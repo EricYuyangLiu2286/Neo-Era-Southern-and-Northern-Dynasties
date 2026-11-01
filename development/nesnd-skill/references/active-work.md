@@ -13,3 +13,7 @@
 ## 当前：按钮同类问题已修复并交付用户测试
 
 2026-11-01用户进一步授权修复全部已发现按钮问题、合入主项目，并亲自测试。本轮禁止启动游戏。`button-guards-20261101-a`修复外部援助引用与过期回复、四组display helper、丹那沙林/JAP对象边界、法国目标筛选，主MOD与main为交付目标。53项源码检查通过，Tiger零新增、MCP四查询通过；STATIC_PASS / ENGINE_NOT_RUN。详细交付见[记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/button-guards-20261101/release-notes.md>)，Git结果见同目录git-delivery.json。旧交接逐字保存于本次报告skill-before/references/active-work.md。引用规则集中在[语法与引用安全](syntax-and-routing.md#引用安全按钮延迟回复与预览)。原始功能欠账保持原列表。
+
+## Editor rounding 子项完成
+
+2026-11-01按用户要求恢复并完成编辑器拆州舍入任务，正式WORK/editor已更新，Git保存development/workbench/editor。真实Project接口回归通过，未打开游戏。现有主MOD12州148个建筑组与设计一致，玩法不变；旧“编辑器舍入修复待办”由此关闭，其他功能与UI能力欠账保留。详见[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/editor-rounding-integration-20261101/release-notes.md>)。规则见map-economy-design.md的建筑总等级/投资股份两步取整。

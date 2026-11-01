@@ -20,6 +20,12 @@
 
 ## 迁移合同
 
+### 建筑总等级与投资股份分两步取整
+
+编辑器比例拆州先按每个 `create_building` 的总等级计算新州目标（整数向下取整，余数留原州），再按最大余数法把目标等级分配给各笔所有权；同余数按原条目顺序确定。复用 `WORK/editor/province_move.py` 的 `divide_building_ownership`，不可逐股份独立向下取整。原版 `common/history/buildings/00_west_europe.txt` 的 Eastern Norway 伐木场有两笔1级持股；50%拆分必须旧1/新1，逐笔取整会错误地变成旧2/新0，总量检查却仍通过。
+
+通过实际 `Project.split` 检验双方的具体等级及每个投资者合计，而不只验世界总量；覆盖碎片持股、重复所有权条目、奇数/非50%比例、外国或外州投资者、零级过滤、整个国别分州迁移和保存/重开/导出。股份分配完再过滤零级条目，原/新树独立修改；本地所有者随地迁移，外资身份保留，唯一建筑继续显式指定位置。明确逐行业设计表优先于编辑器均分预设，不因工具修复重新均分正式地图。2026-11-01当前12州148个建筑组与设计表一致；[本轮证据](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/editor-rounding-integration-20261101/current-map-impact.json>)仅证明这批静态数据，不能外推所有旧试案或游戏运行。
+
 ### 唯一建筑也属于迁移图
 
 2026-10-31全国候选漏掉紫禁城：旧工具只数所有权`levels`，没有数纪念建筑的顶层`level`，旧守恒检查同样漏检。修复后统计两种形式；拆分遇到顶层level建筑必须在修改前明确保留哪侧，不能按比例变零或复制两座。紫禁城原版`common/buildings/08_monuments.txt`还有`unique=yes`、`potential state_region=STATE_BEIJING`及`forbidden_city_locator`，需联查建筑定义和实际定位。当前全国方案它保留燕京，恢复原1级；若未来移动到新地区，还要迁移potential/locator等引用，不能仅改历史块。证据在WORK/plans/two-empires/evidence/monument-regression.json，静态回归不等于引擎验收。

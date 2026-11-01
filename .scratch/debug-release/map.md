@@ -73,3 +73,7 @@ Updated: 2026-11-01
 ## 最新交付：按钮引用保护
 
 [09 按钮修复与用户测试](issues/09-button-reference-guards.md)：完成源码修复和主项目交付，STATIC_PASS，用户自行实机测试；不打开游戏。12个玩法脚本文件修改，53项检查通过，Tiger零新增，MCP四查询通过。该节为当前入口；上方历史进度保留。引用规则集中在技能syntax-and-routing.md。
+
+## Editor rounding 已完成
+
+[10 编辑器舍入修复](issues/10-editor-rounding.md)：正式工具已部署，真实接口外部测试通过；现有12州148建筑组分配正确，主MOD玩法数据未改。未开游戏。

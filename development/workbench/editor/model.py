@@ -260,6 +260,7 @@ class Project:
             return population_ledger(self)
         return None
     def split(self,source,new,selected,ratio=0.5,unique_buildings=None):
+        from province_move import divide_building_ownership
         known={getattr(pop,'original_region',None) for _,pop in self.state_rows('pops',source)}-{None}
         if len(known)>1:raise ValueError('This region contains multiple original geographic populations. Split requires explicit per-origin allocations; the one-ratio operation does not guess them.')
 
@@ -322,8 +323,7 @@ class Project:
                             if a.get('level') and not a.get('add_ownership'):
                                 v=int(a.scalar('level'));side='new' if f==1 else unique_buildings[a.scalar('building')]
                                 setval(a,'level',v if side=='source' else 0);setval(b,'level',v if side=='new' else 0)
-                            for x,y in zip(a.walk(),b.walk()):
-                                if x.key=='levels':v=int(x.value);nv=int(v*f);y.value=str(nv);x.value=str(v-nv)
+                            divide_building_ownership(a,b,f)
                             for own in b.walk():
                                 if own.scalar('region')==source and own.scalar('country')=='c:'+tag:setval(own,'region','"'+new+'"')
                     if kind=='pops':
