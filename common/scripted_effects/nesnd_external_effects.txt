@@ -4,13 +4,53 @@
  remove_variable = nesnd_external_receiver_sponsor
 }
 nesnd_external_send_request = {
- set_variable = { name = nesnd_external_pending value = var:nesnd_external_target days = 30 }
- set_variable = { name = nesnd_external_cooldown months = 6 }
- if = { limit = { is_subject = yes } set_variable = { name = nesnd_external_requester_sponsor value = overlord } }
- else = { set_variable = { name = nesnd_external_requester_sponsor value = this } }
- if = { limit = { var:nesnd_external_target = { is_subject = yes } } set_variable = { name = nesnd_external_receiver_sponsor value = var:nesnd_external_target.overlord } }
- else = { set_variable = { name = nesnd_external_receiver_sponsor value = var:nesnd_external_target } }
- save_scope_as = nesnd_external_requester
+	if = {
+		limit = {
+			nesnd_external_target_valid = yes
+		}
+		set_variable = {
+			name = nesnd_external_pending
+			value = var:nesnd_external_target
+			days = 30
+		}
+		set_variable = {
+			name = nesnd_external_cooldown
+			months = 6
+		}
+		if = {
+			limit = {
+				is_subject = yes
+			}
+			set_variable = {
+				name = nesnd_external_requester_sponsor
+				value = overlord
+			}
+		}
+		else = {
+			set_variable = {
+				name = nesnd_external_requester_sponsor
+				value = this
+			}
+		}
+		if = {
+			limit = {
+				var:nesnd_external_target = {
+					is_subject = yes
+				}
+			}
+			set_variable = {
+				name = nesnd_external_receiver_sponsor
+				value = var:nesnd_external_target.overlord
+			}
+		}
+		else = {
+			set_variable = {
+				name = nesnd_external_receiver_sponsor
+				value = var:nesnd_external_target
+			}
+		}
+		save_scope_as = nesnd_external_requester
+	}
 }
 nesnd_external_cleanup = { nesnd_external_clear_request = yes remove_variable = nesnd_external_target remove_variable = nesnd_external_idle_weeks }
 

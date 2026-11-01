@@ -9,3 +9,7 @@
 已完成：原版参考核心步骤；女性发型；六地区地图细化；日本吞并后三政权恢复及Lin摄政；陈死亡压力初始化保护；供给按钮nil scope与修正清理错误的源码修复。新按钮修复只完成外部检查，没有声称新引擎日志零错。
 
 原始欠账继续保留：QE1/SHA改革连接、明吴战后重建/长期履约、编辑器舍入修复。中断代理可能有独立备份/候选，先检查现场再继续，主MOD已发布修复作为新基线。市场退出低优先级，允许游戏失败、稀缺与破产；不加保姆式补救。
+
+## 当前：按钮同类问题已修复并交付用户测试
+
+2026-11-01用户进一步授权修复全部已发现按钮问题、合入主项目，并亲自测试。本轮禁止启动游戏。`button-guards-20261101-a`修复外部援助引用与过期回复、四组display helper、丹那沙林/JAP对象边界、法国目标筛选，主MOD与main为交付目标。53项源码检查通过，Tiger零新增、MCP四查询通过；STATIC_PASS / ENGINE_NOT_RUN。详细交付见[记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/button-guards-20261101/release-notes.md>)，Git结果见同目录git-delivery.json。旧交接逐字保存于本次报告skill-before/references/active-work.md。引用规则集中在[语法与引用安全](syntax-and-routing.md#引用安全按钮延迟回复与预览)。原始功能欠账保持原列表。

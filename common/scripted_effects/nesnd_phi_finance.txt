@@ -33,11 +33,30 @@ nesnd_phi_measure = {
     if = { limit = { nesnd_phi_households_ready = yes } change_variable = { name = nesnd_phi_score add = 1 } }
 }
 nesnd_phi_display = {
-    save_scope_as = nesnd_phi_display_country
-    je:nesnd_phi_service_recovery ?= {
-        set_bar_progress = { name = nesnd_phi_service_bar value = scope:nesnd_phi_display_country.var:nesnd_phi_score }
-        set_bar_progress = { name = nesnd_phi_continuity_bar value = scope:nesnd_phi_display_country.var:nesnd_phi_good_months }
-    }
+	save_scope_as = nesnd_phi_display_country
+	if = {
+		limit = {
+			exists = scope:nesnd_phi_display_country
+		}
+		if = {
+			limit = {
+				scope:nesnd_phi_display_country = {
+					has_variable = nesnd_phi_score
+					has_variable = nesnd_phi_good_months
+				}
+			}
+			je:nesnd_phi_service_recovery ?= {
+				set_bar_progress = {
+					name = nesnd_phi_service_bar
+					value = scope:nesnd_phi_display_country.var:nesnd_phi_score
+				}
+				set_bar_progress = {
+					name = nesnd_phi_continuity_bar
+					value = scope:nesnd_phi_display_country.var:nesnd_phi_good_months
+				}
+			}
+		}
+	}
 }
 nesnd_phi_clear_pending = {
 	remove_variable = nesnd_phi_requested_cash

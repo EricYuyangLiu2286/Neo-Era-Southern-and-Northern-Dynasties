@@ -3,37 +3,116 @@ nesnd_ten_active = { nesnd_ten_country = yes has_journal_entry = nesnd_tenasseri
 nesnd_ten_jobs_ready = { var:nesnd_ten_workforce > 0 var:nesnd_ten_unemployment <= 0.12 }
 nesnd_ten_livelihood_ready = { var:nesnd_ten_starving <= 0.25 var:nesnd_ten_sol >= 6.5 }
 nesnd_ten_healthy = {
-    nesnd_ten_active = yes var:nesnd_ten_samples >= 3
-    nesnd_ten_jobs_ready = yes nesnd_ten_livelihood_ready = yes
-    var:nesnd_ten_access >= 0.85 is_at_war = no NOT = { has_modifier = declared_bankruptcy }
-    s:STATE_TENASSERIM.region_state:DEI = {
-        any_scope_building = {
-            OR = { is_building_type = building_logging_camp is_building_type = building_fishing_wharf is_building_type = building_iron_mine is_building_type = building_tooling_workshop is_building_type = building_textile_mill is_building_type = building_food_industry }
-            occupancy >= 0.75 building_has_goods_shortage = no
-        }
-    }
+	trigger_if = {
+		limit = {
+			exists = s:STATE_TENASSERIM.region_state:DEI
+		}
+		nesnd_ten_active = yes
+		var:nesnd_ten_samples >= 3
+		nesnd_ten_jobs_ready = yes
+		nesnd_ten_livelihood_ready = yes
+		var:nesnd_ten_access >= 0.85
+		is_at_war = no
+		NOT = {
+			has_modifier = declared_bankruptcy
+		}
+		s:STATE_TENASSERIM.region_state:DEI = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_logging_camp
+					is_building_type = building_fishing_wharf
+					is_building_type = building_iron_mine
+					is_building_type = building_tooling_workshop
+					is_building_type = building_textile_mill
+					is_building_type = building_food_industry
+				}
+				occupancy >= 0.75
+				building_has_goods_shortage = no
+			}
+		}
+	}
+	trigger_else = {
+		always = no
+	}
 }
 nesnd_ten_distress = { OR = { var:nesnd_ten_unemployment > 0.25 var:nesnd_ten_starving > 0.50 has_modifier = declared_bankruptcy } }
 nesnd_ten_can_build = {
-    nesnd_ten_active = yes is_at_war = no NOT = { has_modifier = declared_bankruptcy }
-    gold_reserves >= 5000 var:nesnd_ten_orders < 2 NOT = { has_variable = nesnd_ten_build_cooldown }
-    capital.market = { mg:wood = { market_goods_pricier >= -0.50 } }
-    s:STATE_TENASSERIM.region_state:DEI = {
-        can_construct_building = building_logging_camp
-        state_has_building_type_levels = { target = bt:building_logging_camp value < 2 }
-        NOT = { any_scope_building = { is_building_type = building_logging_camp is_under_construction = yes } }
-        OR = {
-            NOT = { has_building = building_logging_camp }
-            any_scope_building = { is_building_type = building_logging_camp occupancy >= 0.75 building_has_goods_shortage = no }
-        }
-    }
+	trigger_if = {
+		limit = {
+			exists = s:STATE_TENASSERIM.region_state:DEI
+		}
+		nesnd_ten_active = yes
+		is_at_war = no
+		NOT = {
+			has_modifier = declared_bankruptcy
+		}
+		gold_reserves >= 5000
+		var:nesnd_ten_orders < 2
+		NOT = {
+			has_variable = nesnd_ten_build_cooldown
+		}
+		capital.market = {
+			mg:wood = {
+				market_goods_pricier >= -0.50
+			}
+		}
+		s:STATE_TENASSERIM.region_state:DEI = {
+			can_construct_building = building_logging_camp
+			state_has_building_type_levels = {
+				target = bt:building_logging_camp
+				value < 2
+			}
+			NOT = {
+				any_scope_building = {
+					is_building_type = building_logging_camp
+					is_under_construction = yes
+				}
+			}
+			OR = {
+				NOT = {
+					has_building = building_logging_camp
+				}
+				any_scope_building = {
+					is_building_type = building_logging_camp
+					occupancy >= 0.75
+					building_has_goods_shortage = no
+				}
+			}
+		}
+	}
+	trigger_else = {
+		always = no
+	}
 }
 nesnd_ten_can_train = {
-    nesnd_ten_active = yes gold_reserves >= nesnd_ten_training_cost
-    NOT = { has_modifier = declared_bankruptcy } NOT = { has_variable = nesnd_ten_training_cooldown }
-    s:STATE_TENASSERIM.region_state:DEI = {
-        any_scope_building = { OR = { is_building_type = building_logging_camp is_building_type = building_fishing_wharf is_building_type = building_iron_mine is_building_type = building_tooling_workshop is_building_type = building_textile_mill } occupancy < 0.90 }
-    }
+	trigger_if = {
+		limit = {
+			exists = s:STATE_TENASSERIM.region_state:DEI
+		}
+		nesnd_ten_active = yes
+		gold_reserves >= nesnd_ten_training_cost
+		NOT = {
+			has_modifier = declared_bankruptcy
+		}
+		NOT = {
+			has_variable = nesnd_ten_training_cooldown
+		}
+		s:STATE_TENASSERIM.region_state:DEI = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_logging_camp
+					is_building_type = building_fishing_wharf
+					is_building_type = building_iron_mine
+					is_building_type = building_tooling_workshop
+					is_building_type = building_textile_mill
+				}
+				occupancy < 0.90
+			}
+		}
+	}
+	trigger_else = {
+		always = no
+	}
 }
 nesnd_ten_tenant_support = {
     OR = {
@@ -61,9 +140,28 @@ nesnd_ten_can_abolish = {
     enactment_chance_for_law = { target = law_type:law_slavery_banned value >= 0.15 }
 }
 nesnd_ten_can_compromise = {
-    nesnd_ten_active = yes gold_reserves >= nesnd_ten_compromise_cost
-    NOT = { has_modifier = declared_bankruptcy } NOT = { has_variable = nesnd_ten_compromise_cooldown }
-    exists = ig:ig_landowners
-    ig:ig_landowners = { ig_clout >= 0.20 }
-    OR = { is_enacting_law = law_type:law_tenant_farmers is_enacting_law = law_type:law_slavery_banned }
+	trigger_if = {
+		limit = {
+			exists = ig:ig_landowners
+		}
+		nesnd_ten_active = yes
+		gold_reserves >= nesnd_ten_compromise_cost
+		NOT = {
+			has_modifier = declared_bankruptcy
+		}
+		NOT = {
+			has_variable = nesnd_ten_compromise_cooldown
+		}
+		exists = ig:ig_landowners
+		ig:ig_landowners = {
+			ig_clout >= 0.20
+		}
+		OR = {
+			is_enacting_law = law_type:law_tenant_farmers
+			is_enacting_law = law_type:law_slavery_banned
+		}
+	}
+	trigger_else = {
+		always = no
+	}
 }

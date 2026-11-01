@@ -1,0 +1,2579 @@
+--- before/events/nesnd_external_events.txt
++++ after/events/nesnd_external_events.txt
+@@ -14,31 +14,358 @@
+ }
+ 
+ nesnd_external.2 = {
+- type = country_event placement = root duration = 3 title = nesnd_external_money_title desc = nesnd_external_money_desc
+- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+- trigger = { nesnd_external_request_valid = yes }
+- option = { name = nesnd_external_accept
+-  trigger = { nesnd_external_request_valid = yes scope:nesnd_external_requester = { is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 5000 net_total_income >= 1000 gold_reserves >= 26000 } can_create_treaty = { first_country = scope:nesnd_external_requester second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = scope:nesnd_external_requester target_country = root inputs = { { quantity = 500 } } } } } }
+-  ai_chance = { base = 60 modifier = { add = -60 trigger = { "relations(scope:nesnd_external_requester)" < relations_threshold:poor } } }
+-  create_treaty = { first_country = scope:nesnd_external_requester second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = scope:nesnd_external_requester target_country = root inputs = { { quantity = 500 } } } } }
+-  scope:nesnd_external_requester = { set_variable = nesnd_external_aid_committed nesnd_external_clear_request = yes }
+-  custom_tooltip = nesnd_external_commitment_tt
+- }
+- option = { name = nesnd_external_refuse default_option = yes ai_chance = { base = 40 } scope:nesnd_external_requester ?= { nesnd_external_clear_request = yes } }
++	cancellation_trigger = {
++		NOT = {
++			nesnd_external_request_valid = yes
++		}
++	}
++	type = country_event
++	placement = root
++	duration = 3
++	title = nesnd_external_money_title
++	desc = nesnd_external_money_desc
++	event_image = {
++		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
++	}
++	trigger = {
++		nesnd_external_request_valid = yes
++	}
++	option = {
++		name = nesnd_external_accept
++		trigger = {
++			trigger_if = {
++				limit = {
++					nesnd_external_request_valid = yes
++				}
++				nesnd_external_request_valid = yes
++				scope:nesnd_external_requester = {
++					is_at_war = no
++					in_default = no
++					NOT = {
++						has_modifier = declared_bankruptcy
++					}
++					net_fixed_income >= 5000
++					net_total_income >= 1000
++					gold_reserves >= 26000
++				}
++				can_create_treaty = {
++					first_country = scope:nesnd_external_requester
++					second_country = root
++					is_draft = no
++					binding_period = {
++						years = 1
++					}
++					articles_to_create = {
++						 {
++							article = money_transfer
++							source_country = scope:nesnd_external_requester
++							target_country = root
++							inputs = {
++								 {
++									quantity = 500
++								}
++							}
++						}
++					}
++				}
++			}
++			trigger_else = {
++				always = no
++			}
++		}
++		ai_chance = {
++			base = 60
++			modifier = {
++				add = -60
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_external_requester
++						}
++						"relations(scope:nesnd_external_requester)" < relations_threshold:poor
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++		}
++		if = {
++			limit = {
++				trigger_if = {
++					limit = {
++						nesnd_external_request_valid = yes
++					}
++					nesnd_external_request_valid = yes
++					scope:nesnd_external_requester = {
++						is_at_war = no
++						in_default = no
++						NOT = {
++							has_modifier = declared_bankruptcy
++						}
++						net_fixed_income >= 5000
++						net_total_income >= 1000
++						gold_reserves >= 26000
++					}
++					can_create_treaty = {
++						first_country = scope:nesnd_external_requester
++						second_country = root
++						is_draft = no
++						binding_period = {
++							years = 1
++						}
++						articles_to_create = {
++							 {
++								article = money_transfer
++								source_country = scope:nesnd_external_requester
++								target_country = root
++								inputs = {
++									 {
++										quantity = 500
++									}
++								}
++							}
++						}
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			create_treaty = {
++				first_country = scope:nesnd_external_requester
++				second_country = root
++				is_draft = no
++				binding_period = {
++					years = 1
++				}
++				articles_to_create = {
++					 {
++						article = money_transfer
++						source_country = scope:nesnd_external_requester
++						target_country = root
++						inputs = {
++							 {
++								quantity = 500
++							}
++						}
++					}
++				}
++			}
++			scope:nesnd_external_requester = {
++				set_variable = nesnd_external_aid_committed
++				nesnd_external_clear_request = yes
++			}
++			custom_tooltip = nesnd_external_commitment_tt
++		}
++	}
++	option = {
++		name = nesnd_external_refuse
++		default_option = yes
++		ai_chance = {
++			base = 40
++		}
++		scope:nesnd_external_requester ?= {
++			if = {
++				limit = {
++					exists = var:nesnd_external_pending
++				}
++				if = {
++					limit = {
++						var:nesnd_external_pending = root
++					}
++					nesnd_external_clear_request = yes
++				}
++			}
++		}
++	}
+ }
+ 
+ nesnd_external.3 = {
+- type = country_event placement = root duration = 3 title = nesnd_external_arms_title desc = nesnd_external_arms_desc
+- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+- trigger = { nesnd_external_request_valid = yes }
+- option = { name = nesnd_external_accept
+-  trigger = { nesnd_external_request_valid = yes scope:nesnd_external_requester = { is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } capital.market = { mg:small_arms = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = scope:nesnd_external_requester } } } } can_create_treaty = { first_country = scope:nesnd_external_requester second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = scope:nesnd_external_requester target_country = root inputs = { { quantity = 10 } { good = g:small_arms } } } } } }
+-  ai_chance = { base = 60 modifier = { add = -60 trigger = { "relations(scope:nesnd_external_requester)" < relations_threshold:poor } } }
+-  create_treaty = { first_country = scope:nesnd_external_requester second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = scope:nesnd_external_requester target_country = root inputs = { { quantity = 10 } { goods = g:small_arms } } } } }
+-  scope:nesnd_external_requester = { set_variable = nesnd_external_aid_committed nesnd_external_clear_request = yes }
+-  custom_tooltip = nesnd_external_commitment_tt
+- }
+- option = { name = nesnd_external_refuse default_option = yes ai_chance = { base = 40 } scope:nesnd_external_requester ?= { nesnd_external_clear_request = yes } }
++	cancellation_trigger = {
++		NOT = {
++			nesnd_external_request_valid = yes
++		}
++	}
++	type = country_event
++	placement = root
++	duration = 3
++	title = nesnd_external_arms_title
++	desc = nesnd_external_arms_desc
++	event_image = {
++		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
++	}
++	trigger = {
++		nesnd_external_request_valid = yes
++	}
++	option = {
++		name = nesnd_external_accept
++		trigger = {
++			trigger_if = {
++				limit = {
++					nesnd_external_request_valid = yes
++				}
++				nesnd_external_request_valid = yes
++				scope:nesnd_external_requester = {
++					is_at_war = no
++					in_default = no
++					NOT = {
++						has_modifier = declared_bankruptcy
++					}
++					capital.market = {
++						mg:small_arms = {
++							market_goods_pricier <= 0.25
++							NOT = {
++								country_has_local_shortage = scope:nesnd_external_requester
++							}
++						}
++					}
++				}
++				can_create_treaty = {
++					first_country = scope:nesnd_external_requester
++					second_country = root
++					is_draft = no
++					binding_period = {
++						years = 1
++					}
++					articles_to_create = {
++						 {
++							article = goods_transfer
++							source_country = scope:nesnd_external_requester
++							target_country = root
++							inputs = {
++								 {
++									quantity = 10
++								}
++								 {
++									good = g:small_arms
++								}
++							}
++						}
++					}
++				}
++			}
++			trigger_else = {
++				always = no
++			}
++		}
++		ai_chance = {
++			base = 60
++			modifier = {
++				add = -60
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_external_requester
++						}
++						"relations(scope:nesnd_external_requester)" < relations_threshold:poor
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++		}
++		if = {
++			limit = {
++				trigger_if = {
++					limit = {
++						nesnd_external_request_valid = yes
++					}
++					nesnd_external_request_valid = yes
++					scope:nesnd_external_requester = {
++						is_at_war = no
++						in_default = no
++						NOT = {
++							has_modifier = declared_bankruptcy
++						}
++						capital.market = {
++							mg:small_arms = {
++								market_goods_pricier <= 0.25
++								NOT = {
++									country_has_local_shortage = scope:nesnd_external_requester
++								}
++							}
++						}
++					}
++					can_create_treaty = {
++						first_country = scope:nesnd_external_requester
++						second_country = root
++						is_draft = no
++						binding_period = {
++							years = 1
++						}
++						articles_to_create = {
++							 {
++								article = goods_transfer
++								source_country = scope:nesnd_external_requester
++								target_country = root
++								inputs = {
++									 {
++										quantity = 10
++									}
++									 {
++										good = g:small_arms
++									}
++								}
++							}
++						}
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			create_treaty = {
++				first_country = scope:nesnd_external_requester
++				second_country = root
++				is_draft = no
++				binding_period = {
++					years = 1
++				}
++				articles_to_create = {
++					 {
++						article = goods_transfer
++						source_country = scope:nesnd_external_requester
++						target_country = root
++						inputs = {
++							 {
++								quantity = 10
++							}
++							 {
++								goods = g:small_arms
++							}
++						}
++					}
++				}
++			}
++			scope:nesnd_external_requester = {
++				set_variable = nesnd_external_aid_committed
++				nesnd_external_clear_request = yes
++			}
++			custom_tooltip = nesnd_external_commitment_tt
++		}
++	}
++	option = {
++		name = nesnd_external_refuse
++		default_option = yes
++		ai_chance = {
++			base = 40
++		}
++		scope:nesnd_external_requester ?= {
++			if = {
++				limit = {
++					exists = var:nesnd_external_pending
++				}
++				if = {
++					limit = {
++						var:nesnd_external_pending = root
++					}
++					nesnd_external_clear_request = yes
++				}
++			}
++		}
++	}
+ }
+ 
+ nesnd_external.4 = { type = country_event placement = root duration = 3
+@@ -48,29 +375,376 @@
+ }
+ 
+ nesnd_external.5 = {
+- type = country_event placement = root duration = 3 title = nesnd_external_request_money_title desc = nesnd_external_request_money_event_desc
+- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+- trigger = { nesnd_external_request_valid = yes }
+- option = { name = nesnd_external_accept_request
+-  trigger = { nesnd_external_request_valid = yes is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 5000 net_total_income >= 1000 gold_reserves >= 26000 can_create_treaty = { first_country = root second_country = scope:nesnd_external_requester is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = root target_country = scope:nesnd_external_requester inputs = { { quantity = 500 } } } } } }
+-  ai_chance = { base = 25 modifier = { add = 25 trigger = { "relations(scope:nesnd_external_requester)" >= relations_threshold:cordial } } modifier = { add = -25 trigger = { "relations(scope:nesnd_external_requester)" < relations_threshold:poor } } }
+-  create_treaty = { first_country = root second_country = scope:nesnd_external_requester is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = root target_country = scope:nesnd_external_requester inputs = { { quantity = 500 } } } } }
+-  scope:nesnd_external_requester = { set_variable = nesnd_external_aid_committed nesnd_external_clear_request = yes }
+-  custom_tooltip = nesnd_external_commitment_tt
+- }
+- option = { name = nesnd_external_refuse_request default_option = yes ai_chance = { base = 75 } scope:nesnd_external_requester ?= { nesnd_external_clear_request = yes } }
++	cancellation_trigger = {
++		NOT = {
++			nesnd_external_request_valid = yes
++		}
++	}
++	type = country_event
++	placement = root
++	duration = 3
++	title = nesnd_external_request_money_title
++	desc = nesnd_external_request_money_event_desc
++	event_image = {
++		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
++	}
++	trigger = {
++		nesnd_external_request_valid = yes
++	}
++	option = {
++		name = nesnd_external_accept_request
++		trigger = {
++			trigger_if = {
++				limit = {
++					nesnd_external_request_valid = yes
++				}
++				nesnd_external_request_valid = yes
++				is_at_war = no
++				in_default = no
++				NOT = {
++					has_modifier = declared_bankruptcy
++				}
++				net_fixed_income >= 5000
++				net_total_income >= 1000
++				gold_reserves >= 26000
++				can_create_treaty = {
++					first_country = root
++					second_country = scope:nesnd_external_requester
++					is_draft = no
++					binding_period = {
++						years = 1
++					}
++					articles_to_create = {
++						 {
++							article = money_transfer
++							source_country = root
++							target_country = scope:nesnd_external_requester
++							inputs = {
++								 {
++									quantity = 500
++								}
++							}
++						}
++					}
++				}
++			}
++			trigger_else = {
++				always = no
++			}
++		}
++		ai_chance = {
++			base = 25
++			modifier = {
++				add = 25
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_external_requester
++						}
++						"relations(scope:nesnd_external_requester)" >= relations_threshold:cordial
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++			modifier = {
++				add = -25
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_external_requester
++						}
++						"relations(scope:nesnd_external_requester)" < relations_threshold:poor
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++		}
++		if = {
++			limit = {
++				trigger_if = {
++					limit = {
++						nesnd_external_request_valid = yes
++					}
++					nesnd_external_request_valid = yes
++					is_at_war = no
++					in_default = no
++					NOT = {
++						has_modifier = declared_bankruptcy
++					}
++					net_fixed_income >= 5000
++					net_total_income >= 1000
++					gold_reserves >= 26000
++					can_create_treaty = {
++						first_country = root
++						second_country = scope:nesnd_external_requester
++						is_draft = no
++						binding_period = {
++							years = 1
++						}
++						articles_to_create = {
++							 {
++								article = money_transfer
++								source_country = root
++								target_country = scope:nesnd_external_requester
++								inputs = {
++									 {
++										quantity = 500
++									}
++								}
++							}
++						}
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			create_treaty = {
++				first_country = root
++				second_country = scope:nesnd_external_requester
++				is_draft = no
++				binding_period = {
++					years = 1
++				}
++				articles_to_create = {
++					 {
++						article = money_transfer
++						source_country = root
++						target_country = scope:nesnd_external_requester
++						inputs = {
++							 {
++								quantity = 500
++							}
++						}
++					}
++				}
++			}
++			scope:nesnd_external_requester = {
++				set_variable = nesnd_external_aid_committed
++				nesnd_external_clear_request = yes
++			}
++			custom_tooltip = nesnd_external_commitment_tt
++		}
++	}
++	option = {
++		name = nesnd_external_refuse_request
++		default_option = yes
++		ai_chance = {
++			base = 75
++		}
++		scope:nesnd_external_requester ?= {
++			if = {
++				limit = {
++					exists = var:nesnd_external_pending
++				}
++				if = {
++					limit = {
++						var:nesnd_external_pending = root
++					}
++					nesnd_external_clear_request = yes
++				}
++			}
++		}
++	}
+ }
+ 
+ nesnd_external.6 = {
+- type = country_event placement = root duration = 3 title = nesnd_external_request_arms_title desc = nesnd_external_request_arms_event_desc
+- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+- trigger = { nesnd_external_request_valid = yes }
+- option = { name = nesnd_external_accept_request
+-  trigger = { nesnd_external_request_valid = yes is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } capital.market = { mg:small_arms = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } } can_create_treaty = { first_country = root second_country = scope:nesnd_external_requester is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = root target_country = scope:nesnd_external_requester inputs = { { quantity = 10 } { good = g:small_arms } } } } } }
+-  ai_chance = { base = 25 modifier = { add = 25 trigger = { "relations(scope:nesnd_external_requester)" >= relations_threshold:cordial } } modifier = { add = -25 trigger = { "relations(scope:nesnd_external_requester)" < relations_threshold:poor } } }
+-  create_treaty = { first_country = root second_country = scope:nesnd_external_requester is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = root target_country = scope:nesnd_external_requester inputs = { { quantity = 10 } { goods = g:small_arms } } } } }
+-  scope:nesnd_external_requester = { set_variable = nesnd_external_aid_committed nesnd_external_clear_request = yes }
+-  custom_tooltip = nesnd_external_commitment_tt
+- }
+- option = { name = nesnd_external_refuse_request default_option = yes ai_chance = { base = 75 } scope:nesnd_external_requester ?= { nesnd_external_clear_request = yes } }
++	cancellation_trigger = {
++		NOT = {
++			nesnd_external_request_valid = yes
++		}
++	}
++	type = country_event
++	placement = root
++	duration = 3
++	title = nesnd_external_request_arms_title
++	desc = nesnd_external_request_arms_event_desc
++	event_image = {
++		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
++	}
++	trigger = {
++		nesnd_external_request_valid = yes
++	}
++	option = {
++		name = nesnd_external_accept_request
++		trigger = {
++			trigger_if = {
++				limit = {
++					nesnd_external_request_valid = yes
++				}
++				nesnd_external_request_valid = yes
++				is_at_war = no
++				in_default = no
++				NOT = {
++					has_modifier = declared_bankruptcy
++				}
++				capital.market = {
++					mg:small_arms = {
++						market_goods_pricier <= 0.25
++						NOT = {
++							country_has_local_shortage = root
++						}
++					}
++				}
++				can_create_treaty = {
++					first_country = root
++					second_country = scope:nesnd_external_requester
++					is_draft = no
++					binding_period = {
++						years = 1
++					}
++					articles_to_create = {
++						 {
++							article = goods_transfer
++							source_country = root
++							target_country = scope:nesnd_external_requester
++							inputs = {
++								 {
++									quantity = 10
++								}
++								 {
++									good = g:small_arms
++								}
++							}
++						}
++					}
++				}
++			}
++			trigger_else = {
++				always = no
++			}
++		}
++		ai_chance = {
++			base = 25
++			modifier = {
++				add = 25
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_external_requester
++						}
++						"relations(scope:nesnd_external_requester)" >= relations_threshold:cordial
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++			modifier = {
++				add = -25
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_external_requester
++						}
++						"relations(scope:nesnd_external_requester)" < relations_threshold:poor
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++		}
++		if = {
++			limit = {
++				trigger_if = {
++					limit = {
++						nesnd_external_request_valid = yes
++					}
++					nesnd_external_request_valid = yes
++					is_at_war = no
++					in_default = no
++					NOT = {
++						has_modifier = declared_bankruptcy
++					}
++					capital.market = {
++						mg:small_arms = {
++							market_goods_pricier <= 0.25
++							NOT = {
++								country_has_local_shortage = root
++							}
++						}
++					}
++					can_create_treaty = {
++						first_country = root
++						second_country = scope:nesnd_external_requester
++						is_draft = no
++						binding_period = {
++							years = 1
++						}
++						articles_to_create = {
++							 {
++								article = goods_transfer
++								source_country = root
++								target_country = scope:nesnd_external_requester
++								inputs = {
++									 {
++										quantity = 10
++									}
++									 {
++										good = g:small_arms
++									}
++								}
++							}
++						}
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			create_treaty = {
++				first_country = root
++				second_country = scope:nesnd_external_requester
++				is_draft = no
++				binding_period = {
++					years = 1
++				}
++				articles_to_create = {
++					 {
++						article = goods_transfer
++						source_country = root
++						target_country = scope:nesnd_external_requester
++						inputs = {
++							 {
++								quantity = 10
++							}
++							 {
++								goods = g:small_arms
++							}
++						}
++					}
++				}
++			}
++			scope:nesnd_external_requester = {
++				set_variable = nesnd_external_aid_committed
++				nesnd_external_clear_request = yes
++			}
++			custom_tooltip = nesnd_external_commitment_tt
++		}
++	}
++	option = {
++		name = nesnd_external_refuse_request
++		default_option = yes
++		ai_chance = {
++			base = 75
++		}
++		scope:nesnd_external_requester ?= {
++			if = {
++				limit = {
++					exists = var:nesnd_external_pending
++				}
++				if = {
++					limit = {
++						var:nesnd_external_pending = root
++					}
++					nesnd_external_clear_request = yes
++				}
++			}
++		}
++	}
+ }--- before/common/scripted_buttons/ce_french_empire_je_buttons.txt
++++ after/common/scripted_buttons/ce_french_empire_je_buttons.txt
+@@ -331,13 +331,11 @@
+ ce_french_republican_hit_unity = {
+ 	name = "ce_french_republican_hit_unity"
+ 	desc = "ce_french_republican_hit_unity_desc"
+-
+-	visible = {
+-		exists = c:FRA
+-		c:FRA ?= This
+-		has_journal_entry = je_ce_unstable_imperium
+-	}
+-
++	visible = {
++		exists = c:FRA
++		c:FRA ?= This
++		has_journal_entry = je_ce_unstable_imperium
++	}
+ 	possible = {
+ 		custom_tooltip = {
+ 			text = ce_republican_power_10
+@@ -350,21 +348,20 @@
+ 				is_interest_group_type = ig_intelligentsia
+ 				is_interest_group_type = ig_trade_unions
+ 			}
+-			
+-			NOT = { has_modifier = ce_french_republican_unity }
+-		}
+-		NOT = {
+-			custom_tooltip = {
+-				text = ce_french_opposition_action_on_goging_tt
+-				has_variable = ce_french_opposition_movement_var
+-			}
+-		}
+-	}
+-
++			NOT = {
++				has_modifier = ce_french_republican_unity
++			}
++		}
++		NOT = {
++			custom_tooltip = {
++				text = ce_french_opposition_action_on_goging_tt
++				has_variable = ce_french_opposition_movement_var
++			}
++		}
++	}
+ 	ai_chance = {
+ 		value = 1
+ 	}
+-
+ 	effect = {
+ 		hidden_effect = {
+ 			scope:journal_entry = {
+@@ -380,12 +377,17 @@
+ 					is_interest_group_type = ig_intelligentsia
+ 					is_interest_group_type = ig_trade_unions
+ 				}
+-			}
+-			
++				NOT = {
++					has_modifier = ce_french_republican_unity
++				}
++			}
+ 			save_scope_as = ce_republican_ig
+ 		}
+ 		set_variable = ce_french_opposition_movement_var
+-		trigger_event = { id = fra_unrest.15 popup = yes }
++		trigger_event = {
++			id = fra_unrest.15
++			popup = yes
++		}
+ 	}
+ }
+ 
+--- before/common/scripted_buttons/nesnd_external_buttons.txt
++++ after/common/scripted_buttons/nesnd_external_buttons.txt
+@@ -1,21 +1,312 @@
+-nesnd_external_choose_wu = { name = nesnd_external_choose_wu desc = nesnd_external_choose_desc
+- visible = { NOR = { c:MUG ?= this c:SHA ?= this } } possible = { exists = c:USM c:USM = { is_country_alive = yes } NOT = { has_war_with = c:USM } NOT = { has_variable = nesnd_external_target } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } }
+- ai_chance = { value = 1 if = { limit = { c:FRA ?= this } add = 1 } if = { limit = { OR = { c:SHA ?= this c:QE1 ?= this } } multiply = 0 } if = { limit = { c:HUS ?= this c:USM ?= { relations:root < relations_threshold:cordial } } multiply = 0 } } effect = { set_variable = { name = nesnd_external_target value = c:USM } }
+-}
+-
+-nesnd_external_choose_sih = { name = nesnd_external_choose_sih desc = nesnd_external_choose_desc
+- visible = { c:QE1 ?= this } possible = { exists = c:SIH c:SIH = { is_country_alive = yes } NOT = { has_war_with = c:SIH } NOT = { has_variable = nesnd_external_target } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } }
+- ai_chance = { value = 3 } effect = { set_variable = { name = nesnd_external_target value = c:SIH } }
+-}
+-
+-nesnd_external_choose_hus = { name = nesnd_external_choose_hus desc = nesnd_external_choose_desc
+- visible = { c:SHA ?= this } possible = { exists = c:HUS c:HUS = { is_country_alive = yes } NOT = { has_war_with = c:HUS } NOT = { has_variable = nesnd_external_target } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } }
+- ai_chance = { value = 3 } effect = { set_variable = { name = nesnd_external_target value = c:HUS } }
+-}
+-
+-nesnd_external_choose_fra = { name = nesnd_external_choose_fra desc = nesnd_external_choose_desc
+- visible = { c:MUG ?= this } possible = { exists = c:FRA c:FRA = { is_country_alive = yes } NOT = { has_war_with = c:FRA } NOT = { has_variable = nesnd_external_target } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } }
+- ai_chance = { value = 3 } effect = { set_variable = { name = nesnd_external_target value = c:FRA } }
++nesnd_external_choose_wu = {
++	name = nesnd_external_choose_wu
++	desc = nesnd_external_choose_desc
++	visible = {
++		NOR = {
++			c:MUG ?= this
++			c:SHA ?= this
++		}
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:USM
++			}
++			exists = c:USM
++			c:USM = {
++				is_country_alive = yes
++			}
++			NOT = {
++				has_war_with = c:USM
++			}
++			NOT = {
++				has_variable = nesnd_external_target
++			}
++			NOT = {
++				has_variable = nesnd_external_pending
++			}
++			NOT = {
++				has_variable = nesnd_external_aid_committed
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 1
++		if = {
++			limit = {
++				c:FRA ?= this
++			}
++			add = 1
++		}
++		if = {
++			limit = {
++				OR = {
++					c:SHA ?= this
++					c:QE1 ?= this
++				}
++			}
++			multiply = 0
++		}
++		if = {
++			limit = {
++				c:HUS ?= this
++				c:USM ?= {
++					relations:root < relations_threshold:cordial
++				}
++			}
++			multiply = 0
++		}
++	}
++	effect = {
++		if = {
++			limit = {
++				trigger_if = {
++					limit = {
++						exists = c:USM
++					}
++					exists = c:USM
++					c:USM = {
++						is_country_alive = yes
++					}
++					NOT = {
++						has_war_with = c:USM
++					}
++					NOT = {
++						has_variable = nesnd_external_target
++					}
++					NOT = {
++						has_variable = nesnd_external_pending
++					}
++					NOT = {
++						has_variable = nesnd_external_aid_committed
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			set_variable = {
++				name = nesnd_external_target
++				value = c:USM
++			}
++		}
++	}
++}
++
++nesnd_external_choose_sih = {
++	name = nesnd_external_choose_sih
++	desc = nesnd_external_choose_desc
++	visible = {
++		c:QE1 ?= this
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:SIH
++			}
++			exists = c:SIH
++			c:SIH = {
++				is_country_alive = yes
++			}
++			NOT = {
++				has_war_with = c:SIH
++			}
++			NOT = {
++				has_variable = nesnd_external_target
++			}
++			NOT = {
++				has_variable = nesnd_external_pending
++			}
++			NOT = {
++				has_variable = nesnd_external_aid_committed
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 3
++	}
++	effect = {
++		if = {
++			limit = {
++				trigger_if = {
++					limit = {
++						exists = c:SIH
++					}
++					exists = c:SIH
++					c:SIH = {
++						is_country_alive = yes
++					}
++					NOT = {
++						has_war_with = c:SIH
++					}
++					NOT = {
++						has_variable = nesnd_external_target
++					}
++					NOT = {
++						has_variable = nesnd_external_pending
++					}
++					NOT = {
++						has_variable = nesnd_external_aid_committed
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			set_variable = {
++				name = nesnd_external_target
++				value = c:SIH
++			}
++		}
++	}
++}
++
++nesnd_external_choose_hus = {
++	name = nesnd_external_choose_hus
++	desc = nesnd_external_choose_desc
++	visible = {
++		c:SHA ?= this
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:HUS
++			}
++			exists = c:HUS
++			c:HUS = {
++				is_country_alive = yes
++			}
++			NOT = {
++				has_war_with = c:HUS
++			}
++			NOT = {
++				has_variable = nesnd_external_target
++			}
++			NOT = {
++				has_variable = nesnd_external_pending
++			}
++			NOT = {
++				has_variable = nesnd_external_aid_committed
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 3
++	}
++	effect = {
++		if = {
++			limit = {
++				trigger_if = {
++					limit = {
++						exists = c:HUS
++					}
++					exists = c:HUS
++					c:HUS = {
++						is_country_alive = yes
++					}
++					NOT = {
++						has_war_with = c:HUS
++					}
++					NOT = {
++						has_variable = nesnd_external_target
++					}
++					NOT = {
++						has_variable = nesnd_external_pending
++					}
++					NOT = {
++						has_variable = nesnd_external_aid_committed
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			set_variable = {
++				name = nesnd_external_target
++				value = c:HUS
++			}
++		}
++	}
++}
++
++nesnd_external_choose_fra = {
++	name = nesnd_external_choose_fra
++	desc = nesnd_external_choose_desc
++	visible = {
++		c:MUG ?= this
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:FRA
++			}
++			exists = c:FRA
++			c:FRA = {
++				is_country_alive = yes
++			}
++			NOT = {
++				has_war_with = c:FRA
++			}
++			NOT = {
++				has_variable = nesnd_external_target
++			}
++			NOT = {
++				has_variable = nesnd_external_pending
++			}
++			NOT = {
++				has_variable = nesnd_external_aid_committed
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 3
++	}
++	effect = {
++		if = {
++			limit = {
++				trigger_if = {
++					limit = {
++						exists = c:FRA
++					}
++					exists = c:FRA
++					c:FRA = {
++						is_country_alive = yes
++					}
++					NOT = {
++						has_war_with = c:FRA
++					}
++					NOT = {
++						has_variable = nesnd_external_target
++					}
++					NOT = {
++						has_variable = nesnd_external_pending
++					}
++					NOT = {
++						has_variable = nesnd_external_aid_committed
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			set_variable = {
++				name = nesnd_external_target
++				value = c:FRA
++			}
++		}
++	}
+ }
+ 
+ nesnd_external_choose_opposition = { name = nesnd_external_choose_opposition desc = nesnd_external_choose_opposition_desc
+@@ -29,61 +320,270 @@
+  } }
+ }
+ 
+-nesnd_external_offer_money = { name = nesnd_external_offer_money desc = nesnd_external_offer_money_desc
+- visible = { has_variable = nesnd_external_target NOR = { c:MUG ?= this c:SHA ?= this } }
+- possible = { nesnd_external_can_offer_money = yes }
+- ai_chance = { value = 1 }
+- effect = { nesnd_external_send_request = yes var:nesnd_external_target = { trigger_event = { id = nesnd_external.2 days = 7 popup = yes } } custom_tooltip = nesnd_external_request_tt }
+-}
+-
+-nesnd_external_offer_arms = { name = nesnd_external_offer_arms desc = nesnd_external_offer_arms_desc
+- visible = { has_variable = nesnd_external_target NOR = { c:MUG ?= this c:SHA ?= this } }
+- possible = { nesnd_external_can_offer_arms = yes }
+- ai_chance = { value = 1 }
+- effect = { nesnd_external_send_request = yes var:nesnd_external_target = { trigger_event = { id = nesnd_external.3 days = 7 popup = yes } } custom_tooltip = nesnd_external_request_tt }
+-}
+-
+-nesnd_external_request_money = { name = nesnd_external_request_money desc = nesnd_external_request_money_desc
+- visible = { has_variable = nesnd_external_target OR = { c:MUG ?= this c:SHA ?= this } }
+- possible = { nesnd_external_can_request_money = yes }
+- ai_chance = { value = 1 }
+- effect = { nesnd_external_send_request = yes var:nesnd_external_target = { trigger_event = { id = nesnd_external.5 days = 7 popup = yes } } custom_tooltip = nesnd_external_request_tt }
+-}
+-
+-nesnd_external_request_arms = { name = nesnd_external_request_arms desc = nesnd_external_request_arms_desc
+- visible = { has_variable = nesnd_external_target OR = { c:MUG ?= this c:SHA ?= this } }
+- possible = { nesnd_external_can_request_arms = yes }
+- ai_chance = { value = 1 }
+- effect = { nesnd_external_send_request = yes var:nesnd_external_target = { trigger_event = { id = nesnd_external.6 days = 7 popup = yes } } custom_tooltip = nesnd_external_request_tt }
+-}
+-
+-nesnd_external_mysore = { name = nesnd_external_mysore desc = nesnd_external_mysore_desc
+- visible = { c:MUG ?= this }
+- possible = { exists = c:USM exists = s:STATE_MYSORE.region_state:USM NOT = { has_claim = s:STATE_MYSORE } NOT = { has_variable = nesnd_external_mysore_claimed } }
+- ai_chance = { value = 1 }
+- effect = { s:STATE_MYSORE = { add_claim = root } set_variable = nesnd_external_mysore_claimed change_relations = { country = c:USM value = -10 } custom_tooltip = nesnd_external_mysore_tt }
++nesnd_external_offer_money = {
++	name = nesnd_external_offer_money
++	desc = nesnd_external_offer_money_desc
++	visible = {
++		has_variable = nesnd_external_target
++		NOR = {
++			c:MUG ?= this
++			c:SHA ?= this
++		}
++	}
++	possible = {
++		nesnd_external_can_offer_money = yes
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				nesnd_external_can_offer_money = yes
++			}
++			nesnd_external_send_request = yes
++			var:nesnd_external_target = {
++				trigger_event = {
++					id = nesnd_external.2
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_external_request_tt
++		}
++	}
++}
++
++nesnd_external_offer_arms = {
++	name = nesnd_external_offer_arms
++	desc = nesnd_external_offer_arms_desc
++	visible = {
++		has_variable = nesnd_external_target
++		NOR = {
++			c:MUG ?= this
++			c:SHA ?= this
++		}
++	}
++	possible = {
++		nesnd_external_can_offer_arms = yes
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				nesnd_external_can_offer_arms = yes
++			}
++			nesnd_external_send_request = yes
++			var:nesnd_external_target = {
++				trigger_event = {
++					id = nesnd_external.3
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_external_request_tt
++		}
++	}
++}
++
++nesnd_external_request_money = {
++	name = nesnd_external_request_money
++	desc = nesnd_external_request_money_desc
++	visible = {
++		has_variable = nesnd_external_target
++		OR = {
++			c:MUG ?= this
++			c:SHA ?= this
++		}
++	}
++	possible = {
++		nesnd_external_can_request_money = yes
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				nesnd_external_can_request_money = yes
++			}
++			nesnd_external_send_request = yes
++			var:nesnd_external_target = {
++				trigger_event = {
++					id = nesnd_external.5
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_external_request_tt
++		}
++	}
++}
++
++nesnd_external_request_arms = {
++	name = nesnd_external_request_arms
++	desc = nesnd_external_request_arms_desc
++	visible = {
++		has_variable = nesnd_external_target
++		OR = {
++			c:MUG ?= this
++			c:SHA ?= this
++		}
++	}
++	possible = {
++		nesnd_external_can_request_arms = yes
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				nesnd_external_can_request_arms = yes
++			}
++			nesnd_external_send_request = yes
++			var:nesnd_external_target = {
++				trigger_event = {
++					id = nesnd_external.6
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_external_request_tt
++		}
++	}
++}
++
++nesnd_external_mysore = {
++	name = nesnd_external_mysore
++	desc = nesnd_external_mysore_desc
++	visible = {
++		c:MUG ?= this
++	}
++	possible = {
++		exists = c:USM
++		exists = s:STATE_MYSORE.region_state:USM
++		NOT = {
++			has_claim = s:STATE_MYSORE
++		}
++		NOT = {
++			has_variable = nesnd_external_mysore_claimed
++		}
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				exists = c:USM
++				exists = s:STATE_MYSORE.region_state:USM
++			}
++			s:STATE_MYSORE = {
++				add_claim = root
++			}
++			set_variable = nesnd_external_mysore_claimed
++			change_relations = {
++				country = c:USM
++				value = -10
++			}
++			custom_tooltip = nesnd_external_mysore_tt
++		}
++	}
+ }
+ nesnd_external_cancel_request = { name = nesnd_external_cancel_request desc = nesnd_external_cancel_request_desc
+  visible = { has_variable = nesnd_external_pending } possible = { always = yes } ai_chance = { value = 0 }
+  effect = { nesnd_external_clear_request = yes }
+ }
+-nesnd_external_dismiss = { name = nesnd_external_dismiss desc = nesnd_external_dismiss_desc
+- visible = { always = yes } possible = { always = yes } ai_chance = { value = 0 if = { limit = {
+- is_ai = yes NOT = { has_variable = nesnd_external_cooldown } has_variable = nesnd_external_idle_weeks var:nesnd_external_idle_weeks >= 26
+- NOT = { has_variable = nesnd_external_pending }
+- NOT = { has_variable = nesnd_external_aid_committed }
+- NOT = { nesnd_external_any_legal_aid = yes }
+- OR = { has_variable = nesnd_external_ai_reviewed NOT = { nesnd_external_any_partner_available = yes } }
+-} add = 5 } }
+- effect = { set_variable = nesnd_external_dismissed }
+-}
+-nesnd_external_reconsider = { name = nesnd_external_reconsider desc = nesnd_external_reconsider_desc
+- visible = { has_variable = nesnd_external_target }
+- possible = { NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } }
+- ai_chance = { value = 0 if = { limit = {
+- is_ai = yes NOT = { has_variable = nesnd_external_cooldown } has_variable = nesnd_external_idle_weeks var:nesnd_external_idle_weeks >= 13
+- NOT = { has_variable = nesnd_external_ai_reviewed }
+- NOT = { nesnd_external_any_legal_aid = yes }
+-} add = 5 } }
+- effect = { remove_variable = nesnd_external_target  if = { limit = { is_ai = yes } set_variable = nesnd_external_ai_reviewed set_variable = { name = nesnd_external_idle_weeks value = 0 } } }
+-}
++nesnd_external_dismiss = {
++	name = nesnd_external_dismiss
++	desc = nesnd_external_dismiss_desc
++	visible = {
++		always = yes
++	}
++	possible = {
++		always = yes
++	}
++	ai_chance = {
++		value = 0
++		if = {
++			limit = {
++				is_ai = yes
++				NOT = {
++					has_variable = nesnd_external_cooldown
++				}
++				has_variable = nesnd_external_idle_weeks
++				nesnd_external_idle_weeks_value >= 26
++				NOT = {
++					has_variable = nesnd_external_pending
++				}
++				NOT = {
++					has_variable = nesnd_external_aid_committed
++				}
++				NOT = {
++					nesnd_external_any_legal_aid = yes
++				}
++				OR = {
++					has_variable = nesnd_external_ai_reviewed
++					NOT = {
++						nesnd_external_any_partner_available = yes
++					}
++				}
++			}
++			add = 5
++		}
++	}
++	effect = {
++		set_variable = nesnd_external_dismissed
++	}
++}
++nesnd_external_reconsider = {
++	name = nesnd_external_reconsider
++	desc = nesnd_external_reconsider_desc
++	visible = {
++		has_variable = nesnd_external_target
++	}
++	possible = {
++		NOT = {
++			has_variable = nesnd_external_pending
++		}
++		NOT = {
++			has_variable = nesnd_external_aid_committed
++		}
++	}
++	ai_chance = {
++		value = 0
++		if = {
++			limit = {
++				is_ai = yes
++				NOT = {
++					has_variable = nesnd_external_cooldown
++				}
++				has_variable = nesnd_external_idle_weeks
++				nesnd_external_idle_weeks_value >= 13
++				NOT = {
++					has_variable = nesnd_external_ai_reviewed
++				}
++				NOT = {
++					nesnd_external_any_legal_aid = yes
++				}
++			}
++			add = 5
++		}
++	}
++	effect = {
++		remove_variable = nesnd_external_target
++		if = {
++			limit = {
++				is_ai = yes
++			}
++			set_variable = nesnd_external_ai_reviewed
++			set_variable = {
++				name = nesnd_external_idle_weeks
++				value = 0
++			}
++		}
++	}
++}
+--- before/common/scripted_buttons/nesnd_japan.txt
++++ after/common/scripted_buttons/nesnd_japan.txt
+@@ -1,17 +1,57 @@
+ nesnd_japan_send_terms = {
+-    name = nesnd_japan_send_terms desc = nesnd_japan_send_terms_desc
+-    visible = { NOT = { has_global_variable = nesnd_japan_offer_sent } }
+-    possible = { custom_tooltip = { text = nesnd_japan_send_terms_requirements nesnd_japan_can_send = yes } }
+-    ai_chance = { value = 5 if = { limit = { c:JAP ?= { has_variable = usm_opposition_country } } add = 15 } }
+-    effect = {
+-        set_global_variable = nesnd_japan_offer_sent
+-        if = { limit = { any_scope_character = { has_template = USM_lin_hanhan is_character_alive = yes } }
+-            random_scope_character = { limit = { has_template = USM_lin_hanhan is_character_alive = yes }
+-                set_variable = nesnd_japan_expedition_commander
+-            }
+-        }
+-        c:JAP = { trigger_event = { id = nesnd_japan.1 popup = yes } }
+-    }
++	name = nesnd_japan_send_terms
++	desc = nesnd_japan_send_terms_desc
++	visible = {
++		NOT = {
++			has_global_variable = nesnd_japan_offer_sent
++		}
++	}
++	possible = {
++		custom_tooltip = {
++			text = nesnd_japan_send_terms_requirements
++			nesnd_japan_can_send = yes
++		}
++	}
++	ai_chance = {
++		value = 5
++		if = {
++			limit = {
++				c:JAP ?= {
++					has_variable = usm_opposition_country
++				}
++			}
++			add = 15
++		}
++	}
++	effect = {
++		if = {
++			limit = {
++				nesnd_japan_can_send = yes
++			}
++			set_global_variable = nesnd_japan_offer_sent
++			if = {
++				limit = {
++					any_scope_character = {
++						has_template = USM_lin_hanhan
++						is_character_alive = yes
++					}
++				}
++				random_scope_character = {
++					limit = {
++						has_template = USM_lin_hanhan
++						is_character_alive = yes
++					}
++					set_variable = nesnd_japan_expedition_commander
++				}
++			}
++			c:JAP = {
++				trigger_event = {
++					id = nesnd_japan.1
++					popup = yes
++				}
++			}
++		}
++	}
+ }
+ nesnd_japan_accept_status_quo = {
+     name = nesnd_japan_accept_status_quo desc = nesnd_japan_accept_status_quo_desc
+--- before/common/scripted_effects/nesnd_external_effects.txt
++++ after/common/scripted_effects/nesnd_external_effects.txt
+@@ -4,13 +4,53 @@
+  remove_variable = nesnd_external_receiver_sponsor
+ }
+ nesnd_external_send_request = {
+- set_variable = { name = nesnd_external_pending value = var:nesnd_external_target days = 30 }
+- set_variable = { name = nesnd_external_cooldown months = 6 }
+- if = { limit = { is_subject = yes } set_variable = { name = nesnd_external_requester_sponsor value = overlord } }
+- else = { set_variable = { name = nesnd_external_requester_sponsor value = this } }
+- if = { limit = { var:nesnd_external_target = { is_subject = yes } } set_variable = { name = nesnd_external_receiver_sponsor value = var:nesnd_external_target.overlord } }
+- else = { set_variable = { name = nesnd_external_receiver_sponsor value = var:nesnd_external_target } }
+- save_scope_as = nesnd_external_requester
++	if = {
++		limit = {
++			nesnd_external_target_valid = yes
++		}
++		set_variable = {
++			name = nesnd_external_pending
++			value = var:nesnd_external_target
++			days = 30
++		}
++		set_variable = {
++			name = nesnd_external_cooldown
++			months = 6
++		}
++		if = {
++			limit = {
++				is_subject = yes
++			}
++			set_variable = {
++				name = nesnd_external_requester_sponsor
++				value = overlord
++			}
++		}
++		else = {
++			set_variable = {
++				name = nesnd_external_requester_sponsor
++				value = this
++			}
++		}
++		if = {
++			limit = {
++				var:nesnd_external_target = {
++					is_subject = yes
++				}
++			}
++			set_variable = {
++				name = nesnd_external_receiver_sponsor
++				value = var:nesnd_external_target.overlord
++			}
++		}
++		else = {
++			set_variable = {
++				name = nesnd_external_receiver_sponsor
++				value = var:nesnd_external_target
++			}
++		}
++		save_scope_as = nesnd_external_requester
++	}
+ }
+ nesnd_external_cleanup = { nesnd_external_clear_request = yes remove_variable = nesnd_external_target remove_variable = nesnd_external_idle_weeks }
+ 
+--- before/common/scripted_effects/nesnd_phi_finance.txt
++++ after/common/scripted_effects/nesnd_phi_finance.txt
+@@ -33,11 +33,30 @@
+     if = { limit = { nesnd_phi_households_ready = yes } change_variable = { name = nesnd_phi_score add = 1 } }
+ }
+ nesnd_phi_display = {
+-    save_scope_as = nesnd_phi_display_country
+-    je:nesnd_phi_service_recovery ?= {
+-        set_bar_progress = { name = nesnd_phi_service_bar value = scope:nesnd_phi_display_country.var:nesnd_phi_score }
+-        set_bar_progress = { name = nesnd_phi_continuity_bar value = scope:nesnd_phi_display_country.var:nesnd_phi_good_months }
+-    }
++	save_scope_as = nesnd_phi_display_country
++	if = {
++		limit = {
++			exists = scope:nesnd_phi_display_country
++		}
++		if = {
++			limit = {
++				scope:nesnd_phi_display_country = {
++					has_variable = nesnd_phi_score
++					has_variable = nesnd_phi_good_months
++				}
++			}
++			je:nesnd_phi_service_recovery ?= {
++				set_bar_progress = {
++					name = nesnd_phi_service_bar
++					value = scope:nesnd_phi_display_country.var:nesnd_phi_score
++				}
++				set_bar_progress = {
++					name = nesnd_phi_continuity_bar
++					value = scope:nesnd_phi_display_country.var:nesnd_phi_good_months
++				}
++			}
++		}
++	}
+ }
+ nesnd_phi_clear_pending = {
+ 	remove_variable = nesnd_phi_requested_cash
+--- before/common/scripted_effects/nesnd_presentation_effects.txt
++++ after/common/scripted_effects/nesnd_presentation_effects.txt
+@@ -1,21 +1,55 @@
+ nesnd_refresh_land_display = {
+-        save_scope_as = nesnd_land_display_country
+-        if = { limit = { has_journal_entry = ce_cne_land_reform }
+-            je:ce_cne_land_reform = {
+-                set_bar_progress = { name = nesnd_land_completion_bar value = scope:nesnd_land_display_country.var:cne_landreform_completion_tracker }
+-                set_bar_progress = { name = nesnd_land_disorder_bar value = scope:nesnd_land_display_country.var:cne_landreform_failure_tracker }
+-            }
+-        }
+-    }
++	save_scope_as = nesnd_land_display_country
++	if = {
++		limit = {
++			exists = scope:nesnd_land_display_country
++		}
++		if = {
++			limit = {
++				scope:nesnd_land_display_country = {
++					has_variable = cne_landreform_completion_tracker
++					has_variable = cne_landreform_failure_tracker
++				}
++			}
++			if = {
++				limit = {
++					has_journal_entry = ce_cne_land_reform
++				}
++				je:ce_cne_land_reform = {
++					set_bar_progress = {
++						name = nesnd_land_completion_bar
++						value = scope:nesnd_land_display_country.var:cne_landreform_completion_tracker
++					}
++					set_bar_progress = {
++						name = nesnd_land_disorder_bar
++						value = scope:nesnd_land_display_country.var:cne_landreform_failure_tracker
++					}
++				}
++			}
++		}
++	}
++}
+     nesnd_refresh_south_display = {
+-        nesnd_south_initialize = yes
+-
+-        save_scope_as = nesnd_south_display_country
+-        if = { limit = { has_journal_entry = ce_usm_conflicts_within }
+-            
+-            je:ce_usm_conflicts_within = {
+-                set_bar_progress = { name = nesnd_south_pressure_bar value = scope:nesnd_south_display_country.nesnd_south_pressure_value }
+-                set_bar_progress = { name = nesnd_south_compact_bar value = scope:nesnd_south_display_country.nesnd_south_compact_value }
+-            }
+-        }
+-    }
++	nesnd_south_initialize = yes
++	save_scope_as = nesnd_south_display_country
++	if = {
++		limit = {
++			exists = scope:nesnd_south_display_country
++		}
++		if = {
++			limit = {
++				has_journal_entry = ce_usm_conflicts_within
++			}
++			je:ce_usm_conflicts_within = {
++				set_bar_progress = {
++					name = nesnd_south_pressure_bar
++					value = scope:nesnd_south_display_country.nesnd_south_pressure_value
++				}
++				set_bar_progress = {
++					name = nesnd_south_compact_bar
++					value = scope:nesnd_south_display_country.nesnd_south_compact_value
++				}
++			}
++		}
++	}
++}
+--- before/common/scripted_effects/nesnd_tenasserim.txt
++++ after/common/scripted_effects/nesnd_tenasserim.txt
+@@ -24,11 +24,30 @@
+     if = { limit = { is_at_war = no NOT = { has_modifier = declared_bankruptcy } } change_variable = { name = nesnd_ten_score add = 1 } }
+ }
+ nesnd_ten_display = {
+-    save_scope_as = nesnd_ten_display_country
+-    je:nesnd_tenasserim_recovery ?= {
+-        set_bar_progress = { name = nesnd_ten_conditions_bar value = scope:nesnd_ten_display_country.var:nesnd_ten_score }
+-        set_bar_progress = { name = nesnd_ten_continuity_bar value = scope:nesnd_ten_display_country.var:nesnd_ten_good_months }
+-    }
++	save_scope_as = nesnd_ten_display_country
++	if = {
++		limit = {
++			exists = scope:nesnd_ten_display_country
++		}
++		if = {
++			limit = {
++				scope:nesnd_ten_display_country = {
++					has_variable = nesnd_ten_score
++					has_variable = nesnd_ten_good_months
++				}
++			}
++			je:nesnd_tenasserim_recovery ?= {
++				set_bar_progress = {
++					name = nesnd_ten_conditions_bar
++					value = scope:nesnd_ten_display_country.var:nesnd_ten_score
++				}
++				set_bar_progress = {
++					name = nesnd_ten_continuity_bar
++					value = scope:nesnd_ten_display_country.var:nesnd_ten_good_months
++				}
++			}
++		}
++	}
+ }
+ nesnd_ten_initialize = {
+     if = { limit = { NOT = { has_variable = nesnd_ten_initialized } }
+--- before/common/scripted_triggers/nesnd_external_triggers.txt
++++ after/common/scripted_triggers/nesnd_external_triggers.txt
+@@ -1,77 +1,462 @@
+ nesnd_external_country = { OR = { c:HUS ?= this c:FRA ?= this c:QE1 ?= this c:SHA ?= this c:BUR ?= this c:MUG ?= this c:GBR ?= this c:RUS ?= this } }
+ nesnd_external_target_valid = {
+- exists = var:nesnd_external_target
+- var:nesnd_external_target = { is_country_alive = yes }
+- NOT = { this = var:nesnd_external_target }
+- NOT = { has_war_with = var:nesnd_external_target }
+- OR = {
+-  c:USM ?= var:nesnd_external_target
+-  AND = { var:nesnd_external_target = { has_variable = usm_opposition_country_leader_var } is_subject = no }
+-  AND = { c:QE1 ?= this c:SIH ?= var:nesnd_external_target }
+-  AND = { c:SHA ?= this c:HUS ?= var:nesnd_external_target }
+-  AND = { c:MUG ?= this c:FRA ?= var:nesnd_external_target }
+- }
++	trigger_if = {
++		limit = {
++			exists = var:nesnd_external_target
++		}
++		exists = var:nesnd_external_target
++		var:nesnd_external_target = {
++			is_country_alive = yes
++		}
++		NOT = {
++			this = var:nesnd_external_target
++		}
++		NOT = {
++			has_war_with = var:nesnd_external_target
++		}
++		OR = {
++			c:USM ?= var:nesnd_external_target
++			AND = {
++				var:nesnd_external_target = {
++					has_variable = usm_opposition_country_leader_var
++				}
++				is_subject = no
++			}
++			AND = {
++				c:QE1 ?= this
++				c:SIH ?= var:nesnd_external_target
++			}
++			AND = {
++				c:SHA ?= this
++				c:HUS ?= var:nesnd_external_target
++			}
++			AND = {
++				c:MUG ?= this
++				c:FRA ?= var:nesnd_external_target
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ nesnd_external_request_valid = {
+- exists = scope:nesnd_external_requester is_country_alive = yes
+- NOT = { has_global_variable = nesnd_south_settled }
+- scope:nesnd_external_requester = {
+-  is_country_alive = yes is_at_war = no has_journal_entry = nesnd_external_policy
+-  NOT = { has_variable = nesnd_external_dismissed } NOT = { has_variable = nesnd_external_aid_committed }
+-  has_variable = nesnd_external_pending var:nesnd_external_pending = root
+-  nesnd_external_target_valid = yes var:nesnd_external_target = root
+-  OR = { AND = { is_subject = yes overlord = var:nesnd_external_requester_sponsor } AND = { is_subject = no this = var:nesnd_external_requester_sponsor } }
+-  root = { OR = { AND = { is_subject = yes overlord = prev.var:nesnd_external_receiver_sponsor } AND = { is_subject = no this = prev.var:nesnd_external_receiver_sponsor } } }
+- }
++	trigger_if = {
++		limit = {
++			exists = scope:nesnd_external_requester
++		}
++		is_country_alive = yes
++		NOT = {
++			has_global_variable = nesnd_south_settled
++		}
++		scope:nesnd_external_requester = {
++			trigger_if = {
++				limit = {
++					exists = var:nesnd_external_pending
++					exists = var:nesnd_external_target
++				}
++				is_country_alive = yes
++				is_at_war = no
++				has_journal_entry = nesnd_external_policy
++				NOT = {
++					has_variable = nesnd_external_dismissed
++				}
++				NOT = {
++					has_variable = nesnd_external_aid_committed
++				}
++				var:nesnd_external_pending = root
++				var:nesnd_external_target = root
++				nesnd_external_target_valid = yes
++				nesnd_external_pending_politics_valid = yes
++			}
++			trigger_else = {
++				always = no
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ 
+-nesnd_external_can_offer_money = { nesnd_external_target_valid = yes is_at_war = no NOT = { has_variable = nesnd_external_cooldown } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } NOT = { has_global_variable = nesnd_south_settled } is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 5000 net_total_income >= 1000 gold_reserves >= 26000 can_create_treaty = { first_country = root second_country = var:nesnd_external_target is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = root target_country = var:nesnd_external_target inputs = { { quantity = 500 } } } } } }
+-nesnd_external_can_offer_arms = { nesnd_external_target_valid = yes is_at_war = no NOT = { has_variable = nesnd_external_cooldown } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } NOT = { has_global_variable = nesnd_south_settled } is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } capital.market = { mg:small_arms = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } } can_create_treaty = { first_country = root second_country = var:nesnd_external_target is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = root target_country = var:nesnd_external_target inputs = { { quantity = 10 } { good = g:small_arms } } } } } }
+-nesnd_external_can_request_money = { nesnd_external_target_valid = yes is_at_war = no NOT = { has_variable = nesnd_external_cooldown } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } NOT = { has_global_variable = nesnd_south_settled }
+- var:nesnd_external_target = { is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 5000 net_total_income >= 1000 gold_reserves >= 26000 }
+- can_create_treaty = { first_country = var:nesnd_external_target second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = var:nesnd_external_target target_country = root inputs = { { quantity = 500 } } } } } }
+-nesnd_external_can_request_arms = { nesnd_external_target_valid = yes is_at_war = no NOT = { has_variable = nesnd_external_cooldown } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } NOT = { has_global_variable = nesnd_south_settled }
+- var:nesnd_external_target = { is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } capital.market = { mg:small_arms = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root.var:nesnd_external_target } } } }
+- can_create_treaty = { first_country = var:nesnd_external_target second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = var:nesnd_external_target target_country = root inputs = { { quantity = 10 } { good = g:small_arms } } } } } }
++nesnd_external_can_offer_money = {
++	trigger_if = {
++		limit = {
++			exists = var:nesnd_external_target
++		}
++		nesnd_external_target_valid = yes
++		is_at_war = no
++		NOT = {
++			has_variable = nesnd_external_cooldown
++		}
++		NOT = {
++			has_variable = nesnd_external_pending
++		}
++		NOT = {
++			has_variable = nesnd_external_aid_committed
++		}
++		NOT = {
++			has_global_variable = nesnd_south_settled
++		}
++		is_at_war = no
++		in_default = no
++		NOT = {
++			has_modifier = declared_bankruptcy
++		}
++		net_fixed_income >= 5000
++		net_total_income >= 1000
++		gold_reserves >= 26000
++		can_create_treaty = {
++			first_country = root
++			second_country = var:nesnd_external_target
++			is_draft = no
++			binding_period = {
++				years = 1
++			}
++			articles_to_create = {
++				 {
++					article = money_transfer
++					source_country = root
++					target_country = var:nesnd_external_target
++					inputs = {
++						 {
++							quantity = 500
++						}
++					}
++				}
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
++}
++nesnd_external_can_offer_arms = {
++	trigger_if = {
++		limit = {
++			exists = var:nesnd_external_target
++		}
++		nesnd_external_target_valid = yes
++		is_at_war = no
++		NOT = {
++			has_variable = nesnd_external_cooldown
++		}
++		NOT = {
++			has_variable = nesnd_external_pending
++		}
++		NOT = {
++			has_variable = nesnd_external_aid_committed
++		}
++		NOT = {
++			has_global_variable = nesnd_south_settled
++		}
++		is_at_war = no
++		in_default = no
++		NOT = {
++			has_modifier = declared_bankruptcy
++		}
++		capital.market = {
++			mg:small_arms = {
++				market_goods_pricier <= 0.25
++				NOT = {
++					country_has_local_shortage = root
++				}
++			}
++		}
++		can_create_treaty = {
++			first_country = root
++			second_country = var:nesnd_external_target
++			is_draft = no
++			binding_period = {
++				years = 1
++			}
++			articles_to_create = {
++				 {
++					article = goods_transfer
++					source_country = root
++					target_country = var:nesnd_external_target
++					inputs = {
++						 {
++							quantity = 10
++						}
++						 {
++							good = g:small_arms
++						}
++					}
++				}
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
++}
++nesnd_external_can_request_money = {
++	trigger_if = {
++		limit = {
++			exists = var:nesnd_external_target
++		}
++		nesnd_external_target_valid = yes
++		is_at_war = no
++		NOT = {
++			has_variable = nesnd_external_cooldown
++		}
++		NOT = {
++			has_variable = nesnd_external_pending
++		}
++		NOT = {
++			has_variable = nesnd_external_aid_committed
++		}
++		NOT = {
++			has_global_variable = nesnd_south_settled
++		}
++		var:nesnd_external_target = {
++			is_at_war = no
++			in_default = no
++			NOT = {
++				has_modifier = declared_bankruptcy
++			}
++			net_fixed_income >= 5000
++			net_total_income >= 1000
++			gold_reserves >= 26000
++		}
++		can_create_treaty = {
++			first_country = var:nesnd_external_target
++			second_country = root
++			is_draft = no
++			binding_period = {
++				years = 1
++			}
++			articles_to_create = {
++				 {
++					article = money_transfer
++					source_country = var:nesnd_external_target
++					target_country = root
++					inputs = {
++						 {
++							quantity = 500
++						}
++					}
++				}
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
++}
++nesnd_external_can_request_arms = {
++	trigger_if = {
++		limit = {
++			exists = var:nesnd_external_target
++		}
++		nesnd_external_target_valid = yes
++		is_at_war = no
++		NOT = {
++			has_variable = nesnd_external_cooldown
++		}
++		NOT = {
++			has_variable = nesnd_external_pending
++		}
++		NOT = {
++			has_variable = nesnd_external_aid_committed
++		}
++		NOT = {
++			has_global_variable = nesnd_south_settled
++		}
++		var:nesnd_external_target = {
++			is_at_war = no
++			in_default = no
++			NOT = {
++				has_modifier = declared_bankruptcy
++			}
++			capital.market = {
++				mg:small_arms = {
++					market_goods_pricier <= 0.25
++					NOT = {
++						country_has_local_shortage = root.var:nesnd_external_target
++					}
++				}
++			}
++		}
++		can_create_treaty = {
++			first_country = var:nesnd_external_target
++			second_country = root
++			is_draft = no
++			binding_period = {
++				years = 1
++			}
++			articles_to_create = {
++				 {
++					article = goods_transfer
++					source_country = var:nesnd_external_target
++					target_country = root
++					inputs = {
++						 {
++							quantity = 10
++						}
++						 {
++							good = g:small_arms
++						}
++					}
++				}
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
++}
+ 
+ nesnd_external_any_legal_aid = {
+- exists = var:nesnd_external_target
+- OR = {
+-  AND = {
+-   NOR = { c:MUG ?= this c:SHA ?= this }
+-   OR = { nesnd_external_can_offer_money = yes nesnd_external_can_offer_arms = yes }
+-  }
+-  AND = {
+-   OR = { c:MUG ?= this c:SHA ?= this }
+-   OR = { nesnd_external_can_request_money = yes nesnd_external_can_request_arms = yes }
+-  }
+- }
++	trigger_if = {
++		limit = {
++			exists = var:nesnd_external_target
++		}
++		exists = var:nesnd_external_target
++		OR = {
++			AND = {
++				NOR = {
++					c:MUG ?= this
++					c:SHA ?= this
++				}
++				OR = {
++					nesnd_external_can_offer_money = yes
++					nesnd_external_can_offer_arms = yes
++				}
++			}
++			AND = {
++				OR = {
++					c:MUG ?= this
++					c:SHA ?= this
++				}
++				OR = {
++					nesnd_external_can_request_money = yes
++					nesnd_external_can_request_arms = yes
++				}
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ nesnd_external_any_partner_available = {
+- trigger_if = { limit = { c:MUG ?= this }
+-  exists = c:FRA c:FRA = { is_country_alive = yes } NOT = { has_war_with = c:FRA }
+- }
+- trigger_else_if = { limit = { c:SHA ?= this }
+-  exists = c:HUS c:HUS = { is_country_alive = yes } NOT = { has_war_with = c:HUS }
+- }
+- trigger_else = {
+-  OR = {
+-   AND = { exists = c:USM c:USM = { is_country_alive = yes } NOT = { has_war_with = c:USM } }
+-   AND = { c:QE1 ?= this exists = c:SIH c:SIH = { is_country_alive = yes } NOT = { has_war_with = c:SIH } }
+-   AND = { is_subject = no any_country = { has_variable = usm_opposition_country_leader_var is_country_alive = yes NOT = { has_war_with = root } } }
+-  }
+- }
++	trigger_if = {
++		limit = {
++			c:MUG ?= this
++		}
++		trigger_if = {
++			limit = {
++				exists = c:FRA
++			}
++			c:FRA = {
++				is_country_alive = yes
++			}
++			NOT = {
++				has_war_with = c:FRA
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	trigger_else_if = {
++		limit = {
++			c:SHA ?= this
++		}
++		trigger_if = {
++			limit = {
++				exists = c:HUS
++			}
++			c:HUS = {
++				is_country_alive = yes
++			}
++			NOT = {
++				has_war_with = c:HUS
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	trigger_else = {
++		OR = {
++			AND = {
++				trigger_if = {
++					limit = {
++						exists = c:USM
++					}
++					c:USM = {
++						is_country_alive = yes
++					}
++					NOT = {
++						has_war_with = c:USM
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			AND = {
++				c:QE1 ?= this
++				trigger_if = {
++					limit = {
++						exists = c:SIH
++					}
++					c:SIH = {
++						is_country_alive = yes
++					}
++					NOT = {
++						has_war_with = c:SIH
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			AND = {
++				is_subject = no
++				any_country = {
++					has_variable = usm_opposition_country_leader_var
++					is_country_alive = yes
++					NOT = {
++						has_war_with = root
++					}
++				}
++			}
++		}
++	}
+ }
+ nesnd_external_pending_politics_valid = {
+- exists = var:nesnd_external_target
+- OR = {
+-  AND = { is_subject = yes overlord = var:nesnd_external_requester_sponsor }
+-  AND = { is_subject = no this = var:nesnd_external_requester_sponsor }
+- }
+- var:nesnd_external_target = {
+-  OR = {
+-   AND = { is_subject = yes overlord = prev.var:nesnd_external_receiver_sponsor }
+-   AND = { is_subject = no this = prev.var:nesnd_external_receiver_sponsor }
+-  }
+- }
+-}
++	trigger_if = {
++		limit = {
++			exists = var:nesnd_external_target
++			exists = var:nesnd_external_requester_sponsor
++			exists = var:nesnd_external_receiver_sponsor
++		}
++		trigger_if = {
++			limit = {
++				is_subject = yes
++			}
++			overlord = var:nesnd_external_requester_sponsor
++		}
++		trigger_else = {
++			this = var:nesnd_external_requester_sponsor
++		}
++		var:nesnd_external_target = {
++			trigger_if = {
++				limit = {
++					is_subject = yes
++				}
++				overlord = prev.var:nesnd_external_receiver_sponsor
++			}
++			trigger_else = {
++				this = prev.var:nesnd_external_receiver_sponsor
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
++}
+--- before/common/scripted_triggers/nesnd_japan.txt
++++ after/common/scripted_triggers/nesnd_japan.txt
+@@ -51,20 +51,38 @@
+     c:JAP ?= { naval_power_projection <= root.naval_power_projection }
+ }
+ nesnd_japan_can_send = {
+-    c:USM ?= this
+-    is_country_alive = yes
+-    has_variable = tag_WUU_var
+-    has_global_variable = nesnd_south_settled
+-    NOT = { has_global_variable = nesnd_japan_dossier_closed }
+-    NOT = { has_global_variable = nesnd_japan_offer_sent }
+-    is_at_war = no
+-    NOT = { has_truce_with = c:JAP }
+-    nesnd_japan_partition_possible = yes
+-    nesnd_japan_fiscal_ready = yes
+-    nesnd_japan_army_ready = yes
+-    nesnd_japan_navy_ready = yes
+-    c:JAP ?= { is_at_war = no is_diplomatic_play_committed_participant = no }
+-    is_diplomatic_play_committed_participant = no
++	trigger_if = {
++		limit = {
++			exists = c:JAP
++		}
++		c:JAP = { is_country_alive = yes }
++		c:USM ?= this
++		is_country_alive = yes
++		has_variable = tag_WUU_var
++		has_global_variable = nesnd_south_settled
++		NOT = {
++			has_global_variable = nesnd_japan_dossier_closed
++		}
++		NOT = {
++			has_global_variable = nesnd_japan_offer_sent
++		}
++		is_at_war = no
++		NOT = {
++			has_truce_with = c:JAP
++		}
++		nesnd_japan_partition_possible = yes
++		nesnd_japan_fiscal_ready = yes
++		nesnd_japan_army_ready = yes
++		nesnd_japan_navy_ready = yes
++		c:JAP ?= {
++			is_at_war = no
++			is_diplomatic_play_committed_participant = no
++		}
++		is_diplomatic_play_committed_participant = no
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ nesnd_japan_is_united = {
+     owns_entire_state_region = STATE_KANTO
+--- before/common/scripted_triggers/nesnd_tenasserim.txt
++++ after/common/scripted_triggers/nesnd_tenasserim.txt
+@@ -3,37 +3,116 @@
+ nesnd_ten_jobs_ready = { var:nesnd_ten_workforce > 0 var:nesnd_ten_unemployment <= 0.12 }
+ nesnd_ten_livelihood_ready = { var:nesnd_ten_starving <= 0.25 var:nesnd_ten_sol >= 6.5 }
+ nesnd_ten_healthy = {
+-    nesnd_ten_active = yes var:nesnd_ten_samples >= 3
+-    nesnd_ten_jobs_ready = yes nesnd_ten_livelihood_ready = yes
+-    var:nesnd_ten_access >= 0.85 is_at_war = no NOT = { has_modifier = declared_bankruptcy }
+-    s:STATE_TENASSERIM.region_state:DEI = {
+-        any_scope_building = {
+-            OR = { is_building_type = building_logging_camp is_building_type = building_fishing_wharf is_building_type = building_iron_mine is_building_type = building_tooling_workshop is_building_type = building_textile_mill is_building_type = building_food_industry }
+-            occupancy >= 0.75 building_has_goods_shortage = no
+-        }
+-    }
++	trigger_if = {
++		limit = {
++			exists = s:STATE_TENASSERIM.region_state:DEI
++		}
++		nesnd_ten_active = yes
++		var:nesnd_ten_samples >= 3
++		nesnd_ten_jobs_ready = yes
++		nesnd_ten_livelihood_ready = yes
++		var:nesnd_ten_access >= 0.85
++		is_at_war = no
++		NOT = {
++			has_modifier = declared_bankruptcy
++		}
++		s:STATE_TENASSERIM.region_state:DEI = {
++			any_scope_building = {
++				OR = {
++					is_building_type = building_logging_camp
++					is_building_type = building_fishing_wharf
++					is_building_type = building_iron_mine
++					is_building_type = building_tooling_workshop
++					is_building_type = building_textile_mill
++					is_building_type = building_food_industry
++				}
++				occupancy >= 0.75
++				building_has_goods_shortage = no
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ nesnd_ten_distress = { OR = { var:nesnd_ten_unemployment > 0.25 var:nesnd_ten_starving > 0.50 has_modifier = declared_bankruptcy } }
+ nesnd_ten_can_build = {
+-    nesnd_ten_active = yes is_at_war = no NOT = { has_modifier = declared_bankruptcy }
+-    gold_reserves >= 5000 var:nesnd_ten_orders < 2 NOT = { has_variable = nesnd_ten_build_cooldown }
+-    capital.market = { mg:wood = { market_goods_pricier >= -0.50 } }
+-    s:STATE_TENASSERIM.region_state:DEI = {
+-        can_construct_building = building_logging_camp
+-        state_has_building_type_levels = { target = bt:building_logging_camp value < 2 }
+-        NOT = { any_scope_building = { is_building_type = building_logging_camp is_under_construction = yes } }
+-        OR = {
+-            NOT = { has_building = building_logging_camp }
+-            any_scope_building = { is_building_type = building_logging_camp occupancy >= 0.75 building_has_goods_shortage = no }
+-        }
+-    }
++	trigger_if = {
++		limit = {
++			exists = s:STATE_TENASSERIM.region_state:DEI
++		}
++		nesnd_ten_active = yes
++		is_at_war = no
++		NOT = {
++			has_modifier = declared_bankruptcy
++		}
++		gold_reserves >= 5000
++		var:nesnd_ten_orders < 2
++		NOT = {
++			has_variable = nesnd_ten_build_cooldown
++		}
++		capital.market = {
++			mg:wood = {
++				market_goods_pricier >= -0.50
++			}
++		}
++		s:STATE_TENASSERIM.region_state:DEI = {
++			can_construct_building = building_logging_camp
++			state_has_building_type_levels = {
++				target = bt:building_logging_camp
++				value < 2
++			}
++			NOT = {
++				any_scope_building = {
++					is_building_type = building_logging_camp
++					is_under_construction = yes
++				}
++			}
++			OR = {
++				NOT = {
++					has_building = building_logging_camp
++				}
++				any_scope_building = {
++					is_building_type = building_logging_camp
++					occupancy >= 0.75
++					building_has_goods_shortage = no
++				}
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ nesnd_ten_can_train = {
+-    nesnd_ten_active = yes gold_reserves >= nesnd_ten_training_cost
+-    NOT = { has_modifier = declared_bankruptcy } NOT = { has_variable = nesnd_ten_training_cooldown }
+-    s:STATE_TENASSERIM.region_state:DEI = {
+-        any_scope_building = { OR = { is_building_type = building_logging_camp is_building_type = building_fishing_wharf is_building_type = building_iron_mine is_building_type = building_tooling_workshop is_building_type = building_textile_mill } occupancy < 0.90 }
+-    }
++	trigger_if = {
++		limit = {
++			exists = s:STATE_TENASSERIM.region_state:DEI
++		}
++		nesnd_ten_active = yes
++		gold_reserves >= nesnd_ten_training_cost
++		NOT = {
++			has_modifier = declared_bankruptcy
++		}
++		NOT = {
++			has_variable = nesnd_ten_training_cooldown
++		}
++		s:STATE_TENASSERIM.region_state:DEI = {
++			any_scope_building = {
++				OR = {
++					is_building_type = building_logging_camp
++					is_building_type = building_fishing_wharf
++					is_building_type = building_iron_mine
++					is_building_type = building_tooling_workshop
++					is_building_type = building_textile_mill
++				}
++				occupancy < 0.90
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ nesnd_ten_tenant_support = {
+     OR = {
+@@ -61,9 +140,28 @@
+     enactment_chance_for_law = { target = law_type:law_slavery_banned value >= 0.15 }
+ }
+ nesnd_ten_can_compromise = {
+-    nesnd_ten_active = yes gold_reserves >= nesnd_ten_compromise_cost
+-    NOT = { has_modifier = declared_bankruptcy } NOT = { has_variable = nesnd_ten_compromise_cooldown }
+-    exists = ig:ig_landowners
+-    ig:ig_landowners = { ig_clout >= 0.20 }
+-    OR = { is_enacting_law = law_type:law_tenant_farmers is_enacting_law = law_type:law_slavery_banned }
++	trigger_if = {
++		limit = {
++			exists = ig:ig_landowners
++		}
++		nesnd_ten_active = yes
++		gold_reserves >= nesnd_ten_compromise_cost
++		NOT = {
++			has_modifier = declared_bankruptcy
++		}
++		NOT = {
++			has_variable = nesnd_ten_compromise_cooldown
++		}
++		exists = ig:ig_landowners
++		ig:ig_landowners = {
++			ig_clout >= 0.20
++		}
++		OR = {
++			is_enacting_law = law_type:law_tenant_farmers
++			is_enacting_law = law_type:law_slavery_banned
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+--- before/common/script_values/nesnd_external_preview_values.txt
++++ after/common/script_values/nesnd_external_preview_values.txt
+@@ -0,0 +1,10 @@
++# Zero idle weeks means no AI abandonment before the first review.
++nesnd_external_idle_weeks_value = {
++	value = 0
++	if = {
++		limit = {
++			has_variable = nesnd_external_idle_weeks
++		}
++		add = var:nesnd_external_idle_weeks
++	}
++}

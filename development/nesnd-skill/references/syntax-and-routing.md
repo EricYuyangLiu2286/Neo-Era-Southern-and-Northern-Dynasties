@@ -23,6 +23,35 @@ ce_example.1 = {
 
 作用域是 API 的组成部分。写每个效果前记录“输入 scope→返回/跳转 scope→副作用”。事件可以是 country_event、character_event 等，不能从其他 Paradox 游戏推断 root。
 
+## 引用安全：按钮、延迟回复与预览
+
+适用当前 1.13.11 / build 24799966。供给按钮原生日志已经证明缺失 scope/变量会在预览中报错；外部援助与进度条的同形修复见 [按钮修复记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/button-guards-20261101/release-notes.md>)。本轮源码/Tiger/MCP检查不是新的引擎验收。
+
+1. **对象先分支，再使用。** `exists`、`has_variable` 与读取并列，以及普通 AND/OR，不构成短路保证。对象变量用 `exists = var:...` 检查可解析对象；数值用 `has_variable` 检查已赋值。保护实际读取的完整链，例如 `s:STATE_TENASSERIM.region_state:DEI`，不是只检查 state_region。`has_war_with`、`has_truce_with`、`relations(...)`、条约国家参数的右侧对象也属于读取。
+2. **谓词缺对象明确返回 false。** `trigger_if` 的 limit 只做安全存在性判断，进入分支后再访问对象；配 `trigger_else = { always = no }`。多层依赖按层嵌套。检查 overlord 时按 `is_subject` 分支；独立国走 this，不让另一并列 AND 求值空 overlord。`?=` 适合允许跳过的副作用，不能单靠它证明“有效目标”条件成立。
+3. **预览与执行分开。** `visible`/`possible`/选项 `trigger` 不保护 effect 的预览；`hidden_effect` 也不建立安全边界。effect 内重新检查实际前置条件。预览不能假定前面的 `set_variable` 或 `save_scope_as` 已执行：进度条读取临时 scope 前加存在性分支；读取数值再核变量。缺值无明确默认语义时跳过刷新，不能给对象塞零。只有“未累计周数=0”等有定义的数值才用安全 script_value。
+4. **延迟回复核整个生命周期。** 沿按钮→请求标记/对象→延迟事件→选项/AI权重→取消/过期清理检查。接收国、发起国、pending、target、双方 sponsor 均可能失效。过期事件用安全的 cancellation_trigger 收尾；接受执行重新检查资格，拒绝清理只操作仍指向本事件接收国的请求。保留冷却与窗口设计，不能未经可达性核对就断言旧事件会覆盖新请求。
+5. **可用条件和实际选择同一集合。** `any_*` 的候选条件应与 `random_*`/`ordered_*` 的 limit 一致，特别是 alive、owner、已有 modifier 等排除项。检查实际执行对象，不以按钮亮起替代结果验证。
+
+条件骨架（country scope；对象有效时才比较）：
+
+```text
+trigger_if = {
+    limit = { exists = var:partner }
+    var:partner = { is_country_alive = yes }
+    NOT = { has_war_with = var:partner }
+}
+trigger_else = { always = no }
+```
+
+查原版链条时可定位 GAME `events/commander_events.txt` 的 saved scope、cancellation_trigger 与 option；`common/scripted_triggers/00_scripted_triggers.txt` 的 trigger_if。原版也存在并列 exists 写法，不能据此覆盖本项目已有的真实失败证据。以修复后的外部援助条件和供给 display 为项目安全实例。
+
+接口字段按各自文档核对，不能凭相似名字统一：本机生成的 `triggers.log:8955` 将 can_create_treaty 输入写为 `good`，`effects.log:1056` 将 create_treaty 输入写为 `goods`；实际条约类型 `common/treaty_articles/13_goods_transfer.txt` 与 `common/history/treaties/00_historical_treaties.txt` 使用 goods。此差异保留，升级时重新查证。
+
+修改闭包后检查引用缺失、取消/过期、对象转属与预览四类边界；外部检查须绑定文件 SHA。现有回归工具为 `WORK/tools/check_button_guards_20261101.py`，覆盖真实源码结构及数据不变性，不模拟 Jomini。原生日志复发时扩展相应断言。读取 MCP 嵌套结构用精确 key_path（例如 `cancellation_trigger.NOT`），`[block]` 只表示未展开。
+
+局部重写保留原 token 的引号、重复键和注释；尤其 `"relations(scope:...)"` 不能由宽松 parser 的 emitter 丢掉引号。格式化只限受改定义，以保序 AST 等价及独立 Tiger 复核。新脚本采用 UTF-8 BOM；原文件保留编码/换行。
+
 ## 必读文档与当前实现配对
 
 以下均相对 GAME，读文档后必须再读右列真实实现；文档里的省略号不是可用语法。

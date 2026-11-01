@@ -69,3 +69,7 @@ Updated: 2026-11-01
 ## 已整合：日志修复正式包
 
 主MOD已按最新授权备份合入，零文件删除/零冲突，metadata和当前文档保留。供给按钮缺失对象及17处其他清理保护已修；源码23→0，Tiger零新增，MCP4查询通过。正式包无QA覆盖层。详细范围、未新跑引擎及后续功能欠账见WORK/reports/logfix-release-20261101/release-notes.md。此节取代上方旧“主MOD未合入/等待审批”状态；旧阶段记录保留。
+
+## 最新交付：按钮引用保护
+
+[09 按钮修复与用户测试](issues/09-button-reference-guards.md)：完成源码修复和主项目交付，STATIC_PASS，用户自行实机测试；不打开游戏。12个玩法脚本文件修改，53项检查通过，Tiger零新增，MCP四查询通过。该节为当前入口；上方历史进度保留。引用规则集中在技能syntax-and-routing.md。

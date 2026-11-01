@@ -14,31 +14,358 @@ nesnd_external.1 = {
 }
 
 nesnd_external.2 = {
- type = country_event placement = root duration = 3 title = nesnd_external_money_title desc = nesnd_external_money_desc
- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
- trigger = { nesnd_external_request_valid = yes }
- option = { name = nesnd_external_accept
-  trigger = { nesnd_external_request_valid = yes scope:nesnd_external_requester = { is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 5000 net_total_income >= 1000 gold_reserves >= 26000 } can_create_treaty = { first_country = scope:nesnd_external_requester second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = scope:nesnd_external_requester target_country = root inputs = { { quantity = 500 } } } } } }
-  ai_chance = { base = 60 modifier = { add = -60 trigger = { "relations(scope:nesnd_external_requester)" < relations_threshold:poor } } }
-  create_treaty = { first_country = scope:nesnd_external_requester second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = scope:nesnd_external_requester target_country = root inputs = { { quantity = 500 } } } } }
-  scope:nesnd_external_requester = { set_variable = nesnd_external_aid_committed nesnd_external_clear_request = yes }
-  custom_tooltip = nesnd_external_commitment_tt
- }
- option = { name = nesnd_external_refuse default_option = yes ai_chance = { base = 40 } scope:nesnd_external_requester ?= { nesnd_external_clear_request = yes } }
+	cancellation_trigger = {
+		NOT = {
+			nesnd_external_request_valid = yes
+		}
+	}
+	type = country_event
+	placement = root
+	duration = 3
+	title = nesnd_external_money_title
+	desc = nesnd_external_money_desc
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+	trigger = {
+		nesnd_external_request_valid = yes
+	}
+	option = {
+		name = nesnd_external_accept
+		trigger = {
+			trigger_if = {
+				limit = {
+					nesnd_external_request_valid = yes
+				}
+				nesnd_external_request_valid = yes
+				scope:nesnd_external_requester = {
+					is_at_war = no
+					in_default = no
+					NOT = {
+						has_modifier = declared_bankruptcy
+					}
+					net_fixed_income >= 5000
+					net_total_income >= 1000
+					gold_reserves >= 26000
+				}
+				can_create_treaty = {
+					first_country = scope:nesnd_external_requester
+					second_country = root
+					is_draft = no
+					binding_period = {
+						years = 1
+					}
+					articles_to_create = {
+						 {
+							article = money_transfer
+							source_country = scope:nesnd_external_requester
+							target_country = root
+							inputs = {
+								 {
+									quantity = 500
+								}
+							}
+						}
+					}
+				}
+			}
+			trigger_else = {
+				always = no
+			}
+		}
+		ai_chance = {
+			base = 60
+			modifier = {
+				add = -60
+				trigger = {
+					trigger_if = {
+						limit = {
+							exists = scope:nesnd_external_requester
+						}
+						"relations(scope:nesnd_external_requester)" < relations_threshold:poor
+					}
+					trigger_else = {
+						always = no
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				trigger_if = {
+					limit = {
+						nesnd_external_request_valid = yes
+					}
+					nesnd_external_request_valid = yes
+					scope:nesnd_external_requester = {
+						is_at_war = no
+						in_default = no
+						NOT = {
+							has_modifier = declared_bankruptcy
+						}
+						net_fixed_income >= 5000
+						net_total_income >= 1000
+						gold_reserves >= 26000
+					}
+					can_create_treaty = {
+						first_country = scope:nesnd_external_requester
+						second_country = root
+						is_draft = no
+						binding_period = {
+							years = 1
+						}
+						articles_to_create = {
+							 {
+								article = money_transfer
+								source_country = scope:nesnd_external_requester
+								target_country = root
+								inputs = {
+									 {
+										quantity = 500
+									}
+								}
+							}
+						}
+					}
+				}
+				trigger_else = {
+					always = no
+				}
+			}
+			create_treaty = {
+				first_country = scope:nesnd_external_requester
+				second_country = root
+				is_draft = no
+				binding_period = {
+					years = 1
+				}
+				articles_to_create = {
+					 {
+						article = money_transfer
+						source_country = scope:nesnd_external_requester
+						target_country = root
+						inputs = {
+							 {
+								quantity = 500
+							}
+						}
+					}
+				}
+			}
+			scope:nesnd_external_requester = {
+				set_variable = nesnd_external_aid_committed
+				nesnd_external_clear_request = yes
+			}
+			custom_tooltip = nesnd_external_commitment_tt
+		}
+	}
+	option = {
+		name = nesnd_external_refuse
+		default_option = yes
+		ai_chance = {
+			base = 40
+		}
+		scope:nesnd_external_requester ?= {
+			if = {
+				limit = {
+					exists = var:nesnd_external_pending
+				}
+				if = {
+					limit = {
+						var:nesnd_external_pending = root
+					}
+					nesnd_external_clear_request = yes
+				}
+			}
+		}
+	}
 }
 
 nesnd_external.3 = {
- type = country_event placement = root duration = 3 title = nesnd_external_arms_title desc = nesnd_external_arms_desc
- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
- trigger = { nesnd_external_request_valid = yes }
- option = { name = nesnd_external_accept
-  trigger = { nesnd_external_request_valid = yes scope:nesnd_external_requester = { is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } capital.market = { mg:small_arms = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = scope:nesnd_external_requester } } } } can_create_treaty = { first_country = scope:nesnd_external_requester second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = scope:nesnd_external_requester target_country = root inputs = { { quantity = 10 } { good = g:small_arms } } } } } }
-  ai_chance = { base = 60 modifier = { add = -60 trigger = { "relations(scope:nesnd_external_requester)" < relations_threshold:poor } } }
-  create_treaty = { first_country = scope:nesnd_external_requester second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = scope:nesnd_external_requester target_country = root inputs = { { quantity = 10 } { goods = g:small_arms } } } } }
-  scope:nesnd_external_requester = { set_variable = nesnd_external_aid_committed nesnd_external_clear_request = yes }
-  custom_tooltip = nesnd_external_commitment_tt
- }
- option = { name = nesnd_external_refuse default_option = yes ai_chance = { base = 40 } scope:nesnd_external_requester ?= { nesnd_external_clear_request = yes } }
+	cancellation_trigger = {
+		NOT = {
+			nesnd_external_request_valid = yes
+		}
+	}
+	type = country_event
+	placement = root
+	duration = 3
+	title = nesnd_external_arms_title
+	desc = nesnd_external_arms_desc
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+	trigger = {
+		nesnd_external_request_valid = yes
+	}
+	option = {
+		name = nesnd_external_accept
+		trigger = {
+			trigger_if = {
+				limit = {
+					nesnd_external_request_valid = yes
+				}
+				nesnd_external_request_valid = yes
+				scope:nesnd_external_requester = {
+					is_at_war = no
+					in_default = no
+					NOT = {
+						has_modifier = declared_bankruptcy
+					}
+					capital.market = {
+						mg:small_arms = {
+							market_goods_pricier <= 0.25
+							NOT = {
+								country_has_local_shortage = scope:nesnd_external_requester
+							}
+						}
+					}
+				}
+				can_create_treaty = {
+					first_country = scope:nesnd_external_requester
+					second_country = root
+					is_draft = no
+					binding_period = {
+						years = 1
+					}
+					articles_to_create = {
+						 {
+							article = goods_transfer
+							source_country = scope:nesnd_external_requester
+							target_country = root
+							inputs = {
+								 {
+									quantity = 10
+								}
+								 {
+									good = g:small_arms
+								}
+							}
+						}
+					}
+				}
+			}
+			trigger_else = {
+				always = no
+			}
+		}
+		ai_chance = {
+			base = 60
+			modifier = {
+				add = -60
+				trigger = {
+					trigger_if = {
+						limit = {
+							exists = scope:nesnd_external_requester
+						}
+						"relations(scope:nesnd_external_requester)" < relations_threshold:poor
+					}
+					trigger_else = {
+						always = no
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				trigger_if = {
+					limit = {
+						nesnd_external_request_valid = yes
+					}
+					nesnd_external_request_valid = yes
+					scope:nesnd_external_requester = {
+						is_at_war = no
+						in_default = no
+						NOT = {
+							has_modifier = declared_bankruptcy
+						}
+						capital.market = {
+							mg:small_arms = {
+								market_goods_pricier <= 0.25
+								NOT = {
+									country_has_local_shortage = scope:nesnd_external_requester
+								}
+							}
+						}
+					}
+					can_create_treaty = {
+						first_country = scope:nesnd_external_requester
+						second_country = root
+						is_draft = no
+						binding_period = {
+							years = 1
+						}
+						articles_to_create = {
+							 {
+								article = goods_transfer
+								source_country = scope:nesnd_external_requester
+								target_country = root
+								inputs = {
+									 {
+										quantity = 10
+									}
+									 {
+										good = g:small_arms
+									}
+								}
+							}
+						}
+					}
+				}
+				trigger_else = {
+					always = no
+				}
+			}
+			create_treaty = {
+				first_country = scope:nesnd_external_requester
+				second_country = root
+				is_draft = no
+				binding_period = {
+					years = 1
+				}
+				articles_to_create = {
+					 {
+						article = goods_transfer
+						source_country = scope:nesnd_external_requester
+						target_country = root
+						inputs = {
+							 {
+								quantity = 10
+							}
+							 {
+								goods = g:small_arms
+							}
+						}
+					}
+				}
+			}
+			scope:nesnd_external_requester = {
+				set_variable = nesnd_external_aid_committed
+				nesnd_external_clear_request = yes
+			}
+			custom_tooltip = nesnd_external_commitment_tt
+		}
+	}
+	option = {
+		name = nesnd_external_refuse
+		default_option = yes
+		ai_chance = {
+			base = 40
+		}
+		scope:nesnd_external_requester ?= {
+			if = {
+				limit = {
+					exists = var:nesnd_external_pending
+				}
+				if = {
+					limit = {
+						var:nesnd_external_pending = root
+					}
+					nesnd_external_clear_request = yes
+				}
+			}
+		}
+	}
 }
 
 nesnd_external.4 = { type = country_event placement = root duration = 3
@@ -48,29 +375,376 @@ nesnd_external.4 = { type = country_event placement = root duration = 3
 }
 
 nesnd_external.5 = {
- type = country_event placement = root duration = 3 title = nesnd_external_request_money_title desc = nesnd_external_request_money_event_desc
- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
- trigger = { nesnd_external_request_valid = yes }
- option = { name = nesnd_external_accept_request
-  trigger = { nesnd_external_request_valid = yes is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 5000 net_total_income >= 1000 gold_reserves >= 26000 can_create_treaty = { first_country = root second_country = scope:nesnd_external_requester is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = root target_country = scope:nesnd_external_requester inputs = { { quantity = 500 } } } } } }
-  ai_chance = { base = 25 modifier = { add = 25 trigger = { "relations(scope:nesnd_external_requester)" >= relations_threshold:cordial } } modifier = { add = -25 trigger = { "relations(scope:nesnd_external_requester)" < relations_threshold:poor } } }
-  create_treaty = { first_country = root second_country = scope:nesnd_external_requester is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = root target_country = scope:nesnd_external_requester inputs = { { quantity = 500 } } } } }
-  scope:nesnd_external_requester = { set_variable = nesnd_external_aid_committed nesnd_external_clear_request = yes }
-  custom_tooltip = nesnd_external_commitment_tt
- }
- option = { name = nesnd_external_refuse_request default_option = yes ai_chance = { base = 75 } scope:nesnd_external_requester ?= { nesnd_external_clear_request = yes } }
+	cancellation_trigger = {
+		NOT = {
+			nesnd_external_request_valid = yes
+		}
+	}
+	type = country_event
+	placement = root
+	duration = 3
+	title = nesnd_external_request_money_title
+	desc = nesnd_external_request_money_event_desc
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+	trigger = {
+		nesnd_external_request_valid = yes
+	}
+	option = {
+		name = nesnd_external_accept_request
+		trigger = {
+			trigger_if = {
+				limit = {
+					nesnd_external_request_valid = yes
+				}
+				nesnd_external_request_valid = yes
+				is_at_war = no
+				in_default = no
+				NOT = {
+					has_modifier = declared_bankruptcy
+				}
+				net_fixed_income >= 5000
+				net_total_income >= 1000
+				gold_reserves >= 26000
+				can_create_treaty = {
+					first_country = root
+					second_country = scope:nesnd_external_requester
+					is_draft = no
+					binding_period = {
+						years = 1
+					}
+					articles_to_create = {
+						 {
+							article = money_transfer
+							source_country = root
+							target_country = scope:nesnd_external_requester
+							inputs = {
+								 {
+									quantity = 500
+								}
+							}
+						}
+					}
+				}
+			}
+			trigger_else = {
+				always = no
+			}
+		}
+		ai_chance = {
+			base = 25
+			modifier = {
+				add = 25
+				trigger = {
+					trigger_if = {
+						limit = {
+							exists = scope:nesnd_external_requester
+						}
+						"relations(scope:nesnd_external_requester)" >= relations_threshold:cordial
+					}
+					trigger_else = {
+						always = no
+					}
+				}
+			}
+			modifier = {
+				add = -25
+				trigger = {
+					trigger_if = {
+						limit = {
+							exists = scope:nesnd_external_requester
+						}
+						"relations(scope:nesnd_external_requester)" < relations_threshold:poor
+					}
+					trigger_else = {
+						always = no
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				trigger_if = {
+					limit = {
+						nesnd_external_request_valid = yes
+					}
+					nesnd_external_request_valid = yes
+					is_at_war = no
+					in_default = no
+					NOT = {
+						has_modifier = declared_bankruptcy
+					}
+					net_fixed_income >= 5000
+					net_total_income >= 1000
+					gold_reserves >= 26000
+					can_create_treaty = {
+						first_country = root
+						second_country = scope:nesnd_external_requester
+						is_draft = no
+						binding_period = {
+							years = 1
+						}
+						articles_to_create = {
+							 {
+								article = money_transfer
+								source_country = root
+								target_country = scope:nesnd_external_requester
+								inputs = {
+									 {
+										quantity = 500
+									}
+								}
+							}
+						}
+					}
+				}
+				trigger_else = {
+					always = no
+				}
+			}
+			create_treaty = {
+				first_country = root
+				second_country = scope:nesnd_external_requester
+				is_draft = no
+				binding_period = {
+					years = 1
+				}
+				articles_to_create = {
+					 {
+						article = money_transfer
+						source_country = root
+						target_country = scope:nesnd_external_requester
+						inputs = {
+							 {
+								quantity = 500
+							}
+						}
+					}
+				}
+			}
+			scope:nesnd_external_requester = {
+				set_variable = nesnd_external_aid_committed
+				nesnd_external_clear_request = yes
+			}
+			custom_tooltip = nesnd_external_commitment_tt
+		}
+	}
+	option = {
+		name = nesnd_external_refuse_request
+		default_option = yes
+		ai_chance = {
+			base = 75
+		}
+		scope:nesnd_external_requester ?= {
+			if = {
+				limit = {
+					exists = var:nesnd_external_pending
+				}
+				if = {
+					limit = {
+						var:nesnd_external_pending = root
+					}
+					nesnd_external_clear_request = yes
+				}
+			}
+		}
+	}
 }
 
 nesnd_external.6 = {
- type = country_event placement = root duration = 3 title = nesnd_external_request_arms_title desc = nesnd_external_request_arms_event_desc
- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
- trigger = { nesnd_external_request_valid = yes }
- option = { name = nesnd_external_accept_request
-  trigger = { nesnd_external_request_valid = yes is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } capital.market = { mg:small_arms = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } } can_create_treaty = { first_country = root second_country = scope:nesnd_external_requester is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = root target_country = scope:nesnd_external_requester inputs = { { quantity = 10 } { good = g:small_arms } } } } } }
-  ai_chance = { base = 25 modifier = { add = 25 trigger = { "relations(scope:nesnd_external_requester)" >= relations_threshold:cordial } } modifier = { add = -25 trigger = { "relations(scope:nesnd_external_requester)" < relations_threshold:poor } } }
-  create_treaty = { first_country = root second_country = scope:nesnd_external_requester is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = root target_country = scope:nesnd_external_requester inputs = { { quantity = 10 } { goods = g:small_arms } } } } }
-  scope:nesnd_external_requester = { set_variable = nesnd_external_aid_committed nesnd_external_clear_request = yes }
-  custom_tooltip = nesnd_external_commitment_tt
- }
- option = { name = nesnd_external_refuse_request default_option = yes ai_chance = { base = 75 } scope:nesnd_external_requester ?= { nesnd_external_clear_request = yes } }
+	cancellation_trigger = {
+		NOT = {
+			nesnd_external_request_valid = yes
+		}
+	}
+	type = country_event
+	placement = root
+	duration = 3
+	title = nesnd_external_request_arms_title
+	desc = nesnd_external_request_arms_event_desc
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+	trigger = {
+		nesnd_external_request_valid = yes
+	}
+	option = {
+		name = nesnd_external_accept_request
+		trigger = {
+			trigger_if = {
+				limit = {
+					nesnd_external_request_valid = yes
+				}
+				nesnd_external_request_valid = yes
+				is_at_war = no
+				in_default = no
+				NOT = {
+					has_modifier = declared_bankruptcy
+				}
+				capital.market = {
+					mg:small_arms = {
+						market_goods_pricier <= 0.25
+						NOT = {
+							country_has_local_shortage = root
+						}
+					}
+				}
+				can_create_treaty = {
+					first_country = root
+					second_country = scope:nesnd_external_requester
+					is_draft = no
+					binding_period = {
+						years = 1
+					}
+					articles_to_create = {
+						 {
+							article = goods_transfer
+							source_country = root
+							target_country = scope:nesnd_external_requester
+							inputs = {
+								 {
+									quantity = 10
+								}
+								 {
+									good = g:small_arms
+								}
+							}
+						}
+					}
+				}
+			}
+			trigger_else = {
+				always = no
+			}
+		}
+		ai_chance = {
+			base = 25
+			modifier = {
+				add = 25
+				trigger = {
+					trigger_if = {
+						limit = {
+							exists = scope:nesnd_external_requester
+						}
+						"relations(scope:nesnd_external_requester)" >= relations_threshold:cordial
+					}
+					trigger_else = {
+						always = no
+					}
+				}
+			}
+			modifier = {
+				add = -25
+				trigger = {
+					trigger_if = {
+						limit = {
+							exists = scope:nesnd_external_requester
+						}
+						"relations(scope:nesnd_external_requester)" < relations_threshold:poor
+					}
+					trigger_else = {
+						always = no
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				trigger_if = {
+					limit = {
+						nesnd_external_request_valid = yes
+					}
+					nesnd_external_request_valid = yes
+					is_at_war = no
+					in_default = no
+					NOT = {
+						has_modifier = declared_bankruptcy
+					}
+					capital.market = {
+						mg:small_arms = {
+							market_goods_pricier <= 0.25
+							NOT = {
+								country_has_local_shortage = root
+							}
+						}
+					}
+					can_create_treaty = {
+						first_country = root
+						second_country = scope:nesnd_external_requester
+						is_draft = no
+						binding_period = {
+							years = 1
+						}
+						articles_to_create = {
+							 {
+								article = goods_transfer
+								source_country = root
+								target_country = scope:nesnd_external_requester
+								inputs = {
+									 {
+										quantity = 10
+									}
+									 {
+										good = g:small_arms
+									}
+								}
+							}
+						}
+					}
+				}
+				trigger_else = {
+					always = no
+				}
+			}
+			create_treaty = {
+				first_country = root
+				second_country = scope:nesnd_external_requester
+				is_draft = no
+				binding_period = {
+					years = 1
+				}
+				articles_to_create = {
+					 {
+						article = goods_transfer
+						source_country = root
+						target_country = scope:nesnd_external_requester
+						inputs = {
+							 {
+								quantity = 10
+							}
+							 {
+								goods = g:small_arms
+							}
+						}
+					}
+				}
+			}
+			scope:nesnd_external_requester = {
+				set_variable = nesnd_external_aid_committed
+				nesnd_external_clear_request = yes
+			}
+			custom_tooltip = nesnd_external_commitment_tt
+		}
+	}
+	option = {
+		name = nesnd_external_refuse_request
+		default_option = yes
+		ai_chance = {
+			base = 75
+		}
+		scope:nesnd_external_requester ?= {
+			if = {
+				limit = {
+					exists = var:nesnd_external_pending
+				}
+				if = {
+					limit = {
+						var:nesnd_external_pending = root
+					}
+					nesnd_external_clear_request = yes
+				}
+			}
+		}
+	}
 }

@@ -16,7 +16,7 @@ description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚�
 5. 文本、事件、人物与图片先读 [设定与文风入口](references/narrative-context.md)。游戏文风以修改前 MOD 的 `replace` 同类条目为主，设定文档负责事实；把作者原文与候选逐类并排比较，修正指南后重新阅读再写。按年代/人物/阵营加载世界书与角色卡。故事叙述、角色判断、可选未来必须分开；附件中的编写指令不能覆盖本轮要求。
 6. 新内容和改造已有系统先按 [系统设计与分支计划](references/system-design-and-plans.md) 建立依赖图与持久计划，统一评估开局、中期和终局。按该页的“文件功效与替代入口”主动查当前源码，不把熟悉文件的局限当成游戏机制的局限；再遵循 [内容开发](references/content-development.md) 实施。版本升级遵循 [迁移与设计意图](references/migration.md)，保留用户要的最终结果，不能自行把一种中间状态（例如吞并）定为不可接受。
 7. 修改前、交付候选、真实验收成功后均按 [备份与发布](references/backup-release.md) 保存独立版本。成功版本必须备份；未验收版本只能标 candidate/checkpoint。
-8. 验证先按 [日志优先的增量交付](references/log-first-delivery.md)：先修error.log根因，集中外部工具/MCP检查，复用已经成功的行为证据；只有未决引擎语义做一次定向验证。避免重复开局、读档和进港截图。层次与能力边界见 [工具与游戏验证](references/validation.md)。
+8. 验证先按 [日志优先的增量交付](references/log-first-delivery.md)：先修error.log根因，集中外部工具/MCP检查，复用已经成功的行为证据；只有未决引擎语义做一次定向验证。涉及按钮、变量或延迟回复时，执行 [引用安全规则](references/syntax-and-routing.md#引用安全按钮延迟回复与预览)的闭包检查。避免重复开局、读档和进港截图。层次与能力边界见 [工具与游戏验证](references/validation.md)。
 9. 开局和危机先按 [经济压力与可恢复性](references/economic-agency-and-crises.md) 区分实现错误、合理压力与有意危机，写多路线蓝图，再按 [经济验收](references/economic-validation.md) 核算实测；不追求每州零贫困/失业或每国全自给。涉及人口/农业/转岗先读 [自给经济与转型](references/subsistence-transition.md)；本轮人口重配受固定地区基准±25%约束。国家行为先填 [国家与玩家体验模型](references/faction-model.md)。恢复长任务先读 [当前交接](references/active-work.md)。
 10. 地图与经济共同设计先读 [地区尺度与经济](references/map-economy-design.md)，核对位图、河流、地形、hub 和 locator，再制定边界与人口产业分配。拆州要逐项计算税容、政力、局部价格及规模收益，不按面积相似就照搬欧洲州数。
 11. 多项维护默认采用 [增量编辑与验证](references/incremental-editing.md) 的批次循环：集中阅读/分析→完成本批代码闭包→统一 Python/MCP 检查并修复→冻结一次→集中游戏验收→把差异带回源码。复用已证知识，减少逐文件改动后反复看屏幕；离线检查不能代替引擎。用户要求只 debug 时冻结新增功能、剧情和地图扩展，先收口已确认缺陷。
