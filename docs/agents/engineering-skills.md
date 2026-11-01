@@ -8,7 +8,7 @@
 | --- | --- |
 | 当前游戏语法、scope、地图/历史/人物/制度、原设计保护 | [NESND 技能](<C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md>)；先核本机源码与版本 |
 | 诊断与回归 | `diagnosing-bugs`；采用下述双层反馈，不把 Python 模型当游戏执行 |
-| 规格、任务、领域术语 | `to-spec`、`to-tickets`、`domain-modeling`；依 [任务约定](issue-tracker.md) 引用已有 WORK 计划 |
+| 规格、任务、领域术语 | 使用当前已安装的 `domain-modeling`，规格与拆分按本地任务约定实施；依 [任务约定](issue-tracker.md) 引用已有 WORK 计划 |
 | 审查 | `code-review` 的 Standards 与 Spec 两轴；每项都绑定实际差异和依据 |
 | 工具与解析器 | `tdd`、`codebase-design`；已有真实失败样本和可执行接口时应用 |
 | 文档与技能 | `writing-for-agents`；可维护规则放项目文档或 NESND 技能，保留插件缓存原样 |
@@ -39,4 +39,6 @@ Git 保存、候选生成、实机验收和主 MOD 合入分别记录。用户�
 
 重复键、scope 链和跨数据库文件有引擎语义。代码气味只作问题线索，不据此合并 `create_pop`、`option`、`modifier` 等有效重复块，也不为套用 OO/API/schema/CI 术语改造游戏脚本。
 审查分别回答：是否保留本项目硬约束；是否满足已批准设计和具体玩家行为。原版同形是来源证据，仍需区分工具差距、继承缺陷与未核验接口；不以全局忽略或改动经济权重清空告警。
-本轮 DEBUG 范围、未完成项和实际授权以 [执行索引](../../.scratch/debug-release/map.md) 为准；旧设定与计划仍在其原有资料中。
+当前开发范围、未完成项和实际授权以 [执行索引](../../.scratch/debug-release/map.md) 为准；旧设定与计划仍在其原有资料中。
+
+失败结果按用户已确认的设计判定。2026-11-01用户明确接受包括日本在内的玩家失国/GAME OVER；它不再是当前发布缺陷，也不自动授权续玩救援、强制转国或新剧情。调试重点是事件顺序、条件下可达的既定目标，以及难度和玩家行动空间的实际证据；设计已明确时直接查证实施，减少重复设计追问。

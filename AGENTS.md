@@ -1,6 +1,6 @@
 # 本项目开发入口
 
-开始工作前读取 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`，按其中的目录路由查证当前游戏源码与实际实例。
+开始工作前读取 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`，按其中的目录路由查证当前游戏源码与实际实例。写功能或修复前，完成该技能“实现前先查原版完整链条”步骤并记录来源。
 
 只有本目录是主 MOD。维多利亚3本体、所有创意工坊 MOD、旧项目与文案/翻译资料均只读。
 工具、独立备份、原版基线、地图编辑工程与测试证据放在 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench`。

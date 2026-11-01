@@ -32,6 +32,8 @@ Evidence: WORK/reports/git-bootstrap-20261101.json
 
 本轮更新文档、F2与最终验证证据的后续提交仍在进行；本任务保持claimed直至交付版本保存并复核。
 
+F2已另存 `candidate/f2`，提交 `6b9c90c38520dc9fe4695d4cc7c2b6a01e305c50`；玩家确认和旧日本终局备选已保存到两个 `archive/unselected-*` 分支，未合入选定候选。三条远端分支均已核对。后续顺序修复使用独立 `f2-sequence-debug-20261101-a`，未验收前仅保存checkpoint。
+
 ## Comments
 
 2026-11-01：用户指定远端作为后续最终保存位置；本机首次 git ls-remote 因没有可用登录凭据失败，主控正在处理。此记录不宣称仓库已上传。
