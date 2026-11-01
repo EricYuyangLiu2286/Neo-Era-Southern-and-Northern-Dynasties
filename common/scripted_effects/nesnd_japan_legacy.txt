@@ -1,0 +1,86 @@
+﻿nesnd_japan_legacy_close = {
+    set_variable = nesnd_japan_legacy_closed
+    remove_variable = nesnd_japan_legacy_result
+    remove_variable = nesnd_japan_legacy_queued
+    remove_variable = nesnd_japan_legacy_blocked
+}
+nesnd_japan_legacy_cancel = {
+    nesnd_japan_legacy_close = yes
+    set_variable = nesnd_japan_legacy_cancelled
+    remove_variable = nesnd_japan_legacy_winner
+    remove_variable = usm_cw_jap_loss_when_pro_usm
+}
+nesnd_japan_legacy_queue = {
+    if = { limit = {
+        nesnd_japan_legacy_can_apply = yes
+        NOT = { has_variable = nesnd_japan_legacy_queued }
+    }
+        set_variable = nesnd_japan_legacy_queued
+        remove_variable = nesnd_japan_legacy_blocked
+        if = { limit = { has_variable = nesnd_japan_legacy_result var:nesnd_japan_legacy_result = 1 }
+            set_variable = usm_cw_jap_loss_when_pro_usm
+            trigger_event = { id = usm_civilwar.20 popup = yes months = 3 }
+        } else_if = { limit = { has_variable = nesnd_japan_legacy_result var:nesnd_japan_legacy_result = 2 }
+            trigger_event = { id = usm_civilwar.22 popup = yes months = 1 }
+        } else = {
+            trigger_event = { id = usm_civilwar.20 popup = yes months = 1 }
+        }
+    }
+}
+nesnd_japan_legacy_begin = {
+    if = { limit = { nesnd_japan_legacy_can_begin = yes }
+        set_variable = nesnd_japan_legacy_managed
+        remove_variable = usm_cw_jap_loss_when_pro_usm
+        remove_variable = nesnd_japan_legacy_winner
+        if = { limit = { nesnd_japan_legacy_pro_usm_loss = yes }
+            set_variable = { name = nesnd_japan_legacy_result value = 1 }
+            set_variable = { name = nesnd_japan_legacy_winner value = c:USM }
+        } else_if = { limit = { nesnd_japan_legacy_wu_defeat = yes }
+            set_variable = { name = nesnd_japan_legacy_result value = 2 }
+            set_variable = { name = nesnd_japan_legacy_winner value = c:USM }
+        } else = {
+            set_variable = { name = nesnd_japan_legacy_result value = 3 }
+            if = { limit = { exists = c:USM }
+                set_variable = { name = nesnd_japan_legacy_winner value = c:USM }
+            }
+        }
+        nesnd_japan_legacy_queue = yes
+    }
+}
+# Original notification names require both scopes to identify the same JAP.
+nesnd_japan_legacy_load = {
+    save_scope_as = usm_mister_rebel
+    save_scope_as = usm_opposition_lost_scope
+    clear_saved_scope = usm_rebel_winner
+    clear_saved_scope = usm_cw_winner
+    if = { limit = { has_variable = nesnd_japan_legacy_winner }
+        var:nesnd_japan_legacy_winner ?= {
+            if = { limit = { is_country_alive = yes }
+                save_scope_as = usm_cw_winner
+                if = { limit = {
+                    nesnd_current_rebel_winner = yes
+                    root = {
+                        has_variable = nesnd_japan_legacy_result
+                        var:nesnd_japan_legacy_result = 1
+                    }
+                }
+                    save_scope_as = usm_rebel_winner
+                }
+            }
+        }
+    }
+}
+nesnd_japan_legacy_retry = {
+    if = { limit = { c:JAP ?= this has_variable = nesnd_japan_legacy_result }
+        if = { limit = { nesnd_japan_legacy_context_valid = yes }
+            nesnd_japan_legacy_queue = yes
+        } else = { nesnd_japan_legacy_cancel = yes }
+    }
+}
+nesnd_japan_legacy_stale_choice = {
+    custom_tooltip = ce_je_auto_invalid_tt
+    if = { limit = { nesnd_japan_legacy_context_valid = yes }
+        set_variable = nesnd_japan_legacy_blocked
+        remove_variable = nesnd_japan_legacy_queued
+    } else = { nesnd_japan_legacy_cancel = yes }
+}

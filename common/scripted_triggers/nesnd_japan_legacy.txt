@@ -1,0 +1,119 @@
+﻿# Existing civil-war result routes only; three-regime recovery takes precedence.
+nesnd_japan_legacy_current_win = {
+    OR = {
+        AND = { has_variable = ce_usm_cw_ally_with_mng c:USM ?= { has_variable = usm_government_winner_civilwar } }
+        AND = { has_variable = usm_opposition_country c:USM ?= { has_variable = usm_rebel_winner_of_the_civil_war } }
+    }
+}
+nesnd_japan_legacy_pro_usm_loss = {
+    has_variable = ce_usm_cw_ally_with_mng
+    c:USM ?= { nesnd_current_rebel_winner = yes }
+}
+nesnd_japan_legacy_wu_defeat = {
+    has_variable = usm_opposition_country
+    c:USM ?= { is_country_alive = yes has_variable = usm_government_winner_civilwar }
+}
+nesnd_japan_legacy_no_result = {
+    OR = {
+        AND = { has_variable = usm_opposition_country has_global_variable = usm_civilwar_status_quo }
+        AND = {
+            NOT = { has_variable = ce_usm_cw_ally_with_mng }
+            NOT = { has_variable = usm_opposition_country }
+            c:USM ?= { is_country_alive = yes has_variable = usm_government_winner_civilwar }
+        }
+    }
+}
+nesnd_japan_legacy_needs_route = {
+    c:JAP ?= this
+    NOT = { nesnd_japan_legacy_current_win = yes }
+    OR = {
+        nesnd_japan_legacy_pro_usm_loss = yes
+        nesnd_japan_legacy_wu_defeat = yes
+        nesnd_japan_legacy_no_result = yes
+    }
+}
+nesnd_japan_legacy_superseded = {
+    OR = {
+        has_global_variable = nesnd_japan_partitioned
+        has_variable = nesnd_japan_partition_state
+        c:USM ?= { has_variable = nesnd_japan_recovery_pending }
+    }
+}
+nesnd_japan_legacy_subject_safe = {
+    OR = { is_subject = no AND = { exists = c:USM is_subject_of = c:USM } }
+}
+nesnd_japan_legacy_capital_safe = {
+    num_states > 1
+    capital = { owner = root controller = root }
+}
+nesnd_japan_legacy_can_begin = {
+    c:JAP ?= this
+    is_country_alive = yes
+    is_at_war = no
+    has_global_variable = nesnd_south_settled
+    nesnd_japan_legacy_subject_safe = yes
+    nesnd_japan_legacy_needs_route = yes
+    NOT = { nesnd_japan_legacy_superseded = yes }
+    NOT = { has_variable = nesnd_japan_legacy_closed }
+    OR = {
+        NOT = { nesnd_japan_legacy_wu_defeat = yes }
+        nesnd_japan_legacy_capital_safe = yes
+    }
+}
+# This checks enduring outcome identity, excluding temporary war/occupation.
+nesnd_japan_legacy_context_valid = {
+    c:JAP ?= this
+    is_country_alive = yes
+    has_global_variable = nesnd_south_settled
+    nesnd_japan_legacy_subject_safe = yes
+    NOT = { nesnd_japan_legacy_superseded = yes }
+    NOT = { has_variable = nesnd_japan_legacy_closed }
+    trigger_if = {
+        limit = { has_variable = nesnd_japan_legacy_result }
+        OR = {
+            AND = {
+                var:nesnd_japan_legacy_result = 1
+                nesnd_japan_legacy_pro_usm_loss = yes
+                var:nesnd_japan_legacy_winner ?= c:USM
+            }
+            AND = {
+                var:nesnd_japan_legacy_result = 2
+                nesnd_japan_legacy_wu_defeat = yes
+                var:nesnd_japan_legacy_winner ?= c:USM
+            }
+            AND = {
+                var:nesnd_japan_legacy_result = 3
+                nesnd_japan_legacy_no_result = yes
+                trigger_if = {
+                    limit = { has_variable = nesnd_japan_legacy_winner }
+                    var:nesnd_japan_legacy_winner ?= c:USM
+                }
+                trigger_else = { NOT = { exists = c:USM } }
+            }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_legacy_can_apply = {
+    nesnd_japan_legacy_context_valid = yes
+    is_at_war = no
+    trigger_if = {
+        limit = { has_variable = nesnd_japan_legacy_result }
+        OR = {
+            NOT = { var:nesnd_japan_legacy_result = 2 }
+            has_variable = nesnd_japan_legacy_capital_transferred
+            nesnd_japan_legacy_capital_safe = yes
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_legacy_tribute_available = {
+    nesnd_japan_legacy_can_apply = yes
+    trigger_if = {
+        limit = { has_variable = nesnd_japan_legacy_result }
+        var:nesnd_japan_legacy_result = 1
+    }
+    trigger_else = { always = no }
+    exists = scope:usm_rebel_winner
+    scope:usm_rebel_winner = { nesnd_current_rebel_winner = yes }
+}

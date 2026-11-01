@@ -1586,6 +1586,8 @@ usm_civilwar.13 = {
 	}
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	trigger = {
+        OR = {
+            AND = {
 		nesnd_current_rebel_winner = yes
 		exists = scope:usm_mister_rebel
 		exists = scope:usm_opposition_lost_scope
@@ -1593,7 +1595,21 @@ usm_civilwar.13 = {
 			is_country_alive = yes
 			is_subject_of = root
 		}
-	}
+	
+            }
+            AND = {
+                c:USM ?= this is_country_alive = yes has_variable = usm_government_winner_civilwar
+                exists = scope:usm_mister_rebel
+                exists = scope:usm_opposition_lost_scope
+                scope:usm_mister_rebel = {
+                    c:JAP ?= this is_country_alive = yes is_subject_of = root
+                    this = scope:usm_opposition_lost_scope
+                    has_variable = nesnd_japan_legacy_dominion_completed
+                    var:nesnd_japan_legacy_winner ?= root
+                }
+            }
+        }
+    }
 	immediate = {
 		hidden_effect = {
 
@@ -2291,9 +2307,16 @@ usm_civilwar.20 = {
 	}
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	trigger = {
-
-	}
+        OR = {
+            NOT = { has_variable = nesnd_japan_legacy_managed }
+            AND = { c:JAP ?= this is_country_alive = yes has_variable = nesnd_japan_legacy_result }
+        }
+    }
 	immediate = {
+        save_scope_as = usm_opposition_lost_scope
+        if = { limit = { has_variable = nesnd_japan_legacy_managed }
+            nesnd_japan_legacy_load = yes
+        } else = {
 		hidden_effect = {
 			save_scope_as = usm_mister_rebel
 			if = {
@@ -2313,14 +2336,23 @@ usm_civilwar.20 = {
 				}
 			}
 		}
-	}
+	
+        }
+    }
 	option = {
 		name = usm_civilwar.20.1
 		ai_chance = {
 			base = 6
 		}
 		default_option = yes
-		if = {
+		if = { limit = { has_variable = nesnd_japan_legacy_managed }
+        nesnd_japan_legacy_load = yes
+        if = { limit = {
+            nesnd_japan_legacy_can_apply = yes
+            has_variable = nesnd_japan_legacy_result
+            NOT = { var:nesnd_japan_legacy_result = 2 }
+        }
+if = {
 			limit = {
 				is_subject = yes
 			}
@@ -2344,16 +2376,71 @@ usm_civilwar.20 = {
 		add_journal_entry = {
 			type = je_meiji_restoration
 		}
+            set_variable = nesnd_japan_legacy_independence_completed
+            nesnd_japan_legacy_close = yes
+        } else = { nesnd_japan_legacy_stale_choice = yes }
+    } else = {
+if = {
+			limit = {
+				is_subject = yes
+			}
+			make_independent = yes
+		}
+		add_modifier = {
+			name = USM_jap_nothing_good
+			months = 120
+			is_decaying = yes
+		}
+		if = {
+			limit = {
+				exists = scope:usm_rebel_winner
+			}
+			capital = {
+				state_region = {
+					add_claim = scope:usm_rebel_winner
+				}
+			}
+		}
+		add_journal_entry = {
+			type = je_meiji_restoration
+		}
+    }
 	}
 	option = {
 		name = usm_civilwar.20.2
 		trigger = {
 			exists = scope:usm_rebel_winner
-		}
+		
+        trigger_if = { limit = { has_variable = nesnd_japan_legacy_managed }
+            nesnd_japan_legacy_tribute_available = yes
+        }
+    }
 		ai_chance = {
 			base = 4
 		}
-		scope:usm_rebel_winner = {
+		if = { limit = { has_variable = nesnd_japan_legacy_managed }
+        nesnd_japan_legacy_load = yes
+        if = { limit = { nesnd_japan_legacy_tribute_available = yes }
+scope:usm_rebel_winner = {
+			create_diplomatic_pact = {
+				country = root
+				type = tributary
+			}
+		}
+            if = { limit = { is_subject_of = scope:usm_rebel_winner }
+                set_variable = nesnd_japan_legacy_tribute_completed
+                nesnd_japan_legacy_close = yes
+scope:usm_rebel_winner = {
+			trigger_event = {
+				id = usm_civilwar.21
+				months = 1
+				popup = yes
+			}
+		}
+            } else = { nesnd_japan_legacy_stale_choice = yes }
+        } else = { nesnd_japan_legacy_stale_choice = yes }
+    } else = {
+scope:usm_rebel_winner = {
 			create_diplomatic_pact = {
 				country = root
 				type = tributary
@@ -2366,6 +2453,7 @@ usm_civilwar.20 = {
 				popup = yes
 			}
 		}
+    }
 	}
 	after = {
 		if = {
@@ -2389,8 +2477,13 @@ usm_civilwar.21 = {
 	}
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	trigger = {
-
-	}
+        exists = scope:usm_mister_rebel
+        exists = scope:usm_opposition_lost_scope
+        scope:usm_mister_rebel = {
+            is_country_alive = yes is_subject_of = root
+            this = scope:usm_opposition_lost_scope
+        }
+    }
 	immediate = {
 		hidden_effect = {
 
@@ -2426,23 +2519,74 @@ usm_civilwar.22 = {
 	}
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	trigger = {
-
-	}
+        OR = {
+            NOT = { has_variable = nesnd_japan_legacy_managed }
+            AND = { c:JAP ?= this is_country_alive = yes has_variable = nesnd_japan_legacy_result }
+        }
+    }
 	immediate = {
+        save_scope_as = usm_opposition_lost_scope
+        if = { limit = { has_variable = nesnd_japan_legacy_managed }
+            nesnd_japan_legacy_load = yes
+        } else = {
 		hidden_effect = {
 			c:USM ?= {
 				save_scope_as = usm_cw_winner
 			}
 			save_scope_as = usm_mister_rebel
 		}
-	}
+	
+        }
+    }
 	option = {
 		name = usm_civilwar.22.1
 		default_option = yes
 		ai_chance = {
 			base = 70
 		}
-		capital = {
+		if = { limit = { has_variable = nesnd_japan_legacy_managed }
+        nesnd_japan_legacy_load = yes
+        if = { limit = {
+            nesnd_japan_legacy_can_apply = yes
+            has_variable = nesnd_japan_legacy_result
+            var:nesnd_japan_legacy_result = 2
+            exists = scope:usm_cw_winner
+        }
+            if = { limit = { NOT = { has_variable = nesnd_japan_legacy_capital_transferred } }
+                capital = { save_scope_as = nesnd_japan_legacy_capital }
+                set_variable = { name = nesnd_japan_legacy_capital_state value = scope:nesnd_japan_legacy_capital }
+capital = {
+			set_state_owner = scope:usm_cw_winner
+			state_region = {
+				add_claim = root
+			}
+		}
+                if = { limit = { var:nesnd_japan_legacy_capital_state ?= { owner = scope:usm_cw_winner } }
+                    set_variable = nesnd_japan_legacy_capital_transferred
+                }
+            }
+            if = { limit = { has_variable = nesnd_japan_legacy_capital_transferred }
+scope:usm_cw_winner = {
+			create_diplomatic_pact = {
+				country = root
+				type = dominion
+			}
+		}
+                if = { limit = { is_subject_of = scope:usm_cw_winner }
+                    set_variable = nesnd_japan_legacy_dominion_completed
+                    nesnd_japan_legacy_close = yes
+scope:usm_cw_winner = {
+			trigger_event = {
+				id = usm_civilwar.13
+				months = 1
+				popup = yes
+			}
+		}
+                } else = { nesnd_japan_legacy_stale_choice = yes }
+            } else = { nesnd_japan_legacy_stale_choice = yes }
+        } else = { nesnd_japan_legacy_stale_choice = yes }
+    } else = {
+capital = {
 			set_state_owner = scope:usm_cw_winner
 			state_region = {
 				add_claim = root
@@ -2461,6 +2605,7 @@ usm_civilwar.22 = {
 				popup = yes
 			}
 		}
+    }
 	}
 	after = {
 

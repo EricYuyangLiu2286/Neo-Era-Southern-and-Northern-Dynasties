@@ -505,18 +505,39 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
                 has_variable = nesnd_rebel_settlement_seen
             }
         }
+    
+        OR = {
+            nesnd_japan_legacy_current_win = yes
+            NOT = { nesnd_japan_legacy_needs_route = yes }
+            nesnd_japan_legacy_superseded = yes
+            has_variable = nesnd_japan_legacy_closed
+            nesnd_japan_legacy_can_begin = yes
+        }
     }
 
 	on_complete = {
-    if = { limit = { OR = {
+    if = { limit = {
+        OR = { nesnd_japan_legacy_superseded = yes has_variable = nesnd_japan_legacy_closed }
+    }
+        nesnd_japan_legacy_cancel = yes
+    
+    } else_if = { limit = { OR = {
         AND = { has_variable = ce_usm_cw_ally_with_mng c:USM ?= { has_variable = usm_government_winner_civilwar } }
         AND = { has_variable = usm_opposition_country c:USM ?= { has_variable = usm_rebel_winner_of_the_civil_war } }
     } }
         c:USM ?= { every_scope_state = { limit = { state_region = s:STATE_KYUSHU } set_state_owner = c:JAP } }
         if = { limit = { is_subject_of = c:USM } make_independent = yes }
+    
+        trigger_event = { id = nesnd_crisis.41 popup = yes }
+    
+    } else_if = { limit = { nesnd_japan_legacy_needs_route = yes }
+        nesnd_japan_legacy_begin = yes
+    
+    } else = {
+        trigger_event = { id = nesnd_crisis.41 popup = yes }
+    
     }
-    trigger_event = { id = nesnd_crisis.41 popup = yes }
- }
+	}
 	
 	fail = { always = no }
 	
