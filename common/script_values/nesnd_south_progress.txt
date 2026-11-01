@@ -10,10 +10,33 @@ nesnd_south_compact_value = {
 
 # Read-only display of the existing JE monthly effect; no second increment.
 nesnd_south_monthly_pressure_value = {
- value = 0
- if = { limit = { has_journal_entry = ce_usm_conflicts_within }
-  if = { limit = { has_modifier = nesnd_federal_compact } add = 0.4 }
-  else = { add = 1 }
- }
- if = { limit = { has_variable = nesnd_south_reconciliation_active NOT = { has_variable = nesnd_south_reconciliation_first_month } nesnd_south_reconciliation_basis = yes } add = -3 }
+	value = 0
+	if = {
+		limit = {
+			has_journal_entry = ce_usm_conflicts_within
+		}
+		add = nesnd_south_base_monthly_pressure
+	}
+	if = {
+		limit = {
+			has_variable = nesnd_south_reconciliation_active
+			NOT = {
+				has_variable = nesnd_south_reconciliation_first_month
+			}
+			nesnd_south_reconciliation_basis = yes
+		}
+		add = -3
+	}
+}
+
+nesnd_south_base_monthly_pressure = {
+	if = {
+		limit = {
+			has_modifier = nesnd_federal_compact
+		}
+		value = 2.5
+	}
+	else = {
+		value = 3
+	}
 }

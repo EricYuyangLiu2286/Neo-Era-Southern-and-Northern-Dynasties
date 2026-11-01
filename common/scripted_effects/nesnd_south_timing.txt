@@ -1,0 +1,48 @@
+﻿
+# Production JE callbacks only. No game simulator or QA entry point.
+nesnd_south_enforce_crisis_deadline = {
+	if = {
+		limit = {
+			c:USM ?= this
+			has_journal_entry = ce_usm_conflicts_within
+			NOT = {
+				has_variable = tag_WUU_var
+			}
+			NOT = {
+				has_global_variable = nesnd_south_settled
+			}
+			game_date >= 1839.1.1
+			nesnd_chen_case_concluded = yes
+		}
+		nesnd_south_initialize = yes
+		clamp_variable = {
+			name = usm_conflicts_within_tracker
+			min = 100
+			max = 100
+		}
+	}
+}
+nesnd_south_crisis_month = {
+	nesnd_south_initialize = yes
+	change_variable = {
+		name = usm_conflicts_within_tracker
+		add = nesnd_south_base_monthly_pressure
+	}
+	clamp_variable = {
+		name = usm_conflicts_within_tracker
+		min = 0
+		max = 100
+	}
+	if = {
+		limit = {
+			game_date >= 1838.1.1
+			nesnd_chen_case_possible = yes
+		}
+		trigger_event = {
+			id = nesnd_chen.2
+			days = 0
+		}
+	}
+	nesnd_south_enforce_crisis_deadline = yes
+	nesnd_refresh_south_display = yes
+}

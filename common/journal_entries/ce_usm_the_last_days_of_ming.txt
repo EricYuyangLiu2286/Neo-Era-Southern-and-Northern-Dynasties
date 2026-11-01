@@ -1,43 +1,37 @@
-﻿ce_usm_conflicts_within = {	
-
+﻿ce_usm_conflicts_within = {
 	# 东西之争：
-
 	icon = "gfx/interface/icons/invention_icons/pan_nationalism.dds"
 	should_be_pinned_by_default_uninvolved_or_context = yes
 	group = je_group_historical_content
 	can_revolution_inherit = yes
-	
 	modifiers_while_active = {
-		ce_usm_lunzhan_modifier 
+		ce_usm_lunzhan_modifier
 	}
-
 	immediate = {
-        nesnd_south_initialize = yes
-
+		nesnd_south_initialize = yes
 		if = {
-			limit = { NOT = { has_variable = usm_conflicts_within_tracker } }
+			limit = {
+				NOT = {
+					has_variable = usm_conflicts_within_tracker
+				}
+			}
 			set_variable = {
 				name = usm_conflicts_within_tracker
 				value = 0
 			}
 		}
-	
-    nesnd_refresh_south_display = yes
-}
-
+		nesnd_refresh_south_display = yes
+	}
 	#inheritable = no
-	
 	on_monthly_pulse = {
-    effect = {
-        if = { limit = { has_modifier = nesnd_federal_compact } change_variable = { name = usm_conflicts_within_tracker add = 0.4 } }
-        else = { change_variable = { name = usm_conflicts_within_tracker add = 1 } }
-        clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
-    }
-    random_events = { 900 = 0 20 = nesnd_chen.2 }
- }
-	
-	
-	
+		effect = {
+			nesnd_south_crisis_month = yes
+		}
+		random_events = {
+			100 = 0
+			30 = nesnd_chen.2
+		}
+	}
 	complete = {
 		custom_tooltip = {
 			text = nesnd_usm_conflicts_within_tracker_ge_100
@@ -51,18 +45,17 @@
 		}
 		custom_tooltip = {
 			text = nesnd_south_qin_departed_tt
-			NOT = {
-				any_scope_character = {
-					has_template = USM_zheng_qin
-					is_character_alive = yes
-				}
-			}
+			nesnd_south_accession_window_open = yes
+		}
+		custom_tooltip = {
+			text = nesnd_chen_case_concluded_tt
+			nesnd_chen_case_concluded = yes
 		}
 	}
-	
 	on_complete = {
-		
-		trigger_event = { id = flavorUSM.4 }
+		trigger_event = {
+			id = flavorUSM.4
+		}
 		set_variable = {
 			name = ce_usm_conflict_evoked
 			value = yes
@@ -71,7 +64,6 @@
 			remove_variable = flavor_USM_crisis_intro
 		}
 	}
-	
 	fail = {
 		custom_tooltip = {
 			text = nesnd_south_conflicts_failure_tt
@@ -145,11 +137,13 @@
 			}
 		}
 	}
-
 	# effect which is executed when 'fail' trigger becomes true
 	on_fail = {
 		hidden_effect = {
-			trigger_event = { id = flavorUSM.2 } # looming conflicts
+			trigger_event = {
+				id = flavorUSM.2
+			}
+			# looming conflicts
 			set_variable = {
 				name = ce_usm_conflict_looming
 				value = yes
@@ -163,11 +157,9 @@
 			}
 		}
 		hidden_effect = {
-		
 			remove_variable = flavor_USM_crisis_intro
 		}
 	}
-	
 	invalid = {
 		OR = {
 			custom_tooltip = {
@@ -186,44 +178,54 @@
 			}
 		}
 	}
-	
 	on_invalid = {
-    remove_variable = flavor_USM_crisis_intro
-    if = { limit = { NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_ming_preserved } NOT = { has_variable = nesnd_south_inconclusive_settlement } }
-        set_global_variable = nesnd_south_settled
-        trigger_event = { id = flavorUSM.3 popup = yes }
-    }
- }
-	
-	
-	
-	
-
+		remove_variable = flavor_USM_crisis_intro
+		if = {
+			limit = {
+				NOT = {
+					has_variable = tag_WUU_var
+				}
+				NOT = {
+					has_variable = nesnd_ming_preserved
+				}
+				NOT = {
+					has_variable = nesnd_south_inconclusive_settlement
+				}
+			}
+			set_global_variable = nesnd_south_settled
+			trigger_event = {
+				id = flavorUSM.3
+				popup = yes
+			}
+		}
+	}
 	weight = 1200
-
-
-scripted_button = nesnd_federal_compact_button
-scripted_button = nesnd_protect_chen_button
-scripted_button = nesnd_early_accession
-
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-
-    scripted_progress_bar = nesnd_south_pressure_bar
-    scripted_progress_bar = nesnd_south_compact_bar
-    on_weekly_pulse = { effect = { nesnd_refresh_south_display = yes } }
-    status_desc = { first_valid = {
-        triggered_desc = { trigger = { any_scope_character = { has_template = USM_zheng_qin is_character_alive = yes } } desc = nesnd_south_status_qin }
-        desc = nesnd_south_status_succession
-    } }
+	scripted_button = nesnd_federal_compact_button
+	scripted_button = nesnd_protect_chen_button
+	scripted_button = nesnd_early_accession
+	scripted_progress_bar = nesnd_south_pressure_bar
+	scripted_progress_bar = nesnd_south_compact_bar
+	on_weekly_pulse = {
+		effect = {
+			nesnd_south_enforce_crisis_deadline = yes
+			nesnd_refresh_south_display = yes
+		}
+	}
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					game_date < 1839.1.1
+					any_scope_character = {
+						has_template = USM_zheng_qin
+						is_character_alive = yes
+					}
+				}
+				desc = nesnd_south_status_qin
+			}
+			desc = nesnd_south_status_succession
+		}
+	}
 }
 
 ce_usm_ruling_of_nanfu = {

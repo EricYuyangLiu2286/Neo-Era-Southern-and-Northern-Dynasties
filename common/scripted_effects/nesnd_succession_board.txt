@@ -1,10 +1,19 @@
 ﻿# Country scope; safe both before and after JE attachment.
 nesnd_board_initialize_country = {
-    if = { limit = { NOT = { has_variable = nesnd_board_registered } }
-        set_variable = nesnd_board_registered
-        set_variable = { name = nesnd_south_stance value = 0 }
-    }
-    nesnd_board_refresh_country = yes
+	set_variable = nesnd_board_registered
+	if = {
+		limit = {
+			NOT = {
+				has_variable = nesnd_south_stance
+			}
+		}
+		set_variable = {
+			name = nesnd_south_stance
+			value = 0
+		}
+	}
+	nesnd_board_enforce_allegiance = yes
+	nesnd_board_refresh_country = yes
 }
 nesnd_board_refresh_country = {
     set_variable = { name = nesnd_board_fixed_balance value = net_fixed_income }
@@ -53,4 +62,40 @@ nesnd_board_refresh_all = {
         set_bar_progress = { name = nesnd_board_compact_bar value = nesnd_board_compact_value }
         set_bar_progress = { name = nesnd_board_pressure_bar value = nesnd_board_pressure_value }
     }
+}
+
+# Refresh also repairs an earlier save's incompatible stance, once per real change.
+nesnd_board_enforce_allegiance = {
+	if = {
+		limit = {
+			nesnd_board_fixed_ming_allegiance = yes
+		}
+		if = {
+			limit = {
+				has_variable = nesnd_south_accord_active
+				nesnd_south_accord_side_value = 2
+			}
+			nesnd_south_withdraw_accord = yes
+		}
+		set_variable = {
+			name = nesnd_south_stance
+			value = 1
+		}
+	}
+	else_if = {
+		limit = {
+			OR = {
+				c:USM ?= this
+				has_variable = nesnd_ming_court
+			}
+			OR = {
+				nesnd_board_stance_value = 3
+				nesnd_board_stance_value = 4
+			}
+		}
+		set_variable = {
+			name = nesnd_south_stance
+			value = 1
+		}
+	}
 }

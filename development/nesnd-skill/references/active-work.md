@@ -17,3 +17,7 @@
 ## Editor rounding 子项完成
 
 2026-11-01按用户要求恢复并完成编辑器拆州舍入任务，正式WORK/editor已更新，Git保存development/workbench/editor。真实Project接口回归通过，未打开游戏。现有主MOD12州148个建筑组与设计一致，玩法不变；旧“编辑器舍入修复待办”由此关闭，其他功能与UI能力欠账保留。详见[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/editor-rounding-integration-20261101/release-notes.md>)。规则见map-economy-design.md的建筑总等级/投资股份两步取整。
+
+## 当前：南朝反馈修正已交付
+
+2026-11-01按最新七项反馈完成HNA默认固定拥明、朝廷身份选项约束、全局参与国默认钉选和日志文风修订。通商与自筹改为“脆弱的贸易”。首辅案1837下半年开始、1838年初保底，未解决危机1839年初沿既有易代/内战链推进。死亡原有+25保留且只加一次，两处压力bar立即刷新，intro归零移除。48项源码检查通过，Tiger零新增，MCP四查询通过；未开游戏、未修改存档，STATIC_PASS。候选south-feedback-20261101-a；[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/south-feedback-20261101/release-notes.md>)与主项目任务11为当前入口。旧交接保存于本轮报告skill-before/references/active-work.md。

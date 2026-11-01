@@ -15,6 +15,15 @@
 
 旧候选把土地进度和风险拆成两个无故事日志，又把规则塞进正文，需要改造。若用 scripted progress bars，必须核对独立存储与变量的同步：不能让条本身 monthly_progress 与 JE on_monthly 同时重复计分。源注释说明前者先执行；旧国家变量、存档迁移、按钮与事件变更均应统一到一个权威状态，真实游戏测月界和保存重载。
 
+2026-11-01南朝反馈补充：
+
+- 全局JE分开设置参与国与其他国家的默认钉选：`should_be_pinned_by_default_involved`、`should_be_pinned_by_default_uninvolved_or_context`。只写后者不会给实际参与国设默认钉选。原版`00_peoples_springtime_je.txt:317–318`并用两项；既有存档的玩家钉选状态不冒充新激活的默认值验证。
+- 事件调用scripted effect时，沿调用链找真实加分位置。陈死亡的＋25在`nesnd_chen_after_death`，不能因事件文件只有函数名便再加一次。变量改变后同步国家JE与全局JE的对应bar，保留preview scope guard和一次结算标记；同时审查intro/immediate的归零，刷新与旧档迁移不能覆盖已经积累的值。
+- 节奏有明确期限时，同时核月增量、随机等待、人物存活门槛、各国答复期限及外交阶段。随机事件概率不等于最迟日期；用既有事件入口安排明确窗口，并让延迟死亡先结算再进入后续。具体南朝1837–1839安排属于本轮用户规格，见主项目任务11，不推广成其他剧情的固定年份。
+- 同一按钮组按政治身份筛选：中央朝廷不提供“从自身争取自主”或“对自身争位中立”的入口。固定阵营须同时约束初始化、只读显示、AI复议、盟约和事件默认选项；只改初始数值不能保证下一月仍有效。
+
+日志正文用作者同类原文的政治议题、行动者与具体利害；“每周更新、实际检查、达标检验、对应事件结算”等开发说明移出正文和叙事状态。按国家写当前阻碍，完整门槛保留在对应tooltip，避免一国日志列出四国的检查清单。本轮对照与外部检查见`WORK/reports/south-feedback-20261101/prose-review.json`、`source-checks.json`；未启动游戏。
+
 有些旧 readme 的按钮 AI 示例用 base/modifier，本机实际 scripted button 用 script value 的 value/if/add；事件 option 的 ai_chance 仍用 base/modifier。分别核对，不套成一个语法。
 
 按钮 `_desc` 可写行动的政治理由；实际消耗/冷却/可用条件由 effect、possible 与独立 custom_tooltip 展示。已触发不再可用的原因应直接说明。脚本 progress bar 使用自身 desc/second_desc；不可把普通 JE 的 `progress_desc` 误接到 scripted bars。文本验证同时检查动态值、概念链接、人物 scope、颜色闭合与实际布局。

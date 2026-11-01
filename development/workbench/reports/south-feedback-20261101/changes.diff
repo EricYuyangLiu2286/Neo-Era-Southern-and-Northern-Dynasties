@@ -1,0 +1,2313 @@
+--- before/events/flavorUSM_ce.txt
++++ after/events/flavorUSM_ce.txt
+@@ -20,47 +20,32 @@
+ 	title = flavorUSM.1.t
+ 	# 明祚难延
+ 	desc = flavorUSM.1.d
+-	# 
+-
++	#
+ 	flavor = flavorUSM.1.f
+ 	# 天下神祠，无功于民不应祀典者，即淫祠也，有司无得致祭。 \n——《大明太祖高皇帝实录·卷五十三·去封号诏》
+ 	duration = 3
+-
+ 	event_image = {
+ 		texture = "gfx/event_pictures/event_ce_mordern_chinese_6.dds"
+ 	}
+-
+ 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+-
+ 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+-
+ 	trigger = {
+-		
+-	}
+-
++	}
+ 	immediate = {
+ 		hidden_effect = {
+-        nesnd_south_initialize = yes
+-
++			nesnd_south_initialize = yes
+ 			set_variable = flavor_USM_crisis_intro
+ 			set_global_variable = flavor_USM_crisis_ongoing_global
+-			set_variable = {
+-				name = usm_conflicts_within_tracker
+-				value = 0
+-			}
+-			
+-		}
+-	}
+-
+-	option = { # 
++		}
++	}
++	option = {
++		#
+ 		name = flavorUSM.1.1
+ 		default_option = yes
+ 		add_journal_entry = {
+ 			type = ce_usm_conflicts_within
+ 		}
+-		
+-# Journal entry activates from its possible trigger.
+-
++		# Journal entry activates from its possible trigger.
+ 	}
+ 	after = {
+ 		hidden_effect = {
+--- before/events/usm_civilwar_events.txt
++++ after/events/usm_civilwar_events.txt
+@@ -25,7 +25,6 @@
+ 	}
+ 	immediate = {
+ 		hidden_effect = {
+-
+ 		}
+ 	}
+ 	option = {
+@@ -140,6 +139,128 @@
+ 				}
+ 			}
+ 		}
++		trigger = {
++			c:HNA ?= this
++		}
++		default_option = yes
++	}
++	option = {
++		set_variable = {
++			name = nesnd_south_stance
++			value = 1
++		}
++		name = usm_civilwar.1.1
++		ai_chance = {
++			base = 75
++			modifier = {
++				trigger = {
++					c:DEI = This
++				}
++				add = -100
++			}
++			modifier = {
++				trigger = {
++					c:YN1 ?= This
++				}
++				add = -50
++			}
++			modifier = {
++				trigger = {
++					c:HNA ?= This
++				}
++				add = 100
++			}
++			modifier = {
++				trigger = {
++					c:SIH ?= This
++				}
++				add = 100
++			}
++			modifier = {
++				trigger = {
++					c:GNG ?= This
++				}
++				add = 100
++			}
++			modifier = {
++				trigger = {
++					c:YN1 = This
++				}
++				add = -80
++			}
++			modifier = {
++				trigger = {
++					NOT = {
++						c:HNA ?= This
++					}
++					NOT = {
++						c:SIH ?= This
++					}
++					any_scope_character = {
++						is_ruler_of_own_country = yes
++						NOT = {
++							has_trait = reckless
++						}
++						NOT = {
++							has_trait = ambitious
++						}
++						NOT = {
++							has_trait = wrathful
++						}
++						NOT = {
++							has_trait = charismatic
++						}
++						NOT = {
++							has_trait = romantic
++						}
++						NOT = {
++							has_trait = honorable
++						}
++						NOT = {
++							has_trait = persistent
++						}
++					}
++				}
++				add = -25
++			}
++			modifier = {
++				trigger = {
++					any_scope_character = {
++						is_ruler_of_own_country = yes
++						has_variable = this_is_shiyuanfu_var
++					}
++				}
++				add = -15
++			}
++		}
++		custom_tooltip = usm_civilwar_participate
++		hidden_effect = {
++			set_variable = usm_opposition_country
++			if = {
++				limit = {
++					c:SIH ?= This
++				}
++				set_global_variable = sih_anti_wuu_choice_1
++				set_global_variable = sih_anti_wuu_choice_2
++			}
++			if = {
++				limit = {
++					c:GNG ?= This
++				}
++				set_global_variable = sih_anti_gng_choice
++			}
++			c:USM ?= {
++				change_variable = {
++					name = usm_opposition_country_count
++					add = 1
++				}
++			}
++		}
++		trigger = {
++			NOT = {
++				c:HNA ?= this
++			}
++		}
+ 	}
+ 	option = {
+ 		set_variable = {
+@@ -217,6 +338,11 @@
+ 					name = usm_subject_country_count
+ 					add = -1
+ 				}
++			}
++		}
++		trigger = {
++			NOT = {
++				c:HNA ?= this
+ 			}
+ 		}
+ 	}
+--- before/common/journal_entries/ce_usm_the_last_days_of_ming.txt
++++ after/common/journal_entries/ce_usm_the_last_days_of_ming.txt
+@@ -1,43 +1,37 @@
+-ce_usm_conflicts_within = {	
+-
++ce_usm_conflicts_within = {
+ 	# 东西之争：
+-
+ 	icon = "gfx/interface/icons/invention_icons/pan_nationalism.dds"
+ 	should_be_pinned_by_default_uninvolved_or_context = yes
+ 	group = je_group_historical_content
+ 	can_revolution_inherit = yes
+-	
+ 	modifiers_while_active = {
+-		ce_usm_lunzhan_modifier 
+-	}
+-
++		ce_usm_lunzhan_modifier
++	}
+ 	immediate = {
+-        nesnd_south_initialize = yes
+-
++		nesnd_south_initialize = yes
+ 		if = {
+-			limit = { NOT = { has_variable = usm_conflicts_within_tracker } }
++			limit = {
++				NOT = {
++					has_variable = usm_conflicts_within_tracker
++				}
++			}
+ 			set_variable = {
+ 				name = usm_conflicts_within_tracker
+ 				value = 0
+ 			}
+ 		}
+-	
+-    nesnd_refresh_south_display = yes
+-}
+-
++		nesnd_refresh_south_display = yes
++	}
+ 	#inheritable = no
+-	
+ 	on_monthly_pulse = {
+-    effect = {
+-        if = { limit = { has_modifier = nesnd_federal_compact } change_variable = { name = usm_conflicts_within_tracker add = 0.4 } }
+-        else = { change_variable = { name = usm_conflicts_within_tracker add = 1 } }
+-        clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+-    }
+-    random_events = { 900 = 0 20 = nesnd_chen.2 }
+- }
+-	
+-	
+-	
++		effect = {
++			nesnd_south_crisis_month = yes
++		}
++		random_events = {
++			100 = 0
++			30 = nesnd_chen.2
++		}
++	}
+ 	complete = {
+ 		custom_tooltip = {
+ 			text = nesnd_usm_conflicts_within_tracker_ge_100
+@@ -51,18 +45,17 @@
+ 		}
+ 		custom_tooltip = {
+ 			text = nesnd_south_qin_departed_tt
+-			NOT = {
+-				any_scope_character = {
+-					has_template = USM_zheng_qin
+-					is_character_alive = yes
+-				}
+-			}
+-		}
+-	}
+-	
++			nesnd_south_accession_window_open = yes
++		}
++		custom_tooltip = {
++			text = nesnd_chen_case_concluded_tt
++			nesnd_chen_case_concluded = yes
++		}
++	}
+ 	on_complete = {
+-		
+-		trigger_event = { id = flavorUSM.4 }
++		trigger_event = {
++			id = flavorUSM.4
++		}
+ 		set_variable = {
+ 			name = ce_usm_conflict_evoked
+ 			value = yes
+@@ -71,7 +64,6 @@
+ 			remove_variable = flavor_USM_crisis_intro
+ 		}
+ 	}
+-	
+ 	fail = {
+ 		custom_tooltip = {
+ 			text = nesnd_south_conflicts_failure_tt
+@@ -145,11 +137,13 @@
+ 			}
+ 		}
+ 	}
+-
+ 	# effect which is executed when 'fail' trigger becomes true
+ 	on_fail = {
+ 		hidden_effect = {
+-			trigger_event = { id = flavorUSM.2 } # looming conflicts
++			trigger_event = {
++				id = flavorUSM.2
++			}
++			# looming conflicts
+ 			set_variable = {
+ 				name = ce_usm_conflict_looming
+ 				value = yes
+@@ -163,11 +157,9 @@
+ 			}
+ 		}
+ 		hidden_effect = {
+-		
+ 			remove_variable = flavor_USM_crisis_intro
+ 		}
+ 	}
+-	
+ 	invalid = {
+ 		OR = {
+ 			custom_tooltip = {
+@@ -186,44 +178,54 @@
+ 			}
+ 		}
+ 	}
+-	
+ 	on_invalid = {
+-    remove_variable = flavor_USM_crisis_intro
+-    if = { limit = { NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_ming_preserved } NOT = { has_variable = nesnd_south_inconclusive_settlement } }
+-        set_global_variable = nesnd_south_settled
+-        trigger_event = { id = flavorUSM.3 popup = yes }
+-    }
+- }
+-	
+-	
+-	
+-	
+-
++		remove_variable = flavor_USM_crisis_intro
++		if = {
++			limit = {
++				NOT = {
++					has_variable = tag_WUU_var
++				}
++				NOT = {
++					has_variable = nesnd_ming_preserved
++				}
++				NOT = {
++					has_variable = nesnd_south_inconclusive_settlement
++				}
++			}
++			set_global_variable = nesnd_south_settled
++			trigger_event = {
++				id = flavorUSM.3
++				popup = yes
++			}
++		}
++	}
+ 	weight = 1200
+-
+-
+-scripted_button = nesnd_federal_compact_button
+-scripted_button = nesnd_protect_chen_button
+-scripted_button = nesnd_early_accession
+-
+-    
+-    
+-    
+-    
+-    
+-
+-    
+-    
+-    
+-    
+-
+-    scripted_progress_bar = nesnd_south_pressure_bar
+-    scripted_progress_bar = nesnd_south_compact_bar
+-    on_weekly_pulse = { effect = { nesnd_refresh_south_display = yes } }
+-    status_desc = { first_valid = {
+-        triggered_desc = { trigger = { any_scope_character = { has_template = USM_zheng_qin is_character_alive = yes } } desc = nesnd_south_status_qin }
+-        desc = nesnd_south_status_succession
+-    } }
++	scripted_button = nesnd_federal_compact_button
++	scripted_button = nesnd_protect_chen_button
++	scripted_button = nesnd_early_accession
++	scripted_progress_bar = nesnd_south_pressure_bar
++	scripted_progress_bar = nesnd_south_compact_bar
++	on_weekly_pulse = {
++		effect = {
++			nesnd_south_enforce_crisis_deadline = yes
++			nesnd_refresh_south_display = yes
++		}
++	}
++	status_desc = {
++		first_valid = {
++			triggered_desc = {
++				trigger = {
++					game_date < 1839.1.1
++					any_scope_character = {
++						has_template = USM_zheng_qin
++						is_character_alive = yes
++					}
++				}
++				desc = nesnd_south_status_qin
++			}
++			desc = nesnd_south_status_succession
++		}
++	}
+ }
+ 
+ ce_usm_ruling_of_nanfu = {
+--- before/common/journal_entries/nesnd_succession_board.txt
++++ after/common/journal_entries/nesnd_succession_board.txt
+@@ -41,4 +41,5 @@
+     widget = { gui = "gui/journal_entry_widgets/nesnd_south_politics.gui" name = "nesnd_south_politics_summary" container = "custom_widget_container_2" }
+     weight = 1200
+     should_be_pinned_by_default_uninvolved_or_context = yes
++    should_be_pinned_by_default_involved = yes
+ }
+--- before/common/journal_entries/nesnd_supply_journals.txt
++++ after/common/journal_entries/nesnd_supply_journals.txt
+@@ -1,79 +1,300 @@
+ nesnd_supply_preparations = {
+-    group = je_group_historical_content
+-    icon = "gfx/interface/icons/event_icons/event_trade.dds"
+-    can_revolution_inherit = no
+-    is_shown_when_inactive = { nesnd_supply_country = yes NOT = { c:HUS ?= this } NOT = { has_variable = nesnd_supply_done } NOT = { has_variable = nesnd_supply_dismissed } }
+-    possible = { is_country_alive = yes }
+-    immediate = { nesnd_supply_initialize = yes }
+-    scripted_progress_bar = nesnd_supply_readiness_bar
+-    scripted_progress_bar = nesnd_supply_continuity_bar
+-    scripted_button = nesnd_supply_invite_hna
+-    scripted_button = nesnd_supply_invite_sih
+-    scripted_button = nesnd_supply_invite_gng
+-    scripted_button = nesnd_supply_invite_yn1
+-    scripted_button = nesnd_supply_invite_cne
+-    scripted_button = nesnd_supply_invite_fra
+-    scripted_button = nesnd_supply_self
+-    scripted_button = nesnd_supply_end_contact
+-    scripted_button = nesnd_supply_trade
+-    scripted_button = nesnd_supply_finish
+-    scripted_button = nesnd_supply_finish_shared
+-    scripted_button = nesnd_supply_finish_autonomous
+-    scripted_button = nesnd_supply_dismiss
+-    on_weekly_pulse = { effect = { nesnd_supply_week = yes } }
+-    status_desc = { first_valid = {
+-        triggered_desc = { trigger = { is_at_war = yes } desc = nesnd_supply_status_war }
+-        triggered_desc = { trigger = { has_modifier = declared_bankruptcy } desc = nesnd_supply_status_bankruptcy }
+-        triggered_desc = { trigger = { NOT = { nesnd_supply_inputs_ready = yes } } desc = nesnd_supply_status_inputs }
+-        triggered_desc = { trigger = { NOT = { nesnd_supply_jobs_ready = yes } } desc = nesnd_supply_status_jobs }
+-        triggered_desc = { trigger = { NOT = { nesnd_supply_livelihood_ready = yes } } desc = nesnd_supply_status_livelihood }
+-        triggered_desc = { trigger = { NOT = { nesnd_supply_diplomacy_ready = yes } } desc = nesnd_supply_status_diplomacy }
+-        desc = nesnd_supply_status_stable
+-    } }
+-    complete = { has_variable = nesnd_supply_done }
+-    on_complete = { trigger_event = { id = nesnd_supply.3 popup = yes } nesnd_supply_cleanup = yes }
+-    invalid = { OR = { has_variable = nesnd_supply_dismissed NOT = { nesnd_supply_country = yes } } }
+-    on_invalid = { nesnd_supply_cleanup = yes }
+-    weight = 1000
+-    should_be_pinned_by_default_uninvolved_or_context = yes
++	group = je_group_historical_content
++	icon = "gfx/interface/icons/event_icons/event_trade.dds"
++	can_revolution_inherit = no
++	is_shown_when_inactive = {
++		nesnd_supply_country = yes
++		NOT = {
++			c:HUS ?= this
++		}
++		NOT = {
++			has_variable = nesnd_supply_done
++		}
++		NOT = {
++			has_variable = nesnd_supply_dismissed
++		}
++	}
++	possible = {
++		is_country_alive = yes
++	}
++	immediate = {
++		nesnd_supply_initialize = yes
++	}
++	scripted_progress_bar = nesnd_supply_readiness_bar
++	scripted_progress_bar = nesnd_supply_continuity_bar
++	scripted_button = nesnd_supply_invite_hna
++	scripted_button = nesnd_supply_invite_sih
++	scripted_button = nesnd_supply_invite_gng
++	scripted_button = nesnd_supply_invite_yn1
++	scripted_button = nesnd_supply_invite_cne
++	scripted_button = nesnd_supply_invite_fra
++	scripted_button = nesnd_supply_self
++	scripted_button = nesnd_supply_end_contact
++	scripted_button = nesnd_supply_trade
++	scripted_button = nesnd_supply_finish
++	scripted_button = nesnd_supply_finish_shared
++	scripted_button = nesnd_supply_finish_autonomous
++	scripted_button = nesnd_supply_dismiss
++	on_weekly_pulse = {
++		effect = {
++			nesnd_supply_week = yes
++		}
++	}
++	status_desc = {
++		first_valid = {
++			triggered_desc = {
++				trigger = {
++					is_at_war = yes
++				}
++				desc = nesnd_supply_status_war
++			}
++			triggered_desc = {
++				trigger = {
++					has_modifier = declared_bankruptcy
++				}
++				desc = nesnd_supply_status_bankruptcy
++			}
++			triggered_desc = {
++				trigger = {
++					NOT = {
++						nesnd_supply_inputs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_inputs
++			}
++			triggered_desc = {
++				trigger = {
++					c:HNA ?= this
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs_hna
++			}
++			triggered_desc = {
++				trigger = {
++					c:SIH ?= this
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs_sih
++			}
++			triggered_desc = {
++				trigger = {
++					c:GNG ?= this
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs_gng
++			}
++			triggered_desc = {
++				trigger = {
++					c:HUS ?= this
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs_hus
++			}
++			triggered_desc = {
++				trigger = {
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs
++			}
++			triggered_desc = {
++				trigger = {
++					NOT = {
++						nesnd_supply_livelihood_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_livelihood
++			}
++			triggered_desc = {
++				trigger = {
++					NOT = {
++						nesnd_supply_diplomacy_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_diplomacy
++			}
++			desc = nesnd_supply_status_stable
++		}
++	}
++	complete = {
++		has_variable = nesnd_supply_done
++	}
++	on_complete = {
++		trigger_event = {
++			id = nesnd_supply.3
++			popup = yes
++		}
++		nesnd_supply_cleanup = yes
++	}
++	invalid = {
++		OR = {
++			has_variable = nesnd_supply_dismissed
++			NOT = {
++				nesnd_supply_country = yes
++			}
++		}
++	}
++	on_invalid = {
++		nesnd_supply_cleanup = yes
++	}
++	weight = 1000
++	should_be_pinned_by_default_uninvolved_or_context = yes
+ }
+ 
+ nesnd_supply_hus_preparations = {
+-    group = je_group_historical_content
+-    icon = "gfx/interface/icons/event_icons/event_trade.dds"
+-    can_revolution_inherit = no
+-    is_shown_when_inactive = { c:HUS ?= this NOT = { has_variable = nesnd_supply_done } NOT = { has_variable = nesnd_supply_dismissed } }
+-    possible = { is_country_alive = yes }
+-    immediate = { nesnd_supply_initialize = yes }
+-    scripted_progress_bar = nesnd_supply_readiness_bar
+-    scripted_progress_bar = nesnd_supply_continuity_bar
+-    scripted_button = nesnd_supply_invite_hna
+-    scripted_button = nesnd_supply_invite_sih
+-    scripted_button = nesnd_supply_invite_gng
+-    scripted_button = nesnd_supply_invite_yn1
+-    scripted_button = nesnd_supply_invite_cne
+-    scripted_button = nesnd_supply_invite_fra
+-    scripted_button = nesnd_supply_self
+-    scripted_button = nesnd_supply_end_contact
+-    scripted_button = nesnd_supply_trade
+-    scripted_button = nesnd_supply_finish
+-    scripted_button = nesnd_supply_finish_shared
+-    scripted_button = nesnd_supply_finish_autonomous
+-    scripted_button = nesnd_supply_dismiss
+-    on_weekly_pulse = { effect = { nesnd_supply_week = yes } }
+-    status_desc = { first_valid = {
+-        triggered_desc = { trigger = { is_at_war = yes } desc = nesnd_supply_status_war }
+-        triggered_desc = { trigger = { has_modifier = declared_bankruptcy } desc = nesnd_supply_status_bankruptcy }
+-        triggered_desc = { trigger = { NOT = { nesnd_supply_inputs_ready = yes } } desc = nesnd_supply_status_inputs }
+-        triggered_desc = { trigger = { NOT = { nesnd_supply_jobs_ready = yes } } desc = nesnd_supply_status_jobs }
+-        triggered_desc = { trigger = { NOT = { nesnd_supply_livelihood_ready = yes } } desc = nesnd_supply_status_livelihood }
+-        triggered_desc = { trigger = { NOT = { nesnd_supply_diplomacy_ready = yes } } desc = nesnd_supply_status_diplomacy }
+-        desc = nesnd_supply_status_stable
+-    } }
+-    complete = { has_variable = nesnd_supply_done }
+-    on_complete = { trigger_event = { id = nesnd_supply.3 popup = yes } nesnd_supply_cleanup = yes }
+-    invalid = { OR = { has_variable = nesnd_supply_dismissed NOT = { nesnd_supply_country = yes } } }
+-    on_invalid = { nesnd_supply_cleanup = yes }
+-    weight = 1000
+-    should_be_pinned_by_default_uninvolved_or_context = yes
++	group = je_group_historical_content
++	icon = "gfx/interface/icons/event_icons/event_trade.dds"
++	can_revolution_inherit = no
++	is_shown_when_inactive = {
++		c:HUS ?= this
++		NOT = {
++			has_variable = nesnd_supply_done
++		}
++		NOT = {
++			has_variable = nesnd_supply_dismissed
++		}
++	}
++	possible = {
++		is_country_alive = yes
++	}
++	immediate = {
++		nesnd_supply_initialize = yes
++	}
++	scripted_progress_bar = nesnd_supply_readiness_bar
++	scripted_progress_bar = nesnd_supply_continuity_bar
++	scripted_button = nesnd_supply_invite_hna
++	scripted_button = nesnd_supply_invite_sih
++	scripted_button = nesnd_supply_invite_gng
++	scripted_button = nesnd_supply_invite_yn1
++	scripted_button = nesnd_supply_invite_cne
++	scripted_button = nesnd_supply_invite_fra
++	scripted_button = nesnd_supply_self
++	scripted_button = nesnd_supply_end_contact
++	scripted_button = nesnd_supply_trade
++	scripted_button = nesnd_supply_finish
++	scripted_button = nesnd_supply_finish_shared
++	scripted_button = nesnd_supply_finish_autonomous
++	scripted_button = nesnd_supply_dismiss
++	on_weekly_pulse = {
++		effect = {
++			nesnd_supply_week = yes
++		}
++	}
++	status_desc = {
++		first_valid = {
++			triggered_desc = {
++				trigger = {
++					is_at_war = yes
++				}
++				desc = nesnd_supply_status_war
++			}
++			triggered_desc = {
++				trigger = {
++					has_modifier = declared_bankruptcy
++				}
++				desc = nesnd_supply_status_bankruptcy
++			}
++			triggered_desc = {
++				trigger = {
++					NOT = {
++						nesnd_supply_inputs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_inputs
++			}
++			triggered_desc = {
++				trigger = {
++					c:HNA ?= this
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs_hna
++			}
++			triggered_desc = {
++				trigger = {
++					c:SIH ?= this
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs_sih
++			}
++			triggered_desc = {
++				trigger = {
++					c:GNG ?= this
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs_gng
++			}
++			triggered_desc = {
++				trigger = {
++					c:HUS ?= this
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs_hus
++			}
++			triggered_desc = {
++				trigger = {
++					NOT = {
++						nesnd_supply_jobs_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_jobs
++			}
++			triggered_desc = {
++				trigger = {
++					NOT = {
++						nesnd_supply_livelihood_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_livelihood
++			}
++			triggered_desc = {
++				trigger = {
++					NOT = {
++						nesnd_supply_diplomacy_ready = yes
++					}
++				}
++				desc = nesnd_supply_status_diplomacy
++			}
++			desc = nesnd_supply_status_stable
++		}
++	}
++	complete = {
++		has_variable = nesnd_supply_done
++	}
++	on_complete = {
++		trigger_event = {
++			id = nesnd_supply.3
++			popup = yes
++		}
++		nesnd_supply_cleanup = yes
++	}
++	invalid = {
++		OR = {
++			has_variable = nesnd_supply_dismissed
++			NOT = {
++				nesnd_supply_country = yes
++			}
++		}
++	}
++	on_invalid = {
++		nesnd_supply_cleanup = yes
++	}
++	weight = 1000
++	should_be_pinned_by_default_uninvolved_or_context = yes
+ }
+--- before/common/scripted_buttons/nesnd_crisis_buttons.txt
++++ after/common/scripted_buttons/nesnd_crisis_buttons.txt
+@@ -62,9 +62,39 @@
+  effect = { nesnd_chen_security_maintenance = yes set_variable = { name = nesnd_chen_panel_pending months = 1 } trigger_event = { id = nesnd_chen.1 popup = yes } }
+ }
+ 
+-nesnd_early_accession = { name = nesnd_early_accession desc = nesnd_early_accession_desc
+-        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_early_accession_requirements  nesnd_south_pressure_value >= 70 NOT = { has_variable = tag_WUU_var } NOT = { has_global_variable = nesnd_south_settled }  } }
+-        ai_chance = { value = 0 } effect = { add_radicals = { value = 0.05 } trigger_event = { id = flavorUSM.4 popup = yes } 
+-    nesnd_refresh_south_display = yes
++nesnd_early_accession = {
++	name = nesnd_early_accession
++	desc = nesnd_early_accession_desc
++	visible = {
++		always = yes
++	}
++	possible = {
++		custom_tooltip = {
++			text = nesnd_early_accession_requirements
++			nesnd_south_pressure_value >= 70
++			NOT = {
++				has_variable = tag_WUU_var
++			}
++			NOT = {
++				has_global_variable = nesnd_south_settled
++			}
++		}
++		custom_tooltip = {
++			text = nesnd_chen_case_concluded_tt
++			nesnd_chen_case_concluded = yes
++		}
++	}
++	ai_chance = {
++		value = 0
++	}
++	effect = {
++		add_radicals = {
++			value = 0.05
++		}
++		trigger_event = {
++			id = flavorUSM.4
++			popup = yes
++		}
++		nesnd_refresh_south_display = yes
++	}
+ }
+-    }
+--- before/common/scripted_buttons/nesnd_succession_board.txt
++++ after/common/scripted_buttons/nesnd_succession_board.txt
+@@ -7,6 +7,9 @@
+ 			c:USM ?= this
+ 			nesnd_south_political_member = yes
+ 		}
++		NOT = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
+ 	}
+ 	possible = {
+ 		custom_tooltip = {
+@@ -24,23 +27,28 @@
+ 		value = 0
+ 	}
+ 	effect = {
+-		custom_tooltip = nesnd_board_stance_effect_tt
+-		hidden_effect = {
+-			if = {
+-				limit = {
+-					has_variable = nesnd_south_accord_active
+-				}
+-				nesnd_south_withdraw_accord = yes
+-			}
+-			set_variable = {
+-				name = nesnd_south_stance
+-				value = 1
+-			}
+-			set_variable = {
+-				name = nesnd_board_stance_cooldown
+-				months = 6
+-			}
+-			nesnd_board_refresh_all = yes
++		if = {
++			limit = {
++				nesnd_board_can_choose = yes
++			}
++			custom_tooltip = nesnd_board_stance_effect_tt
++			hidden_effect = {
++				if = {
++					limit = {
++						has_variable = nesnd_south_accord_active
++					}
++					nesnd_south_withdraw_accord = yes
++				}
++				set_variable = {
++					name = nesnd_south_stance
++					value = 1
++				}
++				set_variable = {
++					name = nesnd_board_stance_cooldown
++					months = 6
++				}
++				nesnd_board_refresh_all = yes
++			}
+ 		}
+ 	}
+ }
+@@ -54,6 +62,9 @@
+ 			c:USM ?= this
+ 			nesnd_south_political_member = yes
+ 		}
++		NOT = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
+ 	}
+ 	possible = {
+ 		custom_tooltip = {
+@@ -71,23 +82,28 @@
+ 		value = 0
+ 	}
+ 	effect = {
+-		custom_tooltip = nesnd_board_stance_effect_tt
+-		hidden_effect = {
+-			if = {
+-				limit = {
+-					has_variable = nesnd_south_accord_active
+-				}
+-				nesnd_south_withdraw_accord = yes
+-			}
+-			set_variable = {
+-				name = nesnd_south_stance
+-				value = 2
+-			}
+-			set_variable = {
+-				name = nesnd_board_stance_cooldown
+-				months = 6
+-			}
+-			nesnd_board_refresh_all = yes
++		if = {
++			limit = {
++				nesnd_board_can_choose = yes
++			}
++			custom_tooltip = nesnd_board_stance_effect_tt
++			hidden_effect = {
++				if = {
++					limit = {
++						has_variable = nesnd_south_accord_active
++					}
++					nesnd_south_withdraw_accord = yes
++				}
++				set_variable = {
++					name = nesnd_south_stance
++					value = 2
++				}
++				set_variable = {
++					name = nesnd_board_stance_cooldown
++					months = 6
++				}
++				nesnd_board_refresh_all = yes
++			}
+ 		}
+ 	}
+ }
+@@ -101,11 +117,20 @@
+ 			c:USM ?= this
+ 			nesnd_south_political_member = yes
+ 		}
+-	}
+-	possible = {
+-		custom_tooltip = {
+-			text = nesnd_board_stance_available_tt
+-			nesnd_board_can_choose = yes
++		NOT = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
++		NOT = {
++			c:USM ?= this
++		}
++		NOT = {
++			has_variable = nesnd_ming_court
++		}
++	}
++	possible = {
++		custom_tooltip = {
++			text = nesnd_board_stance_available_tt
++			nesnd_board_can_choose_local_stance = yes
+ 		}
+ 		custom_tooltip = {
+ 			text = nesnd_board_not_neutral_tt
+@@ -118,23 +143,28 @@
+ 		value = 0
+ 	}
+ 	effect = {
+-		custom_tooltip = nesnd_board_stance_effect_tt
+-		hidden_effect = {
+-			if = {
+-				limit = {
+-					has_variable = nesnd_south_accord_active
+-				}
+-				nesnd_south_withdraw_accord = yes
+-			}
+-			set_variable = {
+-				name = nesnd_south_stance
+-				value = 3
+-			}
+-			set_variable = {
+-				name = nesnd_board_stance_cooldown
+-				months = 6
+-			}
+-			nesnd_board_refresh_all = yes
++		if = {
++			limit = {
++				nesnd_board_can_choose_local_stance = yes
++			}
++			custom_tooltip = nesnd_board_stance_effect_tt
++			hidden_effect = {
++				if = {
++					limit = {
++						has_variable = nesnd_south_accord_active
++					}
++					nesnd_south_withdraw_accord = yes
++				}
++				set_variable = {
++					name = nesnd_south_stance
++					value = 3
++				}
++				set_variable = {
++					name = nesnd_board_stance_cooldown
++					months = 6
++				}
++				nesnd_board_refresh_all = yes
++			}
+ 		}
+ 	}
+ }
+@@ -148,11 +178,20 @@
+ 			c:USM ?= this
+ 			nesnd_south_political_member = yes
+ 		}
+-	}
+-	possible = {
+-		custom_tooltip = {
+-			text = nesnd_board_stance_available_tt
+-			nesnd_board_can_choose = yes
++		NOT = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
++		NOT = {
++			c:USM ?= this
++		}
++		NOT = {
++			has_variable = nesnd_ming_court
++		}
++	}
++	possible = {
++		custom_tooltip = {
++			text = nesnd_board_stance_available_tt
++			nesnd_board_can_choose_local_stance = yes
+ 		}
+ 		custom_tooltip = {
+ 			text = nesnd_board_not_autonomy_tt
+@@ -165,23 +204,28 @@
+ 		value = 0
+ 	}
+ 	effect = {
+-		custom_tooltip = nesnd_board_stance_effect_tt
+-		hidden_effect = {
+-			if = {
+-				limit = {
+-					has_variable = nesnd_south_accord_active
+-				}
+-				nesnd_south_withdraw_accord = yes
+-			}
+-			set_variable = {
+-				name = nesnd_south_stance
+-				value = 4
+-			}
+-			set_variable = {
+-				name = nesnd_board_stance_cooldown
+-				months = 6
+-			}
+-			nesnd_board_refresh_all = yes
+-		}
+-	}
+-}
++		if = {
++			limit = {
++				nesnd_board_can_choose_local_stance = yes
++			}
++			custom_tooltip = nesnd_board_stance_effect_tt
++			hidden_effect = {
++				if = {
++					limit = {
++						has_variable = nesnd_south_accord_active
++					}
++					nesnd_south_withdraw_accord = yes
++				}
++				set_variable = {
++					name = nesnd_south_stance
++					value = 4
++				}
++				set_variable = {
++					name = nesnd_board_stance_cooldown
++					months = 6
++				}
++				nesnd_board_refresh_all = yes
++			}
++		}
++	}
++}
+--- before/common/scripted_effects/nesnd_chen_security.txt
++++ after/common/scripted_effects/nesnd_chen_security.txt
+@@ -56,48 +56,142 @@
+ }
+ # Reuses the one historical successor. Never respawns a dead/departed Hao.
+ nesnd_chen_after_death = {
+- if = { limit = { NOT = { any_character = { has_template = USM_chen_dongyang is_character_alive = yes } } }
+- ig:ig_rural_folk = { save_scope_as = ce_rural_folk_ig }
+- ig:ig_landowners = { save_scope_as = ce_ig_landowners }
+- ig:ig_armed_forces = { save_scope_as = ce_ig_armed_forces }
+- ig:ig_intelligentsia = { save_scope_as = ce_ig_intelligentsia }
+- clear_saved_scope = hao_tingjiang_scope
+- if = { limit = { any_scope_character = { has_template = USM_hao_tingjiang is_character_alive = yes } }
+-  random_scope_character = { limit = { has_template = USM_hao_tingjiang is_character_alive = yes } save_scope_as = hao_tingjiang_scope }
+- }
+- else_if = { limit = { NOT = { has_global_variable = nesnd_born_usm_hao_tingjiang } NOT = { any_character = { has_template = USM_hao_tingjiang } } }
+-  create_character = { template = USM_hao_tingjiang save_scope_as = hao_tingjiang_scope }
+- }
+- if = { limit = { exists = scope:hao_tingjiang_scope }
+-  scope:hao_tingjiang_scope = { if = { limit = { is_character_alive = yes owner = root is_ruler_of_own_country = no } set_as_interest_group_leader = yes } }
+- }
+- if = { limit = { has_variable = started_with_chendongyang }
+-  nesnd_south_initialize = yes
+-  change_variable = { name = usm_conflicts_within_tracker add = 25 }
+-  clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+-  remove_variable = started_with_chendongyang
+- }
+- nesnd_chen_clear_security = yes
+- }
++	if = {
++		limit = {
++			NOT = {
++				any_character = {
++					has_template = USM_chen_dongyang
++					is_character_alive = yes
++				}
++			}
++		}
++		ig:ig_rural_folk = {
++			save_scope_as = ce_rural_folk_ig
++		}
++		ig:ig_landowners = {
++			save_scope_as = ce_ig_landowners
++		}
++		ig:ig_armed_forces = {
++			save_scope_as = ce_ig_armed_forces
++		}
++		ig:ig_intelligentsia = {
++			save_scope_as = ce_ig_intelligentsia
++		}
++		clear_saved_scope = hao_tingjiang_scope
++		if = {
++			limit = {
++				any_scope_character = {
++					has_template = USM_hao_tingjiang
++					is_character_alive = yes
++				}
++			}
++			random_scope_character = {
++				limit = {
++					has_template = USM_hao_tingjiang
++					is_character_alive = yes
++				}
++				save_scope_as = hao_tingjiang_scope
++			}
++		}
++		else_if = {
++			limit = {
++				NOT = {
++					has_global_variable = nesnd_born_usm_hao_tingjiang
++				}
++				NOT = {
++					any_character = {
++						has_template = USM_hao_tingjiang
++					}
++				}
++			}
++			create_character = {
++				template = USM_hao_tingjiang
++				save_scope_as = hao_tingjiang_scope
++			}
++		}
++		if = {
++			limit = {
++				exists = scope:hao_tingjiang_scope
++			}
++			scope:hao_tingjiang_scope = {
++				if = {
++					limit = {
++						is_character_alive = yes
++						owner = root
++						is_ruler_of_own_country = no
++					}
++					set_as_interest_group_leader = yes
++				}
++			}
++		}
++		if = {
++			limit = {
++				has_variable = started_with_chendongyang
++			}
++			nesnd_south_initialize = yes
++			change_variable = {
++				name = usm_conflicts_within_tracker
++				add = 25
++			}
++			clamp_variable = {
++				name = usm_conflicts_within_tracker
++				min = 0
++				max = 100
++			}
++			remove_variable = started_with_chendongyang
++		}
++		nesnd_chen_clear_security = yes
++	}
++	nesnd_refresh_south_display = yes
+ }
+ nesnd_chen_case_death = {
+  set_variable = { name = nesnd_chen_case_pending_death days = 7 }
+  trigger_event = { id = flavorUSM.5 days = 1 popup = yes }
+ }
+ nesnd_chen_case_wounded = {
+- scope:chen_dongyang_scope ?= { if = { limit = { is_character_alive = yes owner = root } add_trait = wounded } }
+- nesnd_south_initialize = yes
+- change_variable = { name = usm_conflicts_within_tracker add = 10 }
+- clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+- nesnd_chen_clear_security = yes
+- trigger_event = { id = nesnd_chen.3 popup = yes }
++	scope:chen_dongyang_scope ?= {
++		if = {
++			limit = {
++				is_character_alive = yes
++				owner = root
++			}
++			add_trait = wounded
++		}
++	}
++	nesnd_south_initialize = yes
++	change_variable = {
++		name = usm_conflicts_within_tracker
++		add = 10
++	}
++	clamp_variable = {
++		name = usm_conflicts_within_tracker
++		min = 0
++		max = 100
++	}
++	nesnd_chen_clear_security = yes
++	trigger_event = {
++		id = nesnd_chen.3
++		popup = yes
++	}
++	nesnd_refresh_south_display = yes
+ }
+ nesnd_chen_case_escape = {
+- nesnd_south_initialize = yes
+- change_variable = { name = usm_conflicts_within_tracker add = 3 }
+- clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+- nesnd_chen_clear_security = yes
+- trigger_event = { id = nesnd_chen.4 popup = yes }
++	nesnd_south_initialize = yes
++	change_variable = {
++		name = usm_conflicts_within_tracker
++		add = 3
++	}
++	clamp_variable = {
++		name = usm_conflicts_within_tracker
++		min = 0
++		max = 100
++	}
++	nesnd_chen_clear_security = yes
++	trigger_event = {
++		id = nesnd_chen.4
++		popup = yes
++	}
++	nesnd_refresh_south_display = yes
+ }
+ 
+ # Shared preparation for production chance and separately labelled QA outcomes.
+--- before/common/scripted_effects/nesnd_presentation_effects.txt
++++ after/common/scripted_effects/nesnd_presentation_effects.txt
+@@ -51,5 +51,11 @@
+ 				}
+ 			}
+ 		}
++		je:nesnd_south_succession_board ?= {
++			set_bar_progress = {
++				name = nesnd_board_pressure_bar
++				value = scope:nesnd_south_display_country.nesnd_south_pressure_value
++			}
++		}
+ 	}
+ }
+--- before/common/scripted_effects/nesnd_south_political_ai.txt
++++ after/common/scripted_effects/nesnd_south_political_ai.txt
+@@ -1,60 +1,235 @@
+ nesnd_south_ai_initial_stance = {
+-    if = { limit = { c:USM ?= this }
+-        random_list = {
+-            25 = { set_variable = { name = nesnd_south_stance value = 1 } }
+-            75 = { set_variable = { name = nesnd_south_stance value = 2 } }
+-        }
+-    } else_if = { limit = { nesnd_south_mainland_member = yes }
+-        random_list = {
+-            60 = { set_variable = { name = nesnd_south_stance value = 1 } }
+-            20 = { set_variable = { name = nesnd_south_stance value = 2 } }
+-            10 = { set_variable = { name = nesnd_south_stance value = 3 } }
+-            10 = { set_variable = { name = nesnd_south_stance value = 4 } }
+-        }
+-    } else_if = { limit = { nesnd_south_japan_member = yes }
+-        random_list = {
+-            30 = { set_variable = { name = nesnd_south_stance value = 1 } }
+-            10 = { set_variable = { name = nesnd_south_stance value = 2 } }
+-            15 = { set_variable = { name = nesnd_south_stance value = 3 } }
+-            45 = { set_variable = { name = nesnd_south_stance value = 4 } }
+-        }
+-    } else_if = { limit = { nesnd_south_overseas_member = yes }
+-        random_list = {
+-            15 = { set_variable = { name = nesnd_south_stance value = 1 } }
+-            55 = { set_variable = { name = nesnd_south_stance value = 2 } }
+-            15 = { set_variable = { name = nesnd_south_stance value = 3 } }
+-            15 = { set_variable = { name = nesnd_south_stance value = 4 } }
+-        }
+-    }
++	if = {
++		limit = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
++		set_variable = {
++			name = nesnd_south_stance
++			value = 1
++		}
++	}
++	else_if = {
++		limit = {
++			c:USM ?= this
++		}
++		random_list = {
++			25 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 1
++				}
++			}
++			75 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 2
++				}
++			}
++		}
++	}
++	else_if = {
++		limit = {
++			nesnd_south_mainland_member = yes
++		}
++		random_list = {
++			60 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 1
++				}
++			}
++			20 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 2
++				}
++			}
++			10 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 3
++				}
++			}
++			10 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 4
++				}
++			}
++		}
++	}
++	else_if = {
++		limit = {
++			nesnd_south_japan_member = yes
++		}
++		random_list = {
++			30 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 1
++				}
++			}
++			10 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 2
++				}
++			}
++			15 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 3
++				}
++			}
++			45 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 4
++				}
++			}
++		}
++	}
++	else_if = {
++		limit = {
++			nesnd_south_overseas_member = yes
++		}
++		random_list = {
++			15 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 1
++				}
++			}
++			55 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 2
++				}
++			}
++			15 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 3
++				}
++			}
++			15 = {
++				set_variable = {
++					name = nesnd_south_stance
++					value = 4
++				}
++			}
++		}
++	}
+ }
+ nesnd_south_ai_review = {
+-    if = { limit = {
+-        is_ai = yes has_variable = nesnd_board_registered
+-        OR = { c:USM ?= this nesnd_south_political_member = yes has_variable = nesnd_south_member }
+-        NOT = { has_variable = nesnd_south_ai_review_cooldown }
+-        NOT = { has_global_variable = usm_civilwar_occured }
+-        NOT = { has_global_variable = nesnd_south_settled }
+-    }
+-        set_variable = { name = nesnd_south_ai_review_cooldown months = 3 }
+-        if = { limit = { nesnd_board_stance_value = 0 }
+-            nesnd_south_ai_initial_stance = yes
+-        } else_if = { limit = { NOT = { c:USM ?= this } NOT = { has_variable = nesnd_board_stance_cooldown } }
+-            if = { limit = { is_subject = yes NOT = { is_subject_of = c:USM } }
+-                nesnd_south_withdraw_accord = yes
+-                set_variable = { name = nesnd_south_stance value = 3 }
+-                set_variable = { name = nesnd_board_stance_cooldown months = 6 }
+-            } else_if = { limit = { nesnd_board_stance_value = 2 c:USM ?= { in_default = yes } }
+-                nesnd_south_withdraw_accord = yes
+-                set_variable = { name = nesnd_south_stance value = 3 }
+-                set_variable = { name = nesnd_board_stance_cooldown months = 6 }
+-            } else_if = { limit = {
+-                nesnd_board_stance_value = 1
+-                c:USM ?= { NOT = { has_variable = tag_WUU_var } OR = { NOT = { exists = ruler } ruler ?= { NOT = { nesnd_ming_authorized_dynast = yes } } } }
+-            }
+-                nesnd_south_withdraw_accord = yes
+-                set_variable = { name = nesnd_south_stance value = 3 }
+-                set_variable = { name = nesnd_board_stance_cooldown months = 6 }
+-            }
+-        }
+-    }
++	if = {
++		limit = {
++			NOT = {
++				nesnd_board_fixed_ming_allegiance = yes
++			}
++		}
++		if = {
++			limit = {
++				is_ai = yes
++				has_variable = nesnd_board_registered
++				OR = {
++					c:USM ?= this
++					nesnd_south_political_member = yes
++					has_variable = nesnd_south_member
++				}
++				NOT = {
++					has_variable = nesnd_south_ai_review_cooldown
++				}
++				NOT = {
++					has_global_variable = usm_civilwar_occured
++				}
++				NOT = {
++					has_global_variable = nesnd_south_settled
++				}
++			}
++			set_variable = {
++				name = nesnd_south_ai_review_cooldown
++				months = 3
++			}
++			if = {
++				limit = {
++					nesnd_board_stance_value = 0
++				}
++				nesnd_south_ai_initial_stance = yes
++			}
++			else_if = {
++				limit = {
++					NOT = {
++						c:USM ?= this
++					}
++					NOT = {
++						has_variable = nesnd_board_stance_cooldown
++					}
++				}
++				if = {
++					limit = {
++						is_subject = yes
++						NOT = {
++							is_subject_of = c:USM
++						}
++					}
++					nesnd_south_withdraw_accord = yes
++					set_variable = {
++						name = nesnd_south_stance
++						value = 3
++					}
++					set_variable = {
++						name = nesnd_board_stance_cooldown
++						months = 6
++					}
++				}
++				else_if = {
++					limit = {
++						nesnd_board_stance_value = 2
++						c:USM ?= {
++							in_default = yes
++						}
++					}
++					nesnd_south_withdraw_accord = yes
++					set_variable = {
++						name = nesnd_south_stance
++						value = 3
++					}
++					set_variable = {
++						name = nesnd_board_stance_cooldown
++						months = 6
++					}
++				}
++				else_if = {
++					limit = {
++						nesnd_board_stance_value = 1
++						c:USM ?= {
++							NOT = {
++								has_variable = tag_WUU_var
++							}
++							OR = {
++								NOT = {
++									exists = ruler
++								}
++								ruler ?= {
++									NOT = {
++										nesnd_ming_authorized_dynast = yes
++									}
++								}
++							}
++						}
++					}
++					nesnd_south_withdraw_accord = yes
++					set_variable = {
++						name = nesnd_south_stance
++						value = 3
++					}
++					set_variable = {
++						name = nesnd_board_stance_cooldown
++						months = 6
++					}
++				}
++			}
++		}
++	}
+ }
+--- before/common/scripted_effects/nesnd_south_timing.txt
++++ after/common/scripted_effects/nesnd_south_timing.txt
+@@ -0,0 +1,48 @@
++
++# Production JE callbacks only. No game simulator or QA entry point.
++nesnd_south_enforce_crisis_deadline = {
++	if = {
++		limit = {
++			c:USM ?= this
++			has_journal_entry = ce_usm_conflicts_within
++			NOT = {
++				has_variable = tag_WUU_var
++			}
++			NOT = {
++				has_global_variable = nesnd_south_settled
++			}
++			game_date >= 1839.1.1
++			nesnd_chen_case_concluded = yes
++		}
++		nesnd_south_initialize = yes
++		clamp_variable = {
++			name = usm_conflicts_within_tracker
++			min = 100
++			max = 100
++		}
++	}
++}
++nesnd_south_crisis_month = {
++	nesnd_south_initialize = yes
++	change_variable = {
++		name = usm_conflicts_within_tracker
++		add = nesnd_south_base_monthly_pressure
++	}
++	clamp_variable = {
++		name = usm_conflicts_within_tracker
++		min = 0
++		max = 100
++	}
++	if = {
++		limit = {
++			game_date >= 1838.1.1
++			nesnd_chen_case_possible = yes
++		}
++		trigger_event = {
++			id = nesnd_chen.2
++			days = 0
++		}
++	}
++	nesnd_south_enforce_crisis_deadline = yes
++	nesnd_refresh_south_display = yes
++}
+--- before/common/scripted_effects/nesnd_succession_board.txt
++++ after/common/scripted_effects/nesnd_succession_board.txt
+@@ -1,10 +1,19 @@
+ # Country scope; safe both before and after JE attachment.
+ nesnd_board_initialize_country = {
+-    if = { limit = { NOT = { has_variable = nesnd_board_registered } }
+-        set_variable = nesnd_board_registered
+-        set_variable = { name = nesnd_south_stance value = 0 }
+-    }
+-    nesnd_board_refresh_country = yes
++	set_variable = nesnd_board_registered
++	if = {
++		limit = {
++			NOT = {
++				has_variable = nesnd_south_stance
++			}
++		}
++		set_variable = {
++			name = nesnd_south_stance
++			value = 0
++		}
++	}
++	nesnd_board_enforce_allegiance = yes
++	nesnd_board_refresh_country = yes
+ }
+ nesnd_board_refresh_country = {
+     set_variable = { name = nesnd_board_fixed_balance value = net_fixed_income }
+@@ -54,3 +63,39 @@
+         set_bar_progress = { name = nesnd_board_pressure_bar value = nesnd_board_pressure_value }
+     }
+ }
++
++# Refresh also repairs an earlier save's incompatible stance, once per real change.
++nesnd_board_enforce_allegiance = {
++	if = {
++		limit = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
++		if = {
++			limit = {
++				has_variable = nesnd_south_accord_active
++				nesnd_south_accord_side_value = 2
++			}
++			nesnd_south_withdraw_accord = yes
++		}
++		set_variable = {
++			name = nesnd_south_stance
++			value = 1
++		}
++	}
++	else_if = {
++		limit = {
++			OR = {
++				c:USM ?= this
++				has_variable = nesnd_ming_court
++			}
++			OR = {
++				nesnd_board_stance_value = 3
++				nesnd_board_stance_value = 4
++			}
++		}
++		set_variable = {
++			name = nesnd_south_stance
++			value = 1
++		}
++	}
++}
+--- before/common/scripted_triggers/nesnd_chen_security.txt
++++ after/common/scripted_triggers/nesnd_chen_security.txt
+@@ -6,4 +6,11 @@
+ }
+ nesnd_chen_can_renew = { nesnd_chen_security_active = yes NOT = { has_variable = nesnd_chen_renew_lock } in_default = no NOT = { has_modifier = declared_bankruptcy } }
+ nesnd_chen_can_investigate = { nesnd_chen_security_active = yes has_variable = nesnd_chen_guard_active NOT = { has_variable = nesnd_chen_intel_ready } gold_reserves >= 18000 in_default = no NOT = { has_modifier = declared_bankruptcy } }
+-nesnd_chen_case_possible = { nesnd_chen_security_active = yes nesnd_south_pressure_value > 24 }
++nesnd_chen_case_possible = {
++	nesnd_chen_security_active = yes
++	game_date >= 1837.7.1
++	OR = {
++		nesnd_south_pressure_value > 24
++		game_date >= 1838.1.1
++	}
++}
+--- before/common/scripted_triggers/nesnd_south_politics.txt
++++ after/common/scripted_triggers/nesnd_south_politics.txt
+@@ -169,6 +169,22 @@
+ 		is_subject = no
+ 		is_subject_of = c:USM
+ 	}
++	trigger_if = {
++		limit = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
++		trigger_if = {
++			limit = {
++				exists = c:USM
++			}
++			c:USM = {
++				nesnd_board_stance_value = 1
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
+ }
+ 
+ nesnd_south_can_offer_accord = {
+@@ -224,6 +240,12 @@
+ 				nesnd_board_stance_value = 2
+ 			}
+ 		}
++	}
++	trigger_if = {
++		limit = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
++		nesnd_south_pending_side_value = 1
+ 	}
+ }
+ 
+--- before/common/scripted_triggers/nesnd_south_timing.txt
++++ after/common/scripted_triggers/nesnd_south_timing.txt
+@@ -0,0 +1,23 @@
++
++nesnd_chen_case_concluded = {
++	NOT = {
++		has_variable = nesnd_chen_case_pending_death
++	}
++	OR = {
++		has_variable = nesnd_assassination_resolved
++		NOT = {
++			nesnd_chen_present = yes
++		}
++	}
++}
++nesnd_south_accession_window_open = {
++	OR = {
++		NOT = {
++			any_scope_character = {
++				has_template = USM_zheng_qin
++				is_character_alive = yes
++			}
++		}
++		game_date >= 1839.1.1
++	}
++}
+--- before/common/scripted_triggers/nesnd_succession_board.txt
++++ after/common/scripted_triggers/nesnd_succession_board.txt
+@@ -11,10 +11,40 @@
+     }
+ }
+ nesnd_board_can_choose = {
+- OR = { c:USM ?= this nesnd_south_political_member = yes }
++	OR = {
++		c:USM ?= this
++		nesnd_south_political_member = yes
++	}
++	is_involved_in_journal_entry = nesnd_south_succession_board
++	NOT = {
++		has_global_variable = nesnd_south_settled
++	}
++	NOT = {
++		has_variable = nesnd_board_stance_cooldown
++	}
++	NOT = {
++		has_global_variable = usm_civilwar_occured
++	}
++	NOT = {
++		nesnd_board_fixed_ming_allegiance = yes
++	}
++}
+ 
+-    is_involved_in_journal_entry = nesnd_south_succession_board
+-    NOT = { has_global_variable = nesnd_south_settled }
+-    NOT = { has_variable = nesnd_board_stance_cooldown }
+-    NOT = { has_global_variable = usm_civilwar_occured }
++nesnd_board_fixed_ming_allegiance = {
++	c:HNA ?= this
++	NOT = {
++		has_global_variable = usm_civilwar_occured
++	}
++	NOT = {
++		has_global_variable = nesnd_south_settled
++	}
+ }
++nesnd_board_can_choose_local_stance = {
++	nesnd_board_can_choose = yes
++	NOT = {
++		c:USM ?= this
++	}
++	NOT = {
++		has_variable = nesnd_ming_court
++	}
++}
+--- before/common/script_values/nesnd_south_progress.txt
++++ after/common/script_values/nesnd_south_progress.txt
+@@ -10,10 +10,33 @@
+ 
+ # Read-only display of the existing JE monthly effect; no second increment.
+ nesnd_south_monthly_pressure_value = {
+- value = 0
+- if = { limit = { has_journal_entry = ce_usm_conflicts_within }
+-  if = { limit = { has_modifier = nesnd_federal_compact } add = 0.4 }
+-  else = { add = 1 }
+- }
+- if = { limit = { has_variable = nesnd_south_reconciliation_active NOT = { has_variable = nesnd_south_reconciliation_first_month } nesnd_south_reconciliation_basis = yes } add = -3 }
++	value = 0
++	if = {
++		limit = {
++			has_journal_entry = ce_usm_conflicts_within
++		}
++		add = nesnd_south_base_monthly_pressure
++	}
++	if = {
++		limit = {
++			has_variable = nesnd_south_reconciliation_active
++			NOT = {
++				has_variable = nesnd_south_reconciliation_first_month
++			}
++			nesnd_south_reconciliation_basis = yes
++		}
++		add = -3
++	}
+ }
++
++nesnd_south_base_monthly_pressure = {
++	if = {
++		limit = {
++			has_modifier = nesnd_federal_compact
++		}
++		value = 2.5
++	}
++	else = {
++		value = 3
++	}
++}
+--- before/common/script_values/nesnd_succession_board.txt
++++ after/common/script_values/nesnd_succession_board.txt
+@@ -38,6 +38,19 @@
+ 
+ # Country scope. Read-only previews do not rely on initialization effects.
+ nesnd_board_stance_value = {
+-    if = { limit = { has_variable = nesnd_south_stance } value = var:nesnd_south_stance }
+-    else = { value = 0 }
++	if = {
++		limit = {
++			nesnd_board_fixed_ming_allegiance = yes
++		}
++		value = 1
++	}
++	else_if = {
++		limit = {
++			has_variable = nesnd_south_stance
++		}
++		value = var:nesnd_south_stance
++	}
++	else = {
++		value = 0
++	}
+ }
+--- before/localization/english/nesnd_supply_l_english.yml
++++ after/localization/english/nesnd_supply_l_english.yml
+@@ -1,15 +1,15 @@
+ l_english:
+- nesnd_supply_preparations:0 "通商与自筹"
+- nesnd_supply_preparations_reason:0 "南朝的盐粮、军械和银钱沿江河流动，内陆工坊与海上贸易早已相连。地方的军队要按时领饷，官署要有纸张，离乡的农民要在城中找到工作。杭州掌握中央军财和远洋航路，各府也有自己的工匠、商帮与交游。\n\n[ROOT.GetCountry.GetName]将清查现有生产，联络能够互通有无的邦国。经营这些联系，会影响我们在南朝变局中的余地；港口、工坊和田亩里的人们，也要靠这些往来维持日常生活。"
+- nesnd_supply_status_war:0 "#n 正在战争中。#!连续合格周数暂停并归零；请核查当前军需和市场。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_inputs:0 "#n 关键投入尚未达标。#!纸、工具、小武器须无本国短缺且涨价不超过50%；东洲另检查硬木。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_jobs:0 "#n 实际配员尚未达标。#!湖广检查大学与军营，四川检查工具厂及铁矿或伐木场，广西检查纸厂与伐木场，东洲检查港口与官署：至少各有一座配员达到75%且无投入短缺。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_livelihood:0 "#n Living conditions are not yet adequate.#! National workforce unemployment must be at most #v 12%#!; states with at least #v 50,000#! workers must remain at or below #v 20%#!. No famine or local grain shortage, and grain price increase at most #v 25%#!.\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_diplomacy:0 "尚未确定筹办办法。可向邦国派使，或选择自行筹办。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_stable:0 "#p 当前四项条件均已达标。#!保持12个连续周后，可结束本轮筹办。市场改变或任一条件失效会重新计时。\n$nesnd_supply_rules_link$"
+- nesnd_supply_readiness_bar:0 "当前达标项目"
++ nesnd_supply_preparations:0 "Fragile Trade"
++ nesnd_supply_preparations_reason:0 "Wu’s ships carry grain and raw materials between distant ports. The workshops, garrisons and schools of the southern countries have come to depend on that traffic. A closed harbour or a detained cargo can now take livelihoods away far beyond its own shores.\n\nWhile Nanjing and Hangzhou dispute the dynasty, merchants consider their own future. [ROOT.GetCountry.GetName] needs paper for its offices, supplies for its soldiers and employment for its people. We must renew our trading connections and sustain the production at home that gives us room to act."
++ nesnd_supply_status_war:0 "#n War has reached the trading routes.#! Requisitions and disrupted shipping have broken the previous period of stability.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_inputs:0 "#n Workshops and garrisons lack reliable supplies.#! Paper, tools and arms are straining their budgets.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_jobs:0 "#n Workshops and offices still lack workers.#! More posts must be filled to sustain their business.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_livelihood:0 "#n Livelihoods remain insecure.#! Unemployment, grain prices and famine threaten commercial life.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_diplomacy:0 "Trading arrangements remain undecided. Send envoys abroad or rely on merchants at home.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_stable:0 "#p Supplies, employment and livelihoods are becoming stable.#! Sustain them for a season to establish lasting trade.\n$nesnd_supply_rules_link$"
++ nesnd_supply_readiness_bar:0 "Foundations of trade"
+  nesnd_supply_readiness_bar_desc:0 "#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 4#!"
+- nesnd_supply_continuity_bar:0 "连续合格周数"
++ nesnd_supply_continuity_bar:0 "Weeks of stable trade"
+  nesnd_supply_continuity_bar_desc:0 "#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 12#!"
+  nesnd_supply_invite_desc:0 "遣使与对方商议商人往来和采购联络，听取他们的条件。"
+  nesnd_supply_invitation_tt:0 "#v 7日#!后向对方发出邀请，请求30日后失效；派使占用#n 15外交影响力#!，持续6个月。对方可以拒绝。"
+@@ -49,12 +49,12 @@
+  nesnd_supply_invite_cne:0 "遣使中华帝国"
+  nesnd_supply_invite_fra:0 "遣使法兰西"
+  nesnd_supply_hus_preparations:0 "共和国的商路"
+- nesnd_supply_hus_preparations_reason:0 "东洲诸邦在反抗吴人的战争中结为共和国，商人、船主与移民把沿海城镇连成一体。北朝的盟约和共同市场又为这片土地带来了新的生意，工坊采购原料，港口运出本国的产品。\n\n如今南朝的争端牵动着海外商路。[ROOT.GetCountry.GetName]需要查清哪些生产掌握在自己手中，哪些货物仍由远方运来。留在北朝市场经营，或争取独立的贸易安排，都要让官署、工坊和普通家庭能够维持生计。"
++ nesnd_supply_hus_preparations_reason:0 "Immigrants and merchant ships built the republic’s coastal towns. War against Wu brought its states together; the northern alliance opened further markets. Work in the harbours, production in the mills and provincial revenue now depend upon these connections.\n\nNews of the southern dispute crosses the ocean. Whether we continue in the shared market or arrange our own trade, production and livelihoods at home must endure."
+  nesnd_supply_finish_shared:0 "继续经营共同市场"
+  nesnd_supply_finish_shared_desc:0 "确认在当前共同市场内的供应与民生准备。保留现有市场和盟约，首次验收获得2年的通商筹办成效。"
+  nesnd_supply_finish_autonomous:0 "完成自主市场检验"
+  nesnd_supply_finish_autonomous_desc:0 "在本国掌管的市场内，连续12周维持全部条件。首次验收获得2年的通商筹办成效。"
+- nesnd_supply_status_bankruptcy:0 "#n 破产状态尚未解除。#!连续合格周数归零，待财政恢复后继续检验。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_bankruptcy:0 "#n The treasury is bankrupt.#! Finances must recover before a new period of stability can be established.\n$nesnd_supply_rules_link$"
+  nesnd_supply_workforce_ready_tt:0 "National workforce unemployment is at most #v 12%#!, and at most #v 20%#! in states with at least #v 50,000#! workers."
+- nesnd_supply_rules_link:0 "#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_supply_rules Employment statistics and requirements#!#!"
++ nesnd_supply_rules_link:0 "#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_supply_rules Supplies and livelihoods#!#!"
+  nesnd_supply_rules:0 "#bold Latest refresh#!\nUnemployed workforce: #v [Country.MakeScope.Var('nesnd_supply_unemployed').GetValue|0] / [Country.MakeScope.Var('nesnd_supply_workforce').GetValue|0]#! (#v [Country.MakeScope.Var('nesnd_supply_unemployment').GetValue|%1]#!)\nStates beyond the local unemployment limit: #v [Country.MakeScope.Var('nesnd_supply_critical_states').GetValue|0]#!\n\n#bold Employment requirements#!\nUnemployed workers may be at most #v 12%#! of the national workforce. In states with at least #v 50,000#! workers, the limit is #v 20%#!. Subsistence workers count as employed. Statistics refresh weekly and when arrangements change; completion checks current conditions.\n\nEach required school, barracks, workshop or administrative facility must have at least one building staffed to #v 75%#! without input shortages. Check its hiring tooltip for [concept_pop_qualifications], [concept_building_wage] and [concept_good]. Education, suitable vacancies and market supplies can support occupational transitions. There must be no famine, no local grain shortage and no more than a #v 25%#! grain price increase.\n\nContinue in the shared market, approach a foreign partner, or arrange purchases domestically. All four requirements must hold for #v 12 consecutive weeks#!; war, market changes or failed requirements restart the count."
+--- before/localization/simp_chinese/nesnd_supply_l_simp_chinese.yml
++++ after/localization/simp_chinese/nesnd_supply_l_simp_chinese.yml
+@@ -1,36 +1,36 @@
+ l_simp_chinese:
+- nesnd_supply_preparations:0 "通商与自筹"
+- nesnd_supply_preparations_reason:0 "南朝的盐粮、军械和银钱沿江河流动，内陆工坊与海上贸易早已相连。地方的军队要按时领饷，官署要有纸张，离乡的农民要在城中找到工作。杭州掌握中央军财和远洋航路，各府也有自己的工匠、商帮与交游。\n\n[ROOT.GetCountry.GetName]将清查现有生产，联络能够互通有无的邦国。经营这些联系，会影响我们在南朝变局中的余地；港口、工坊和田亩里的人们，也要靠这些往来维持日常生活。"
+- nesnd_supply_status_war:0 "#n 正在战争中。#!连续合格周数暂停并归零；请核查当前军需和市场。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_inputs:0 "#n 关键投入尚未达标。#!纸、工具、小武器须无本国短缺且涨价不超过50%；东洲另检查硬木。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_jobs:0 "#n 实际配员尚未达标。#!湖广检查大学与军营，四川检查工具厂及铁矿或伐木场，广西检查纸厂与伐木场，东洲检查港口与官署：至少各有一座配员达到75%且无投入短缺。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_livelihood:0 "#n 民生条件尚未达标。#!全国无业劳动力至多#v 12%#!；劳动力至少#v 5万#!的州至多#v 20%#!。全国无饥荒，粮食无本国短缺且涨价不超过#v 25%#!。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_diplomacy:0 "尚未确定筹办办法。可向邦国派使，或选择自行筹办。\n$nesnd_supply_rules_link$"
+- nesnd_supply_status_stable:0 "#p 当前四项条件均已达标。#!保持12个连续周后，可结束本轮筹办。市场改变或任一条件失效会重新计时。\n$nesnd_supply_rules_link$"
+- nesnd_supply_readiness_bar:0 "当前达标项目"
++ nesnd_supply_preparations:0 "脆弱的贸易"
++ nesnd_supply_preparations_reason:0 "吴人的海船把南洋的稻米、远方的木材和各国的货物运进南朝，内陆的工坊、营伍与学堂也早已依赖这些往来。旧日各府可以据地自守，今日停下一处港口、扣住一批货物，损失便会沿着商路传到许多人的家中。\n\n南京与杭州争论帝统的时候，商人同样在衡量自己的前程。[ROOT.GetCountry.GetName]的官署需要纸张，军队需要粮饷与军械，工坊中的人需要靠工钱生活。我们当与愿意往来的诸邦重续交游，也须让本国的生产支撑起这些生计。商路能否经受朝争，将决定我们届时有多少余力。"
++ nesnd_supply_status_war:0 "#n 战火已波及商路。#!军需征发与航运受阻，先前的安定未能延续。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_inputs:0 "#n 工坊与营伍所需的货物供给不济。#!纸张、工具与军械的价钱正在牵动各处开支。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_jobs:0 "#n 工坊与官署尚缺人手。#!现有职位仍须招足工人，才能维持生产与日常事务。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_livelihood:0 "#n 各州的生计仍未安定。#!失业者难以谋生，粮价与饥馑也在拖累商贸往来。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_diplomacy:0 "各方商路尚待议定。可以遣使联络邻邦，也可以交由本国商帮筹措。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_stable:0 "#p 货源、工场与民生渐趋安定。#!若能维持一季，我们便有把握将这些往来长久经营下去。\n$nesnd_supply_rules_link$"
++ nesnd_supply_readiness_bar:0 "通商根基"
+  nesnd_supply_readiness_bar_desc:0 "#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 4#!"
+- nesnd_supply_continuity_bar:0 "连续合格周数"
++ nesnd_supply_continuity_bar:0 "商路安定周数"
+  nesnd_supply_continuity_bar_desc:0 "#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 12#!"
+  nesnd_supply_invite_desc:0 "遣使与对方商议商人往来和采购联络，听取他们的条件。"
+  nesnd_supply_invitation_tt:0 "#v 7日#!后向对方发出邀请，请求30日后失效；派使占用#n 15外交影响力#!，持续6个月。对方可以拒绝。"
+- nesnd_supply_accept_tt:0 "建立通商联络，双方关系提高#p 10#!。商品采购仍按当前市场、贸易和运输结算。"
+- nesnd_supply_self:0 "自行筹办"
+- nesnd_supply_self_desc:0 "由本国商人和官署安排采购，撤回待答邀请并结束现有联络。继续检查实际市场供给。"
++ nesnd_supply_accept_tt:0 "建立通商联络，双方关系#p ＋10#!。商人仍通过各自市场与航路买卖货物。"
++ nesnd_supply_self:0 "依靠本国商帮"
++ nesnd_supply_self_desc:0 "请本国商人自行安排采购，召回此前遣出的使者。"
+  nesnd_supply_end_contact:0 "结束通商联络"
+- nesnd_supply_end_contact_desc:0 "召回负责此次筹办的联络人员，另行寻找伙伴。"
+- nesnd_supply_end_contact_tt:0 "清除本次联络和连续周数；已有的正式外交条约继续按原生规则生效。"
++ nesnd_supply_end_contact_desc:0 "召回驻外使者，另寻能够长久往来的商路。"
++ nesnd_supply_end_contact_tt:0 "结束此次联络，连续安定周数归零；已经签署的正式条约仍依约履行。"
+  nesnd_supply_trade:0 "商议互惠贸易条约"
+- nesnd_supply_trade_desc:0 "向联络伙伴提出双向贸易优惠。两国须具备签约资格；共同市场中的从属成员不能单独签署这一条款。"
+- nesnd_supply_trade_request_tt:0 "7日后请求对方签署双向贸易优惠条约，约束期2年。条款、维护与退出使用原生外交规则，对方可以拒绝。"
+- nesnd_supply_finish:0 "结束本轮筹办"
+- nesnd_supply_finish_desc:0 "四项条件连续合格12周后，公布本轮筹办结果。首次完成获得“通商筹办成效”，持续2年。"
+- nesnd_supply_dismiss:0 "中止筹办"
+- nesnd_supply_dismiss_desc:0 "关闭本项目，清除联络与准备计时。派使的既有外交成本继续至期限届满，可在决议中恢复项目。"
++ nesnd_supply_trade_desc:0 "把两国商人的往来写入盟约，互予贸易优惠。"
++ nesnd_supply_trade_request_tt:0 "#v 7日#!后向对方提出互惠贸易条约，约束期#v 2年#!；对方可接受或拒绝。"
++ nesnd_supply_finish:0 "商路渐稳"
++ nesnd_supply_finish_desc:0 "货源、工场、民生与通商安排连续安定#v 12周#!后，首次获得持续#v 2年#!的通商收益。"
++ nesnd_supply_dismiss:0 "暂缓经营"
++ nesnd_supply_dismiss_desc:0 "先收回使团，日后再议商路。既有派使开支仍须支付至期满。"
+  nesnd_supply_envoys:0 "驻外通商使团"
+- nesnd_supply_verified:0 "通商筹办成效"
++ nesnd_supply_verified:0 "商路渐通"
+  nesnd_supply_treaty:0 "互惠通商约"
+- nesnd_supply_resume:0 "恢复通商筹办"
+- nesnd_supply_resume_desc:0 "重新核查当前市场、地方配员和民生，另行安排对外联络。"
++ nesnd_supply_resume:0 "重续商路"
++ nesnd_supply_resume_desc:0 "重新联络商人，整顿货源与雇工，恢复与各邦的往来。"
+  nesnd_supply.1.t:0 "商人先行"
+  nesnd_supply.1.d:0 "[SCOPE.sCountry('nesnd_supply_requester').GetName]的使者带来了商人的请托。他们希望在两国之间保留采购联络，互通纸张、木材和工坊的供货消息，使商人在局势变化时仍能找到交易的门路。\n\n这些往来会扩大我们的交游，也需要官员接待和商人经营。[ROOT.GetCountry.GetName]可以派人接洽，听取对方的采购安排。"
+  nesnd_supply.1.a:0 "请他们来谈。"
+@@ -40,7 +40,7 @@
+  nesnd_supply.2.a:0 "准予签署。"
+  nesnd_supply.2.b:0 "此约尚须再议。"
+  nesnd_supply.3.t:0 "商路与生计"
+- nesnd_supply.3.d:0 "[ROOT.GetCountry.GetName]已经完成本轮通商筹办。官署、军队与工坊所需的关键商品保持供应，受检的学校、营伍或生产设施已有人员任事，各州的生计也经受了这一季的检验。\n\n商人熟悉了往来的门路，官员掌握了本国生产的长短。此后的建设与交涉，可以从这些实际经验继续做起。"
++ nesnd_supply.3.d:0 "过去一季，[ROOT.GetCountry.GetName]的工坊与营伍有货可购，学堂、官署和厂场也逐渐补齐了人手。商人重新熟悉了往来的门路，各州的人们得以靠生产与买卖维持生活。\n\n海内外的朝争还在继续。那些装着货物驶离码头的船只，为我们留下了继续经营的本钱。"
+  nesnd_supply.3.a:0 "让商旅继续往来。"
+  nesnd_supply_invite_hna:0 "遣使湖广"
+  nesnd_supply_invite_sih:0 "遣使四川"
+@@ -49,12 +49,12 @@
+  nesnd_supply_invite_cne:0 "遣使中华帝国"
+  nesnd_supply_invite_fra:0 "遣使法兰西"
+  nesnd_supply_hus_preparations:0 "共和国的商路"
+- nesnd_supply_hus_preparations_reason:0 "东洲诸邦在反抗吴人的战争中结为共和国，商人、船主与移民把沿海城镇连成一体。北朝的盟约和共同市场又为这片土地带来了新的生意，工坊采购原料，港口运出本国的产品。\n\n如今南朝的争端牵动着海外商路。[ROOT.GetCountry.GetName]需要查清哪些生产掌握在自己手中，哪些货物仍由远方运来。留在北朝市场经营，或争取独立的贸易安排，都要让官署、工坊和普通家庭能够维持生计。"
++ nesnd_supply_hus_preparations_reason:0 "共和国的沿海城镇因移民与商船而兴盛。反抗吴人的战争使东洲诸邦走到一起，北朝的盟约又为我们的货物打开了新的销路。港口中的装卸、工坊中的生产和各州的赋税，已经随着这些往来紧紧相连。\n\n如今南朝争位的消息越海而来。商人要打听货源，船主忧心航路，工人仍等着每周的工钱。无论继续经营共同市场，还是由共和国另定通商安排，我们都须先稳住自己的生产与生计。"
+  nesnd_supply_finish_shared:0 "继续经营共同市场"
+- nesnd_supply_finish_shared_desc:0 "确认在当前共同市场内的供应与民生准备。保留现有市场和盟约，首次验收获得2年的通商筹办成效。"
+- nesnd_supply_finish_autonomous:0 "完成自主市场检验"
+- nesnd_supply_finish_autonomous_desc:0 "在本国掌管的市场内，连续12周维持全部条件。首次验收获得2年的通商筹办成效。"
+- nesnd_supply_status_bankruptcy:0 "#n 破产状态尚未解除。#!连续合格周数归零，待财政恢复后继续检验。\n$nesnd_supply_rules_link$"
++ nesnd_supply_finish_shared_desc:0 "继续在共同市场中经营，保留既有盟约。货源与生计连续安定#v 12周#!，首次获得#v 2年#!通商收益。"
++ nesnd_supply_finish_autonomous:0 "自掌商路"
++ nesnd_supply_finish_autonomous_desc:0 "由本国掌管市场，安排对外通商。各项条件连续维持#v 12周#!，首次获得#v 2年#!通商收益。"
++ nesnd_supply_status_bankruptcy:0 "#n 国库已经破产。#!官署须重整财政，商路的安定也要重新积累。\n$nesnd_supply_rules_link$"
+  nesnd_supply_workforce_ready_tt:0 "全国无业劳动力占比至多#v 12%#!，且劳动力至少#v 5万#!的州失业占比至多#v 20%#!。"
+- nesnd_supply_rules_link:0 "#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_supply_rules 就业统计与筹办条件#!#!"
+- nesnd_supply_rules:0 "#bold 最近一次刷新#!\n无业劳动力：#v [Country.MakeScope.Var('nesnd_supply_unemployed').GetValue|0] / [Country.MakeScope.Var('nesnd_supply_workforce').GetValue|0]#!（#v [Country.MakeScope.Var('nesnd_supply_unemployment').GetValue|%1]#!）\n超过地方失业界线的州：#v [Country.MakeScope.Var('nesnd_supply_critical_states').GetValue|0]#!\n\n#bold 就业条件#!\n全国无业劳动力占总劳动力至多#v 12%#!；劳动力至少#v 5万#!的州，无业份额至多#v 20%#!。自给农业从业者计为有业。统计在每周及筹办办法改变时更新，完成按钮按当时状况重新检查。\n\n所需大学、军营、工坊或行政设施须分别有一座配员至少#v 75%#!且无投入短缺。查看建筑的招聘提示，核对[concept_pop_qualifications]、[concept_building_wage]和[concept_good]；适合的教育、岗位和市场供给可帮助转岗。全国无饥荒，粮食无本国短缺且涨价不超过#v 25%#!。\n\n可在共同市场内经营、联络其他邦国或自行筹办。四项条件连续合格#v 12周#!后完成；战争、市场改变或条件失效会重新计时。"
++ nesnd_supply_rules_link:0 "#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_supply_rules 货源与生计#!#!"
++ nesnd_supply_rules:0 "#bold 货源#!\n纸张、工具、小武器无本国短缺，价格涨幅不超过#v 50%#!；东洲另需硬木。\n\n#bold 工场与人手#!\n所需建筑各有至少一座雇员达到#v 75%#!，且不缺生产投入。湖广为大学与军营；四川为工具厂，以及铁矿或伐木场；广西为纸厂与伐木场；东洲为港口与官署。招工困难时可查看[concept_pop_qualifications]、[concept_building_wage]与原料供应。\n\n#bold 生计#!\n全国无业劳动力不超过#v 12%#!；劳动力至少#v 5万#!的州不超过#v 20%#!。自给农民属于有业人口。全国无饥荒，粮食无本国短缺且涨价不超过#v 25%#!。\n现有无业劳动力：#v [Country.MakeScope.Var('nesnd_supply_unemployed').GetValue|0] / [Country.MakeScope.Var('nesnd_supply_workforce').GetValue|0]#!（#v [Country.MakeScope.Var('nesnd_supply_unemployment').GetValue|%1]#!）；超过地方失业界线的州：#v [Country.MakeScope.Var('nesnd_supply_critical_states').GetValue|0]#!。\n\n#bold 商路安定#!\n确定联络伙伴或依靠本国商帮，四项条件连续维持#v 12周#!。战争、破产、市场改变或任一条件不满足，连续周数重新计算。"--- before/localization/english/replace/zzzzzzzzzz_nesnd_court_followup_l_english.yml
++++ after/localization/english/replace/zzzzzzzzzz_nesnd_court_followup_l_english.yml
+@@ -24,6 +24,6 @@
+  nesnd_south_inconclusive_order:0 "Confirm the Status Quo"
+  nesnd_south_inconclusive_order_desc:0 "After two years of deadlock without a southern confrontation, conclude negotiations on the basis of existing sovereignty, borders and treaties."
+  nesnd_south_inconclusive_result_tt:0 "End the current Ming–Wu crisis. Retain existing territory, governments and actual treaties. No subjects are annexed and neither faction receives victory rewards."
+- nesnd_south_pressure_detail_tt:0 "#bold Succession Pressure#!: #v [Country.MakeScope.ScriptValue('nesnd_south_pressure_value')|1] / 100#!\nCurrent monthly net change: #v [Country.MakeScope.ScriptValue('nesnd_south_monthly_pressure_value')|1]#!. While the East–West conflict journal is active, pressure rises by #n 1#! monthly, or #n 0.4#! with the Federal Compact modifier. This growth stops when that journal ends.\n\nAfter one month of commission expenses, each qualifying monthly review reduces pressure by #p 3#!. Signing or renewing accords has no immediate pressure effect. Peace requires pressure below #v 60#! and the remaining route and observation conditions."
++ nesnd_south_pressure_detail_tt:0 "#bold Succession pressure#!: #v [Country.MakeScope.ScriptValue('nesnd_south_pressure_value')|1] / 100#!\nCurrent monthly net change: #v [Country.MakeScope.ScriptValue('nesnd_south_monthly_pressure_value')|1]#!. Base growth is #n +3#!, or #n +2.5#! under the Federal Compact modifier. Valid reconciliation separately subtracts #p 3#!.\n\nThe attempt on Chen can occur from #v July 1837#! above #v 24#! pressure, and is initiated by #v early 1838#! if still unresolved and Chen is present. Death adds #n 25#!, wounding #n 10#!, and escape #n 3#!.\n\nAfter the case, early accession is available at #v 70#! pressure. Automatic accession requires #v 100#! and Zheng Qin’s departure, or the #v early-1839#! crisis deadline. An unresolved crisis reaches #v 100#! at that deadline and proceeds to accession, provincial replies and confrontation. Completed peaceful settlements are preserved."
+  character_role_nesnd_ming_patron:0 "Court Protector"
+  character_role_nesnd_ming_patron_desc:0 "A former local ruler supporting the provisional Ming court."
+--- before/localization/english/replace/zzzzzzzzz_nesnd_south_feedback_l_english.yml
++++ after/localization/english/replace/zzzzzzzzz_nesnd_south_feedback_l_english.yml
+@@ -0,0 +1,6 @@
++l_english:
++ nesnd_chen_case_concluded_tt:0 "The attempt on Chen has been resolved, or he is no longer in this country; a pending death event must finish first."
++ nesnd_supply_status_jobs_hna:0 "#n The garrisons and schools lack personnel.#! Xiangfan must fill its barracks and university posts.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_jobs_sih:0 "#n Sichuan’s workshops lack workers.#! The tooling industry and its iron or timber suppliers cannot yet maintain production.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_jobs_gng:0 "#n Logging camps and paper mills lack workers.#! Guangxi must put these establishments into regular operation.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_jobs_hus:0 "#n Ports and offices lack personnel.#! The republic needs both cargo handlers and staffed administrations.\n$nesnd_supply_rules_link$"
+--- before/localization/english/replace/zzzzzzz_nesnd_ming_court_l_english.yml
++++ after/localization/english/replace/zzzzzzz_nesnd_ming_court_l_english.yml
+@@ -19,7 +19,7 @@
+  nesnd_ming_court_country:0 "Ming Court in Exile"
+  nesnd_ming_interregnum_country:0 "Ming Provisional Government"
+  nesnd_ming_court_adj:0 "Ming"
+- nesnd_south_succession_board_reason:0 "The Zhu emperor retains the dynastic title. The Zheng house commands the central forces, revenues and principal overseas colonial network. The coastal provinces sustain its military and commercial power, while the regional governments maintain their own forces and industries within the common market. A change of dynasty will reopen questions of appointments, tribute, military obligations and overseas trade."
++ nesnd_south_succession_board_reason:0 "Does the southern realm belong to the Zhu emperors, or to the Zheng rulers whose fleets and armies have carried it across the seas? Edicts travel from Nanjing to the same countries reached by Hangzhou’s merchants, tax collectors and warships. Centuries of Ming legitimacy now stand against the achievements and resources of Wu.\n\nXiangfan remains loyal to the Ming. Sichuan debates the reforms of the Southern Court, while overseas governors and Japanese lords consider the money, land and troops a new dynasty might demand. Their answers will soon have to be sustained by their own forces."
+  nesnd_ming_court_transfer_effect_tt:0 "You now govern [ROOT.GetCountry.GetName]. Its forces, treasury, land and taxation systems continue to operate. If a legitimate monarch accompanies the court, monarchy is adopted and that same character takes the throne."
+  nesnd_ming_court.12.t:0 "The Route Is Uncertain"
+  nesnd_ming_court.12.d:0 "The provinces have broken with the centre, but the government expected to receive the court has changed. The escort cannot follow its planned route. Officials remaining in the capital can still exchange messages while confronting the orders of the new dynasty."
+--- before/localization/english/replace/zzzzzz_nesnd_concept_clarity_l_english.yml
++++ after/localization/english/replace/zzzzzz_nesnd_concept_clarity_l_english.yml
+@@ -3,4 +3,4 @@
+  nesnd_land_rules:0 "#bold Current statistics#!\nUnemployed share of workforce: #v [Country.MakeScope.Var('nesnd_reform_unemployment').GetValue|%1]#!\nWorkforce in starving households: #v [Country.MakeScope.Var('nesnd_reform_starving').GetValue|%1]#!\nWorkforce-weighted household SoL: #v [Country.MakeScope.Var('nesnd_reform_sol').GetValue|1]#!\nPopulation-weighted market access: #v [Country.MakeScope.Var('nesnd_reform_access').GetValue|%1]#!\n\n#bold Healthy month#!\nPeasant proprietorship, commercialized or collectivized agriculture; schools level 2 and 48% literacy; unemployment at most 6%, starvation at most 8%, SoL at least 11, market access at least 85%; nonnegative bureaucracy, peace and no active [concept_bankruptcy] penalty. Social security level 2 with SoL 12 permits unemployment up to 12%.\n\nHealthy months add 2 progress and reduce disorder by 1. With land rights, unemployment at most 10%, starvation at most 12%, SoL 10.5, access 80%, schools level 1 and no active [concept_bankruptcy] penalty, partial progress adds 0.5 monthly. Completion requires 100 progress, twelve consecutive healthy months and disorder below 50. Completion within 48 months with 24 healthy months and disorder below 30 earns an additional reward.\n\nThese monthly indicators cover currently owned reform states, including Shengjing, Outer Manchuria and Amur. National and state unemployment use unemployed workforce divided by total workforce. Market access is weighted by state population; SoL and starvation by pop workforce. Subsistence peasants count as employed.\n\n#bold Regional living conditions#!\nA state with at least 500,000 people interrupts consolidation if unemployment exceeds 20%, starving workforce exceeds 25%, or severely starving workforce exceeds 10% for six consecutive months. Actual employment, basic goods supply, relief or industrial adjustment must bring it below these severe-hardship thresholds."
+  nesnd_ten_status_bankruptcy:0 "An active [concept_bankruptcy] penalty interrupts consolidation."
+  nesnd_ten_conditions_bar_detail:0 "Unemployed workforce: #v [Country.MakeScope.Var('nesnd_ten_unemployment').GetValue|%1]#!\nHungry workforce: #v [Country.MakeScope.Var('nesnd_ten_starving').GetValue|%1]#!\nEmployed and hungry: #v [Country.MakeScope.Var('nesnd_ten_working_hungry').GetValue|%1]#!\nWorkforce-weighted living standards: #v [Country.MakeScope.Var('nesnd_ten_sol').GetValue|1]#!\nMarket access: #v [Country.MakeScope.Var('nesnd_ten_access').GetValue|%1]#!\n\nTargets: unemployment <=12%; hunger <=25% and living standards >=6.5; access >=85%; peace and no active [concept_bankruptcy] penalty. Workforce shares are refreshed monthly. Subsistence farmers are employed."
+- nesnd_supply_status_bankruptcy:0 "An active [concept_bankruptcy] penalty resets the qualifying weeks. Checks resume after this modifier expires.\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_bankruptcy:0 "#n The treasury is bankrupt.#! Finances must recover before a new period of stability can be established.\n$nesnd_supply_rules_link$"--- before/localization/english/replace/zzzzzz_nesnd_succession_board_l_english.yml
++++ after/localization/english/replace/zzzzzz_nesnd_succession_board_l_english.yml
+@@ -1,9 +1,9 @@
+ l_english:
+  je_group_nesnd_succession:0 "The Southern Polities"
+  nesnd_south_succession_board:0 "The Southern Polities"
+- nesnd_south_succession_board_reason:0 "Hangzhou commands the central forces, revenues and ocean routes; Nanjing retains the seals of the Zhu emperor. Provincial tributes enter a common treasury while ships serve distant shores. The generals of Huguang and Sichuan, the governors of Nanyang and the rulers of Japan will answer the court in their own names."
+- nesnd_south_succession_board_status:0 "Positions and national conditions update weekly. A declaration records public alignment; entry into war, independence and territorial transfers follow their diplomatic and event procedures."
+- nesnd_board_table_heading:0 "Positions and national conditions"
++ nesnd_south_succession_board_reason:0 "Does the southern realm belong to the Zhu emperors, or to the Zheng rulers whose fleets and armies have carried it across the seas? Edicts travel from Nanjing to the same countries reached by Hangzhou’s merchants, tax collectors and warships. Centuries of Ming legitimacy now stand against the achievements and resources of Wu.\n\nXiangfan remains loyal to the Ming. Sichuan debates the reforms of the Southern Court, while overseas governors and Japanese lords consider the money, land and troops a new dynasty might demand. Their answers will soon have to be sustained by their own forces."
++ nesnd_south_succession_board_status:0 "The provinces exchange envoys and prepare their forces. The dispute over the dynasty increasingly turns upon money and arms."
++ nesnd_board_table_heading:0 "The Southern Countries"
+  nesnd_board_country_metrics:0 "Regular #v [Country.GetRegularBattalions|0]#! / Conscriptable #v [Country.CalcConscriptableBattalions|0]#!　Ships #v [Country.GetNumShips|0]#!\nFixed balance @money![Country.MakeScope.Var('nesnd_board_fixed_balance').GetValue|D+]　[concept_bureaucracy] [Country.MakeScope.Var('nesnd_board_bureaucracy').GetValue|D+]\n[concept_legitimacy] #v [Country.MakeScope.Var('nesnd_board_legitimacy').GetValue|0]#!　Army projection #v [Country.MakeScope.Var('nesnd_board_army_projection').GetValue|1]#!\nSupply preparations: [Country.GetCustom('nesnd_board_supply_loc')]"
+  nesnd_board_supply_known:0 "#v [Country.MakeScope.Var('nesnd_board_supply_score').GetValue|0] / 4#! conditions"
+  nesnd_board_supply_unknown:0 "Not assessed"
+@@ -12,7 +12,7 @@
+  nesnd_board_stance_wu:0 "Wu"
+  nesnd_board_stance_neutral:0 "Neutral"
+  nesnd_board_stance_autonomy:0 "Autonomy"
+- nesnd_board_stance_available_tt:0 "The southern crisis is unsettled, civil war has not begun, and the declaration cooldown has expired."
++ nesnd_board_stance_available_tt:0 "The civil war has not begun and the six-month stance cooldown has ended. Xiangfan is committed to the Ming; the central court cannot choose neutrality or autonomy."
+  nesnd_board_stance_effect_tt:0 "Record our position in the register. It can be changed again after #v 6 months#!. A member with an active accord also withdraws consent to unexecuted integration or cession; relations with the centre #n −15#!."
+  nesnd_board_choose_ming:0 "Support the Ming Court"
+  nesnd_board_choose_ming_desc:0 "Recognize the Zhu emperor and approach governments willing to preserve the court."
+--- before/localization/english/replace/zzzzz_nesnd_south_journal_ui_l_english.yml
++++ after/localization/english/replace/zzzzz_nesnd_south_journal_ui_l_english.yml
+@@ -1,13 +1,13 @@
+ l_english:
+  nesnd_south_unsettled_tt:0 "The southern political crisis has not yet been settled."
+- nesnd_south_qin_departed_tt:0 "#v Zheng Qin#! has died or left this country."
++ nesnd_south_qin_departed_tt:0 "Zheng Qin has died or left the country, or the crisis has reached #v 1839#!."
+  nesnd_south_conflicts_failure_tt:0 "Either condition is met:\nThis country owns fewer than #v 2#! [Concept('concept_state','States')];\nor each of Sichuan, Hunan, the Philippines, the Nanyang United Provinces and Yuannan has ceased to exist or ceased to be our direct [concept_subject]."
+  nesnd_south_settled_tt:0 "The southern political crisis has been settled."
+  nesnd_south_wu_established_tt:0 "The Wu dynasty has been established."
+  nesnd_south_monarchy_ended_tt:0 "This country has abolished #v monarchy#!."
+  nesnd_south_pressure_bar_desc:0 "Succession Pressure: #v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!  #tooltippable #tooltip:[JournalEntry.GetCountry.GetTooltipTag],nesnd_south_pressure_detail_tt Changes#!#!"
+  nesnd_south_compact_bar_desc:0 "Federal Compact: #v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 100#!  #tooltippable #tooltip:[JournalEntry.GetCountry.GetTooltipTag],nesnd_south_compact_detail_tt Conditions#!#!"
+- nesnd_south_pressure_detail_tt:0 "#bold Succession Pressure#!: #v [Country.MakeScope.ScriptValue('nesnd_south_pressure_value')|1] / 100#!\nCurrent monthly increase: #n [Country.MakeScope.ScriptValue('nesnd_south_monthly_pressure_value')|1]#!. Normally #n +1#!; #n +0.4#! while the Federal Compact modifier is active.\n\nEach renewal reduces pressure by #p 8#!, to a minimum of #v 0#!. At #v 70#! pressure, succession can be initiated early. At #v 100#!, succession begins if Zheng Qin has died or left this country and the southern crisis is still unsettled."
++ nesnd_south_pressure_detail_tt:0 "#bold Succession pressure#!: #v [Country.MakeScope.ScriptValue('nesnd_south_pressure_value')|1] / 100#!\nCurrent monthly net change: #v [Country.MakeScope.ScriptValue('nesnd_south_monthly_pressure_value')|1]#!. Base growth is #n +3#!, or #n +2.5#! under the Federal Compact modifier. Valid reconciliation separately subtracts #p 3#!.\n\nThe attempt on Chen can occur from #v July 1837#! above #v 24#! pressure, and is initiated by #v early 1838#! if still unresolved and Chen is present. Death adds #n 25#!, wounding #n 10#!, and escape #n 3#!.\n\nAfter the case, early accession is available at #v 70#! pressure. Automatic accession requires #v 100#! and Zheng Qin’s departure, or the #v early-1839#! crisis deadline. An unresolved crisis reaches #v 100#! at that deadline and proceeds to accession, provincial replies and confrontation. Completed peaceful settlements are preserved."
+  nesnd_south_compact_detail_tt:0 "#bold Federal Compact#!: #v [Country.MakeScope.ScriptValue('nesnd_south_compact_value')|0] / 100#!\nThere is no automatic monthly progress. Each renewal adds #p 20#! progress and reduces succession pressure by #p 8#!, with an #v 18-month#! cooldown.\n\nRenewal requires nonnegative [concept_bureaucracy], at least #v 50#! [concept_legitimacy], and the active Wu–Ming controversy. The Federal Compact modifier lasts #v 10 years#!; while active, pressure rises by #n 0.4#! per month. Reaching #v 100#! compact progress preserves the Zhu dynasty and ends this crisis."
+  nesnd_south_rules:0 "$nesnd_south_pressure_detail_tt$\n\n$nesnd_south_compact_detail_tt$"
+- nesnd_south_status_succession:0 "#bold Zheng Qin is no longer in this country#!: at #v 100#! pressure, a succession edict is issued and the regional governments respond.\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules Succession and compact rules#!#!"
++ nesnd_south_status_succession:0 "The dispute can no longer be deferred. Once Chen’s case is resolved and pressure reaches #v 100#!, the accession edict will be sent to the provinces.\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules The succession dispute#!#!"--- before/localization/english/replace/zz_nesnd_crisis_l_english.yml
++++ after/localization/english/replace/zz_nesnd_crisis_l_english.yml
+@@ -142,8 +142,8 @@
+  nesnd_land_disorder_bar:0 "地方失序"
+  nesnd_land_disorder_bar_desc:0 "地方失序：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
+  nesnd_huguang_preparations_status:0 "完成书院、粮运、退伍安置三项准备，每项#v 30#!点；达到#v 90#!点后获得#v 10年#!地方防卫收益。"
+- nesnd_south_status_qin:0 "#bold 吴王在世#!：易代压力继续积累。可重订邦国契约、加强首辅护卫，或在压力达到#v 70#!时提前推动易代。\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules 易代与契约规则#!#!"
+- nesnd_south_status_succession:0 "#bold 吴府继承已定#!：压力达到#v 100#!时颁布易代诏书，各府随后表态。\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules 易代与契约规则#!#!"
++ nesnd_south_status_qin:0 "The Prince of Wu still restrains his advisers, but the dispute between Nanjing and Hangzhou grows sharper.\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules The succession dispute#!#!"
++ nesnd_south_status_succession:0 "The dispute can no longer be deferred. Once Chen’s case is resolved and pressure reaches #v 100#!, the accession edict will be sent to the provinces.\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules The succession dispute#!#!"
+  nesnd_south_rules:0 "#bold 易代压力#!每月#n +1#!；邦国契约修正生效时每月#n +0.4#!。压力达到#v 100#!且郑钦已去世后进入易代事件。\n#bold 邦国契约#!每次议定增加#p 20#!点，并降低易代压力#p 8#!点，冷却#v 18个月#!。契约达到#v 100#!后保全明朝。"
+  nesnd_south_pressure_bar:0 "易代压力"
+  nesnd_south_pressure_bar_desc:0 "易代压力：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
+--- before/localization/simp_chinese/replace/zzzzzzzzzz_nesnd_court_followup_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zzzzzzzzzz_nesnd_court_followup_l_simp_chinese.yml
+@@ -24,6 +24,6 @@
+  nesnd_south_inconclusive_order:0 "议定现状"
+  nesnd_south_inconclusive_order_desc:0 "在持续两年没有形成靖难对峙的僵局后，以现有主权、疆界与条约结束这次易代交涉。"
+  nesnd_south_inconclusive_result_tt:0 "结束本轮明吴危机。保留各国当前领土、政体及实际条约；不吞并附属国，不颁发明廷或吴朝胜利奖励。"
+- nesnd_south_pressure_detail_tt:0 "#bold 易代压力#!：#v [Country.MakeScope.ScriptValue('nesnd_south_pressure_value')|1] / 100#!\n按当前条件，每月净变化#v [Country.MakeScope.ScriptValue('nesnd_south_monthly_pressure_value')|1]#!点。东西之争日志存续时，通常每月#n +1#!，邦国契约修正生效时#n +0.4#!；该日志结束后，这一增长停止。\n\n完成一个月会办经费承担后，每次符合条件的月度履约使压力#p −3#!。签署或续签盟书不直接改变压力。和平结局须压力低于#v 60#!；其余条件和观察期限见相应日志。"
++ nesnd_south_pressure_detail_tt:0 "#bold 易代压力#!：#v [Country.MakeScope.ScriptValue('nesnd_south_pressure_value')|1] / 100#!\n当前每月净变化：#v [Country.MakeScope.ScriptValue('nesnd_south_monthly_pressure_value')|1]#!。通常每月#n ＋3#!，邦国契约修正生效时#n ＋2.5#!；有效和解进程另每月减少#p 3#!。\n\n#bold 首辅案#!\n自#v 1837年7月#!起，压力超过#v 24#!时可能发生；至#v 1838年初#!，尚未结案且陈东阳仍在本国，就会进入刺杀与护卫分支。死亡使压力#n ＋25#!，受伤#n ＋10#!，脱险#n ＋3#!。\n\n案件结算后，压力达到#v 70#!可主动提前易代；达到#v 100#!且郑钦已离去，自动推进。至#v 1839年初#!仍未解决的朝争会达到#v 100#!，不再等待郑钦自然死亡，继而进入易代、诸国答复与内战交涉。已经达成的和平结局不受影响。"
+  character_role_nesnd_ming_patron:0 "行在保护人"
+  character_role_nesnd_ming_patron_desc:0 "为明廷行在提供地方军政支持的旧任领袖。"
+--- before/localization/simp_chinese/replace/zzzzzzzzz_nesnd_south_feedback_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zzzzzzzzz_nesnd_south_feedback_l_simp_chinese.yml
+@@ -0,0 +1,6 @@
++l_simp_chinese:
++ nesnd_chen_case_concluded_tt:0 "首辅案已经结案，或陈东阳已不在本国；遇刺死亡的后续事件须先完成。"
++ nesnd_supply_status_jobs_hna:0 "#n 营伍与学堂尚缺人手。#!襄樊的军营须补足兵额，大学也要延揽足够的教员与职员。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_jobs_sih:0 "#n 川中工场尚缺人手。#!工具厂及供应铁料或木材的产业，还不能维持应有的生产。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_jobs_gng:0 "#n 林场与纸厂尚缺人手。#!广西的木材与纸张要运往各处，先须让这些厂场正常开工。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_jobs_hus:0 "#n 港口与官署尚缺人手。#!共和国的船货需要装卸，各州的税赋与公事也不能无人办理。\n$nesnd_supply_rules_link$"
+--- before/localization/simp_chinese/replace/zzzzzzzzz_nesnd_south_peace_gates_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zzzzzzzzz_nesnd_south_peace_gates_l_simp_chinese.yml
+@@ -2,4 +2,4 @@
+  nesnd_south_peace_stability_tt:0 "易代压力低于#v 60#!，且没有[concept_bankruptcy]恢复期修正。"
+  nesnd_south_ming_supply_tt:0 "中央所在市场的纸张、工具和轻武器价格均不高于基价#v 50%#!，本国没有对应的本地短缺；这些商品可以通过共同市场供应。"
+  nesnd_south_peace_b1_note:0 "和平须在易代压力#v 60#!以下，并已结束[concept_bankruptcy]恢复期。明廷另须满足纸张、工具、轻武器的市场供应条件。"
+- nesnd_south_politics_summary:0 "#bold 宗盟分组#!：大陆#v 50#!、海外#v 30#!、日本#v 20#!；按各组有效代表权重归一。外国援助者不计宗盟票。\n#bold 共同基础#!：财政行政#v [GetGlobalVariable('nesnd_south_finance').GetValue|1]/20#!，政府合作#v [GetGlobalVariable('nesnd_south_domestic').GetValue|1]/20#!。合法朱氏君主提供统绪#v 20#!；吴方军务投射提供#v [GetGlobalVariable('nesnd_south_military').GetValue|1]/20#!。\n#bold 有效盟书#!：拥明#v [GetGlobalVariable('nesnd_south_ming_accord').GetValue|1]%#!；拥吴#v [GetGlobalVariable('nesnd_south_wu_accord').GetValue|1]%#!。本国路线已通过连续月度核验#v [GetGlobalVariable('nesnd_south_peace_months').GetValue|0]/12#!次；实际履约期另须满#v 12个月#!，条件每周复核。\n和平须本国明确选定路线、政治分至少#v 85#!且领先#v 20#!。明廷须盟书#v 75%#!及两大陆核心签署；吴朝须#v 80%#!、全部拟整合国与日本方面同意、真实海军配员和维护达标。\n$nesnd_south_peace_b1_note$"
++ nesnd_south_politics_summary:0 "#bold 南京与杭州#!\n财政与行政 #v [GetGlobalVariable('nesnd_south_finance').GetValue|1]/20#!　朝臣合作 #v [GetGlobalVariable('nesnd_south_domestic').GetValue|1]/20#!\n朱氏统绪 #v 20#!　吴方军力 #v [GetGlobalVariable('nesnd_south_military').GetValue|1]/20#!\n#bold 诸府盟书#!　奉明 #v [GetGlobalVariable('nesnd_south_ming_accord').GetValue|1]%#!　拥吴 #v [GetGlobalVariable('nesnd_south_wu_accord').GetValue|1]%#!\n盟约连续履行 #v [GetGlobalVariable('nesnd_south_peace_months').GetValue|0]/12#!个月。\n\n$nesnd_south_compact_detail_tt$"--- before/localization/simp_chinese/replace/zzzzzzzz_nesnd_south_politics_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zzzzzzzz_nesnd_south_politics_l_simp_chinese.yml
+@@ -4,8 +4,8 @@
+  nesnd_board_ming_bar_desc:0 "统绪支持：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
+  nesnd_board_wu_bar_desc:0 "新政基础：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
+  nesnd_board_compact_bar_name:0 "诸府盟约"
+- nesnd_board_compact_bar_desc:0 "中央所选路线的有效盟书：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
+- nesnd_south_politics_summary:0 "#bold 宗盟分组#!：大陆#v 50#!、海外#v 30#!、日本#v 20#!；按各组有效代表权重归一。外国援助者不计宗盟票。\n#bold 共同基础#!：财政行政#v [GetGlobalVariable('nesnd_south_finance').GetValue|1]/20#!，政府合作#v [GetGlobalVariable('nesnd_south_domestic').GetValue|1]/20#!。合法朱氏君主提供统绪#v 20#!；吴方军务投射提供#v [GetGlobalVariable('nesnd_south_military').GetValue|1]/20#!。\n#bold 有效盟书#!：拥明#v [GetGlobalVariable('nesnd_south_ming_accord').GetValue|1]%#!；拥吴#v [GetGlobalVariable('nesnd_south_wu_accord').GetValue|1]%#!。本国路线已通过连续月度核验#v [GetGlobalVariable('nesnd_south_peace_months').GetValue|0]/12#!次；实际履约期另须满#v 12个月#!，条件每周复核。\n和平须本国明确选定路线、政治分至少#v 85#!且领先#v 20#!。明廷须盟书#v 75%#!及两大陆核心签署；吴朝须#v 80%#!、全部拟整合国与日本方面同意、真实海军配员和维护达标。"
++ nesnd_board_compact_bar_desc:0 "诸府承诺：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
++ nesnd_south_politics_summary:0 "#bold 南京与杭州#!\n财政与行政 #v [GetGlobalVariable('nesnd_south_finance').GetValue|1]/20#!　朝臣合作 #v [GetGlobalVariable('nesnd_south_domestic').GetValue|1]/20#!\n朱氏统绪 #v 20#!　吴方军力 #v [GetGlobalVariable('nesnd_south_military').GetValue|1]/20#!\n#bold 诸府盟书#!　奉明 #v [GetGlobalVariable('nesnd_south_ming_accord').GetValue|1]%#!　拥吴 #v [GetGlobalVariable('nesnd_south_wu_accord').GetValue|1]%#!\n盟约连续履行 #v [GetGlobalVariable('nesnd_south_peace_months').GetValue|0]/12#!个月。\n\n$nesnd_south_compact_detail_tt$"
+  nesnd_south_offer_accord:0 "遣使议约"
+  nesnd_south_offer_accord_desc:0 "依照本国选定的路线，将朝廷与诸府的约章送交各国作答。"
+  nesnd_south_offer_available_tt:0 "选择拥明或拥吴，尚未决裂；本国未违约且不在战争中，邀请冷却结束，并有具备答复条件的帝国成员。"
+@@ -14,9 +14,9 @@
+  nesnd_south_leave_accord:0 "退出盟书"
+  nesnd_south_leave_accord_desc:0 "撤回本国的政治承诺，重新决定与朝廷的关系。"
+  nesnd_south_accord_leave_tt:0 "停止计入有效盟书，撤销尚未执行的整合或割地同意；与中央关系#n −15#!，换派冷却#v 6个月#!。"
+- nesnd_board_stance_effect_tt:0 "记录本国的新立场，撤回与之不符的既有盟书；#v 6个月#!内不能再次更改。 已签盟书的成员同时撤销尚未执行的整合或割地同意，与中央关系#n −15#!。"
++ nesnd_board_stance_effect_tt:0 "公开本国立场，#v 6个月#!内不再更改。撤回既有盟书时，尚未执行的并省或割地承诺一并作废，与中央关系#n −15#!。"
+  nesnd_south_retry_confrontation:0 "再提诸府交涉"
+- nesnd_south_retry_confrontation_desc:0 "此前外交程序未能建立对峙。按现存国家和反对联盟重新提出要求。"
++ nesnd_south_retry_confrontation_desc:0 "前次交涉未成，各府仍据地拥兵。再次召集使者，要求反对诸国作出答复。"
+  nesnd_south_accords.1.t:0 "诸府约章"
+  nesnd_south_accords.1.ming:0 "内阁将新编的盟书送到了[ROOT.GetCountry.GetName]。朱氏天子继续主持国政，各府保留自己的政府、领土和既有法制，以共同的朝廷协调诸邦事务。随文送来的还有一册任官与赋额的议事记录。来使要带回本国的正式答复，好让这些条款在日后的朝会上有据可循。"
+  nesnd_south_accords.1.integration:0 "郑氏的使者带来了改设州省的议案。参加新朝的大陆诸邦将交出中国范围内的辖地，由中央统一施政，原有田契、工坊和人口仍留在当地。地方官员须将各衙署的簿册逐项移交。使者要求在文书上写明同意的范围，署名用印以后，再由朝廷与各府共同等候改制。"
+@@ -47,8 +47,8 @@
+  nesnd_south_hasty_mobilization:0 "仓促奉调"
+  nesnd_south_peace_administration:0 "和平建制"
+  nesnd_south_new_province:0 "州省交接"
+- nesnd_south_ready_unknown:0 "军政筹备：尚未核定。"
++ nesnd_south_ready_unknown:0 "军政情形尚未报齐。"
+  nesnd_south_ready_known:0 "军政筹备 #v [Country.MakeScope.Var('nesnd_ready_total').GetValue|1]/100#!（财政[Country.MakeScope.Var('nesnd_ready_finance').GetValue|1]/20，军务[Country.MakeScope.Var('nesnd_ready_military').GetValue|1]/35，供给[Country.MakeScope.Var('nesnd_ready_supply').GetValue|0]/25，政府[Country.MakeScope.Var('nesnd_ready_domestic').GetValue|1]/20）\n水手 #v [Country.MakeScope.Var('nesnd_ready_actual_crew').GetValue|D]#!；配员达标舰 #v [Country.MakeScope.Var('nesnd_ready_ships_ready').GetValue|0]/[Country.MakeScope.Var('nesnd_ready_ships').GetValue|0]#!；海军投射 #v [Country.MakeScope.Var('nesnd_ready_naval_projection').GetValue|1]#!。"
+- nesnd_south_compact_detail_tt:0 "诸府盟约按对方真实接受且尚有效的承诺计算。大陆、海外、日本三组分别占#v 50/30/20#!权重，组内按约定代表权重归一。盟书有效#v 36个月#!；改宗主、改立场、交战或撤约都会重算。和平条件须连续满足#v 12个月#!，旧议约数值不会直接判定胜利。"
++ nesnd_south_compact_detail_tt:0 "#bold 诸府盟约#!\n大陆、海外与日本诸邦的承诺分别占#v 50%、30%、20%#!。盟书有效#v 36个月#!；改换立场、交战、改投宗主或撤约后，相应承诺失效。\n\n#bold 以盟约定天下#!\n所选一方的政治支持须达到#v 85#!，领先另一方#v 20#!，并连续履约#v 12个月#!。明廷须获#v 75%#!盟书及至少两个大陆核心邦国签署；吴方须获#v 80%#!盟书、拟并省诸国与日本割地各方同意，并备有合格舰队。已达成和解，朝争便告结束。"
+  nesnd_board_country_metrics:0 "常备营 #v [Country.GetRegularBattalions|0]#! / 可动员 #v [Country.CalcConscriptableBattalions|0]#!　舰船 #v [Country.GetNumShips|0]#!\n固定收支 @money![Country.MakeScope.Var('nesnd_board_fixed_balance').GetValue|D+]　[concept_bureaucracy] [Country.MakeScope.Var('nesnd_board_bureaucracy').GetValue|D+]\n[concept_legitimacy] #v [Country.MakeScope.Var('nesnd_board_legitimacy').GetValue|0]#!　陆军力量 #v [Country.MakeScope.Var('nesnd_board_army_projection').GetValue|1]#!\n供给准备：[Country.GetCustom('nesnd_board_supply_loc')]\n[Country.GetCustom('nesnd_south_ready_loc')]"
+  nesnd_south_failed_alignment:0 "失据之盟"
+--- before/localization/simp_chinese/replace/zzzzzzz_nesnd_ming_court_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zzzzzzz_nesnd_ming_court_l_simp_chinese.yml
+@@ -19,7 +19,7 @@
+  nesnd_ming_court_country:0 "大明行在"
+  nesnd_ming_interregnum_country:0 "大明监国政府"
+  nesnd_ming_court_adj:0 "明廷"
+- nesnd_south_succession_board_reason:0 "朱氏天子的帝统延续至今，郑氏已经掌握南朝的中央军队、财政和主要海外殖民网络。江浙、福建与江西的兵饷、货物流转维系着吴王的势力，各府也在共同市场中经营自己的军队和产业。名位更易的消息一旦传出，地方任官、赋额、军事义务和海外贸易都要重新议定。各国将为自己的政权和前途选择立场。"
++ nesnd_south_succession_board_reason:0 "南朝的天下，究竟是朱氏皇帝的天下，还是郑氏开拓出来的天下？南京的诏书遍传诸邦，杭州的商船、税吏与兵舰也遍至诸邦。三百年来奉明正朔的名义与百余年来吴国经营海陆的功业，终于被摆到了同一张案上。\n\n襄樊大营奉朱氏正朔，四川士人仍在争论南府的新政；南洋总督与日本诸侯，则盘算着改朝换代将向他们索取多少钱粮、土地和兵员。各国的札子陆续送到南京与杭州。待到奉表称臣不再足以两全，今日的主张便要由各自的军队承担。"
+  nesnd_ming_court_transfer_effect_tt:0 "你现在执掌[ROOT.GetCountry.GetName]。原有军队、财政、土地和税制继续运作；有合法君主随行时改行君主制，由同一人物主持行在。"
+  nesnd_ming_court.12.t:0 "去路未定"
+  nesnd_ming_court.12.d:0 "诸府已经与中央决裂，预定接驾的地方政府又发生了变故。护送队伍无法照原路启程。留在京中的官员仍能传递消息，也必须应付新朝发下的命令。"
+--- before/localization/simp_chinese/replace/zzzzzz_nesnd_concept_clarity_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zzzzzz_nesnd_concept_clarity_l_simp_chinese.yml
+@@ -3,4 +3,4 @@
+  nesnd_land_rules:0 "#bold 本月统计#!\n无业劳动力占比：#v [Country.MakeScope.Var('nesnd_reform_unemployment').GetValue|%1]#!\n劳动力家庭欠食份额：#v [Country.MakeScope.Var('nesnd_reform_starving').GetValue|%1]#!\n劳动力家庭[concept_sol]：#v [Country.MakeScope.Var('nesnd_reform_sol').GetValue|1]#!\n人口加权[concept_market_access]：#v [Country.MakeScope.Var('nesnd_reform_access').GetValue|%1]#!\n\n#bold 巩固条件#!\n自耕农、商业化农业或集体化农业制度；学校机构至少#v 2#!级，识字率至少#v 48%#!；无业劳动力占比至多#v 6%#!，欠食份额至多#v 8%#!，生活水平至少#v 11#!，市场接入至少#v 85%#!；行政非负、和平且未受[concept_bankruptcy]惩罚。社保至少#v 2#!级且生活水平达到#v 12#!时，失业上限为#v 12%#!。\n\n达标月份增加#p 2#!改革进度，减少#p 1#!失序。已落实地权制度、失业至多#v 10%#!、欠食至多#v 12%#!、生活水平至少#v 10.5#!、市场接入至少#v 80%#!、学校至少#v 1#!级且未受[concept_bankruptcy]惩罚时，可每月增加#p 0.5#!进度。完成需进度#v 100#!、连续#v 12#!个达标月及失序低于#v 50#!；四十八个月内完成、连续达标至少#v 24#!个月且失序低于#v 30#!，另获快速改革奖励。\n\n统计采本国拥有的改革地区，包含盛京、外东北与阿穆尔：失业按无业劳动力除以总劳动力；市场接入按州人口加权；生活水平与欠食按各人口群体劳动力加权，每月更新。自给农业从业者属于有业人口。全国与地方失业采用同一口径。\n\n#bold 地方民生底线#!\n人口至少#v 50万#!的州，若连续六个月无业劳动力占比超过#v 20%#!、欠食劳动力超过#v 25%#!或严重饥饿劳动力超过#v 10%#!，将中断巩固月份并增加失序。可用有资质的岗位、粮食与日用品供给、救济或产业转型改善当地状况；须实际降到上述严重困境线以内。"
+  nesnd_ten_status_bankruptcy:0 "国家仍受[concept_bankruptcy]惩罚，巩固月份已中断。"
+  nesnd_ten_conditions_bar_detail:0 "无业劳动力：#v [Country.MakeScope.Var('nesnd_ten_unemployment').GetValue|%1]#!\n欠食劳动力：#v [Country.MakeScope.Var('nesnd_ten_starving').GetValue|%1]#!\n其中在岗且欠食：#v [Country.MakeScope.Var('nesnd_ten_working_hungry').GetValue|%1]#!\n劳动力家庭[concept_sol]：#v [Country.MakeScope.Var('nesnd_ten_sol').GetValue|1]#!\n[concept_market_access]：#v [Country.MakeScope.Var('nesnd_ten_access').GetValue|%1]#!\n\n四项条件：无业至多#v 12%#!；欠食至多#v 25%#!且生活水平至少#v 6.5#!；接入至少#v 85%#!；和平且未受[concept_bankruptcy]惩罚。份额按丹那沙林本国州的劳动力计算，自给农属于有业人口，每月更新。"
+- nesnd_supply_status_bankruptcy:0 "#n [concept_bankruptcy]惩罚尚未结束。#!连续合格周数归零，待该修正到期后继续检验。\n$nesnd_supply_rules_link$"
++ nesnd_supply_status_bankruptcy:0 "#n 国库已经破产。#!官署须重整财政，商路的安定也要重新积累。\n$nesnd_supply_rules_link$"--- before/localization/simp_chinese/replace/zzzzzz_nesnd_succession_board_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zzzzzz_nesnd_succession_board_l_simp_chinese.yml
+@@ -1,38 +1,37 @@
+ l_simp_chinese:
+  je_group_nesnd_succession:0 "南朝诸国"
+  nesnd_south_succession_board:0 "南朝诸国"
+- nesnd_south_succession_board_reason:0 "杭州掌握军府、财赋和海上的商路，南京仍悬着朱氏天子的印玺。各府的贡赋汇入同一个国库，兵船却驶向不同的海岸。朝廷的盟书送出以后，湖广与四川的将帅、南洋的总督和日本的诸侯都将以自己的名义作答。"
+- nesnd_south_succession_board_status:0 "各国表态与军政情形每周更新。表态决定本国公开立场；正式参战、独立和领土转移仍由对应外交与事件决定。"
+- nesnd_board_table_heading:0 "各国立场与军政情形"
++ nesnd_south_succession_board_reason:0 "南朝的天下，究竟是朱氏皇帝的天下，还是郑氏开拓出来的天下？南京的诏书遍传诸邦，杭州的商船、税吏与兵舰也遍至诸邦。三百年来奉明正朔的名义与百余年来吴国经营海陆的功业，终于被摆到了同一张案上。\n\n襄樊大营奉朱氏正朔，四川士人仍在争论南府的新政；南洋总督与日本诸侯，则盘算着改朝换代将向他们索取多少钱粮、土地和兵员。各国的札子陆续送到南京与杭州。待到奉表称臣不再足以两全，今日的主张便要由各自的军队承担。"
++ nesnd_south_succession_board_status:0 "各府正在遣使问讯、整饬营伍。南朝的争论已渐渐变成兵财的较量。"
++ nesnd_board_table_heading:0 "诸国军政"
+  nesnd_board_country_metrics:0 "常备营 #v [Country.GetRegularBattalions|0]#! / 可动员 #v [Country.CalcConscriptableBattalions|0]#!　舰船 #v [Country.GetNumShips|0]#!\n固定收支 @money![Country.MakeScope.Var('nesnd_board_fixed_balance').GetValue|D+]　[concept_bureaucracy] [Country.MakeScope.Var('nesnd_board_bureaucracy').GetValue|D+]\n[concept_legitimacy] #v [Country.MakeScope.Var('nesnd_board_legitimacy').GetValue|0]#!　陆军力量 #v [Country.MakeScope.Var('nesnd_board_army_projection').GetValue|1]#!\n供给准备：[Country.GetCustom('nesnd_board_supply_loc')]"
+  nesnd_board_supply_known:0 "#v [Country.MakeScope.Var('nesnd_board_supply_score').GetValue|0] / 4#!项"
+- nesnd_board_supply_unknown:0 "未核定"
++ nesnd_board_supply_unknown:0 "商情未明"
+  nesnd_board_stance_unstated:0 "尚未表态"
+  nesnd_board_stance_ming:0 "拥明"
+  nesnd_board_stance_wu:0 "拥吴"
+  nesnd_board_stance_neutral:0 "中立"
+  nesnd_board_stance_autonomy:0 "自主"
+- nesnd_board_stance_available_tt:0 "南朝危机尚未结束，内战尚未爆发；本国的表态冷却已经结束。"
+- nesnd_board_stance_effect_tt:0 "将本国立场记入诸国名册。#v 6个月#!内不能再次更改。 已签盟书的成员同时撤销尚未执行的整合或割地同意，与中央关系#n −15#!。"
++ nesnd_board_stance_available_tt:0 "内战尚未爆发，本国不受固定立场约束，距上次改换立场已满#v 6个月#!。襄樊大营固定拥明；朝廷不能选择中立或自主。"
++ nesnd_board_stance_effect_tt:0 "公开本国立场，#v 6个月#!内不再更改。撤回既有盟书时，尚未执行的并省或割地承诺一并作废，与中央关系#n −15#!。"
+  nesnd_board_choose_ming:0 "拥护明廷"
+- nesnd_board_choose_ming_desc:0 "承认朱氏天子，联络愿意保全明廷的各府。"
++ nesnd_board_choose_ming_desc:0 "朱氏帝统历经诸侯分争，仍是南朝诸邦共同奉行的正朔。遣使南京，表明本国奉明的主张。"
+  nesnd_board_choose_wu:0 "支持郑氏"
+- nesnd_board_choose_wu_desc:0 "支持郑氏建立新朝，议定本国在新秩序中的地位。"
++ nesnd_board_choose_wu_desc:0 "郑氏经营海陆、掌握军财已久。遣使杭州，支持吴王以今日的功业改定天下的名位。"
+  nesnd_board_choose_neutral:0 "守持中立"
+- nesnd_board_choose_neutral_desc:0 "暂不为两朝争位出兵，保留既有通商与外交关系。"
++ nesnd_board_choose_neutral_desc:0 "南京与杭州各有主张，本国的军队暂且留守境内，商旅仍照旧往来。"
+  nesnd_board_choose_autonomy:0 "争取自主"
+- nesnd_board_choose_autonomy_desc:0 "以本国的政权、市场与防务安排为谈判目标。"
++ nesnd_board_choose_autonomy_desc:0 "朝廷将议改制，本国也当自掌财赋、官员与防务。以此向两方陈明条件。"
+  nesnd_board_ming_bar_name:0 "拥明表态"
+  nesnd_board_wu_bar_name:0 "拥吴表态"
+  nesnd_board_ming_bar_desc:0 "已登记诸国中拥明者：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1]%#!"
+  nesnd_board_wu_bar_desc:0 "已登记诸国中拥吴者：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1]%#!"
+  nesnd_board_compact_bar_name:0 "诸府盟约"
+  nesnd_board_pressure_bar_name:0 "兵戈之势"
+- nesnd_board_compact_bar_desc:0 "中央议约进度：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 100#!"
++ nesnd_board_compact_bar_desc:0 "诸府承诺：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
+  nesnd_board_pressure_bar_desc:0 "易代压力：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
+  nesnd_federal_compact_button_outcome_tt:0 "中央议约进度#p +20#!，易代压力#p −8#!。#v 18个月#!后可再次订约。"
+- nesnd_south_compact_detail_tt:0 "#bold 中央议约进度#!：#v [Country.MakeScope.ScriptValue('nesnd_south_compact_value')|0] / 100#!\n每次重订增加#p 20#!点，降低易代压力#p 8#!点，冷却#v 18个月#!。\n订约须[concept_bureaucracy]非负、[concept_legitimacy]至少#v 50#!且吴明论战仍在进行。邦国契约修正持续#v 10年#!，生效时压力每月增加#n 0.4#!点。和平结局由各方承诺与政局条件共同决定。"
+-
++ nesnd_south_compact_detail_tt:0 "#bold 诸府盟约#!\n大陆、海外与日本诸邦的承诺分别占#v 50%、30%、20%#!。盟书有效#v 36个月#!；改换立场、交战、改投宗主或撤约后，相应承诺失效。\n\n#bold 以盟约定天下#!\n所选一方的政治支持须达到#v 85#!，领先另一方#v 20#!，并连续履约#v 12个月#!。明廷须获#v 75%#!盟书及至少两个大陆核心邦国签署；吴方须获#v 80%#!盟书、拟并省诸国与日本割地各方同意，并备有合格舰队。已达成和解，朝争便告结束。"
+  nesnd_board_not_ming_tt:0 "本国尚未公开拥护明廷。"
+  nesnd_board_not_wu_tt:0 "本国尚未公开支持郑氏。"
+  nesnd_board_not_neutral_tt:0 "本国尚未宣布中立。"
+--- before/localization/simp_chinese/replace/zzzzz_nesnd_south_journal_ui_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zzzzz_nesnd_south_journal_ui_l_simp_chinese.yml
+@@ -1,13 +1,13 @@
+ l_simp_chinese:
+  nesnd_south_unsettled_tt:0 "南方政局尚未完成结算。"
+- nesnd_south_qin_departed_tt:0 "#v 郑钦#!已去世或离开本国。"
++ nesnd_south_qin_departed_tt:0 "郑钦已去世或离开本国，或朝争已延续至#v 1839年#!。"
+  nesnd_south_conflicts_failure_tt:0 "以下任一情况发生：\n本国拥有的[Concept('concept_state','州')]不足#v 2#!个；\n或四川、湖南、菲律宾、南洋联省和远南五邦均已不再是本国的直属[Concept('concept_subject','附属国')]（包括已经灭亡的邦国）。"
+  nesnd_south_settled_tt:0 "南方政局已经完成结算。"
+  nesnd_south_wu_established_tt:0 "吴朝已经建立。"
+  nesnd_south_monarchy_ended_tt:0 "本国已经废除#v 君主制#!。"
+  nesnd_south_pressure_bar_desc:0 "易代压力：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!　#tooltippable #tooltip:[JournalEntry.GetCountry.GetTooltipTag],nesnd_south_pressure_detail_tt 变化规则#!#!"
+  nesnd_south_compact_bar_desc:0 "邦国契约：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 100#!　#tooltippable #tooltip:[JournalEntry.GetCountry.GetTooltipTag],nesnd_south_compact_detail_tt 订约条件#!#!"
+- nesnd_south_pressure_detail_tt:0 "#bold 易代压力#!：#v [Country.MakeScope.ScriptValue('nesnd_south_pressure_value')|1] / 100#!\n当前每月增加#n [Country.MakeScope.ScriptValue('nesnd_south_monthly_pressure_value')|1]#!点。通常每月#n +1#!；邦国契约修正生效期间每月#n +0.4#!。\n\n每次重订契约降低压力#p 8#!点，最低降至#v 0#!。压力达到#v 70#!可提前推动易代；达到#v 100#!，且郑钦已去世或离开本国、南方政局尚未完成结算时，进入易代事件。"
+- nesnd_south_compact_detail_tt:0 "#bold 邦国契约#!：#v [Country.MakeScope.ScriptValue('nesnd_south_compact_value')|0] / 100#!\n契约进度不按月自动增长。每次重订增加#p 20#!点，并降低易代压力#p 8#!点，冷却#v 18个月#!。\n\n订约须[concept_bureaucracy]非负、[concept_legitimacy]至少#v 50#!且吴明论战仍在进行。邦国契约修正持续#v 10年#!，生效时压力每月增加#n 0.4#!点。契约进度达到#v 100#!后保留朱明国号，结束这场危机。"
++ nesnd_south_pressure_detail_tt:0 "#bold 易代压力#!：#v [Country.MakeScope.ScriptValue('nesnd_south_pressure_value')|1] / 100#!\n当前每月净变化：#v [Country.MakeScope.ScriptValue('nesnd_south_monthly_pressure_value')|1]#!。通常每月#n ＋3#!，邦国契约修正生效时#n ＋2.5#!；有效和解进程另每月减少#p 3#!。\n\n#bold 首辅案#!\n自#v 1837年7月#!起，压力超过#v 24#!时可能发生；至#v 1838年初#!，尚未结案且陈东阳仍在本国，就会进入刺杀与护卫分支。死亡使压力#n ＋25#!，受伤#n ＋10#!，脱险#n ＋3#!。\n\n案件结算后，压力达到#v 70#!可主动提前易代；达到#v 100#!且郑钦已离去，自动推进。至#v 1839年初#!仍未解决的朝争会达到#v 100#!，不再等待郑钦自然死亡，继而进入易代、诸国答复与内战交涉。已经达成的和平结局不受影响。"
++ nesnd_south_compact_detail_tt:0 "#bold 诸府盟约#!\n大陆、海外与日本诸邦的承诺分别占#v 50%、30%、20%#!。盟书有效#v 36个月#!；改换立场、交战、改投宗主或撤约后，相应承诺失效。\n\n#bold 以盟约定天下#!\n所选一方的政治支持须达到#v 85#!，领先另一方#v 20#!，并连续履约#v 12个月#!。明廷须获#v 75%#!盟书及至少两个大陆核心邦国签署；吴方须获#v 80%#!盟书、拟并省诸国与日本割地各方同意，并备有合格舰队。已达成和解，朝争便告结束。"
+  nesnd_south_rules:0 "$nesnd_south_pressure_detail_tt$\n\n$nesnd_south_compact_detail_tt$"
+- nesnd_south_status_succession:0 "#bold 郑钦已不在本国#!：易代压力达到#v 100#!时颁布易代诏书，各府随后表态。\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules 易代与契约规则#!#!"
++ nesnd_south_status_succession:0 "南府的易代之议已不能再拖。首辅案结算、压力达到#v 100#!后，诏书将送往各府，等待诸国答复。\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules 朝争进展#!#!"--- before/localization/simp_chinese/replace/zz_nesnd_crisis_l_simp_chinese.yml
++++ after/localization/simp_chinese/replace/zz_nesnd_crisis_l_simp_chinese.yml
+@@ -142,8 +142,8 @@
+  nesnd_land_disorder_bar:0 "地方失序"
+  nesnd_land_disorder_bar_desc:0 "地方失序：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
+  nesnd_huguang_preparations_status:0 "完成书院、粮运、退伍安置三项准备，每项#v 30#!点；达到#v 90#!点后获得#v 10年#!地方防卫收益。"
+- nesnd_south_status_qin:0 "#bold 吴王在世#!：易代压力继续积累。可重订邦国契约、加强首辅护卫，或在压力达到#v 70#!时提前推动易代。\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules 易代与契约规则#!#!"
+- nesnd_south_status_succession:0 "#bold 吴府继承已定#!：压力达到#v 100#!时颁布易代诏书，各府随后表态。\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules 易代与契约规则#!#!"
++ nesnd_south_status_qin:0 "吴王仍在约束近臣的易代之议，南京与杭州的争论却一日紧过一日。\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules 朝争进展#!#!"
++ nesnd_south_status_succession:0 "南府的易代之议已不能再拖。首辅案结算、压力达到#v 100#!后，诏书将送往各府，等待诸国答复。\n#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],nesnd_south_rules 朝争进展#!#!"
+  nesnd_south_rules:0 "#bold 易代压力#!每月#n +1#!；邦国契约修正生效时每月#n +0.4#!。压力达到#v 100#!且郑钦已去世后进入易代事件。\n#bold 邦国契约#!每次议定增加#p 20#!点，并降低易代压力#p 8#!点，冷却#v 18个月#!。契约达到#v 100#!后保全明朝。"
+  nesnd_south_pressure_bar:0 "易代压力"
+  nesnd_south_pressure_bar_desc:0 "易代压力：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!"
