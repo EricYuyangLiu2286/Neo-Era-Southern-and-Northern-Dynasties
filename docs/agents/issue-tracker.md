@@ -1,35 +1,40 @@
 # Issue tracker: Local Markdown
 
-本项目的任务与规格使用 `.scratch/` 下的 Markdown 文件。
+本项目继续使用本地 Markdown 管理任务。GitHub 用于源码与版本保存；目前不自动创建 GitHub Issues、PR 请求队列或外部评论。
 
-## 文件约定
+## 位置与权威记录
 
-- 每项功能一个目录：`.scratch/<feature-slug>/`。
-- 规格：`.scratch/<feature-slug>/spec.md`。
-- 实施任务：`.scratch/<feature-slug>/issues/<NN>-<slug>.md`，
-  从 `01` 编号，每个任务单独一个文件。
-- 普通任务的分诊状态写在文件顶部附近的 `Status:` 行，
-  名称见 `triage-labels.md`。
-- 讨论记录追加到文件末尾的 `## Comments` 下。
+- 每项工作一个目录：`.scratch/<effort>/`；入口为 `map.md`。
+- 新规格为 `spec.md`。已有 WORK 规格与计划只建立链接，保留原编号及正文。
+- 实施任务分别存放在 `issues/<NN>-<slug>.md`，从 `01` 编号。
+- 当前工作入口：[DEBUG 收口与交付](../../.scratch/debug-release/map.md)。
+- 已有整体范围和批次要求分别由 [原始范围账](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/12-scope-ledger.md>) 与 [集中修复计划](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/40-batched-debug-and-delivery.md>)承载；当前进度、差异和新证据从执行索引到具体任务追踪，不复制另一套详细计划。
+- 工具、备份、报告、原生日志和存档放 WORK；任务中记录绝对路径、版本/候选 SHA 和覆盖范围。
 
-## 技能操作
+## 实施任务
 
-技能要求“发布到任务跟踪器”时，按上述约定创建文件。
-技能要求“获取相关任务”时，读取用户指定的文件；
-仅给出编号时，先在对应功能目录定位。
+顶部字段：
 
-## Wayfinding
+- `Record: implementation`。
+- `Category: bug|enhancement`，只选一个。
+- `Status:` 使用 [五种分诊状态](triage-labels.md)，只选一个。
+- `Execution: open|claimed|blocked|completed|rejected`；认领时先写 `Assignee:`，阻塞时写原因，完成/拒绝时记录结果。
+- `Blocked by: NN, NN` 引用本目录任务；`none` 表示无前置。前置完成才解除执行依赖。
+- `Validation: NOT_RUN|STATIC_PASS|ENGINE_PARTIAL|ENGINE_PASS|NOT_APPLICABLE`，附 `Evidence:` 链接。
 
-`wayfinder` 使用以下布局和执行状态：
+`completed` 仅表示该任务声明的交付与检查完成，不能外推整个 MOD。文档任务可用 `NOT_APPLICABLE` 标明无游戏行为；游戏任务的 `ENGINE_PASS` 必须绑定实际场景、候选 SHA、游戏/依赖版本与原始证据。部分通过用 `ENGINE_PARTIAL` 并列未覆盖项；`ready-for-agent` 只说明可实施。
+讨论追加到 `## Comments`，最终交付记入 `## Result`。仅由规划分析产生的 bug 线索，先记未核验，不伪称已复现。
 
-- 总图：`.scratch/<effort>/map.md`，
-  包含 Notes、Decisions-so-far、Fog。
-- 子任务：`.scratch/<effort>/issues/NN-<slug>.md`，
-  正文写待解决的问题。
-- `Type:` 为 `research`、`prototype`、`grilling` 或 `task`。
-- `Blocked by: NN, NN` 记录依赖；
-  所列任务全部为 `resolved` 后解除阻塞。
-- 从未完成、未领取且无阻塞的任务中，按编号选择最前一项。
-- 开始工作前写入 `Status: claimed`。
-- 完成后在 `## Answer` 下追加答案，写入 `Status: resolved`，
-  并向总图的 Decisions-so-far 追加结论摘要与任务链接。
+技能要求“发布到任务跟踪器”时按上述位置建文件；要求“获取任务”时按路径或当前 effort 编号读取。使用 triage 技能时保留其 AI 分诊标注及类别/状态要求。
+
+## Wayfinding operations
+
+默认 wayfinder 图用于决策；经用户明确授权执行的图可在 Notes 中声明该例外。执行索引中的 implementation 任务与 decision 任务依 `Record` 分开判断。
+
+- 地图：`.scratch/<effort>/map.md`，包含 Destination、Notes、Decisions-so-far、Not yet specified、Out of scope；图只存索引与结论摘要。
+- 决策子任务：`issues/NN-<slug>.md`，顶部 `Record: decision`、`Type: research|prototype|grilling|task`；正文 `## Question`。
+- 决策状态为 `Status: open|claimed|resolved|closed-out-of-scope`；不使用五种 triage 状态，也不附 implementation 类别。
+- 初始 `open` 且 `Assignee: none`。领取前写 `claimed` 和实际代理/人工身份；释放领取恢复 open 并说明原因。
+- `Blocked by:` 所列决策全部 resolved 后，从 open、无阻塞、无人认领的子任务按编号选择。
+- 解决时追加 `## Answer`、状态改 resolved，并向地图 Decisions-so-far 追加摘要及链接。resolved 表示问题得到回答，不证明实施或游戏验收。
+- 移出范围时写 closed-out-of-scope 及原因，将链接放地图 Out of scope；不删除已有记录。

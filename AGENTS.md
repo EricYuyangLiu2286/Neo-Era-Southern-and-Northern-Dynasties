@@ -9,6 +9,8 @@
 
 ## Agent skills
 
+使用工程技能进行诊断、规划、实现、审查或版本交付前，先读 `docs/agents/engineering-skills.md`。恢复本轮工作时读 `.scratch/debug-release/map.md`。
+
 ### Issue tracker
 
 创建、读取或更新任务时，使用本地 Markdown；先读 `docs/agents/issue-tracker.md`。
