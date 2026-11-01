@@ -1,0 +1,87 @@
+﻿nesnd_land_survey = { name = nesnd_land_survey desc = nesnd_land_survey_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_land_survey_requirements  has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } bureaucracy > 0 NOT = { has_modifier = nesnd_land_survey_cost }  } }
+        ai_chance = { value = 20 } effect = {
+ custom_tooltip = nesnd_land_survey_outcome_tt
+ change_variable = { name = cne_landreform_completion_tracker add = 8 } change_variable = { name = cne_landreform_failure_tracker add = 4 } add_modifier = { name = nesnd_land_survey_cost months = 24 } 
+    nesnd_refresh_land_display = yes
+}
+    }
+
+nesnd_land_review = { name = nesnd_land_review desc = nesnd_land_review_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_land_review_requirements  has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } var:cne_landreform_failure_tracker >= 15 NOT = { has_modifier = nesnd_land_appeals }  } }
+        ai_chance = { value = 35 } effect = {
+ custom_tooltip = nesnd_land_review_outcome_tt
+ change_variable = { name = cne_landreform_completion_tracker add = -3 } change_variable = { name = cne_landreform_failure_tracker add = -8 } clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 } clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 } add_modifier = { name = nesnd_land_appeals months = 12 } 
+    nesnd_refresh_land_display = yes
+}
+    }
+
+nesnd_land_military = { name = nesnd_land_military desc = nesnd_land_military_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_land_military_requirements  has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } bureaucracy > 0 var:cne_landreform_failure_tracker < 50 NOT = { has_variable = nesnd_land_military_audit }  } }
+        ai_chance = { value = 10 } effect = {
+ custom_tooltip = nesnd_land_military_outcome_tt
+ change_variable = { name = cne_landreform_completion_tracker add = 10 } change_variable = { name = cne_landreform_failure_tracker add = 10 } set_variable = nesnd_land_military_audit add_modifier = { name = nesnd_army_audit months = 36 } 
+    nesnd_refresh_land_display = yes
+}
+    }
+
+nesnd_land_suspend = { name = nesnd_land_suspend desc = nesnd_land_suspend_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_land_suspend_requirements  has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done }  } }
+        ai_chance = { value = 1 } effect = { trigger_event = { id = nesnd_crisis.32 popup = yes } 
+    nesnd_refresh_land_display = yes
+}
+    }
+
+nesnd_hna_academy_button = { name = nesnd_hna_academy_button desc = nesnd_hna_academy_button_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_hna_academy_button_requirements  NOT = { has_variable = nesnd_hna_academy_built } bureaucracy >= 0  } }
+        ai_chance = { value = 35 } effect = {
+ custom_tooltip = nesnd_hna_academy_button_outcome_tt
+ set_variable = nesnd_hna_academy_built change_variable = { name = nesnd_hna_preparation add = 30 } add_modifier = { name = nesnd_hna_academy months = 120 } }
+    }
+
+nesnd_hna_supply_button = { name = nesnd_hna_supply_button desc = nesnd_hna_supply_button_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_hna_supply_button_requirements  NOT = { has_variable = nesnd_hna_supply_built } NOT = { has_modifier = declared_bankruptcy }  } }
+        ai_chance = { value = 35 } effect = {
+ custom_tooltip = nesnd_hna_supply_button_outcome_tt
+ set_variable = nesnd_hna_supply_built change_variable = { name = nesnd_hna_preparation add = 30 } add_modifier = { name = nesnd_hna_supply months = 120 } }
+    }
+
+nesnd_hna_veterans_button = { name = nesnd_hna_veterans_button desc = nesnd_hna_veterans_button_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_hna_veterans_button_requirements  NOT = { has_variable = nesnd_hna_veterans_built } bureaucracy >= 0  } }
+        ai_chance = { value = 35 } effect = {
+ custom_tooltip = nesnd_hna_veterans_button_outcome_tt
+ set_variable = nesnd_hna_veterans_built change_variable = { name = nesnd_hna_preparation add = 30 } add_modifier = { name = nesnd_hna_veterans months = 120 } }
+    }
+
+nesnd_federal_compact_button = { name = nesnd_federal_compact_button desc = nesnd_federal_compact_button_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_federal_compact_button_requirements  has_journal_entry = ce_usm_conflicts_within bureaucracy >= 0 government_legitimacy >= 50 NOT = { has_variable = nesnd_compact_cooldown }  } }
+        ai_chance = { value = 8 } effect = {
+ custom_tooltip = nesnd_federal_compact_button_outcome_tt
+ if = { limit = { NOT = { has_variable = nesnd_compact_progress } } set_variable = { name = nesnd_compact_progress value = 0 } }
+    change_variable = { name = nesnd_compact_progress add = 20 }
+    change_variable = { name = usm_conflicts_within_tracker add = -8 }
+    clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+    set_variable = { name = nesnd_compact_cooldown months = 18 }
+    add_modifier = { name = nesnd_federal_compact months = 120 }
+    if = { limit = { var:nesnd_compact_progress >= 100 }
+        set_variable = nesnd_ming_preserved
+        set_global_variable = nesnd_south_settled
+        trigger_event = { id = nesnd_crisis.10 popup = yes }
+    } 
+    nesnd_refresh_south_display = yes
+}
+    }
+
+nesnd_protect_chen_button = { name = nesnd_protect_chen_button desc = nesnd_protect_chen_button_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_protect_chen_button_requirements  NOT = { has_variable = nesnd_chen_protected } any_scope_character = { has_template = USM_chen_dongyang is_character_alive = yes }  } }
+        ai_chance = { value = 25 } effect = {
+ custom_tooltip = nesnd_protect_chen_button_outcome_tt
+ set_variable = nesnd_chen_protected add_modifier = { name = nesnd_court_protection months = 120 } }
+    }
+
+nesnd_early_accession = { name = nesnd_early_accession desc = nesnd_early_accession_desc
+        visible = { always = yes } possible = { custom_tooltip = { text = nesnd_early_accession_requirements  var:usm_conflicts_within_tracker >= 70 NOT = { has_variable = tag_WUU_var } NOT = { has_global_variable = nesnd_south_settled }  } }
+        ai_chance = { value = 0 } effect = { add_radicals = { value = 0.05 } trigger_event = { id = flavorUSM.4 popup = yes } 
+    nesnd_refresh_south_display = yes
+}
+    }

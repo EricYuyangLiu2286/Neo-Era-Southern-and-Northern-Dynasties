@@ -56,9 +56,9 @@ flavorUSM.1 = {
 		add_journal_entry = {
 			type = ce_usm_conflicts_within
 		}
-		add_journal_entry = {
-			type = ce_usm_ruling_of_nanfu
-		}
+		
+# Journal entry activates from its possible trigger.
+
 	}
 	after = {
 		hidden_effect = {
@@ -415,334 +415,78 @@ flavorUSM.3 = {
 	
 }
 
-flavorUSM.4 = { # 以吴代明
-	type = country_event
-	placement = root
-	title = flavorUSM.4.t
-	# 
-	desc = flavorUSM.4.d
-	# 
+flavorUSM.4 = {
+    type = country_event placement = root duration = 3
+    title = flavorUSM.4.t desc = flavorUSM.4.d
+    
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this NOT = { has_variable = tag_WUU_var } NOT = { has_global_variable = nesnd_south_settled } }
+    immediate = { 
+    ruler = { set_variable = nesnd_ming_claimant save_scope_as = nesnd_old_ming_ruler }
+    if = { limit = { any_country = { any_scope_character = { has_template = USM_zheng_Ju is_character_alive = yes } } }
+        random_country = { limit = { any_scope_character = { has_template = USM_zheng_Ju is_character_alive = yes } }
+            random_scope_character = { limit = { has_template = USM_zheng_Ju is_character_alive = yes } transfer_character = root save_scope_as = nesnd_wu_ruler }
+        }
+    } else_if = { limit = { NOT = { has_global_variable = nesnd_born_usm_zheng_ju } year < 1890 }
+        create_character = { template = USM_zheng_Ju save_scope_as = nesnd_wu_ruler }
+    }
+    if = { limit = { exists = scope:nesnd_wu_ruler } scope:nesnd_wu_ruler = { set_character_as_ruler = yes } }
+    else = { create_character = { last_name = "ce_Zheng" first_name = "name_yuan" age = 35 culture = cu:ce_wuu interest_group = ig_industrialists ideology = ideology_reformer ruler = yes } }
+    # The former monarch is moved alive, not destroyed or reconstructed from a name.
+    if = { limit = { exists = scope:nesnd_old_ming_ruler exists = c:HNA }
+        scope:nesnd_old_ming_ruler = { transfer_character = c:HNA }
+    } else_if = { limit = { exists = scope:nesnd_old_ming_ruler exists = c:SIH }
+        scope:nesnd_old_ming_ruler = { transfer_character = c:SIH }
+    }
+    set_variable = tag_WUU_var set_variable = ce_usm_conflict_evoked
+    remove_variable = flavor_USM_crisis_intro
+    set_variable = ce_usm_civilwar_journal_trigger
+    set_variable = { name = usm_opposition_country_choice value = 0 }
+    set_variable = { name = usm_opposition_country_count value = 0 }
+    set_variable = { name = usm_subject_country_count value = 0 }
+    set_variable = { name = usm_opposition_country_choice_tt_var value = 0 }
+    c:SIH ?= { if = { limit = { is_subject_of = root }
+        set_variable = nesnd_invited_south
+        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
+    } }
+c:HNA ?= { if = { limit = { is_subject_of = root }
+        set_variable = nesnd_invited_south
+        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
+    } }
+c:GNG ?= { if = { limit = { is_subject_of = root }
+        set_variable = nesnd_invited_south
+        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
+    } }
+c:PHI ?= { if = { limit = { is_subject_of = root }
+        set_variable = nesnd_invited_south
+        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
+    } }
+c:DEI ?= { if = { limit = { is_subject_of = root }
+        set_variable = nesnd_invited_south
+        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
+    } }
+c:YN1 ?= { if = { limit = { is_subject_of = root }
+        set_variable = nesnd_invited_south
+        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
+    } }
 
-	flavor = flavorUSM.4.f
-	#  \n——《》
-	duration = 3
+    c:JAP ?= { trigger_event = { id = usm_civilwar.23 days = 7 popup = yes } }
+    add_journal_entry = { type = ce_usm_civilwar_journal }
+    nesnd_notify_foreign_countries = yes
+ }
+    option = { name = flavorUSM.4.1
+        default_option = yes
+        ai_chance = { base = 100 }
+        
+        
+    }
 
-	event_image = {
-		texture = "gfx/event_pictures/event_ce_mordern_chinese_6.dds"
-	}
+    
 
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    
 
-	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
-
-	trigger = {
-		# TRIGGERED BY E/JE
-	}
-
-	immediate = {
-		hidden_effect = {
-			if = {
-				limit = {
-					NOT = { has_variable = ce_usm_conflict_invalid }
-					NOT = { has_variable = ce_usm_conflict_looming }
-				}
-				
-				set_variable = ce_usm_civilwar_journal_trigger
-				
-				set_variable = {
-					name = usm_opposition_country_choice
-					value = 0
-				}
-				
-				set_variable = {
-					name = usm_opposition_country_count
-					value = 0
-				}
-				
-				set_variable = {
-					name = usm_subject_country_count
-					value = 0
-				}
-				
-				set_variable = {
-					name = usm_opposition_country_choice_tt_var
-					value = 0
-				}
-				
-				if = {
-					limit = {
-						exists = c:SIH
-						c:SIH ?= { is_subject_of = root }
-					}
-					c:SIH ?= { trigger_event = { id = usm_civilwar.1 popup = yes months = 1 } }
-					# Do we want war?
-					change_variable = {
-						name = usm_subject_country_count
-						add = 1
-					}
-					change_variable = {
-						name = usm_opposition_country_choice
-						add = 1
-					}
-				}
-				
-				if = {
-					limit = {
-						exists = c:HNA
-						c:HNA ?= { is_subject_of = root }
-					}
-					c:HNA ?= { trigger_event = { id = usm_civilwar.1 popup = yes months = 1 } }
-					change_variable = {
-						name = usm_subject_country_count
-						add = 1
-					}
-					change_variable = {
-						name = usm_opposition_country_choice
-						add = 1
-					}
-				}
-				
-				if = {
-					limit = {
-						exists = c:YN1
-						c:YN1 = { is_subject_of = root }
-					}
-					c:YN1 = { trigger_event = { id = usm_civilwar.1 popup = yes months = 1 } }
-					change_variable = {
-						name = usm_subject_country_count
-						add = 1
-					}
-					change_variable = {
-						name = usm_opposition_country_choice
-						add = 1
-					}
-				}
-				
-				if = {
-					limit = {
-						exists = c:GNG
-						c:GNG ?= { is_subject_of = root }
-					}
-					c:GNG ?= { trigger_event = { id = usm_civilwar.1 popup = yes months = 1 } }
-					change_variable = {
-						name = usm_subject_country_count
-						add = 1
-					}
-					change_variable = {
-						name = usm_opposition_country_choice
-						add = 1
-					}
-				}
-				
-				if = {
-					limit = {
-						exists = c:PHI
-						c:PHI ?= { is_subject_of = root }
-					}
-					c:PHI ?= { trigger_event = { id = usm_civilwar.1 popup = yes months = 1 } }
-					change_variable = {
-						name = usm_subject_country_count
-						add = 1
-					}
-					change_variable = {
-						name = usm_opposition_country_choice
-						add = 1
-					}
-				}
-				
-				if = {
-					limit = {
-						exists = c:DEI
-						c:DEI ?= { is_subject_of = root }
-					}
-					c:DEI ?= { trigger_event = { id = usm_civilwar.1 popup = yes months = 1 } }
-					change_variable = {
-						name = usm_subject_country_count
-						add = 1
-					}
-					change_variable = {
-						name = usm_opposition_country_choice
-						add = 1
-					}
-				}
-				
-				add_journal_entry = {
-					type = ce_usm_civilwar_journal
-				}
-			}
-			
-			if = {
-				limit = {
-					any_scope_character = {
-						NOT = { has_template = USM_zheng_qin }
-						is_ruler_of_own_country = yes
-					}
-				}
-				random_scope_character = {
-					limit = {
-						NOT = { has_template = USM_zheng_qin }
-						is_ruler_of_own_country = yes
-					}
-					save_scope_as = ruler_of_ming
-				#	set_character_as_ruler = yes
-				}
-			}
-			
-			if = {
-				limit = {
-					any_scope_character = {
-						has_template = USM_zheng_qin
-						is_ruler_of_own_country = no
-					}
-				}
-				random_scope_character = {
-					limit = {
-						is_character_alive = yes
-						has_template = USM_zheng_qin
-					}
-					save_scope_as = zheng_qin_scope
-					set_character_as_ruler = yes
-				}
-			}
-			else = {
-				if = {
-					limit = {
-						any_scope_character = {
-							is_character_alive = yes
-							has_template = USM_zheng_qin
-							is_ruler_of_own_country = yes
-						}
-					}
-					set_variable = zheng_qin_is_ruler_of_own_country_var
-				}
-				else = {
-					create_character = {
-						template = USM_zheng_yuan
-						save_scope_as = zheng_yuan_scope
-					}
-					scope:zheng_yuan_scope = {
-						set_character_as_ruler = yes
-					}
-				}
-			}
-			
-			if = {
-				limit = {
-					exists = scope:ruler_of_ming
-					scope:ruler_of_ming = { is_character_alive = yes is_in_exile_pool = no }  
-				}
-				scope:ruler_of_ming ?= {
-					#save_scope_as = emperor_of_ming_scope
-					exile_character_with_martyrdom = yes
-					#add_character_role = agitator
-				}
-			}
-			else_if = {
-				limit = {
-					any_scope_character = {
-						has_variable = this_is_zhuzuoyu_var
-						is_character_alive = yes
-						is_ruler_of_own_country = yes
-					}
-				}
-				random_scope_character = {
-					limit={
-						has_variable = this_is_zhuzuoyu_var
-						is_character_alive = yes
-					}
-					save_scope_as = emperor_of_ming_scope
-					exile_character_with_martyrdom = yes
-					#add_character_role = agitator
-				}
-			}
-			else = {
-				if = {
-					limit = {
-						exists = scope:ruler_of_ming
-						scope:ruler_of_ming = { is_character_alive = yes is_in_exile_pool = no }  
-					}
-					scope:ruler_of_ming ?= {
-						#save_scope_as = emperor_of_ming_scope
-						exile_character_with_martyrdom = yes
-						#add_character_role = agitator
-					}
-				}
-			}
-			
-			set_variable = tag_WUU_var
-			
-			create_character = {
-				template = USM_zheng_Ju
-				
-				on_created = {
-					set_variable = usm_this_is_zhengju_var
-				}
-				#save_scope_as = zheng_yuan_scope
-			}
-		}
-	}
-
-	option = { # 
-		name = flavorUSM.4.1
-		default_option = yes
-		if = {
-			limit = {
-				exists = scope:ruler_of_ming
-				scope:ruler_of_ming = { is_character_alive = yes is_in_exile_pool = no }  
-			}
-			show_as_tooltip = {
-				scope:ruler_of_ming = {
-					
-					exile_character = yes
-					#add_character_role = agitator
-				}
-			}
-		}
-		
-		if = {
-			limit = {
-				exists = scope:emperor_of_ming_scope
-				scope:ruler_of_ming = { is_character_alive = yes is_in_exile_pool = no }  
-			}
-			show_as_tooltip = {
-				scope:emperor_of_ming_scope = {
-					exile_character_with_martyrdom = yes
-					#add_character_role = agitator
-				}
-			}
-		}
-		
-		if = {
-			limit =  {
-				exists = scope:zheng_qin_scope
-			}
-			show_as_tooltip = {
-				scope:zheng_qin_scope = {
-					set_character_as_ruler = yes
-				}
-				
-			}
-		}
-		
-		if = {
-			limit =  {
-				exists = scope:zheng_yuan_scope
-			}
-			show_as_tooltip = {
-				scope:zheng_yuan_scope = {
-					set_character_as_ruler = yes
-				}
-				
-			}
-		}
-		
-		show_as_tooltip = {
-			create_character = {
-				template = USM_zheng_Ju
-			}
-		}
-	}
-	
+    flavor = flavorUSM.4.f
 }
 
 flavorUSM.5 = {
@@ -765,16 +509,12 @@ flavorUSM.5 = {
 
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
-	trigger = {
-		has_variable = usm_conflicts_within_tracker
-		has_variable = started_with_chendongyang
-		any_scope_character = {
-			has_template = USM_chen_dongyang
-		}
-		root.var:usm_conflicts_within_tracker > 24
-	}
+	trigger = { has_variable = started_with_chendongyang var:usm_conflicts_within_tracker > 24 NOT = { has_variable = nesnd_assassination_resolved } NOT = { has_variable = nesnd_chen_protected }
+        any_scope_character = { has_template = USM_chen_dongyang is_character_alive = yes } }
 
-	immediate = {
+	immediate = { set_variable = nesnd_assassination_resolved
+        if = { limit = { has_variable = nesnd_chen_protected } trigger_event = { id = nesnd_crisis.11 popup = yes } }
+        else = { 
 		hidden_effect = {
 			ig:ig_rural_folk = {
 				save_scope_as = ce_rural_folk_ig
@@ -820,7 +560,8 @@ flavorUSM.5 = {
 			
 			remove_variable = started_with_chendongyang
 		}
-	}
+	 }
+    }
 
 	option = { # 
 		name = flavorUSM.5.1

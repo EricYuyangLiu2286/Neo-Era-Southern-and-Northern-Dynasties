@@ -1,578 +1,71 @@
-﻿ce_cne_land_reform = {	
-
-	# 地权革命：
-
-	icon = "gfx/interface/icons/event_icons/event_industry.dds"
-	should_be_pinned_by_default_uninvolved_or_context = yes
-	group = je_group_historical_content
-	can_revolution_inherit = yes
-	
-	is_shown_when_inactive = {
-		exists = c:CNE
-		c:CNE ?= THIS
-		has_variable = flavorCNE_land_reform_value
-		NOT = {
-			has_variable = ce_CNE_land_reform_done
-		}
-	}
-	
-	immediate = {
-		set_variable = {
-			name = cne_landreform_completion_tracker
-			value = 50
-		}
-	}
-
-	possible = {
-		has_variable = flavorCNE_land_reform_value
-		NOT = {
-			has_variable = ce_CNE_land_reform_done
-		}
-	}
-	
-	#inheritable = no
-	
-	on_yearly_pulse = {
-		effect = {
-			if = {
-				limit = {
-					ig:ig_rural_folk = {
-						is_powerful = no
-						is_in_government = no
-					}
-				}
-				change_variable = {
-					name = cne_landreform_completion_tracker
-					add = 3
-				}
-			}
-			else = {
-				change_variable = {
-					name = cne_landreform_completion_tracker
-					add = 1
-				}
-			}
-		}
-		random_events = {
-			900 = 0
-			20 = flavorCNE.4 # 士绅不满
-			20 = flavorCNE.5 # 军官家族来信
-			20 = flavorCNE.6 # 滥捕
-			20 = flavorCNE.7 # 改革红利
-			20 = flavorCNE.8 # 农民涌入城市
-		}
-	}
-	
-	progressbar = yes
-	
-	complete = {
-		scope:journal_entry = {
-			is_goal_complete = yes
-		}
-		
-		
-		#$ig_landowners$不[concept_powerful]且不[concept_in_government]
-		#$ig_devout$不[concept_powerful]且不[concept_in_government]
-		#$ig_rural_folk$不[concept_powerful]且不[concept_in_government]
-		
-	}
-	
-	on_complete = {
-		hidden_effect = {
-		#	remove_modifier = CNE_land_draft_debuff
-		}
-		trigger_event = { id = flavorCNE.3 }
-		set_variable = {
-			name = ce_CNE_land_reform_done
-			value = yes
-		}
-		
-		if = {
-			limit = {
-				OR = {
-					has_law_or_variant = law_type:law_serfdom
-					has_law_or_variant = law_type:law_tenant_farmers
-				}
-			}
-			activate_law = law_type:law_homesteading
-		}
-	}
-
-	fail = {
-		custom_tooltip = {
-			text = cne_land_reform_failed_variable_tt
-			has_variable = cne_land_reform_failed_variable
-		}
-	}
-
-	# effect which is executed when 'fail' trigger becomes true
-	on_fail = {
-		trigger_event = { id = flavorCNE.10 } # failed land draft
-		hidden_effect = {
-			remove_variable = cne_landreform_completion_tracker
-			set_variable = {
-				name = ce_CNE_land_reform_done
-				value = yes
-			}
-		}
-	}
-
-	invalid = {
-		OR = {	
-			num_states < 4
-			any_civil_war = {
-				civil_war_progress >= 0.90
-			}
-		}
-	}	
-
-	# effect which is executed when 'invalid' trigger becomes true
-	on_invalid = {
-		trigger_event = { id = flavorCNE.9 } # missed opportunity
-		hidden_effect = {
-			remove_variable = cne_landreform_completion_tracker
-			set_variable = {
-				name = ce_CNE_land_reform_done
-				value = yes
-			}
-		}
-	}
-	
-	current_value = {
-		value = root.var:cne_landreform_completion_tracker
-	}
-	
-	goal_add_value = {
-		value = 100
-	}
-
-	weight = 1200
-
+﻿ce_cne_land_reform = {
+    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
+    group = je_group_historical_content can_revolution_inherit = no
+    is_shown_when_inactive = { c:CNE ?= this has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } }
+    possible = { c:CNE ?= this has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } }
+    immediate = { nesnd_land_init = yes 
+    nesnd_refresh_land_display = yes
 }
+    scripted_button = nesnd_land_survey
+    scripted_button = nesnd_land_review
+    scripted_button = nesnd_land_military
+    scripted_button = nesnd_land_suspend
+    on_monthly_pulse = { effect = { nesnd_land_monthly = yes } }
+    on_yearly_pulse = { random_events = { 50 = 0 10 = flavorCNE.4 10 = flavorCNE.5 10 = flavorCNE.6 10 = flavorCNE.7 10 = flavorCNE.8 } }
+      
+    complete = { custom_tooltip = { text = nesnd_cne_landreform_completion_tracker_ge_100 var:cne_landreform_completion_tracker >= 100 } custom_tooltip = { text = nesnd_cne_landreform_failure_tracker_lt_70 var:cne_landreform_failure_tracker < 70 } }
+    on_complete = { nesnd_land_success = yes }
+    fail = { custom_tooltip = { text = nesnd_cne_landreform_failure_tracker_ge_90 var:cne_landreform_failure_tracker >= 90 } OR = { bureaucracy < 0 is_at_war = yes country_turmoil > 0.25 } }
+    on_fail = { trigger_event = { id = nesnd_crisis.31 popup = yes } }
+    invalid = { OR = { has_variable = ce_CNE_land_reform_done NOT = { c:CNE ?= this } } }
+    weight = 1200 should_be_pinned_by_default_uninvolved_or_context = yes
 
-ce_cne_land_draft_failing = {	
-	icon = "gfx/interface/icons/event_icons/event_military.dds"
-	is_shown_when_inactive = {
-		exists = c:CNE
-		c:CNE ?= THIS
-		has_variable = flavorCNE_land_reform_value
-		NOT = {
-			has_variable = ce_CNE_land_reform_done
-		}
-	}
-	
-	group = je_group_historical_content
-	possible = {
-		has_variable = flavorCNE_land_reform_value
-		NOT = {
-			has_variable = ce_CNE_land_reform_done
-		}
-	}
-
-	immediate = {
-		set_variable = {
-			name = cne_landreform_failure_tracker
-			value = 0
-		}
-	}
-
-	on_yearly_pulse = {
-		effect = {
-			if = {
-				limit = {
-					OR = {
-						ig:ig_landowners = {
-							OR = {
-								is_powerful = yes
-								is_in_government = yes
-							}
-						}
-						ig:ig_devout = {
-							OR = {
-								is_powerful = yes
-								is_in_government = yes
-							}
-						}
-
-					}
-				}
-				change_variable = {
-					name = cne_landreform_failure_tracker
-					add = 3
-				}
-			}
-		}
-    }
-
-	complete = {
-		scope:journal_entry = {
-		 	is_goal_complete = yes
-		}
-		trigger_if = {
-			limit = {
-				has_variable = cne_landreform_failure_tracker
-			}
-			custom_tooltip = {
-				text = cne_landreform_failure_tracker_100
-				root.var:cne_landreform_failure_tracker >= 100
-			}
-		}
-	}
-
-	on_complete = {
-		custom_tooltip = {
-			text = failure_of_the_land_reform_je
-			set_variable = {
-				name = cne_land_reform_failed_variable
-				value = yes
-			}
-		}
-	}
-
-	invalid = {
-		has_variable = ce_CNE_land_reform_done
-	}
-
-      on_invalid = {
-    	#
-    }
-
-	current_value = {
-		value = root.var:cne_landreform_failure_tracker
-	}
-
-	goal_add_value = {
-		value = 100
-	}
-
-	progressbar = yes
     
-    weight = 1000
-    should_be_pinned_by_default_uninvolved_or_context = yes
-}
-
-ce_cne_reform_limited_market_access = {	
-	is_shown_when_inactive = {
-		has_variable = cne_landreform_failure_tracker
-	}
-	possible = {
-		has_variable = cne_landreform_failure_tracker
-	}
-	group = je_group_historical_content
-	immediate = {
-		
-	}
-
-	on_yearly_pulse = {
-		effect = {
-			change_variable = {
-				name = cne_landreform_failure_tracker
-				add = 1
-			}
-		}
-	}
-
-	complete = {
-		#always = no
-		
-		trigger_if = {
-			limit = {
-				any_scope_state = {
-					market_access < 0.85
-				}
-			}	
-			custom_tooltip = {
-				text = ce_cne_reform_limited_market_access_explain # 
-				always = no
-			}
-		}
-		trigger_else ={
-			custom_tooltip = {
-				text = ce_cne_reform_limited_market_access_explain # 
-				always = yes
-			}
-		}
-	}
-
-	on_complete = {
-		custom_tooltip = {
-			text = push_land_reform_forward_15
-			change_variable = {
-				name = cne_landreform_completion_tracker
-				add = 15
-			}
-		}
-	}
-
-	invalid = {
-		has_variable = ce_CNE_land_reform_done
-	}
-
-    on_invalid = {
-    	#
-    }
     
-    weight = 1000
-    should_be_pinned_by_default_uninvolved_or_context = yes
-}
-
-ce_cne_war_with_western_qin = {	
-	is_shown_when_inactive = {
-		has_variable = cne_landreform_failure_tracker
-	}
-	possible = {
-		has_variable = cne_landreform_failure_tracker
-	}
-	group = je_group_historical_content
-	immediate = {
-		
-	}
-
-	on_yearly_pulse = {
-		effect = {
-			change_variable = {
-				name = cne_landreform_failure_tracker
-				add = 1
-			}
-		}
-	}
-
-	complete = {
-		OR = {
-			custom_tooltip = {
-				text = qe1_is_mengyou_tt
-				any_scope_ally = { c:QE1 ?= This  }
-			}
-			AND = {
-				country_or_subject_owns_entire_state_region = STATE_TIANSHAN
-				country_or_subject_owns_entire_state_region = STATE_DZUNGARIA
-				country_or_subject_owns_entire_state_region = STATE_JETISY
-				country_or_subject_owns_entire_state_region = STATE_QINGHAI
-				country_or_subject_owns_entire_state_region = STATE_LHASA
-				country_or_subject_owns_entire_state_region = STATE_NGARI
-			}
-		}
-		custom_tooltip = {
-			text = ce_cne_war_with_western_qin_explain # 
-		}
-	}
-
-	on_complete = {
-		custom_tooltip = {
-			text = push_land_reform_forward_5
-			change_variable = {
-				name = cne_landreform_completion_tracker
-				add = 5
-			}
-		}
-	}
-
-	invalid = {
-		has_variable = ce_CNE_land_reform_done
-	}
-
-	on_invalid = {
-    	#
-	}
     
-	weight = 1000
-	should_be_pinned_by_default_uninvolved_or_context = yes
-}
-
-ce_cne_war_with_usm = {	
-	is_shown_when_inactive = {
-        has_variable = cne_landreform_failure_tracker
-    }
-    possible = {
-        has_variable = cne_landreform_failure_tracker
-    }
-	group = je_group_historical_content
-    immediate = {
-    	
-    }
-
-	on_yearly_pulse = {
-		effect = {
-			change_variable = {
-				name = cne_landreform_failure_tracker
-				add = 1
-			}
-		}
-	}
-
-	complete = {
-		OR = {
-			custom_tooltip = {
-				text = usm_is_mengyou_tt
-				any_scope_ally = { c:USM ?= This }
-			}
-			NOT = { exists = c:USM }
-			AND = {
-				country_or_subject_owns_entire_state_region = STATE_GUANGDONG
-				country_or_subject_owns_entire_state_region = STATE_FUJIAN
-				country_or_subject_owns_entire_state_region = STATE_ZHEJIANG
-				country_or_subject_owns_entire_state_region = STATE_NANJING
-				country_or_subject_owns_entire_state_region = STATE_JIANGSU
-				country_or_subject_owns_entire_state_region = STATE_GUANGXI
-			}
-		}
-		custom_tooltip = {
-			text = ce_cne_war_with_usm_explain # 
-		}
-	}
-
-	on_complete = {
-		custom_tooltip = {
-			text = push_land_reform_forward_15
-			change_variable = {
-				name = cne_landreform_completion_tracker
-				add = 15
-			}
-		}
-	}
-
-	invalid = {
-		has_variable = ce_CNE_land_reform_done
-	}
-
-    on_invalid = {
-    	#
-    }
     
-    weight = 1000
-    should_be_pinned_by_default_uninvolved_or_context = yes
-}
-
-ce_cne_technology_advantage = {	
-	is_shown_when_inactive = {
-        has_variable = cne_landreform_failure_tracker
-	}
-	possible = {
-        has_variable = cne_landreform_failure_tracker
-	}
-	group = je_group_historical_content
-	immediate = {
-		hidden_effect = {
-			if = {
-				limit = {
-					has_variable = cne_landreform_completion_tracker
-				}
-				
-				change_variable = {
-					name = cne_landreform_completion_tracker
-					add = 25
-				}
-			}
-		}
-	}
-
-	on_yearly_pulse = {
-		effect = {
-			if = {
-				limit = {
-					root.var:cne_landreform_completion_tracker >= 3
-				}
-				change_variable = {
-					name = cne_landreform_completion_tracker
-					add = -1
-				}
-			}
-		}
-	}
-
-	complete = {
-
-		has_technology_researched = dialectics
-		has_technology_researched = psychiatry
-		has_technology_researched = realism
-		has_technology_researched = organized_sports
-		has_technology_researched = nationalism
-		has_technology_researched = labor_movement
-
-		custom_tooltip = {
-			text = ce_cne_technology_advantage_explain # 
-		}
-	}
-
-	on_complete = {
-		custom_tooltip = {
-			text = push_land_reform_forward_15
-			change_variable = {
-				name = cne_landreform_completion_tracker
-				add = 15
-			}
-		}
-	}	
-
-    invalid = {
-    	has_variable = ce_CNE_land_reform_done
-    }
-
-    on_invalid = {
-    	#
-    }
     
-    weight = 1000
-    should_be_pinned_by_default_uninvolved_or_context = yes
-}
 
-ce_cne_reform_legal_system = {	
-	is_shown_when_inactive = {
-		has_variable = cne_landreform_failure_tracker
-	}
-	possible = {
-		has_variable = cne_landreform_failure_tracker
-	}
-	group = je_group_historical_content
-    immediate = {
-    	
-    }
-
-	on_yearly_pulse = {
-		effect = {
-			change_variable = {
-				name = cne_landreform_failure_tracker
-				add = 1
-			}
-		}
-	}
-
-	complete = {
-		OR = {
-			has_law_or_variant = law_type:law_agrarianism
-			has_law_or_variant = law_type:law_laissez_faire
-			has_law_or_variant = law_type:law_cooperative_ownership
-		}
-		NOT = { has_law_or_variant = law_type:law_serfdom }
-		NOT = { has_law_or_variant = law_type:law_tenant_farmers }
-		has_law_or_variant = law_type:law_public_schools
-		has_law_or_variant = law_type:law_poor_laws
-		NOT = { 
-			has_law_or_variant = law_type:law_autocracy
-		}
-		custom_tooltip = {
-			text = ce_cne_reform_legal_system_explain # 
-		}
-	}
-
-	on_complete = {
-		custom_tooltip = {
-			text = push_land_reform_forward_25
-			change_variable = {
-				name = cne_landreform_completion_tracker
-				add = 25
-			}
-		}
-	}
-
-	invalid = {
-		has_variable = ce_CNE_land_reform_done
-	}
-
-    on_invalid = {
-    	#
-    }
     
-    weight = 1000
-    should_be_pinned_by_default_uninvolved_or_context = yes
+    
+    
+    
+
+    scripted_progress_bar = nesnd_land_completion_bar
+    scripted_progress_bar = nesnd_land_disorder_bar
+    on_weekly_pulse = { effect = { nesnd_refresh_land_display = yes } }
+    status_desc = { first_valid = {
+        triggered_desc = { trigger = { bureaucracy < 0 } desc = nesnd_land_status_admin }
+        triggered_desc = { trigger = { is_at_war = yes } desc = nesnd_land_status_war }
+        triggered_desc = { trigger = { var:cne_landreform_failure_tracker >= 55 } desc = nesnd_land_status_petition }
+        desc = nesnd_land_status_normal
+    } }
 }
+ce_cne_land_draft_failing = {
+    icon = "gfx/interface/icons/politics_icons/radicalized.dds"
+    group = je_group_historical_content can_revolution_inherit = no
+    
+    
+    immediate = { nesnd_land_init = yes }
+    progressbar = yes current_value = { value = root.var:cne_landreform_failure_tracker } goal_add_value = { value = 100 }
+    complete = { always = no }
+    
+    weight = 1100 should_be_pinned_by_default_uninvolved_or_context = yes
+
+    
+    
+    
+
+    
+    
+    
+
+    is_shown_when_inactive = { always = no }
+    possible = { always = no }
+    invalid = { always = yes }
+}
+ce_cne_reform_limited_market_access = { group = je_group_historical_content possible = { always = no } invalid = { always = yes } }
+ce_cne_war_with_western_qin = { group = je_group_historical_content possible = { always = no } invalid = { always = yes } }
+ce_cne_war_with_usm = { group = je_group_historical_content possible = { always = no } invalid = { always = yes } }
+ce_cne_technology_advantage = { group = je_group_historical_content possible = { always = no } invalid = { always = yes } }
+ce_cne_reform_legal_system = { group = je_group_historical_content possible = { always = no } invalid = { always = yes } }
