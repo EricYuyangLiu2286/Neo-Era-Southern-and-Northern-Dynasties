@@ -1,0 +1,51 @@
+﻿# Called after loading explicit loser/winner scopes, before play_as.
+nesnd_wu_player_ack_valid = {
+    exists = scope:nesnd_ack_loser
+    exists = scope:nesnd_ack_winner
+    scope:nesnd_ack_loser = {
+        is_country_alive = yes
+        is_player = yes
+        has_variable = nesnd_wu_player_ack_pending
+        has_variable = usm_opposition_country
+        has_war_with = scope:nesnd_ack_winner
+        enemy_occupation > 0.8
+        capital = { controller = scope:nesnd_ack_winner }
+    }
+    scope:nesnd_ack_winner = {
+        c:USM ?= this
+        is_country_alive = yes
+        is_player = no
+        has_variable = usm_government_winner_civilwar
+    }
+}
+nesnd_rebel_player_ack_valid = {
+    exists = scope:nesnd_ack_loser
+    exists = scope:nesnd_ack_winner
+    scope:nesnd_ack_loser = {
+        c:USM ?= this
+        is_country_alive = yes
+        is_player = yes
+        has_variable = nesnd_rebel_player_ack_pending
+        enemy_occupation > 0.6
+        capital = { controller = scope:nesnd_ack_winner }
+    }
+    scope:nesnd_ack_winner = {
+        is_country_alive = yes
+        is_player = no
+        is_subject = no
+        NOT = { c:USM ?= this }
+        has_variable = nesnd_rebel_player_ack_waiting
+        var:nesnd_player_ack_loser ?= scope:nesnd_ack_loser
+        has_global_variable = usm_civilwar_occured
+        has_variable = usm_opposition_country
+        OR = { has_variable = nesnd_restoration_side has_variable = ce_usm_republican_revolution_tag }
+        OR = {
+            NOT = { has_global_variable = nesnd_south_settled }
+            AND = { has_variable = nesnd_ming_court has_global_variable = usm_civilwar_status_quo }
+        }
+        has_war_with = scope:nesnd_ack_loser
+    }
+    s:STATE_NANJING = {
+        any_scope_state = { owner = scope:nesnd_ack_loser controller = scope:nesnd_ack_winner }
+    }
+}

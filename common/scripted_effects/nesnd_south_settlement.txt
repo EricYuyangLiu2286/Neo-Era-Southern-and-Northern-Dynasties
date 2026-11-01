@@ -1,4 +1,8 @@
 ﻿nesnd_commit_rebel_settlement = {
+    if = { limit = { c:USM ?= { is_country_alive = yes is_player = yes } NOT = { c:USM ?= this } }
+        nesnd_rebel_player_ack_prepare = yes
+    } else = {
+
     # Called within the guarded option, after the constitutional/royal selection.
     ruler ?= { save_scope_as = nesnd_selected_postwar_ruler }
     if = { limit = { exists = c:USM NOT = { c:USM ?= this } }
@@ -21,9 +25,15 @@
     remove_variable = nesnd_rebel_settlement_pending
     c:CNE ?= { remove_variable = nesnd_north_intervention }
     nesnd_notify_jingyin_origin = yes
+
+    }
 }
 nesnd_south_settlement_retry = {
-    if = { limit = { has_variable = nesnd_rebel_settlement_waiting is_country_alive = yes }
+    nesnd_player_ack_retry = yes
+    if = { limit = {
+ has_variable = nesnd_rebel_settlement_waiting is_country_alive = yes 
+        NOT = { has_variable = nesnd_rebel_player_ack_waiting }
+	}
         if = { limit = { has_global_variable = nesnd_south_settled NOT = { AND = { has_variable = nesnd_ming_court has_global_variable = usm_civilwar_status_quo } } }
             remove_variable = nesnd_rebel_settlement_waiting
             remove_variable = nesnd_rebel_settlement_pending

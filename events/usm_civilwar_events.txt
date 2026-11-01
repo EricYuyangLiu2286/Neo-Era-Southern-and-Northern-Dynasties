@@ -542,12 +542,16 @@ usm_civilwar.4 = {
 			}
 		}
 		default_option = yes
-		if = {
+		if = { limit = { has_variable = nesnd_player_ack_managed }
+            nesnd_wu_player_ack_commit = yes
+        } else = {
+if = {
 			limit = {
 				is_ai = no
 			}
 			play_as = c:USM
 		}
+        }
 		show_as_tooltip = {
 			c:USM ?= {
 				annex = root
@@ -563,12 +567,16 @@ usm_civilwar.4 = {
 			c:SIH ?= This
 		}
 		default_option = yes
-		if = {
+		if = { limit = { has_variable = nesnd_player_ack_managed }
+            nesnd_wu_player_ack_commit = yes
+        } else = {
+if = {
 			limit = {
 				is_ai = no
 			}
 			play_as = c:USM
 		}
+        }
 		show_as_tooltip = {
 			c:USM ?= {
 				annex = root
@@ -576,6 +584,8 @@ usm_civilwar.4 = {
 		}
 	}
 	after = {
+    if = { limit = { NOT = { has_variable = nesnd_player_ack_managed } }
+
 		hidden_effect = {
 			if = {
 				limit = {
@@ -731,6 +741,8 @@ usm_civilwar.4 = {
 				remove_variable = nesnd_japan_event_annex_registered
 			}
 		}
+	
+    }
 	}
 }
 
@@ -1062,6 +1074,12 @@ usm_civilwar.7 = {
 
 	}
 	immediate = {
+    if = { limit = { has_variable = nesnd_player_ack_managed }
+        if = { limit = { has_variable = nesnd_player_ack_winner }
+            var:nesnd_player_ack_winner ?= { save_scope_as = from_country_inherit_usm_scope }
+        }
+    } else = {
+
 		hidden_effect = {
 			random_country = {
 				limit = {
@@ -1083,6 +1101,8 @@ usm_civilwar.7 = {
 				}
 			}
 		}
+	
+    }
 	}
 	option = {
 		name = usm_civilwar.7.1
@@ -1090,7 +1110,10 @@ usm_civilwar.7 = {
 			base = 1
 		}
 		default_option = yes
-		if = {
+		if = { limit = { has_variable = nesnd_player_ack_managed }
+            nesnd_rebel_player_ack_commit = yes
+        } else = {
+if = {
 			limit = {
 				exists = scope:from_country_inherit_usm_scope
 				is_ai = no
@@ -1158,6 +1181,8 @@ usm_civilwar.7 = {
 			remove_variable = nesnd_japan_event_annex_registered
 			change_tag = USM
 		}
+	
+        }
 	}
 	after = {
 
@@ -1190,6 +1215,18 @@ usm_civilwar.8 = {
 					controller = root
 				}
 			}
+            if = { limit = { is_player = yes }
+                if = { limit = { NOT = { has_variable = nesnd_player_ack_managed } }
+                    set_variable = nesnd_player_ack_managed
+                    set_variable = nesnd_wu_player_ack_pending
+                    set_variable = { name = nesnd_player_ack_winner value = root }
+                    if = { limit = { root = { is_player = no } }
+                        set_variable = nesnd_player_ack_open
+                        trigger_event = { id = usm_civilwar.4 popup = yes }
+                    }
+                }
+            } else = {
+
 			every_scope_character = {
 				limit = {
 					is_character_alive = yes
@@ -1228,7 +1265,9 @@ usm_civilwar.8 = {
 				}
 				remove_variable = nesnd_japan_event_annex_registered
 			}
-		}
+		
+            }
+	}
 	}
 	option = {
 		name = usm_civilwar.8.1

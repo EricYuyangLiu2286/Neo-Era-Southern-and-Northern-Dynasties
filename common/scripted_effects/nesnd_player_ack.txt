@@ -1,0 +1,238 @@
+﻿
+# Country root = original loser. Explicit objects survive player handover.
+nesnd_player_ack_load = {
+    save_scope_as = nesnd_ack_loser
+    clear_saved_scope = nesnd_ack_winner
+    if = { limit = { has_variable = nesnd_player_ack_winner }
+        var:nesnd_player_ack_winner ?= { save_scope_as = nesnd_ack_winner }
+    }
+}
+nesnd_wu_player_ack_commit = {
+    remove_variable = nesnd_player_ack_open
+    nesnd_player_ack_load = yes
+    if = { limit = { nesnd_wu_player_ack_valid = yes }
+        set_variable = nesnd_player_ack_accepted
+        remove_variable = nesnd_wu_player_ack_pending
+        play_as = scope:nesnd_ack_winner
+        every_scope_character = {
+            limit = { is_character_alive = yes }
+            transfer_character = scope:nesnd_ack_winner
+        }
+c:USM ?= {
+				remove_variable = nesnd_japan_event_annex_registered
+				if = {
+					limit = {
+						c:USM ?= this
+						c:JAP ?= root
+					}
+					nesnd_japan_register_annex_target = yes
+					if = {
+						limit = {
+							has_variable = nesnd_japan_annex_expected_country
+						}
+						set_variable = nesnd_japan_event_annex_registered
+					}
+				}
+				annex_as_civil_war = root
+				if = {
+					limit = {
+						c:USM ?= this
+						has_variable = nesnd_japan_event_annex_registered
+						NOT = {
+							c:JAP ?= {
+								is_country_alive = yes
+							}
+						}
+					}
+					set_variable = nesnd_japan_recovery_pending
+					remove_variable = nesnd_japan_annex_expected_country
+					nesnd_japan_recovery_request = yes
+				}
+				remove_variable = nesnd_japan_event_annex_registered
+			}
+    } else = { set_variable = nesnd_player_ack_blocked }
+}
+# Root remains the selected opposition winner. No country/player transfer yet.
+nesnd_rebel_player_ack_prepare = {
+    if = { limit = {
+        NOT = { has_variable = nesnd_rebel_player_ack_waiting }
+        NOT = { c:USM ?= { has_variable = nesnd_player_ack_managed } }
+    }
+        save_scope_as = nesnd_ack_prepare_winner
+        set_variable = nesnd_rebel_player_ack_waiting
+        set_variable = nesnd_player_ack_selection_locked
+        set_variable = { name = nesnd_player_ack_loser value = c:USM }
+        remove_variable = nesnd_player_ack_ruler
+        ruler ?= { save_scope_as = nesnd_selected_postwar_ruler }
+        if = { limit = { exists = scope:nesnd_selected_postwar_ruler }
+            set_variable = { name = nesnd_player_ack_ruler value = scope:nesnd_selected_postwar_ruler }
+        }
+        remove_variable = nesnd_player_ack_jingyin_origin
+        remove_variable = nesnd_player_ack_jingyin_claimant
+        if = { limit = { exists = scope:nesnd_jingyin_previous_country }
+            set_variable = { name = nesnd_player_ack_jingyin_origin value = scope:nesnd_jingyin_previous_country }
+        }
+        if = { limit = { exists = scope:nesnd_jingyin_claimant }
+            set_variable = { name = nesnd_player_ack_jingyin_claimant value = scope:nesnd_jingyin_claimant }
+        }
+        c:USM = {
+            set_variable = nesnd_player_ack_managed
+            set_variable = nesnd_rebel_player_ack_pending
+            set_variable = { name = nesnd_player_ack_winner value = scope:nesnd_ack_prepare_winner }
+            if = { limit = { scope:nesnd_ack_prepare_winner = { is_player = no } }
+                set_variable = nesnd_player_ack_open
+                trigger_event = { id = usm_civilwar.7 popup = yes }
+            }
+        }
+    }
+}
+nesnd_rebel_player_ack_commit = {
+    remove_variable = nesnd_player_ack_open
+    nesnd_player_ack_load = yes
+    if = { limit = { nesnd_rebel_player_ack_valid = yes }
+        set_variable = nesnd_player_ack_accepted
+        remove_variable = nesnd_rebel_player_ack_pending
+        play_as = scope:nesnd_ack_winner
+        scope:nesnd_ack_winner = {
+            set_variable = nesnd_rebel_player_ack_accepted
+            set_variable = nesnd_player_ack_finalize_queued
+            trigger_event = { id = nesnd_player_ack.1 }
+        }
+    } else = { set_variable = nesnd_player_ack_blocked }
+}
+# Runs with WINNER root, preserving original settlement and notification root semantics.
+nesnd_rebel_player_ack_finalize = {
+    clear_saved_scope = nesnd_selected_postwar_ruler
+    clear_saved_scope = nesnd_jingyin_previous_country
+    clear_saved_scope = nesnd_jingyin_claimant
+    if = { limit = { has_variable = nesnd_player_ack_ruler }
+        var:nesnd_player_ack_ruler ?= { save_scope_as = nesnd_selected_postwar_ruler }
+    }
+    if = { limit = { has_variable = nesnd_player_ack_jingyin_origin }
+        var:nesnd_player_ack_jingyin_origin ?= { save_scope_as = nesnd_jingyin_previous_country }
+    }
+    if = { limit = { has_variable = nesnd_player_ack_jingyin_claimant }
+        var:nesnd_player_ack_jingyin_claimant ?= { save_scope_as = nesnd_jingyin_claimant }
+    }
+    remove_variable = nesnd_rebel_player_ack_accepted
+
+    # Called within the guarded option, after the constitutional/royal selection.
+    if = { limit = { exists = c:USM NOT = { c:USM ?= this } }
+        c:USM = { every_scope_character = { limit = { is_character_alive = yes } transfer_character = root } }
+        annex_as_civil_war = c:USM
+    }
+    change_tag = USM
+    remove_variable = nesnd_ming_interregnum
+    remove_global_variable = usm_civilwar_status_quo
+    remove_variable = tag_WUU_var
+    if = { limit = { exists = scope:nesnd_selected_postwar_ruler }
+        scope:nesnd_selected_postwar_ruler = {
+            if = { limit = { is_character_alive = yes owner = root } set_character_as_ruler = yes }
+        }
+    }
+    set_variable = nesnd_rebel_settlement_seen
+    set_variable = usm_rebel_winner_of_the_civil_war
+    set_global_variable = nesnd_south_settled
+    remove_variable = nesnd_rebel_settlement_waiting
+    remove_variable = nesnd_rebel_settlement_pending
+    c:CNE ?= { remove_variable = nesnd_north_intervention }
+    nesnd_notify_jingyin_origin = yes
+
+    remove_variable = nesnd_rebel_player_ack_waiting
+    remove_variable = nesnd_player_ack_finalize_queued
+    remove_variable = nesnd_player_ack_loser
+    remove_variable = nesnd_player_ack_ruler
+    remove_variable = nesnd_player_ack_jingyin_origin
+    remove_variable = nesnd_player_ack_jingyin_claimant
+}
+
+# Terminal cancellation keeps the managed marker so a stale .4/.7 can never run casualties.
+nesnd_player_ack_cancel = {
+    save_scope_as = nesnd_ack_cancel_loser
+    if = { limit = { has_variable = nesnd_player_ack_winner }
+        var:nesnd_player_ack_winner ?= {
+            if = { limit = {
+                has_variable = nesnd_player_ack_loser
+                var:nesnd_player_ack_loser ?= scope:nesnd_ack_cancel_loser
+            }
+                nesnd_player_ack_cancel_winner = yes
+            }
+        }
+    }
+    remove_variable = nesnd_wu_player_ack_pending
+    remove_variable = nesnd_rebel_player_ack_pending
+    remove_variable = nesnd_player_ack_open
+    remove_variable = nesnd_player_ack_winner
+    set_variable = nesnd_player_ack_cancelled
+}
+nesnd_player_ack_cancel_winner = {
+    if = { limit = { has_variable = nesnd_player_ack_loser }
+        var:nesnd_player_ack_loser ?= {
+            remove_variable = nesnd_rebel_player_ack_pending
+            remove_variable = nesnd_player_ack_open
+            set_variable = nesnd_player_ack_cancelled
+        }
+    }
+    remove_variable = nesnd_rebel_player_ack_waiting
+    remove_variable = nesnd_rebel_player_ack_accepted
+    remove_variable = nesnd_player_ack_finalize_queued
+    remove_variable = nesnd_player_ack_loser
+    remove_variable = nesnd_player_ack_ruler
+    remove_variable = nesnd_player_ack_jingyin_origin
+    remove_variable = nesnd_player_ack_jingyin_claimant
+    set_variable = nesnd_player_ack_cancelled
+}
+# Existing monthly settlement pulse calls only these explicitly registered objects.
+nesnd_player_ack_retry = {
+    if = { limit = { OR = {
+        has_variable = nesnd_wu_player_ack_pending
+        has_variable = nesnd_rebel_player_ack_pending
+    } }
+        nesnd_player_ack_load = yes
+        if = { limit = { NOT = { exists = scope:nesnd_ack_winner } }
+            nesnd_player_ack_cancel = yes
+        } else_if = { limit = { OR = {
+            is_player = no
+            scope:nesnd_ack_winner = { is_country_alive = no }
+            NOT = { has_war_with = scope:nesnd_ack_winner }
+            AND = {
+                has_variable = nesnd_wu_player_ack_pending
+                NOT = { scope:nesnd_ack_winner ?= c:USM }
+            }
+            AND = {
+                has_variable = nesnd_rebel_player_ack_pending
+                NOT = { c:USM ?= this }
+            }
+        } }
+            nesnd_player_ack_cancel = yes
+        } else_if = { limit = { NOT = { has_variable = nesnd_player_ack_open } }
+            if = { limit = { nesnd_wu_player_ack_valid = yes }
+                set_variable = nesnd_player_ack_open
+                trigger_event = { id = usm_civilwar.4 popup = yes }
+            } else_if = { limit = { nesnd_rebel_player_ack_valid = yes }
+                set_variable = nesnd_player_ack_open
+                trigger_event = { id = usm_civilwar.7 popup = yes }
+            }
+        }
+    }
+    if = { limit = { has_variable = nesnd_rebel_player_ack_waiting }
+        if = { limit = { NOT = { c:USM ?= { is_country_alive = yes } } }
+            nesnd_player_ack_cancel_winner = yes
+        } else_if = { limit = { OR = {
+            NOT = { has_variable = nesnd_player_ack_loser }
+            NOT = { var:nesnd_player_ack_loser ?= c:USM }
+            NOT = { has_war_with = c:USM }
+            AND = { has_variable = nesnd_rebel_player_ack_accepted is_player = no }
+        } }
+            nesnd_player_ack_cancel_winner = yes
+        } else_if = { limit = {
+            has_variable = nesnd_rebel_player_ack_accepted
+            NOT = { has_variable = nesnd_player_ack_finalize_queued }
+            is_player = yes
+            nesnd_rebel_victory_fact = yes
+        }
+            set_variable = nesnd_player_ack_finalize_queued
+            trigger_event = { id = nesnd_player_ack.1 }
+        }
+    }
+}

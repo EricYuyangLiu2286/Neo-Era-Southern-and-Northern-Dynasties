@@ -1,0 +1,22 @@
+﻿namespace = nesnd_player_ack
+# The original acknowledgement option handed control to this exact winner.
+# Re-root finalization here so existing ruler/claimant notification scopes remain correct.
+nesnd_player_ack.1 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        remove_variable = nesnd_player_ack_finalize_queued
+        if = { limit = {
+            is_country_alive = yes
+            is_player = yes
+            has_variable = nesnd_rebel_player_ack_waiting
+            has_variable = nesnd_rebel_player_ack_accepted
+            has_variable = nesnd_player_ack_loser
+            var:nesnd_player_ack_loser ?= c:USM
+            c:USM ?= { is_country_alive = yes is_player = no has_variable = nesnd_player_ack_accepted }
+            nesnd_rebel_victory_fact = yes
+        }
+            nesnd_rebel_player_ack_finalize = yes
+        } else = { set_variable = nesnd_player_ack_blocked }
+    }
+}
