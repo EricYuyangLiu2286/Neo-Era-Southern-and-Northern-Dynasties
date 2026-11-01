@@ -1,0 +1,36 @@
+﻿# Vanilla 00_code_on_actions.txt: battle roots are countries; scope:enemy_country is the opposing country.
+on_battle_ended = { on_actions = { nesnd_war_collapse_after_battle } }
+on_empty_battle_won = { on_actions = { nesnd_war_collapse_after_battle } }
+nesnd_war_collapse_after_battle = {
+    effect = {
+        if = {
+            limit = { OR = { c:USM ?= this scope:enemy_country ?= c:USM } }
+            c:USM ?= { nesnd_queue_war_collapse_check = yes }
+        }
+    }
+}
+# Native callbacks: root is the victorious country; scope:target is the defeated enemy.
+# on_enemy_capitulated_notification also fires when that enemy had no demands against it.
+on_wargoal_enforced = { on_actions = { nesnd_record_wu_defeat } }
+on_enemy_capitulated_notification = { on_actions = { nesnd_record_wu_defeat } }
+nesnd_record_wu_defeat = {
+    effect = {
+        if = {
+            limit = { c:USM ?= this has_variable = tag_WUU_var exists = scope:target }
+            scope:target = {
+                if = {
+                    limit = { is_country_alive = yes NOT = { c:USM ?= this } has_variable = usm_opposition_country }
+                    set_variable = nesnd_south_defeat_confirmed
+                }
+            }
+            if = {
+                limit = { exists = c:JAP }
+                if = {
+                    limit = { scope:target = c:JAP c:JAP = { is_country_alive = yes } NOT = { has_global_variable = nesnd_japan_partitioned } }
+                    set_variable = nesnd_japan_defeat_confirmed
+                }
+            }
+            nesnd_queue_war_collapse_check = yes
+        }
+    }
+}

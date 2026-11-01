@@ -23,3 +23,10 @@
 详细源依据和实测记录保留WORK/plans/two-empires/evidence与reports/runtime/20261101T014437Z；只对受改闭包重查。
 
 - 源码重写与 MCP 嵌套查询的复核方法统一维护在引用安全规则，避免本页重复一套语法约定。
+
+
+## 战争机制回退审查
+
+用户报告原本可触发的吞并/崩溃不再发生时，先与最初保留版对照事件trigger、on_action调用、JE的complete/fail/invalid和最终effect。2026-11-01负例：usm_civilwar.5入口被置always=no，日本失败JE被关闭；不能以已有新系统为由漏掉原来的失败结果，也不能为避免玩家亡国关停它。角色存活、临时独立、战争胜败、领土吞并与后续释放分阶段核验。世界机制正常与玩家继续控制同一tag是两项不同结果。
+
+投降/恢复有延迟时，把“待处理的已确认败局”作为共同结算条件，覆盖全局胜利、现状、各参战方JE与延迟事件，不只修一个on_fail。源码与用例证据见WORK/reports/south-war-collapse-20261101；回调scope与全球JE写法见syntax-and-routing.md战争段。

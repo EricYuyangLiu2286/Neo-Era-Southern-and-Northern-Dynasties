@@ -1,0 +1,48 @@
+﻿# USM scope; the existing, previously exercised annex -> recovery -> partition chain owns the result.
+nesnd_japan_commit_war_collapse = {
+    if = {
+        limit = { nesnd_japan_collapse_ready = yes }
+        set_global_variable = nesnd_japan_collapse_committed
+        nesnd_japan_register_annex_target = yes
+        c:JAP = { every_scope_character = { limit = { is_character_alive = yes } transfer_character = c:USM } }
+        annex_as_civil_war = c:JAP
+        if = {
+            limit = { NOT = { c:JAP ?= { is_country_alive = yes } } }
+            set_variable = nesnd_japan_recovery_pending
+            remove_variable = nesnd_japan_annex_expected_country
+            nesnd_japan_recovery_request = yes
+        }
+    }
+}
+nesnd_check_war_collapses = {
+    if = {
+        limit = { c:USM ?= this is_country_alive = yes }
+        every_country = {
+            limit = { nesnd_south_capital_defeat = yes NOT = { has_variable = nesnd_capital_surrender_pending } }
+            trigger_event = { id = usm_civilwar.5 popup = yes }
+        }
+        nesnd_japan_commit_war_collapse = yes
+    }
+}
+nesnd_queue_war_collapse_check = {
+    if = {
+        limit = { c:USM ?= this is_country_alive = yes NOT = { has_variable = nesnd_war_collapse_check_queued } }
+        set_variable = { name = nesnd_war_collapse_check_queued days = 2 }
+        trigger_event = { id = nesnd_war_collapse.1 days = 1 }
+    }
+}
+# Contextless JE scope: update viewers, execute the actual outcome once in USM.
+nesnd_japan_collapse_refresh = {
+    every_country = {
+        limit = { nesnd_japan_collapse_viewer = yes NOT = { is_involved_in_journal_entry = nesnd_japan_war_collapse } }
+        scope:journal_entry ?= { add_involved_country = prev }
+    }
+    scope:journal_entry ?= {
+        every_scope_je_involved = {
+            if = {
+                limit = { NOT = { nesnd_japan_collapse_viewer = yes } }
+                scope:journal_entry ?= { remove_involved_country = prev }
+            }
+        }
+    }
+}

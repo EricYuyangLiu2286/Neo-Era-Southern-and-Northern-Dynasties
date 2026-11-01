@@ -1,0 +1,993 @@
+--- base/events/nesnd_war_collapse.txt
++++ candidate/events/nesnd_war_collapse.txt
+@@ -0,0 +1,7 @@
++namespace = nesnd_war_collapse
++nesnd_war_collapse.1 = {
++    type = country_event
++    hidden = yes
++    trigger = { c:USM ?= this is_country_alive = yes }
++    immediate = { remove_variable = nesnd_war_collapse_check_queued nesnd_check_war_collapses = yes }
++}
+--- base/events/usm_civilwar_events.txt
++++ candidate/events/usm_civilwar_events.txt
+@@ -924,212 +924,174 @@
+ 		texture = "gfx/event_pictures/event_ce_mordern_chinese_1.dds"
+ 	}
+ 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+-	trigger = {
+-		always = no
+-	}
+-	immediate = {
+-		hidden_effect = {
+-			save_scope_as = usm_opposition_lost_scope
+-			if = {
+-				limit = {
+-					any_diplomatic_play = {
+-						c:USM ?= {
+-							is_diplomatic_play_initiator = yes
+-						}
+-						scope:usm_opposition_lost_scope = {
+-							is_diplomatic_play_target = yes
+-						}
+-					}
+-					c:USM ?= {
+-						NOT = {
+-							has_variable = usm_won_the_civil_war
+-						}
+-					}
+-				}
+-				c:USM ?= {
+-					set_variable = usm_won_the_civil_war
+-					trigger_event = {
+-						id = usm_civilwar.24
+-						popup = yes
+-						months = 2
+-					}
+-				}
+-			}
+-		}
+-	}
+-	option = {
+-		name = usm_civilwar.4.1
+-		ai_chance = {
+-			base = 1
+-		}
++	trigger = { nesnd_south_capital_defeat = yes NOT = { has_variable = nesnd_capital_surrender_pending } }
++	immediate = { set_variable = nesnd_capital_surrender_pending }
++	option = {
++		name = nesnd_capital_surrender_accept
+ 		default_option = yes
+-		if = {
+-			limit = {
+-				is_ai = no
+-			}
+-			play_as = c:USM
+-		}
+-		show_as_tooltip = {
+-			c:USM ?= {
+-				annex = root
+-			}
+-		}
++		ai_chance = { base = 1 }
++		custom_tooltip = nesnd_capital_surrender_tt
+ 	}
+ 	after = {
+-		hidden_effect = {
+-			if = {
+-				limit = {
+-					NOT = {
+-						c:SIH ?= This
+-					}
+-					NOT = {
+-						c:HNA ?= This
+-					}
+-					NOT = {
+-						c:GNG ?= This
+-					}
+-					NOT = {
+-						c:YN1 ?= This
+-					}
+-				}
+-				every_scope_character = {
++		if = { limit = { nesnd_south_capital_defeat = yes }
++
++			hidden_effect = {
++				if = {
+ 					limit = {
+ 						NOT = {
+-							has_trait = trait_child
+-						}
+-						is_in_exile_pool = no
+-						is_character_alive = yes
+-					}
+-					random_list = {
+-						1 = {
+-							exile_character = yes
+-						}
+-						2 = {
+-							kill_character = yes
+-						}
+-					}
+-				}
+-			}
+-			if = {
+-				limit = {
+-					c:SIH ?= This
+-				}
+-				every_scope_character = {
+-					limit = {
++							c:SIH ?= This
++						}
+ 						NOT = {
+-							has_trait = trait_child
+-						}
+-						is_in_exile_pool = no
+-						is_character_alive = yes
+-					}
+-					random_list = {
+-						1 = {
+-							exile_character = yes
+-						}
+-						5 = {
+-							kill_character = yes
+-						}
+-					}
+-				}
+-			}
+-			if = {
+-				limit = {
+-					c:HNA ?= This
+-				}
+-				every_scope_character = {
+-					limit = {
++							c:HNA ?= This
++						}
+ 						NOT = {
+-							has_trait = trait_child
+-						}
+-						is_in_exile_pool = no
+-					}
+-					random_list = {
+-						1 = {
+-							exile_character = yes
+-						}
+-						4 = {
+-							kill_character = yes
+-						}
+-					}
+-				}
+-			}
+-			if = {
+-				limit = {
+-					c:GNG ?= This
+-				}
+-				every_scope_character = {
+-					limit = {
++							c:GNG ?= This
++						}
+ 						NOT = {
+-							has_trait = trait_child
+-						}
+-						is_in_exile_pool = no
+-						is_character_alive = yes
+-					}
+-					random_list = {
+-						2 = {
+-							exile_character = yes
+-						}
+-						5 = {
+-							kill_character = yes
+-						}
+-					}
+-				}
+-			}
+-			if = {
+-				limit = {
+-					c:YN1 ?= This
+-				}
+-				every_scope_character = {
+-					limit = {
+-						NOT = {
+-							has_trait = trait_child
+-						}
+-						is_in_exile_pool = no
+-						is_character_alive = yes
+-					}
+-					random_list = {
+-						2 = {
+-							exile_character = yes
+-						}
+-						1 = {
+-							kill_character = yes
+-						}
+-					}
+-				}
+-			}
+-			c:USM ?= {
+-				remove_variable = nesnd_japan_event_annex_registered
++							c:YN1 ?= This
++						}
++					}
++					every_scope_character = {
++						limit = {
++							NOT = {
++								has_trait = trait_child
++							}
++							is_in_exile_pool = no
++							is_character_alive = yes
++						}
++						random_list = {
++							1 = {
++								exile_character = yes
++							}
++							2 = {
++								kill_character = yes
++							}
++						}
++					}
++				}
+ 				if = {
+ 					limit = {
+-						c:USM ?= this
+-						c:JAP ?= root
+-					}
+-					nesnd_japan_register_annex_target = yes
++						c:SIH ?= This
++					}
++					every_scope_character = {
++						limit = {
++							NOT = {
++								has_trait = trait_child
++							}
++							is_in_exile_pool = no
++							is_character_alive = yes
++						}
++						random_list = {
++							1 = {
++								exile_character = yes
++							}
++							5 = {
++								kill_character = yes
++							}
++						}
++					}
++				}
++				if = {
++					limit = {
++						c:HNA ?= This
++					}
++					every_scope_character = {
++						limit = {
++							NOT = {
++								has_trait = trait_child
++							}
++							is_in_exile_pool = no
++						}
++						random_list = {
++							1 = {
++								exile_character = yes
++							}
++							4 = {
++								kill_character = yes
++							}
++						}
++					}
++				}
++				if = {
++					limit = {
++						c:GNG ?= This
++					}
++					every_scope_character = {
++						limit = {
++							NOT = {
++								has_trait = trait_child
++							}
++							is_in_exile_pool = no
++							is_character_alive = yes
++						}
++						random_list = {
++							2 = {
++								exile_character = yes
++							}
++							5 = {
++								kill_character = yes
++							}
++						}
++					}
++				}
++				if = {
++					limit = {
++						c:YN1 ?= This
++					}
++					every_scope_character = {
++						limit = {
++							NOT = {
++								has_trait = trait_child
++							}
++							is_in_exile_pool = no
++							is_character_alive = yes
++						}
++						random_list = {
++							2 = {
++								exile_character = yes
++							}
++							1 = {
++								kill_character = yes
++							}
++						}
++					}
++				}
++				c:USM ?= {
++					remove_variable = nesnd_japan_event_annex_registered
+ 					if = {
+ 						limit = {
+-							has_variable = nesnd_japan_annex_expected_country
+-						}
+-						set_variable = nesnd_japan_event_annex_registered
+-					}
+-				}
+-				annex_as_civil_war = root
+-				if = {
+-					limit = {
+-						c:USM ?= this
+-						has_variable = nesnd_japan_event_annex_registered
+-						NOT = {
+-							c:JAP ?= {
+-								is_country_alive = yes
++							c:USM ?= this
++							c:JAP ?= root
++						}
++						nesnd_japan_register_annex_target = yes
++						if = {
++							limit = {
++								has_variable = nesnd_japan_annex_expected_country
+ 							}
+-						}
+-					}
+-					set_variable = nesnd_japan_recovery_pending
+-					remove_variable = nesnd_japan_annex_expected_country
+-					nesnd_japan_recovery_request = yes
+-				}
+-				remove_variable = nesnd_japan_event_annex_registered
+-			}
+-		}
++							set_variable = nesnd_japan_event_annex_registered
++						}
++					}
++					annex_as_civil_war = root
++					if = {
++						limit = {
++							c:USM ?= this
++							has_variable = nesnd_japan_event_annex_registered
++							NOT = {
++								c:JAP ?= {
++									is_country_alive = yes
++								}
++							}
++						}
++						set_variable = nesnd_japan_recovery_pending
++						remove_variable = nesnd_japan_annex_expected_country
++						nesnd_japan_recovery_request = yes
++					}
++					remove_variable = nesnd_japan_event_annex_registered
++				}
++			}
++
++		}
++		remove_variable = nesnd_capital_surrender_pending
+ 	}
+ }
+ 
+@@ -1307,54 +1269,6 @@
+ 	immediate = {
+ 		set_global_variable = nesnd_south_settled
+ 		set_variable = usm_government_winner_civilwar
+-		every_country = {
+-			limit = {
+-				has_variable = usm_opposition_country
+-				has_war_with = root
+-				enemy_occupation > 0.8
+-				capital = {
+-					controller = root
+-				}
+-			}
+-			every_scope_character = {
+-				limit = {
+-					is_character_alive = yes
+-				}
+-				transfer_character = root
+-			}
+-			root = {
+-				remove_variable = nesnd_japan_event_annex_registered
+-				if = {
+-					limit = {
+-						c:USM ?= this
+-						c:JAP ?= prev
+-					}
+-					nesnd_japan_register_annex_target = yes
+-					if = {
+-						limit = {
+-							has_variable = nesnd_japan_annex_expected_country
+-						}
+-						set_variable = nesnd_japan_event_annex_registered
+-					}
+-				}
+-				annex_as_civil_war = prev
+-				if = {
+-					limit = {
+-						c:USM ?= this
+-						has_variable = nesnd_japan_event_annex_registered
+-						NOT = {
+-							c:JAP ?= {
+-								is_country_alive = yes
+-							}
+-						}
+-					}
+-					set_variable = nesnd_japan_recovery_pending
+-					remove_variable = nesnd_japan_annex_expected_country
+-					nesnd_japan_recovery_request = yes
+-				}
+-				remove_variable = nesnd_japan_event_annex_registered
+-			}
+-		}
+ 	}
+ 	option = {
+ 		name = usm_civilwar.8.1
+@@ -1389,6 +1303,7 @@
+ 	}
+ 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ 	trigger = {
++		NOT = { nesnd_south_defeat_resolution_pending = yes }
+ 		NOT = {
+ 			has_variable = nesnd_status_quo_seen
+ 		}
+--- base/common/journal_entries/ce_usm_the_last_days_of_ming.txt
++++ candidate/common/journal_entries/ce_usm_the_last_days_of_ming.txt
+@@ -338,39 +338,43 @@
+ 
+ ce_usm_suppress_rebellion = {
+ 	icon = "gfx/interface/icons/politics_icons/radicalized.dds"
+-	
+-	can_revolution_inherit = yes
+-	group = je_group_historical_content
+-
+-	complete = { NOT = { has_global_variable = nesnd_south_settled }
+-    has_global_variable = usm_civilwar_occured
+-    NOT = { any_country = { has_variable = usm_opposition_country NOT = { is_subject_of = root }
+-        NOT = { has_war_with = root enemy_occupation > 0.8 capital = { controller = root } }
+-    } } }
++
++	can_revolution_inherit = yes
++	group = je_group_historical_content
++
++	complete = {
++		NOT = { nesnd_south_defeat_resolution_pending = yes }
++		NOT = { has_global_variable = nesnd_south_settled }
++		has_global_variable = usm_civilwar_occured
++		NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } }
++	}
+ 
+ 	on_complete = { set_global_variable = nesnd_south_settled set_variable = usm_government_winner_civilwar trigger_event = { id = usm_civilwar.8 popup = yes } }
+-	
+-	fail = { NOT = { has_global_variable = nesnd_south_settled }
+-    NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
+-    NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+-    NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
+-	
++
++	fail = {
++		NOT = { nesnd_south_defeat_resolution_pending = yes } NOT = { has_global_variable = nesnd_south_settled }
++		NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
++		NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
++		NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
++
+ 	on_fail = { trigger_event = { id = usm_civilwar.9 popup = yes } }
+-	
++
+ 	timeout = 3650
+-	
++
+ 	on_timeout = { trigger_event = { id = usm_civilwar.9 popup = yes } }
+ 
+ 	weight = 1000
+ 	should_be_pinned_by_default_uninvolved_or_context = yes
++
++	on_weekly_pulse = { effect = { nesnd_check_war_collapses = yes } }
+ }
+ 
+ ce_usm_restoration_of_ming = {
+ 	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+-	
+-	can_revolution_inherit = yes
+-	group = je_group_historical_content
+-	
++
++	can_revolution_inherit = yes
++	group = je_group_historical_content
++
+ 	immediate = {
+ 		s:STATE_NANJING = {
+ 			add_claim = ROOT
+@@ -394,28 +398,29 @@
+ 			}
+ 		}
+ 	}
+-	
++
+ 	on_monthly_pulse = { effect = { } }
+-	
++
+ 	complete = { nesnd_rebel_victory_fact = yes }
+ 
+ 	on_complete = { set_variable = nesnd_rebel_settlement_waiting trigger_event = { id = usm_civilwar.10 popup = yes } }
+-	
+-	fail = { NOT = { has_global_variable = nesnd_south_settled }
+-    NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
+-    NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+-    NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
+-	
++
++	fail = {
++		NOT = { nesnd_south_defeat_resolution_pending = yes } NOT = { has_global_variable = nesnd_south_settled }
++		NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
++		NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
++		NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
++
+ 	on_fail = {
+ 		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+ 	}
+-	
++
+ 	invalid = { has_global_variable = nesnd_south_settled NOT = { has_variable = usm_rebel_winner_of_the_civil_war } }
+-	
++
+ 	on_invalid = { if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
+-	
++
+ 	timeout = 3650
+-	
++
+ 	on_timeout = {
+ 		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+ 	}
+@@ -426,10 +431,10 @@
+ 
+ ce_usm_acheive_revolution = {
+ 	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+-	
+-	can_revolution_inherit = yes
+-	group = je_group_historical_content
+-	
++
++	can_revolution_inherit = yes
++	group = je_group_historical_content
++
+ 	immediate = {
+ 		s:STATE_NANJING = {
+ 			add_claim = ROOT
+@@ -453,28 +458,29 @@
+ 			}
+ 		}
+ 	}
+-	
++
+ 	on_monthly_pulse = { effect = { } }
+-	
++
+ 	complete = { nesnd_rebel_victory_fact = yes }
+ 
+ 	on_complete = { set_variable = nesnd_rebel_settlement_waiting trigger_event = { id = usm_civilwar.10 popup = yes } }
+-	
+-	fail = { NOT = { has_global_variable = nesnd_south_settled }
+-    NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
+-    NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+-    NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
+-	
++
++	fail = {
++		NOT = { nesnd_south_defeat_resolution_pending = yes } NOT = { has_global_variable = nesnd_south_settled }
++		NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
++		NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
++		NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
++
+ 	on_fail = {
+ 		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+ 	}
+-	
++
+ 	invalid = { has_global_variable = nesnd_south_settled NOT = { has_variable = usm_rebel_winner_of_the_civil_war } }
+-	
++
+ 	on_invalid = { if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
+-	
++
+ 	timeout = 3650
+-	
++
+ 	on_timeout = {
+ 		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+ 	}
+@@ -485,7 +491,7 @@
+ 
+ ce_usm_cw_japanese_interest = { # 历史转折中的和族
+ 	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+-	
++
+ 	can_revolution_inherit = yes
+ 	group = je_group_historical_content
+ 
+@@ -496,39 +502,50 @@
+ 	}
+ 
+ 	complete = {
+-        has_global_variable = nesnd_south_settled
+-        OR = {
+-            NOT = {
+-                any_country = {
+-                    is_country_alive = yes
+-                    has_variable = usm_rebel_winner_of_the_civil_war
+-                }
+-            }
+-            c:USM ?= {
+-                is_country_alive = yes
+-                has_variable = usm_rebel_winner_of_the_civil_war
+-                has_variable = nesnd_rebel_settlement_seen
+-            }
+-        }
+-    }
++		has_global_variable = nesnd_south_settled
++		OR = {
++			NOT = {
++				any_country = {
++					is_country_alive = yes
++					has_variable = usm_rebel_winner_of_the_civil_war
++				}
++			}
++			c:USM ?= {
++				is_country_alive = yes
++				has_variable = usm_rebel_winner_of_the_civil_war
++				has_variable = nesnd_rebel_settlement_seen
++			}
++		}
++	}
+ 
+ 	on_complete = {
+-    if = { limit = { OR = {
+-        AND = { has_variable = ce_usm_cw_ally_with_mng c:USM ?= { has_variable = usm_government_winner_civilwar } }
+-        AND = { has_variable = usm_opposition_country c:USM ?= { has_variable = usm_rebel_winner_of_the_civil_war } }
+-    } }
+-        c:USM ?= { every_scope_state = { limit = { state_region = s:STATE_KYUSHU } set_state_owner = c:JAP } }
+-        if = { limit = { is_subject_of = c:USM } make_independent = yes }
+-    }
+-    trigger_event = { id = nesnd_crisis.41 popup = yes }
+- }
+-	
++		if = {
++			limit = {
++				has_variable = usm_opposition_country
++				c:USM ?= { has_variable = tag_WUU_var has_variable = usm_government_winner_civilwar }
++				NOT = { has_global_variable = nesnd_japan_partitioned }
++			}
++			c:USM ?= { set_variable = nesnd_japan_defeat_confirmed nesnd_queue_war_collapse_check = yes }
++		}
++		else = {
++			if = { limit = { OR = {
++						AND = { has_variable = ce_usm_cw_ally_with_mng c:USM ?= { has_variable = usm_government_winner_civilwar } }
++						AND = { has_variable = usm_opposition_country c:USM ?= { has_variable = usm_rebel_winner_of_the_civil_war } }
++					} }
++				c:USM ?= { every_scope_state = { limit = { state_region = s:STATE_KYUSHU } set_state_owner = c:JAP } }
++				if = { limit = { is_subject_of = c:USM } make_independent = yes }
++			}
++			trigger_event = { id = nesnd_crisis.41 popup = yes }
++
++		}
++	}
++
+ 	fail = { always = no }
+-	
++
+ 	on_fail = { }
+-	
++
+ 	invalid = { always = no }
+-	
++
+ 	on_invalid = { }
+ 
+ 	weight = 1000
+--- base/common/journal_entries/nesnd_war_collapse.txt
++++ candidate/common/journal_entries/nesnd_war_collapse.txt
+@@ -0,0 +1,40 @@
++nesnd_japan_war_collapse = {
++    icon = "gfx/interface/icons/politics_icons/revolution.dds"
++    group = je_group_global_international_situations
++    is_shown_when_inactive = {
++        NOT = { has_global_variable = nesnd_japan_collapse_journal_started }
++        NOT = { has_global_variable = nesnd_japan_partitioned }
++        c:USM ?= { has_variable = tag_WUU_var }
++    }
++    possible = {
++        NOT = { has_global_variable = nesnd_japan_collapse_journal_started }
++        NOT = { has_global_variable = nesnd_japan_partitioned }
++        nesnd_japan_at_war_with_wu = yes
++    }
++    should_be_involved = { nesnd_japan_collapse_viewer = yes }
++    should_show_when_not_involved = { nesnd_japan_collapse_viewer = yes }
++    immediate = { set_global_variable = nesnd_japan_collapse_journal_started }
++    status_desc = {
++        first_valid = {
++            triggered_desc = { trigger = { has_global_variable = nesnd_japan_collapse_committed } desc = nesnd_japan_war_collapse_fallen }
++            desc = nesnd_japan_war_collapse_status
++        }
++    }
++    on_weekly_pulse = { effect = { nesnd_japan_collapse_refresh = yes c:USM ?= { nesnd_check_war_collapses = yes } } }
++    complete = { has_global_variable = nesnd_japan_partitioned }
++    on_complete = { }
++    weight = 1200
++    should_be_pinned_by_default_involved = yes
++    should_be_pinned_by_default_uninvolved_or_context = yes
++}
++nesnd_xiangyang_camp_journal = {
++    icon = "gfx/interface/icons/politics_icons/revolution.dds"
++    group = je_group_historical_content
++    can_revolution_inherit = no
++    is_shown_when_inactive = { c:HNA ?= this }
++    possible = { c:HNA ?= this owns_entire_state_region = STATE_XIANGYANG }
++    modifiers_while_active = { nesnd_xiangyang_camp }
++    invalid = { NOT = { owns_entire_state_region = STATE_XIANGYANG } }
++    weight = 900
++    should_be_pinned_by_default_uninvolved_or_context = yes
++}
+--- base/common/on_actions/nesnd_war_collapse.txt
++++ candidate/common/on_actions/nesnd_war_collapse.txt
+@@ -0,0 +1,36 @@
++# Vanilla 00_code_on_actions.txt: battle roots are countries; scope:enemy_country is the opposing country.
++on_battle_ended = { on_actions = { nesnd_war_collapse_after_battle } }
++on_empty_battle_won = { on_actions = { nesnd_war_collapse_after_battle } }
++nesnd_war_collapse_after_battle = {
++    effect = {
++        if = {
++            limit = { OR = { c:USM ?= this scope:enemy_country ?= c:USM } }
++            c:USM ?= { nesnd_queue_war_collapse_check = yes }
++        }
++    }
++}
++# Native callbacks: root is the victorious country; scope:target is the defeated enemy.
++# on_enemy_capitulated_notification also fires when that enemy had no demands against it.
++on_wargoal_enforced = { on_actions = { nesnd_record_wu_defeat } }
++on_enemy_capitulated_notification = { on_actions = { nesnd_record_wu_defeat } }
++nesnd_record_wu_defeat = {
++    effect = {
++        if = {
++            limit = { c:USM ?= this has_variable = tag_WUU_var exists = scope:target }
++            scope:target = {
++                if = {
++                    limit = { is_country_alive = yes NOT = { c:USM ?= this } has_variable = usm_opposition_country }
++                    set_variable = nesnd_south_defeat_confirmed
++                }
++            }
++            if = {
++                limit = { exists = c:JAP }
++                if = {
++                    limit = { scope:target = c:JAP c:JAP = { is_country_alive = yes } NOT = { has_global_variable = nesnd_japan_partitioned } }
++                    set_variable = nesnd_japan_defeat_confirmed
++                }
++            }
++            nesnd_queue_war_collapse_check = yes
++        }
++    }
++}
+--- base/common/scripted_effects/nesnd_war_collapse.txt
++++ candidate/common/scripted_effects/nesnd_war_collapse.txt
+@@ -0,0 +1,48 @@
++# USM scope; the existing, previously exercised annex -> recovery -> partition chain owns the result.
++nesnd_japan_commit_war_collapse = {
++    if = {
++        limit = { nesnd_japan_collapse_ready = yes }
++        set_global_variable = nesnd_japan_collapse_committed
++        nesnd_japan_register_annex_target = yes
++        c:JAP = { every_scope_character = { limit = { is_character_alive = yes } transfer_character = c:USM } }
++        annex_as_civil_war = c:JAP
++        if = {
++            limit = { NOT = { c:JAP ?= { is_country_alive = yes } } }
++            set_variable = nesnd_japan_recovery_pending
++            remove_variable = nesnd_japan_annex_expected_country
++            nesnd_japan_recovery_request = yes
++        }
++    }
++}
++nesnd_check_war_collapses = {
++    if = {
++        limit = { c:USM ?= this is_country_alive = yes }
++        every_country = {
++            limit = { nesnd_south_capital_defeat = yes NOT = { has_variable = nesnd_capital_surrender_pending } }
++            trigger_event = { id = usm_civilwar.5 popup = yes }
++        }
++        nesnd_japan_commit_war_collapse = yes
++    }
++}
++nesnd_queue_war_collapse_check = {
++    if = {
++        limit = { c:USM ?= this is_country_alive = yes NOT = { has_variable = nesnd_war_collapse_check_queued } }
++        set_variable = { name = nesnd_war_collapse_check_queued days = 2 }
++        trigger_event = { id = nesnd_war_collapse.1 days = 1 }
++    }
++}
++# Contextless JE scope: update viewers, execute the actual outcome once in USM.
++nesnd_japan_collapse_refresh = {
++    every_country = {
++        limit = { nesnd_japan_collapse_viewer = yes NOT = { is_involved_in_journal_entry = nesnd_japan_war_collapse } }
++        scope:journal_entry ?= { add_involved_country = prev }
++    }
++    scope:journal_entry ?= {
++        every_scope_je_involved = {
++            if = {
++                limit = { NOT = { nesnd_japan_collapse_viewer = yes } }
++                scope:journal_entry ?= { remove_involved_country = prev }
++            }
++        }
++    }
++}
+--- base/common/scripted_triggers/nesnd_war_collapse.txt
++++ candidate/common/scripted_triggers/nesnd_war_collapse.txt
+@@ -0,0 +1,91 @@
++# Country scope. Restore the original capital OR occupation rule; Japan has its own two-centre rule.
++nesnd_south_capital_defeat = {
++    trigger_if = {
++        limit = { exists = c:USM }
++        is_country_alive = yes
++        has_variable = usm_opposition_country
++        NOT = { c:JAP ?= this }
++        NOT = { c:USM ?= this }
++        NOT = { is_subject_of = c:USM }
++        OR = {
++            has_variable = nesnd_south_defeat_confirmed
++            AND = {
++                has_war_with = c:USM
++                OR = {
++                    enemy_occupation > 0.8
++                    capital = { controller = c:USM }
++                    capital = { controller = { is_subject_of = c:USM } }
++                }
++            }
++        }
++    }
++    trigger_else = { always = no }
++}
++# Called only after a living JAP and USM are established. A friendly controller is not occupation.
++nesnd_japan_two_centres_lost = {
++    s:STATE_KYOTO = { any_scope_state = { owner = c:JAP controller = { has_war_with = c:JAP } } }
++    s:STATE_KANTO = { any_scope_state = { owner = c:JAP controller = { has_war_with = c:JAP } } }
++}
++# USM scope. An enforced demand / restored losing-side settlement is an independent defeat fact.
++nesnd_japan_collapse_ready = {
++    trigger_if = {
++        limit = { exists = c:JAP }
++        c:USM ?= this
++        is_country_alive = yes
++        has_variable = tag_WUU_var
++        c:JAP = { is_country_alive = yes NOT = { has_variable = nesnd_japan_recovery_created } }
++        NOT = { has_global_variable = nesnd_japan_partitioned }
++        NOT = { has_global_variable = nesnd_japan_collapse_committed }
++        OR = {
++            AND = { has_war_with = c:JAP nesnd_japan_two_centres_lost = yes }
++            has_variable = nesnd_japan_defeat_confirmed
++        }
++    }
++    trigger_else = { always = no }
++}
++nesnd_japan_collapse_viewer = {
++    trigger_if = {
++        limit = { exists = c:JAP }
++        is_country_alive = yes
++        OR = { c:JAP ?= this has_war_with = c:JAP }
++    }
++    trigger_else = { c:USM ?= this }
++}
++
++# Contextless: a real defeat must finish its country / recovery transaction before any status-quo verdict.
++nesnd_south_defeat_resolution_pending = {
++    trigger_if = {
++        limit = { exists = c:USM }
++        OR = {
++            any_country = {
++                is_country_alive = yes
++                has_variable = usm_opposition_country
++                NOT = { c:USM ?= this }
++                NOT = { is_subject_of = c:USM }
++                OR = { has_variable = nesnd_south_defeat_confirmed has_variable = nesnd_capital_surrender_pending }
++            }
++            AND = {
++                NOT = { has_global_variable = nesnd_japan_partitioned }
++                c:USM = {
++                    OR = {
++                        has_variable = nesnd_japan_recovery_pending
++                        AND = {
++                            has_variable = nesnd_japan_defeat_confirmed
++                            exists = c:JAP
++                            c:JAP ?= { is_country_alive = yes NOT = { has_variable = nesnd_japan_recovery_created } }
++                        }
++                    }
++                }
++            }
++        }
++    }
++    trigger_else = { always = no }
++}
++nesnd_japan_at_war_with_wu = {
++    trigger_if = {
++        limit = { exists = c:USM exists = c:JAP }
++        c:JAP = { is_country_alive = yes }
++        c:USM = { is_country_alive = yes has_variable = tag_WUU_var has_war_with = c:JAP }
++    }
++    trigger_else = { always = no }
++}
+--- base/common/static_modifiers/nesnd_xiangyang.txt
++++ candidate/common/static_modifiers/nesnd_xiangyang.txt
+@@ -0,0 +1,5 @@
++nesnd_xiangyang_camp = {
++    icon = "gfx/interface/icons/timed_modifier_icons/modifier_rifle_positive.dds"
++    country_military_goods_cost_mult = -0.20
++    unit_defense_mult = 0.20
++}
+--- base/common/history/military_formations/CE_military_formations_asia.txt
++++ candidate/common/history/military_formations/CE_military_formations_asia.txt
+@@ -339,7 +339,7 @@
+ 	combat_unit = {
+ 		type = unit_type:combat_unit_type_skirmish_infantry
+ 		state_region = s:STATE_XIANGYANG
+-		count = 4
++		count = 8
+ 	}
+ }
+ 	}
+--- base/localization/english/nesnd_war_collapse_l_english.yml
++++ candidate/localization/english/nesnd_war_collapse_l_english.yml
+@@ -0,0 +1,11 @@
++l_english:
++ nesnd_japan_war_collapse:0 "The Shogunate in Peril"
++ nesnd_japan_war_collapse_reason:0 "Wu armies have crossed the sea. Kyoto sustains the court's authority, while Kanto holds the military strength of the great houses. If both fall, the Toyotomi can no longer command the domains. The victors will determine the boundaries and standing of the three successor governments."
++ nesnd_japan_war_collapse_status:0 "While at war with Wu, hostile occupation of #bold both Kyoto and Kanto#! causes the shogunate to collapse. Either centre remaining free allows resistance to continue. An enforced Wu war demand also leads to the defeat settlement."
++ nesnd_japan_war_collapse_fallen:0 "The shogunate has fallen. The Toyotomi, Tokugawa and imperial territories are being reorganised. Land still occupied by a third country awaits settlement of the fighting."
++ nesnd_xiangyang_camp_journal:0 "The Xiangyang Camp"
++ nesnd_xiangyang_camp_journal_reason:0 "Xiangyang commands the Han River and the inland military roads. Its soldiers follow Chen Dongyang's reforms, opposing both the Zheng usurpation and a return to the old gentry's rule. Central supply and regular drills give this inland army the means to hold its ground."
++ nesnd_xiangyang_camp:0 "The Xiangyang Camp"
++ nesnd_xiangyang_camp_desc:0 "Coordinated arms and provisions sustain a disciplined defence of the Han River."
++ nesnd_capital_surrender_accept:0 "The cause is lost."
++ nesnd_capital_surrender_tt:0 "This country will be annexed by Wu."
+--- base/localization/simp_chinese/nesnd_war_collapse_l_simp_chinese.yml
++++ candidate/localization/simp_chinese/nesnd_war_collapse_l_simp_chinese.yml
+@@ -0,0 +1,11 @@
++l_simp_chinese:
++ nesnd_japan_war_collapse:0 "幕府危局"
++ nesnd_japan_war_collapse_reason:0 "吴军渡海而来，幕府的号令还能传至何处？京都维系朝廷的名分，关东聚集诸家的兵力。一旦两地同时失守，丰臣家便再无力约束各藩。战败后的日本，将由胜者重定三家的疆界与名分。"
++ nesnd_japan_war_collapse_status:0 "与吴朝交战期间，#bold 京都与关东同时被敌军占领#!，幕府便告崩溃；京都或关东尚有一地未失，仍可继续抵抗。向吴朝屈服、被其强制执行战争要求，也将进入战败处置。"
++ nesnd_japan_war_collapse_fallen:0 "幕府已告崩溃。丰臣、德川与朝廷的疆界正在重定；仍被第三国占据的土地，须待战局厘清后处置。"
++ nesnd_xiangyang_camp_journal:0 "襄阳大营"
++ nesnd_xiangyang_camp_journal_reason:0 "襄阳扼汉水而通江汉，是南朝内地兵马往来的枢纽。大营将士追随陈东阳的新政，既不愿为郑氏易代效力，也不愿把立宪的前途交回旧士绅手中。军需统筹与常年操练，使这支内陆军队仍有守住阵地的本钱。"
++ nesnd_xiangyang_camp:0 "襄阳大营"
++ nesnd_xiangyang_camp_desc:0 "统一筹措军械与粮饷，整饬营伍，固守江汉。"
++ nesnd_capital_surrender_accept:0 "大势已去。"
++ nesnd_capital_surrender_tt:0 "本国将被吴朝吞并。"
+--- base/localization/english/replace/map/ce_states_l_english.yml
++++ candidate/localization/english/replace/map/ce_states_l_english.yml
+@@ -791,7 +791,7 @@
+  STATE_BAJIO:0 "Bajío"
+  STATE_OAXACA:0 "Oaxaca"
+  STATE_SHENGJING:0 "Shengjing"
+- STATE_JETISY:0 "Ili"
++ STATE_JETISY:0 "Xiyi"
+  STATE_RUHR: "Ruhr"
+  STATE_MAINE_ANJOU: "Maine-Anjou"
+  STATE_VILNIUS: "Vilnius"
+--- base/localization/simp_chinese/replace/map/ce_states_l_simp_chinese.yml
++++ candidate/localization/simp_chinese/replace/map/ce_states_l_simp_chinese.yml
+@@ -728,7 +728,7 @@
+  STATE_BAJIO:0 "巴希奥"
+  STATE_OAXACA:0 "瓦哈卡"
+  STATE_SHENGJING:0 "辽东"
+- STATE_JETISY:0 "伊犁"
++ STATE_JETISY:0 "西益"
+  
+  # NEW STATES
+  STATE_UUSIMAA:0 "新地"

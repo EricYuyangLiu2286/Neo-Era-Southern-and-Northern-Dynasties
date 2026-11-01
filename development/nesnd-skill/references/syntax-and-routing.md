@@ -81,3 +81,11 @@ trigger_else = { always = no }
 按目录分别验证同路径替换、数据库条目替换与追加。现代 `REPLACE:key` 可见于本 MOD 的文化和定义，但不能据此假设 history 文件有同等语义。重复国家/地区定义必须审查有效加载结果。不要用 `.bak` 作活动文件；备份在 WORK/backups 的独立目录。
 
 文本保持原换行/BOM风格，局部修改保留注释；本地化键 ` key:0 "文本"` 不能把双引号/反斜杠错误转义。绝不全局格式化或以字典去重引擎脚本。
+
+
+## 战争回调与一次全球日志（1.13.11）
+
+- `on_wargoal_enforced`的root是执行要求的国家，`scope:target`是被执行者；它不覆盖没有针对性要求的支援国败退。补查原生`on_enemy_capitulated_notification`：00_code_on_actions.txt:4217→messages/00_messages.txt:70→interfaces_l_english.yml:9318–9319显示root国家、scope:target敌国。只记录目标明确的败退，不能用recently_lost_war推断输给谁。该链证实对象语义；AI/零要求分发顺序仍需实测，勿把源码推断写成引擎通过。
+- 战斗结束的on_action先排队次日检查，待占领刷新；用日志周度检查补漏。实际执行重新核战争与controller，友军控制不算敌占。所有回调共用一次标记与同一个提交效果，不能按每个观察国各吞并一次。
+- 同一日志供各国查看时，使用`context=none`的journal_entry_group、should_be_involved/should_show_when_not_involved，并按原版01_ryukyu_rivalry方式动态add/remove_involved_country。全局副作用放单次全局回调，个人通知才用all_involved。`scope:journal_entry`只在已附着的JE上下文访问；一次激活与一次提交分开记录，既有状态不随读档清零。
+- 湖泊外观疑点先对照有效default.map.lakes、province_terrains和相邻state_region，区分原版分类与MOD误分配。本轮甘肃xBD5671与原版一致，按用户要求保留；不能只把它塞进州而忘了湖泊/地形层。

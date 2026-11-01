@@ -1,0 +1,91 @@
+﻿# Country scope. Restore the original capital OR occupation rule; Japan has its own two-centre rule.
+nesnd_south_capital_defeat = {
+    trigger_if = {
+        limit = { exists = c:USM }
+        is_country_alive = yes
+        has_variable = usm_opposition_country
+        NOT = { c:JAP ?= this }
+        NOT = { c:USM ?= this }
+        NOT = { is_subject_of = c:USM }
+        OR = {
+            has_variable = nesnd_south_defeat_confirmed
+            AND = {
+                has_war_with = c:USM
+                OR = {
+                    enemy_occupation > 0.8
+                    capital = { controller = c:USM }
+                    capital = { controller = { is_subject_of = c:USM } }
+                }
+            }
+        }
+    }
+    trigger_else = { always = no }
+}
+# Called only after a living JAP and USM are established. A friendly controller is not occupation.
+nesnd_japan_two_centres_lost = {
+    s:STATE_KYOTO = { any_scope_state = { owner = c:JAP controller = { has_war_with = c:JAP } } }
+    s:STATE_KANTO = { any_scope_state = { owner = c:JAP controller = { has_war_with = c:JAP } } }
+}
+# USM scope. An enforced demand / restored losing-side settlement is an independent defeat fact.
+nesnd_japan_collapse_ready = {
+    trigger_if = {
+        limit = { exists = c:JAP }
+        c:USM ?= this
+        is_country_alive = yes
+        has_variable = tag_WUU_var
+        c:JAP = { is_country_alive = yes NOT = { has_variable = nesnd_japan_recovery_created } }
+        NOT = { has_global_variable = nesnd_japan_partitioned }
+        NOT = { has_global_variable = nesnd_japan_collapse_committed }
+        OR = {
+            AND = { has_war_with = c:JAP nesnd_japan_two_centres_lost = yes }
+            has_variable = nesnd_japan_defeat_confirmed
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_collapse_viewer = {
+    trigger_if = {
+        limit = { exists = c:JAP }
+        is_country_alive = yes
+        OR = { c:JAP ?= this has_war_with = c:JAP }
+    }
+    trigger_else = { c:USM ?= this }
+}
+
+# Contextless: a real defeat must finish its country / recovery transaction before any status-quo verdict.
+nesnd_south_defeat_resolution_pending = {
+    trigger_if = {
+        limit = { exists = c:USM }
+        OR = {
+            any_country = {
+                is_country_alive = yes
+                has_variable = usm_opposition_country
+                NOT = { c:USM ?= this }
+                NOT = { is_subject_of = c:USM }
+                OR = { has_variable = nesnd_south_defeat_confirmed has_variable = nesnd_capital_surrender_pending }
+            }
+            AND = {
+                NOT = { has_global_variable = nesnd_japan_partitioned }
+                c:USM = {
+                    OR = {
+                        has_variable = nesnd_japan_recovery_pending
+                        AND = {
+                            has_variable = nesnd_japan_defeat_confirmed
+                            exists = c:JAP
+                            c:JAP ?= { is_country_alive = yes NOT = { has_variable = nesnd_japan_recovery_created } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_at_war_with_wu = {
+    trigger_if = {
+        limit = { exists = c:USM exists = c:JAP }
+        c:JAP = { is_country_alive = yes }
+        c:USM = { is_country_alive = yes has_variable = tag_WUU_var has_war_with = c:JAP }
+    }
+    trigger_else = { always = no }
+}
