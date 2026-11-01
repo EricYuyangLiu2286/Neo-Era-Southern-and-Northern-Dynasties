@@ -7,7 +7,8 @@ Victoria 3 架空历史 MOD；当前源码核验环境为 1.13.11 / Steam build 
 - `original-20261030`：开发开始前保存的原始 MOD，288 个文件；对应独立备份 `pre-update-20261030T233944Z`。
 - `main-snapshot-20261101`：本轮开始时的主 MOD，318 个文件；保留既有游戏内容及 Matt Pocock 工程技能配置。
 - `candidate/f1` / `f1-frozen-20261101`：514 文件的冻结调试候选。已有检查为 12 PASS、2 FAIL、3 NOT_RUN，未完成整体验收。
-- F2 正在独立候选中继续修复与验证，尚未合入主 MOD。
+- candidate/f2 保存526文件的别名修复版；后续 sequence、Lin resume、female-hair A/B、map-refinement 与 resumed-integrated 共6条独立候选分支已推送并逐字核对 Git archive。
+- 当前运行 candidate/resumed-integrated-a（553文件，提交5edbdf6d671f023c9a4d39026152de8e6402b6bb）。女性发型的同人对照及综合新局BOM复核已完成；地图、机制顺序和集中验收仍为ENGINE_PARTIAL。主MOD玩法尚未合入。
 
 标签用于保存精确历史，不表示全部游戏机制已验证。当前主分支不是未经限定的“全部功能验收通过”发布版。
 

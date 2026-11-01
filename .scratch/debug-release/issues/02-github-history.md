@@ -7,7 +7,7 @@ Execution: claimed
 Assignee: root
 Blocked by: none
 Validation: NOT_APPLICABLE
-Evidence: WORK/reports/git-bootstrap-20261101.json
+Evidence: [首次保存](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/git-bootstrap-20261101.json>)；[六个新候选远端与archive核对](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/git-resumed-candidates-20261101T014406Z/report.json>)
 
 ## Scope
 
@@ -39,3 +39,18 @@ F2已另存 `candidate/f2`，提交 `6b9c90c38520dc9fe4695d4cc7c2b6a01e305c50`�
 2026-11-01：用户指定远端作为后续最终保存位置；本机首次 git ls-remote 因没有可用登录凭据失败，主控正在处理。此记录不宣称仓库已上传。
 
 2026-11-01：Git Credential Manager官方设备授权完成，HTTPS访问及推送成功。上述首次失败保留为历史，不再是当前阻塞。
+
+## Latest remote checkpoint
+
+2026-11-01本轮重新读取远端refs，原始版、F1/F2、未选用备选及下列6条新候选均仍存在。报告remote_verified=true、git_archive_exact=true；Git保存不代表玩法合入或全体验收。
+
+| 分支 | 提交 | 文件数 |
+| --- | --- | ---: |
+| candidate/sequence-a | 8931bd455a53ca949628a507db2058760505bb29 | 532 |
+| candidate/lin-resume-a | 7623b72cf3063f28fdde31ab5045b166f2b80c93 | 532 |
+| candidate/female-hair-a | e3726f929186b9c24899bcc817c78a816257c7e8 | 533 |
+| candidate/female-hair-b | 954f661fb5937cd7a1850678e82753d0013986e8 | 533 |
+| candidate/map-refinement-a | 4bf0ce6d333d48c3b53a535a547db6c5910822e6 | 549 |
+| candidate/resumed-integrated-a | 5edbdf6d671f023c9a4d39026152de8e6402b6bb | 553 |
+
+本次文档整理前main为670870a0dc3e4f2bae2d37a81f60bda1e1fc2e04且工作树干净；后续仅提交本票/任务索引、当前交接及development支持快照。原始玩法文件保持main基线，综合候选及运行冻结均不改。本任务随持续交付保持claimed。

@@ -14,7 +14,7 @@ Updated: 2026-11-01
 - 领域与工程职责见 [工程适配](../../docs/agents/engineering-skills.md)；任务字段见 [任务约定](../../docs/agents/issue-tracker.md)。
 - 详细设计继续使用 [原始范围账](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/12-scope-ledger.md>)和 [批次计划40](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/40-batched-debug-and-delivery.md>)。其中旧进度描述以精确候选及本轮结果为准，不删除原账。
 - 主 MOD 已备份为 `pre-change-github-f2-entry-20261101T002814Z`。F1 冻结为 `batch-debug-20261031-f1`；本轮 F2 目标为 `batch-debug-20261101-f2`，实际生成/冻结结果在对应任务记录。
-- 2026-11-01最新范围优先：接受玩家失国/GAME OVER（包括日本），不要求自动保控续玩。当前选定基底为F2别名修复版；玩家确认和日本旧终局两个独立候选均为UNSELECTED，不集成。
+- 2026-11-01最新范围优先：接受玩家失国/GAME OVER（包括日本），不要求自动保控续玩。F2别名版及sequence A保留为父链；当前运行resumed-integrated-20261101-a（553文件，SHA 1f0c4f79024eb674d60b2d2cbc2b82e2e7fea56673a55caeb78eb2d421d4650d）。玩家确认和日本旧终局两个独立候选仍UNSELECTED，不集成。
 
 ## Tasks
 
@@ -36,6 +36,13 @@ Updated: 2026-11-01
 - [日本设计与保护条件](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/japan-annex-recovery-batch-review.md>)：允许 JAP 被吞并；恢复三政权、人物与第三国保护仍须实测。
 - [本轮真实运行](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/runtime-003815-root-observations.md>)：原生JAP退让后GAME OVER已观察；手动“作为观察者继续”后自然恢复三国。这是可接受失败结果及世界机制证据，不改写为自动续玩。
 - 先核实际事件顺序：吞并→恢复三个日本政权；林汉涵后续统辖三个日本属国（可任其中一国摄政）；陈东阳刺杀→内战进度跃升→战争。具体条件和成功/失败证据沿实际源码查证，不自动补救或新造剧情。
+
+## Current checkpoint
+
+- 06原版参考/女性发型：completed / ENGINE_PASS，仅认证A同档牧沐子及女群像复现修复、BOM版综合新局牧沐子复核。主MOD玩法未合入。
+- 03、04、07均claimed / ENGINE_PARTIAL：综合新局12受改州和初始化已核，真实退让后三国恢复、Lin摄政显示及原生Mar12重载持久已观察；完整人物/关系审计、陈链、实际市场/航行与其余分支仍待。
+- 原始版、主MOD起点、F1/F2和6条新candidate分支已远端保存；[Git报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/git-resumed-candidates-20261101T014406Z/report.json>)的archive核对均逐字一致，综合提交5edbdf6。主分支只保存文档/support更新，不切换游戏部署。
+- 最新实际运行与所有偏差见[恢复记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/resumed-runtime-20261101-root-observations.md>)；新局基线和[BOM肖像记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T014437Z/evidence/Jan1-new-baseline/mu-muzi-newgame.json>)、[Lin重载记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T014437Z/evidence/Mar12-native-Lin-regency/reload-observation.json>)分别限定证明范围。综合global仍为13 PASS、1 FAIL、3 NOT_RUN，不能标整体验收。
 
 ## Not yet specified
 

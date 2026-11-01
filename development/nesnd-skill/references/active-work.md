@@ -1,46 +1,41 @@
-# 当前交接：DEBUG 收口与 GitHub 保存
+# 当前交接：综合候选实机验证与后续开发
 
-更新：2026-11-01。旧交接已原样归档到 [完整历史](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/archive/engineering-entry-20261101T002933Z/references/active-work.md>)，[归档 manifest](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/archive/engineering-entry-20261101T002933Z/manifest.json>)保存原始 SHA。旧运行 ID、窗口号及历史“当前”标题仅为证据，不作为现时进程状态。
+更新：2026-11-01；本次状态快照截至已记录的Mar12原生结算与新局发型观察。先读 [任务索引](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/map.md>)，实际后续步骤以 [主控运行记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/resumed-runtime-20261101-root-observations.md>) 为准。本次整理前全文及SHA保存在 [独立文档归档](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/archive/resumed-hair-completion-20261101T022359Z/manifest.json>)，更早交接链接保留在档内。
 
-## 当前授权与入口
+## 授权与工作顺序
 
-用户已要求保存最初版本和最新成果到 [私有 GitHub 仓库](https://github.com/EricYuyangLiu2286/Neo-Era-Southern-and-Northern-Dynasties)，并依次完成文档/技能整理、独立 F2 最小修复、集中实机验收、交付清单。**最终合入主 MOD 前仍须用户批准具体清单。**
-最新任务已扩展：先完成原版参考核心步骤、女性发型、指定六地区地图细化及既有 DEBUG，再实施完整 CNE 改革、明吴多结局、编辑器；海外市场退出为低优先级，仅保障基本开局运行和合理难度。保留原设计、人口基准与已有数据。用户已休息且明确不提问，当前自主推进已授权工作，不发起批准问题。当前任务状态与结果统一到 [执行索引](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/map.md>)，工程方法适配见 [项目说明](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/docs/agents/engineering-skills.md>)。
+用户明确恢复并要求休息期间不要提问。先完成原版参考核心步骤、中国女性发型、六地区地图细化和DEBUG，再推进完整CNE改革、明吴多结局、编辑器；海外市场退出降低优先级。合理实现选择自主处理。最终主MOD玩法合并仍保留具体清单审批，当前不发起问题；独立候选、证据、备份和Git保存继续。
 
-**最新用户纠正优先：接受包括日本在内的玩家失国/GAME OVER，不再以保控续玩作为发布门槛。** 当前只用F2别名修复版继续查源码和机制顺序，不集成玩家确认或日本旧终局备选。调试重点是吞并→恢复三个日本政权；林汉涵后续统辖三个日本属国（可任其中一国摄政）；陈东阳刺杀→内战进度跃升→战争。依原定目标核顺序、可达性、难度与玩家行动空间，减少设计追问，不自动加救援或新剧情。修订前说明完整保存在[范围归档](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/archive/accepted-failure-20261101T010339Z/manifest.json>)。
+保留原设计、现有疆域/人口基准与已验机制。玩家失国/GAME OVER、合理稀缺与破产可接受；不默认救援或保证不败。当前三条机制重点是吞并后恢复三个日本政权、Lin统辖三个日本属国（可任一国摄政）、陈东阳刺杀后内战进度跃升再触发战争。写功能/修复前完成SKILL“实现前先查原版完整链条”。
 
-详细设计与验收欠账继续读取 [原始范围12](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/12-scope-ledger.md>)、[批次计划40](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/40-batched-debug-and-delivery.md>)、[发布阻断历史总表](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/debug-status-and-release-blockers-20261031.md>)。这些旧表部分状态落后于 F1；优先核精确候选及新任务结果，保留原文作为历史。
+## 当前源与保存
 
-## 已核快照与候选
+- 主MOD仍是独立加载目录，当前只更新工程文档；玩法没有用候选覆盖。原始版本、当前主MOD、F1、F2及未选用备选的Git历史均保留。
+- 当前综合候选 `WORK/exports/resumed-integrated-20261101-a`：553文件，SHA `1f0c4f79024eb674d60b2d2cbc2b82e2e7fea56673a55caeb78eb2d421d4650d`。冻结运行副本 `WORK/exports/runtime-20261101T014437Z/mod` 不改。
+- 综合A以sequence A为共同父，整合Lin resume、hair B、六地区map和工程文档；来源见 [合并清单](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/resumed-integrated-20261101-a-merge.json>)。
+- [Git保存报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/git-resumed-candidates-20261101T014406Z/report.json>)已核6条新candidate分支及Git archive逐字一致；综合分支 `candidate/resumed-integrated-a` 提交 `5edbdf6d671f023c9a4d39026152de8e6402b6bb`。工作副本 `WORK/projects/nesnd-repository`，main只维护当前主MOD内容及文档/support。最新refs细表在 [任务02](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/02-github-history.md>)。
+- `f2-player-continuation-20261101-a`（5b8e9824…）和 `f2-japan-legacy-20261101-a`（0332f0dc…）仍UNSELECTED，存档分支和独立备份均保留，不集成。它们的静态结果和备选局限不构成当前交付门槛。
 
-- 主 MOD：318文件，SHA `bf6558a3d20d475988e5487f59aab6d08205c4a8f7091280ba7313ff44e787b6`，本轮编辑前备份 `WORK/backups/pre-change-github-f2-entry-20261101T002814Z/mod`。本轮文档编辑后指纹会变化，此值只是起点。
-- 冻结 F1：`WORK/exports/batch-debug-20261031-f1`，514文件，SHA `3b379906c62a4611513bcf9110ecce429a84c22b48562b920b86f2307f3ebcdb`；独立备份 `candidate-batch-debug-f1-20261101T000328Z/mod`，不覆盖。
-- F1 已合 E1 海域、Japan A1（含 Lin）、功能本地化和字面 scope 修复；[合并记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/batch-debug-20261031-f1-merge.json>)为来源。计划40中 Lin“待合本批”、日本“待完成闭包”是旧状态。
-- 当前运行基底F2为 `WORK/exports/batch-debug-20261101-f2`，526文件，SHA `416ac54f8fb9f4c4ab1c86266519b517724f9f78a9a396e4579342774fb9353f`。后续编辑在独立 `WORK/exports/f2-sequence-debug-20261101-a`：保留已赚危机进度的JE初始化守卫、用户允许的Lin日本摄政链路；本体/F1/本运行冻结不改。实际生成、冻结与验证结果在 [F2任务](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/03-f2-minimal-debug.md>)更新。
-- 未选用备选保持原样：`f2-player-continuation-20261101-a`，SHA `5b8e98246e52f4d8cb160257e18aa9a4f4e8896e8be7473d618ea0ee9632fd5e`，备份 `candidate-f2-player-continuation-a-final-20261101T004755Z/mod`；`f2-japan-legacy-20261101-a`，SHA `0332f0dcc72f290b7873f2ae61d222c8f215e5e4f428d56db6a97d7e69213018`，备份 `candidate-f2-japan-legacy-a-20261101T005454Z/mod`。这些是保留的静态候选，不是accepted或待自动合并。玩家主动离开后的selection锁中断边界仍是备选局限；日本备选没有完成第二次独立审查。
-- GitHub 保存由 [版本任务](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/02-github-history.md>)记录远端与提交结果。官方设备授权及首次推送已成功；原始288文件、当前主MOD318文件和F1的独立提交/标签均已保存并核对远端refs。Git工作副本为 `WORK/projects/nesnd-repository`；文档更新与F2后续保存仍在进行。
+## 当前验收范围
 
-## 尚需收口
+[综合全局报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/validation/runs/resumed-integrated-20261101-a-global/report.md>)：13 PASS、1 FAIL、3 NOT_RUN。唯一FAIL为Tiger分类债；Foochow同形原版奖励、旧Russia空if有独立源码依据，旧报告保留，未知告警不自动清绿。历史/人口/生产/几何/交通/MCP通过限静态或协议层。
 
-[F1统一报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/validation/runs/f1-global-20261101-final/report.md>)：12 PASS、2 FAIL、3 NOT_RUN，F1未绑定实际运行证据。源码版本1.13.11/build24799966、固定人口±25%、历史顺序、资源/生产、海域/交通结构、实际MCP通过均限各自检查范围。
+| 任务 | 当前结果 |
+| --- | --- |
+| 06 原版参考与女性发型 | completed / ENGINE_PASS，限本票复现范围：A同档牧沐子/女群像修复实测，hair B随综合A新局牧沐子肖像复核通过；不是全MOD或全部肖像认证 |
+| 07 六地图细化 | claimed / ENGINE_PARTIAL：新局12受改州及全球国家地块、人口/建筑股份/首都/交通对象初始化已核；真实接入率、航行、战争与重载覆盖尚欠 |
+| 03 DEBUG顺序收口 | claimed / ENGINE_PARTIAL：日本真实退让后恢复、Lin摄政已有原生观察；Lin原生重载后摄政显示已保持，完整人物/关系审计及陈链仍在验证 |
+| 04 集中实机 | claimed / ENGINE_PARTIAL：当前run014437，所需分支尚未全部覆盖 |
+| 08 原始欠账 | 仍待本批闭包，按原计划推进，不把当前局部结果写成整个MOD完成 |
 
-1. 内容闭包唯一 hard error 是原版简中 `great_game_complete_tt` 的 `concept_geogregions` 拼写；现有本体概念为 `concept_georegion(s)`。F2用独立兼容入口处理，不改本体。
-2. Tiger 的 annex 枚举/target_region、3处缩进提示需按现有源码证据完成分类。原版俄罗斯空if改值会影响全球AI；26处人物裸ig仍兼容性待证，不因清告警批量改。
-3. F2最初统一报告为13 PASS、2 FAIL、2 NOT_RUN。`known_semantic_review`中的玩家续玩FAIL依据已被用户最新范围撤回，应保留旧报告并更新当前分类，不伪造当时PASS；其余项仍逐一核来源SHA与实际机制证据。
-4. 优先核日本吞并后恢复、Lin后续统辖、陈案触发内战三条链，再覆盖海运、PHI与实际受影响机制。日本吞并和玩家GAME OVER本身允许；不因旧事件无调用就擅自接回叙事。
+06详细源链和证据见 [发型任务](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/06-source-first-female-hair.md>)。A前后run012826/013305读取同一原生首日档，牧沐子ID3124、身份/脸/衣服不变；B只补UTF-8 BOM。B于run014437全新局中重新打开完整肖像通过，[新局截图与记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T014437Z/evidence/Jan1-new-baseline/mu-muzi-newgame.json>)明确绑定综合候选SHA，无新增BOM告警。
 
-PHI现金A正常到期/提前撤约只在C5已测；陈案购买/撤卫/到期/指定负伤及部分姓名/界面来自更早精确版本。E1 Jan1已证明67港口连接实例化，未证明实际接入率或舰队抵达。全部证据继续保留原版本身份。
-完整CNE改革、明吴其它结局/转国、海外市场退出和编辑器等原始欠账仍在范围12；本轮收口不等于整个MOD交付完成。
+## 实际运行断点与边界
 
-## 恢复运行
+游戏1.13.11/build24799966，EACR→综合A→QA E，run `20261101T014437Z`。恢复后旧CUA停止已属历史；每次恢复仍须枚举进程/窗口，不复用旧句柄。主控独占UI，文档代理没有启动或操作游戏。
 
-2026-11-01本轮实际运行run `20261101T003815Z`，冻结源为上述F2别名版526文件。原生Jan27 JAP玩家让步后实际GAME OVER，主控点击内置“作为观察者继续”；Jan29自然回调与Feb9原生档证明JAP/JTK/JIM存活及真实保护关系，96省色分配、第三国未变，见[Feb9审计](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T003815Z/evidence/Feb9-native-backdown-result/review.md>)与[原始人物时间线](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T003815Z/evidence/Feb9-native-backdown-result/original-character-timeline.json>)。旧JAP人物retired/仍记owner17不等于已死，实际is_character_alive探针尚欠。GAME OVER是已接受结果，不改写成自动续玩。
+全新USM Jan1原生档SHA `9b4de7f764cb5e1e28e77c5aea76337651dd69e24ffbb6390941d2c1819f9982`、seed1873443562，见 [基线审计](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T014437Z/evidence/Jan1-new-baseline/baseline-review.md>)。地图必须用这个新局验收；旧档只支持同人对照，不能认证新州。QE1缺lathe导致4纺织等级手缝是旧原生fallback，不能当拆州损失或随意改经济。
 
-随后准备Lin夹具时CUA返回“physical Escape”停止信号；本轮已停止所有ComputerUse，不归因用户实际按键。Lin结果为NOT_OBSERVED，最后已知状态为Jan1暂停YN1；没有因此启动第二局或改变生产候选。[实时操作记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/runtime-003815-root-observations.md>)和[GAME OVER界面证据](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T003815Z/stages/native-backdown-gameover/capture.json>)保留原始步骤。后续源码分析可继续，UI恢复须按工具边界与最新用户授权处理，不能沿用旧exec或窗口ID。
+Feb3原生JAP退让→实际GAME OVER→手动选择内置观察者继续→世界恢复三政权；这条路径未直接调用恢复helper。实际走至Mar12后，合法国家ROOT下probe观察REALM_READY、LIN_COMPLETED、LIN_ACTUAL_JAP_RULER、LIN_REGENCY_ACTIVE为YES，政治页显示摄政王林汉涵。Mar12原生档已保存并经实际Load Game重载（档SHA 517f15165a5ed10e91422c83e40600e9c878126e77378949607bda8082bcaf45），政治页摄政政府/摄政王林汉涵保持，见[重载记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T014437Z/evidence/Mar12-native-Lin-regency/reload-observation.json>)；完整关系和领土审计继续取证；不得把截图与单次probe扩成全部分支通过。短暂误点瑞典tag、无国家observer probe产生的QA错误及原版Peru/Bolivia重复均如实保留。
 
-先枚举当前进程/窗口，核真实加载组合；不得沿用旧exec或窗口号。编辑候选、冻结运行副本和存档分别记录，主控独占UI。
-统一入口与证据要求见 [validation README](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/validation/README.md>)及 [游戏验证](validation.md)。F2实际通过后保存独立版本并汇总精确合并清单；用户休息期间不提出问题，继续独立候选和欠账工作。
-
-## 2026-11-01断点恢复
-
-用户明确 resume；旧“本轮停止 ComputerUse”描述属于上一回合，不再作为本次操作禁令。新运行先枚举真实进程/窗口，不能沿用旧ID。共同父候选 sequence A 为532文件，SHA `3325ec418bf25fceef54cda480444e1ca739c0836c40c97af051c841bc7b1b5a`；Lin补齐、发型、地图分别独立派生，再三方合并。本次范围变更前全文与SHA见 [resumed-expanded-scope-20261101T012820Z](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/archive/resumed-expanded-scope-20261101T012820Z/manifest.json>)。
+下一具体入口：完成Mar12人物/关系审计，再从Jan1新基线分支验证陈链与真实交通；按影响闭包补PHI及现有机制。原始设计/欠账继续引用 [范围12](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/12-scope-ledger.md>)和 [批次40](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/40-batched-debug-and-delivery.md>)，历史进度以精确版本和当前任务结果校正。统一检查不能替代实际事件、航行、经济和存读档；成功后按已验范围备份，最终玩法合并清单另行保留待审。

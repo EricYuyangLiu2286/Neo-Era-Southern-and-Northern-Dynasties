@@ -7,7 +7,7 @@ Execution: claimed
 Assignee: root
 Blocked by: 03
 Validation: ENGINE_PARTIAL
-Evidence: [F2运行观察](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/runtime-003815-root-observations.md>)
+Evidence: [恢复后综合实机记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/resumed-runtime-20261101-root-observations.md>)；[新局基线](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T014437Z/evidence/Jan1-new-baseline/baseline-review.md>)
 Resume: 用户明确恢复；旧停止保留为历史证据，本轮重新启动隔离运行。新增女性发型同人前后对照、六地区地图和实际交通覆盖。
 
 ## Scope
@@ -25,6 +25,10 @@ Resume: 用户明确恢复；旧停止保留为历史证据，本轮重新启动
 - 失败返回源码最小修复再冻结；部分完成明确 ENGINE_PARTIAL，不升级为全 MOD 验收。
 
 ## Result
+
+当前run20261101T014437Z使用冻结综合A（553文件，SHA 1f0c4f79024eb674d60b2d2cbc2b82e2e7fea56673a55caeb78eb2d421d4650d），真实新局首日基线与hair B肖像复核已完成。Feb3原生退让→GAME OVER→手动观察者继续→三日本政权恢复，Mar12合法ROOT下Lin完成/实际JAP君主/摄政探针为YES，政治页实显摄政王林汉涵。Mar12已另存并通过原生Load Game重载，政治页摄政政府/摄政王林汉涵保持，见[重载记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T014437Z/evidence/Mar12-native-Lin-regency/reload-observation.json>)；完整人物/关系审计、陈链与交通等仍待，保持ENGINE_PARTIAL。实际误点tag及无ROOT probe的QA错误详见Evidence，不能改写为纯默认玩家路线或全部通过。
+
+以下为旧run来源记录：
 
 run20261101T003815Z已在F2别名版真实新开USM，原生JAP让步确认后出现GAME OVER；手动作为观察者继续，自然回调观察到三国恢复。原档与关系/领土审计见Evidence及主控后续记录。Lin操作被CUA中断，不能标通过；海运、PHI等剩余覆盖仍欠。该结果不是两个未选用备选的验收。
 
