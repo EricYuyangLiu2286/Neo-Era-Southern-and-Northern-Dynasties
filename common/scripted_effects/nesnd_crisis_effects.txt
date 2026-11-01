@@ -2,70 +2,103 @@
     if = { limit = { NOT = { has_variable = cne_landreform_completion_tracker } } set_variable = { name = cne_landreform_completion_tracker value = 25 } }
     if = { limit = { NOT = { has_variable = cne_landreform_failure_tracker } } set_variable = { name = cne_landreform_failure_tracker value = 20 } }
     if = { limit = { NOT = { has_variable = nesnd_land_months } } set_variable = { name = nesnd_land_months value = 0 } }
+    if = { limit = { NOT = { has_variable = nesnd_reform_v2 } }
+        set_variable = nesnd_reform_v2
+        set_variable = { name = nesnd_reform_samples value = 0 }
+        set_variable = { name = nesnd_reform_good_months value = 0 }
+        set_variable = { name = nesnd_reform_bad_months value = 0 }
+        nesnd_reform_measure = yes
+    }
 }
 nesnd_land_monthly = {
-    nesnd_land_init = yes
-    change_variable = { name = nesnd_land_months add = 1 }
-    if = { limit = { bureaucracy >= 0 is_at_war = no } change_variable = { name = cne_landreform_completion_tracker add = 0.75 } }
-    else = { change_variable = { name = cne_landreform_failure_tracker add = 0.75 } }
-    if = { limit = { bureaucracy < 0 } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
-    if = { limit = { country_turmoil > 0.25 } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
-    if = { limit = { has_modifier = declared_bankruptcy } change_variable = { name = cne_landreform_failure_tracker add = 1 } }
-    if = { limit = { has_variable = nesnd_north_intervention } change_variable = { name = cne_landreform_failure_tracker add = 1 } }
-    if = { limit = { has_technology_researched = nationalism has_technology_researched = labor_movement } change_variable = { name = cne_landreform_completion_tracker add = 0.25 } }
-    if = { limit = { NOT = { any_scope_state = { market_access < 0.85 } } } change_variable = { name = cne_landreform_completion_tracker add = 0.25 } }
-    if = { limit = { has_law_or_variant = law_type:law_public_schools NOT = { has_law_or_variant = law_type:law_serfdom } } change_variable = { name = cne_landreform_completion_tracker add = 0.25 } }
-    if = { limit = { ig:ig_landowners = { is_powerful = yes is_in_government = yes } } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
-    if = { limit = { has_modifier = nesnd_land_appeals } change_variable = { name = cne_landreform_failure_tracker add = -1 } }
-    if = { limit = { var:cne_landreform_failure_tracker >= 55 NOT = { has_variable = nesnd_land_petition_seen } }
-        set_variable = nesnd_land_petition_seen
-        trigger_event = { id = nesnd_crisis.30 popup = yes }
+    if = { limit = { nesnd_reform_active = yes }
+        nesnd_land_init = yes
+        change_variable = { name = nesnd_land_months add = 1 }
+        change_variable = { name = nesnd_reform_samples add = 1 }
+        nesnd_reform_measure = yes
+        if = { limit = { var:nesnd_reform_samples > 3 }
+            nesnd_reform_regional_monthly = yes
+            if = { limit = { nesnd_reform_healthy = yes }
+                change_variable = { name = nesnd_reform_good_months add = 1 }
+                change_variable = { name = cne_landreform_completion_tracker add = 2 }
+                change_variable = { name = cne_landreform_failure_tracker add = -1 }
+            } else = {
+                set_variable = { name = nesnd_reform_good_months value = 0 }
+                if = { limit = { nesnd_reform_substantive_progress = yes } change_variable = { name = cne_landreform_completion_tracker add = 0.5 } }
+            }
+            if = { limit = { nesnd_reform_distress = yes }
+                change_variable = { name = nesnd_reform_bad_months add = 1 }
+                change_variable = { name = cne_landreform_failure_tracker add = 1 }
+            } else = { set_variable = { name = nesnd_reform_bad_months value = 0 } }
+            if = { limit = { bureaucracy < 0 } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
+            if = { limit = { country_turmoil > 0.25 } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
+            if = { limit = { is_at_war = yes } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
+            if = { limit = { has_modifier = declared_bankruptcy } change_variable = { name = cne_landreform_failure_tracker add = 1 } }
+            if = { limit = { nesnd_reform_hostile_landowners = yes } change_variable = { name = cne_landreform_failure_tracker add = 0.25 } }
+            if = { limit = { nesnd_reform_cooperative_cabinet = yes } change_variable = { name = cne_landreform_failure_tracker add = -0.25 } }
+            if = { limit = { has_modifier = nesnd_land_appeals } change_variable = { name = cne_landreform_failure_tracker add = -0.5 } }
+            if = { limit = { var:cne_landreform_failure_tracker >= 55 NOT = { has_variable = nesnd_land_petition_seen } }
+                set_variable = nesnd_land_petition_seen
+                trigger_event = { id = nesnd_crisis.30 popup = yes }
+            }
+            if = { limit = { nesnd_reform_local_crisis = yes NOT = { has_variable = nesnd_reform_local_seen } }
+                set_variable = nesnd_reform_local_seen
+                trigger_event = { id = nesnd_crisis.33 popup = yes }
+            }
+        }
+        clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+        clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+        nesnd_refresh_land_display = yes
     }
-    clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 } clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
-
-    nesnd_refresh_land_display = yes
 }
 nesnd_land_cleanup = {
     set_variable = ce_CNE_land_reform_done
     remove_variable = flavorCNE_land_reform_value
     remove_modifier = CNE_land_draft_debuff
-    remove_variable = nesnd_north_intervention
+    remove_variable = nesnd_reform_terminal_pending
+    nesnd_reform_clear_local = yes
 }
 nesnd_land_success = {
-    nesnd_land_cleanup = yes
-    set_variable = nesnd_land_succeeded
-    if = { limit = { var:nesnd_land_months <= 60 var:cne_landreform_failure_tracker < 35 }
-        set_variable = nesnd_land_rapid_success
-        add_modifier = { name = nesnd_land_rapid months = 120 }
+    if = { limit = { nesnd_reform_active = yes nesnd_reform_healthy = yes var:nesnd_reform_good_months >= 12 var:cne_landreform_completion_tracker >= 100 }
+        set_variable = nesnd_land_succeeded
+        if = { limit = { var:nesnd_land_months <= 48 var:nesnd_reform_good_months >= 24 var:cne_landreform_failure_tracker < 30 }
+            set_variable = nesnd_land_rapid_success
+            add_modifier = { name = nesnd_land_rapid months = 120 }
+        }
+        nesnd_land_cleanup = yes
+        trigger_event = { id = flavorCNE.3 popup = yes }
     }
-    if = { limit = { OR = { has_law_or_variant = law_type:law_serfdom has_law_or_variant = law_type:law_tenant_farmers } }
-        activate_law = law_type:law_peasant_proprietorship
-    }
-    trigger_event = { id = flavorCNE.3 popup = yes }
 }
 nesnd_land_freeze = {
-    nesnd_land_cleanup = yes
-    set_variable = nesnd_land_frozen
-    add_modifier = { name = nesnd_land_compromise months = 120 }
+    if = { limit = { nesnd_reform_active = yes }
+        set_variable = nesnd_land_frozen
+        nesnd_land_cleanup = yes
+        remove_modifier = nesnd_land_compromise
+        add_modifier = { name = nesnd_land_compromise months = 120 }
+        trigger_event = { id = flavorCNE.2 popup = yes }
+    }
 }
 
 
 nesnd_release_nsx = {
-        if = { limit = { NOT = { exists = c:NSX } num_states > 1
-            exists = s:STATE_SHANXI.region_state:CNE
-            s:STATE_SHANXI.region_state:CNE = { is_capital = no }
+    if = { limit = { c:CNE ?= this NOT = { exists = c:NSX } num_states > 1 any_scope_state = { nesnd_reform_local_state = yes } }
+        ordered_scope_state = { limit = { nesnd_reform_local_state = yes }
+            order_by = nesnd_reform_state_unemployment_rate position = 0 check_range_bounds = no
+            save_scope_as = nesnd_reform_seceding_state
+            state_region = { save_scope_as = nesnd_reform_seceding_region }
         }
-            create_country = { tag = NSX origin = this state = s:STATE_SHANXI.region_state:CNE
-                on_created = {
-                    set_variable = nesnd_republican_rising
-                    activate_law = law_type:law_presidential_republic
-                    add_modifier = { name = nesnd_secession_disorder months = 36 }
-                    add_change_relations_progress = { country = c:CNE value = -75 }
-                }
+        create_country = { tag = NSX origin = this state = scope:nesnd_reform_seceding_state
+            on_created = {
+                nesnd_land_cleanup = yes
+                set_variable = nesnd_republican_rising
+                activate_law = law_type:law_presidential_republic
+                add_modifier = { name = nesnd_secession_disorder months = 36 }
+                c:CNE ?= { add_change_relations_progress = { country = prev value = -75 } }
             }
-            s:STATE_SHANXI = { add_claim = root }
         }
+        scope:nesnd_reform_seceding_region = { add_claim = root }
     }
+}
 
 nesnd_release_nhb = {
         if = { limit = { NOT = { exists = c:NHB } num_states > 1
@@ -73,12 +106,14 @@ nesnd_release_nhb = {
             s:STATE_ZHILI.region_state:CNE = { is_capital = no }
         }
             create_country = { tag = NHB origin = this state = s:STATE_ZHILI.region_state:CNE
-                on_created = {
+                on_created = { nesnd_land_cleanup = yes
+
                     set_variable = nesnd_military_secession
                     activate_law = law_type:law_monarchy
                     add_modifier = { name = nesnd_secession_disorder months = 36 }
                     add_change_relations_progress = { country = c:CNE value = -75 }
-                }
+                
+}
             }
             s:STATE_ZHILI = { add_claim = root }
         }
@@ -90,25 +125,30 @@ nesnd_release_nsd = {
             s:STATE_SHANDONG.region_state:CNE = { is_capital = no }
         }
             create_country = { tag = NSD origin = this state = s:STATE_SHANDONG.region_state:CNE
-                on_created = {
+                on_created = { nesnd_land_cleanup = yes
+
                     set_variable = nesnd_military_secession
                     activate_law = law_type:law_monarchy
                     add_modifier = { name = nesnd_secession_disorder months = 36 }
                     add_change_relations_progress = { country = c:CNE value = -75 }
-                }
+                
+}
             }
             s:STATE_SHANDONG = { add_claim = root }
         }
     }
 
 nesnd_land_collapse = {
-    nesnd_land_cleanup = yes
-    set_variable = nesnd_land_collapsed
-    nesnd_release_nsx = yes
-    nesnd_release_nhb = yes
-    nesnd_release_nsd = yes
-    add_modifier = { name = nesnd_land_compromise months = 120 }
-    add_radicals = { value = 0.10 }
+    if = { limit = { nesnd_reform_extreme_crisis = yes }
+        nesnd_release_nsx = yes
+        nesnd_release_nhb = yes
+        nesnd_release_nsd = yes
+        set_variable = nesnd_land_collapsed
+        nesnd_land_cleanup = yes
+        remove_modifier = nesnd_land_compromise
+        add_modifier = { name = nesnd_land_compromise months = 120 }
+        add_radicals = { value = 0.10 }
+    } else_if = { limit = { nesnd_reform_active = yes } nesnd_land_freeze = yes }
 }
 
 nesnd_join_opposition_play = {
@@ -135,35 +175,200 @@ c:HUS ?= { trigger_event = { id = nesnd_crisis.21 days = 3 popup = yes } }
 }
 
 nesnd_open_southern_war = {
-    if = { limit = { NOT = { has_global_variable = usm_civilwar_occured } }
-        if = { limit = { c:SIH ?= { has_variable = usm_opposition_country } } c:SIH = { save_scope_as = nesnd_opposition_leader } }
-else_if = { limit = { c:HNA ?= { has_variable = usm_opposition_country } } c:HNA = { save_scope_as = nesnd_opposition_leader } }
-else_if = { limit = { c:GNG ?= { has_variable = usm_opposition_country } } c:GNG = { save_scope_as = nesnd_opposition_leader } }
-else_if = { limit = { c:PHI ?= { has_variable = usm_opposition_country } } c:PHI = { save_scope_as = nesnd_opposition_leader } }
-else_if = { limit = { c:DEI ?= { has_variable = usm_opposition_country } } c:DEI = { save_scope_as = nesnd_opposition_leader } }
-else_if = { limit = { c:YN1 ?= { has_variable = usm_opposition_country } } c:YN1 = { save_scope_as = nesnd_opposition_leader } }
-else_if = { limit = { c:JAP ?= { has_variable = usm_opposition_country } } c:JAP = { save_scope_as = nesnd_opposition_leader } }
-
-        if = { limit = { exists = scope:nesnd_opposition_leader }
-            scope:nesnd_opposition_leader = { set_variable = usm_opposition_country_leader_var }
-            every_country = { limit = { has_variable = usm_opposition_country is_subject_of = root } make_independent = yes }
-            create_diplomatic_play = { name = usm_civilwar_play target_country = scope:nesnd_opposition_leader type = dp_usm_civil_war }
-            random_diplomatic_play = {
-                limit = { initiator = root target = scope:nesnd_opposition_leader }
-                set_variable = this_is_nanming_civilwar_var
-            }
-            set_global_variable = usm_civilwar_occured
-            set_variable = { name = nesnd_war_opening_grace months = 6 }
-            every_country = { limit = { has_variable = usm_opposition_country NOT = { this = scope:nesnd_opposition_leader } is_subject = no }
-                random_diplomatic_play = { limit = { has_variable = this_is_nanming_civilwar_var } add_target_backers = { prev } }
-            }
-            every_country = { limit = { OR = { has_variable = usm_opposition_country is_subject_of = root c:JAP ?= this } NOT = { c:USM ?= this } }
-                trigger_event = { id = usm_civilwar.2 days = 1 popup = yes }
-            }
-            c:CNE ?= { if = { limit = { has_variable = nesnd_north_intervention } nesnd_join_opposition_play = yes } }
-            c:JAP ?= { if = { limit = { has_variable = ce_usm_cw_ally_with_mng is_subject = no }
-                random_diplomatic_play = { limit = { has_variable = this_is_nanming_civilwar_var } add_initiator_backers = { c:JAP } }
-            } }
-        } else = { trigger_event = { id = usm_civilwar.3 popup = yes } }
-    }
+	if = {
+		limit = {
+			NOT = {
+				has_global_variable = usm_civilwar_occured
+			}
+		}
+		nesnd_ming_find_rebel_host = yes
+		if = {
+			limit = {
+				exists = var:nesnd_ming_receiver
+			}
+			var:nesnd_ming_receiver = {
+				save_scope_as = nesnd_opposition_leader
+			}
+		}
+		else_if = {
+			limit = {
+				c:SIH ?= {
+					has_variable = usm_opposition_country
+				}
+			}
+			c:SIH = {
+				save_scope_as = nesnd_opposition_leader
+			}
+		}
+		else_if = {
+			limit = {
+				c:HNA ?= {
+					has_variable = usm_opposition_country
+				}
+			}
+			c:HNA = {
+				save_scope_as = nesnd_opposition_leader
+			}
+		}
+		else_if = {
+			limit = {
+				c:GNG ?= {
+					has_variable = usm_opposition_country
+				}
+			}
+			c:GNG = {
+				save_scope_as = nesnd_opposition_leader
+			}
+		}
+		else_if = {
+			limit = {
+				c:PHI ?= {
+					has_variable = usm_opposition_country
+				}
+			}
+			c:PHI = {
+				save_scope_as = nesnd_opposition_leader
+			}
+		}
+		else_if = {
+			limit = {
+				c:DEI ?= {
+					has_variable = usm_opposition_country
+				}
+			}
+			c:DEI = {
+				save_scope_as = nesnd_opposition_leader
+			}
+		}
+		else_if = {
+			limit = {
+				c:YN1 ?= {
+					has_variable = usm_opposition_country
+				}
+			}
+			c:YN1 = {
+				save_scope_as = nesnd_opposition_leader
+			}
+		}
+		else_if = {
+			limit = {
+				c:JAP ?= {
+					has_variable = usm_opposition_country
+				}
+			}
+			c:JAP = {
+				save_scope_as = nesnd_opposition_leader
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:nesnd_opposition_leader
+			}
+			scope:nesnd_opposition_leader = {
+				set_variable = usm_opposition_country_leader_var
+			}
+			every_country = {
+				limit = {
+					has_variable = usm_opposition_country
+					is_subject_of = root
+				}
+				make_independent = yes
+			}
+			create_diplomatic_play = {
+				name = usm_civilwar_play
+				target_country = scope:nesnd_opposition_leader
+				type = dp_usm_civil_war
+			}
+			random_diplomatic_play = {
+				limit = {
+					initiator = root
+					target = scope:nesnd_opposition_leader
+				}
+				set_variable = this_is_nanming_civilwar_var
+			}
+			if = {
+				limit = {
+					any_diplomatic_play = {
+						has_variable = this_is_nanming_civilwar_var
+						initiator = root
+						target = scope:nesnd_opposition_leader
+					}
+				}
+				remove_variable = nesnd_south_play_failed
+				nesnd_south_war_readiness_outcome = yes
+				set_global_variable = usm_civilwar_occured
+				trigger_event = {
+					id = nesnd_ming_court.2
+					days = 0
+				}
+				set_variable = {
+					name = nesnd_war_opening_grace
+					months = 6
+				}
+				every_country = {
+					limit = {
+						has_variable = usm_opposition_country
+						NOT = {
+							this = scope:nesnd_opposition_leader
+						}
+						is_subject = no
+					}
+					random_diplomatic_play = {
+						limit = {
+							has_variable = this_is_nanming_civilwar_var
+						}
+						add_target_backers = { prev }
+					}
+				}
+				every_country = {
+					limit = {
+						OR = {
+							has_variable = usm_opposition_country
+							is_subject_of = root
+							c:JAP ?= this
+						}
+						NOT = {
+							c:USM ?= this
+						}
+					}
+					trigger_event = {
+						id = usm_civilwar.2
+						days = 1
+						popup = yes
+					}
+				}
+				c:CNE ?= {
+					if = {
+						limit = {
+							has_variable = nesnd_north_intervention
+						}
+						nesnd_join_opposition_play = yes
+					}
+				}
+				c:JAP ?= {
+					if = {
+						limit = {
+							has_variable = ce_usm_cw_ally_with_mng
+							is_subject = no
+						}
+						random_diplomatic_play = {
+							limit = {
+								has_variable = this_is_nanming_civilwar_var
+							}
+							add_initiator_backers = { c:JAP }
+						}
+					}
+				}
+			}
+			else = {
+				set_variable = nesnd_south_play_failed
+			}
+		}
+		else = {
+			trigger_event = {
+				id = usm_civilwar.3
+				popup = yes
+			}
+		}
+	}
 }

@@ -1,0 +1,53 @@
+﻿# Called weekly and immediately before monthly progression.
+nesnd_south_reset_broken_deadlock = {
+ if = { limit = { c:USM ?= this has_variable = nesnd_south_deadlock_started NOT = { nesnd_south_deadlock_context = yes } }
+  remove_variable = nesnd_south_deadlock_started
+  remove_variable = nesnd_south_deadlock_minimum
+  remove_variable = nesnd_south_deadlock_review
+ }
+}
+nesnd_south_start_reconciliation = {
+    if = { limit = { c:USM ?= this nesnd_south_pressure_value >= 60 nesnd_south_reconciliation_basis = yes NOT = { has_variable = nesnd_south_reconciliation_active } }
+        set_variable = nesnd_south_reconciliation_active
+        set_variable = { name = nesnd_south_reconciliation_first_month months = 1 }
+        set_variable = { name = nesnd_south_reconciliation_payments value = 0 }
+        if = { limit = { NOT = { has_journal_entry = nesnd_south_reconciliation } } add_journal_entry = { type = nesnd_south_reconciliation } }
+    }
+}
+nesnd_south_stop_reconciliation = {
+    remove_variable = nesnd_south_reconciliation_active
+    remove_variable = nesnd_south_reconciliation_first_month
+}
+nesnd_south_reconciliation_month = {
+ nesnd_south_reset_broken_deadlock = yes
+    if = { limit = { c:USM ?= this NOT = { has_global_variable = nesnd_south_settled } }
+        if = { limit = { nesnd_south_deadlock_context = yes NOT = { has_variable = nesnd_south_deadlock_started } }
+            set_variable = nesnd_south_deadlock_started
+            set_variable = { name = nesnd_south_deadlock_minimum months = 24 }
+        }
+        if = { limit = { has_variable = nesnd_south_reconciliation_active }
+            nesnd_south_measure_politics = yes
+            if = { limit = { nesnd_south_reconciliation_basis = yes }
+                if = { limit = { NOT = { has_variable = nesnd_south_reconciliation_first_month } }
+                    change_variable = { name = usm_conflicts_within_tracker add = -3 }
+                    clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+                    change_variable = { name = nesnd_south_reconciliation_payments add = 1 }
+                }
+            } else = { nesnd_south_stop_reconciliation = yes }
+        }
+        if = { limit = { nesnd_south_deadlock_context = yes has_variable = nesnd_south_deadlock_started NOT = { has_variable = nesnd_south_deadlock_minimum } NOT = { has_variable = nesnd_south_deadlock_review } }
+            set_variable = { name = nesnd_south_deadlock_review months = 12 }
+            trigger_event = { id = nesnd_court_followup.19 popup = yes }
+        }
+    }
+}
+nesnd_south_accept_inconclusive_order = {
+    if = { limit = { nesnd_south_deadlock_context = yes has_variable = nesnd_south_deadlock_started NOT = { has_variable = nesnd_south_deadlock_minimum } }
+        set_variable = nesnd_south_inconclusive_settlement
+        set_global_variable = nesnd_south_settled
+        remove_variable = ce_usm_civilwar_journal_trigger
+        remove_variable = nesnd_south_peace_pending
+        remove_variable = nesnd_accession_pending
+        nesnd_south_stop_reconciliation = yes
+    }
+}

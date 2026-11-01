@@ -1,0 +1,69 @@
+﻿nesnd_ten_country = { c:DEI ?= this is_country_alive = yes exists = s:STATE_TENASSERIM.region_state:DEI }
+nesnd_ten_active = { nesnd_ten_country = yes has_journal_entry = nesnd_tenasserim_recovery NOT = { has_variable = nesnd_ten_done } NOT = { has_variable = nesnd_ten_dismissed } }
+nesnd_ten_jobs_ready = { var:nesnd_ten_workforce > 0 var:nesnd_ten_unemployment <= 0.12 }
+nesnd_ten_livelihood_ready = { var:nesnd_ten_starving <= 0.25 var:nesnd_ten_sol >= 6.5 }
+nesnd_ten_healthy = {
+    nesnd_ten_active = yes var:nesnd_ten_samples >= 3
+    nesnd_ten_jobs_ready = yes nesnd_ten_livelihood_ready = yes
+    var:nesnd_ten_access >= 0.85 is_at_war = no NOT = { has_modifier = declared_bankruptcy }
+    s:STATE_TENASSERIM.region_state:DEI = {
+        any_scope_building = {
+            OR = { is_building_type = building_logging_camp is_building_type = building_fishing_wharf is_building_type = building_iron_mine is_building_type = building_tooling_workshop is_building_type = building_textile_mill is_building_type = building_food_industry }
+            occupancy >= 0.75 building_has_goods_shortage = no
+        }
+    }
+}
+nesnd_ten_distress = { OR = { var:nesnd_ten_unemployment > 0.25 var:nesnd_ten_starving > 0.50 has_modifier = declared_bankruptcy } }
+nesnd_ten_can_build = {
+    nesnd_ten_active = yes is_at_war = no NOT = { has_modifier = declared_bankruptcy }
+    gold_reserves >= 5000 var:nesnd_ten_orders < 2 NOT = { has_variable = nesnd_ten_build_cooldown }
+    capital.market = { mg:wood = { market_goods_pricier >= -0.50 } }
+    s:STATE_TENASSERIM.region_state:DEI = {
+        can_construct_building = building_logging_camp
+        state_has_building_type_levels = { target = bt:building_logging_camp value < 2 }
+        NOT = { any_scope_building = { is_building_type = building_logging_camp is_under_construction = yes } }
+        OR = {
+            NOT = { has_building = building_logging_camp }
+            any_scope_building = { is_building_type = building_logging_camp occupancy >= 0.75 building_has_goods_shortage = no }
+        }
+    }
+}
+nesnd_ten_can_train = {
+    nesnd_ten_active = yes gold_reserves >= nesnd_ten_training_cost
+    NOT = { has_modifier = declared_bankruptcy } NOT = { has_variable = nesnd_ten_training_cooldown }
+    s:STATE_TENASSERIM.region_state:DEI = {
+        any_scope_building = { OR = { is_building_type = building_logging_camp is_building_type = building_fishing_wharf is_building_type = building_iron_mine is_building_type = building_tooling_workshop is_building_type = building_textile_mill } occupancy < 0.90 }
+    }
+}
+nesnd_ten_tenant_support = {
+    OR = {
+        any_interest_group = { is_in_government = yes law_enactment_stance = { law = law_type:law_tenant_farmers value > neutral } }
+        any_political_movement = { political_movement_support >= 0.10 law_enactment_stance = { law = law_type:law_tenant_farmers value > neutral } }
+    }
+}
+nesnd_ten_can_tenant = {
+    nesnd_ten_active = yes has_law_or_variant = law_type:law_serfdom
+    enacting_any_law = no is_at_war = no has_revolution = no government_legitimacy >= 25
+    any_law = { type = law_type:law_tenant_farmers can_be_enacted = yes }
+    nesnd_ten_tenant_support = yes
+    enactment_chance_for_law = { target = law_type:law_tenant_farmers value >= 0.15 }
+}
+nesnd_ten_can_abolish = {
+    nesnd_ten_active = yes NOT = { has_law_or_variant = law_type:law_slavery_banned }
+    NOT = { has_law_or_variant = law_type:law_serfdom }
+    enacting_any_law = no is_at_war = no has_revolution = no government_legitimacy >= 25
+    var:nesnd_ten_samples >= 3 var:nesnd_ten_unemployment <= 0.15
+    any_law = { type = law_type:law_slavery_banned can_be_enacted = yes }
+    OR = {
+        any_interest_group = { is_in_government = yes law_enactment_stance = { law = law_type:law_slavery_banned value > neutral } }
+        any_political_movement = { political_movement_support >= 0.10 law_enactment_stance = { law = law_type:law_slavery_banned value > neutral } }
+    }
+    enactment_chance_for_law = { target = law_type:law_slavery_banned value >= 0.15 }
+}
+nesnd_ten_can_compromise = {
+    nesnd_ten_active = yes gold_reserves >= nesnd_ten_compromise_cost
+    NOT = { has_modifier = declared_bankruptcy } NOT = { has_variable = nesnd_ten_compromise_cooldown }
+    exists = ig:ig_landowners
+    ig:ig_landowners = { ig_clout >= 0.20 }
+    OR = { is_enacting_law = law_type:law_tenant_farmers is_enacting_law = law_type:law_slavery_banned }
+}

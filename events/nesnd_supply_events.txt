@@ -1,0 +1,57 @@
+﻿namespace = nesnd_supply
+nesnd_supply.1 = {
+ type = country_event placement = root duration = 3
+ title = nesnd_supply.1.t desc = nesnd_supply.1.d
+ event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+ trigger = { nesnd_supply_request_valid = yes }
+ option = {
+  name = nesnd_supply.1.a
+  trigger = { nesnd_supply_request_valid = yes is_at_war = no }
+  ai_chance = { base = 50 modifier = { add = 50 trigger = { "relations(scope:nesnd_supply_requester)" >= relations_threshold:cordial } } modifier = { add = -50 trigger = { "relations(scope:nesnd_supply_requester)" < relations_threshold:poor } } }
+  if = { limit = {  nesnd_supply_request_valid = yes is_at_war = no  }
+save_scope_as = nesnd_supply_receiver
+  scope:nesnd_supply_requester = {
+   set_variable = { name = nesnd_supply_partner value = root }
+   remove_variable = nesnd_supply_pending
+   remove_variable = nesnd_supply_pending_sponsor
+   remove_variable = nesnd_supply_self_reliance
+   nesnd_supply_save_sponsor = yes
+   if = { limit = { root = { is_subject = yes } } set_variable = { name = nesnd_supply_partner_sponsor value = root.overlord } }
+   else = { set_variable = { name = nesnd_supply_partner_sponsor value = root } }
+   change_relations = { country = root value = 10 }
+  }
+ }
+  custom_tooltip = nesnd_supply_accept_tt
+ }
+ option = { name = nesnd_supply.1.b default_option = yes ai_chance = { base = 50 }
+  scope:nesnd_supply_requester ?= { if = { limit = { has_variable = nesnd_supply_pending var:nesnd_supply_pending = root }  remove_variable = nesnd_supply_pending  remove_variable = nesnd_supply_pending_sponsor  } }
+ }
+}
+nesnd_supply.2 = {
+ type = country_event placement = root duration = 3
+ title = nesnd_supply.2.t desc = nesnd_supply.2.d
+ event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+ trigger = { nesnd_supply_trade_request_valid = yes }
+ option = { name = nesnd_supply.2.a
+  trigger = { nesnd_supply_trade_request_valid = yes  can_create_treaty = { first_country = scope:nesnd_supply_requester second_country = root is_draft = no binding_period = { years = 2 } articles_to_create = { { article = trade_privilege source_country = root target_country = scope:nesnd_supply_requester } { article = trade_privilege source_country = scope:nesnd_supply_requester target_country = root } } } }
+  ai_chance = { base = 50 modifier = { add = 50 trigger = { "relations(scope:nesnd_supply_requester)" >= relations_threshold:cordial } } }
+  if = { limit = {  nesnd_supply_trade_request_valid = yes  can_create_treaty = { first_country = scope:nesnd_supply_requester second_country = root is_draft = no binding_period = { years = 2 } articles_to_create = { { article = trade_privilege source_country = root target_country = scope:nesnd_supply_requester } { article = trade_privilege source_country = scope:nesnd_supply_requester target_country = root } } }  }
+create_treaty = { name = nesnd_supply_treaty first_country = scope:nesnd_supply_requester second_country = root is_draft = no binding_period = { years = 2 } articles_to_create = { { article = trade_privilege source_country = root target_country = scope:nesnd_supply_requester } { article = trade_privilege source_country = scope:nesnd_supply_requester target_country = root } } }
+  scope:nesnd_supply_requester = { remove_variable = nesnd_supply_trade_pending }
+ }
+ }
+ option = { name = nesnd_supply.2.b default_option = yes ai_chance = { base = 50 }
+  scope:nesnd_supply_requester ?= { if = { limit = { has_variable = nesnd_supply_trade_pending var:nesnd_supply_trade_pending = root }  remove_variable = nesnd_supply_trade_pending  } }
+ }
+}
+nesnd_supply.3 = {
+ type = country_event placement = root duration = 3
+ title = nesnd_supply.3.t desc = nesnd_supply.3.d
+ event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+ trigger = { has_variable = nesnd_supply_done }
+ option = { name = nesnd_supply.3.a default_option = yes
+  if = { limit = { NOT = { has_variable = nesnd_supply_rewarded } }
+   set_variable = nesnd_supply_rewarded add_modifier = { name = nesnd_supply_verified months = 24 }
+  }
+ }
+}

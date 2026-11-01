@@ -91,36 +91,11 @@ flavorCNE.2 = {
 
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 	
-	trigger = {
-		has_variable = flavorCNE_land_reform_value
-		NOT = {
-			THIS = c:CNE
-		}
-	}
+	trigger = { c:CNE ?= this has_variable = nesnd_land_frozen NOT = { has_variable = nesnd_reform_failure_seen } }
 
-	immediate = {
-		hidden_effect = {
-			remove_variable = flavorCNE_land_reform_value
-			if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff }
-			add_modifier = {
-				name = CNE_missed_land_draft
-				months = stupidly_long_modifier_time
-			}
-		}
-	}
+	immediate = { set_variable = nesnd_reform_failure_seen remove_modifier = CNE_land_draft_debuff }
 
-	option = { # 我们承认失败，维持现状。
-		name = flavorCNE.2.1
-		default_option = yes
-		custom_tooltip = ce_cne_land_reform_remove
-		show_as_tooltip = {
-			if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff }
-			add_modifier = {
-				name = CNE_missed_land_draft
-				months = stupidly_long_modifier_time
-			}
-		}
-	}
+	option = { name = flavorCNE.2.1 default_option = yes custom_tooltip = ce_cne_land_reform_remove }
 	
 }
 
@@ -144,22 +119,9 @@ flavorCNE.3 = {
 
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
-	trigger = {
-		# triggered by JE
-	}
+	trigger = { c:CNE ?= this has_variable = nesnd_land_succeeded NOT = { has_variable = nesnd_reform_success_seen } }
 
-	immediate = {
-		hidden_effect = {
-			remove_variable = flavorCNE_land_reform_value
-
-			if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff }
-
-			add_modifier = {
-				name = CNE_post_landdraft_modifier
-				months = long_modifier_time
-			}
-		}
-	}
+	immediate = { set_variable = nesnd_reform_success_seen remove_modifier = CNE_land_draft_debuff add_modifier = { name = CNE_post_landdraft_modifier months = long_modifier_time } }
 
 	option = { # 人类的力量为改变其命运而抒发，是至上的财富之源。
 		name = flavorCNE.3.1
@@ -180,7 +142,7 @@ flavorCNE.3 = {
 
 flavorCNE.4 = { # 士绅把握地权
 	type = country_event
-	placement = root
+	placement = scope:cne_land_reform_uprising_state
 	title = flavorCNE.4.t
 	# 地权革命结束
 	desc = flavorCNE.4.d
@@ -198,13 +160,17 @@ flavorCNE.4 = { # 士绅把握地权
 
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
-	trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } any_scope_state = { is_modern_china_state = yes is_split_state = no } }
+	trigger = { nesnd_reform_active = yes any_scope_state = {
+					nesnd_reform_region = yes
+					is_split_state = no
+					NOT = { has_modifier = CNE_land_related_uprising }
+				} }
 
 	immediate = {
 		hidden_effect = {
 			random_scope_state = {
 				limit = {
-					is_modern_china_state = yes
+					nesnd_reform_region = yes
 					is_split_state = no
 					NOT = { has_modifier = CNE_land_related_uprising }
 				}
@@ -221,9 +187,10 @@ flavorCNE.4 = { # 士绅把握地权
 		}
 	}
 
-	option = { # 
-		name = flavorCNE.4.1
-		scope:cne_land_reform_uprising_state ?= {
+	option = {
+name = flavorCNE.4.1
+if = { limit = { nesnd_reform_active = yes }
+scope:cne_land_reform_uprising_state ?= { if = { limit = { owner = root } 
 			add_radicals_in_state = {
 			   	value = small_radicals
 			   	interest_group = scope:ce_rural_folk_ig
@@ -232,45 +199,44 @@ flavorCNE.4 = { # 士绅把握地权
 			   	value = medium_radicals
 			   	interest_group = scope:ce_landowners_ig
 			}
-		}
-		custom_tooltip = {
-			text = cne_landreform_completion_tracker_add_3
+		 } }
+custom_tooltip = {
+			text = nesnd_cne_feedback_progress_up_3
 			change_variable = {
 				name = cne_landreform_completion_tracker
 				add = 3
 			}
 		}
-	
-# nesnd risk 4.0
+custom_tooltip = nesnd_cne_feedback_disorder_up_6_bound
 change_variable = { name = cne_landreform_failure_tracker add = 6 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 }
+}
 
-	option = { # 
-		name = flavorCNE.4.2
-		default_option = yes
-		scope:cne_land_reform_uprising_state ?= {
+	option = {
+name = flavorCNE.4.2
+default_option = yes
+if = { limit = { nesnd_reform_active = yes }
+scope:cne_land_reform_uprising_state ?= { if = { limit = { owner = root } 
 			add_modifier = {
 				name = CNE_land_related_uprising
 				months = 36
 			}
-		}
-		custom_tooltip = {
-			text = cne_landreform_completion_tracker_minus_1
-			if = {
+		 } }
+if = {
 				limit = {
 					root.var:cne_landreform_completion_tracker >= 1
 				}
-				change_variable = {
+				custom_tooltip = nesnd_cne_feedback_progress_down_1
+change_variable = {
 					name = cne_landreform_completion_tracker
 					add = -1
 				}
 			}
-		}
-	
-# nesnd risk 4.1
+custom_tooltip = nesnd_cne_feedback_disorder_down_3_bound
 change_variable = { name = cne_landreform_failure_tracker add = -3 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+}
 }
 	
 
@@ -279,7 +245,7 @@ clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 
 flavorCNE.5 = { # 飞舞的雪片
 	type = country_event
-	placement = root
+	placement = scope:cne_land_reform_army_state
 	title = flavorCNE.5.t
 	# 
 	desc = flavorCNE.5.d
@@ -297,13 +263,16 @@ flavorCNE.5 = { # 飞舞的雪片
 
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
-	trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } any_scope_state = { is_modern_china_state = yes is_split_state = no } }
+	trigger = { nesnd_reform_active = yes any_scope_state = {
+					nesnd_reform_region = yes
+					is_split_state = no
+				} }
 
 	immediate = {
 		hidden_effect = {
 			random_scope_state = {
 				limit = {
-					is_modern_china_state = yes
+					nesnd_reform_region = yes
 					is_split_state = no
 				}
 				save_scope_as = cne_land_reform_army_state
@@ -319,33 +288,35 @@ flavorCNE.5 = { # 飞舞的雪片
 		}
 	}
 
-	option = { # 
-		name = flavorCNE.5.1
-		add_radicals = {
+	option = {
+name = flavorCNE.5.1
+default_option = yes
+if = { limit = { nesnd_reform_active = yes }
+add_radicals = {
 		   	value = 0.02
 		   	interest_group = scope:ce_armed_forces_ig
 	    }
-		default_option = yes
-	    add_modifier = {
+add_modifier = {
 	    	name = CNE_appease_army_je
 	    	months = 36
 	    }
-		custom_tooltip = {
-			text = cne_landreform_completion_tracker_add_3
+custom_tooltip = {
+			text = nesnd_cne_feedback_progress_up_3
 			change_variable = {
 				name = cne_landreform_completion_tracker
 				add = 3
 			}
 		}
-	
-# nesnd risk 5.0
+custom_tooltip = nesnd_cne_feedback_disorder_up_2_bound
 change_variable = { name = cne_landreform_failure_tracker add = 2 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 }
+}
 
-	option = { # 
-		name = flavorCNE.5.2
-		scope:cne_land_reform_army_state ?= {
+	option = {
+name = flavorCNE.5.2
+if = { limit = { nesnd_reform_active = yes }
+scope:cne_land_reform_army_state ?= { if = { limit = { owner = root } 
 			add_radicals_in_state = {
 			   	value = medium_radicals
 			   	interest_group = scope:ce_armed_forces_ig
@@ -354,23 +325,21 @@ clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 			   	value = small_radicals
 			   	interest_group = scope:ce_landowners_ig
 			}
-		}
-		custom_tooltip = {
-			text = cne_landreform_completion_tracker_minus_1
-			if = {
+		 } }
+if = {
 				limit = {
 					root.var:cne_landreform_completion_tracker >= 1
 				}
-				change_variable = {
+				custom_tooltip = nesnd_cne_feedback_progress_down_1
+change_variable = {
 					name = cne_landreform_completion_tracker
 					add = -1
 				}
 			}
-		}
-	
-# nesnd risk 5.1
+custom_tooltip = nesnd_cne_feedback_disorder_up_7_bound
 change_variable = { name = cne_landreform_failure_tracker add = 7 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+}
 }
 	
 
@@ -379,7 +348,7 @@ clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 
 flavorCNE.6 = { # 滥捕事件
 	type = country_event
-	placement = root
+	placement = scope:cne_land_reform_mess_imprisonment_state
 	title = flavorCNE.6.t
 	# 
 	desc = flavorCNE.6.d
@@ -397,13 +366,16 @@ flavorCNE.6 = { # 滥捕事件
 
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
-	trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } any_scope_state = { is_modern_china_state = yes is_split_state = no } }
+	trigger = { nesnd_reform_active = yes any_scope_state = {
+					nesnd_reform_region = yes
+					is_split_state = no
+				} }
 
 	immediate = {
 		hidden_effect = {
 			random_scope_state = {
 				limit = {
-					is_modern_china_state = yes
+					nesnd_reform_region = yes
 					is_split_state = no
 				}
 				save_scope_as = cne_land_reform_mess_imprisonment_state
@@ -421,10 +393,11 @@ flavorCNE.6 = { # 滥捕事件
 }
 	}
 
-	option = { # 
-		name = flavorCNE.6.1
-		default_option = yes
-		scope:cne_land_reform_mess_imprisonment_state ?= {
+	option = {
+name = flavorCNE.6.1
+default_option = yes
+if = { limit = { nesnd_reform_active = yes }
+scope:cne_land_reform_mess_imprisonment_state ?= { if = { limit = { owner = root } 
 			add_loyalists_in_state = {
 			   	value = 0.15
 			   	interest_group = scope:ce_armed_forces_ig
@@ -437,32 +410,30 @@ flavorCNE.6 = { # 滥捕事件
 			   	value = medium_radicals
 			   	interest_group = scope:ce_landowners_ig
 			}
-		}
-
-	
-# nesnd risk 6.0
+		 } }
+custom_tooltip = nesnd_cne_feedback_disorder_up_7_bound
 change_variable = { name = cne_landreform_failure_tracker add = 7 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 }
+}
 
-	option = { # 
-		name = flavorCNE.6.2
-		custom_tooltip = {
-			text = cne_landreform_completion_tracker_minus_1
-			if = {
+	option = {
+name = flavorCNE.6.2
+if = { limit = { nesnd_reform_active = yes }
+if = {
 				limit = {
 					root.var:cne_landreform_completion_tracker >= 1
 				}
-				change_variable = {
+				custom_tooltip = nesnd_cne_feedback_progress_down_1
+change_variable = {
 					name = cne_landreform_completion_tracker
 					add = -1
 				}
 			}
-		}
-	
-# nesnd risk 6.1
+custom_tooltip = nesnd_cne_feedback_disorder_down_4_bound
 change_variable = { name = cne_landreform_failure_tracker add = -4 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+}
 }
 	
 
@@ -471,7 +442,7 @@ clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 
 flavorCNE.7 = { # 产业界支持
 	type = country_event
-	placement = root
+	placement = scope:cne_land_reform_industrialists_support_state
 	title = flavorCNE.7.t
 	# 
 	desc = flavorCNE.7.d
@@ -489,13 +460,17 @@ flavorCNE.7 = { # 产业界支持
 
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
-	trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } any_scope_state = { is_modern_china_state = yes is_split_state = no } }
+	trigger = { nesnd_reform_active = yes any_scope_state = {
+					nesnd_reform_region = yes
+					is_split_state = no
+					NOT = { has_modifier = CNE_local_industrial_broom }
+				} }
 
 	immediate = {
 		hidden_effect = {
 			random_scope_state = {
 				limit = {
-					is_modern_china_state = yes
+					nesnd_reform_region = yes
 					is_split_state = no
 					NOT = { has_modifier = CNE_local_industrial_broom }
 				}
@@ -512,10 +487,10 @@ flavorCNE.7 = { # 产业界支持
 		}
 	}
 
-	option = { # 
-		name = flavorCNE.7.1
-		
-	    scope:cne_land_reform_industrialists_support_state ?= {
+	option = {
+name = flavorCNE.7.1
+if = { limit = { nesnd_reform_active = yes }
+scope:cne_land_reform_industrialists_support_state ?= { if = { limit = { owner = root } 
 	    	add_loyalists_in_state = {
 			   	value = 0.15
 			   	interest_group = scope:ce_industrialists_ig
@@ -524,32 +499,32 @@ flavorCNE.7 = { # 产业界支持
 		    	name = CNE_local_industrial_broom
 		    	months = 36
 		    }
-		}
-
-	
-# nesnd risk 7.0
+		 } }
+custom_tooltip = nesnd_cne_feedback_disorder_up_4_bound
 change_variable = { name = cne_landreform_failure_tracker add = 4 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 }
+}
 
-	option = { # 
-		name = flavorCNE.7.2
-		default_option = yes
-		add_modifier = {
+	option = {
+name = flavorCNE.7.2
+default_option = yes
+if = { limit = { nesnd_reform_active = yes }
+add_modifier = {
 	    	name = CNE_industrialists_in_government
 	    	months = 36
 	    }
-		custom_tooltip = {
-			text = cne_landreform_completion_tracker_add_2
+custom_tooltip = {
+			text = nesnd_cne_feedback_progress_up_2
 			change_variable = {
 				name = cne_landreform_completion_tracker
 				add = 2
 			}
 		}
-	
-# nesnd risk 7.1
+custom_tooltip = nesnd_cne_feedback_disorder_up_3_bound
 change_variable = { name = cne_landreform_failure_tracker add = 3 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+}
 }
 	
 
@@ -558,7 +533,7 @@ clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 
 flavorCNE.8 = { # 农人涌入城市
 	type = country_event
-	placement = root
+	placement = scope:cne_land_reform_peasants_in_city_state
 	title = flavorCNE.8.t
 	# 
 	desc = flavorCNE.8.d
@@ -576,13 +551,18 @@ flavorCNE.8 = { # 农人涌入城市
 
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
-	trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } any_scope_state = { is_modern_china_state = yes is_split_state = no } }
+	trigger = { nesnd_reform_active = yes any_scope_state = {
+					nesnd_reform_region = yes
+					is_split_state = no
+					NOT = { has_modifier = CNE_crack_local_gangs }
+					NOT = { has_modifier = CNE_local_gangs_triumph }
+				} }
 
 	immediate = {
 		hidden_effect = {
 			random_scope_state = {
 				limit = {
-					is_modern_china_state = yes
+					nesnd_reform_region = yes
 					is_split_state = no
 					NOT = { has_modifier = CNE_crack_local_gangs }
 					NOT = { has_modifier = CNE_local_gangs_triumph }
@@ -600,10 +580,10 @@ flavorCNE.8 = { # 农人涌入城市
 		}
 	}
 
-	option = { # 
-		name = flavorCNE.8.1
-		
-		scope:cne_land_reform_peasants_in_city_state ?= {
+	option = {
+name = flavorCNE.8.1
+if = { limit = { nesnd_reform_active = yes }
+scope:cne_land_reform_peasants_in_city_state ?= { if = { limit = { owner = root } 
 			add_radicals_in_state = {
 			   	value = 0.05
 			   	interest_group = scope:ce_industrialists_ig
@@ -616,42 +596,41 @@ flavorCNE.8 = { # 农人涌入城市
 				name = CNE_crack_local_gangs
 				months = 36
 			}
-		}
-		custom_tooltip = {
-			text = cne_landreform_completion_tracker_add_2
+		 } }
+custom_tooltip = {
+			text = nesnd_cne_feedback_progress_up_2
 			change_variable = {
 				name = cne_landreform_completion_tracker
 				add = 2
 			}
 		}
-		
-	
-# nesnd risk 8.0
+custom_tooltip = nesnd_cne_feedback_disorder_down_4_bound
 change_variable = { name = cne_landreform_failure_tracker add = -4 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
 }
+}
 
-	option = { # 
-		name = flavorCNE.8.2
-		default_option = yes
-
-		scope:cne_land_reform_peasants_in_city_state ?= {
+	option = {
+name = flavorCNE.8.2
+default_option = yes
+if = { limit = { nesnd_reform_active = yes }
+scope:cne_land_reform_peasants_in_city_state ?= { if = { limit = { owner = root } 
 			add_modifier = {
 				name = CNE_local_gangs_triumph
 				months = 36
 			}
-		}
-		custom_tooltip = {
-			text = cne_landreform_completion_tracker_add_3
+		 } }
+custom_tooltip = {
+			text = nesnd_cne_feedback_progress_up_3
 			change_variable = {
 				name = cne_landreform_completion_tracker
 				add = 3
 			}
 		}
-	
-# nesnd risk 8.1
+custom_tooltip = nesnd_cne_feedback_disorder_up_7_bound
 change_variable = { name = cne_landreform_failure_tracker add = 7 }
 clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+}
 }
 	
 

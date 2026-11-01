@@ -1,0 +1,71 @@
+﻿# Country scope. Arrival changes no country ownership and does not resurrect a dead character.
+nesnd_queue_diaojin_to_shu = {
+    if = {
+        limit = {
+            c:USM ?= this
+            exists = c:SIH
+            c:SIH = { is_country_alive = yes }
+            game_date <= 1870.1.1
+            NOT = { any_character = { has_template = USM_chen_dongyang is_character_alive = yes } }
+            NOT = { has_global_variable = nesnd_diaojin_requested }
+            NOT = { has_global_variable = nesnd_diaojin_arrived }
+        }
+        set_global_variable = nesnd_diaojin_requested
+        c:SIH = {
+            set_variable = { name = nesnd_diaojin_pending months = 13 }
+            trigger_event = { id = flavorUSM.7 months = 1 popup = yes }
+        }
+    }
+}
+nesnd_receive_diaojin_in_shu = {
+    clear_saved_scope = zhengdiaojin_scope
+    if = {
+        limit = {
+            c:SIH ?= this
+            is_country_alive = yes
+            has_variable = nesnd_diaojin_pending
+            NOT = { has_global_variable = nesnd_diaojin_arrived }
+            NOT = { any_character = { has_template = USM_chen_dongyang is_character_alive = yes } }
+        }
+        if = {
+            limit = {
+                any_character = {
+                    has_template = USM_zheng_diaojin
+                    is_character_alive = yes
+                    is_ruler_of_own_country = no
+                    OR = { owner = root owner = c:USM owner = { is_subject_of = c:USM } }
+                }
+            }
+            random_character = {
+                limit = {
+                    has_template = USM_zheng_diaojin
+                    is_character_alive = yes
+                    is_ruler_of_own_country = no
+                    OR = { owner = root owner = c:USM owner = { is_subject_of = c:USM } }
+                }
+                transfer_character = root
+                save_scope_as = zhengdiaojin_scope
+            }
+        }
+        else_if = {
+            limit = {
+                NOT = { any_character = { has_template = USM_zheng_diaojin } }
+                NOT = { has_global_variable = nesnd_born_usm_zheng_diaojin }
+                game_date <= 1870.1.1
+            }
+            create_character = { template = USM_zheng_diaojin save_scope_as = zhengdiaojin_scope }
+        }
+        if = {
+            limit = { exists = scope:zhengdiaojin_scope }
+            scope:zhengdiaojin_scope = {
+                if = {
+                    limit = { is_character_alive = yes owner = root is_ruler_of_own_country = no }
+                    set_as_interest_group_leader = yes
+                    set_global_variable = nesnd_born_usm_zheng_diaojin
+                    set_global_variable = nesnd_diaojin_arrived
+                }
+            }
+        }
+    }
+    remove_variable = nesnd_diaojin_pending
+}

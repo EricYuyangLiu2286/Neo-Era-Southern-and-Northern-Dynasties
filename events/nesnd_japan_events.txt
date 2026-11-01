@@ -1,0 +1,106 @@
+﻿namespace = nesnd_japan
+nesnd_japan.1 = {
+    type = country_event placement = root duration = 30
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    title = nesnd_japan.1.t desc = nesnd_japan.1.d
+    trigger = { c:JAP ?= this has_global_variable = nesnd_japan_offer_sent NOT = { has_global_variable = nesnd_japan_dossier_closed } NOT = { has_variable = nesnd_japan_terms_seen } }
+    immediate = { set_variable = nesnd_japan_terms_seen }
+    option = { name = nesnd_japan.1.a
+        trigger = { nesnd_japan_partition_possible = yes }
+        ai_chance = { base = 5 modifier = { add = 20 trigger = { army_power_projection < c:USM.army_power_projection } } }
+        custom_tooltip = nesnd_japan_partition_tt
+        nesnd_partition_japan = yes
+    }
+    option = { name = nesnd_japan.1.b default_option = yes
+        ai_chance = { base = 60 modifier = { add = 30 trigger = { army_power_projection >= c:USM.army_power_projection } } }
+        set_global_variable = nesnd_japan_terms_rejected
+        c:USM ?= { trigger_event = { id = nesnd_japan.2 popup = yes } }
+    }
+    option = { name = nesnd_japan.1.c
+        ai_chance = { base = 35 }
+        set_global_variable = nesnd_japan_unity_offer
+        c:USM ?= { trigger_event = { id = nesnd_japan.2 popup = yes } }
+    }
+}
+nesnd_japan.2 = {
+    type = country_event placement = root duration = 30
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    title = nesnd_japan.2.t
+    desc = { first_valid = {
+        triggered_desc = { trigger = { exists = scope:nesnd_japan_commander } desc = nesnd_japan.2.d_commander }
+        desc = nesnd_japan.2.d
+    } }
+    trigger = { c:USM ?= this NOT = { has_global_variable = nesnd_japan_dossier_closed } NOT = { has_variable = nesnd_japan_response_seen } }
+    immediate = {
+        set_variable = nesnd_japan_response_seen
+        if = { limit = { any_scope_character = { has_variable = nesnd_japan_expedition_commander is_character_alive = yes } }
+            random_scope_character = { limit = { has_variable = nesnd_japan_expedition_commander is_character_alive = yes } save_scope_as = nesnd_japan_commander }
+        }
+    }
+    option = {
+name = nesnd_japan.2.a
+trigger = {
+            nesnd_japan_partition_possible = yes is_at_war = no
+            NOT = { has_truce_with = c:JAP }
+            is_diplomatic_play_committed_participant = no
+            c:JAP = { is_at_war = no is_diplomatic_play_committed_participant = no }
+        }
+ai_chance = { base = 50 modifier = { add = -40 trigger = { net_total_income < 0 } } }
+custom_tooltip = nesnd_japan_war_tt
+if = { limit = {
+    c:USM ?= this
+    NOT = { has_global_variable = nesnd_japan_dossier_closed }
+
+            nesnd_japan_partition_possible = yes is_at_war = no
+            NOT = { has_truce_with = c:JAP }
+            is_diplomatic_play_committed_participant = no
+            c:JAP = { is_at_war = no is_diplomatic_play_committed_participant = no }
+        
+}
+c:JAP = { if = { limit = { is_subject_of = c:USM } make_independent = yes } }
+create_diplomatic_play = { name = dp_nesnd_eastern_intervention target_country = c:JAP type = dp_nesnd_eastern_intervention
+            add_war_goal = { holder = c:JAP target_country = root type = humiliation primary_demand = yes }
+        }
+random_diplomatic_play = { limit = { initiator = root target = c:JAP } set_variable = nesnd_eastern_intervention_play }
+set_global_variable = nesnd_japan_war_started
+set_variable = { name = nesnd_japan_war_grace months = 6 }
+} else_if = { limit = { c:USM ?= this NOT = { has_global_variable = nesnd_japan_dossier_closed } }
+    # Conditions changed while the event was open. Close the dossier without a war or transfer.
+    set_global_variable = nesnd_japan_dossier_closed
+}
+}
+    option = { name = nesnd_japan.2.b default_option = yes
+        ai_chance = { base = 50 modifier = { add = 40 trigger = { has_global_variable = nesnd_japan_unity_offer } } }
+        set_global_variable = nesnd_japan_dossier_closed
+        c:JAP ?= { change_relations = { country = root value = 20 } }
+    }
+}
+nesnd_japan.3 = {
+    type = country_event placement = root duration = 30
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    title = nesnd_japan.3.t desc = nesnd_japan.3.d
+    trigger = { has_global_variable = nesnd_japan_partitioned NOT = { has_variable = nesnd_japan_partition_notice } }
+    immediate = { set_variable = nesnd_japan_partition_notice }
+    option = { name = nesnd_japan.3.a default_option = yes ai_chance = { base = 100 } }
+}
+nesnd_japan.4 = {
+    type = country_event placement = root duration = 30
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    title = nesnd_japan.4.t desc = nesnd_japan.4.d
+    trigger = { NOT = { has_variable = nesnd_japan_withdrawal_seen } }
+    immediate = { set_variable = nesnd_japan_withdrawal_seen }
+    option = { name = nesnd_japan.4.a default_option = yes ai_chance = { base = 100 } }
+}
+nesnd_japan.5 = {
+    type = country_event placement = root duration = 30
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    title = nesnd_japan.5.t desc = nesnd_japan.5.d
+    trigger = { has_variable = nesnd_japan_unified NOT = { has_variable = nesnd_japan_unity_notice } }
+    immediate = { set_variable = nesnd_japan_unity_notice }
+    option = { name = nesnd_japan.5.a default_option = yes ai_chance = { base = 100 } }
+}

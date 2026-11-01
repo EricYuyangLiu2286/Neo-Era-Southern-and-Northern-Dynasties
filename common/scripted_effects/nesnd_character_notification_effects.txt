@@ -1,0 +1,24 @@
+﻿# Character scope; ROOT must be the actual winner of usm_civilwar.10.
+# This wraps an existing live-character transfer, never a create_character path.
+nesnd_transfer_restoration_claimant = {
+ if = { limit = { has_template = USM_zhu_jingyin is_character_alive = yes
+   NOT = { owner = root } NOT = { has_variable = nesnd_jingyin_departure_notified }
+ } owner = { save_scope_as = nesnd_jingyin_previous_country }
+   save_scope_as = nesnd_jingyin_claimant
+ }
+ transfer_character = root
+}
+# Country scope, after the existing settlement's annexation/change_tag.
+nesnd_notify_jingyin_origin = {
+ if = { limit = {
+   exists = scope:nesnd_jingyin_previous_country exists = scope:nesnd_jingyin_claimant
+   scope:nesnd_jingyin_previous_country = { is_country_alive = yes NOT = { this = root } }
+   scope:nesnd_jingyin_claimant = { is_character_alive = yes has_template = USM_zhu_jingyin
+     owner = root is_ruler_of_own_country = yes NOT = { has_variable = nesnd_jingyin_departure_notified }
+   }
+ }
+   save_scope_as = new_jingyin_owner
+   scope:nesnd_jingyin_claimant = { set_variable = nesnd_jingyin_departure_notified }
+   scope:nesnd_jingyin_previous_country = { trigger_event = { id = usm_civilwar.26 days = 1 popup = yes } }
+ }
+}

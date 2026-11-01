@@ -1,0 +1,100 @@
+﻿nesnd_supply_country = { OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this c:HUS ?= this } }
+# These guards use the current capital market and the country's own local shortages.
+nesnd_supply_inputs_ready = {
+    capital.market = {
+        mg:paper = { market_goods_pricier <= 0.5 NOT = { country_has_local_shortage = root } }
+        mg:tools = { market_goods_pricier <= 0.5 NOT = { country_has_local_shortage = root } }
+        mg:small_arms = { market_goods_pricier <= 0.5 NOT = { country_has_local_shortage = root } }
+    }
+    trigger_if = { limit = { c:HUS ?= this }
+        capital.market = { mg:hardwood = { market_goods_pricier <= 0.5 NOT = { country_has_local_shortage = root } } }
+    }
+}
+nesnd_supply_staffed_building = { occupancy >= 0.75 building_has_goods_shortage = no }
+nesnd_supply_jobs_ready = {
+    trigger_if = { limit = { c:HNA ?= this }
+        any_scope_building = { is_building_type = building_university nesnd_supply_staffed_building = yes }
+        any_scope_building = { is_building_type = building_barrack nesnd_supply_staffed_building = yes }
+    }
+    trigger_else_if = { limit = { c:SIH ?= this }
+        any_scope_building = { is_building_type = building_tooling_workshop nesnd_supply_staffed_building = yes }
+        any_scope_building = { OR = { is_building_type = building_iron_mine is_building_type = building_logging_camp } nesnd_supply_staffed_building = yes }
+    }
+    trigger_else_if = { limit = { c:GNG ?= this }
+        any_scope_building = { is_building_type = building_paper_mill nesnd_supply_staffed_building = yes }
+        any_scope_building = { is_building_type = building_logging_camp nesnd_supply_staffed_building = yes }
+    }
+    trigger_else = {
+        any_scope_building = { is_building_type = building_port nesnd_supply_staffed_building = yes }
+        any_scope_building = { is_building_type = building_government_administration nesnd_supply_staffed_building = yes }
+    }
+}
+nesnd_supply_livelihood_ready = {
+    has_famine = no
+    custom_tooltip = {
+        text = nesnd_supply_workforce_ready_tt
+        nesnd_supply_workforce_sum > 0
+        nesnd_supply_workforce_unemployment <= 0.12
+        nesnd_supply_critical_employment_states = 0
+    }
+    capital.market = { mg:grain = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } }
+}
+nesnd_supply_partner_valid = {
+    exists = var:nesnd_supply_partner
+    var:nesnd_supply_partner = { is_country_alive = yes }
+    NOT = { has_war_with = var:nesnd_supply_partner }
+    OR = {
+        AND = { is_subject = yes overlord = var:nesnd_supply_sponsor }
+        AND = { is_subject = no this = var:nesnd_supply_sponsor }
+    }
+    var:nesnd_supply_partner = {
+        OR = {
+            AND = { is_subject = yes overlord = prev.var:nesnd_supply_partner_sponsor }
+            AND = { is_subject = no this = prev.var:nesnd_supply_partner_sponsor }
+        }
+    }
+}
+nesnd_supply_diplomacy_ready = {
+    OR = { has_variable = nesnd_supply_self_reliance nesnd_supply_partner_valid = yes }
+}
+nesnd_supply_all_ready = {
+    has_variable = nesnd_supply_workforce_metrics_v1
+    is_at_war = no
+    NOT = { has_modifier = declared_bankruptcy }
+    nesnd_supply_inputs_ready = yes
+    nesnd_supply_jobs_ready = yes
+    nesnd_supply_livelihood_ready = yes
+    nesnd_supply_diplomacy_ready = yes
+}
+nesnd_supply_request_valid = {
+    exists = scope:nesnd_supply_requester
+    is_country_alive = yes
+    OR = {
+        AND = { is_subject = yes overlord = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor }
+        AND = { is_subject = no this = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor }
+    }
+
+    scope:nesnd_supply_requester = {
+        is_country_alive = yes OR = { has_journal_entry = nesnd_supply_preparations has_journal_entry = nesnd_supply_hus_preparations }
+        NOT = { has_variable = nesnd_supply_dismissed }
+        OR = { AND = { is_subject = yes overlord = var:nesnd_supply_sponsor } AND = { is_subject = no this = var:nesnd_supply_sponsor } }
+        has_variable = nesnd_supply_pending
+        var:nesnd_supply_pending = root
+        NOT = { has_war_with = root }
+    }
+}
+
+nesnd_supply_trade_request_valid = {
+ exists = scope:nesnd_supply_requester
+ is_country_alive = yes
+ scope:nesnd_supply_requester = {
+  is_country_alive = yes is_at_war = no
+  OR = { has_journal_entry = nesnd_supply_preparations has_journal_entry = nesnd_supply_hus_preparations }
+  NOT = { has_variable = nesnd_supply_dismissed }
+  NOT = { has_variable = nesnd_supply_done }
+  has_variable = nesnd_supply_trade_pending
+  var:nesnd_supply_trade_pending = root
+  var:nesnd_supply_partner = root
+  nesnd_supply_partner_valid = yes
+ }
+}

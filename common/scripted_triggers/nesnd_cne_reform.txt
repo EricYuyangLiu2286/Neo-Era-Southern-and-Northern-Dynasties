@@ -1,0 +1,134 @@
+﻿# State scope. Dedicated reform geography: do not change the shared unification trigger.
+nesnd_reform_region = {
+    OR = {
+        is_modern_china_state = yes
+        state_region = s:STATE_SHENGJING
+        state_region = s:STATE_OUTER_MANCHURIA
+        state_region = s:STATE_AMUR
+    }
+}
+nesnd_reform_active = {
+    c:CNE ?= this
+    is_country_alive = yes
+    has_variable = flavorCNE_land_reform_value
+    NOT = { has_variable = ce_CNE_land_reform_done }
+}
+nesnd_reform_land_rights = {
+    OR = {
+        has_law_or_variant = law_type:law_peasant_proprietorship
+        has_law_or_variant = law_type:law_commercialized_agriculture
+        has_law_or_variant = law_type:law_collectivized_agriculture
+    }
+}
+nesnd_reform_employment_ready = {
+    OR = {
+        var:nesnd_reform_unemployment <= 0.06
+        AND = {
+            institution_investment_level = { institution = institution_social_security value >= 2 }
+            var:nesnd_reform_sol >= 12
+            var:nesnd_reform_unemployment <= 0.12
+        }
+    }
+}
+nesnd_reform_healthy = {
+    nesnd_reform_active = yes
+    has_variable = nesnd_reform_v2
+    var:nesnd_reform_samples >= 3
+    var:nesnd_reform_workforce > 0
+    nesnd_reform_land_rights = yes
+    nesnd_reform_employment_ready = yes
+    var:nesnd_reform_starving <= 0.08
+    var:nesnd_reform_neglected_regions < 1
+    var:nesnd_reform_sol >= 11
+    var:nesnd_reform_access >= 0.85
+    institution_investment_level = { institution = institution_schools value >= 2 }
+    literacy_rate >= 0.48
+    bureaucracy >= 0
+    is_at_war = no
+    NOT = { has_modifier = declared_bankruptcy }
+}
+nesnd_reform_substantive_progress = {
+    nesnd_reform_land_rights = yes
+    var:nesnd_reform_workforce > 0
+    var:nesnd_reform_unemployment <= 0.10
+    var:nesnd_reform_starving <= 0.12
+    var:nesnd_reform_sol >= 10.5
+    var:nesnd_reform_access >= 0.80
+    institution_investment_level = { institution = institution_schools value >= 1 }
+    NOT = { has_modifier = declared_bankruptcy }
+}
+nesnd_reform_distress = {
+    OR = {
+        var:nesnd_reform_neglected_regions > 0
+        var:nesnd_reform_unemployment > 0.15
+        var:nesnd_reform_starving > 0.20
+        has_modifier = declared_bankruptcy
+        AND = { bureaucracy < 0 country_turmoil > 0.25 }
+    }
+}
+# State scope; large persistent local hardship must not disappear in a national mean.
+nesnd_reform_regional_deprivation = {
+    nesnd_reform_region = yes
+    state_population >= 500000
+    var:nesnd_reform_state_workforce > 0
+    OR = {
+        nesnd_reform_state_unemployment_rate > 0.20
+        var:nesnd_reform_state_starving > 0.25
+        var:nesnd_reform_state_severe > 0.10
+    }
+}
+nesnd_reform_persistent_deprivation = {
+    nesnd_reform_regional_deprivation = yes
+    has_variable = nesnd_reform_deprivation_months
+    var:nesnd_reform_deprivation_months >= 6
+}
+# State scope. Only a currently CNE-owned, non-capital regional crisis can secede.
+nesnd_reform_local_state = {
+    owner = c:CNE
+    is_capital = no
+    OR = { state_region = s:STATE_JINBEI state_region = s:STATE_SHANXI }
+    has_variable = nesnd_reform_local_bad_months
+    var:nesnd_reform_local_bad_months >= 6
+    nesnd_reform_state_unemployment_rate > 0.10
+    turmoil > 0.25
+}
+nesnd_reform_local_crisis = {
+    nesnd_reform_active = yes
+    var:nesnd_reform_samples >= 9
+    var:cne_landreform_failure_tracker >= 65
+    NOT = { exists = c:NSX }
+    num_states > 1
+    any_scope_state = { nesnd_reform_local_state = yes }
+}
+nesnd_reform_extreme_crisis = {
+    nesnd_reform_active = yes
+    has_variable = nesnd_reform_v2
+    var:nesnd_reform_samples >= 15
+    var:cne_landreform_failure_tracker >= 90
+    var:nesnd_reform_bad_months >= 12
+    country_turmoil > 0.40
+    government_legitimacy < 25
+    OR = { is_at_war = yes has_modifier = declared_bankruptcy }
+}
+nesnd_reform_can_invest = {
+    nesnd_reform_active = yes
+    bureaucracy >= 0
+    NOT = { has_modifier = declared_bankruptcy }
+    gold_reserves >= nesnd_reform_investment_cost
+    NOT = { has_variable = nesnd_reform_investment_cooldown }
+    any_scope_state = { nesnd_reform_region = yes }
+}
+nesnd_reform_can_review = {
+    nesnd_reform_active = yes
+    gold_reserves >= nesnd_reform_review_cost
+    NOT = { has_variable = nesnd_reform_review_cooldown }
+    var:cne_landreform_failure_tracker >= 15
+}
+nesnd_reform_can_relieve = {
+    nesnd_reform_active = yes
+    gold_reserves >= nesnd_reform_review_cost
+    NOT = { has_modifier = declared_bankruptcy }
+    NOT = { has_variable = nesnd_reform_relief_cooldown }
+    institution_investment_level = { institution = institution_social_security value >= 1 }
+    any_scope_state = { nesnd_reform_region = yes any_scope_pop = { OR = { is_in_mild_starvation = yes is_in_severe_starvation = yes } } }
+}

@@ -40,6 +40,8 @@ flavorUSM.1 = {
 
 	immediate = {
 		hidden_effect = {
+        nesnd_south_initialize = yes
+
 			set_variable = flavor_USM_crisis_intro
 			set_global_variable = flavor_USM_crisis_ongoing_global
 			set_variable = {
@@ -102,8 +104,10 @@ flavorUSM.2 = {
 					any_scope_state = {
 						OR = {
 							state_region = s:STATE_SICHUAN
+ state_region = s:STATE_CHUANNAN
 							state_region = s:STATE_YUNNAN
 							state_region = s:STATE_CHONGQING
+							state_region = s:STATE_ZITONG
 						}
 					}
 				}
@@ -111,8 +115,10 @@ flavorUSM.2 = {
 					limit = {
 						OR = {
 							state_region = s:STATE_SICHUAN
+ state_region = s:STATE_CHUANNAN
 							state_region = s:STATE_YUNNAN
 							state_region = s:STATE_CHONGQING
+							state_region = s:STATE_ZITONG
 						}
 					}
 					save_scope_as = usm_source_of_central_diaproval
@@ -124,6 +130,7 @@ flavorUSM.2 = {
 					any_scope_state = {
 						OR = {
 							state_region = s:STATE_WESTERN_HUBEI
+							state_region = s:STATE_XIANGYANG
 							state_region = s:STATE_EASTERN_HUBEI
 							state_region = s:STATE_HUNAN
 							
@@ -134,6 +141,7 @@ flavorUSM.2 = {
 					limit = {
 						OR = {
 							state_region = s:STATE_WESTERN_HUBEI
+							state_region = s:STATE_XIANGYANG
 							state_region = s:STATE_EASTERN_HUBEI
 							state_region = s:STATE_HUNAN
 						}
@@ -147,18 +155,24 @@ flavorUSM.2 = {
 					any_scope_state = {
 						OR = {
 							state_region = s:STATE_GUANGXI
+							state_region = s:STATE_GUILIN
 							state_region = s:STATE_GUANGDONG
 							state_region = s:STATE_SHAOZHOU
-						}
+						
+	state_region = s:STATE_HAINAN
+}
 					}
 				}
 				random_scope_state = {
 					limit = {
 						OR = {
 							state_region = s:STATE_GUANGXI
+							state_region = s:STATE_GUILIN
 							state_region = s:STATE_GUANGDONG
 							state_region = s:STATE_SHAOZHOU
-						}
+						
+	state_region = s:STATE_HAINAN
+}
 					}
 					save_scope_as = usm_source_of_southern_diaproval
 					set_variable = var_source_of_southern_diaproval
@@ -276,8 +290,10 @@ flavorUSM.3 = {
 					any_scope_state = {
 						OR = {
 							state_region = s:STATE_SICHUAN
+ state_region = s:STATE_CHUANNAN
 							state_region = s:STATE_YUNNAN
 							state_region = s:STATE_CHONGQING
+							state_region = s:STATE_ZITONG
 						}
 					}
 				}
@@ -285,8 +301,10 @@ flavorUSM.3 = {
 					limit = {
 						OR = {
 							state_region = s:STATE_SICHUAN
+ state_region = s:STATE_CHUANNAN
 							state_region = s:STATE_YUNNAN
 							state_region = s:STATE_CHONGQING
+							state_region = s:STATE_ZITONG
 						}
 					}
 					save_scope_as = usm_source_of_central_diaproval
@@ -298,6 +316,7 @@ flavorUSM.3 = {
 					any_scope_state = {
 						OR = {
 							state_region = s:STATE_WESTERN_HUBEI
+							state_region = s:STATE_XIANGYANG
 							state_region = s:STATE_EASTERN_HUBEI
 							state_region = s:STATE_HUNAN
 							
@@ -308,6 +327,7 @@ flavorUSM.3 = {
 					limit = {
 						OR = {
 							state_region = s:STATE_WESTERN_HUBEI
+							state_region = s:STATE_XIANGYANG
 							state_region = s:STATE_EASTERN_HUBEI
 							state_region = s:STATE_HUNAN
 						}
@@ -321,18 +341,24 @@ flavorUSM.3 = {
 					any_scope_state = {
 						OR = {
 							state_region = s:STATE_GUANGXI
+							state_region = s:STATE_GUILIN
 							state_region = s:STATE_GUANGDONG
 							state_region = s:STATE_SHAOZHOU
-						}
+						
+	state_region = s:STATE_HAINAN
+}
 					}
 				}
 				random_scope_state = {
 					limit = {
 						OR = {
 							state_region = s:STATE_GUANGXI
+							state_region = s:STATE_GUILIN
 							state_region = s:STATE_GUANGDONG
 							state_region = s:STATE_SHAOZHOU
-						}
+						
+	state_region = s:STATE_HAINAN
+}
 					}
 					save_scope_as = usm_source_of_southern_diaproval
 					set_variable = var_source_of_southern_diaproval
@@ -366,10 +392,14 @@ flavorUSM.3 = {
 		if = {
 			limit = {
 				exists = scope:usm_source_of_western_diaproval
-			}
+			
+	scope:usm_source_of_western_diaproval = {
+		owner = root
+	}
+}
 			scope:usm_source_of_western_diaproval = {
 				add_modifier = {
-					name = USM_conflict_invalid
+					name = nesnd_usm_old_guard_local
 					months = 240 # 20 yrs
 					is_decaying = yes
 				}
@@ -416,157 +446,336 @@ flavorUSM.3 = {
 }
 
 flavorUSM.4 = {
-    type = country_event placement = root duration = 3
-    title = flavorUSM.4.t desc = flavorUSM.4.d
-    
-    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
-    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-    trigger = { c:USM ?= this NOT = { has_variable = tag_WUU_var } NOT = { has_global_variable = nesnd_south_settled } }
-    immediate = { 
-    ruler = { set_variable = nesnd_ming_claimant save_scope_as = nesnd_old_ming_ruler }
-    if = { limit = { any_country = { any_scope_character = { has_template = USM_zheng_Ju is_character_alive = yes } } }
-        random_country = { limit = { any_scope_character = { has_template = USM_zheng_Ju is_character_alive = yes } }
-            random_scope_character = { limit = { has_template = USM_zheng_Ju is_character_alive = yes } transfer_character = root save_scope_as = nesnd_wu_ruler }
-        }
-    } else_if = { limit = { NOT = { has_global_variable = nesnd_born_usm_zheng_ju } year < 1890 }
-        create_character = { template = USM_zheng_Ju save_scope_as = nesnd_wu_ruler }
-    }
-    if = { limit = { exists = scope:nesnd_wu_ruler } scope:nesnd_wu_ruler = { set_character_as_ruler = yes } }
-    else = { create_character = { last_name = "ce_Zheng" first_name = "name_yuan" age = 35 culture = cu:ce_wuu interest_group = ig_industrialists ideology = ideology_reformer ruler = yes } }
-    # The former monarch is moved alive, not destroyed or reconstructed from a name.
-    if = { limit = { exists = scope:nesnd_old_ming_ruler exists = c:HNA }
-        scope:nesnd_old_ming_ruler = { transfer_character = c:HNA }
-    } else_if = { limit = { exists = scope:nesnd_old_ming_ruler exists = c:SIH }
-        scope:nesnd_old_ming_ruler = { transfer_character = c:SIH }
-    }
-    set_variable = tag_WUU_var set_variable = ce_usm_conflict_evoked
-    remove_variable = flavor_USM_crisis_intro
-    set_variable = ce_usm_civilwar_journal_trigger
-    set_variable = { name = usm_opposition_country_choice value = 0 }
-    set_variable = { name = usm_opposition_country_count value = 0 }
-    set_variable = { name = usm_subject_country_count value = 0 }
-    set_variable = { name = usm_opposition_country_choice_tt_var value = 0 }
-    c:SIH ?= { if = { limit = { is_subject_of = root }
-        set_variable = nesnd_invited_south
-        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
-    } }
-c:HNA ?= { if = { limit = { is_subject_of = root }
-        set_variable = nesnd_invited_south
-        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
-    } }
-c:GNG ?= { if = { limit = { is_subject_of = root }
-        set_variable = nesnd_invited_south
-        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
-    } }
-c:PHI ?= { if = { limit = { is_subject_of = root }
-        set_variable = nesnd_invited_south
-        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
-    } }
-c:DEI ?= { if = { limit = { is_subject_of = root }
-        set_variable = nesnd_invited_south
-        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
-    } }
-c:YN1 ?= { if = { limit = { is_subject_of = root }
-        set_variable = nesnd_invited_south
-        trigger_event = { id = usm_civilwar.1 days = 7 popup = yes }
-    } }
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				c:USM ?= this
+				NOT = {
+					has_variable = tag_WUU_var
+				}
+				NOT = {
+					has_global_variable = nesnd_south_settled
+				}
+				NOT = {
+					has_variable = nesnd_accession_pending
+				}
+				NOT = {
+					has_variable = nesnd_accession_executed
+				}
+				NOT = {
+					has_variable = nesnd_accession_deferred
+				}
+			}
+			nesnd_ming_prepare_accession = yes
+			if = {
+				limit = {
+					nesnd_ming_accession_can_execute = yes
+				}
+				set_variable = nesnd_accession_pending
+				trigger_event = {
+					id = flavorUSM.400
+					popup = yes
+				}
+			}
+			else_if = {
+				limit = {
+					is_player = yes
+					nesnd_board_stance_value = 1
+				}
+				trigger_event = {
+					id = nesnd_ming_court.9
+					popup = yes
+				}
+			}
+		}
+	}
+}
 
-    c:JAP ?= { trigger_event = { id = usm_civilwar.23 days = 7 popup = yes } }
-    add_journal_entry = { type = ce_usm_civilwar_journal }
-    nesnd_notify_foreign_countries = yes
- }
-    option = { name = flavorUSM.4.1
-        default_option = yes
-        ai_chance = { base = 100 }
-        
-        
-    }
+flavorUSM.400 = {
+	type = country_event
+	placement = root
+	duration = 3
+	title = flavorUSM.4.t
+	desc = flavorUSM.4.d
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = {
+		c:USM ?= this
+		NOT = {
+			has_variable = tag_WUU_var
+		}
+		NOT = {
+			has_global_variable = nesnd_south_settled
+		}
+	}
+	immediate = {
+		if = {
+			limit = {
+				nesnd_ming_accession_can_execute = yes
+				has_variable = nesnd_accession_pending
+			}
+			set_variable = nesnd_accession_executed
+			remove_variable = nesnd_accession_pending
+			if = {
+				limit = {
+					any_country = {
+						any_scope_character = {
+							has_template = USM_zheng_Ju
+							OR = {
+								owner = root
+								is_ruler_of_own_country = no
+							}
+							is_character_alive = yes
+						}
+					}
+				}
+				random_country = {
+					limit = {
+						any_scope_character = {
+							has_template = USM_zheng_Ju
+							OR = {
+								owner = root
+								is_ruler_of_own_country = no
+							}
+							is_character_alive = yes
+						}
+					}
+					random_scope_character = {
+						limit = {
+							has_template = USM_zheng_Ju
+							OR = {
+								owner = root
+								is_ruler_of_own_country = no
+							}
+							is_character_alive = yes
+						}
+						transfer_character = root
+						save_scope_as = nesnd_wu_ruler
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					NOT = {
+						has_global_variable = nesnd_born_usm_zheng_ju
+					}
+					year < 1890
+				}
+				create_character = {
+					template = USM_zheng_Ju
+					save_scope_as = nesnd_wu_ruler
+				}
+			}
+			if = {
+				limit = {
+					exists = scope:nesnd_wu_ruler
+				}
+				scope:nesnd_wu_ruler = {
+					set_character_as_ruler = yes
+				}
+			}
+			else = {
+				create_character = {
+					last_name = "ce_Zheng"
+					first_name = "name_yuan"
+					age = 35
+					culture = cu:ce_wuu
+					interest_group = ig_industrialists
+					ideology = ideology_reformer
+					ruler = yes
+				}
+			}
+			set_variable = tag_WUU_var
+ nesnd_ming_mark_retained_royals = yes
 
-    
-
-    
-
-    flavor = flavorUSM.4.f
+			set_variable = ce_usm_conflict_evoked
+			remove_variable = flavor_USM_crisis_intro
+			set_variable = ce_usm_civilwar_journal_trigger
+			set_variable = {
+				name = usm_opposition_country_choice
+				value = 0
+			}
+			set_variable = {
+				name = usm_opposition_country_count
+				value = 0
+			}
+			set_variable = {
+				name = usm_subject_country_count
+				value = 0
+			}
+			set_variable = {
+				name = usm_opposition_country_choice_tt_var
+				value = 0
+			}
+			c:SIH ?= {
+				if = {
+					limit = {
+						is_subject_of = root
+					}
+					set_variable = nesnd_invited_south
+					trigger_event = {
+						id = usm_civilwar.1
+						days = 7
+						popup = yes
+					}
+				}
+			}
+			c:HNA ?= {
+				if = {
+					limit = {
+						is_subject_of = root
+					}
+					set_variable = nesnd_invited_south
+					trigger_event = {
+						id = usm_civilwar.1
+						days = 7
+						popup = yes
+					}
+				}
+			}
+			c:GNG ?= {
+				if = {
+					limit = {
+						is_subject_of = root
+					}
+					set_variable = nesnd_invited_south
+					trigger_event = {
+						id = usm_civilwar.1
+						days = 7
+						popup = yes
+					}
+				}
+			}
+			c:PHI ?= {
+				if = {
+					limit = {
+						is_subject_of = root
+					}
+					set_variable = nesnd_invited_south
+					trigger_event = {
+						id = usm_civilwar.1
+						days = 7
+						popup = yes
+					}
+				}
+			}
+			c:DEI ?= {
+				if = {
+					limit = {
+						is_subject_of = root
+					}
+					set_variable = nesnd_invited_south
+					trigger_event = {
+						id = usm_civilwar.1
+						days = 7
+						popup = yes
+					}
+				}
+			}
+			c:YN1 ?= {
+				if = {
+					limit = {
+						is_subject_of = root
+					}
+					set_variable = nesnd_invited_south
+					trigger_event = {
+						id = usm_civilwar.1
+						days = 7
+						popup = yes
+					}
+				}
+			}
+			c:JAP ?= {
+				trigger_event = {
+					id = usm_civilwar.23
+					days = 7
+					popup = yes
+				}
+			}
+			add_journal_entry = {
+				type = ce_usm_civilwar_journal
+			}
+			nesnd_notify_foreign_countries = yes
+		}
+		else = {
+			remove_variable = nesnd_accession_pending
+			if = {
+				limit = {
+					is_player = yes
+					nesnd_board_stance_value = 1
+				}
+				trigger_event = {
+					id = nesnd_ming_court.9
+					popup = yes
+				}
+			}
+		}
+	}
+	option = {
+		name = flavorUSM.4.1
+		default_option = yes
+		ai_chance = {
+			base = 100
+		}
+	}
+	flavor = flavorUSM.4.f
 }
 
 flavorUSM.5 = {
 	type = country_event
 	placement = root
 	title = flavorUSM.5.t
-	# 陈东阳遇刺
-	desc = flavorUSM.5.d
-	# 
-
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_variable = nesnd_chen_case_residence
+				}
+				desc = nesnd_chen.death_residence_desc
+			}
+			desc = flavorUSM.5.d
+		}
+	}
 	flavor = flavorUSM.5.f
-	# \n——《大国论》陈东阳
 	duration = 3
-
 	event_image = {
 		texture = "gfx/event_pictures/event_ce_mordern_chinese_9.dds"
 	}
-
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-
-	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
-
-	trigger = { has_variable = started_with_chendongyang var:usm_conflicts_within_tracker > 24 NOT = { has_variable = nesnd_assassination_resolved } NOT = { has_variable = nesnd_chen_protected }
-        any_scope_character = { has_template = USM_chen_dongyang is_character_alive = yes } }
-
-	immediate = { set_variable = nesnd_assassination_resolved
-        if = { limit = { has_variable = nesnd_chen_protected } trigger_event = { id = nesnd_crisis.11 popup = yes } }
-        else = { 
-		hidden_effect = {
-			ig:ig_rural_folk = {
-				save_scope_as = ce_rural_folk_ig
+	trigger = {
+		c:USM ?= this
+		has_variable = nesnd_chen_case_pending_death
+		nesnd_chen_present = yes
+	}
+	immediate = {
+		if = {
+			limit = {
+				has_variable = nesnd_chen_case_pending_death
+				nesnd_chen_present = yes
 			}
-			ig:ig_landowners = {
-				save_scope_as = ce_ig_landowners
-			}
-			ig:ig_armed_forces = {
-				save_scope_as = ce_ig_armed_forces
-			}
-			ig:ig_intelligentsia = {
-				save_scope_as = ce_ig_intelligentsia
-			}
-			if = {
+			random_scope_character = {
 				limit = {
-					any_scope_character = {
-						has_template = USM_chen_dongyang
-					}
+					has_template = USM_chen_dongyang
+					is_character_alive = yes
 				}
-				random_scope_character = {
-					limit = {
-						has_template = USM_chen_dongyang
-					}
-					save_scope_as = chen_dongyang_scope
-				}
-				scope:chen_dongyang_scope = {
-					kill_character = yes
-				}
-				set_variable = kill_character_chendongyang
+				save_scope_as = chen_dongyang_scope
 			}
-			
-			create_character = {
-				template = USM_hao_tingjiang
-				save_scope_as = hao_tingjiang_scope
+			scope:chen_dongyang_scope = {
+				kill_character = yes
 			}
-			scope:hao_tingjiang_scope = {
-				set_as_interest_group_leader = yes
-			}
-			change_variable = {
-				name = usm_conflicts_within_tracker
-				add = 25
-			}
-			
-			remove_variable = started_with_chendongyang
+			set_variable = kill_character_chendongyang
+			remove_variable = nesnd_chen_case_pending_death
+			nesnd_chen_after_death = yes
 		}
-	 }
-    }
-
-	option = { # 
+	}
+	option = {
 		name = flavorUSM.5.1
 		default_option = yes
-		custom_tooltip  = increase_usm_conflicts_25
+		custom_tooltip = increase_usm_conflicts_25
 		add_loyalists = {
 			value = medium_radicals
 			interest_group = scope:ce_rural_folk_ig
@@ -601,41 +810,18 @@ flavorUSM.5 = {
 			value = medium_radicals
 			interest_group = scope:ce_ig_intelligentsia
 		}
-		
 		add_loyalists = {
 			value = medium_radicals
 			interest_group = ig:ig_rural_folk
 		}
-		
-		if = {
-			limit = {
-				has_variable = kill_character_chendongyang
-			}
-			show_as_tooltip = {
-				scope:chen_dongyang_scope = {
-					kill_character = yes
-				}
-				scope:hao_tingjiang_scope = {
-					set_as_interest_group_leader = yes
-				}
-			}
-		}
-		else = {
-			show_as_tooltip = { 
-				scope:hao_tingjiang_scope = {
-					set_as_interest_group_leader = yes
-				}
-			}
-		}
+		nesnd_queue_diaojin_to_shu = yes
 	}
-	
 }
 
 flavorUSM.6 = {
 	type = country_event
 	placement = root
 	title = flavorUSM.6.t
-	# 陈东阳遇刺
 	desc = {
 		first_valid = {
 			triggered_desc = {
@@ -647,91 +833,36 @@ flavorUSM.6 = {
 			triggered_desc = {
 				desc = flavorUSM.6.d1
 				trigger = {
-					game_date > 1870.1.1 # 防止玩家好玩误触
+					game_date > 1870.1.1
 				}
 			}
 		}
 	}
-	# 
-
 	flavor = flavorUSM.6.f
-	# 大国不在山川之广，不在人民之众，不在金铁之数。其唯生生地，其唯立立民，其唯治治产。以无限之天地为圆郭，取正道为方城。虽一城、一郭、一隅之地，犹大国也。\n——《大国论》陈东阳
 	duration = 3
-
 	event_image = {
 		texture = "gfx/event_pictures/event_ce_mordern_chinese_9.dds"
 	}
-
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-
-	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
-
 	trigger = {
+		c:USM ?= this
 		has_variable = usm_conflicts_within_tracker
 		has_variable = started_with_chendongyang
 		NOT = {
-			any_scope_character = {
+			any_character = {
 				has_template = USM_chen_dongyang
+				is_character_alive = yes
 			}
 		}
-		has_variable = started_with_chendongyang
 		game_date <= 1862.1.1
 	}
-
 	immediate = {
-		hidden_effect = {
-			ig:ig_rural_folk = {
-				save_scope_as = ce_rural_folk_ig
-			}
-			ig:ig_landowners = {
-				save_scope_as = ce_ig_landowners
-			}
-			ig:ig_armed_forces = {
-				save_scope_as = ce_ig_armed_forces
-			}
-			ig:ig_intelligentsia = {
-				save_scope_as = ce_ig_intelligentsia
-			}
-		
-			if = {
-				limit = {
-					any_scope_character = {
-						has_template = USM_chen_dongyang
-					}
-				}
-				random_scope_character = {
-					limit = {
-						has_template = USM_chen_dongyang
-					}
-					save_scope_as = chen_dongyang_scope
-				}
-				scope:chen_dongyang_scope = {
-					kill_character = yes
-				}
-				set_variable = kill_character_chendongyang
-			}
-			
-			create_character = {
-				template = USM_hao_tingjiang
-				save_scope_as = hao_tingjiang_scope
-			}
-			scope:hao_tingjiang_scope = {
-				set_as_interest_group_leader = yes
-			}
-			change_variable = {
-				name = usm_conflicts_within_tracker
-				add = 25
-			}
-			
-			remove_variable = started_with_chendongyang
-		}
+		nesnd_chen_after_death = yes
 	}
-
-	option = { # 
+	option = {
 		name = flavorUSM.6.1
 		default_option = yes
-		custom_tooltip  = increase_usm_conflicts_25
-		
+		custom_tooltip = increase_usm_conflicts_25
 		add_loyalists = {
 			value = medium_radicals
 			interest_group = scope:ce_rural_folk_ig
@@ -766,36 +897,8 @@ flavorUSM.6 = {
 			value = medium_radicals
 			interest_group = scope:ce_ig_intelligentsia
 		}
-		
-		if = {
-			limit = {
-				has_variable = kill_character_chendongyang
-			}
-			show_as_tooltip = {
-				scope:chen_dongyang_scope = {
-					kill_character = yes
-				}
-				scope:hao_tingjiang_scope = {
-					set_as_interest_group_leader = yes
-				}
-			}
-		}
-		else = {
-			show_as_tooltip = { 
-				scope:hao_tingjiang_scope = {
-					set_as_interest_group_leader = yes
-				}
-			}
-		}
-		if = {
-			limit = {
-				exists = c:SIH
-				game_date <= 1870.1.1
-			}
-			c:SIH = { trigger_event = { id = flavorUSM.7 months = 1 popup = yes } }
-		}
+		nesnd_queue_diaojin_to_shu = yes
 	}
-	
 }
 
 flavorUSM.7 = {
@@ -819,33 +922,22 @@ flavorUSM.7 = {
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
 	trigger = {
-		has_variable = usm_conflicts_within_tracker
-		has_variable = started_with_chendongyang
-		NOT = {
-			any_scope_character = {
-				has_template = USM_chen_dongyang
-			}
-		}
-		has_variable = started_with_chendongyang
-	}
+    c:SIH ?= this
+    is_country_alive = yes
+    has_variable = nesnd_diaojin_pending
+    NOT = { has_global_variable = nesnd_diaojin_arrived }
+    NOT = { any_character = { has_template = USM_chen_dongyang is_character_alive = yes } }
+}
 
 	immediate = {
 		
 	}
 
-	option = { # 
-		name = flavorUSM.7.1
-		default_option = yes
-		create_character = {
-			template = USM_zheng_diaojin
-			save_scope_as = zhengdiaojin_scope
-		}
-		hidden_effect = {
-			scope:zhengdiaojin_scope ?= {
-				set_as_interest_group_leader = yes
-			}
-		}
-	}
+	option = {
+    name = flavorUSM.7.1
+    default_option = yes
+    nesnd_receive_diaojin_in_shu = yes
+}
 	
 }
  
@@ -880,12 +972,16 @@ flavorUSM.8 = {
 			has_variable = can_review_flavorUSM_8
 		}
 		OR = {
-			s:STATE_SICHUAN = { 
+			OR = { s:STATE_SICHUAN = { 
 				any_scope_state = {
 					controller = root
 				}
-			}
-			country_or_subject_owns_entire_state_region = STATE_SICHUAN
+			} s:STATE_CHUANNAN = { 
+				any_scope_state = {
+					controller = root
+				}
+			} }
+			AND = { country_or_subject_owns_entire_state_region = STATE_SICHUAN country_or_subject_owns_entire_state_region = STATE_CHUANNAN }
 		}
 		NOT = { has_variable = reviewd_flavorUSM_8 }
 	}
@@ -910,10 +1006,9 @@ flavorUSM.8 = {
 				limit = {
 					has_variable = tag_WUU_var
 				}
-				s:STATE_SICHUAN = {
-					every_scope_state = {
-						owner = { add_to_list = usm_owner_of_target_state }
-					}
+				every_country = {
+					limit = { any_scope_state = { OR = { state_region = s:STATE_SICHUAN state_region = s:STATE_CHUANNAN } } }
+					add_to_list = usm_owner_of_target_state
 				}
 				set_variable = flavorming_usm_91
 			}
@@ -929,9 +1024,9 @@ flavorUSM.8 = {
 			}
 			show_as_tooltip = {
 				ROOT ?= {
-					random_scope_state = {
+					every_scope_state = {
 						limit = {
-							state_region = s:STATE_SICHUAN
+							OR = { state_region = s:STATE_SICHUAN state_region = s:STATE_CHUANNAN }
 						}
 						add_radicals_in_state = {
 							value = medium_radicals
@@ -968,9 +1063,9 @@ flavorUSM.8 = {
 			hidden_effect = {
 				every_in_list = {
 					list = usm_owner_of_target_state
-					random_scope_state = {
+					every_scope_state = {
 						limit = {
-							state_region = s:STATE_SICHUAN
+							OR = { state_region = s:STATE_SICHUAN state_region = s:STATE_CHUANNAN }
 						}
 						add_radicals_in_state = {
 							value = medium_radicals
@@ -1228,8 +1323,8 @@ flavorUSM.10 = {
 			has_variable = can_review_flavorUSM_10
 		}
 		OR = {
-			s:STATE_GUANGXI = { any_scope_state ={ controller = ROOT } }
-			country_or_subject_owns_entire_state_region = STATE_GUANGXI
+			OR = { s:STATE_GUANGXI = { any_scope_state ={ controller = ROOT } } s:STATE_GUILIN = { any_scope_state ={ controller = ROOT } } }
+			AND = { country_or_subject_owns_entire_state_region = STATE_GUANGXI country_or_subject_owns_entire_state_region = STATE_GUILIN }
 		}
 		NOT = { has_variable = reviewd_flavorUSM_10 }
 	}
@@ -1254,10 +1349,9 @@ flavorUSM.10 = {
 				limit = {
 					has_variable = tag_WUU_var
 				}
-				s:STATE_GUANGXI = {
-					every_scope_state = {
-						owner = { add_to_list = usm_owner_of_target_state }
-					}
+				every_country = {
+					limit = { any_scope_state = { OR = { state_region = s:STATE_GUANGXI state_region = s:STATE_GUILIN } } }
+					add_to_list = usm_owner_of_target_state
 				}
 				set_variable = flavorming_usm_91
 			}
@@ -1273,9 +1367,9 @@ flavorUSM.10 = {
 			}
 			show_as_tooltip = {
 				ROOT ?= {
-					random_scope_state = {
+					every_scope_state = {
 						limit = {
-							state_region = s:STATE_GUANGXI
+							OR = { state_region = s:STATE_GUANGXI state_region = s:STATE_GUILIN }
 						}
 						add_radicals_in_state = {
 							value = medium_radicals
@@ -1333,9 +1427,9 @@ flavorUSM.10 = {
 			hidden_effect = {
 				every_in_list = {
 					list = usm_owner_of_target_state
-					random_scope_state = {
+					every_scope_state = {
 						limit = {
-							state_region = s:STATE_GUANGXI
+							OR = { state_region = s:STATE_GUANGXI state_region = s:STATE_GUILIN }
 						}
 						add_radicals_in_state = {
 							value = medium_radicals
@@ -1409,4 +1503,3 @@ flavorUSM.10 = {
 		}
 	}
 }
-  

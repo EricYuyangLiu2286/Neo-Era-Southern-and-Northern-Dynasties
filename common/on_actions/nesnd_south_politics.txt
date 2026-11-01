@@ -1,0 +1,147 @@
+﻿on_monthly_pulse_country = {
+	on_actions = { nesnd_south_politics_monthly }
+}
+
+nesnd_south_politics_monthly = {
+	effect = {
+		nesnd_south_ai_review = yes
+		if = {
+			limit = {
+				c:USM ?= this
+				NOT = {
+					has_global_variable = nesnd_south_settled
+				}
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_variable = nesnd_south_ming_months
+					}
+				}
+				set_variable = {
+					name = nesnd_south_ming_months
+					value = 0
+				}
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_variable = nesnd_south_wu_months
+					}
+				}
+				set_variable = {
+					name = nesnd_south_wu_months
+					value = 0
+				}
+			}
+			nesnd_south_measure_politics = yes
+			if = {
+				limit = {
+					nesnd_south_ming_peace_ready = yes
+				}
+				change_variable = {
+					name = nesnd_south_ming_months
+					add = 1
+				}
+			}
+			else = {
+				set_variable = {
+					name = nesnd_south_ming_months
+					value = 0
+				}
+			}
+			if = {
+				limit = {
+					nesnd_south_wu_peace_ready = yes
+				}
+				change_variable = {
+					name = nesnd_south_wu_months
+					add = 1
+				}
+			}
+			else = {
+				set_variable = {
+					name = nesnd_south_wu_months
+					value = 0
+				}
+			}
+			clamp_variable = {
+				name = nesnd_south_ming_months
+				min = 0
+				max = 12
+			}
+			clamp_variable = {
+				name = nesnd_south_wu_months
+				min = 0
+				max = 12
+			}
+			set_global_variable = {
+				name = nesnd_south_peace_months
+				value = 0
+			}
+			if = {
+				limit = {
+					nesnd_board_stance_value = 1
+				}
+				set_global_variable = {
+					name = nesnd_south_peace_months
+					value = nesnd_south_ming_months_value
+				}
+			}
+			if = {
+				limit = {
+					nesnd_board_stance_value = 2
+				}
+				set_global_variable = {
+					name = nesnd_south_peace_months
+					value = nesnd_south_wu_months_value
+				}
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_variable = nesnd_south_peace_pending
+					}
+					NOT = {
+						has_variable = nesnd_south_peace_committed
+					}
+				}
+				if = {
+					limit = {
+						nesnd_south_ming_peace_ready = yes
+						nesnd_south_ming_observation_complete = yes
+					}
+					set_variable = {
+						name = nesnd_south_peace_pending
+						months = 4
+					}
+					trigger_event = {
+						id = nesnd_south_accords.20
+						popup = yes
+					}
+				}
+				else_if = {
+					limit = {
+						nesnd_south_wu_peace_ready = yes
+						nesnd_south_wu_observation_complete = yes
+					}
+					set_variable = {
+						name = nesnd_south_peace_pending
+						months = 4
+					}
+					trigger_event = {
+						id = nesnd_south_accords.21
+						popup = yes
+					}
+				}
+			}
+			if = {
+				limit = {
+					is_ai = yes
+					nesnd_south_can_offer_accord = yes
+				}
+				nesnd_south_offer_chosen_accord = yes
+			}
+		}
+	}
+}

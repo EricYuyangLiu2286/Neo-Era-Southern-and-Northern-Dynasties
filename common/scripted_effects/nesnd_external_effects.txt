@@ -1,0 +1,32 @@
+﻿nesnd_external_clear_request = {
+ remove_variable = nesnd_external_pending
+ remove_variable = nesnd_external_requester_sponsor
+ remove_variable = nesnd_external_receiver_sponsor
+}
+nesnd_external_send_request = {
+ set_variable = { name = nesnd_external_pending value = var:nesnd_external_target days = 30 }
+ set_variable = { name = nesnd_external_cooldown months = 6 }
+ if = { limit = { is_subject = yes } set_variable = { name = nesnd_external_requester_sponsor value = overlord } }
+ else = { set_variable = { name = nesnd_external_requester_sponsor value = this } }
+ if = { limit = { var:nesnd_external_target = { is_subject = yes } } set_variable = { name = nesnd_external_receiver_sponsor value = var:nesnd_external_target.overlord } }
+ else = { set_variable = { name = nesnd_external_receiver_sponsor value = var:nesnd_external_target } }
+ save_scope_as = nesnd_external_requester
+}
+nesnd_external_cleanup = { nesnd_external_clear_request = yes remove_variable = nesnd_external_target remove_variable = nesnd_external_idle_weeks }
+
+nesnd_external_ai_review_week = {
+ if = { limit = { is_ai = yes NOT = { has_variable = nesnd_external_aid_committed } }
+  if = { limit = { NOT = { has_variable = nesnd_external_idle_weeks } }
+   set_variable = { name = nesnd_external_idle_weeks value = 0 }
+  }
+  if = { limit = {
+   NOT = { has_variable = nesnd_external_pending }
+   NOT = { has_variable = nesnd_external_cooldown }
+   NOT = { nesnd_external_any_legal_aid = yes }
+   OR = { has_variable = nesnd_external_target NOT = { nesnd_external_any_partner_available = yes } }
+  }
+   change_variable = { name = nesnd_external_idle_weeks add = 1 }
+   clamp_variable = { name = nesnd_external_idle_weeks min = 0 max = 52 }
+  } else = { set_variable = { name = nesnd_external_idle_weeks value = 0 } }
+ }
+}

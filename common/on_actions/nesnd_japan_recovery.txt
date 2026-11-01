@@ -1,0 +1,62 @@
+﻿on_diplomatic_play_started = {
+	on_actions = { nesnd_japan_register_play_hook }
+}
+
+nesnd_japan_register_play_hook = {
+	effect = {
+		c:USM ?= {
+			nesnd_japan_register_existing_play = yes
+		}
+	}
+}
+
+on_wargoal_enforced = {
+	on_actions = { nesnd_japan_registered_wargoal_hook }
+}
+
+nesnd_japan_registered_wargoal_hook = {
+	effect = {
+		if = {
+			limit = {
+				c:USM ?= this
+				has_variable = nesnd_japan_annex_expected_country
+				exists = scope:target
+			}
+			clear_saved_scope = nesnd_japan_annex_callback_target
+			scope:target = {
+				save_scope_as = nesnd_japan_annex_callback_target
+			}
+			nesnd_japan_confirm_native_annex = yes
+		}
+	}
+}
+
+on_war_end = {
+	on_actions = { nesnd_japan_recovery_after_war }
+}
+
+nesnd_japan_recovery_after_war = {
+	effect = {
+		c:USM ?= {
+			nesnd_japan_clear_unused_registration = yes
+			nesnd_japan_recovery_request = yes
+		}
+	}
+}
+
+on_monthly_pulse_country = {
+	on_actions = { nesnd_japan_recovery_monthly }
+}
+
+nesnd_japan_recovery_monthly = {
+	effect = {
+		if = {
+			limit = {
+				c:USM ?= this
+			}
+			nesnd_japan_register_existing_play = yes
+			nesnd_japan_clear_unused_registration = yes
+			nesnd_japan_recovery_request = yes
+		}
+	}
+}

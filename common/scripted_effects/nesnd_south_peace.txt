@@ -1,0 +1,482 @@
+﻿nesnd_south_install_wu_peacefully = {
+	if = {
+		limit = {
+			c:USM ?= this
+			NOT = {
+				has_variable = tag_WUU_var
+			}
+		}
+		nesnd_ming_prepare_accession = yes
+		clear_saved_scope = nesnd_wu_ruler
+		if = {
+			limit = {
+				any_country = {
+					any_scope_character = {
+						has_template = USM_zheng_Ju
+						OR = {
+							owner = root
+							is_ruler_of_own_country = no
+						}
+						is_character_alive = yes
+					}
+				}
+			}
+			random_country = {
+				limit = {
+					any_scope_character = {
+						has_template = USM_zheng_Ju
+						OR = {
+							owner = root
+							is_ruler_of_own_country = no
+						}
+						is_character_alive = yes
+					}
+				}
+				random_scope_character = {
+					limit = {
+						has_template = USM_zheng_Ju
+						OR = {
+							owner = root
+							is_ruler_of_own_country = no
+						}
+						is_character_alive = yes
+					}
+					transfer_character = root
+					save_scope_as = nesnd_wu_ruler
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = {
+					has_global_variable = nesnd_born_usm_zheng_ju
+				}
+				year < 1890
+			}
+			create_character = {
+				template = USM_zheng_Ju
+				save_scope_as = nesnd_wu_ruler
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:nesnd_wu_ruler
+			}
+			scope:nesnd_wu_ruler = {
+				set_character_as_ruler = yes
+			}
+		}
+		else = {
+			create_character = {
+				last_name = "ce_Zheng"
+				first_name = "name_yuan"
+				age = 35
+				culture = cu:ce_wuu
+				interest_group = ig_industrialists
+				ideology = ideology_reformer
+				ruler = yes
+			}
+		}
+		set_variable = tag_WUU_var
+ nesnd_ming_mark_retained_royals = yes
+
+		set_variable = nesnd_accession_executed
+		remove_variable = nesnd_accession_pending
+	}
+}
+
+nesnd_south_capture_snapshot = {
+	if = {
+		limit = {
+			NOT = {
+				has_global_variable = nesnd_south_snapshot_taken
+			}
+		}
+		set_global_variable = nesnd_south_snapshot_taken
+		every_country = {
+			limit = {
+				OR = {
+					c:USM ?= this
+					nesnd_south_political_member = yes
+				}
+			}
+			nesnd_south_measure_readiness = yes
+			set_variable = {
+				name = nesnd_south_snapshot_stance
+				value = nesnd_board_stance_value
+			}
+			set_variable = {
+				name = nesnd_south_snapshot_ready
+				value = nesnd_south_ready_value
+			}
+			set_variable = {
+				name = nesnd_south_snapshot_army
+				value = army_power_projection
+			}
+			set_variable = {
+				name = nesnd_south_snapshot_navy
+				value = naval_power_projection
+			}
+			set_variable = {
+				name = nesnd_south_snapshot_balance
+				value = net_fixed_income
+			}
+		}
+	}
+}
+
+nesnd_south_war_readiness_outcome = {
+	nesnd_south_capture_snapshot = yes
+	every_country = {
+		limit = {
+			OR = {
+				c:USM ?= this
+				has_variable = usm_opposition_country
+				AND = {
+					is_subject_of = c:USM
+					nesnd_board_stance_value = 2
+				}
+			}
+			has_variable = nesnd_south_snapshot_ready
+			NOT = {
+				has_variable = nesnd_south_preparation_rewarded
+			}
+		}
+		set_variable = nesnd_south_preparation_rewarded
+		if = {
+			limit = {
+				nesnd_preview_c_south_snapshot_ready_value >= 70
+			}
+			add_modifier = {
+				name = nesnd_south_prepared_mobilization
+				months = 12
+			}
+		}
+		else_if = {
+			limit = {
+				nesnd_preview_c_south_snapshot_ready_value < 30
+			}
+			add_modifier = {
+				name = nesnd_south_hasty_mobilization
+				months = 12
+			}
+		}
+	}
+}
+
+nesnd_south_peace_member_outcome = {
+	if = {
+		limit = {
+			NOT = {
+				has_variable = nesnd_south_preparation_rewarded
+			}
+		}
+		set_variable = nesnd_south_preparation_rewarded
+		if = {
+			limit = {
+				nesnd_south_accord_valid = yes
+				nesnd_south_accord_side_value = c:USM.nesnd_board_stance_value
+			}
+			add_modifier = {
+				name = nesnd_south_accord_respected
+				months = 24
+			}
+			if = {
+				limit = {
+					has_variable = nesnd_south_snapshot_ready
+					nesnd_preview_c_south_snapshot_ready_value >= 70
+				}
+				add_modifier = {
+					name = nesnd_south_prepared_member
+					months = 24
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				OR = {
+					nesnd_board_stance_value = 1
+					nesnd_board_stance_value = 2
+				}
+				NOT = {
+					nesnd_board_stance_value = c:USM.nesnd_board_stance_value
+				}
+			}
+			add_modifier = {
+				name = nesnd_south_failed_alignment
+				months = 12
+			}
+			change_relations = {
+				country = c:USM
+				value = -15
+			}
+		}
+	}
+}
+
+nesnd_south_integrate_consented_country = {
+	if = {
+		limit = {
+			nesnd_south_member_can_integrate = yes
+		}
+		save_scope_as = nesnd_south_cession_country
+		if = {
+			limit = {
+				exists = scope:nesnd_south_cession_country
+			}
+			clear_saved_scope = nesnd_south_retained_capital
+			remove_variable = nesnd_south_move_political_capital
+			remove_variable = nesnd_south_move_market_capital
+			if = {
+				limit = {
+					NOT = {
+						any_scope_state = {
+							NOT = {
+								nesnd_south_chinese_state = yes
+							}
+						}
+					}
+					NOT = {
+						nesnd_south_protected_overseas = yes
+					}
+				}
+				every_scope_state = {
+					add_modifier = {
+						name = nesnd_south_new_province
+						months = 12
+					}
+				}
+				if = {
+					limit = {
+						is_player = yes
+						c:USM = {
+							is_player = no
+						}
+					}
+					play_as = c:USM
+				}
+				every_scope_character = {
+					limit = {
+						is_character_alive = yes
+					}
+					transfer_character = c:USM
+				}
+				c:USM = {
+					annex = prev
+				}
+			}
+			else = {
+				ordered_scope_state = {
+					limit = {
+						NOT = {
+							nesnd_south_chinese_state = yes
+						}
+						controller = owner
+					}
+					order_by = state_population
+					position = 0
+					check_range_bounds = no
+					state_region = {
+						save_scope_as = nesnd_south_retained_capital
+					}
+				}
+				if = {
+					limit = {
+						exists = scope:nesnd_south_retained_capital
+					}
+					if = {
+						limit = {
+							capital ?= {
+								nesnd_south_chinese_state = yes
+							}
+						}
+						set_variable = nesnd_south_move_political_capital
+					}
+					if = {
+						limit = {
+							market_capital ?= {
+								owner = scope:nesnd_south_cession_country
+								nesnd_south_chinese_state = yes
+							}
+						}
+						set_variable = nesnd_south_move_market_capital
+					}
+					nesnd_south_apply_selected_capitals = yes
+					if = {
+						limit = {
+							has_variable = nesnd_south_capital_move_applied
+						}
+						every_scope_state = {
+							limit = {
+								nesnd_south_chinese_state = yes
+								controller = owner
+							}
+							add_modifier = {
+								name = nesnd_south_new_province
+								months = 12
+							}
+							set_state_owner = c:USM
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+nesnd_south_japan_consented_cession = {
+	if = {
+		limit = {
+			nesnd_south_japan_can_cede = yes
+		}
+		save_scope_as = nesnd_south_cession_country
+		if = {
+			limit = {
+				exists = scope:nesnd_south_cession_country
+			}
+			clear_saved_scope = nesnd_south_retained_capital
+			remove_variable = nesnd_south_move_political_capital
+			remove_variable = nesnd_south_move_market_capital
+			ordered_scope_state = {
+				limit = {
+					NOR = {
+						state_region = s:STATE_SHIKOKU
+						state_region = s:STATE_KYUSHU
+					}
+					controller = owner
+				}
+				order_by = state_population
+				position = 0
+				check_range_bounds = no
+				state_region = {
+					save_scope_as = nesnd_south_retained_capital
+				}
+			}
+			if = {
+				limit = {
+					exists = scope:nesnd_south_retained_capital
+				}
+				if = {
+					limit = {
+						capital ?= {
+							OR = {
+								state_region = s:STATE_SHIKOKU
+								state_region = s:STATE_KYUSHU
+							}
+						}
+					}
+					set_variable = nesnd_south_move_political_capital
+				}
+				if = {
+					limit = {
+						market_capital ?= {
+							owner = scope:nesnd_south_cession_country
+							OR = {
+								state_region = s:STATE_SHIKOKU
+								state_region = s:STATE_KYUSHU
+							}
+						}
+					}
+					set_variable = nesnd_south_move_market_capital
+				}
+				nesnd_south_apply_selected_capitals = yes
+				if = {
+					limit = {
+						has_variable = nesnd_south_capital_move_applied
+					}
+					every_scope_state = {
+						limit = {
+							OR = {
+								state_region = s:STATE_SHIKOKU
+								state_region = s:STATE_KYUSHU
+							}
+							controller = owner
+						}
+						set_state_owner = c:USM
+					}
+				}
+			}
+		}
+	}
+}
+
+nesnd_south_commit_ming_peace = {
+	hidden_effect = {
+		nesnd_south_measure_politics = yes
+		if = {
+			limit = {
+				nesnd_south_ming_peace_ready = yes
+				nesnd_south_ming_observation_complete = yes
+			}
+			nesnd_south_capture_snapshot = yes
+			set_variable = nesnd_south_peace_committed
+			set_variable = nesnd_ming_preserved
+			set_global_variable = nesnd_south_settled
+			remove_variable = nesnd_south_peace_pending
+			remove_variable = ce_usm_civilwar_journal_trigger
+			add_modifier = {
+				name = nesnd_federal_compact
+				months = 120
+			}
+			add_modifier = {
+				name = nesnd_south_peace_administration
+				months = 24
+			}
+			every_country = {
+				limit = {
+					nesnd_south_political_member = yes
+				}
+				nesnd_south_peace_member_outcome = yes
+			}
+			trigger_event = {
+				id = nesnd_south_accords.22
+				popup = yes
+			}
+		}
+	}
+}
+
+nesnd_south_commit_wu_peace = {
+	hidden_effect = {
+		nesnd_south_measure_politics = yes
+		if = {
+			limit = {
+				nesnd_south_wu_peace_ready = yes
+				nesnd_south_wu_observation_complete = yes
+			}
+			nesnd_south_capture_snapshot = yes
+			set_variable = nesnd_south_peace_committed
+			nesnd_south_install_wu_peacefully = yes
+			set_global_variable = nesnd_south_settled
+			set_variable = nesnd_wu_peaceful_settlement
+			remove_variable = nesnd_south_peace_pending
+			remove_variable = ce_usm_civilwar_journal_trigger
+			every_country = {
+				limit = {
+					nesnd_south_political_member = yes
+				}
+				nesnd_south_peace_member_outcome = yes
+			}
+			every_country = {
+				limit = {
+					nesnd_south_integration_member = yes
+				}
+				nesnd_south_integrate_consented_country = yes
+			}
+			every_country = {
+				limit = {
+					nesnd_south_japan_member = yes
+				}
+				nesnd_south_japan_consented_cession = yes
+			}
+			add_modifier = {
+				name = nesnd_south_peace_administration
+				months = 36
+			}
+			trigger_event = {
+				id = nesnd_south_accords.23
+				popup = yes
+			}
+		}
+	}
+}

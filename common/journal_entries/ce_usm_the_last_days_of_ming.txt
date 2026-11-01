@@ -12,6 +12,8 @@
 	}
 
 	immediate = {
+        nesnd_south_initialize = yes
+
 		set_variable = {
 			name = usm_conflicts_within_tracker
 			value = 0
@@ -28,14 +30,32 @@
         else = { change_variable = { name = usm_conflicts_within_tracker add = 1 } }
         clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
     }
-    random_events = { 900 = 0 20 = flavorUSM.5 }
+    random_events = { 900 = 0 20 = nesnd_chen.2 }
  }
 	
 	
 	
-	complete = { custom_tooltip = { text = nesnd_usm_conflicts_within_tracker_ge_100 var:usm_conflicts_within_tracker >= 100 } NOT = { has_global_variable = nesnd_south_settled }
-    NOT = { any_scope_character = { has_template = USM_zheng_qin is_character_alive = yes } }
- }
+	complete = {
+		custom_tooltip = {
+			text = nesnd_usm_conflicts_within_tracker_ge_100
+			nesnd_south_pressure_value >= 100
+		}
+		custom_tooltip = {
+			text = nesnd_south_unsettled_tt
+			NOT = {
+				has_global_variable = nesnd_south_settled
+			}
+		}
+		custom_tooltip = {
+			text = nesnd_south_qin_departed_tt
+			NOT = {
+				any_scope_character = {
+					has_template = USM_zheng_qin
+					is_character_alive = yes
+				}
+			}
+		}
+	}
 	
 	on_complete = {
 		
@@ -50,43 +70,75 @@
 	}
 	
 	fail = {
-		trigger_if = {
-			limit = {
-				num_states >= 2
+		custom_tooltip = {
+			text = nesnd_south_conflicts_failure_tt
+			trigger_if = {
+				limit = {
+					num_states >= 2
+				}
+				OR = {
+					NOT = {
+						exists = c:SIH
+					}
+					NOT = {
+						c:SIH ?= {
+							is_direct_subject_of = root
+						}
+					}
+				}
+				OR = {
+					NOT = {
+						exists = c:HNA
+					}
+					NOT = {
+						c:HNA ?= {
+							is_direct_subject_of = root
+						}
+					}
+				}
+				OR = {
+					NOT = {
+						exists = c:PHI
+					}
+					NOT = {
+						c:PHI ?= {
+							is_direct_subject_of = root
+						}
+					}
+				}
+				OR = {
+					NOT = {
+						exists = c:DEI
+					}
+					NOT = {
+						c:DEI ?= {
+							is_direct_subject_of = root
+						}
+					}
+				}
+				OR = {
+					NOT = {
+						exists = c:YN1
+					}
+					NOT = {
+						c:YN1 ?= {
+							is_direct_subject_of = root
+						}
+					}
+				}
+				custom_tooltip = {
+					text = ce_usm_conflicts_invalid_tt_1
+					always = yes
+				}
 			}
-			OR = {
-				NOT = { exists = c:SIH }
-				NOT = { c:SIH ?= { is_direct_subject_of = root } }
-			}
-			OR = {
-				NOT = { exists = c:HNA }
-				NOT = { c:HNA ?= { is_direct_subject_of = root } }
-			}
-			OR = {
-				NOT = { exists = c:PHI }
-				NOT = { c:PHI ?= { is_direct_subject_of = root } }
-			}
-			OR = {
-				NOT = { exists = c:DEI }
-				NOT = { c:DEI ?= { is_direct_subject_of = root } }
-			}
-			OR = {
-				NOT = { exists = c:YN1 }
-				NOT = { c:YN1 ?= { is_direct_subject_of = root } }
-			}
-			custom_tooltip = {
-				text = ce_usm_conflicts_invalid_tt_1
-				always = yes
-			}
-		}
-		
-		trigger_if = {
-			limit = {
-				num_states < 2
-			}
-			custom_tooltip = {
-				text = ce_usm_conflicts_invalid_tt_2
-				always = yes
+			trigger_if = {
+				limit = {
+					num_states < 2
+				}
+				custom_tooltip = {
+					text = ce_usm_conflicts_invalid_tt_2
+					always = yes
+				}
 			}
 		}
 	}
@@ -113,11 +165,28 @@
 		}
 	}
 	
-	invalid = { OR = { has_global_variable = nesnd_south_settled has_variable = tag_WUU_var NOT = { has_law_or_variant = law_type:law_monarchy } } }
+	invalid = {
+		OR = {
+			custom_tooltip = {
+				text = nesnd_south_settled_tt
+				has_global_variable = nesnd_south_settled
+			}
+			custom_tooltip = {
+				text = nesnd_south_wu_established_tt
+				has_variable = tag_WUU_var
+			}
+			custom_tooltip = {
+				text = nesnd_south_monarchy_ended_tt
+				NOT = {
+					has_law_or_variant = law_type:law_monarchy
+				}
+			}
+		}
+	}
 	
 	on_invalid = {
     remove_variable = flavor_USM_crisis_intro
-    if = { limit = { NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_ming_preserved } }
+    if = { limit = { NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_ming_preserved } NOT = { has_variable = nesnd_south_inconclusive_settlement } }
         set_global_variable = nesnd_south_settled
         trigger_event = { id = flavorUSM.3 popup = yes }
     }
@@ -193,7 +262,7 @@ ce_usm_ruling_of_nanfu = {
 	fail = {
 		custom_tooltip = {
 			text = ce_usm_conflict_fail_tt
-			has_variable = ce_usm_conflict_fail
+			NOT = { has_law_or_variant = law_type:law_monarchy }
 		}
 	}
 	
@@ -203,12 +272,12 @@ ce_usm_ruling_of_nanfu = {
 		}
 	}
 	
-	invalid = {
+	invalid = { OR = { has_global_variable = nesnd_south_settled 
 		custom_tooltip = {
 			text = ce_usm_conflict_looming_tt
 			has_variable = ce_usm_conflict_looming
 		}
-	}
+	 } }
 	
 	on_invalid = {
 		hidden_effect = {
@@ -323,15 +392,9 @@ ce_usm_restoration_of_ming = {
 	
 	on_monthly_pulse = { effect = { } }
 	
-	complete = { NOT = { has_global_variable = nesnd_south_settled }
-    OR = {
-        AND = { NOT = { exists = c:USM } owns_entire_state_region = STATE_NANJING }
-        AND = { has_war_with = c:USM c:USM = { enemy_occupation > 0.6 capital = { controller = root } }
-            s:STATE_NANJING = { any_scope_state = { owner = c:USM controller = root } }
-        }
-    } }
+	complete = { nesnd_rebel_victory_fact = yes }
 
-	on_complete = { set_variable = ce_usm_restoration_of_ming_var set_variable = usm_rebel_winner_of_the_civil_war set_global_variable = nesnd_south_settled trigger_event = { id = usm_civilwar.10 popup = yes } }
+	on_complete = { set_variable = nesnd_rebel_settlement_waiting trigger_event = { id = usm_civilwar.10 popup = yes } }
 	
 	fail = { NOT = { has_global_variable = nesnd_south_settled }
     NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
@@ -344,7 +407,7 @@ ce_usm_restoration_of_ming = {
 	
 	invalid = { has_global_variable = nesnd_south_settled NOT = { has_variable = usm_rebel_winner_of_the_civil_war } }
 	
-	on_invalid = { if = { limit = { any_country = { has_variable = usm_rebel_winner_of_the_civil_war } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
+	on_invalid = { if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
 	
 	timeout = 3650
 	
@@ -388,15 +451,9 @@ ce_usm_acheive_revolution = {
 	
 	on_monthly_pulse = { effect = { } }
 	
-	complete = { NOT = { has_global_variable = nesnd_south_settled }
-    OR = {
-        AND = { NOT = { exists = c:USM } owns_entire_state_region = STATE_NANJING }
-        AND = { has_war_with = c:USM c:USM = { enemy_occupation > 0.6 capital = { controller = root } }
-            s:STATE_NANJING = { any_scope_state = { owner = c:USM controller = root } }
-        }
-    } }
+	complete = { nesnd_rebel_victory_fact = yes }
 
-	on_complete = { set_variable = ce_usm_republican_revolution_tag set_variable = usm_rebel_winner_of_the_civil_war set_global_variable = nesnd_south_settled trigger_event = { id = usm_civilwar.10 popup = yes } }
+	on_complete = { set_variable = nesnd_rebel_settlement_waiting trigger_event = { id = usm_civilwar.10 popup = yes } }
 	
 	fail = { NOT = { has_global_variable = nesnd_south_settled }
     NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
@@ -409,7 +466,7 @@ ce_usm_acheive_revolution = {
 	
 	invalid = { has_global_variable = nesnd_south_settled NOT = { has_variable = usm_rebel_winner_of_the_civil_war } }
 	
-	on_invalid = { if = { limit = { any_country = { has_variable = usm_rebel_winner_of_the_civil_war } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
+	on_invalid = { if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
 	
 	timeout = 3650
 	
@@ -433,7 +490,22 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 		}
 	}
 
-	complete = { has_global_variable = nesnd_south_settled }
+	complete = {
+        has_global_variable = nesnd_south_settled
+        OR = {
+            NOT = {
+                any_country = {
+                    is_country_alive = yes
+                    has_variable = usm_rebel_winner_of_the_civil_war
+                }
+            }
+            c:USM ?= {
+                is_country_alive = yes
+                has_variable = usm_rebel_winner_of_the_civil_war
+                has_variable = nesnd_rebel_settlement_seen
+            }
+        }
+    }
 
 	on_complete = {
     if = { limit = { OR = {

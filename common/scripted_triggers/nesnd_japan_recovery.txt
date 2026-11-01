@@ -1,0 +1,227 @@
+﻿# No access to an annexed JAP object is required by the sponsor.
+nesnd_japan_recovery_anchor_states = {
+ s:STATE_KANTO = { any_scope_state = { owner = c:USM controller = owner } }
+ s:STATE_KYOTO = { any_scope_state = { owner = c:USM controller = owner } }
+ s:STATE_CHUGOKU = { any_scope_state = { owner = c:USM controller = owner } }
+}
+nesnd_japan_recovery_safe_context = {
+	c:USM ?= this
+	is_country_alive = yes
+	has_variable = tag_WUU_var
+	NOT = {
+		has_global_variable = nesnd_japan_partitioned
+	}
+	has_variable = nesnd_japan_recovery_pending
+	OR = {
+		NOT = {
+			c:JAP ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JAP ?= {
+			has_variable = nesnd_japan_recovery_created
+			OR = {
+				is_subject = no
+				is_subject_of = c:USM
+			}
+		}
+	}
+	OR = {
+		NOT = {
+			c:JTK ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JTK ?= {
+			has_variable = nesnd_japan_recovery_created
+			OR = {
+				is_subject = no
+				is_subject_of = c:USM
+			}
+		}
+	}
+	OR = {
+		NOT = {
+			c:JIM ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JIM ?= {
+			has_variable = nesnd_japan_recovery_created
+			OR = {
+				is_subject = no
+				is_subject_of = c:USM
+			}
+		}
+	}
+	OR = {
+		c:JAP ?= {
+			is_country_alive = yes
+			has_variable = nesnd_japan_recovery_created
+		}
+		nesnd_japan_recovery_anchor_states = yes
+	}
+	OR = {
+		NOT = {
+			c:JAP ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JAP ?= {
+			NOT = {
+				has_war_with = c:USM
+			}
+		}
+	}
+	OR = {
+		NOT = {
+			c:JTK ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JTK ?= {
+			NOT = {
+				has_war_with = c:USM
+			}
+		}
+	}
+	OR = {
+		NOT = {
+			c:JIM ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JIM ?= {
+			NOT = {
+				has_war_with = c:USM
+			}
+		}
+	}
+}
+nesnd_japan_recovery_partition_possible = {
+	c:USM ?= {
+		is_country_alive = yes
+		has_variable = tag_WUU_var
+		has_variable = nesnd_japan_recovery_pending
+	}
+	c:JAP ?= {
+		is_country_alive = yes
+		has_variable = nesnd_japan_recovery_created
+		OR = {
+			is_subject = no
+			is_subject_of = c:USM
+		}
+		any_scope_state = {
+			state_region = s:STATE_CHUGOKU
+			controller = owner
+		}
+	}
+	OR = {
+		AND = {
+			NOT = {
+				c:JTK ?= {
+					is_country_alive = yes
+				}
+			}
+			s:STATE_KANTO = {
+				any_scope_state = {
+					owner = c:JAP
+					controller = owner
+				}
+			}
+		}
+		c:JTK ?= {
+			is_country_alive = yes
+			has_variable = nesnd_japan_recovery_created
+			OR = {
+				is_subject = no
+				is_subject_of = c:USM
+			}
+		}
+	}
+	OR = {
+		AND = {
+			NOT = {
+				c:JIM ?= {
+					is_country_alive = yes
+				}
+			}
+			s:STATE_KYOTO = {
+				any_scope_state = {
+					owner = c:JAP
+					controller = owner
+				}
+			}
+		}
+		c:JIM ?= {
+			is_country_alive = yes
+			has_variable = nesnd_japan_recovery_created
+			OR = {
+				is_subject = no
+				is_subject_of = c:USM
+			}
+		}
+	}
+	OR = {
+		NOT = {
+			c:JAP ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JAP ?= {
+			NOT = {
+				has_war_with = c:USM
+			}
+		}
+	}
+	OR = {
+		NOT = {
+			c:JTK ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JTK ?= {
+			NOT = {
+				has_war_with = c:USM
+			}
+		}
+	}
+	OR = {
+		NOT = {
+			c:JIM ?= {
+				is_country_alive = yes
+			}
+		}
+		c:JIM ?= {
+			NOT = {
+				has_war_with = c:USM
+			}
+		}
+	}
+}
+
+
+# Called from JAP in the existing finalization branch. Every current USM/JAP
+# intersection intended for another member must be assigned before completion.
+# Third-country owners are not selected; a foreign controller leaves it pending.
+nesnd_japan_recovery_allocated = {
+ c:USM ?= {
+  NOT = { any_scope_state = {
+   NOR = { state_region = s:STATE_KYUSHU state_region = s:STATE_SHIKOKU }
+   OR = {
+    has_variable = nesnd_japan_before_annex
+    state_region = s:STATE_KANTO state_region = s:STATE_KYOTO state_region = s:STATE_KANSAI
+    state_region = s:STATE_CHUGOKU state_region = s:STATE_TOHOKU state_region = s:STATE_TOKAI
+    state_region = s:STATE_HOKUSHINETSU state_region = s:STATE_HOKKAIDO
+   }
+  } }
+ }
+ c:JAP ?= {
+  NOT = { any_scope_state = { OR = {
+   state_region = s:STATE_KANTO state_region = s:STATE_KYOTO state_region = s:STATE_TOHOKU
+   state_region = s:STATE_TOKAI state_region = s:STATE_HOKUSHINETSU state_region = s:STATE_HOKKAIDO
+   state_region = s:STATE_KYUSHU state_region = s:STATE_SHIKOKU
+  } } }
+ }
+ p:xB03EF0 = { NOT = { state = { owner = c:JAP } } }
+}

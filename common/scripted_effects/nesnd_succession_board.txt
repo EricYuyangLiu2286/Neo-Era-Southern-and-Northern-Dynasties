@@ -1,0 +1,56 @@
+﻿# Country scope; safe both before and after JE attachment.
+nesnd_board_initialize_country = {
+    if = { limit = { NOT = { has_variable = nesnd_board_registered } }
+        set_variable = nesnd_board_registered
+        set_variable = { name = nesnd_south_stance value = 0 }
+    }
+    nesnd_board_refresh_country = yes
+}
+nesnd_board_refresh_country = {
+    set_variable = { name = nesnd_board_fixed_balance value = net_fixed_income }
+    set_variable = { name = nesnd_board_army_projection value = army_power_projection }
+    set_variable = { name = nesnd_board_legitimacy value = government_legitimacy }
+    set_variable = { name = nesnd_board_bureaucracy value = bureaucracy }
+    if = { limit = { has_variable = nesnd_supply_score }
+        set_variable = nesnd_board_supply_known
+        set_variable = { name = nesnd_board_supply_score value = var:nesnd_supply_score }
+    } else = {
+        remove_variable = nesnd_board_supply_known
+        remove_variable = nesnd_board_supply_score
+    }
+
+    nesnd_south_measure_readiness = yes
+}
+# Contextless effect. Every country expression below has an explicit country scope.
+nesnd_board_refresh_all = {
+    every_country = {
+        limit = { nesnd_board_country_eligible = yes }
+        nesnd_board_initialize_country = yes
+        if = { limit = { NOT = { is_involved_in_journal_entry = nesnd_south_succession_board } }
+            scope:journal_entry ?= { add_involved_country = prev }
+        }
+    }
+    set_global_variable = { name = nesnd_board_members value = 0 }
+    set_global_variable = { name = nesnd_board_ming_members value = 0 }
+    set_global_variable = { name = nesnd_board_wu_members value = 0 }
+    scope:journal_entry ?= {
+        every_scope_je_involved = {
+            if = { limit = { is_country_alive = yes }
+                change_global_variable = { name = nesnd_board_members add = 1 }
+                if = { limit = { nesnd_board_stance_value = 1 }
+                    change_global_variable = { name = nesnd_board_ming_members add = 1 }
+                }
+                if = { limit = { nesnd_board_stance_value = 2 }
+                    change_global_variable = { name = nesnd_board_wu_members add = 1 }
+                }
+            } else = {
+                scope:journal_entry ?= { remove_involved_country = prev }
+            }
+        }
+        nesnd_south_measure_politics = yes
+        set_bar_progress = { name = nesnd_board_ming_bar value = nesnd_south_ming_strength }
+        set_bar_progress = { name = nesnd_board_wu_bar value = nesnd_south_wu_strength }
+        set_bar_progress = { name = nesnd_board_compact_bar value = nesnd_board_compact_value }
+        set_bar_progress = { name = nesnd_board_pressure_bar value = nesnd_board_pressure_value }
+    }
+}

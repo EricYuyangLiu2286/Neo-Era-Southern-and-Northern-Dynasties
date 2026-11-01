@@ -1,0 +1,84 @@
+﻿nesnd_phi_service_recovery = {
+	group = je_group_internal_affairs
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	can_revolution_inherit = no
+	is_shown_when_inactive = {
+		c:PHI ?= this
+		NOT = {
+			has_variable = nesnd_phi_recovery_done
+		}
+	}
+	possible = {
+		c:PHI ?= this
+		is_country_alive = yes
+		NOT = {
+			has_variable = nesnd_phi_recovery_done
+		}
+	}
+	immediate = {
+		nesnd_phi_measure = yes
+		nesnd_phi_display = yes
+	}
+	scripted_button = nesnd_phi_request_a_button
+	scripted_button = nesnd_phi_request_b_button
+	scripted_button = nesnd_phi_cancel_request_button
+	scripted_button = nesnd_phi_withdraw_button
+	scripted_button = nesnd_phi_request_cash_a_button
+	scripted_button = nesnd_phi_request_cash_b_button
+	scripted_progress_bar = nesnd_phi_service_bar
+	scripted_progress_bar = nesnd_phi_continuity_bar
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					NOT = {
+						nesnd_phi_relation_valid = yes
+					}
+				}
+				desc = nesnd_phi_status_external
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = nesnd_phi_stalled
+				}
+				desc = nesnd_phi_status_stalled
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = nesnd_phi_pending
+				}
+				desc = nesnd_phi_status_pending
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = nesnd_phi_active
+				}
+				desc = nesnd_phi_status_active
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = nesnd_phi_ever_received
+				}
+				desc = nesnd_phi_status_review
+			}
+			desc = nesnd_phi_status_proposal
+		}
+	}
+	complete = {
+		has_variable = nesnd_phi_ever_received
+		NOT = {
+			has_variable = nesnd_phi_active
+		}
+		var:nesnd_phi_good_months >= 3
+	}
+	on_complete = {
+		set_variable = nesnd_phi_recovery_done
+		trigger_event = {
+			id = nesnd_phi_finance.8
+			popup = yes
+		}
+	}
+	weight = 180
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+

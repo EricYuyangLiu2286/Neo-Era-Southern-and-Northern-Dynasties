@@ -1,0 +1,72 @@
+﻿nesnd_south_withdraw_accord = {
+    remove_variable = nesnd_south_accord_active
+    remove_variable = nesnd_south_accepts_integration
+    remove_variable = nesnd_south_accepts_japan_concession
+    set_variable = nesnd_south_accord_broken
+    c:USM ?= { if = { limit = { NOT = { this = prev } } change_relations = { country = prev value = -15 } } }
+}
+nesnd_south_offer_chosen_accord = {
+    if = { limit = { nesnd_south_can_offer_accord = yes }
+        save_scope_as = nesnd_accord_sender
+        set_variable = { name = nesnd_south_offer_cooldown months = 6 }
+        add_modifier = { name = nesnd_south_negotiation_cost months = 6 }
+        every_country = { limit = { nesnd_south_can_receive_accord = yes }
+            set_variable = { name = nesnd_south_pending_side value = scope:nesnd_accord_sender.nesnd_board_stance_value }
+            set_variable = { name = nesnd_south_accord_pending months = 4 }
+            trigger_event = { id = nesnd_south_accords.1 days = 3 popup = yes }
+        }
+    }
+}
+nesnd_south_accept_accord = {
+	hidden_effect = {
+		if = {
+			limit = {
+				nesnd_south_accord_reply_valid = yes
+			}
+			set_variable = {
+				name = nesnd_south_accord_side
+				value = nesnd_south_pending_side_value
+			}
+			set_variable = {
+				name = nesnd_south_stance
+				value = nesnd_south_pending_side_value
+			}
+			set_variable = {
+				name = nesnd_board_stance_cooldown
+				months = 6
+			}
+			set_variable = {
+				name = nesnd_south_accord_active
+				months = 36
+			}
+			remove_variable = nesnd_south_accord_broken
+			remove_variable = nesnd_south_accepts_integration
+			remove_variable = nesnd_south_accepts_japan_concession
+			if = {
+				limit = {
+					nesnd_south_accord_side_value = 2
+					nesnd_south_integration_member = yes
+				}
+				set_variable = nesnd_south_accepts_integration
+			}
+			if = {
+				limit = {
+					nesnd_south_accord_side_value = 2
+					nesnd_south_japan_member = yes
+				}
+				set_variable = nesnd_south_accepts_japan_concession
+			}
+			change_relations = {
+				country = c:USM
+				value = 15
+			}
+			remove_variable = nesnd_south_accord_pending
+			remove_variable = nesnd_south_pending_side
+			nesnd_south_measure_politics = yes
+		}
+	}
+}
+nesnd_south_clear_accord_reply = {
+    remove_variable = nesnd_south_accord_pending
+    remove_variable = nesnd_south_pending_side
+}

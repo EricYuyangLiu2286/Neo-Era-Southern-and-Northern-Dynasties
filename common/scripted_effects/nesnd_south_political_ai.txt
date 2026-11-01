@@ -1,0 +1,60 @@
+﻿nesnd_south_ai_initial_stance = {
+    if = { limit = { c:USM ?= this }
+        random_list = {
+            25 = { set_variable = { name = nesnd_south_stance value = 1 } }
+            75 = { set_variable = { name = nesnd_south_stance value = 2 } }
+        }
+    } else_if = { limit = { nesnd_south_mainland_member = yes }
+        random_list = {
+            60 = { set_variable = { name = nesnd_south_stance value = 1 } }
+            20 = { set_variable = { name = nesnd_south_stance value = 2 } }
+            10 = { set_variable = { name = nesnd_south_stance value = 3 } }
+            10 = { set_variable = { name = nesnd_south_stance value = 4 } }
+        }
+    } else_if = { limit = { nesnd_south_japan_member = yes }
+        random_list = {
+            30 = { set_variable = { name = nesnd_south_stance value = 1 } }
+            10 = { set_variable = { name = nesnd_south_stance value = 2 } }
+            15 = { set_variable = { name = nesnd_south_stance value = 3 } }
+            45 = { set_variable = { name = nesnd_south_stance value = 4 } }
+        }
+    } else_if = { limit = { nesnd_south_overseas_member = yes }
+        random_list = {
+            15 = { set_variable = { name = nesnd_south_stance value = 1 } }
+            55 = { set_variable = { name = nesnd_south_stance value = 2 } }
+            15 = { set_variable = { name = nesnd_south_stance value = 3 } }
+            15 = { set_variable = { name = nesnd_south_stance value = 4 } }
+        }
+    }
+}
+nesnd_south_ai_review = {
+    if = { limit = {
+        is_ai = yes has_variable = nesnd_board_registered
+        OR = { c:USM ?= this nesnd_south_political_member = yes has_variable = nesnd_south_member }
+        NOT = { has_variable = nesnd_south_ai_review_cooldown }
+        NOT = { has_global_variable = usm_civilwar_occured }
+        NOT = { has_global_variable = nesnd_south_settled }
+    }
+        set_variable = { name = nesnd_south_ai_review_cooldown months = 3 }
+        if = { limit = { nesnd_board_stance_value = 0 }
+            nesnd_south_ai_initial_stance = yes
+        } else_if = { limit = { NOT = { c:USM ?= this } NOT = { has_variable = nesnd_board_stance_cooldown } }
+            if = { limit = { is_subject = yes NOT = { is_subject_of = c:USM } }
+                nesnd_south_withdraw_accord = yes
+                set_variable = { name = nesnd_south_stance value = 3 }
+                set_variable = { name = nesnd_board_stance_cooldown months = 6 }
+            } else_if = { limit = { nesnd_board_stance_value = 2 c:USM ?= { in_default = yes } }
+                nesnd_south_withdraw_accord = yes
+                set_variable = { name = nesnd_south_stance value = 3 }
+                set_variable = { name = nesnd_board_stance_cooldown months = 6 }
+            } else_if = { limit = {
+                nesnd_board_stance_value = 1
+                c:USM ?= { NOT = { has_variable = tag_WUU_var } OR = { NOT = { exists = ruler } ruler ?= { NOT = { nesnd_ming_authorized_dynast = yes } } } }
+            }
+                nesnd_south_withdraw_accord = yes
+                set_variable = { name = nesnd_south_stance value = 3 }
+                set_variable = { name = nesnd_board_stance_cooldown months = 6 }
+            }
+        }
+    }
+}

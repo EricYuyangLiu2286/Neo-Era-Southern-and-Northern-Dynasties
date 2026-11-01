@@ -6,17 +6,3 @@
 工具、独立备份、原版基线、地图编辑工程与测试证据放在 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench`。
 
 不得以“通过静态检查”宣称“游戏内已验证”。版本迁移应保持架空领土、人口、文化与制度意图，不能直接复制原版的新国界或删除不再受支持的设计。
-
-## Agent skills
-
-### Issue tracker
-
-创建、读取或更新任务时，使用本地 Markdown；先读 `docs/agents/issue-tracker.md`。
-
-### Triage labels
-
-分诊任务时，使用五种默认状态名称；先读 `docs/agents/triage-labels.md`。
-
-### Domain docs
-
-探索项目时，按单一领域文档布局读取术语和设计决策；先读 `docs/agents/domain.md`。

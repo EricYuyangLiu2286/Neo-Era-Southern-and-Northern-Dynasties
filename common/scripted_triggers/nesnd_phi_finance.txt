@@ -1,0 +1,308 @@
+﻿nesnd_phi_relation_valid = {
+    c:PHI ?= this is_country_alive = yes
+    c:USM ?= { is_country_alive = yes }
+    is_subject_of = c:USM
+    overlord = c:USM
+    market = c:USM.market
+    NOT = { has_war_with = c:USM }
+}
+# Read B's accepted political accord; never create a political accord here.
+nesnd_phi_political_accord_valid = {
+    has_variable = nesnd_south_accord_active
+    NOT = { has_variable = nesnd_south_accord_broken }
+    has_variable = nesnd_south_accord_side
+    has_variable = nesnd_south_stance
+    c:USM ?= { has_variable = nesnd_south_stance }
+    OR = {
+        AND = { var:nesnd_south_accord_side = 1 var:nesnd_south_stance = 1 c:USM = { var:nesnd_south_stance = 1 } }
+        AND = { var:nesnd_south_accord_side = 2 var:nesnd_south_stance = 2 c:USM = { var:nesnd_south_stance = 2 } }
+    }
+}
+nesnd_phi_payments_possible = {
+    c:USM = {
+        OR = {
+            has_diplomatic_pact = { who = c:PHI type = decrease_payments is_initiator = yes }
+            can_create_diplomatic_pact = { target = c:PHI type = decrease_payments }
+        }
+    }
+}
+nesnd_phi_exemption_possible = {
+    c:USM = {
+        OR = {
+            has_diplomatic_pact = { who = c:PHI type = exempt_from_service is_initiator = yes }
+            can_create_diplomatic_pact = { target = c:PHI type = exempt_from_service }
+        }
+    }
+}
+nesnd_phi_a_terms = {
+    nesnd_phi_relation_valid = yes
+    nesnd_phi_political_accord_valid = yes
+    nesnd_phi_payments_possible = yes
+    NOT = { has_variable = nesnd_phi_b_transferred }
+    in_default = no
+    NOT = { has_modifier = declared_bankruptcy }
+    c:USM = {
+        in_default = no NOT = { has_modifier = declared_bankruptcy }
+        net_fixed_income >= 10000 gold_reserves >= 100000
+        can_create_treaty = {
+            first_country = c:USM second_country = c:PHI is_draft = no binding_period = { months = 12 }
+            articles_to_create = { { article = money_transfer source_country = c:USM target_country = c:PHI inputs = { { quantity = 8000 } } } }
+        }
+    }
+}
+nesnd_phi_b_ships_available = {
+    c:USM = { has_port_country = yes }
+    OR = {
+        has_variable = nesnd_phi_b_transferred
+        AND = {
+            any_scope_ship = { count >= 20 owner = c:PHI is_ship_type = ship_type:ship_type_ship_of_the_line is_in_battle = no hit_points > 0 }
+            any_scope_ship = { count >= 20 owner = c:PHI is_ship_type = ship_type:ship_type_frigate hit_points > 0 }
+        }
+    }
+}
+nesnd_phi_b_terms = {
+    nesnd_phi_relation_valid = yes
+    nesnd_phi_payments_possible = yes
+    nesnd_phi_exemption_possible = yes
+    nesnd_phi_b_ships_available = yes
+    in_default = no NOT = { has_modifier = declared_bankruptcy }
+    c:USM = {
+        in_default = no NOT = { has_modifier = declared_bankruptcy }
+        net_fixed_income >= 5000 gold_reserves >= 60000
+        can_create_treaty = {
+            first_country = c:USM second_country = c:PHI is_draft = no binding_period = { months = 12 }
+            articles_to_create = { { article = money_transfer source_country = c:USM target_country = c:PHI inputs = { { quantity = 3000 } } } }
+        }
+    }
+}
+nesnd_phi_can_request = {
+	nesnd_phi_relation_valid = yes
+	is_at_war = no
+	c:USM = {
+		is_at_war = no
+	}
+	NOT = {
+		has_variable = nesnd_phi_active
+	}
+	NOT = {
+		has_variable = nesnd_phi_pending
+	}
+	NOT = {
+		has_variable = nesnd_phi_cooldown
+	}
+	NOT = {
+		has_variable = nesnd_phi_creating
+	}
+	NOT = {
+		has_variable = nesnd_phi_creation_unbound
+	}
+}
+nesnd_phi_can_request_a = { nesnd_phi_can_request = yes nesnd_phi_a_terms = yes }
+nesnd_phi_can_request_b = { nesnd_phi_can_request = yes nesnd_phi_b_terms = yes }
+nesnd_phi_pending_valid = {
+	nesnd_phi_relation_valid = yes
+	has_variable = nesnd_phi_pending
+	is_at_war = no
+	c:USM = {
+		is_at_war = no
+	}
+	has_variable = nesnd_phi_requested_route
+	OR = {
+		AND = {
+			NOT = {
+				has_variable = nesnd_phi_requested_cash
+			}
+			var:nesnd_phi_requested_route = 1
+			var:nesnd_phi_quote = 8000
+			nesnd_phi_a_terms = yes
+		}
+		AND = {
+			NOT = {
+				has_variable = nesnd_phi_requested_cash
+			}
+			var:nesnd_phi_requested_route = 2
+			var:nesnd_phi_quote = 3000
+			nesnd_phi_b_terms = yes
+		}
+		AND = {
+			has_variable = nesnd_phi_requested_cash
+			var:nesnd_phi_requested_route = 1
+			var:nesnd_phi_quote = 8700
+			nesnd_phi_cash_a_terms = yes
+		}
+		AND = {
+			has_variable = nesnd_phi_requested_cash
+			var:nesnd_phi_requested_route = 2
+			var:nesnd_phi_quote = 3700
+			nesnd_phi_cash_b_terms = yes
+		}
+	}
+	NOT = {
+		has_variable = nesnd_phi_creation_unbound
+	}
+}
+nesnd_phi_commit_allowed = {
+	nesnd_phi_pending_valid = yes
+	var:nesnd_phi_stage = 2
+	NOT = {
+		has_variable = nesnd_phi_active
+	}
+	NOT = {
+		has_variable = nesnd_phi_creating
+	}
+	NOT = {
+		has_variable = nesnd_phi_creation_unbound
+	}
+}
+# Exact stored treaty identity; an unrelated USM-PHI treaty never satisfies this.
+nesnd_phi_owned_treaty_live = {
+    exists = var:nesnd_phi_treaty
+    any_scope_treaty = { this = c:PHI.var:nesnd_phi_treaty binds = c:USM binds = c:PHI }
+}
+nesnd_phi_owned_treaty_unamended = {
+    nesnd_phi_owned_treaty_live = yes
+    var:nesnd_phi_treaty = {
+        binding_period = c:PHI.var:nesnd_phi_original_binding
+        NOT = { any_scope_article = { count > 1 always = yes } }
+        any_scope_article = { has_type = money_transfer source_country = c:USM target_country = c:PHI input_quantity = c:PHI.var:nesnd_phi_quote }
+    }
+}
+nesnd_phi_concessions_intact = {
+	OR = {
+		has_variable = nesnd_phi_active_cash
+		c:USM = {
+			has_diplomatic_pact = {
+				who = c:PHI
+				type = decrease_payments
+				is_initiator = yes
+			}
+		}
+	}
+	OR = {
+		var:nesnd_phi_active_route = 1
+		c:USM = {
+			has_diplomatic_pact = {
+				who = c:PHI
+				type = exempt_from_service
+				is_initiator = yes
+			}
+		}
+	}
+}
+nesnd_phi_contract_valid = {
+    nesnd_phi_relation_valid = yes
+    OR = {
+        var:nesnd_phi_active_route = 2
+        AND = { var:nesnd_phi_active_route = 1 nesnd_phi_political_accord_valid = yes }
+    }
+}
+nesnd_phi_fleet_ready = {
+    military_ship_maintenance_fulfillment >= 0.8
+    OR = {
+        AND = { var:nesnd_phi_last_route = 1 any_scope_ship = { count >= 40 hit_points > 0 crew_percent >= 0.75 } }
+        AND = { var:nesnd_phi_last_route = 2 any_scope_ship = { count >= 20 hit_points > 0 crew_percent >= 0.75 } }
+    }
+}
+nesnd_phi_fiscal_ready = {
+    in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 0
+    OR = {
+        NOT = { has_variable = nesnd_phi_active }
+        AND = {
+            nesnd_phi_owned_treaty_live = yes
+            var:nesnd_phi_treaty = { is_fulfilled_by = c:USM }
+        }
+    }
+}
+nesnd_phi_households_ready = { var:nesnd_phi_unemployment <= 0.12 var:nesnd_phi_starving <= 0.15 }
+
+# Separate negotiated expenditure; it does not create/imitate the paid decrease_payments action.
+nesnd_phi_cash_alternative_available = {
+    NOT = { has_dlc_feature = subject_and_bloc_actions }
+    c:USM ?= { NOT = { has_diplomatic_pact = { who = c:PHI type = decrease_payments is_initiator = yes } } }
+}
+nesnd_phi_cash_a_terms = {
+	nesnd_phi_relation_valid = yes
+	nesnd_phi_political_accord_valid = yes
+	nesnd_phi_cash_alternative_available = yes
+	NOT = {
+		has_variable = nesnd_phi_b_transferred
+	}
+	in_default = no
+	NOT = {
+		has_modifier = declared_bankruptcy
+	}
+	c:USM = {
+		in_default = no
+		NOT = {
+			has_modifier = declared_bankruptcy
+		}
+		net_fixed_income >= 10000
+		gold_reserves >= 100000
+		can_create_treaty = {
+			first_country = c:USM
+			second_country = c:PHI
+			is_draft = no
+			binding_period = {
+				months = 12
+			}
+			articles_to_create = {
+				{
+					article = money_transfer
+					source_country = c:USM
+					target_country = c:PHI
+					inputs = {
+						{
+							quantity = 8700
+						}
+					}
+				}
+			}
+		}
+	}
+}
+nesnd_phi_cash_b_terms = {
+	nesnd_phi_relation_valid = yes
+	nesnd_phi_cash_alternative_available = yes
+	nesnd_phi_exemption_possible = yes
+	nesnd_phi_b_ships_available = yes
+	in_default = no
+	NOT = {
+		has_modifier = declared_bankruptcy
+	}
+	c:USM = {
+		in_default = no
+		NOT = {
+			has_modifier = declared_bankruptcy
+		}
+		net_fixed_income >= 5000
+		gold_reserves >= 60000
+		can_create_treaty = {
+			first_country = c:USM
+			second_country = c:PHI
+			is_draft = no
+			binding_period = {
+				months = 12
+			}
+			articles_to_create = {
+				{
+					article = money_transfer
+					source_country = c:USM
+					target_country = c:PHI
+					inputs = {
+						{
+							quantity = 3700
+						}
+					}
+				}
+			}
+		}
+	}
+}
+nesnd_phi_can_request_cash_a = { nesnd_phi_can_request = yes nesnd_phi_cash_a_terms = yes }
+nesnd_phi_can_request_cash_b = { nesnd_phi_can_request = yes nesnd_phi_cash_b_terms = yes }
+
+nesnd_phi_request_event_current = {
+        exists = scope:nesnd_phi_proposal_serial
+        has_variable = nesnd_phi_proposal_serial
+        var:nesnd_phi_proposal_serial = scope:nesnd_phi_proposal_serial
+    }

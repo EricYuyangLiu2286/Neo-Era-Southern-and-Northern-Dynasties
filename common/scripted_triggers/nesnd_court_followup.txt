@@ -1,0 +1,109 @@
+﻿nesnd_ming_royal_refuge_host = {
+    is_country_alive = yes is_subject = no exists = capital
+    OR = { c:HNA ?= this c:SIH ?= this }
+    nesnd_board_stance_value = 1 has_variable = usm_opposition_country
+    NOT = { has_variable = ce_usm_republican_revolution_tag }
+    capital = { controller = prev }
+}
+nesnd_south_no_active_confrontation = {
+    NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+    NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } }
+}
+nesnd_south_deadlock_context = {
+    c:USM ?= this NOT = { has_global_variable = nesnd_south_settled }
+    nesnd_south_no_active_confrontation = yes is_at_war = no
+    nesnd_south_pressure_value >= 60
+    OR = { has_variable = tag_WUU_var has_variable = nesnd_ming_internal_agreement has_variable = nesnd_south_play_failed }
+}
+
+nesnd_south_ming_reconciliation_basis = {
+ NOT = { has_modifier = declared_bankruptcy }
+ custom_tooltip = { text = nesnd_south_ming_supply_tt nesnd_south_ming_supply_ready = yes }
+
+	c:USM ?= this
+	nesnd_board_stance_value = 1
+	NOT = {
+		has_variable = tag_WUU_var
+	}
+	NOT = {
+		has_variable = nesnd_south_peace_committed
+	}
+	NOT = {
+		has_global_variable = nesnd_south_settled
+	}
+	NOT = {
+		has_global_variable = usm_civilwar_occured
+	}
+	is_at_war = no
+	in_default = no
+	bureaucracy >= 0
+	has_law_or_variant = law_type:law_monarchy
+	exists = ruler
+	ruler = {
+		is_character_alive = yes
+		nesnd_ming_authorized_dynast = yes
+		has_variable = nesnd_ming_claimant
+	}
+	nesnd_south_ming_strength >= 85
+	nesnd_south_ming_lead >= 20
+	nesnd_south_ming_accord >= 75
+	any_country = {
+		count >= 2
+		nesnd_south_mainland_member = yes
+		nesnd_south_accord_valid = yes
+		nesnd_south_accord_side_value = 1
+	}
+}
+nesnd_south_wu_reconciliation_basis = {
+ NOT = { has_modifier = declared_bankruptcy }
+
+	c:USM ?= this
+	nesnd_board_stance_value = 2
+	NOT = {
+		has_variable = nesnd_south_peace_committed
+	}
+	NOT = {
+		has_global_variable = nesnd_south_settled
+	}
+	NOT = {
+		has_global_variable = usm_civilwar_occured
+	}
+	is_at_war = no
+	in_default = no
+	bureaucracy >= 0
+	nesnd_south_wu_strength >= 85
+	nesnd_south_wu_lead >= 20
+	nesnd_south_wu_accord >= 80
+	any_country = {
+		count >= 2
+		nesnd_south_mainland_member = yes
+	}
+	NOT = {
+		any_country = {
+			nesnd_south_integration_member = yes
+			NOT = {
+				nesnd_south_member_can_integrate = yes
+			}
+		}
+	}
+	any_scope_ship = {
+		count >= 1
+	}
+	any_scope_ship = {
+		percent >= 0.75
+		crew_percent >= 0.7
+	}
+	military_ship_maintenance_fulfillment >= 0.75
+	NOT = {
+		any_country = {
+			nesnd_south_japan_member = yes
+			NOT = {
+				nesnd_south_japan_can_cede = yes
+			}
+		}
+	}
+}
+nesnd_south_reconciliation_basis = {
+    c:USM ?= this nesnd_south_no_active_confrontation = yes
+    OR = { nesnd_south_ming_reconciliation_basis = yes nesnd_south_wu_reconciliation_basis = yes }
+}

@@ -1,0 +1,61 @@
+﻿nesnd_rebel_victory_fact = {
+    is_country_alive = yes
+    is_subject = no
+    has_global_variable = usm_civilwar_occured
+    has_variable = usm_opposition_country
+    OR = { has_variable = nesnd_restoration_side has_variable = ce_usm_republican_revolution_tag }
+    NOT = { c:USM ?= this }
+    OR = {
+        NOT = { has_global_variable = nesnd_south_settled }
+        AND = { has_variable = nesnd_ming_court has_global_variable = usm_civilwar_status_quo }
+    }
+    OR = {
+        AND = { NOT = { exists = c:USM } owns_entire_state_region = STATE_NANJING }
+        AND = {
+            c:USM ?= { is_country_alive = yes enemy_occupation > 0.6 capital = { controller = root } }
+            has_war_with = c:USM
+            s:STATE_NANJING = { any_scope_state = { owner = c:USM controller = root } }
+        }
+    }
+}
+nesnd_rebel_can_offer_settlement = {
+    nesnd_rebel_victory_fact = yes
+    has_variable = nesnd_rebel_settlement_waiting
+    NOT = { has_variable = nesnd_rebel_settlement_pending }
+    NOT = { has_variable = nesnd_rebel_settlement_seen }
+}
+nesnd_rebel_can_commit_settlement = {
+    nesnd_rebel_victory_fact = yes
+    has_variable = nesnd_rebel_settlement_waiting
+    has_variable = nesnd_rebel_settlement_pending
+    NOT = { has_variable = nesnd_rebel_settlement_seen }
+}
+nesnd_current_rebel_winner = {
+    c:USM ?= this
+    is_country_alive = yes
+    has_global_variable = nesnd_south_settled
+    has_variable = usm_rebel_winner_of_the_civil_war
+    has_variable = nesnd_rebel_settlement_seen
+}
+nesnd_postwar_allegiance_eligible = {
+    is_country_alive = yes
+    has_variable = usm_opposition_country
+    OR = { has_variable = nesnd_restoration_side has_variable = ce_usm_republican_revolution_tag }
+    NOT = { c:USM ?= this }
+    NOT = { has_variable = nesnd_postwar_allegiance_answered }
+    c:USM ?= { nesnd_current_rebel_winner = yes }
+    OR = { is_subject = no is_subject_of = c:USM }
+    NOT = { has_war_with = c:USM }
+}
+nesnd_postwar_choice_still_valid = {
+    nesnd_postwar_allegiance_eligible = yes
+    exists = scope:usm_rebel_winner
+    scope:usm_rebel_winner = { nesnd_current_rebel_winner = yes }
+}
+# Character scope. An existing foreign ruler cannot be taken by a restoration option.
+nesnd_ming_claimant_available = {
+    is_character_alive = yes
+    exists = owner
+    owner = { is_country_alive = yes }
+    OR = { owner = root is_ruler_of_own_country = no }
+}

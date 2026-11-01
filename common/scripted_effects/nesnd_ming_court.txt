@@ -1,0 +1,251 @@
+﻿# All effects in this file have country scope unless marked otherwise.
+nesnd_ming_prepare_accession = {
+    if = { limit = { c:USM ?= this NOT = { has_variable = tag_WUU_var } }
+        if = { limit = { is_player = yes nesnd_board_stance_value = 1 }
+            set_variable = nesnd_ming_player_intent
+        } else = { remove_variable = nesnd_ming_player_intent }
+        nesnd_ming_validate_dynasty = yes
+        remove_variable = nesnd_ming_claimant_ref
+        remove_variable = nesnd_ming_heir_ref
+        if = { limit = { exists = ruler has_law_or_variant = law_type:law_monarchy ruler = { nesnd_ming_authorized_dynast = yes } }
+            ruler = { set_variable = nesnd_ming_claimant }
+            set_variable = { name = nesnd_ming_claimant_ref value = ruler }
+        }
+        if = { limit = { any_scope_character = { is_heir_of_own_country = yes is_character_alive = yes nesnd_ming_authorized_dynast = yes } }
+            random_scope_character = { limit = { is_heir_of_own_country = yes is_character_alive = yes nesnd_ming_authorized_dynast = yes }
+                root = { set_variable = { name = nesnd_ming_heir_ref value = prev } }
+            }
+        }
+    }
+}
+nesnd_ming_find_rebel_host = {
+    remove_variable = nesnd_ming_receiver
+    if = { limit = { has_variable = nesnd_ming_player_intent is_player = yes nesnd_board_stance_value = 1 }
+        if = { limit = { exists = var:nesnd_ming_preferred_host var:nesnd_ming_preferred_host = { nesnd_ming_host_rebel = yes } }
+            set_variable = { name = nesnd_ming_receiver value = var:nesnd_ming_preferred_host }
+        } else_if = { limit = { c:HNA ?= { nesnd_ming_host_rebel = yes } }
+            set_variable = { name = nesnd_ming_receiver value = c:HNA }
+        } else_if = { limit = { c:SIH ?= { nesnd_ming_host_rebel = yes } }
+            set_variable = { name = nesnd_ming_receiver value = c:SIH }
+        }
+    }
+}
+nesnd_ming_commit_player_transfer = {
+	if = {
+		limit = {
+			c:USM ?= this
+			is_player = yes
+			has_variable = nesnd_ming_player_intent
+			nesnd_board_stance_value = 1
+			NOT = {
+				has_variable = nesnd_ming_player_transferred
+			}
+			NOT = {
+				has_global_variable = nesnd_south_settled
+			}
+			OR = {
+				any_diplomatic_play = {
+					has_variable = this_is_nanming_civilwar_var
+					initiator = root
+				}
+				any_country = {
+					has_variable = usm_opposition_country
+					has_war_with = root
+				}
+			}
+		}
+		nesnd_ming_find_rebel_host = yes
+		if = {
+			limit = {
+				exists = var:nesnd_ming_receiver
+				var:nesnd_ming_receiver = {
+					nesnd_ming_host_rebel = yes
+					is_subject = no
+				}
+			}
+			var:nesnd_ming_receiver = {
+				save_scope_as = nesnd_ming_host
+			}
+			clear_saved_scope = nesnd_ming_live_claimant
+			if = {
+				limit = {
+					exists = var:nesnd_ming_claimant_ref
+					var:nesnd_ming_claimant_ref = {
+						is_character_alive = yes
+						owner = root
+						nesnd_ming_authorized_dynast = yes
+					}
+				}
+				var:nesnd_ming_claimant_ref = {
+					save_scope_as = nesnd_ming_live_claimant
+				}
+			}
+			else_if = {
+				limit = {
+					exists = var:nesnd_ming_heir_ref
+					var:nesnd_ming_heir_ref = {
+						is_character_alive = yes
+						owner = root
+						nesnd_ming_authorized_dynast = yes
+					}
+				}
+				var:nesnd_ming_heir_ref = {
+					set_variable = nesnd_ming_claimant
+					save_scope_as = nesnd_ming_live_claimant
+				}
+			}
+			scope:nesnd_ming_host = {
+				ruler ?= {
+					set_variable = nesnd_ming_local_patron
+				}
+				if = {
+					limit = {
+						exists = ruler
+					}
+					set_variable = {
+						name = nesnd_ming_local_ruler_ref
+						value = ruler
+					}
+				}
+				set_variable = nesnd_ming_court
+				set_variable = nesnd_restoration_side
+				set_variable = {
+					name = nesnd_south_stance
+					value = 1
+				}
+				remove_variable = ce_usm_republican_revolution_tag
+				if = {
+					limit = {
+						exists = scope:nesnd_ming_live_claimant
+					}
+					activate_law = law_type:law_monarchy
+					scope:nesnd_ming_live_claimant = {
+						transfer_character = scope:nesnd_ming_host
+						set_character_as_ruler = yes
+						if = {
+							limit = {
+								has_role = character_role_nesnd_ming_refuge
+							}
+							remove_character_role = character_role_nesnd_ming_refuge
+						}
+					}
+					set_variable = {
+						name = nesnd_ming_court_monarch
+						value = scope:nesnd_ming_live_claimant
+					}
+				}
+				else = {
+					set_variable = nesnd_ming_interregnum
+				}
+				if = {
+					limit = {
+						NOT = {
+							has_journal_entry = ce_usm_restoration_of_ming
+						}
+					}
+					add_journal_entry = {
+						type = ce_usm_restoration_of_ming
+					}
+				}
+				nesnd_ming_preserve_local_patron = yes
+			}
+			if = {
+				limit = {
+					exists = var:nesnd_ming_heir_ref
+					var:nesnd_ming_heir_ref = {
+						is_character_alive = yes
+						owner = root
+						is_ruler_of_own_country = no
+						nesnd_ming_authorized_dynast = yes
+					}
+				}
+				var:nesnd_ming_heir_ref = {
+					set_variable = nesnd_ming_claimant
+					transfer_character = scope:nesnd_ming_host
+					save_scope_as = nesnd_ming_moved_heir
+				}
+				scope:nesnd_ming_host = {
+					if = {
+						limit = {
+							has_law_or_variant = law_type:law_monarchy
+						}
+						set_heir = scope:nesnd_ming_moved_heir
+						scope:nesnd_ming_moved_heir = {
+							if = {
+								limit = {
+									has_role = character_role_nesnd_ming_refuge
+								}
+								remove_character_role = character_role_nesnd_ming_refuge
+							}
+						}
+					}
+				}
+			}
+			set_variable = nesnd_ming_player_transferred
+			remove_variable = nesnd_ming_player_intent
+			play_as = scope:nesnd_ming_host
+			set_variable = {
+				name = nesnd_south_stance
+				value = 2
+			}
+			scope:nesnd_ming_host = {
+				trigger_event = {
+					id = nesnd_ming_court.3
+					days = 1
+					popup = yes
+				}
+			}
+		}
+		else = {
+			trigger_event = {
+				id = nesnd_ming_court.12
+				popup = yes
+			}
+		}
+	}
+}
+nesnd_ming_internal_compromise = {
+    if = { limit = { c:USM ?= this is_player = yes NOT = { has_global_variable = usm_civilwar_occured } }
+        if = { limit = { exists = var:nesnd_ming_claimant_ref var:nesnd_ming_claimant_ref = { is_character_alive = yes owner = root nesnd_ming_authorized_dynast = yes } }
+            activate_law = law_type:law_monarchy
+            var:nesnd_ming_claimant_ref = { set_character_as_ruler = yes }
+        }
+        remove_variable = tag_WUU_var
+        remove_variable = nesnd_accession_pending
+        remove_variable = nesnd_accession_executed
+        remove_variable = ce_usm_civilwar_journal_trigger
+        remove_variable = ce_usm_conflict_evoked
+        set_variable = nesnd_ming_internal_agreement
+        set_variable = { name = nesnd_accession_deferred months = 12 }
+        set_variable = { name = nesnd_south_stance value = 1 }
+        add_modifier = { name = nesnd_federal_compact months = 12 }
+    }
+}
+nesnd_ming_restore_existing_claimant = {
+    if = { limit = { nesnd_ming_has_existing_claimant = yes }
+        activate_law = law_type:law_monarchy
+        if = { limit = { exists = ruler ruler = { has_variable = nesnd_ming_claimant is_character_alive = yes } }
+            # Preserve the already enthroned living member of the legitimate court.
+        } else_if = { limit = { any_scope_character = { has_variable = nesnd_ming_claimant is_character_alive = yes } }
+            random_scope_character = { limit = { has_variable = nesnd_ming_claimant is_character_alive = yes } set_character_as_ruler = yes }
+        } else_if = { limit = { any_country = { any_scope_character = { has_variable = nesnd_ming_claimant nesnd_ming_claimant_available = yes } } }
+            random_country = { limit = { any_scope_character = { has_variable = nesnd_ming_claimant nesnd_ming_claimant_available = yes } }
+                random_scope_character = { limit = { has_variable = nesnd_ming_claimant nesnd_ming_claimant_available = yes } nesnd_transfer_restoration_claimant = yes set_character_as_ruler = yes if = { limit = { has_role = character_role_nesnd_ming_refuge } remove_character_role = character_role_nesnd_ming_refuge } }
+            }
+        } else = {
+            random_country = { limit = { any_scope_character = { has_template = USM_zhu_jingyin nesnd_ming_claimant_available = yes } }
+                random_scope_character = { limit = { has_template = USM_zhu_jingyin nesnd_ming_claimant_available = yes } nesnd_transfer_restoration_claimant = yes set_character_as_ruler = yes if = { limit = { has_role = character_role_nesnd_ming_refuge } remove_character_role = character_role_nesnd_ming_refuge } }
+            }
+        }
+    }
+}
+
+nesnd_ming_validate_dynasty = {
+    every_scope_character = { limit = { has_variable = nesnd_ming_claimant NOT = { nesnd_ming_authorized_dynast = yes } } remove_variable = nesnd_ming_claimant }
+    if = { limit = { has_law_or_variant = law_type:law_monarchy exists = ruler ruler = { nesnd_ming_authorized_dynast = yes } NOT = { has_variable = tag_WUU_var } }
+        ruler = { set_variable = nesnd_ming_dynastic_verified set_variable = nesnd_ming_claimant }
+        every_scope_character = { limit = { is_heir_of_own_country = yes is_character_alive = yes }
+            set_variable = nesnd_ming_dynastic_verified set_variable = nesnd_ming_legal_heir
+        }
+    }
+}
