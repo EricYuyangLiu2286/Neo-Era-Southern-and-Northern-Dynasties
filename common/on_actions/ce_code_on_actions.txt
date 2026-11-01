@@ -1,0 +1,410 @@
+﻿# For on_actions launched by the code itself.
+
+# root = country
+on_yearly_pulse_country = {
+	on_actions = {
+		ce_yearly_pulse_country
+	}
+}
+
+ce_yearly_pulse_country = {
+	effect = {
+		if = {
+			limit = {
+				NOT = { 
+					has_journal_entry = je_ce_polish_reconquest 
+				}
+				NOT = {
+					any_country = {
+						has_journal_entry = je_ce_polish_reconquest 
+					}
+				}
+				has_global_variable = ce_polish_claim_state_count
+			}
+			remove_global_variable = ce_polish_claim_state_count
+		}
+	}
+}
+
+# Root = Country
+on_monthly_pulse_country = {
+	on_actions = {
+    	ce_monthly_pulse_country #the name should be unique, but does not need to follow any strict pattern
+    }
+}
+
+ce_monthly_pulse_country = {
+	events = {
+		flavorUSM.6
+		usm_civilwar.5
+		usm_civilwar.6
+		flavorCNE.15
+		flavorJAP_ce.1
+		flavorJAP_ce.2
+		flavorJAP_ce.3
+	}
+	effect = {
+		# polish
+		if = {
+			limit = { NOT = { exists = c:KRA }  NOT = { has_global_variable = ce_poland_problem_end } }
+			set_global_variable = ce_poland_problem_end
+		}
+		if = {
+			limit = { has_global_variable = ce_poland_problem_end has_variable = ce_anti_polish_variable }
+			remove_variable = ce_anti_polish_variable
+		}
+		if = {
+			limit = { has_global_variable = ce_poland_problem_end has_variable = ce_pro_polish_variable }
+			remove_variable = ce_pro_polish_variable
+		}
+		if = {
+			limit = { has_global_variable = ce_poland_problem_end has_variable = ce_participated_in_polish_problem }
+			remove_variable = ce_participated_in_polish_problem
+		}
+
+		# FRA
+		# if = {
+		# 	limit = {
+		# 		has_global_variable = ce_french_empire_je_end
+		# 		NOT = { has_journal_entry = je_ce_unstable_imperium }
+		# 	}
+		# 	ce_remove_all_french_empire_variable = yes
+		# }
+		
+		
+		# CNE
+		if = {
+			limit = {
+				exists = c:CNE
+				c:CNE ?= This
+				NOT = { has_global_variable = flavorCNE_1_happened_global }
+			}
+			trigger_event = { id = flavorCNE.1 popup = yes }
+		}
+		
+		if = {
+			limit = {
+				exists = c:CHI
+				c:CHI ?= This
+				NOT = {
+					has_variable = ce_event_culture_1_happened
+				}
+			}
+			trigger_event = { id = ce_culture_event.1 popup = yes }
+		}
+		
+		if = {
+			limit = {
+				exists = c:CNE
+				c:CNE ?= This
+				has_variable = the_dynasty_of_mu_variable
+				NOT = { has_law_or_variant = law_type:law_monarchy }
+			}
+			remove_variable = the_dynasty_of_mu_variable
+			trigger_event = { id = flavorCNE.11 popup = yes }
+		}
+		
+		# USM
+		if = {
+			limit = {
+				exists = c:USM
+				c:USM ?= This
+				NOT = { has_global_variable = flavor_USM_crisis_ongoing_global }
+			}
+			trigger_event = { id = flavorUSM.1 popup = yes }
+		}
+
+		# The Polish Problem participation
+		if = {
+			limit = {
+				OR = {
+					AND = {
+						exists = c:KRA
+						c:KRA ?= this
+					}
+					AND = {
+						exists = c:SPA
+						c:SPA ?= this
+					}
+					AND = {
+						exists = c:SPC
+						c:SPC ?= this
+					}
+					AND = {
+						exists = c:FRA
+						c:FRA ?= this
+					}
+					AND = {
+						exists = c:GBR
+						c:GBR ?= this
+					}
+					AND = {
+						exists = c:RUS
+						c:RUS ?= this
+					}
+
+					AND = {
+						exists = c:PRU
+						c:PRU ?= this
+					}
+
+					AND = {
+						exists = c:SWE
+						c:SWE ?= this
+					}
+
+					AND = {
+						exists = c:AUS
+						c:AUS ?= this
+					}
+					any_state = {
+						OR = {
+							state_region = s:STATE_WEST_GALICIA
+							state_region = s:STATE_UPPER_SILESIA
+							state_region = s:STATE_EAST_GALICIA
+							state_region = s:STATE_POSEN
+							state_region = s:STATE_KAUNAS
+							state_region = s:STATE_BREST
+							state_region = s:STATE_VOLHYNIA
+							state_region = s:STATE_WEST_PRUSSIA
+							state_region = s:STATE_GREATER_POLAND
+							state_region = s:STATE_LESSER_POLAND
+						}
+						owner = root
+					}
+				}
+				NOT = { has_variable = ce_participated_in_polish_problem }
+				NOT = {
+					has_global_variable = ce_poland_problem_end
+				}
+			}
+			set_variable = ce_participated_in_polish_problem
+		}
+	}
+
+}
+
+on_new_ruler = {
+	on_actions = {
+		ce_new_ruler
+	}
+}
+ce_new_ruler = {
+	effect = {
+		if = {
+			limit = {
+				is_ruler_of_own_country = yes
+				exists = c:CNE
+				exists = owner
+				owner ?= {
+					c:CNE ?= This
+					has_law_or_variant = law_type:law_monarchy
+					has_variable = the_dynasty_of_mu_variable
+					
+				}
+				NOT = { has_global_variable = ce_cne_events_12_happened_flag }
+			}
+			if = {
+				limit = {
+					has_template = CNE_mu_chimin
+				}
+				owner = {
+					trigger_event = { id = flavorCNE.12 popup = yes }
+				}
+			}
+			else = {
+				trigger_event = { id = flavorCNE.13 popup = yes }
+			}
+		}
+	}
+
+}
+
+
+on_diplomatic_play_started = {
+	on_actions = {
+		on_ce_poland_war_change_side
+	}
+}
+
+on_ce_poland_war_change_side = {
+	effect = {
+		if = {
+			limit = { 
+				exists = c:KRA
+				scope:initiator = { c:KRA ?= This }
+				scope:target = {
+					has_variable = ce_pro_polish_variable
+				}
+			}
+			scope:target = {
+				remove_variable = ce_pro_polish_variable
+				set_variable = ce_anti_polish_variable
+				ce_update_poland_supporter_and_haters_effect = yes
+				add_journal_entry = { type = je_ce_block_polish_advance }
+			}
+		}
+
+		if = {
+			limit = { 
+				exists = c:KRA
+				scope:target = { c:KRA ?= This }
+				scope:initiator = {
+					has_variable = ce_pro_polish_variable
+				}
+			}
+			scope:target = {
+				remove_variable = ce_pro_polish_variable
+				set_variable = ce_anti_polish_variable
+				ce_update_poland_supporter_and_haters_effect = yes
+				add_journal_entry = { type = je_ce_block_polish_advance }
+			}
+		}
+	}
+}
+
+
+# on_law_enactment_pass = {
+# 	effect = {
+# 		if = {
+# 			limit = {
+# 				is_player = yes
+# 				NOT = { has_variable = achievement_vox_populi_var }
+# 				any_political_movement = {
+# 					desired_law = ROOT.currently_enacting_law.type
+# 					any_supporting_character = {
+# 						has_role_of_type = agitator
+# 					}
+# 				}
+# 			}
+# 			set_variable = achievement_vox_populi_var
+# 		}
+# 		if = {
+# 			limit = {
+# 				is_player = yes
+# 				NOT = {
+# 					has_variable = achievement_amish_paradise_var
+# 				}
+# 				is_enacting_law = law_type:law_industry_banned
+# 				year < 1846
+# 			}
+# 			set_variable = achievement_amish_paradise_var
+# 		}
+# 		if = {
+# 			limit = {
+# 				has_journal_entry = je_pedro_republic
+# 				is_enacting_law = law_type:law_presidential_republic
+# 			}
+# 			set_variable = { name = hide_ruler_change_notification days = 3 }
+# 			ruler = { place_character_in_void = 6 }
+# 			trigger_event = { id = pedro.10 popup = yes days = 1 }
+# 		}
+# 		if = {
+# 			limit = {
+# 				has_modifier = brazil_slaving_pariah_modifier
+# 				has_law_or_variant = law_type:law_slave_trade
+# 				OR = {
+# 					is_enacting_law = law_type:law_debt_slavery
+# 					is_enacting_law = law_type:law_legacy_slavery
+# 					is_enacting_law = law_type:law_slavery_banned
+# 				}
+# 			}
+# 			remove_modifier = brazil_slaving_pariah_modifier
+# 		}
+# 		if = {
+# 			limit = {
+# 				OR = {
+# 					has_modifier = unrestricted_slave_trade_modifier
+# 					has_modifier = restricted_slave_trade_modifier
+# 					has_modifier = slave_shipments_intercepted_small
+# 					has_modifier = slave_shipments_intercepted_large
+# 				}
+# 				has_law_or_variant = law_type:law_slave_trade
+# 				OR = {
+# 					is_enacting_law = law_type:law_debt_slavery
+# 					is_enacting_law = law_type:law_legacy_slavery
+# 				}
+# 			}
+# 			if = {
+# 				limit = {
+# 					has_modifier = unrestricted_slave_trade_modifier
+# 				}
+# 				remove_modifier = unrestricted_slave_trade_modifier
+# 			}
+# 			if = {
+# 				limit = {
+# 					has_modifier = restricted_slave_trade_modifier
+# 				}
+# 				remove_modifier = restricted_slave_trade_modifier
+# 			}
+# 			if = {
+# 				limit = {
+# 					has_modifier = slave_shipments_intercepted_small
+# 				}
+# 				remove_modifier = slave_shipments_intercepted_small
+# 			}
+# 			if = {
+# 				limit = {
+# 					has_modifier = slave_shipments_intercepted_large
+# 				}
+# 				remove_modifier = slave_shipments_intercepted_large
+# 			}
+# 			if = {
+# 				limit = {
+# 					has_variable = var_slave_trade_suppression_var
+# 				}
+# 				remove_variable = var_slave_trade_suppression_var
+# 			}
+# 		}
+# 		if = {
+# 			limit = {
+# 				c:CHI ?= {
+# 					has_modifier = opium_ban_authority
+# 					is_enacting_law = law_type:law_free_trade
+# 				}
+# 			}
+# 			remove_modifier = opium_ban_authority
+# 		}
+# 	}
+# }
+
+REPLACE:ryukyu_rivalry_coin_toss = {
+	trigger = {
+		exists = c:CHI 
+		exists = c:JAP
+		OR = {
+			c:CHI ?= this
+			c:JAP ?= this
+		}
+        AND = {
+            c:JAP ?= { has_modifier = modifier_ryukyu_rivalry_officer_training }
+            c:CHI ?= { has_modifier = modifier_ryukyu_rivalry_officer_training }
+        }
+		NOT = { exists = global_var:ryukyu_rivalry_training_incident }
+	}
+	effect = {
+		set_global_variable = {
+			name = ryukyu_rivalry_training_incident
+			years = 5
+		}
+		random_list = {
+			1 = {
+				set_global_variable = {
+					name = ryukyu_rivalry_fire
+				}
+			}
+			1 = {
+				set_global_variable = {
+					name = ryukyu_rivalry_accident
+				}
+			}
+			1 = {
+				set_global_variable = {
+					name = ryukyu_rivalry_brawl
+				}
+			}
+		}
+		hidden_effect = { c:JAP ?= { trigger_event = { id = ryukyu_rivalry.6 days = 1 popup = yes } } } # Consider notification
+		hidden_effect = { c:CHI ?= { trigger_event = { id = ryukyu_rivalry.6 days = 1 popup = yes } } } # Consider notification
+	}
+}

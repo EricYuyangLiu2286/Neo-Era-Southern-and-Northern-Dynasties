@@ -1,0 +1,1036 @@
+﻿je_ce_unstable_imperium = {
+	icon = "gfx/interface/icons/event_icons/bicorne_hat.dds"
+
+	group = je_group_france_divided_monarchists
+
+	is_shown_in_lobby = {
+		exists = c:FRA
+		c:FRA ?= THIS
+	}
+
+	modifiers_while_active = {
+		FRA_ce_louis_empire
+	}
+
+	immediate = {
+		# hidden_effect = {
+		# 	set_variable = ce_france_is_bonapartist
+		# }
+		ce_reset_french_empire_stablity_factors = yes
+		trigger_event = { id = fra_unrest.99 }
+		trigger_event = { id = fra_unrest.1 }
+	}
+
+	scripted_progress_bar = ce_monarchists_bonapartist_stability_progress_bar
+	#scripted_progress_bar = ce_republican_liberal_progress_bar
+
+	complete = {
+		year >= 1860
+		has_law_or_variant = law_type:law_monarchy
+
+		OR = {
+			year >= 1870
+			custom_tooltip = {
+				text = ce_ce_monarchists_bonapartist_stability_progress_bar_tt
+				scope:journal_entry = {
+					"scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 950
+				}
+			}
+		}
+			
+		NOT = {
+			any_political_movement = {
+				OR = {
+					movement_is_liberal = yes
+					movement_is_socialist = yes
+				}
+				is_insurrectionary = yes
+			}
+		}
+	}
+
+	on_complete = {
+		trigger_event = { id = fra_unrest.2 popup = yes } # good ending
+		ce_remove_all_french_empire_variable = yes
+		set_global_variable = ce_french_empire_je_end # may be useful in the future
+	}
+
+	#scripted_button = french_monarchy_bonapartist_button
+	#scripted_button = french_monarchy_orleanist_button
+
+	fail = {
+		trigger_if = {
+			limit = {
+				NOT = { has_global_variable = ce_french_empire_has_made_choice }
+			}
+			custom_tooltip = {
+				text = ce_french_empire_has_made_choice_tt
+				game_date >= 1838.12.1
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				NOT = { has_variable = ce_french_empire_stable_fail }
+			}
+			any_political_movement = {
+				OR = {
+					movement_is_liberal = yes
+					movement_is_socialist = yes
+				}
+				is_insurrectionary = yes
+			}
+			OR = {
+				any_civil_war = {
+					is_civil_war_type = revolution
+					civil_war_progress >= 0.75
+				}
+				capital = {
+					is_in_revolt = yes
+				}
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = ce_je_auto_fail_tt
+				always = yes
+			}
+		}
+	}
+
+	on_fail = {
+		trigger_event = { id = french_pretenders.6 popup = yes }
+		# if = {
+		# 	limit = {
+		# 		has_variable = fra_divided_monarchists_freeze
+		# 	}
+		# 	remove_variable = fra_divided_monarchists_freeze #Clears the freeze variable so that progress can be made if this JE is somehow activated again.
+		# }
+		# fra_clear_divided_monarchist_variables = yes #Removes all variables used for math in this JE, to save memory and performance.
+		set_global_variable = ce_france_no_more_napoleon
+		set_global_variable = ce_french_empire_je_end # may be useful in the future
+		remove_variable = one_true_french_dynasty
+		ce_remove_all_french_empire_variable = yes
+	}
+
+	invalid = {
+		OR = {
+			has_global_variable = ce_france_no_more_napoleon
+			NOT = {
+				#Previous "Stamp Out Monarchism" requirement is deprecated - this can now come back from the dead properly upon restoring the monarchy.
+				has_law_or_variant = law_type:law_monarchy
+			}
+			AND = {
+				has_law_or_variant = law_type:law_monarchy
+				has_gov_regency = no
+				NOR = {
+					ruler = { has_ideology = ideology:ideology_bonapartist } 
+					custom_tooltip = {
+						text = ruler_is_bonapartist_claimant_tt
+						ruler = {
+                            has_variable = house_bonaparte
+                        }
+					}
+				}
+			}
+			AND = {
+				has_law_or_variant = law_type:law_monarchy
+				has_gov_regency = no
+				custom_tooltip = {
+					text = ce_no_france_is_bonapartist
+					NOT = {
+						has_variable = bonapartist_restoration_var
+					}
+				}
+			}
+		}
+			
+	}
+
+	on_invalid = {
+		trigger_event = { id = fra_unrest.3 popup = yes } # invalid ending
+		set_global_variable = ce_france_no_more_napoleon
+		set_global_variable = ce_french_empire_je_end
+		#remove_variable = one_true_french_dynasty
+		ce_remove_all_french_empire_variable = yes
+	}
+
+	on_weekly_pulse = {
+		effect = {
+			c:FRA = { trigger_event = { id = fra_unrest.99 } }
+		}
+	}
+
+	on_monthly_pulse = {
+		random_events = {
+			300 = 0
+			10 = fra_unrest.4
+			10 = fra_unrest.6
+			10 = fra_unrest.7
+			10 = fra_unrest.8
+			10 = fra_unrest.9
+			10 = fra_unrest.10
+			10 = fra_unrest.11
+			50 = fra_unrest.12
+			#10 = fra_unrest.13
+			#10 = fra_unrest.14
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = { # Bar not moving, either no supported or not in government
+				desc = status_in_lead_and_on_throne_fra
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+
+	# 最后顺位的内容 —— 策动/打击共和派革命
+	scripted_button = ce_french_support_dynasty_button
+	scripted_button = ce_french_against_dynasty_button
+	scripted_button = ce_french_orleans_dynasty_button
+	scripted_button = ce_french_bourbon_dynasty_button
+
+	weight = 100
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_ce_subpress_republican_movement = {
+	icon = "gfx/interface/icons/generic_icons/in_opposition_icon.dds"
+
+	group = je_group_france_divided_monarchists
+
+	is_shown_in_lobby = {
+		always = no
+	}
+
+	immediate = {
+	}
+
+	scripted_progress_bar = ce_french_empire_republican_movement_progress_bar
+
+	status_desc = {
+		triggered_desc = {
+			desc = je_ce_subpress_republican_movement_desc
+			trigger = {
+				always = yes
+			}
+		}
+	}
+
+	complete = {
+		OR = {
+			custom_tooltip = {
+				text = ce_french_empire_has_ended
+				has_global_variable = ce_french_empire_je_end
+				NOR = {
+					has_law_or_variant = law_type:law_presidential_republic
+					has_law_or_variant = law_type:law_parliamentary_republic
+					has_law_or_variant = law_type:law_council_republic
+				}
+			}
+			NOT = { has_journal_entry = je_ce_unstable_imperium }
+			custom_tooltip = {
+				text = ce_french_empire_has_ended_alt
+				NOR = { 
+					has_law_or_variant = law_type:law_monarchy 
+					has_law_or_variant = law_type:law_presidential_republic
+					has_law_or_variant = law_type:law_parliamentary_republic
+					has_law_or_variant = law_type:law_council_republic 
+				}
+			}
+		}
+			
+	}
+
+	on_complete = {
+		add_modifier = {
+			name = ce_suppress_revolution
+			years = 10
+			is_decaying = yes
+		}
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			if = {
+				limit = {
+					custom_tooltip = {
+						text = ce_french_empire_oreleans_progress_bar_100_tt
+						scope:journal_entry = {
+							"scripted_bar_progress(ce_french_empire_republican_movement_progress_bar)" >= 100
+						}
+					}
+					
+				}
+
+				if = {
+					limit = { has_variable = ce_french_opposition_movement_var }
+					remove_variable = ce_french_opposition_movement_var
+				}
+
+				trigger_event = { id = fra_unrest.17 popup = yes }
+			}
+			hidden_effect = {
+				random_list = {
+					200 = {}
+					10 = { ce_manual_trigger_fra_unrest_event_13_effect = yes }
+					10 = { ce_manual_trigger_fra_unrest_event_14_effect = yes }
+					10 = { ce_manual_trigger_fra_unrest_event_15_effect = yes }
+					10 = { ce_manual_trigger_fra_unrest_event_16_effect = yes }
+				}
+			}
+		}
+	}
+
+	fail = {
+		custom_tooltip = {
+			text = ce_french_empire_has_not_ended
+			OR = {
+				NOT = { has_global_variable = ce_french_empire_je_end }
+				has_law_or_variant = law_type:law_presidential_republic
+				has_law_or_variant = law_type:law_parliamentary_republic
+				has_law_or_variant = law_type:law_council_republic 
+			}
+		}
+		trigger_if = {
+			limit = { NOT = { has_journal_entry = je_ce_unstable_imperium } }
+			OR = {
+				has_law_or_variant = law_type:law_presidential_republic
+				has_law_or_variant = law_type:law_parliamentary_republic
+				has_law_or_variant = law_type:law_council_republic 
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = ce_ce_monarchists_bonapartist_stability_progress_bar_fail_tt
+				OR = {
+					je:je_ce_unstable_imperium = {
+						"scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" <= 50
+					}
+					has_law_or_variant = law_type:law_presidential_republic
+					has_law_or_variant = law_type:law_parliamentary_republic
+					has_law_or_variant = law_type:law_council_republic 
+				}
+			}
+		}
+	}
+
+	on_fail = {
+		custom_tooltip = {
+			text = ce_french_empire_je_auto_fail
+			set_variable = ce_french_empire_stable_fail
+		}
+	}
+
+	scripted_button = ce_french_freeze_republican_movement_with_institution_1
+	scripted_button = ce_french_freeze_republican_movement_with_institution_2
+
+
+	weight = 100
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_ce_republican_movement = {
+	icon = "gfx/interface/icons/generic_icons/in_opposition_icon.dds"
+
+	group = je_group_france_divided_monarchists
+
+	is_shown_in_lobby = {
+		always = no
+	}
+
+	immediate = {
+	}
+
+	scripted_progress_bar = ce_french_empire_republican_movement_progress_bar
+
+	complete = {
+		custom_tooltip = {
+			text = ce_french_empire_has_not_ended
+			OR = {
+				NOT = { has_global_variable = ce_french_empire_je_end }
+				has_law_or_variant = law_type:law_presidential_republic
+				has_law_or_variant = law_type:law_parliamentary_republic
+				has_law_or_variant = law_type:law_council_republic 
+			}
+		}
+		trigger_if = {
+			limit = { NOT = { has_journal_entry = je_ce_unstable_imperium } }
+			OR = {
+				has_law_or_variant = law_type:law_presidential_republic
+				has_law_or_variant = law_type:law_parliamentary_republic
+				has_law_or_variant = law_type:law_council_republic 
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = ce_ce_monarchists_bonapartist_stability_progress_bar_fail_tt
+				OR = {
+					je:je_ce_unstable_imperium = {
+						"scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" <= 50
+					}
+					has_law_or_variant = law_type:law_presidential_republic
+					has_law_or_variant = law_type:law_parliamentary_republic
+					has_law_or_variant = law_type:law_council_republic 
+				}
+			}
+		}
+	}
+
+	on_complete = {
+		custom_tooltip = {
+			text = ce_french_empire_je_auto_fail
+			set_variable = ce_french_empire_stable_fail
+		}
+	}
+
+	scripted_button = ce_french_republican_hit_social
+	scripted_button = ce_french_republican_hit_economy
+	scripted_button = ce_french_republican_hit_military
+	scripted_button = ce_french_republican_hit_unity
+	scripted_button = ce_french_republican_hit_status
+
+	fail = {
+		OR = {
+			custom_tooltip = {
+				text = ce_french_empire_has_ended
+				has_global_variable = ce_french_empire_je_end
+				NOR = {
+					has_law_or_variant = law_type:law_presidential_republic
+					has_law_or_variant = law_type:law_parliamentary_republic
+					has_law_or_variant = law_type:law_council_republic
+				}
+			}
+			NOT = { has_journal_entry = je_ce_unstable_imperium }
+			NOR = { 
+				has_law_or_variant = law_type:law_monarchy 
+				has_law_or_variant = law_type:law_presidential_republic
+				has_law_or_variant = law_type:law_parliamentary_republic
+				has_law_or_variant = law_type:law_council_republic 
+			}
+		}
+	}
+
+	on_fail = {
+		add_modifier = {
+			name = ce_political_oppo
+			months = 36
+		}
+	}
+
+	weight = 100
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_ce_orleans_dynasty_support = {
+	icon = "gfx/interface/icons/generic_icons/mixed_icon_refining.dds"
+
+	group = je_group_france_divided_monarchists
+
+	is_shown_in_lobby = {
+		always = no
+	}
+
+	immediate = {
+		ce_create_orleanist_ig_leader = yes
+		trigger_event = { id = fra_unrest.18 popup = yes }
+		ce_orleans_dynasty_support_variable_reset = yes
+	}
+
+	scripted_progress_bar = ce_french_empire_oreleans_progress_bar
+
+	status_desc = {
+		triggered_desc = {
+			desc = je_ce_orleans_dynasty_support_desc
+			trigger = {
+				always = yes
+			}
+		}
+	}
+
+	complete = {
+		has_law_or_variant = law_type:law_monarchy
+		trigger_if = {
+			limit = {
+				exists = ruler
+				ruler = { NOT = { has_ideology = ideology:ideology_orleanist } }
+			}
+		
+			custom_tooltip = {
+				text = ce_french_empire_oreleans_progress_bar_100_tt
+				scope:journal_entry = {
+					"scripted_bar_progress(ce_french_empire_oreleans_progress_bar)" >= 200
+				}
+			}
+
+			trigger_if = {
+				limit = { has_journal_entry = je_ce_unstable_imperium }
+				custom_tooltip = {
+					text = ce_ce_monarchists_bonapartist_stability_progress_bar_fail_alt_tt
+					je:je_ce_unstable_imperium = {
+						"scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" <= 200
+					}
+				}
+			}
+				
+			NOT = {
+				custom_tooltip = {
+					text = ce_je_auto_fail_tt
+					has_variable = ce_french_empire_stable_fail
+				}
+			}
+		}
+		trigger_else = {
+			ruler = { has_ideology = ideology:ideology_orleanist }
+		}
+	}
+
+	on_complete = {
+		if = {
+			limit = {
+				has_variable = bonapartist_restoration_var
+			}
+			remove_variable = bonapartist_restoration_var
+		}
+
+		if = {
+			limit = {
+				NOT = { has_variable = orleanist_restoration_var }
+			}
+			set_variable = orleanist_restoration_var
+		}
+
+
+		if = { 
+			limit = {
+				exists = ruler
+			}
+			hidden_effect = {
+				if ={
+					limit = {
+						any_scope_character = {
+							has_template = FRA_Jerome_Bonaparte
+							is_heir_of_own_country = yes
+						}
+					}
+					random_scope_character = {
+						limit = {
+							has_template = FRA_Jerome_Bonaparte
+							is_heir_of_own_country = yes
+						}
+						set_ideology = ideology:ideology_bonapartist
+						exile_character_with_martyrdom = yes
+					}
+				}
+			}
+			if = { # safest situation
+				limit = { has_gov_regency = no ruler = { NOT = { has_ideology = ideology:ideology_orleanist } } }
+				ruler = {
+					save_scope_as = fra_old_ruler_scope
+				}
+				hidden_effect = {
+					
+					if = {
+						limit = {
+							any_scope_character = {
+								is_heir_of_own_country = yes
+							}
+						}
+						random_scope_character = {
+							limit = {
+								is_heir_of_own_country = yes
+							}
+							kill_character = yes
+						}
+						
+					}
+					if = {
+						limit = {
+							has_gov_regency = yes
+						}
+						remove_regency_modifier = yes
+					}
+				}
+				ce_set_orleanist_ruler = yes
+				scope:fra_old_ruler_scope = {
+					exile_character_with_martyrdom = yes
+				}
+			}
+			else_if = { # Somehow you trigger this in orleanist non orleanist ideology regency (???)
+				limit = {
+					has_gov_regency = yes
+					any_scope_character = {
+						is_heir_of_own_country = yes
+						NOT = { has_ideology = ideology:ideology_orleanist }
+						has_variable = house_orleans
+					}
+				}
+				random_scope_character = {
+					limit = {
+						is_heir_of_own_country = yes
+						NOT = { has_ideology = ideology:ideology_orleanist }
+						has_variable = house_orleans
+					}
+					set_ideology = ideology:ideology_orleanist
+					save_scope_as = french_monarch_scope
+				}
+				hidden_effect = {
+					ce_find_bonaparte_in_exile_effect = yes
+				}
+				
+			}
+			else_if = { # Somehow you trigger this in non orleanist regency (???)
+				limit = {
+					has_gov_regency = yes
+					any_scope_character = {
+						is_heir_of_own_country = yes
+						NOT = { has_ideology = ideology:ideology_orleanist }
+						NOT = { has_variable = house_orleans }
+					}
+				}
+				hidden_effect = {
+					random_scope_character = {
+						limit = {
+							is_ruler_of_own_country = yes
+						}
+						save_scope_as = fra_regent_scope
+					}
+					random_scope_character = {
+						limit = {
+							is_heir_of_own_country = yes
+						}
+						kill_character = yes
+					}
+					if = {
+						limit = {
+							has_gov_regency = yes
+						}
+						remove_regency_modifier = yes
+					}
+				}
+
+				ce_set_orleanist_ruler = yes
+
+				scope:fra_regent_scope = {
+					exile_character_with_martyrdom = yes
+					if = {
+						limit = {
+							NOT = { has_ideology = ideology:ideology_bonapartist }
+							NOT = { has_ideology = ideology:ideology_legitimist }
+						}
+						set_ideology = ideology:ideology_bonapartist
+					}
+				}
+
+				hidden_effect = {
+					ce_find_bonaparte_in_exile_effect = yes
+				}
+			}
+			else_if = {
+				limit = {
+					has_gov_regency = no
+					exists = ruler
+					ruler = { has_ideology = ideology:ideology_orleanist }
+				}
+				hidden_effect = {
+					ce_find_bonaparte_in_exile_effect = yes
+				}
+				ruler = {
+					save_scope_as = french_monarch_scope
+				}
+			}
+			else = {
+				hidden_effect = {
+					ce_create_bonapart_character_for_exile = yes
+				}	
+				ruler = {
+					set_ideology = ideology:ideology_orleanist
+					save_scope_as = french_monarch_scope
+				}
+			}
+		}
+		
+		trigger_event = { id = fra_unrest.19 popup = yes }
+		set_global_variable = ce_france_no_more_napoleon
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			
+			if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_ideology = ideology:ideology_orleanist
+						}
+					}
+				}
+				ce_create_orleanist_ig_leader = yes
+			}
+			ce_orleans_dynasty_support_variable_reset = yes
+			ce_calculate_french_empire_orleans_from_characters_factors = yes
+			ce_calculate_french_empire_notorleans_from_characters_factors = yes
+			ce_calculate_french_empire_orl_movement_factors = yes
+			ce_calculate_french_empire_orl_anti_movement_factors = yes
+		}
+	}
+
+	invalid = {
+		custom_tooltip = {
+			text = ce_french_empire_has_ended
+			has_global_variable = ce_french_empire_je_end
+			NOT = { has_global_variable = ce_france_no_more_napoleon }
+		}
+	}
+
+	on_invalid = {
+		trigger_event = { id = fra_unrest.22 popup = yes }	
+	}
+
+	fail = {
+		OR = {
+			custom_tooltip = {
+				text = ce_je_auto_fail_tt
+				has_variable = ce_french_empire_stable_fail
+			}
+			AND = {
+				any_political_movement = {
+					OR = {
+						movement_is_liberal = yes
+						movement_is_socialist = yes
+					}
+					is_insurrectionary = yes
+				}
+				OR = {
+					any_civil_war = {
+						is_civil_war_type = revolution
+						civil_war_progress >= 0.75
+					}
+					capital = {
+						is_in_revolt = yes
+					}
+				}
+			}
+		}
+	}
+
+	on_fail = {
+		trigger_event = { id = fra_unrest.21 popup = yes }
+	}
+
+	weight = 100
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_ce_bourbon_dynasty_support = {
+	icon = "gfx/interface/icons/generic_icons/mixed_icon_refining.dds"
+
+	group = je_group_france_divided_monarchists
+
+	is_shown_in_lobby = {
+		always = no
+	}
+
+	immediate = {
+		ce_create_legitimist_ig_leader = yes
+		trigger_event = { id = fra_unrest.20 popup = yes }
+		ce_bourbon_dynasty_support_variable_reset = yes
+	}
+
+	scripted_progress_bar = ce_french_empire_bourbon_progress_bar
+
+	status_desc = {
+		triggered_desc = {
+			desc = je_ce_orleans_dynasty_support_desc
+			trigger = {
+				always = yes
+			}
+		}
+	}
+
+	complete = {
+		has_law_or_variant = law_type:law_monarchy
+		trigger_if = {
+			limit = {
+				exists = ruler
+				ruler = { NOT = { has_ideology = ideology:ideology_legitimist } }
+			}
+		
+			custom_tooltip = {
+				text = ce_french_empire_oreleans_progress_bar_100_tt
+				scope:journal_entry = {
+					"scripted_bar_progress(ce_french_empire_bourbon_progress_bar)" >= 200
+				}
+			}
+
+			trigger_if = {
+				limit = { has_journal_entry = je_ce_unstable_imperium }
+				custom_tooltip = {
+					text = ce_ce_monarchists_bonapartist_stability_progress_bar_fail_alt_tt
+					je:je_ce_unstable_imperium = {
+						"scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" <= 200
+					}
+				}
+			}
+				
+			NOT = {
+				custom_tooltip = {
+					text = ce_je_auto_fail_tt
+					has_variable = ce_french_empire_stable_fail
+				}
+			}
+		}
+		trigger_else = {
+			ruler = { has_ideology = ideology:ideology_legitimist }
+		}
+	}
+
+	on_complete = {
+		if = {
+			limit = {
+				has_variable = bonapartist_restoration_var
+			}
+			remove_variable = bonapartist_restoration_var
+		}
+
+		if = {
+			limit = {
+				NOT = { has_variable = legitimist_restoration_var }
+			}
+			set_variable = legitimist_restoration_var
+		}
+
+
+		if = { 
+			limit = {
+				exists = ruler
+			}
+			hidden_effect = {
+				if ={
+					limit = {
+						any_scope_character = {
+							has_template = FRA_Jerome_Bonaparte
+							is_heir_of_own_country = yes
+						}
+					}
+					random_scope_character = {
+						limit = {
+							has_template = FRA_Jerome_Bonaparte
+							is_heir_of_own_country = yes
+						}
+						set_ideology = ideology:ideology_bonapartist
+						exile_character_with_martyrdom = yes
+					}
+				}
+			}
+			if = { # safest situation
+				limit = { has_gov_regency = no ruler = { NOT = { has_ideology = ideology:ideology_legitimist } } }
+				ruler = {
+					save_scope_as = fra_old_ruler_scope
+				}
+				hidden_effect = {
+					
+					if = {
+						limit = {
+							any_scope_character = {
+								is_heir_of_own_country = yes
+							}
+						}
+						random_scope_character = {
+							limit = {
+								is_heir_of_own_country = yes
+							}
+							kill_character = yes
+						}
+					}
+					if = {
+						limit = {
+							has_gov_regency = yes
+						}
+						remove_regency_modifier = yes
+					}
+				}
+				ce_set_legitimist_ruler = yes
+				scope:fra_old_ruler_scope = {
+					exile_character_with_martyrdom = yes
+				}
+			}
+			else_if = { # Somehow you trigger this in orleanist non legitimist ideology regency (???)
+				limit = {
+					has_gov_regency = yes
+					any_scope_character = {
+						is_heir_of_own_country = yes
+						NOT = { has_ideology = ideology:ideology_legitimist }
+						has_variable = house_bourbon
+					}
+				}
+				random_scope_character = {
+					limit = {
+						is_heir_of_own_country = yes
+						NOT = { has_ideology = ideology:ideology_legitimist }
+						has_variable = house_bourbon
+					}
+					set_ideology = ideology:ideology_legitimist
+					save_scope_as = french_monarch_scope
+				}
+				hidden_effect = {
+					ce_find_bonaparte_in_exile_effect = yes
+				}
+				
+			}
+			else_if = { # Somehow you trigger this in non legitimist regency (???)
+				limit = {
+					has_gov_regency = yes
+					any_scope_character = {
+						is_heir_of_own_country = yes
+						NOT = { has_ideology = ideology:ideology_legitimist }
+						NOT = { has_variable = house_bourbon }
+					}
+				}
+				hidden_effect = {
+					random_scope_character = {
+						limit = {
+							is_ruler_of_own_country = yes
+						}
+						save_scope_as = fra_regent_scope
+					}
+					random_scope_character = {
+						limit = {
+							is_heir_of_own_country = yes
+						}
+						kill_character = yes
+					}
+					if = {
+						limit = {
+							has_gov_regency = yes
+						}
+						remove_regency_modifier = yes
+					}
+				}
+
+				ce_set_legitimist_ruler = yes
+
+				scope:fra_regent_scope = {
+					exile_character_with_martyrdom = yes
+					if = {
+						limit = {
+							NOT = { has_ideology = ideology:ideology_bonapartist }
+							NOT = { has_ideology = ideology:ideology_orleanist }
+						}
+						set_ideology = ideology:ideology_bonapartist
+					}
+				}
+
+				hidden_effect = {
+					ce_find_bonaparte_in_exile_effect = yes
+				}
+			}
+			else_if = {
+				limit = {
+					has_gov_regency = no
+					exists = ruler
+					ruler = { has_ideology = ideology:ideology_legitimist }
+				}
+				hidden_effect = {
+					ce_find_bonaparte_in_exile_effect = yes
+				}
+				ruler = {
+					save_scope_as = french_monarch_scope
+				}
+			}
+			else = {
+				ce_set_legitimist_ruler = yes
+				hidden_effect = {
+					ce_create_bonapart_character_for_exile = yes
+				}	
+			}
+		}
+			
+		
+		trigger_event = { id = fra_unrest.23 popup = yes }
+		set_global_variable = ce_france_no_more_napoleon
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			
+			if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_ideology = ideology:ideology_legitimist
+						}
+					}
+
+				}
+				ce_create_legitimist_ig_leader = yes
+			}
+
+			ce_orleans_dynasty_support_variable_reset = yes
+			ce_calculate_french_empire_borpon_from_characters_factors = yes
+			ce_calculate_french_empire_notbourbon_from_characters_factors = yes
+			ce_calculate_french_empire_bor_movement_factors = yes
+			ce_calculate_french_empire_bor_anti_movement_factors = yes
+		}
+	}
+
+	invalid = {
+		OR = {
+			custom_tooltip = {
+				text = ce_french_empire_has_ended
+				has_global_variable = ce_french_empire_je_end
+				NOT = { has_global_variable = ce_france_no_more_napoleon }
+			}
+			custom_tooltip = {
+				text = ce_je_auto_fail_tt
+				has_variable = ce_french_empire_stable_fail
+			}
+		}
+	}
+
+	on_invalid = {
+		trigger_event = { id = fra_unrest.21 popup = yes }
+	}
+
+	fail = {
+		OR = {
+			custom_tooltip = {
+				text = ce_je_auto_fail_tt
+				has_variable = ce_french_empire_stable_fail
+			}
+			AND = {
+				any_political_movement = {
+					OR = {
+						movement_is_liberal = yes
+						movement_is_socialist = yes
+					}
+					is_insurrectionary = yes
+				}
+				OR = {
+					any_civil_war = {
+						is_civil_war_type = revolution
+						civil_war_progress >= 0.75
+					}
+					capital = {
+						is_in_revolt = yes
+					}
+				}
+			}
+		}
+	}
+
+	on_fail = {
+		trigger_event = { id = fra_unrest.21 popup = yes }
+	}
+
+	weight = 100
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}

@@ -1,0 +1,192 @@
+﻿REPLACE:je_opium = {
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+
+	group = je_group_foreign_affairs
+
+	is_shown_when_inactive = {
+		any_market = {
+			owner ?= root
+		}
+		NOT = { has_variable = opium_je_done }
+		any_scope_state = {
+			has_potential_resource = building_opium_plantation
+		}
+	}
+
+	possible = {
+		any_scope_building = {
+			is_building_type = building_opium_plantation
+		}
+		NOT = {
+			any_primary_culture = {
+				has_cultural_obsession = opium
+			}
+		}
+		any_market = {
+			NOT = { owner ?= root }
+			owner = {
+				NOT = { has_variable = ce_war_to_opium_experienced }
+			}
+		}
+	}
+
+	complete = {
+		any_scope_building = {
+			is_building_type = building_opium_plantation
+			cash_reserves_ratio > 0.5
+			weekly_profit > 0
+			occupancy >= 0.75
+			level >= 10
+		}
+		any_market = {
+			NOT = { owner ?= root }
+			mg:opium ?= {
+				market_goods_exports >= 200
+			}
+			owner = {
+				NOT = { has_variable = ce_war_to_opium_experienced }
+				any_primary_culture = {
+					NOT = {
+						has_cultural_obsession = opium
+					}
+				}
+			}
+		}
+	}
+
+	on_complete = {
+		trigger_event = { id = ce_opium_events.1 }
+		set_variable = {
+			name = opium_je_done
+		}
+	}
+
+	transferable = no
+	weight = 100
+}
+
+je_ce_war_to_opium = {
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	group = je_group_foreign_affairs
+
+	#progressbar = yes # you don't need progress bar = yes if you have scripted_progress_bar set
+	scripted_progress_bar = ce_war_to_opium_progress_bar
+
+	possible = {
+		custom_tooltip = {
+			text = possible_je_ce_war_to_opium
+			has_variable = can_have_je_ce_war_to_opium_variable
+			NOT = { has_variable = ce_war_to_opium_experienced }
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = { 
+				desc = je_ce_war_to_opium_status_high
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(ce_war_to_opium_progress_bar)" >= 75
+					}
+				}
+			}
+			triggered_desc = { 
+				desc = je_ce_war_to_opium_status_low
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(ce_war_to_opium_progress_bar)" <= 25
+					}
+				}
+			}
+			triggered_desc = { 
+				desc = je_ce_war_to_opium_status_mid
+			}
+		}
+	}
+
+	is_shown_when_inactive = {
+		has_variable = can_have_je_ce_war_to_opium_variable
+	}
+
+	immediate = {
+		set_variable = {
+			name = ce_war_to_opium_progress
+			value = 0
+		}
+		# add_modifier = {
+		# 	name = ce_war_to_opium_active_modifier
+		# }
+	}
+
+	modifiers_while_active = {
+		ce_war_to_opium_active_modifier 
+	}
+
+	current_value = {
+		value = var:ce_war_to_opium_progress
+	}
+
+
+	complete = {
+		custom_tooltip = {
+            text = je_ce_war_to_opium_success
+            scope:journal_entry = {
+                "scripted_bar_progress(ce_war_to_opium_progress_bar)" <= 0
+            }
+        }
+	}
+
+	on_complete = {
+		remove_variable = ce_war_to_opium_progress
+		remove_variable = can_have_je_ce_war_to_opium_variable
+		#remove_modifier = ce_war_to_opium_active_modifier
+		trigger_event = { id = ce_opium_events.3 }
+	}
+
+	fail = {
+		custom_tooltip = {
+            text = je_ce_war_to_opium_fail
+            scope:journal_entry = {
+                "scripted_bar_progress(ce_war_to_opium_progress_bar)" >= 100
+            }
+        }
+	}
+
+	on_fail = {
+		remove_variable = ce_war_to_opium_progress
+		remove_variable = can_have_je_ce_war_to_opium_variable
+		#remove_modifier = ce_war_to_opium_active_modifier
+		trigger_event = { id = ce_opium_events.4 }
+	}
+
+	invalid = {
+		NOT = {
+			any_market = {
+				owner = root
+			}
+		}
+	}
+
+	on_invalid = {
+		remove_variable = ce_war_to_opium_progress
+		remove_variable = can_have_je_ce_war_to_opium_variable
+		#remove_modifier = ce_war_to_opium_active_modifier
+		trigger_event = { id = ce_opium_events.5 }
+	}
+
+	on_monthly_pulse = {
+		random_events = {
+			98 = 0
+			2 = ce_opium_events.6
+			2 = ce_opium_events.7
+			2 = ce_opium_events.8
+			2 = ce_opium_events.9
+		}
+	}
+
+	is_progressing = {
+		is_banning_goods = g:opium
+	}
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}

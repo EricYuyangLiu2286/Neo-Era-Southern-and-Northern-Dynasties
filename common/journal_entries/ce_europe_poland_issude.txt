@@ -1,0 +1,739 @@
+﻿je_ce_the_polish_problem = {
+	icon = "gfx/interface/icons/event_icons/event_fire.dds"
+	group = je_ce_poland_unification
+
+	is_shown_when_inactive = {
+		any_country = { has_variable = ce_participated_in_polish_problem }
+		NOT = {
+			has_global_variable = ce_poland_problem_end
+		}
+		exists = c:KRA
+		year <= 1850
+	}
+
+	possible = {
+		#has_variable = ce_participated_in_polish_problem
+		NOT = {
+			has_global_variable = ce_poland_problem_end
+		}
+		exists = c:KRA
+		year <= 1850
+	}
+
+	is_shown_in_lobby = {
+		has_variable = ce_participated_in_polish_problem
+		NOT = { has_global_variable = ce_poland_problem_end }
+	}
+
+	should_be_involved = {
+		OR = {
+			has_variable = ce_participated_in_polish_problem
+			AND = { exists = c:KRA c:KRA ?= This }
+		}
+		NOT = { has_global_variable = ce_poland_problem_end }
+	}
+
+	should_show_when_not_involved = {
+		always = no
+	}
+
+	
+	status_desc = {
+		desc = je_ce_the_polish_problem_status_desc
+	}
+
+	# scripted_button = ce_support_polish_problem_btn
+	# scripted_button = ce_oppose_polish_problem_btn
+	
+	
+	# scripted_progress_bar = ce_polish_problem_pro_support_bar
+	# scripted_progress_bar = ce_polish_problem_anti_support_bar
+	
+	immediate = {
+		# Triggered when it starts
+		if = {
+			limit = {
+				c:KRA = { NOT = { has_variable = ce_poland_owned_polish_states } }
+			}
+			c:KRA = { set_variable = { name = ce_poland_owned_polish_states value = 0 } }
+		}
+		if = {
+			limit = {
+				NOT = { has_global_variable = ce_poland_supporters_count }
+			}
+			set_global_variable = { name = ce_poland_supporters_count value = 0 }
+		}	
+		if = {
+			limit = {
+				NOT = { has_global_variable = ce_poland_allied_supporters_count }
+			}
+			set_global_variable = { name = ce_poland_allied_supporters_count value = 0 }
+		}	
+		if = {
+			limit = {
+				NOT = { has_global_variable = ce_poland_anti_count }
+			}
+			set_global_variable = { name = ce_poland_anti_count value = 0 }
+		}	
+		hidden_effect = {
+			c:KRA = { trigger_event = { id = ce_poland_events.98 } }
+		}
+	}
+
+	immediate_all_involved = {
+		
+		trigger_event = { id = ce_poland_events.97 popup = yes }
+	}
+
+	# on_yearly_pulse = {
+	# 	events = {
+	# 		ce_poland_events.99
+	# 	}
+	# }
+
+	on_monthly_pulse = {
+		effect = {
+			c:KRA = { trigger_event = { id = ce_poland_events.98 } }
+		}
+	}
+	
+	complete = {
+		c:KRA = {
+			has_variable = ce_polish_victory_declared
+		}
+	}
+	
+	on_complete_all_involved = {
+		trigger_event = { id = ce_poland_events.10 popup = yes }
+		if = {
+			limit = { NOT = { has_global_variable = ce_poland_problem_end } }
+			set_global_variable = ce_poland_problem_end
+		}		
+		if = {
+			limit = { has_variable = ce_participated_in_polish_problem }
+			remove_variable = ce_participated_in_polish_problem
+		}  
+	}
+	
+	fail = {
+		OR = {
+			NOT = { exists = c:KRA }
+			year >= 1850
+		}
+	}
+	
+	on_fail_all_involved = {
+		trigger_event = { id = ce_poland_events.11 popup = yes }
+		if = {
+			limit = { NOT = { has_global_variable = ce_poland_problem_end } }
+			set_global_variable = ce_poland_problem_end
+		}	
+		if = {
+			limit = { has_variable = ce_participated_in_polish_problem }
+			remove_variable = ce_participated_in_polish_problem
+		}  
+	}
+	
+	invalid = {
+		OR = {
+			
+			custom_tooltip = {
+				text = ce_je_poland_1_invalid_tt_0
+				has_global_variable = ce_poland_problem_end
+			}
+			custom_tooltip = {
+				text = ce_je_poland_1_invalid_tt_1
+				AND = {
+					exists = c:POL
+					exists = c:PLC
+					any_country = {
+						OR = {
+							AND = {
+								exists = c:POL
+								c:POL ?= This
+							}
+							AND = {
+								exists = c:PLC
+								c:PLC ?= This
+							}
+						}
+						NOT = { is_subject = yes }
+						num_incorporated_states >= 3
+					}
+				}
+			}
+			custom_tooltip = {
+				text = ce_je_poland_1_invalid_tt_2
+				NOT = {
+					any_country = {
+						exists = c:KRA
+						NOT = { c:KRA ?= This }
+						OR = {
+							has_variable = ce_participated_in_polish_problem
+							any_state = {
+								OR = {
+									state_region = s:STATE_WEST_GALICIA
+									state_region = s:STATE_UPPER_SILESIA
+									state_region = s:STATE_EAST_GALICIA
+									state_region = s:STATE_POSEN
+									state_region = s:STATE_KAUNAS
+									state_region = s:STATE_BREST
+									state_region = s:STATE_VOLHYNIA
+									state_region = s:STATE_WEST_PRUSSIA
+									state_region = s:STATE_GREATER_POLAND
+									state_region = s:STATE_LESSER_POLAND
+								}
+								owner = prev
+							}
+						}
+					}
+				}
+
+			}
+
+			custom_tooltip = {
+				text = kra_is_subject_ce_tt
+				AND = {
+					exists = c:KRA
+					c:KRA = { is_subject = yes }
+				}
+			}	
+				
+		}
+	}
+	
+	on_invalid_all_involved = {
+		trigger_event = { id = ce_poland_events.12 popup = yes }
+		if = {
+			limit = { NOT = { has_global_variable = ce_poland_problem_end } }
+			set_global_variable = ce_poland_problem_end
+		}	
+		if = {
+			limit = { has_variable = ce_participated_in_polish_problem }
+			remove_variable = ce_participated_in_polish_problem
+		}  
+	}
+	
+	
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_ce_polish_reconquest = {
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	group = je_ce_poland_unification_country
+	
+	is_shown_when_inactive = {
+		exists = c:KRA
+		c:KRA ?= this
+		has_journal_entry = je_ce_the_polish_problem
+	}
+	
+	possible = {
+		exists = c:KRA
+		c:KRA ?= this
+		has_journal_entry = je_ce_the_polish_problem
+	}
+
+	immediate = {
+		hidden_effect = {
+			if = {
+				limit = { NOT = { has_global_variable = ce_polish_claim_state_count } }
+				set_global_variable = {
+					name = ce_polish_claim_state_count
+					value = 0
+				}
+			}
+		}
+	}
+	
+	scripted_button = ce_polish_claim_state_west_galicia_btn
+	scripted_button = ce_polish_claim_state_upper_silesia_btn
+	scripted_button = ce_polish_claim_state_posen_btn
+	scripted_button = ce_polish_claim_state_east_galicia_btn
+	scripted_button = ce_polish_claim_state_kaunas_btn
+	scripted_button = ce_polish_claim_state_brest_btn
+	scripted_button = ce_polish_claim_state_volhynia_btn
+	scripted_button = ce_polish_claim_state_west_prussia_btn
+	scripted_button = ce_polish_claim_state_greater_poland_btn
+	scripted_button = ce_polish_claim_state_lesser_poland_btn
+	
+	
+	scripted_progress_bar = ce_polish_reconquest_energy_bar
+	
+	fail = {
+		OR = {
+			NOT = { exists = c:KRA }
+			year >= 1850
+		}
+	}
+	
+	invalid = {
+		OR = {
+			NOT = { has_journal_entry = je_ce_the_polish_problem }
+			c:KRA = { has_variable = ce_polish_victory_declared }
+		}
+	}
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_ce_polish_war_preparation = {
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	group = je_ce_poland_unification_country
+
+	# is_shown_in_lobby = {
+	# 	exists = c:KRA
+	# 	c:KRA ?= this
+	# 	has_journal_entry = je_ce_the_polish_problem
+	# }
+	
+	is_shown_when_inactive = {
+		exists = c:KRA
+		c:KRA ?= this
+		has_journal_entry = je_ce_the_polish_problem
+	}
+	
+	possible = {
+		exists = c:KRA
+		c:KRA ?= this
+		has_journal_entry = je_ce_the_polish_problem
+	}
+	
+	scripted_button = ce_polish_move_capital_btn
+	scripted_button = ce_polish_boost_relations_btn
+	scripted_button = ce_polish_boost_army_btn
+	#scripted_button = ce_polish_diplo_play_btn
+	scripted_button = ce_polish_announce_victory_btn
+
+	scripted_button = ce_polish_dp_state_west_galicia_btn
+	scripted_button = ce_polish_dp_state_upper_silesia_btn
+	scripted_button = ce_polish_dp_state_posen_btn
+	scripted_button = ce_polish_dp_state_east_galicia_btn
+	scripted_button = ce_polish_dp_state_kaunas_btn
+	scripted_button = ce_polish_dp_state_brest_btn
+	scripted_button = ce_polish_dp_state_volhynia_btn
+	scripted_button = ce_polish_dp_state_west_prussia_btn
+	scripted_button = ce_polish_dp_state_greater_poland_btn
+	scripted_button = ce_polish_dp_state_lesser_poland_btn
+	
+	#
+	scripted_progress_bar = ce_polish_reconquest_war_prep_bar
+	
+	complete = {
+		c:KRA = {
+			has_variable = ce_polish_victory_declared
+		}
+	}
+	
+	on_complete = {
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_30 }
+			remove_modifier = ce_poland_war_prep_30
+		}
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_50 }
+			remove_modifier = ce_poland_war_prep_50
+		}
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_100 }
+			remove_modifier = ce_poland_war_prep_100
+		}
+	}
+	
+	fail = {
+		OR = {
+			NOT = { exists = c:KRA }
+			year >= 1850
+		}
+	}
+	
+	invalid = {
+		NOT = { has_journal_entry = je_ce_the_polish_problem }
+	}
+	
+	on_weekly_pulse = {
+		effect = {
+			# Check 100+ threshold first
+			if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 100
+					}
+				}
+				if = {
+					limit = { NOT = { scope:journal_entry = { has_modifier = ce_poland_war_prep_100 } } }
+					scope:journal_entry = { add_modifier = ce_poland_war_prep_100 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_50 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_50 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_30 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_30 }
+				}
+			}
+			# Check 50-99 threshold
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 50
+					}
+				}
+				if = {
+					limit = { NOT = { scope:journal_entry = { has_modifier = ce_poland_war_prep_50 } } }
+					scope:journal_entry = { add_modifier = ce_poland_war_prep_50 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_100 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_100 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_30 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_30 }
+				}
+			}
+			# Check 30-49 threshold
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 30
+					}
+				}
+				if = {
+					limit = { NOT = { scope:journal_entry = { has_modifier = ce_poland_war_prep_30 } } }
+					scope:journal_entry = { add_modifier = ce_poland_war_prep_30 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_100 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_100 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_50 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_50 }
+				}
+			}
+			# Below 30 threshold - remove all
+			else = {
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_30 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_30 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_50 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_50 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_100 } }
+					scope:journal_entry = { remove_modifier = ce_poland_war_prep_100 }
+				}
+			}
+		}
+	}
+	
+	on_fail = {
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_30 }
+			remove_modifier = ce_poland_war_prep_30
+		}
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_50 }
+			remove_modifier = ce_poland_war_prep_50
+		}
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_100 }
+			remove_modifier = ce_poland_war_prep_100
+		}
+	}
+	
+	on_invalid = {
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_30 }
+			remove_modifier = ce_poland_war_prep_30
+		}
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_50 }
+			remove_modifier = ce_poland_war_prep_50
+		}
+		if = {
+			limit = { has_modifier = ce_poland_war_prep_100 }
+			remove_modifier = ce_poland_war_prep_100
+		}
+	}
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_ce_polish_territory_claim = {
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	group = je_ce_poland_unification_country
+	
+	is_shown_when_inactive = {
+		has_variable = ce_pro_polish_variable
+	}
+	
+	possible = {
+		has_variable = ce_pro_polish_variable
+		has_journal_entry = je_ce_the_polish_problem
+	}
+	
+	complete = {
+		c:KRA = {
+			has_variable = ce_polish_victory_declared
+		}
+	}
+
+	on_complete = {
+		remove_variable = ce_pro_polish_variable
+		if = {
+			limit = {
+				has_variable = ce_participated_in_polish_problem
+			}
+			remove_variable = ce_participated_in_polish_problem
+		}
+	}
+	
+	fail = {
+		OR = {
+			NOT = { exists = c:KRA }
+			year >= 1850
+		}
+	}
+	
+	on_fail = {
+		# Clean up any modifiers that may have been added
+		remove_variable = ce_pro_polish_variable
+		if = {
+			limit = {
+				has_variable = ce_participated_in_polish_problem
+			}
+			remove_variable = ce_participated_in_polish_problem
+		}
+	}
+	
+	invalid = {
+		OR = {
+			NOT = { has_journal_entry = je_ce_the_polish_problem }
+			c:KRA = { has_variable = ce_polish_victory_declared }
+			NOT = { has_variable = ce_pro_polish_variable }
+		}
+	}
+	
+	on_invalid = {
+		remove_variable = ce_pro_polish_variable
+		if = {
+			limit = {
+				has_variable = ce_participated_in_polish_problem
+			}
+			remove_variable = ce_participated_in_polish_problem
+		}
+	}
+	
+	scripted_button = ce_pro_polish_give_money_btn
+	scripted_button = ce_pro_polish_influence_btn
+	scripted_button = ce_pro_polish_infamy_btn
+	scripted_button = ce_pro_polish_lobby_btn
+	
+	
+	scripted_progress_bar = ce_polish_territory_claim_bar
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_ce_block_polish_advance = {
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	group = je_ce_poland_unification_country
+	
+	is_shown_when_inactive = {
+		has_variable = ce_anti_polish_variable
+	}
+	
+	possible = {
+		has_variable = ce_anti_polish_variable
+		has_journal_entry = je_ce_the_polish_problem
+	}
+	
+	complete = {
+		OR = {
+			NOT = { exists = c:KRA }
+			year >= 1850
+		}
+	}
+	
+	fail = {
+		c:KRA = {
+			has_variable = ce_polish_victory_declared
+		}
+	}
+	
+	on_complete = {
+		if = {
+			limit = { has_modifier = ce_anti_poland_block_30 }
+			remove_modifier = ce_anti_poland_block_30
+		}
+		if = {
+			limit = { has_modifier = ce_anti_poland_block_50 }
+			remove_modifier = ce_anti_poland_block_50
+		}
+		if = {
+			limit = { has_modifier = ce_anti_poland_block_90 }
+			remove_modifier = ce_anti_poland_block_90
+		}
+		if = {
+			limit = {
+				has_variable = ce_anti_polish_variable
+			}
+			remove_variable = ce_anti_polish_variable
+		}
+		if = {
+			limit = {
+				has_variable = ce_participated_in_polish_problem
+			}
+			remove_variable = ce_participated_in_polish_problem
+		}
+	}
+	
+	on_fail = {
+		if = {
+			limit = { has_modifier = ce_anti_poland_block_30 }
+			remove_modifier = ce_anti_poland_block_30
+		}
+		if = {
+			limit = { has_modifier = ce_anti_poland_block_50 }
+			remove_modifier = ce_anti_poland_block_50
+		}
+		if = {
+			limit = { has_modifier = ce_anti_poland_block_90 }
+			remove_modifier = ce_anti_poland_block_90
+		}
+		if = {
+			limit = {
+				has_variable = ce_anti_polish_variable
+			}
+			remove_variable = ce_anti_polish_variable
+		}
+		if = {
+			limit = {
+				has_variable = ce_participated_in_polish_problem
+			}
+			remove_variable = ce_participated_in_polish_problem
+		}
+	}
+	
+	invalid = {
+		NOT = { has_journal_entry = je_ce_the_polish_problem }
+	}
+	
+	on_invalid = {
+		if = {
+			limit = { has_modifier = ce_anti_poland_block_30 }
+			remove_modifier = ce_anti_poland_block_30
+		}
+		if = {
+			limit = { has_modifier = ce_anti_poland_block_50 }
+			remove_modifier = ce_anti_poland_block_50
+		}
+		if = {
+			limit = {
+				has_variable = ce_anti_polish_variable
+			}
+			remove_variable = ce_anti_polish_variable
+		}
+		if = {
+			limit = {
+				has_variable = ce_participated_in_polish_problem
+			}
+			remove_variable = ce_participated_in_polish_problem
+		}
+		
+	}
+	
+	scripted_button = ce_anti_polish_radicals_kra_btn
+	scripted_button = ce_anti_polish_radicals_pro_btn
+	scripted_button = ce_anti_polish_free_factory_btn
+	scripted_button = ce_anti_polish_lobby_btn
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	
+	
+	scripted_progress_bar = ce_block_polish_advance_bar
+	on_weekly_pulse = {
+		effect = {
+			# Check 90+ threshold first
+			if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(ce_block_polish_advance_bar)" >= 90
+					}
+				}
+				if = {
+					limit = { NOT = { scope:journal_entry = { has_modifier = ce_anti_poland_block_90 } } }
+					scope:journal_entry = { add_modifier = ce_anti_poland_block_90 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_50 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_50 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_30 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_30 }
+				}
+			}
+			# Check 50-89 threshold
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(ce_block_polish_advance_bar)" >= 50
+					}
+				}
+				if = {
+					limit = { NOT = { scope:journal_entry = { has_modifier = ce_anti_poland_block_50 } } }
+					scope:journal_entry = { add_modifier = ce_anti_poland_block_50 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_90 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_90 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_30 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_30 }
+				}
+			}
+			# Check 30-49 threshold
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(ce_block_polish_advance_bar)" >= 30
+					}
+				}
+				if = {
+					limit = { NOT = { scope:journal_entry = { has_modifier = ce_anti_poland_block_30 } } }
+					scope:journal_entry = { add_modifier = ce_anti_poland_block_30 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_90 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_90 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_50 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_50 }
+				}
+			}
+			# Below 30 threshold - remove all
+			else = {
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_30 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_30 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_50 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_50 }
+				}
+				if = {
+					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_90 } }
+					scope:journal_entry = { remove_modifier = ce_anti_poland_block_90 }
+				}
+			}
+		}
+	}
+}

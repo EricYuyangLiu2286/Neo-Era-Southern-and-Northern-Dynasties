@@ -1,0 +1,3208 @@
+﻿ce_polish_diplo_play_btn = {
+	name = "ce_polish_diplo_play_btn_name"
+	desc = "ce_polish_diplo_play_btn_desc"
+	
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_polish_war_preparation
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_100
+			je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 100 }
+		}
+			
+		custom_tooltip = {
+			text = ce_any_state_not_us_tt
+			any_state = {
+				has_claim_by = c:KRA
+				exists = c:KRA
+				owner = { NOT = { c:KRA ?= this } }
+				OR = {
+					state_region = s:STATE_BREST
+					state_region = s:STATE_EAST_GALICIA
+					state_region = s:STATE_GREATER_POLAND
+					state_region = s:STATE_KAUNAS
+					state_region = s:STATE_LESSER_POLAND
+					state_region = s:STATE_POSEN
+					state_region = s:STATE_UPPER_SILESIA
+					state_region = s:STATE_VOLHYNIA
+					state_region = s:STATE_WEST_GALICIA
+					state_region = s:STATE_WEST_PRUSSIA
+				}
+			}
+		}
+		
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+
+			}
+			add = 1000
+		}
+	}
+	
+	effect = {
+		je:je_ce_polish_war_preparation ?= {
+			add_progress = {
+				value = -50
+				name = ce_polish_reconquest_war_prep_bar
+			}
+		}
+		random_state = {
+			limit = {
+				OR = {
+					state_region = s:STATE_BREST
+					state_region = s:STATE_EAST_GALICIA
+					state_region = s:STATE_GREATER_POLAND
+					state_region = s:STATE_KAUNAS
+					state_region = s:STATE_LESSER_POLAND
+					state_region = s:STATE_POSEN
+					state_region = s:STATE_UPPER_SILESIA
+					state_region = s:STATE_VOLHYNIA
+					state_region = s:STATE_WEST_GALICIA
+					state_region = s:STATE_WEST_PRUSSIA
+				}
+				has_claim_by = c:KRA
+				exists = c:KRA
+				owner = { NOT = { c:KRA ?= this } }
+			}
+			save_scope_as = target_diplo_play_state
+			owner = {
+				trigger_event = { id = ce_poland_events.2 popup = yes }
+			}
+			if = {
+				limit = { exists = c:KRA NOT = { c:KRA ?= This } }
+				c:KRA = { trigger_event = { id = ce_poland_events.8 popup = yes } }
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_west_galicia_btn = {
+	name = "ce_polish_claim_state_west_galicia_btn_name"
+	desc = "ce_polish_claim_state_west_galicia_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_WEST_GALICIA }
+				c:KRA = { has_claim = s:STATE_WEST_GALICIA }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_WEST_GALICIA
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_dp_state_west_galicia_btn = {
+	name = "ce_polish_dp_state_west_galicia_btn_name"
+	desc = "ce_polish_dp_state_west_galicia_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100 # 进度条大于100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = { 
+				any_scope_state = {
+					state_region = s:STATE_WEST_GALICIA
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100 # 进度条大于100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = { 
+				any_scope_state = {
+					state_region = s:STATE_WEST_GALICIA
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+			
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_WEST_GALICIA }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_WEST_GALICIA } }
+			s:STATE_WEST_GALICIA = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_WEST_GALICIA } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+
+		save_scope_as = ce_from_country
+		
+		s:STATE_WEST_GALICIA = {
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+
+	}
+}
+
+ce_polish_dp_state_upper_silesia_btn = {
+	name = "ce_polish_dp_state_upper_silesia_btn_name"
+	desc = "ce_polish_dp_state_upper_silesia_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_UPPER_SILESIA
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_UPPER_SILESIA
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_UPPER_SILESIA }
+			NOT = { 
+				c:KRA = { owns_entire_state_region = STATE_UPPER_SILESIA }
+			}
+			s:STATE_UPPER_SILESIA = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_UPPER_SILESIA } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		s:STATE_UPPER_SILESIA = {
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+
+	}
+}
+
+ce_polish_dp_state_posen_btn = {
+	name = "ce_polish_dp_state_posen_btn_name"
+	desc = "ce_polish_dp_state_posen_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_POSEN
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_POSEN
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_POSEN }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_POSEN } }
+			s:STATE_POSEN = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_POSEN } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		s:STATE_POSEN = {
+			save_scope_as = target_diplo_play_state
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+
+	}
+}
+
+ce_polish_dp_state_east_galicia_btn = {
+	name = "ce_polish_dp_state_east_galicia_btn_name"
+	desc = "ce_polish_dp_state_east_galicia_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_EAST_GALICIA
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_EAST_GALICIA
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_EAST_GALICIA }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_EAST_GALICIA } }
+			s:STATE_EAST_GALICIA = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_EAST_GALICIA } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+		
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		s:STATE_EAST_GALICIA = {
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+
+	}
+}
+
+ce_polish_dp_state_kaunas_btn = {
+	name = "ce_polish_dp_state_kaunas_btn_name"
+	desc = "ce_polish_dp_state_kaunas_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_KAUNAS
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_KAUNAS
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_KAUNAS }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_KAUNAS } }
+			s:STATE_KAUNAS = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_KAUNAS } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+		
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		s:STATE_KAUNAS = {
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+	}
+}
+
+ce_polish_dp_state_brest_btn = {
+	name = "ce_polish_dp_state_brest_btn_name"
+	desc = "ce_polish_dp_state_brest_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_BREST
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_BREST
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_BREST }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_BREST } }
+			s:STATE_BREST = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_BREST } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		s:STATE_BREST = {
+			# limit = {
+			# 	state_region = s:STATE_BREST
+			# 	has_claim_by = c:KRA
+			# 	exists = c:KRA
+			# 	owner = { NOT = { c:KRA ?= this } }
+			# }
+			
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+
+	}
+}
+
+ce_polish_dp_state_volhynia_btn = {
+	name = "ce_polish_dp_state_volhynia_btn_name"
+	desc = "ce_polish_dp_state_volhynia_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_VOLHYNIA
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_VOLHYNIA
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_VOLHYNIA }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_VOLHYNIA } }
+			s:STATE_VOLHYNIA = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_VOLHYNIA } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		s:STATE_VOLHYNIA = {
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+
+	}
+}
+
+ce_polish_dp_state_west_prussia_btn = {
+	name = "ce_polish_dp_state_west_prussia_btn_name"
+	desc = "ce_polish_dp_state_west_prussia_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_WEST_PRUSSIA
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_WEST_PRUSSIA
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_WEST_PRUSSIA }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_WEST_PRUSSIA } }
+			s:STATE_WEST_PRUSSIA = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_WEST_PRUSSIA } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		s:STATE_WEST_PRUSSIA = {
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+
+	}
+}
+
+ce_polish_dp_state_greater_poland_btn = {
+	name = "ce_polish_dp_state_greater_poland_btn_name"
+	desc = "ce_polish_dp_state_greater_poland_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_GREATER_POLAND
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_GREATER_POLAND
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_GREATER_POLAND }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_GREATER_POLAND } }
+			s:STATE_GREATER_POLAND = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_GREATER_POLAND } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		s:STATE_GREATER_POLAND = {
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+	}
+}
+
+ce_polish_dp_state_lesser_poland_btn = {
+	name = "ce_polish_dp_state_lesser_poland_btn_name"
+	desc = "ce_polish_dp_state_lesser_poland_btn_desc"
+
+	visible = {
+		hidden_trigger = {
+			custom_tooltip = {
+				text = can_claim_ce_polish_state_tt
+				exists = c:KRA
+			}
+		}
+		OR = {
+			has_journal_entry = je_ce_polish_reconquest
+			has_journal_entry = je_ce_polish_territory_claim
+		}
+	}
+
+	possible = {
+		trigger_if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_LESSER_POLAND
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			custom_tooltip = {
+				text = ce_polish_script_bar_tt_100
+				je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+			}
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_LESSER_POLAND
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+
+		NOT = { any_country = { has_war_with = ROOT } }
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			c:KRA = { has_claim = s:STATE_LESSER_POLAND }
+			NOT = { c:KRA = { owns_entire_state_region = STATE_LESSER_POLAND } }
+			s:STATE_LESSER_POLAND = {
+				any_scope_state = {
+					owner = {
+						NOT = { c:KRA ?= This }
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = c:KRA
+				NOT = { c:KRA = { has_claim = s:STATE_LESSER_POLAND } }
+			}
+			custom_tooltip = ce_polish_wait_and_see_tt
+		}
+		else = {
+			custom_tooltip = ce_spend_50_progress_tt
+		}
+
+		if = {
+			limit = { has_journal_entry = je_ce_polish_reconquest }
+			je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_reconquest_energy_bar
+				}
+			}
+		}
+		else_if = {
+			limit = { has_journal_entry = je_ce_polish_territory_claim }
+			je:je_ce_polish_territory_claim ?= {
+				add_progress = {
+					value = -50
+					name = ce_polish_territory_claim_bar
+				}
+			}
+		}
+		save_scope_as = ce_from_country
+
+		# random_state = {
+		# 	limit = {
+		# 		state_region = s:STATE_LESSER_POLAND
+		# 		has_claim_by = c:KRA
+		# 		exists = c:KRA
+		# 		owner = { NOT = { c:KRA ?= this } }
+		# 	}
+		# 	save_scope_as = target_diplo_play_state
+
+		# 	owner = {
+		# 		trigger_event = { id = ce_poland_events.2 popup = yes }
+		# 	}
+		# }
+
+		s:STATE_LESSER_POLAND = {
+			random_scope_state = {
+				limit = { 
+					exists = c:KRA 
+					exists = owner 
+					NOT = { c:KRA ?= owner } 
+					owner = {
+						NOR = {
+							has_subject_relation_with = c:KRA
+							is_in_same_power_bloc = c:KRA
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = alliance
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = defensive_pact
+								}
+							}
+							any_scope_treaty = {
+								binds = c:KRA
+								any_scope_article = {
+									has_type = guarantee_independence
+								}
+							}
+						}
+					}
+				}
+				save_scope_as = target_diplo_play_state
+				owner = {
+					trigger_event = { id = ce_poland_events.2 popup = yes }
+				}
+			}
+		}
+
+	}
+}
+
+ce_polish_claim_state_upper_silesia_btn = {
+	name = "ce_polish_claim_state_upper_silesia_btn_name"
+	desc = "ce_polish_claim_state_upper_silesia_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_UPPER_SILESIA }
+				c:KRA = { has_claim = s:STATE_UPPER_SILESIA }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 30
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_UPPER_SILESIA
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_posen_btn = {
+	name = "ce_polish_claim_state_posen_btn_name"
+	desc = "ce_polish_claim_state_posen_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_POSEN }
+				c:KRA = { has_claim = s:STATE_POSEN }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 25
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_POSEN
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_east_galicia_btn = {
+	name = "ce_polish_claim_state_east_galicia_btn_name"
+	desc = "ce_polish_claim_state_east_galicia_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_EAST_GALICIA }
+				c:KRA = { has_claim = s:STATE_EAST_GALICIA }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count <= 3
+			}
+			add = 100
+		}
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 25
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_EAST_GALICIA
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_kaunas_btn = {
+	name = "ce_polish_claim_state_kaunas_btn_name"
+	desc = "ce_polish_claim_state_kaunas_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_KAUNAS }
+				c:KRA = { has_claim = s:STATE_KAUNAS }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count <= 3
+			}
+			add = 100
+		}
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 25
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_KAUNAS
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_brest_btn = {
+	name = "ce_polish_claim_state_brest_btn_name"
+	desc = "ce_polish_claim_state_brest_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_BREST }
+				c:KRA = { has_claim = s:STATE_BREST }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count <= 3
+			}
+			add = 100
+		}
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 25
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_BREST
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_volhynia_btn = {
+	name = "ce_polish_claim_state_volhynia_btn_name"
+	desc = "ce_polish_claim_state_volhynia_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_VOLHYNIA }
+				c:KRA = { has_claim = s:STATE_VOLHYNIA }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count <= 3
+			}
+			add = 100
+		}
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 25
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_VOLHYNIA
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_west_prussia_btn = {
+	name = "ce_polish_claim_state_west_prussia_btn_name"
+	desc = "ce_polish_claim_state_west_prussia_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_WEST_PRUSSIA }
+				c:KRA = { has_claim = s:STATE_WEST_PRUSSIA }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				global_var:ce_polish_claim_state_count > 3
+			}
+			add = 15
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_WEST_PRUSSIA
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_greater_poland_btn = {
+	name = "ce_polish_claim_state_greater_poland_btn_name"
+	desc = "ce_polish_claim_state_greater_poland_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_GREATER_POLAND }
+				c:KRA = { has_claim = s:STATE_GREATER_POLAND }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 100
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_GREATER_POLAND
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_claim_state_lesser_poland_btn = {
+	name = "ce_polish_claim_state_lesser_poland_btn_name"
+	desc = "ce_polish_claim_state_lesser_poland_btn_desc"
+
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+
+	possible = {
+		has_journal_entry = je_ce_polish_reconquest
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
+		}
+		custom_tooltip = {
+			text = can_claim_ce_polish_state_tt
+			exists = c:KRA
+			NOT = {
+				c:KRA = { owns_entire_state_region = STATE_LESSER_POLAND }
+				c:KRA = { has_claim = s:STATE_LESSER_POLAND }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 100
+	}
+
+	effect = {
+		je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_reconquest_energy_bar
+			}
+		}
+		random_state = {
+			limit = {
+				state_region = s:STATE_LESSER_POLAND
+				NOT = { owner = c:KRA }
+				NOT = { has_claim_by = c:KRA }
+			}
+			state_region = { add_claim = c:KRA }
+			owner = {
+				trigger_event = { id = ce_poland_events.1 popup = yes }
+			}
+		}
+		hidden_effect = {
+			every_country = {
+				limit = { has_variable = ce_anti_polish_variable }
+				if = {
+					limit = { has_journal_entry = je_ce_block_polish_advance }
+					je:je_ce_block_polish_advance = {
+						add_progress = {
+							value = 5
+							name = ce_block_polish_advance_bar
+						}
+					}
+				}
+			}
+			if = {
+				limit = { has_global_variable = ce_polish_claim_state_count }
+				change_global_variable = {
+					name = ce_polish_claim_state_count
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+ce_polish_move_capital_btn = {
+	name = "ce_polish_move_capital_btn_name"
+	desc = "ce_polish_move_capital_btn_desc"
+	
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_polish_war_preparation
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_50
+			je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 50 }
+		}
+		NOT = { has_modifier = ce_poland_war_prep_capital_buff }
+		any_state = {
+			state_region = s:STATE_GREATER_POLAND
+			is_incorporated = yes
+			owner = c:KRA
+		}
+	}
+	
+	effect = {
+		je:je_ce_polish_war_preparation ?= {
+			add_progress = {
+				value = -50
+				name = ce_polish_reconquest_war_prep_bar
+			}
+		}
+		set_capital = STATE_GREATER_POLAND
+		add_modifier = {
+			name = ce_poland_war_prep_capital_buff
+			months = 120 # 10 years or permanent? Let's say 120 months
+		}
+	}
+}
+
+ce_polish_boost_relations_btn = {
+	name = "ce_polish_boost_relations_btn_name"
+	desc = "ce_polish_boost_relations_btn_desc"
+	
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_polish_war_preparation
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_5
+			je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 5 }
+		}
+		any_country = {
+			has_variable = ce_pro_polish_variable
+		}
+	}
+	
+	effect = {
+		je:je_ce_polish_war_preparation ?= {
+			add_progress = {
+				value = -5
+				name = ce_polish_reconquest_war_prep_bar
+			}
+		}
+		every_country = {
+			limit = { has_variable = ce_pro_polish_variable }
+			change_relations = {
+				country = c:KRA
+				value = 20
+			}
+		}
+	}
+}
+
+ce_polish_boost_army_btn = {
+	name = "ce_polish_boost_army_btn_name"
+	desc = "ce_polish_boost_army_btn_desc"
+	
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_polish_war_preparation
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_5
+			je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 5 }
+		}
+		NOT = { has_modifier = ce_poland_war_prep_spend_buff }
+	}
+	
+	effect = {
+		je:je_ce_polish_war_preparation ?= {
+			add_progress = {
+				value = -5
+				name = ce_polish_reconquest_war_prep_bar
+			}
+		}
+		add_modifier = {
+			name = ce_poland_war_prep_spend_buff
+			months = 12
+		}
+	}
+}
+
+ce_polish_announce_victory_btn = {
+	name = "ce_polish_announce_victory_btn_name"
+	desc = "ce_polish_announce_victory_btn_desc"
+	
+	visible = {
+		exists = c:KRA
+		c:KRA ?= this
+	}
+	
+	ai_chance = {
+		value = 100
+	}
+	
+	possible = {
+		var:ce_poland_owned_polish_states >= 5
+	}
+	
+	effect = {
+		trigger_event = { id = ce_poland_events.3 popup = yes }
+	}
+}
+
+ce_pro_polish_give_money_btn = {
+	name = "ce_pro_polish_give_money_btn_name"
+	desc = "ce_pro_polish_give_money_btn_desc"
+	
+	visible = {
+		has_variable = ce_pro_polish_variable
+		exists = c:KRA
+		NOT = { c:KRA ?= this }
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_polish_territory_claim
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_10
+			je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 10 }
+		}
+			
+		NOT = { has_modifier = ce_pro_poland_spend_buff }
+	}
+	
+	effect = {
+		je:je_ce_polish_territory_claim ?= {
+			add_progress = {
+				value = -10
+				name = ce_polish_territory_claim_bar
+			}
+		}
+		add_modifier = {
+			name = ce_pro_poland_spend_buff
+			months = 12
+		}
+		c:KRA = {
+			trigger_event = { id = ce_poland_events.15 popup = yes }
+		}
+	}
+}
+
+ce_pro_polish_influence_btn = {
+	name = "ce_pro_polish_influence_btn_name"
+	desc = "ce_pro_polish_influence_btn_desc"
+	
+	visible = {
+		has_variable = ce_pro_polish_variable
+		exists = c:KRA
+		NOT = { c:KRA ?= this }
+		
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_polish_territory_claim
+		NOT = { has_modifier = ce_pro_poland_influence_buff }
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 20 }
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_territory_claim ?= {
+			add_progress = {
+				value = -20
+				name = ce_polish_territory_claim_bar
+			}
+		}
+		add_modifier = {
+			name = ce_pro_poland_influence_buff
+			is_decaying = yes
+			months = 12
+		}
+		c:KRA = {
+			trigger_event = { id = ce_poland_events.14 popup = yes }
+			
+		}
+	}
+}
+
+ce_pro_polish_infamy_btn = {
+	name = "ce_pro_polish_infamy_btn_name"
+	desc = "ce_pro_polish_infamy_btn_desc"
+	
+	visible = {
+		has_variable = ce_pro_polish_variable
+		exists = c:KRA
+		NOT = { c:KRA ?= this }
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_polish_territory_claim
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_15
+			je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 15 }
+		}
+	}
+	
+	effect = {
+		je:je_ce_polish_territory_claim ?= {
+			add_progress = {
+				value = -15
+				name = ce_polish_territory_claim_bar
+			}
+		}
+		change_infamy = -5
+		c:KRA = {
+			change_infamy = -5
+		}
+	}
+}
+
+ce_pro_polish_lobby_btn = {
+	name = "ce_pro_polish_lobby_btn_name"
+	desc = "ce_pro_polish_lobby_btn_desc"
+	
+	visible = {
+		has_variable = ce_pro_polish_variable
+		exists = c:KRA
+		NOT = { c:KRA ?= this }
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_polish_territory_claim
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_15
+			je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 15 }
+		}
+	}
+
+	effect = {
+		je:je_ce_polish_territory_claim ?= {
+			add_progress = {
+				value = -15
+				name = ce_polish_territory_claim_bar
+			}
+		}
+		save_scope_as = ce_strong_power
+		c:KRA = {
+			trigger_event = { id = ce_poland_events.13 popup = yes }
+		}
+		every_interest_group = {
+			limit = {
+				OR = {
+					is_interest_group_type = ig_landowners
+					is_interest_group_type = ig_intelligentsia
+					is_interest_group_type = ig_petty_bourgeoisie
+				}
+			}
+			add_modifier = {
+				name = ce_poland_lobby_approval_buff
+				is_decaying = yes
+				months = 6
+			}
+		}
+	}
+}
+
+ce_anti_polish_radicals_kra_btn = {
+	name = "ce_anti_polish_radicals_kra_btn_name"
+	desc = "ce_anti_polish_radicals_kra_btn_desc"
+	
+	visible = {
+		has_variable = ce_anti_polish_variable
+	}
+	
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				has_journal_entry = je_ce_block_polish_advance
+				je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 95 }
+			}
+			add = 25
+		}
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_block_polish_advance
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_5
+			je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 5 }
+		}
+		NOT = { has_modifier = ce_anti_poland_influence_debuff }
+	}
+
+	effect = {
+		je:je_ce_block_polish_advance ?= {
+			add_progress = {
+				value = -5
+				name = ce_block_polish_advance_bar
+			}
+		}
+		add_modifier = {
+			name = ce_anti_poland_influence_debuff
+			months = 12
+		}
+		save_scope_as = ce_from_country
+		c:KRA = {
+			random_state = {
+				add_radicals_in_state = {
+					value = 0.05
+				}
+			}
+			trigger_event = { id = ce_poland_events.4 popup = no }
+		}
+	}
+}
+
+ce_anti_polish_radicals_pro_btn = {
+	name = "ce_anti_polish_radicals_pro_btn_name"
+	desc = "ce_anti_polish_radicals_pro_btn_desc"
+	
+	visible = {
+		has_variable = ce_anti_polish_variable
+	}
+	
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				has_journal_entry = je_ce_block_polish_advance
+				je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 95 }
+			}
+			add = 10
+		}
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_block_polish_advance
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_10
+			je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 15 }
+		}
+		any_country = {
+			has_variable = ce_pro_polish_variable
+			exists = c:KRA
+			NOT = { c:KRA ?= this }
+		}
+	}
+
+	effect = {
+		je:je_ce_block_polish_advance ?= {
+			add_progress = {
+				value = -15
+				name = ce_block_polish_advance_bar
+			}
+		}
+		random_country = {
+			limit = {
+				has_variable = ce_pro_polish_variable
+				exists = c:KRA
+				NOT = { c:KRA ?= this }
+			}
+			random_state = {
+				add_radicals_in_state = {
+					value = 0.02
+				}
+			}
+			trigger_event = { id = ce_poland_events.5 popup = no }
+		}
+		save_scope_as = ce_from_country
+		c:KRA = { trigger_event = { id = ce_poland_events.4 popup = no } }
+	}
+}
+
+ce_anti_polish_free_factory_btn = {
+	name = "ce_anti_polish_free_factory_btn_name"
+	desc = "ce_anti_polish_free_factory_btn_desc"
+	
+	visible = {
+		has_variable = ce_anti_polish_variable
+	}
+	
+	ai_chance = {
+		value = 0
+		# if = {
+		# 	limit = {
+		# 		has_journal_entry = je_ce_block_polish_advance
+		# 		je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 95 }
+		# 	}
+		# 	add = 10
+		# }
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_block_polish_advance
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_20
+			je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 20 }
+		}
+		any_scope_state = {
+			infrastructure_usage >= 0.3
+			infrastructure_usage <= 0.9
+		}
+	}
+
+	effect = {
+		je:je_ce_block_polish_advance ?= {
+			add_progress = {
+				value = -20
+				name = ce_block_polish_advance_bar
+			}
+		}
+		trigger_event = { id = ce_poland_events.6 popup = yes }
+	}
+}
+
+ce_anti_polish_lobby_btn = {
+	name = "ce_anti_polish_lobby_btn_name"
+	desc = "ce_anti_polish_lobby_btn_desc"
+	
+	visible = {
+		has_variable = ce_anti_polish_variable
+	}
+	
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				has_journal_entry = je_ce_block_polish_advance
+				je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 95 }
+			}
+			add = 10
+		}
+	}
+	
+	possible = {
+		has_journal_entry = je_ce_block_polish_advance
+		custom_tooltip = {
+			text = ce_polish_script_bar_tt_10
+			je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 10 }
+		}
+	}
+
+	effect = {
+		je:je_ce_block_polish_advance ?= {
+			add_progress = {
+				value = -10
+				name = ce_block_polish_advance_bar
+			}
+		}
+		every_interest_group = {
+			limit = {
+				OR = {
+					is_interest_group_type = ig_landowners
+					is_interest_group_type = ig_armed_forces
+					is_interest_group_type = ig_petty_bourgeoisie
+				}
+			}
+			add_modifier = {
+				name = ce_poland_lobby_approval_buff
+				months = 12
+			}
+		}
+		
+	}
+}
+
+# Replaced by an event.
+# 
+# ce_support_polish_problem_btn = {
+# 	name = "ce_support_polish_problem_btn_name"
+# 	desc = "ce_support_polish_problem_btn_desc"
+	
+# 	visible = {
+# 		NOT = { has_variable = ce_pro_polish_variable }
+# 		NOT = { has_variable = ce_anti_polish_variable }
+# 		exists = c:KRA
+# 		NOT = { c:KRA ?= this }
+# 	}
+	
+# 	ai_chance = {
+# 		value = 10
+# 		if = {
+# 			limit = { exists = c:RUS c:RUS ?= this }
+# 			add = -1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:AUS c:AUS ?= this }
+# 			add = -1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:SPC c:SPC ?= this }
+# 			add = -1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:FRA c:FRA ?= this }
+# 			add = 1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:SWE c:SWE ?= this }
+# 			add = 1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:GBR c:GBR ?= this }
+# 			add = 1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:SPA c:SPA ?= this }
+# 			add = 1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:PRU c:PRU ?= this }
+# 			add = 1000
+# 		}
+# 	}
+	
+# 	possible = {
+# 		NOT = { c:KRA ?= this }
+# 		NOT = {
+# 			any_state = {
+# 				has_claim_by = c:KRA
+# 				owner = root
+# 			}
+# 		}
+# 		NOT = {
+# 			has_war_with = c:KRA
+# 		}
+# 	}
+	
+# 	effect = {
+		
+# 	}
+# }
+
+# ce_oppose_polish_problem_btn = {
+# 	name = "ce_oppose_polish_problem_btn_name"
+# 	desc = "ce_oppose_polish_problem_btn_desc"
+	
+# 	visible = {
+# 		NOT = { has_variable = ce_pro_polish_variable }
+# 		NOT = { has_variable = ce_anti_polish_variable }
+# 		exists = c:KRA
+# 		NOT = { c:KRA ?= this }
+# 	}
+	
+# 	ai_chance = {
+# 		value = 10
+# 		if = {
+# 			limit = { exists = c:RUS c:RUS ?= this }
+# 			add = 1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:AUS c:AUS ?= this }
+# 			add = 1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:SPC c:SPC ?= this }
+# 			add = 1000
+# 		}
+
+# 		if = {
+# 			limit = { exists = c:FRA c:FRA ?= this }
+# 			add = -1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:SWE c:SWE ?= this }
+# 			add = -1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:GBR c:GBR ?= this }
+# 			add = -1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:SPA c:SPA ?= this }
+# 			add = -1000
+# 		}
+# 		if = {
+# 			limit = { exists = c:PRU c:PRU ?= this }
+# 			add = -1000
+# 		}
+# 	}
+	
+# 	possible = {
+# 		NOT = {
+# 			any_scope_treaty = {
+# 				binds = c:KRA
+# 				any_scope_article = {
+# 					has_type = alliance
+# 				}
+# 			}
+# 		}
+# 		NOT = {
+# 			any_scope_treaty = {
+# 				binds = c:KRA
+# 				any_scope_article = {
+# 					has_type = defensive_pact
+# 				}
+# 			}
+# 		}
+# 		NOT = {
+# 			any_scope_treaty = {
+# 				binds = c:KRA
+# 				any_scope_article = {
+# 					has_type = support_independence
+# 				}
+# 			}
+# 		}
+# 	}
+	
+# 	effect = {
+		
+# 	}
+# }
+
+
+
+

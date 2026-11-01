@@ -1,0 +1,3462 @@
+﻿namespace = usm_civilwar
+
+usm_civilwar.1 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.1.t
+	# 
+	desc = usm_civilwar.1.d
+	# 
+
+	flavor = usm_civilwar.1.f
+	# 天下神祠，无功于民不应祀典者，即淫祠也，有司无得致祭。 \n——《大明太祖高皇帝实录·卷五十三·去封号诏》
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_4.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 狗贼！奸贼！恶贼！逆贼！
+		name = usm_civilwar.1.1
+		ai_chance = {
+			base = 75
+			modifier = {
+				trigger = {
+					c:DEI = This
+				}
+				add = -100
+			}
+			modifier = {
+				trigger = { c:YN1 ?= This }
+				add = -50
+			}
+			modifier = {
+				trigger = { c:HNA ?= This  }
+				add = 100
+			}
+			modifier = {
+				trigger = { c:SIH ?= This  }
+				add = 100
+			}
+			modifier = {
+				trigger = { c:GNG ?= This  }
+				add = 100
+			}
+			modifier = {
+				trigger = {
+					c:YN1 = This
+				}	
+				add = -80
+			}
+			modifier = {
+				trigger = { 
+					NOT = { c:HNA ?= This }
+					NOT = { c:SIH ?= This }
+					any_scope_character = {
+						is_ruler_of_own_country = yes
+						NOT = { has_trait = reckless }
+						NOT = { has_trait = ambitious }
+						NOT = { has_trait = wrathful }
+						NOT = { has_trait = charismatic }
+						NOT = { has_trait = romantic }
+						NOT = { has_trait = honorable }
+						NOT = { has_trait = persistent }
+						#NOT = { has_trait = direct }
+					}
+				}
+				add = -25
+			}
+			modifier = {
+				trigger = { 
+					any_scope_character = {
+						is_ruler_of_own_country = yes
+						has_variable = This_is_shiyuanfu_var
+					}
+				}
+				add = -15
+			}
+		}
+		custom_tooltip = usm_civilwar_participate
+		
+		hidden_effect = {
+			
+			set_variable = usm_opposition_country
+			if = {
+				limit = { c:SIH ?= This }
+				set_global_variable = sih_anti_wuu_choice_1
+				set_global_variable = sih_anti_wuu_choice_2
+			}
+			
+			if = {
+				limit = { c:GNG ?= This }
+				set_global_variable = sih_anti_gng_choice
+			}
+			
+			c:USM ?= {
+				change_variable = {
+					name = usm_opposition_country_count
+					add = 1
+				}
+			}
+		}
+	}
+	
+	option = { # 趁机争取更大的自治度。
+		name = usm_civilwar.1.2
+		ai_chance = {
+			base = 10
+			
+		}
+		trigger = {
+			OR = {
+				c:YN1 = This
+				c:JAP = This
+			}
+		}
+		make_independent = yes
+		add_change_relations_progress = {
+			country = c:USM
+			value = -25
+		}
+		capital = {
+			state_region = { add_claim = c:USM }
+		}
+		hidden_effect = {
+			c:USM ?= {
+				change_variable = {
+					name = usm_subject_country_count
+					add = -1
+				}
+			}
+		}
+		# 下个版本改成独立后以较高自治度的身份加入USM的势力范围。
+	}
+	
+	option = { # 新朝的乌纱帽好看吗？
+		name = usm_civilwar.1.3
+		ai_chance = {
+			base = 15
+			modifier = {
+				trigger = {
+					c:DEI = This
+				}
+				add = 100
+			}
+			modifier = {
+				trigger = {
+					c:PHI = This
+				}
+				add = 75
+			}
+			modifier = {
+				trigger = {
+					c:YN1 = This
+				}
+				add = 75
+			}
+		}
+		default_option = yes
+		# 下个版本加入一个降低自治度的BUFF
+		add_modifier = {
+			name = USM_loyal_subject
+			months = 120
+		}
+		add_change_relations_progress = {
+			country = c:USM
+			value = 100
+		}
+		hidden_effect = {
+			c:USM ?= {
+				change_variable = {
+					name = usm_subject_country_count
+					add = -1
+				}
+			}
+		}
+	}
+	after = {
+		if = {
+			limit = {
+				exists = c:USM
+				#is_subject_of = c:USM
+			}
+			c:USM ?= {
+				change_variable = {
+					name = usm_opposition_country_choice
+					add = -1
+				}
+				change_variable = {
+					name = usm_opposition_country_choice_tt_var
+					add = 1
+				}
+			}
+		}
+	}
+}
+
+usm_civilwar.2 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.2.t
+	# 南明内战爆发
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = usm_civilwar.2.d
+				trigger = {
+					c:USM ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.2.d1
+				trigger = {
+					has_variable = usm_opposition_country
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.2.d2
+				trigger = {
+					NOT = { has_variable = usm_opposition_country }
+					NOT = { c:USM ?= This }
+				}
+			}
+		}
+	}
+	# 
+
+	flavor = usm_civilwar.2.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_5.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		NOT = { has_variable = have_seen_dierci_jingnan }
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_variable = have_seen_dierci_jingnan
+			if = {
+				limit = {
+					c:USM ?= This
+					NOT = {
+						any_country = { has_variable = usm_opposition_country_leader_var }
+					}
+					c:SIH ?= { has_variable = usm_opposition_country }
+				}
+				c:SIH ?= {
+					make_independent = yes
+					set_variable = usm_opposition_country_leader_var
+					save_scope_as = usm_opposition_country_leader
+				}
+			}
+			else_if = {
+				limit = {
+					c:USM ?= This
+					NOT = {
+						any_country = { has_variable = usm_opposition_country_leader_var }
+					}
+					NOT = { c:SIH ?= { has_variable = usm_opposition_country } }
+					c:HNA ?= { has_variable = usm_opposition_country } 
+				}
+				c:HNA ?= {
+					make_independent = yes
+					set_variable = usm_opposition_country_leader_var
+					save_scope_as = usm_opposition_country_leader
+				}
+			}	
+			else_if = {
+				limit = {
+					c:USM ?= This
+					NOT = {
+						any_country = { has_variable = usm_opposition_country_leader_var }
+					}
+					NOT = { c:SIH ?= { has_variable = usm_opposition_country } }
+					NOT = { c:HNA ?= { has_variable = usm_opposition_country } }
+					c:GNG ?= { has_variable = usm_opposition_country } 
+				}
+				c:GNG ?= {
+					make_independent = yes
+					set_variable = usm_opposition_country_leader_var
+					save_scope_as = usm_opposition_country_leader
+				}
+			}	
+			else_if = {
+				limit = {
+					c:USM ?= This
+					NOT = {
+						any_country = { has_variable = usm_opposition_country_leader_var }
+					}
+					NOT = { c:SIH ?= { has_variable = usm_opposition_country } }
+					NOT = { c:HNA ?= { has_variable = usm_opposition_country } }
+					NOT = { c:GNG ?= { has_variable = usm_opposition_country } }
+					c:PHI ?= { has_variable = usm_opposition_country } 
+				}
+				c:PHI ?= {
+					make_independent = yes
+					set_variable = usm_opposition_country_leader_var
+					save_scope_as = usm_opposition_country_leader
+				}
+			}	
+			else = {
+				limit = {
+					c:USM ?= This
+					NOT = {
+						any_country = { has_variable = usm_opposition_country_leader_var }
+					}
+				}
+				random_country = {
+					limit = {
+						has_variable = usm_opposition_country
+						NOT = { c:JAP ?= This }
+					}
+					make_independent = yes
+					set_variable = usm_opposition_country_leader_var
+					save_scope_as = usm_opposition_country_leader
+				}
+			}
+			
+			every_country = {
+				limit = { has_variable = usm_opposition_country is_subject = yes }
+				make_independent = yes
+			}
+			
+			save_scope_as = ce_current_country
+			if = {
+				limit = {
+					OR = {
+						is_subject_of = c:USM
+						has_variable = usm_opposition_country
+					}
+					any_diplomatic_play = {
+						has_variable = this_is_nanming_civilwar_var
+					}
+				}
+				random_diplomatic_play = {
+					limit = {
+						has_variable = this_is_nanming_civilwar_var
+					}
+					save_scope_as = this_is_nanming_civilwar_scope
+				}
+			}
+			
+			if = {
+				limit = {
+					any_country = { has_variable = usm_opposition_country_leader_var }
+				}
+				random_country = {
+					limit = {
+						has_variable = usm_opposition_country_leader_var
+					}
+					save_scope_as = usm_opposition_leader
+				}
+			}
+			else_if = {
+				limit = {
+					has_variable = usm_opposition_country_leader_var
+				}
+				save_scope_as = usm_opposition_leader
+			}
+		}
+	}
+
+	option = { # 贼子敢尔！
+		name = usm_civilwar.2.1
+		ai_chance = {
+			base = 1
+		}
+		#default_option = yes
+		trigger = {
+			c:USM ?= This
+		}
+		
+		if = {
+			limit = {
+				year >= 1853
+			}
+			create_character = {
+				template = USM_li_hongzhang
+			}
+		}
+		if = {
+			limit = {
+				year >= 1845
+			}
+			create_character = {
+				template = USM_zeng_guofan
+			}
+		}
+		
+		create_character = {
+			template = USM_wu_naosuke
+		}
+		
+		create_diplomatic_play = {
+			name = usm_civilwar_play
+			target_country = scope:usm_opposition_country_leader
+			type = dp_usm_civil_war
+		#	war = yes
+		}
+		
+		add_journal_entry = {
+			type = ce_usm_suppress_rebellion
+		}
+		
+		#scope:usm_opposition_country_leader = {
+		#
+		#}
+		
+		hidden_effect = { # INFORM EVERYONE ABOUT THE WAR
+			set_global_variable = usm_civilwar_occured
+			every_country = {
+				limit = {
+					OR = {
+						has_variable = usm_opposition_country
+						AND = {
+							NOT = { has_variable = have_seen_dierci_jingnan }
+							is_ai = no
+							NOT = { has_variable = usm_opposition_country }
+							NOT = { is_subject_of = root }
+							NOT = { c:USM ?= This }
+						}
+						is_subject_of = root
+					}
+				}
+				#make_independent = yes
+				if = {
+					limit = { 
+						has_variable = usm_opposition_country
+						is_subject_of = root
+						NOT = { has_variable = usm_opposition_country_leader_var }
+					}
+					make_independent = yes
+				}
+				trigger_event = { id = usm_civilwar.2 popup = yes }
+			}  
+			random_diplomatic_play = {
+				limit = {
+					c:USM ?= {
+						is_diplomatic_play_initiator = yes
+					}
+					scope:usm_opposition_country_leader = {
+						is_diplomatic_play_target = yes
+					}
+				}
+				set_variable = This_is_nanming_civilwar_var
+				#add_escalation = 80
+			}
+			random_diplomatic_play = {
+				limit = {
+					#is_war = yes
+					target = {
+						NOT = { this = root }
+						has_variable = usm_opposition_country_leader_var
+					}
+					initiator = {
+						c:USM = This
+					}
+				}
+				set_variable = This_is_nanming_civilwar_var
+				add_escalation = 90
+			}
+		}
+	}
+	option = { # 
+		name = usm_civilwar.2.2
+		default_option = yes
+		ai_chance = {
+			base = 75
+		}
+		trigger = {
+			NOT = { c:USM ?= This }
+			NOT = { c:JAP ?= This }
+			has_variable = usm_opposition_country
+			
+		}
+		
+		if = {
+			limit = { 
+				c:YN1 ?= This 
+				any_country = {
+					any_scope_character = {
+						has_template = USM_lin_hanhan
+					}
+				}
+			}
+			hidden_effect = {
+				save_scope_as = new_linhanhan_owner
+				random_country = {
+					limit = {	
+						any_scope_character = {
+							has_template = USM_lin_hanhan
+						}
+					}
+					save_scope_as = original_hanhan_owner
+					random_scope_character = {
+						limit = { has_template = USM_lin_hanhan }
+						save_scope_as = linhanhan_scope_local
+					}
+				}
+			
+			}
+			if = {
+				limit = {
+					exists = scope:linhanhan_scope_local
+				}
+				
+				scope:linhanhan_scope_local = {
+					transfer_character = root
+				}
+				scope:original_hanhan_owner = {
+					trigger_event = { id = usm_civilwar.25 } # Lin hanhan ran away
+				}
+			}
+		}
+		
+		if = {
+			limit = {
+				NOT = { has_variable = usm_opposition_country_leader_var }
+				scope:usm_opposition_leader = {
+					NOT = { has_war_with = root }
+				}
+			}
+			
+			create_treaty = {
+				first_country = root
+				second_country = scope:usm_opposition_leader
+
+				is_draft = no
+				binding_period = { years = 5 }
+
+				articles_to_create = {
+					{
+						article = defensive_pact
+					}
+				}
+			}
+		}
+		
+		add_journal_entry = {
+			type = ce_usm_restoration_of_ming
+		}
+		add_modifier = {
+			name = USM_pingwu_dagao
+			months = 60
+			is_decaying = yes
+		}
+		
+		if = {
+			limit = { 
+				c:GNG ?= This 
+				year <= 1881
+				year >= 1840
+			}
+			create_character = {
+				last_name = Yang
+				first_name = Xiuqing
+				birth_date = 1821.9.23
+				culture = cu:ce_xinan
+				religion = rel:mahayana
+				is_general = yes
+				ig_leader = yes
+				historical = yes
+				interest_group = ig_armed_forces
+				hq = region_south_china
+				ideology = ideology_reformer
+				commander_rank = commander_rank_3
+				traits = {
+					grifter
+					mountain_commander
+					surveyor
+					expert_political_operator
+					ambitious
+					demagogue
+				}
+			}
+		}
+		
+		if = {
+			limit = { 
+				c:GNG ?= This 
+				year <= 1881
+				year >= 1840
+			}
+			create_character = {
+				last_name = Xiao
+				first_name = Chaogui
+				birth_date = 1820.1.1
+				culture = cu:hakka
+				religion = rel:mahayana
+				is_general = yes
+				ig_leader = yes
+				historical = yes
+				interest_group = ig_devout
+				hq = region_south_china
+				ideology = ideology_theocrat
+				commander_rank = commander_rank_2
+				traits = {
+					reckless
+					experienced_artillery_commander
+					charismatic
+					demagogue
+				}
+			}
+		}
+		
+		if = {
+			limit = { 
+				c:SIH ?= This 
+				year < 1860
+			}
+			#custom_tooltip = sih_shuwang_ran_off_tt
+			create_character = {
+				template = USM_wei_jian
+				save_scope_as = laojian_scope
+			}
+			if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_template = USM_zhu_shenhui
+						}
+					}
+					NOT = {
+						any_scope_character = {
+							has_template = USM_xiao_huli
+						}
+					}
+				}
+				random_list = {
+					6 = {
+						custom_tooltip = sih_shuwang_ran_off_tt
+						hidden_effect = {
+							random_scope_character = {
+								limit = { is_ruler_of_own_country = yes }
+								set_home_country = c:USM
+							}
+						}
+						scope:laojian_scope = {
+							set_character_as_ruler = yes
+						}
+					}
+					4 = {
+						custom_tooltip = ce_nothing_happen_tt
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					any_scope_character = {
+						has_template = USM_xiao_huli
+					}
+				}
+				custom_tooltip = sih_shuwang_ran_off_tt
+				random_scope_character = {
+					limit = { has_template = USM_xiao_huli }
+					set_character_as_ruler = yes
+				}
+			}
+			else_if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_template = USM_xiao_huli
+						}
+					}
+				}
+				custom_tooltip = sih_shuwang_ran_off_tt
+				random_scope_character = {
+					limit = { has_template = USM_zhu_shenhui }
+					set_character_as_ruler = yes
+				}
+			}
+			else = {
+				custom_tooltip = sih_shuwang_ran_off_tt
+				random_scope_character = {
+					limit = { has_template = USM_zhu_shenhui }
+					set_character_as_ruler = yes
+				}
+			}
+			
+		}
+		
+		if = {
+			limit = { 
+				c:HNA ?= This 
+				year <= 1881
+				year >= 1840
+			}
+			create_character = {
+				first_name = Yunshan
+				last_name = Feng
+				birth_date = 1815.1.1
+				culture = cu:yue
+				religion = rel:mahayana
+				is_general = yes
+				ig_leader = yes
+				historical = yes
+				interest_group = ig_devout
+				hq = region_south_china
+				ideology = ideology_theocrat
+				commander_rank = commander_rank_2
+				traits = {
+					resupply_commander
+					plains_commander
+					charismatic
+					demagogue
+				}
+			}
+		}
+		
+		if = {
+			limit = {
+				is_diplomatic_play_target = no
+			}
+			if = {
+				limit = { is_subject = yes }
+				make_independent = yes
+			}
+			random_diplomatic_play = {
+				limit = {
+					#is_war = yes
+					target = {
+						NOT = { this = root }
+						has_variable = usm_opposition_country_leader_var
+					}
+					initiator = {
+						c:USM = This
+					}
+				}
+				add_target_backers = { root }
+				#add_escalation = 80
+			}
+		}
+		else = {
+			show_as_tooltip = {
+				make_independent = yes
+				scope:this_is_nanming_civilwar_scope = {
+					add_target_backers = { root }
+					#add_diplomatic_play_war_support = { target = scope:usm_opposition_country_leader value = 5 }
+				}
+			}
+		}
+	}
+	option = { # 
+		name = usm_civilwar.2.3
+		#default_option = yes
+		ai_chance = {
+			base = 23
+		}
+		trigger = {
+			NOT = { c:USM ?= This }
+			NOT = { c:JAP ?= This }
+			has_variable = usm_opposition_country
+		}
+		
+		if = {
+			limit = {
+				NOT = { has_variable = usm_opposition_country_leader_var }
+				scope:usm_opposition_leader = {
+					NOT = { has_war_with = root }
+				}
+			}
+			create_treaty = {
+				first_country = root
+				second_country = scope:usm_opposition_leader
+
+				is_draft = no
+				binding_period = { years = 5 }
+
+				articles_to_create = {
+					{
+						article = defensive_pact
+					}
+				}
+			}
+		}
+		
+		add_journal_entry = {
+			type = ce_usm_acheive_revolution
+		}
+		
+		if = {
+			limit = { 
+				c:GNG ?= This 
+				year <= 1881
+				year >= 1840
+			}
+			create_character = {
+				last_name = Yang
+				first_name = Xiuqing
+				birth_date = 1821.9.23
+				culture = cu:ce_xinan
+				religion = rel:mahayana
+				is_general = yes
+				ig_leader = yes
+				historical = yes
+				interest_group = ig_armed_forces
+				hq = region_south_china
+				ideology = ideology_reformer
+				commander_rank = commander_rank_3
+				traits = {
+					grifter
+					mountain_commander
+					surveyor
+					expert_political_operator
+					ambitious
+					demagogue
+				}
+			}
+		}
+		
+		if = {
+			limit = { 
+				c:GNG ?= This 
+				year <= 1881
+				year >= 1840
+			}
+			create_character = {
+				last_name = Xiao
+				first_name = Chaogui
+				birth_date = 1820.1.1
+				culture = cu:hakka
+				religion = rel:mahayana
+				is_general = yes
+				ig_leader = yes
+				historical = yes
+				interest_group = ig_devout
+				hq = region_south_china
+				ideology = ideology_theocrat
+				commander_rank = commander_rank_2
+				traits = {
+					reckless
+					experienced_artillery_commander
+					charismatic
+					demagogue
+				}
+			}
+		}
+		
+		if = {
+			limit = { 
+				c:SIH ?= This 
+				year < 1860
+			}
+			#custom_tooltip = sih_shuwang_ran_off_tt
+			if = {
+				limit = {
+					year > 1850
+				}
+				create_character = {
+					template = USM_shi_dakai
+				}
+			}
+			if = {
+				limit = {
+					year > 1845
+				}
+				create_character = {
+					template = USM_li_xiucheng
+				}
+			}
+			create_character = {
+				template = USM_wei_jian
+				save_scope_as = laojian_scope
+			}
+			if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_template = USM_zhu_shenhui
+						}
+					}
+					NOT = {
+						any_scope_character = {
+							has_template = USM_xiao_huli
+						}
+					}
+				}
+				random_list = {
+					6 = {
+						custom_tooltip = sih_shuwang_ran_off_tt
+						hidden_effect = {
+							random_scope_character = {
+								limit = { is_ruler_of_own_country = yes }
+								set_home_country = c:USM
+							}
+						}
+						scope:laojian_scope = {
+							set_character_as_ruler = yes
+						}
+					}
+					4 = {
+						custom_tooltip = ce_nothing_happen_tt
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					any_scope_character = {
+						has_template = USM_xiao_huli
+					}
+				}
+				custom_tooltip = sih_shuwang_ran_off_tt
+				random_scope_character = {
+					limit = { has_template = USM_xiao_huli }
+					set_character_as_ruler = yes
+				}
+			}
+			else_if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_template = USM_xiao_huli
+						}
+					}
+				}
+				custom_tooltip = sih_shuwang_ran_off_tt
+				random_scope_character = {
+					limit = { has_template = USM_zhu_shenhui }
+					set_character_as_ruler = yes
+				}
+			}
+			else = {
+				custom_tooltip = sih_shuwang_ran_off_tt
+				random_scope_character = {
+					limit = { has_template = USM_zhu_shenhui }
+					set_character_as_ruler = yes
+				}
+			}
+			
+			
+		}
+		
+		if = {
+			limit = { 
+				c:HNA ?= This 
+				year <= 1881
+				year >= 1840
+			}
+			create_character = {
+				first_name = Yunshan
+				last_name = Feng
+				birth_date = 1815.1.1
+				culture = cu:yue
+				religion = rel:mahayana
+				is_general = yes
+				ig_leader = yes
+				historical = yes
+				interest_group = ig_devout
+				hq = region_south_china
+				ideology = ideology_theocrat
+				commander_rank = commander_rank_2
+				traits = {
+					resupply_commander
+					plains_commander
+					charismatic
+					demagogue
+				}
+			}
+		}
+		
+		if = {
+			limit = {
+				is_diplomatic_play_target = no
+			}
+			if = {
+				limit = { is_subject = yes }
+				make_independent = yes
+			}
+			random_diplomatic_play = {
+				limit = {
+					#is_war = yes
+					target = {
+						NOT = { this = root }
+						has_variable = usm_opposition_country_leader_var
+					}
+					initiator = {
+						c:USM = This
+					}
+				}
+				add_target_backers = { root }
+				#add_escalation = 80
+			}
+		}
+		else = {
+			show_as_tooltip = {
+				make_independent = yes
+				scope:this_is_nanming_civilwar_scope = {
+					add_target_backers = { root }
+					#add_diplomatic_play_war_support = { target = scope:usm_opposition_country_leader value = 5 }
+				}
+			}
+		}
+	}
+	option = { # 
+		name = usm_civilwar.2.4
+		#default_option = yes
+		ai_chance = {
+			base = 23
+		}
+		trigger = {
+			c:JAP ?= This
+			has_variable = usm_opposition_country
+		}
+		add_journal_entry = {
+			type = ce_usm_cw_japanese_interest
+		}
+		if = {
+			limit = {
+				is_diplomatic_play_target = no
+			}
+			if = {
+				limit = { is_subject = yes }
+				make_independent = yes
+			}
+			random_diplomatic_play = {
+				limit = {
+					#is_war = yes
+					target = {
+						NOT = { this = root }
+						has_variable = usm_opposition_country_leader_var
+					}
+					initiator = {
+						c:USM ?= This
+					}
+				}
+				add_target_backers = { root }
+				#add_escalation = 80
+			}
+			
+		}
+		else = {
+			show_as_tooltip = {
+				make_independent = yes
+				scope:this_is_nanming_civilwar_scope = {
+					add_target_backers = { root }
+					#add_diplomatic_play_war_support = { target = scope:usm_opposition_country_leader value = 5 }
+				}
+			}
+		}
+		
+	}
+	option = { # 
+		name = usm_civilwar.2.5
+		#default_option = yes
+		ai_chance = {
+			base = 1
+		}
+		trigger = {
+			NOT = { c:USM ?= This }
+			NOT = { has_variable = usm_opposition_country }
+		}
+		
+		if = {
+			limit = { 
+				c:JAP ?= This 
+			}
+			add_journal_entry = {
+				type = ce_usm_cw_japanese_interest
+			}
+			if = {
+				limit = {
+					is_subject = no
+				}
+				random_diplomatic_play = {
+					limit = {
+						c:USM ?= {
+							is_diplomatic_play_initiator = yes
+						}
+						OR = {
+							any_country = { has_variable = usm_opposition_country_leader_var }
+							scope:usm_opposition_country_leader = {
+								is_diplomatic_play_target = yes
+							}
+						}
+					}
+					add_target_backers = { root }
+				}
+			}
+		}
+		
+	}
+	after = {
+		if = {
+			limit = {
+				exists = c:USM
+			}
+			c:USM = { change_infamy = -50 }
+		}
+	}
+}
+
+usm_civilwar.3 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.3.t
+	# 无疾而终
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = usm_civilwar.3.d
+				trigger = {
+					c:USM ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.3.d1
+				trigger = {
+					NOT = { c:USM ?= This }
+				}
+			}
+		}
+	}
+	# 
+
+	flavor = usm_civilwar.3.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_2.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 朕，本也乐生于有明之世。
+		name = usm_civilwar.3.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		trigger = {
+			c:USM ?= This
+		}
+		hidden_effect = {
+			every_country = {
+				limit = {
+					OR = {
+						has_variable = usm_opposition_country
+						is_ai = no
+						is_subject_of = root
+					}
+				}
+				
+				trigger_event = { id = usm_civilwar.3 months = 1 }
+			}  
+		}
+	}
+	
+	option = { # 那各地的明人街是不是该改名了？
+		name = usm_civilwar.3.2
+		#default_option = yes
+		ai_chance = {
+			base = 1
+		}
+		trigger = {
+			NOT = { c:USM ?= This }
+			#NOT = { has_variable = usm_opposition_country }
+		}
+		
+		hidden_effect = {
+			if = {
+				limit = { has_variable = usm_opposition_country }
+				remove_variable = usm_opposition_country
+			}
+		}
+	}
+	
+}
+
+usm_civilwar.4 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.4.t
+	# 独立战争失败
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = usm_civilwar.4.d
+				trigger = {
+					c:HNA ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d1
+				trigger = {
+					c:SIH ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d2
+				trigger = {
+					c:GNG ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d3
+				trigger = {
+					c:PHI ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d4
+				trigger = {
+					c:JAP ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d5
+				trigger = {
+					NOT = { c:HNA ?= This }
+					NOT = { c:SIH ?= This }
+					NOT = { c:GNG ?= This }
+					NOT = { c:PHI ?= This }
+					NOT = { c:JAP ?= This }
+				}
+			}
+		}
+	}
+	# 
+
+	flavor = usm_civilwar.4.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_1.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			if = {
+				limit = {
+					c:USM ?= {
+						NOT = {
+							has_variable = usm_won_the_civil_war
+						}
+					}
+				}
+				c:USM ?= { set_variable = usm_won_the_civil_war }
+			}
+		}
+	}
+
+	option = { # 我计不成，乃天命也！
+		name = usm_civilwar.4.1
+		ai_chance = {
+			base = 1
+		}
+		trigger = {
+			NOT = { c:SIH ?= This }
+		}
+		default_option = yes
+		if = {
+			limit = { is_ai = no }
+			play_as = c:USM
+		}
+		show_as_tooltip = {
+			c:USM ?= {
+				annex = root
+			}
+		}
+	}
+	option = { # 我计不成，乃天命也！
+		name = usm_civilwar.4.2
+		ai_chance = {
+			base = 1
+		}
+		trigger = {
+			c:SIH ?= This
+		}
+		default_option = yes
+		if = {
+			limit = { is_ai = no }
+			play_as = c:USM
+		}
+		show_as_tooltip = {
+			c:USM ?= {
+				annex = root
+			}
+		}
+	}
+	after = {
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { c:SIH ?= This }
+					NOT = { c:HNA ?= This }
+					NOT = { c:GNG ?= This }
+					NOT = { c:YN1 ?= This }
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						1 = { exile_character = yes }
+						2 = { kill_character = yes }
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:SIH ?= This 
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						1 = { exile_character = yes }
+						5 = { kill_character = yes }
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:HNA ?= This 
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						1 = { exile_character = yes }
+						4 = { kill_character = yes }
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:GNG ?= This 
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						2 = { exile_character = yes }
+						5 = { kill_character = yes }
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:YN1 ?= This 
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						2 = { exile_character = yes }
+						1 = { kill_character = yes }
+					}
+				}
+			}
+			
+			c:USM ?= {
+				annex_as_civil_war = root
+			}
+		}
+	}
+}
+
+usm_civilwar.5 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.4.t
+	# 独立战争失败
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = usm_civilwar.4.d
+				trigger = {
+					c:HNA ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d1
+				trigger = {
+					c:SIH ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d2
+				trigger = {
+					c:GNG ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d3
+				trigger = {
+					c:PHI ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d4
+				trigger = {
+					c:JAP ?= This
+				}
+			}
+			triggered_desc = {
+				desc = usm_civilwar.4.d5
+				trigger = {
+					NOT = { c:HNA ?= This }
+					NOT = { c:SIH ?= This }
+					NOT = { c:GNG ?= This }
+					NOT = { c:PHI ?= This }
+					NOT = { c:JAP ?= This }
+				}
+			}
+		}
+	}
+	# 
+
+	flavor = usm_civilwar.4.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_1.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		has_variable = usm_opposition_country
+		NOT = {
+			has_variable = usm_opposition_country_leader_var
+		}
+		has_war_with = c:USM
+		OR = {
+			enemy_occupation > 0.8
+			capital = { controller = c:USM }
+			capital = { controller = { is_subject_of = c:USM } }
+		}
+	}
+
+	immediate = {
+		hidden_effect = {
+			save_scope_as = usm_opposition_lost_scope
+			if = {
+				limit = {
+					any_diplomatic_play = { 
+						c:USM ?= {
+							is_diplomatic_play_initiator = yes
+						}
+						scope:usm_opposition_lost_scope = {
+							is_diplomatic_play_target = yes 
+						}
+					}
+					c:USM ?= { 
+						NOT = {
+							has_variable = usm_won_the_civil_war
+						}
+					}
+				}
+				c:USM ?= { 
+					set_variable = usm_won_the_civil_war 
+					trigger_event = { id = usm_civilwar.24 popup = yes months = 2 }
+				}
+			}
+		}
+	}
+
+	option = { # 我计不成，乃天命也！
+		name = usm_civilwar.4.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		if = {
+			limit = { is_ai = no }
+			play_as = c:USM
+		}
+		
+		show_as_tooltip = {
+			c:USM ?= {
+				annex = root
+			}
+		}
+	}
+	after = {
+		
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { c:SIH ?= This }
+					NOT = { c:HNA ?= This }
+					NOT = { c:GNG ?= This }
+					NOT = { c:YN1 ?= This }
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						1 = { exile_character = yes }
+						2 = { kill_character = yes }
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:SIH ?= This 
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						1 = { exile_character = yes }
+						5 = { kill_character = yes }
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:HNA ?= This 
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+					}
+					random_list = {
+						1 = { exile_character = yes }
+						4 = { kill_character = yes }
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:GNG ?= This 
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						2 = { exile_character = yes }
+						5 = { kill_character = yes }
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:YN1 ?= This 
+				}
+				every_scope_character = {
+					limit = {
+						NOT = { has_trait = trait_child }
+						is_in_exile_pool = no
+						is_character_alive = yes
+					}
+					random_list = {
+						2 = { exile_character = yes }
+						1 = { kill_character = yes }
+					}
+				}
+			}
+			
+			c:USM ?= {
+				annex_as_civil_war = root
+			}
+		}
+		
+	}
+}
+
+usm_civilwar.6 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.6.t
+	# 吴朝末路
+	desc = usm_civilwar.6.d
+	# 
+
+	flavor = usm_civilwar.6.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_6.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		NOT={
+			any_country = { has_variable = usm_surrendered_to_you_var }
+			has_variable = usm_surrendered_to_you_var
+		}
+		has_variable = usm_opposition_country
+		has_war_with = c:USM
+		c:USM ?= { 
+			capital = { controller = root }
+		}
+		s:STATE_NANJING = { 
+			region_state:USM = {
+				controller = root
+			}
+		}
+		s:STATE_ZHEJIANG = { 
+			region_state:USM = {
+				controller = root
+			}
+		}
+		s:STATE_FUJIAN = { 
+			region_state:USM = {
+				controller = root
+			}
+		}
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_variable = usm_surrendered_to_you_var
+		}
+	}
+
+	option = { # 乱臣贼子！图谋篡位！
+		name = usm_civilwar.6.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		show_as_tooltip = {
+			annex_as_civil_war = c:USM
+		}
+	}
+	after = {
+		set_variable = from_country_inherit_usm
+		c:USM ?= {
+			trigger_event = { id = usm_civilwar.7 popup = yes }
+		}
+	}
+}
+
+usm_civilwar.7 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.7.t
+	# 大势已去
+	desc = usm_civilwar.7.d
+	# 
+
+	flavor = usm_civilwar.7.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_1.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			random_country = {
+				limit = { has_variable = from_country_inherit_usm }
+				save_scope_as = from_country_inherit_usm_scope
+			}
+			if ={
+				limit = {
+					any_scope_character = {
+						is_ruler_of_own_country = yes
+					}
+				}
+				random_scope_character = {
+					limit = {	
+						is_ruler_of_own_country = yes
+					}
+					save_scope_as = leader_of_wuu
+				}
+			}
+		}
+	}
+
+	option = { # 四百年基业，岂能毁于孤手？
+		name = usm_civilwar.7.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		
+		if = {
+			limit = { 
+				exists = scope:from_country_inherit_usm_scope
+				is_ai = no 
+			}
+			play_as = scope:from_country_inherit_usm_scope
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					exists = scope:leader_of_wuu
+				}
+				scope:leader_of_wuu ?= {
+					kill_character = yes
+				}
+			}
+			every_scope_character = {
+				limit = {
+					is_ruler_of_own_country = no
+					NOT = { has_trait = trait_child }
+					is_in_exile_pool = no
+					is_character_alive = yes
+				}
+				random_list = {
+					1 = { exile_character = yes }
+					3 = { kill_character = yes }
+				}
+			}
+		}
+		scope:from_country_inherit_usm_scope ?= {
+			annex_as_civil_war = c:USM
+			change_tag = USM
+		}
+	}
+	after = {
+		
+	}
+}
+
+usm_civilwar.8 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.8.t
+	# 吴朝胜利
+	desc = usm_civilwar.8.d
+	# 
+
+	flavor = usm_civilwar.8.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_3.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		
+	}
+
+	option = { # 
+		name = usm_civilwar.8.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		custom_tooltip = usm_civilwar.8.tt
+		add_modifier = {
+			name = USM_wuu_post_war_modifier
+			months = 360
+			is_decaying = yes
+		}
+	}
+	after = {
+
+	}
+}
+
+usm_civilwar.9 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.9.t
+	# 南朝贰分
+	desc = usm_civilwar.9.d
+	# 
+
+	flavor = usm_civilwar.9.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_8.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { has_global_variable = usm_civilwar_status_quo }
+				}
+				set_global_variable = usm_civilwar_status_quo
+			}
+		}
+	}
+
+	option = { # 这难道是日月照临之国的诅咒吗？
+		name = usm_civilwar.9.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		#custom_tooltip = usm_civilwar.8.tt
+		add_modifier = {
+			name = USM_collapsed_dynasty
+			months = 360
+			is_decaying = yes
+		}
+		
+	}
+	after = {
+
+	}
+}
+
+usm_civilwar.10 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.10.t
+	# 靖难胜利
+	desc = usm_civilwar.10.d
+	# 
+
+	flavor = usm_civilwar.10.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_4.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 拨乱反正，重开日月换新天！
+		name = usm_civilwar.10.1
+		ai_chance = {
+			base = 2
+		}
+		trigger = {
+			has_variable = ce_usm_restoration_of_ming_var
+		}
+		default_option = yes
+		if = {
+			limit = {
+				NOT = { any_scope_character = { has_template = USM_zhu_jingyin } }
+				NOT = { any_scope_character = { has_template = USM_zhu_zhongying } }
+			}
+			
+			hidden_effect = {
+				save_scope_as = new_jingyin_owner
+				if = {
+					limit = {
+						any_country = {
+							any_scope_character = { has_template = USM_zhu_jingyin }
+						}
+					}	
+					random_country = {
+						limit = {
+							any_scope_character = { has_template = USM_zhu_jingyin }
+						}
+						save_scope_as = original_jingyin_owner
+						random_scope_character = {
+							limit = {
+								has_template = USM_zhu_jingyin
+							}
+							transfer_character = root
+							save_scope_as = zhu_jingyin_scope
+						}
+					}
+				}
+				else = {
+					create_character = {
+						template = USM_zhu_jingyin
+						save_scope_as = zhu_jingyin_scope
+					}
+				}
+			}
+			
+			scope:original_jingyin_owner = {
+				trigger_event = { id = usm_civilwar.26 } # Jingyin ran away
+			}
+			scope:zhu_jingyin_scope = {
+				set_character_as_ruler = yes
+			}
+		}
+		else_if = {
+			limit = {
+				any_scope_character = { has_template = USM_zhu_zhongying }
+			}
+			random_scope_character = {
+				limit = { has_template = USM_zhu_zhongying }
+				set_character_as_ruler = yes
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { any_scope_character = { has_template = USM_zhu_zhongying } }
+				any_scope_character = { has_template = USM_zhu_jingyin }
+			}
+			random_scope_character = {
+				limit = { has_template = USM_zhu_jingyin }
+				set_character_as_ruler = yes
+			}
+		}
+		else = {
+			hidden_effect = {
+				if = {
+					limit = {
+						any_country = {
+							any_scope_character = { has_template = USM_zhu_jingyin }
+						}
+					}	
+					random_country = {
+						limit = {
+							any_scope_character = { has_template = USM_zhu_jingyin }
+						}
+						random_scope_character = {
+							limit = {
+								has_template = USM_zhu_jingyin
+							}
+							transfer_character = root
+							save_scope_as = zhu_jingyin_scope
+						}
+					}
+				}
+				else = {
+					create_character = {
+						template = USM_zhu_jingyin
+						save_scope_as = zhu_jingyin_scope
+					}
+				}
+			}
+			
+			scope:zhu_jingyin_scope = {
+				set_character_as_ruler = yes
+			}
+		}
+		add_modifier = {
+			name = USM_not_wuu_post_war_modifier
+			months = 360
+			is_decaying = yes
+		}
+		if = {
+			limit = {
+				exists = c:USM
+			}
+			show_as_tooltip = {
+				annex_as_civil_war = c:USM
+			}
+		}
+	}
+	option = { # 拨乱反正，重开日月换新天！但是有条件。
+		name = usm_civilwar.10.2
+		ai_chance = {
+			base = 1
+		}
+		trigger = {
+			has_variable = ce_usm_restoration_of_ming_var
+		}
+		default_option = yes
+		add_modifier = {
+			name = USM_domination_over_ming
+			months = 1200
+			is_decaying = yes
+		}
+		add_modifier = {
+			name = USM_not_wuu_post_war_modifier
+			months = 360
+			is_decaying = yes
+		}
+		
+		if = {
+			limit = {
+				c:HNA ?= This
+				NOT = {
+					any_primary_culture = {
+						this ?= cu:min
+					}
+				}
+			}
+			add_primary_culture = cu:min
+		}
+		
+		if = {
+			limit = {
+				c:YN1 ?= This
+				NOT = {
+					any_primary_culture = {
+						this ?= cu:min
+					}
+				}
+			}
+			add_primary_culture = cu:min
+		}
+		
+		if = {
+			limit = {
+				c:JAP ?= This
+				NOT = {
+					any_primary_culture = {
+						this ?= cu:ce_wuu
+					}
+				}
+			}
+			add_primary_culture = cu:ce_wuu
+		}
+		
+		if = {
+			limit = {
+				exists = c:USM
+			}
+			show_as_tooltip = {
+				annex_as_civil_war = c:USM
+			}
+		}
+		hidden_effect = {
+			set_variable = usm_dominion_of_ming_var
+		}
+	}
+	option = { # 我们要建立一个中华大地上从未见过的国家。
+		name = usm_civilwar.10.3
+		ai_chance = {
+			base = 1
+		}
+		trigger = {
+			NOT = { has_variable = ce_usm_restoration_of_ming_var }
+		}
+		default_option = yes
+		
+		activate_law = law_type:law_presidential_republic
+		
+		add_radicals = {
+			value = very_large_radicals
+			interest_group = ig:ig_landowners
+		}
+		
+		add_radicals = {
+			value = very_large_radicals
+			interest_group = ig:ig_rural_folk
+		}
+		
+		add_radicals = {
+			value = 0.25
+			interest_group = ig:ig_devout
+		}
+		
+		add_loyalists = {
+			value = large_radicals
+			interest_group = ig:ig_armed_forces
+		}
+		
+		add_loyalists = {
+			value = large_radicals
+			interest_group = ig:ig_petty_bourgeoisie
+		}
+		
+		add_loyalists = {
+			value = very_large_radicals
+			interest_group = ig:ig_intelligentsia
+		}
+		
+		add_loyalists = {
+			value = medium_radicals
+			interest_group = ig:ig_industrialists
+		}
+		
+		add_modifier = {
+			name = USM_not_wuu_post_war_rev_modifier
+			months = 360
+			is_decaying = yes
+		}
+		if = {
+			limit = {
+				exists = c:USM
+			}
+			show_as_tooltip = {
+				annex_as_civil_war = c:USM
+			}
+		}
+	}
+	after = {
+		if = {
+			limit = {
+				exists = c:USM
+			}
+			set_variable = from_country_inherit_usm
+			c:USM ?= {
+				trigger_event = { id = usm_civilwar.7 popup = yes }
+			}
+		}
+	}
+}
+
+usm_civilwar.11 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.11.t
+	# 战争结束之后
+	desc = usm_civilwar.11.d
+	# 
+
+	flavor = usm_civilwar.11.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_5.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			make_independent = yes
+			if = {
+				limit = {
+					any_country = { has_variable = usm_rebel_winner_of_the_civil_war }
+				}
+				random_country = {
+					limit = {
+						has_variable = usm_rebel_winner_of_the_civil_war
+					}
+					save_scope_as = usm_rebel_winner
+				}
+			}
+			save_scope_as = usm_mister_rebel
+			capital = {
+				save_scope_as = capital_scope
+			}
+		}
+	}
+
+	option = { # 我们应该维持自己的独立。
+		name = usm_civilwar.11.1
+		ai_chance = {
+			base = 30
+			
+		}
+		scope:capital_scope = { 
+			state_region= { add_claim = scope:usm_rebel_winner }
+		}
+		scope:usm_rebel_winner = { trigger_event = { id = usm_civilwar.12 months = 1 popup = yes } }
+	}
+	option = { # 拥抱新政权。
+		name = usm_civilwar.11.2
+		default_option = yes
+		ai_chance = {
+			base = 70
+			modifier = {
+				add = -60
+				trigger = {
+					scope:usm_rebel_winner = { has_variable = ce_usm_restoration_of_ming_var }
+					NOT = { has_variable = ce_usm_restoration_of_ming_var }
+				}
+			}
+			modifier = {
+				add = -60
+				trigger = {
+					scope:usm_rebel_winner = { has_variable = ce_usm_republican_revolution_tag }
+					NOT = { has_variable = ce_usm_republican_revolution_tag }
+				}
+			}
+		}
+		
+		scope:usm_rebel_winner = {
+			create_diplomatic_pact = {
+				country = root
+				type = dominion
+			}	
+		}
+		
+		scope:usm_rebel_winner = { trigger_event = { id = usm_civilwar.13 months = 1 popup = yes } }
+	}
+	after = {
+		
+	}
+}
+
+usm_civilwar.12 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.12.t
+	# [SCOPE.sCountry('usm_opposition_lost_scope').GetNameNoFormatting]宣布独立
+	desc = usm_civilwar.12.d
+	# 
+
+	flavor = usm_civilwar.12.f
+	# \n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_armored_train.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+
+		}
+	}
+
+	option = { # 悬而未决之事。
+		name = usm_civilwar.12.1
+		ai_chance = {
+			base = 30
+			
+		}
+		default_option = yes
+		show_as_tooltip = {
+			scope:usm_mister_rebel ?= {
+				make_independent = yes
+				capital = {
+					state_region = { add_claim = scope:usm_rebel_winner }
+				}
+			}
+		}
+	}
+
+	after = {
+		
+	}
+}
+
+usm_civilwar.13 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.13.t
+	# [SCOPE.sCountry('usm_opposition_lost_scope').GetNameNoFormatting]宣誓效忠
+	desc = usm_civilwar.13.d
+	# 
+
+	flavor = usm_civilwar.13.f
+	# \n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_signed_contract.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+
+		}
+	}
+
+	option = { # 迟早还要起变化。
+		name = usm_civilwar.13.1
+		default_option = yes
+		ai_chance = {
+			base = 30
+		}
+		show_as_tooltip = {
+			create_diplomatic_pact = {
+				country = scope:usm_mister_rebel
+				type = dominion
+			}	
+		}
+	}
+
+	after = {
+		
+	}
+}
+
+usm_civilwar.14 = { # 九州归还谈判 TODO
+	type = country_event
+	placement = root
+	title = usm_civilwar.14.t
+	# [SCOPE.sCountry('usm_opposition_lost_scope').GetNameNoFormatting]宣誓效忠
+	desc = usm_civilwar.14.d
+	# 
+
+	flavor = usm_civilwar.14.f
+	# \n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_ruler_speaking_to_people.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			save_scope_as = current_jap
+			c:USM ?= {
+				every_scope_state = {
+					limit = {
+						OR = {
+							state_region = s:STATE_TOHOKU
+							state_region = s:STATE_KANTO
+							state_region = s:STATE_CHUBU
+							state_region = s:STATE_KANSAI
+							state_region = s:STATE_KYUSHU
+							state_region = s:STATE_CHUGOKU
+							state_region = s:STATE_SHIKOKU
+						}
+					}
+					set_variable = usm_occupied_japan
+				}	
+				#save_scope_as = current_usm
+			}
+		}
+	}
+
+	option = { # TODO 加入新日志“九州谈判”
+		name = usm_civilwar.14.1
+		default_option = yes
+		ai_chance = {
+			base = 30
+		}
+		
+		add_journal_entry = {
+			type = je_meiji_restoration
+		}
+		
+		# add_journal_entry = {
+		#		key = ceje_kyushu_negotiation # TODO
+		# }
+		if = {
+			limit = {
+				is_direct_subject_of = c:USM
+			}
+			make_independent = yes
+		}
+		# 目前效果为直接让USM归还九州及其他占日领土
+		c:USM ?= {
+			custom_tooltip = lost_all_occupied_region_in_jap_usm
+			hidden_effect = {
+				every_scope_state = {
+					limit = { has_variable = usm_occupied_japan }
+					set_state_owner = root
+				}
+			}
+		}
+		
+		if = {
+			limit = {
+				has_variable = ce_japan_kyushu_winner
+			}
+			c:USM ?= { trigger_event = { id = usm_civilwar.15 popup = yes } } # inform event
+			hidden_effect = {
+				remove_variable = ce_japan_kyushu_winner
+			}
+		}
+		
+		if = {
+			limit = {
+				has_variable = ce_japan_keyushu_status_quo
+			}
+			c:USM ?= { trigger_event = { id = usm_civilwar.16 popup = yes } } # inform event
+			hidden_effect = {
+				remove_variable = ce_japan_keyushu_status_quo
+			}
+		}
+	}
+
+	after = {
+		
+	} 
+}
+
+usm_civilwar.15 = { # 九州归还谈判 TODO
+	type = country_event
+	placement = root
+	title = usm_civilwar.15.t
+	# [SCOPE.sCountry('current_jap').GetNameNoFormatting]要求兑现承诺
+	desc = usm_civilwar.15.d
+	# 
+
+	flavor = usm_civilwar.15.f
+	# \n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			#save_scope_as = current_jap
+			
+		}
+	}
+
+	option = { # TODO 加入新日志“九州谈判” # 暂时，隐忍。
+		name = usm_civilwar.15.1
+		ai_chance = {
+			base = 30
+		}
+		default_option = yes
+		
+		# 目前效果为直接让USM归还九州及其他占日领土
+		custom_tooltip = lost_all_occupied_region_in_jap_usm
+		if = {
+			limit = {
+				scope:current_jap ?= { is_direct_subject_of = c:USM }
+			}
+			show_as_tooltip = {
+				scope:current_jap = { make_independent = yes }
+			}
+		}
+		hidden_effect = {
+			
+			scope:current_jap ?= {
+				every_scope_state = {
+					limit = { has_variable = usm_occupied_japan }
+					state_region = { add_claim = root }
+				}
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			scope:current_jap ?= { # TODO, PUSH LATER FOR JE
+				every_scope_state = {
+					limit = {
+						has_variable = usm_occupied_japan
+					}
+					remove_variable = usm_occupied_japan
+				}
+			}
+		}
+	}
+}
+
+usm_civilwar.16 = { # 九州归还谈判 TODO
+	type = country_event
+	placement = root
+	title = usm_civilwar.16.t
+	# [SCOPE.sCountry('current_jap').GetNameNoFormatting]要求兑现承诺
+	desc = usm_civilwar.16.d
+	# 
+
+	flavor = usm_civilwar.16.f
+	# \n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			#save_scope_as = current_jap
+			
+		}
+	}
+
+	option = { # TODO 加入新日志“九州谈判” # 暂时，隐忍。
+		name = usm_civilwar.16.1
+		ai_chance = {
+			base = 3
+		}
+		#default_option = yes
+		if = {
+			limit = {
+				scope:current_jap ?= { is_direct_subject_of = c:USM }
+			}
+			show_as_tooltip = {
+				scope:current_jap = { make_independent = yes }
+			}
+		}
+		# 
+		custom_tooltip = lost_all_occupied_region_in_jap_usm
+	}
+	
+	option = { # TODO 加入新日志“九州谈判” # 东洋领事府的历史，你们知道吗？
+		name = usm_civilwar.16.2
+		ai_chance = {
+			base = 7
+		}
+		trigger = {
+			scope:current_jap ?= { is_direct_subject_of = root }
+		}
+		default_option = yes
+		custom_tooltip = lost_all_occupied_region_in_jap_but_usm_retaliate
+		if = {
+			limit = {
+				scope:current_jap ?= { is_direct_subject_of = c:USM }
+			}
+			show_as_tooltip = {
+				scope:current_jap = { make_independent = yes }
+			}
+		}
+		# 
+		create_diplomatic_play = {
+			name = ce_restablish_dongyang_lingshifu
+			target_country = scope:current_jap
+			type = dp_make_protectorate
+			
+		}
+		random_diplomatic_play = {
+			limit = {
+				scope:current_jap = {
+					is_diplomatic_play_target = yes
+				}
+			}
+			add_escalation = 90
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			scope:current_jap ?= { # TODO, PUSH LATER FOR JE
+				every_scope_state = {
+					limit = {
+						has_variable = usm_occupied_japan
+					}
+					remove_variable = usm_occupied_japan
+				}
+			}
+		}
+	} 
+}
+
+usm_civilwar.17 = { # 九州归还谈判 TODO
+	type = country_event
+	placement = root
+	title = usm_civilwar.17.t
+	# [SCOPE.sCountry('usm_opposition_lost_scope').GetNameNoFormatting]宣誓效忠
+	desc = usm_civilwar.17.d
+	# 
+
+	flavor = usm_civilwar.17.f
+	# \n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_ruler_speaking_to_people.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			save_scope_as = current_jap
+			
+			if = {
+				limit = {
+					NOT = { country_or_subject_owns_entire_state_region = STATE_TOHOKU }
+				}
+				s:STATE_TOHOKU = {
+					every_scope_state = {
+						owner = {
+							if = {
+								limit = {
+									NOT = { scope:current_jap ?= This }
+									NOT = { is_subject_of = scope:current_jap }
+									NOT = { has_variable = japan_occupier_ce }
+								}
+								add_to_list = japan_occupier_list
+							}
+						}
+					}
+				}
+			}
+			
+			if = {
+				limit = {
+					NOT = { country_or_subject_owns_entire_state_region = STATE_KANTO }
+				}
+				s:STATE_KANTO = {
+					every_scope_state = {
+						owner = {
+							if = {
+								limit = {
+									NOT = { scope:current_jap ?= This }
+									NOT = { is_subject_of = scope:current_jap }
+									NOT = { has_variable = japan_occupier_ce }
+								}
+								set_variable = japan_occupier_ce
+								add_to_list = japan_occupier_list
+							}
+						}
+					}
+				}
+			}
+			
+			if = {
+				limit = {
+					NOT = { country_or_subject_owns_entire_state_region = STATE_KANSAI }
+				}
+				s:STATE_KANSAI = {
+					every_scope_state = {
+						owner = {
+							if = {
+								limit = {
+									NOT = { scope:current_jap ?= This }
+									NOT = { is_subject_of = scope:current_jap }
+									NOT = { has_variable = japan_occupier_ce }
+								}
+								set_variable = japan_occupier_ce
+								add_to_list = japan_occupier_list
+							}
+						}
+					}
+				}
+			}
+			
+			if = {
+				limit = {
+					NOT = { country_or_subject_owns_entire_state_region = STATE_CHUBU }
+				}
+				s:STATE_CHUBU = {
+					every_scope_state = {
+						owner = {
+							if = {
+								limit = {
+									NOT = { scope:current_jap ?= This }
+									NOT = { is_subject_of = scope:current_jap }
+									NOT = { has_variable = japan_occupier_ce }
+								}
+								set_variable = japan_occupier_ce
+								add_to_list = japan_occupier_list
+							}
+						}
+					}
+				}
+			}
+			
+			if = {
+				limit = {
+					NOT = { country_or_subject_owns_entire_state_region = STATE_KYUSHU }
+				}
+				s:STATE_KYUSHU = {
+					every_scope_state = {
+						owner = {
+							if = {
+								limit = {
+									NOT = { scope:current_jap ?= This }
+									NOT = { is_subject_of = scope:current_jap }
+									NOT = { has_variable = japan_occupier_ce }
+								}
+								set_variable = japan_occupier_ce
+								add_to_list = japan_occupier_list
+							}
+						}
+					}
+				}
+			}
+			
+			if = {
+				limit = {
+					NOT = { country_or_subject_owns_entire_state_region = STATE_CHUGOKU }
+				}
+				s:STATE_CHUGOKU = {
+					every_scope_state = {
+						owner = {
+							if = {
+								limit = {
+									NOT = { scope:current_jap ?= This }
+									NOT = { is_subject_of = scope:current_jap }
+									NOT = { has_variable = japan_occupier_ce }
+								}
+								set_variable = japan_occupier_ce
+								add_to_list = japan_occupier_list
+							}
+						}
+					}
+				}
+			}
+			
+			if = {
+				limit = {
+					NOT = { country_or_subject_owns_entire_state_region = STATE_SHIKOKU }
+				}
+				s:STATE_SHIKOKU = {
+					every_scope_state = {
+						owner = {
+							if = {
+								limit = {
+									NOT = { scope:current_jap ?= This }
+									NOT = { is_subject_of = scope:current_jap }
+									NOT = { has_variable = japan_occupier_ce }
+								}
+								set_variable = japan_occupier_ce
+								add_to_list = japan_occupier_list
+							}
+						}
+					}
+				}
+			}
+			
+			
+		}
+	}
+
+	option = { # TODO 加入新日志“九州谈判”
+		name = usm_civilwar.17.1
+		default_option = yes
+		ai_chance = {
+			base = 30
+		}
+		
+		add_journal_entry = {
+			type = je_meiji_restoration
+		}
+		
+		if = {
+			limit = { is_subject = yes }
+			make_independent = yes
+		}
+		
+		custom_tooltip = receive_all_occupied_state_jap_ce
+		
+		hidden_effect = {
+				every_in_list = {
+					list = japan_occupier_list
+					limit = {
+						has_variable = japan_occupier_ce
+					}
+					every_scope_state = {
+						limit = {
+							OR = {
+								state_region = s:STATE_TOHOKU
+								state_region = s:STATE_KANTO
+								state_region = s:STATE_CHUBU
+								state_region = s:STATE_KANSAI
+								state_region = s:STATE_KYUSHU
+								state_region = s:STATE_CHUGOKU
+								state_region = s:STATE_SHIKOKU
+							}
+						}
+						set_state_owner = root
+					}
+						
+					create_bidirectional_truce = {
+						country = root
+						months = 60
+					}
+					remove_variable = japan_occupier_ce
+					trigger_event = {
+						id = usm_civilwar.18
+						weeks = 1
+					}
+				}
+			if = {
+				limit = {
+					has_war_with = c:USM
+				}
+				create_bidirectional_truce = {
+					country = c:USM
+					months = 60
+				}
+			}
+		}
+	}
+
+	after = {
+		
+	} 
+}
+
+usm_civilwar.18 = { # 九州归还谈判 TODO
+	type = country_event
+	placement = root
+	title = usm_civilwar.18.t
+	# [SCOPE.sCountry('current_jap').GetNameNoFormatting]要求兑现承诺
+	desc = usm_civilwar.18.d
+	# 
+
+	flavor = usm_civilwar.18.f
+	# \n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			#save_scope_as = current_jap
+			
+		}
+	}
+
+	option = { # TODO 加入新日志“九州谈判” # 暂时，隐忍。
+		name = usm_civilwar.18.1
+		ai_chance = {
+			base = 3
+		}
+		default_option = yes
+		if = {
+			limit = {
+				scope:current_jap ?= { is_direct_subject_of = c:USM }
+			}
+			show_as_tooltip = {
+				scope:current_jap = { make_independent = yes }
+			}
+		}
+		# 
+		custom_tooltip = lost_all_occupied_region_in_jap_usm
+	}
+
+	after = {
+		hidden_effect = {
+		
+		}
+	} 
+}
+
+usm_civilwar.19 = { # 日本退出南明内战
+	type = country_event
+	placement = root
+	title = usm_civilwar.19.t
+	# 
+	desc = usm_civilwar.19.d
+	# 
+
+	flavor = usm_civilwar.19.f
+	# \n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_devastation.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			#save_scope_as = current_jap
+			
+		}
+	}
+
+	option = { # 希望他们在这之前已经削弱了我们的敌人。
+		name = usm_civilwar.19.1
+		ai_chance = {
+			base = 7
+		}
+		
+	}
+
+	after = {
+		
+	} 
+}
+
+usm_civilwar.20 = { # 无疾而终
+	type = country_event
+	placement = root
+	title = usm_civilwar.20.t
+	# 
+	desc = usm_civilwar.20.d
+	# 
+
+	flavor = usm_civilwar.2.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_8.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			save_scope_as = usm_mister_rebel
+			if = {
+				limit = {
+					has_variable = usm_cw_jap_loss_when_pro_usm
+				}
+				if = {
+					limit = {
+						exists = c:USM
+						c:USM ?= {
+							has_variable = usm_rebel_winner_of_the_civil_war
+						}
+					}
+					c:USM ?= {
+						save_scope_as = usm_rebel_winner
+					}
+				}
+			}
+		}
+	}
+
+	option = { # 这是我们来之不易的独立。
+		name = usm_civilwar.20.1
+		ai_chance = {
+			base = 6
+		}
+		default_option = yes
+		if = {
+			limit = { is_subject = yes }
+			make_independent = yes
+		}
+		add_modifier = {
+			name = USM_jap_nothing_good
+			months = 120
+			is_decaying = yes
+		}
+		
+		if = {
+			limit = {
+				exists = scope:usm_rebel_winner
+			}
+			capital = {
+				state_region = { add_claim = scope:usm_rebel_winner }
+			}
+		}
+		
+		add_journal_entry = {
+			type = je_meiji_restoration
+		}
+	}
+	
+	option = { # 或许这个时代不需要次一等的棋手......
+		name = usm_civilwar.20.2
+		trigger = {
+			exists = scope:usm_rebel_winner
+		}
+		ai_chance = {
+			base = 4
+		}
+		scope:usm_rebel_winner = {
+			create_diplomatic_pact = {
+				country = root
+				type = tributary
+			}	
+		}
+		
+		scope:usm_rebel_winner = { trigger_event = { id = usm_civilwar.21 months = 1 popup = yes } }
+	}
+
+	after = {
+		if = {
+			limit = {
+				has_variable = usm_cw_jap_loss_when_pro_usm
+			}
+			remove_variable = usm_cw_jap_loss_when_pro_usm
+		}
+	} 
+}
+
+usm_civilwar.21 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.21.t
+	# [SCOPE.sCountry('usm_opposition_lost_scope').GetNameNoFormatting]前来朝贡
+	desc = usm_civilwar.21.d
+	# 
+
+	flavor = usm_civilwar.21.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_8.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 迟早还要起变化。
+		name = usm_civilwar.21.1
+		default_option = yes
+		ai_chance = {
+			base = 30
+		}
+		show_as_tooltip = {
+			create_diplomatic_pact = {
+				country = scope:usm_mister_rebel
+				type = tributary
+			}	
+		}
+	}
+
+	after = {
+		
+	}
+}
+
+usm_civilwar.22 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.22.t
+	# 在抵抗中失败
+	desc = usm_civilwar.22.d
+	# 
+
+	flavor = usm_civilwar.22.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_6.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+	
+	}
+
+	immediate = {
+		hidden_effect = {
+			c:USM ?= {
+				save_scope_as = usm_cw_winner
+			}	
+			save_scope_as = usm_mister_rebel
+		}
+	}
+
+	option = { # 耻辱的一天！
+		name = usm_civilwar.22.1
+		default_option = yes
+		ai_chance = {
+			base = 70
+		}
+		capital = {
+			set_state_owner = scope:usm_cw_winner
+			state_region = { add_claim = root }
+		}
+		scope:usm_cw_winner = {
+			create_diplomatic_pact = {
+				country = root
+				type = dominion
+			}	
+		}
+		
+		scope:usm_cw_winner = { trigger_event = { id = usm_civilwar.13 months = 1 popup = yes } }
+	}
+	after = {
+		
+	}
+}
+
+usm_civilwar.23 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.23.t
+	# 南明走向内战
+	desc = usm_civilwar.23.d
+	# 
+
+	flavor = usm_civilwar.23.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_4.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		#OR = {
+		#	is_subject = no
+		#	is_direct_subject_of = c:USM
+		#}
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 我们需要忠于神洲的领袖。
+		name = usm_civilwar.23.1
+		#default_option = yes
+		ai_chance = {
+			base = 5
+			modifier = {
+				add = 100
+				trigger = {
+					any_scope_ally = { c:USM ?= This }
+				}
+			}
+		}
+		custom_tooltip = future_concequences_ce.tt
+		if = {
+			limit = {
+				is_subject = no
+			}
+			
+			create_treaty = {
+				first_country = root
+				second_country = scope:usm_opposition_leader
+
+				is_draft = no
+				binding_period = { years = 5 }
+
+				articles_to_create = {
+					{
+						article = alliance
+					}
+				}
+			}
+		}
+		hidden_effect = {
+			set_variable = ce_usm_cw_ally_with_mng
+		}
+	}
+	
+	option = { # 是时候铤而走险了。
+		name = usm_civilwar.23.2
+		
+		#default_option = yes
+		ai_chance = {
+			base = 2
+			modifier = {
+				trigger = {
+					NOT = { is_subject_of = c:USM }
+				}
+				add = 1
+			}
+		}
+		custom_tooltip = future_concequences_ce.tt
+		hidden_effect = {
+			set_variable = usm_opposition_country
+		}
+	}
+	
+	option = { # 或许我们的时代还未到来。
+		name = usm_civilwar.23.3
+		default_option = yes
+		ai_chance = {
+			base = 3
+		}
+		trigger = {
+			NOT = { is_subject_of = c:USM }
+		}
+		custom_tooltip = future_concequences_ce.tt
+	}
+	after = {
+		
+	}
+}
+
+usm_civilwar.24 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.24.t
+	# [SCOPE.sCountry('usm_opposition_lost_scope').GetNameNoFormatting]崩溃
+	desc = usm_civilwar.24.d
+	# 
+
+	flavor = usm_civilwar.24.f
+	# \n
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_5.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 早该如此。
+		name = usm_civilwar.24.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		show_as_tooltip = {
+			annex_as_civil_war = scope:usm_opposition_lost_scope 
+		}
+	}
+
+}
+
+usm_civilwar.25 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.25.t
+	# 林汉涵离开
+	desc = usm_civilwar.25.d
+	# 
+
+	flavor = usm_civilwar.25.f
+	# 良禽择木而栖。\n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_armored_train.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 无伤大雅......
+		name = usm_civilwar.25.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		if = {
+			limit = {
+				exists = scope:new_linhanhan_owner
+			}
+			show_as_tooltip = {
+				scope:new_linhanhan_owner = {
+					create_character = {
+						template = USM_lin_hanhan
+					}
+				}
+			}
+		}
+	}
+
+}
+
+usm_civilwar.26 = {
+	type = country_event
+	placement = root
+	title = usm_civilwar.26.t
+	# 朱靖堙前往南京
+	desc = usm_civilwar.26.d
+	# 在胜利者的宣告下，被反吴势力尊为明主的淮国朱靖堙终于登顶至尊。这意味着他将离开位于桂林的淮国，前往南京登基为大明皇帝。正如过去“淮宁相禅”中获选的淮王世子们那般。
+
+	flavor = usm_civilwar.26.f
+	# 良禽择木而栖。\n
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_trains.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 这有可能让我们获得好处，但我们还有自己的事情要做。
+		name = usm_civilwar.26.1
+		ai_chance = {
+			base = 1
+		}
+		default_option = yes
+		if = {
+			limit = {
+				exists = scope:new_jingyin_owner
+			}
+			add_modifier = {
+				name = USM_benifit_of_an_emperor
+				months = 120
+			}
+			show_as_tooltip = {
+				scope:new_jingyin_owner = {
+					create_character = {
+						template = USM_lin_hanhan
+						on_created = {
+							set_character_as_ruler = yes
+						}
+					}
+				}
+			}
+		}
+	}
+
+}

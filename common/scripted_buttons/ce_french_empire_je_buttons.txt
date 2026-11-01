@@ -1,0 +1,559 @@
+﻿ce_french_support_dynasty_button = {
+	name = "ce_french_support_dynasty_button"
+	desc = "ce_french_support_dynasty_button_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		NOT = { has_global_variable = ce_french_empire_has_made_choice }
+	}
+
+	possible = {
+		
+	}
+
+	ai_chance = {
+		value = 50
+	}
+
+	effect = {
+		set_global_variable = ce_french_empire_has_made_choice
+
+		if = {
+			limit = {
+				NOT = {
+					any_political_movement = {
+						is_political_movement_type = movement_bonapartist
+					}
+				}
+			}
+			create_political_movement = { type = movement_bonapartist }
+		}
+
+		add_journal_entry = {
+			type = je_ce_subpress_republican_movement
+		}
+	}
+}
+
+ce_french_against_dynasty_button = {
+	name = "ce_french_against_dynasty_button"
+	desc = "ce_french_against_dynasty_button_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		NOT = { has_global_variable = ce_french_empire_has_made_choice }
+	}
+
+	possible = {
+		has_technology_researched = egalitarianism
+	}
+
+	ai_chance = {
+		value = 25
+	}
+
+	effect = {
+		set_global_variable = ce_french_empire_has_made_choice
+
+		if = {
+			limit = {
+				NOT = {
+					any_political_movement = {
+						is_political_movement_type = movement_radical
+					}
+				}
+			}
+			create_political_movement = { type = movement_radical }
+		}
+
+		random_political_movement = {
+			limit = {
+				is_political_movement_type = movement_radical
+			}
+			add_modifier = {
+				name = ce_political_movement_in_the_lead
+				years = 10
+			}
+		}
+
+		add_journal_entry = {
+			type = je_ce_republican_movement
+		}
+	}
+}
+
+ce_french_orleans_dynasty_button = {
+	name = "ce_french_orleans_dynasty_button"
+	desc = "ce_french_orleans_dynasty_button_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		NOT = { has_global_variable = ce_french_empire_has_made_choice }
+	}
+
+	possible = {
+		
+	}
+
+	ai_chance = {
+		value = 5
+	}
+
+	effect = {
+		if = {
+			limit = { NOT = { has_global_variable = ce_orleanist_come_back } }
+			set_global_variable = ce_orleanist_come_back
+		}
+			
+		set_global_variable = ce_french_empire_has_made_choice
+
+		add_journal_entry = {
+			type = je_ce_orleans_dynasty_support
+		}
+
+		add_journal_entry = {
+			type = je_ce_subpress_republican_movement
+		}
+	}
+}
+
+ce_french_bourbon_dynasty_button = {
+	name = "ce_french_bourbon_dynasty_button"
+	desc = "ce_french_bourbon_dynasty_button_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		has_global_variable = charles_x_body_done
+		NOT = { has_global_variable = ce_french_empire_has_made_choice }
+	}
+
+	possible = {
+		
+	}
+
+	ai_chance = {
+		value = 1
+	}
+
+	effect = {
+		if = {
+			limit = { NOT = { has_global_variable = ce_legitimist_come_back } }
+			set_global_variable = ce_legitimist_come_back
+		}
+		
+		set_global_variable = ce_french_empire_has_made_choice
+
+		add_journal_entry = {
+			type = je_ce_bourbon_dynasty_support
+		}
+
+		add_journal_entry = {
+			type = je_ce_subpress_republican_movement
+		}
+	}
+}
+
+ce_french_republican_hit_social = {
+	name = "ce_french_republican_hit_social"
+	desc = "ce_french_republican_hit_social_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		has_journal_entry = je_ce_unstable_imperium
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = ce_republican_power_5
+			scope:journal_entry = {
+				"scripted_bar_progress(ce_french_empire_republican_movement_progress_bar)" >= 5
+			}
+		}
+		NOT = {
+			custom_tooltip = {
+				text = ce_french_opposition_action_on_goging_tt
+				has_variable = ce_french_opposition_movement_var
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 1
+	}
+
+	effect = {
+		hidden_effect = {
+			scope:journal_entry = {
+				add_progress = {
+					name = ce_french_empire_republican_movement_progress_bar
+					value = -5
+				}
+			}
+			set_variable = ce_french_opposition_movement_var
+		}
+		trigger_event = { id = fra_unrest.13 popup = yes }
+	}
+}
+
+ce_french_republican_hit_economy = {
+	name = "ce_french_republican_hit_economy"
+	desc = "ce_french_republican_hit_economy_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		has_journal_entry = je_ce_unstable_imperium
+	}
+
+	possible = {
+		any_political_movement = {
+			OR = {
+				is_political_movement_type = movement_radical
+				is_political_movement_type = movement_liberal
+			}
+			NOT = { has_modifier = ce_french_republican_helped }
+		}
+		NOT = {
+			custom_tooltip = {
+				text = ce_french_opposition_action_on_goging_tt
+				has_variable = ce_french_opposition_movement_var
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 1
+	}
+
+	effect = {
+		custom_tooltip = ce_french_republican_hit_economy_tt
+		random_political_movement = {
+			limit = {
+				OR = {
+					is_political_movement_type = movement_radical
+					is_political_movement_type = movement_liberal
+				}
+				NOT = { has_modifier = ce_french_republican_helped }
+			}
+			add_modifier = {
+				name = ce_french_republican_helped
+				months = 12
+			}
+		}
+		
+	}
+}
+
+ce_french_republican_hit_military = {
+	name = "ce_french_republican_hit_military"
+	desc = "ce_french_republican_hit_military_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		has_journal_entry = je_ce_unstable_imperium
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = ce_republican_power_20
+			scope:journal_entry = {
+				"scripted_bar_progress(ce_french_empire_republican_movement_progress_bar)" >= 20
+			}
+		}
+		any_scope_character = {
+			OR = {
+				has_role_of_type = admiral
+				has_role_of_type = general
+			}
+			interest_group ?= {
+				NOR = {
+					is_interest_group_type = ig_landowners
+					is_interest_group_type = ig_intelligentsia
+					is_interest_group_type = ig_trade_unions
+				}
+			}
+			NOT = { has_modifier = ce_french_republican_approached }
+		}
+		NOT = {
+			custom_tooltip = {
+				text = ce_french_opposition_action_on_goging_tt
+				has_variable = ce_french_opposition_movement_var
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+	}
+
+	effect = {
+		hidden_effect = {
+			scope:journal_entry = {
+				add_progress = {
+					name = ce_french_empire_republican_movement_progress_bar
+					value = -20
+				}
+			}
+		}
+		random_scope_character = {
+			limit = {
+				OR = {
+					has_role_of_type = admiral
+					has_role_of_type = general
+				}
+				interest_group ?= {
+					NOR = {
+						is_interest_group_type = ig_landowners
+						is_interest_group_type = ig_intelligentsia
+						is_interest_group_type = ig_trade_unions
+					}
+				}
+				NOT = { has_modifier = ce_french_republican_approached }
+			}
+			add_modifier = {
+				name = ce_french_republican_approached
+				months = 6
+			}
+			save_scope_as = ce_french_republican_buying
+		}
+		set_variable = ce_french_opposition_movement_var
+		trigger_event = { id = fra_unrest.14 popup = yes }
+		
+	}
+}
+
+ce_french_republican_hit_unity = {
+	name = "ce_french_republican_hit_unity"
+	desc = "ce_french_republican_hit_unity_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		has_journal_entry = je_ce_unstable_imperium
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = ce_republican_power_10
+			scope:journal_entry = {
+				"scripted_bar_progress(ce_french_empire_republican_movement_progress_bar)" >= 10
+			}
+		}
+		any_interest_group = {
+			OR = {
+				is_interest_group_type = ig_intelligentsia
+				is_interest_group_type = ig_trade_unions
+			}
+			
+			NOT = { has_modifier = ce_french_republican_unity }
+		}
+		NOT = {
+			custom_tooltip = {
+				text = ce_french_opposition_action_on_goging_tt
+				has_variable = ce_french_opposition_movement_var
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 1
+	}
+
+	effect = {
+		hidden_effect = {
+			scope:journal_entry = {
+				add_progress = {
+					name = ce_french_empire_republican_movement_progress_bar
+					value = -10
+				}
+			}
+		}
+		random_interest_group = {
+			limit = {
+				OR = {
+					is_interest_group_type = ig_intelligentsia
+					is_interest_group_type = ig_trade_unions
+				}
+			}
+			
+			save_scope_as = ce_republican_ig
+		}
+		set_variable = ce_french_opposition_movement_var
+		trigger_event = { id = fra_unrest.15 popup = yes }
+	}
+}
+
+ce_french_republican_hit_status = {
+	name = "ce_french_republican_hit_status"
+	desc = "ce_french_republican_hit_status_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		has_journal_entry = je_ce_unstable_imperium
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = ce_republican_power_20
+			scope:journal_entry = {
+				"scripted_bar_progress(ce_french_empire_republican_movement_progress_bar)" >= 20
+			}
+		}
+		any_scope_character = {
+			has_ideology = ideology:ideology_bonapartist
+			
+			NOT = { has_modifier = scandalous }
+		}
+		NOT = {
+			custom_tooltip = {
+				text = ce_french_opposition_action_on_goging_tt
+				has_variable = ce_french_opposition_movement_var
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+	}
+
+	effect = {
+		hidden_effect = {
+			scope:journal_entry = {
+				add_progress = {
+					name = ce_french_empire_republican_movement_progress_bar
+					value = -20
+				}
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_ideology = ideology:ideology_bonapartist
+				NOT = { has_modifier = scandalous }
+			}
+			
+			save_scope_as = ce_republican_attacked
+		}
+		set_variable = ce_french_opposition_movement_var
+		trigger_event = { id = fra_unrest.16 popup = yes }
+	}
+}
+
+ce_french_freeze_republican_movement_with_institution_1 = {
+	name = "ce_french_freeze_republican_movement_with_institution_1"
+	desc = "ce_french_freeze_republican_movement_with_institution_1_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		has_journal_entry = je_ce_unstable_imperium
+	}
+
+	possible = {
+		OR = {
+			institution_investment_level = {
+				institution = institution_police
+				value > 1
+			}
+			institution_investment_level = {
+				institution = institution_home_affairs
+				value > 1
+			}
+		}
+			
+
+		custom_tooltip = {
+			text = ce_republican_power_20
+			scope:journal_entry = {
+				"scripted_bar_progress(ce_french_empire_republican_movement_progress_bar)" >= 20
+			}
+		}
+		NOT = {
+			custom_tooltip = {
+				text = ce_french_opposition_action_on_goging_tt
+				has_variable = ce_french_opposition_movement_var
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 1
+	}
+
+	effect = {
+		hidden_effect = {
+			scope:journal_entry = {
+				add_progress = {
+					name = ce_french_empire_republican_movement_progress_bar
+					value = -20
+				}
+			}
+		}
+		add_modifier = {
+			name = ce_french_suppress_increase_police_spending
+			months = 6
+		}
+	}
+}
+
+ce_french_freeze_republican_movement_with_institution_2 = {
+	name = "ce_french_freeze_republican_movement_with_institution_2"
+	desc = "ce_french_freeze_republican_movement_with_institution_2_desc"
+
+	visible = {
+		exists = c:FRA
+		c:FRA ?= This
+		has_journal_entry = je_ce_unstable_imperium
+	}
+
+	possible = {
+		OR = {
+			institution_investment_level = {
+				institution = institution_health_system
+				value > 1
+			}
+			institution_investment_level = {
+				institution = institution_social_security
+				value > 1
+			}
+		}
+
+		custom_tooltip = {
+			text = ce_republican_power_20
+			scope:journal_entry = {
+				"scripted_bar_progress(ce_french_empire_republican_movement_progress_bar)" >= 20
+			}
+		}
+		NOT = {
+			custom_tooltip = {
+				text = ce_french_opposition_action_on_goging_tt
+				has_variable = ce_french_opposition_movement_var
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 1
+	}
+
+	effect = {
+		hidden_effect = {
+			scope:journal_entry = {
+				add_progress = {
+					name = ce_french_empire_republican_movement_progress_bar
+					value = -20
+				}
+			}
+		}
+		add_modifier = {
+			name = ce_french_suppress_increase_social_spending
+			months = 6
+		}
+	}
+}

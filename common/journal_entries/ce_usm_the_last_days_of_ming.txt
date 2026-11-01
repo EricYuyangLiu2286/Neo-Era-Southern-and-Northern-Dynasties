@@ -1,0 +1,1334 @@
+﻿ce_usm_conflicts_within = {	
+
+	# 东西之争：
+
+	icon = "gfx/interface/icons/invention_icons/pan_nationalism.dds"
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	group = je_group_historical_content
+	can_revolution_inherit = yes
+	
+	modifiers_while_active = {
+		ce_usm_lunzhan_modifier 
+	}
+
+	immediate = {
+		set_variable = {
+			name = usm_conflicts_within_tracker
+			value = 0
+		}
+	}
+
+	#inheritable = no
+	
+	on_monthly_pulse = {
+		effect = {
+			
+			if = {
+				limit = {
+					ig:ig_landowners = {
+						is_powerful = no
+						is_in_government = no
+					}
+				}
+				change_variable = {
+					name = usm_conflicts_within_tracker
+					add = 0.5
+				}
+			}
+			else = {
+				change_variable = {
+					name = usm_conflicts_within_tracker
+					add = 1
+				}
+			}
+		}
+		random_events = {
+			900 = 0
+			20 = flavorUSM.5 # CONDITIONED EVENT 陈东阳遇刺
+		#	20 = flavorUSM.8 # 
+		#	20 = flavorUSM.9 # 
+		#	20 = flavorUSM.10 # 
+		#	20 = flavorUSM.11 # 
+		}
+	}
+	
+	progressbar = yes
+	
+	complete = {
+		scope:journal_entry = {
+			is_goal_complete = yes
+		}
+		
+		#$ig_landowners$不[concept_powerful]且不[concept_in_government]
+		#$ig_devout$不[concept_powerful]且不[concept_in_government]
+		#$ig_rural_folk$不[concept_powerful]且不[concept_in_government]
+		
+	}
+	
+	on_complete = {
+		
+		trigger_event = { id = flavorUSM.4 }
+		set_variable = {
+			name = ce_usm_conflict_evoked
+			value = yes
+		}
+		hidden_effect = {
+			remove_variable = flavor_USM_crisis_intro
+		}
+	}
+	
+	fail = {
+		trigger_if = {
+			limit = {
+				num_states >= 2
+			}
+			OR = {
+				NOT = { exists = c:SIH }
+				NOT = { c:SIH ?= { is_direct_subject_of = root } }
+			}
+			OR = {
+				NOT = { exists = c:HNA }
+				NOT = { c:HNA ?= { is_direct_subject_of = root } }
+			}
+			OR = {
+				NOT = { exists = c:PHI }
+				NOT = { c:PHI ?= { is_direct_subject_of = root } }
+			}
+			OR = {
+				NOT = { exists = c:DEI }
+				NOT = { c:DEI ?= { is_direct_subject_of = root } }
+			}
+			OR = {
+				NOT = { exists = c:YN1 }
+				NOT = { c:YN1 ?= { is_direct_subject_of = root } }
+			}
+			custom_tooltip = {
+				text = ce_usm_conflicts_invalid_tt_1
+				always = yes
+			}
+		}
+		
+		trigger_if = {
+			limit = {
+				num_states < 2
+			}
+			custom_tooltip = {
+				text = ce_usm_conflicts_invalid_tt_2
+				always = yes
+			}
+		}
+	}
+
+	# effect which is executed when 'fail' trigger becomes true
+	on_fail = {
+		hidden_effect = {
+			trigger_event = { id = flavorUSM.2 } # looming conflicts
+			set_variable = {
+				name = ce_usm_conflict_looming
+				value = yes
+			}
+		}
+		show_as_tooltip = {
+			add_modifier = {
+				name = USM_looming_conflicts
+				years = 35
+				is_decaying = yes
+			}
+		}
+		hidden_effect = {
+		
+			remove_variable = flavor_USM_crisis_intro
+		}
+	}
+	
+	invalid = {
+	#	always = no
+		OR = {
+			any_civil_war = {
+				is_civil_war_type = revolution
+				civil_war_progress >= 0.95
+			}
+			NOT = { has_law_or_variant = law_type:law_monarchy }
+		}
+	}
+	
+	on_invalid = {
+		hidden_effect = {
+			trigger_event = { id = flavorUSM.3 } # new opportunities
+			set_variable = {
+				name = ce_usm_conflict_invalid
+				value = yes
+			}
+		}
+		show_as_tooltip = {
+			add_modifier = {
+				name = USM_conflict_invalid
+				years = 35
+				is_decaying = yes
+			}
+		}
+		hidden_effect = {
+			set_variable = ce_usm_conflict_fail
+			remove_variable = flavor_USM_crisis_intro
+		}
+	}
+	
+	current_value = {
+		value = root.var:usm_conflicts_within_tracker
+	}
+	
+	goal_add_value = {
+		value = 100
+	}
+
+	weight = 1200
+
+}
+
+ce_usm_ruling_of_nanfu = {
+	icon = "gfx/interface/icons/decree/decree_emergency_relief.dds"
+	
+	can_revolution_inherit = yes
+	group = je_group_historical_content
+	is_shown_when_inactive = {
+		has_journal_entry = ce_usm_conflicts_within
+		NOT = { has_global_variable = nanfu_ruling_je_ended }
+	}
+	possible = {
+		has_journal_entry = ce_usm_conflicts_within
+		NOT = { has_global_variable = nanfu_ruling_je_ended }
+	}
+	
+	modifiers_while_active = {
+		ce_usm_ruling_of_nanfu_modifier # TODO
+	}
+
+	complete = {
+		custom_tooltip = {
+			text = ce_usm_conflict_evoked_tt
+			has_variable = ce_usm_conflict_evoked
+		}
+	}
+
+	on_complete = {
+		add_modifier = {
+			name = modifier_new_found_dynasty_wuu
+			days = moderately_long_modifier_time
+			is_decaying = yes
+		}
+		hidden_effect = {
+			set_global_variable = nanfu_ruling_je_ended
+		}
+	}
+	
+	fail = {
+		custom_tooltip = {
+			text = ce_usm_conflict_fail_tt
+			has_variable = ce_usm_conflict_fail
+		}
+	}
+	
+	on_fail = {
+		hidden_effect = {
+			set_global_variable = nanfu_ruling_je_ended
+		}
+	}
+	
+	invalid = {
+		custom_tooltip = {
+			text = ce_usm_conflict_looming_tt
+			has_variable = ce_usm_conflict_looming
+		}
+	}
+	
+	on_invalid = {
+		hidden_effect = {
+			set_global_variable = nanfu_ruling_je_ended
+		}
+	}
+
+	weight = 1
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+ce_usm_civilwar_journal = {
+	icon = "gfx/interface/icons/infamy_icons/pariah.dds"
+	
+	can_revolution_inherit = yes
+	group = je_group_historical_content
+	
+	possible = {
+		has_variable = ce_usm_civilwar_journal_trigger
+		NOT = { has_global_variable = usm_civilwar_occured }
+	}
+	
+	immediate = {
+		hidden_effect = {
+			add_modifier = {
+				name = USM_civilwar_buffer
+				months = 3
+			}
+			if = {
+				limit = { 
+					exists = c:JAP 
+					c:JAP ?= {
+						OR = {
+							is_direct_subject_of = root
+							is_subject = no
+						}
+					}
+				}
+				c:JAP ?= { trigger_event = { id = usm_civilwar.23 popup = yes } }
+			}
+		}
+	}
+	
+	fail = {
+		custom_tooltip = {
+			text = ce_usm_civilwar_journal_fail.tt
+			root.var:usm_opposition_country_choice <= 0
+			root.var:usm_opposition_country_count > 0
+			NOT = { 
+				has_modifier = USM_civilwar_buffer
+			}
+		}
+	}
+
+	on_fail = {
+		trigger_event = { id = usm_civilwar.2 popup = yes }
+		hidden_effect = {
+			remove_variable = ce_usm_civilwar_journal_trigger
+			remove_variable = usm_subject_country_count
+			remove_variable = usm_opposition_country_choice_tt_var
+			remove_variable = usm_opposition_country_count
+			remove_variable = usm_opposition_country_choice
+		}
+	}
+	
+	invalid = {
+		trigger_if = {
+			limit = {
+				# sanity check
+				OR = {
+					NOT = { exists = c:SIH }
+					c:SIH ?= { NOT = { is_subject_of = root } }
+				}
+				OR = {
+					NOT = { exists = c:HNA }
+					c:HNA ?= { NOT = { is_subject_of = root } }
+				}
+				OR = {
+					NOT = { exists = c:GNG }
+					c:GNG ?= { NOT = { is_subject_of = root } }
+				}
+				OR = {
+					NOT = { exists = c:DEI }
+					c:DEI ?= { NOT = { is_subject_of = root } }
+				}
+				OR = {
+					NOT = { exists = c:PHI }
+					c:PHI ?= { NOT = { is_subject_of = root } }
+				}
+				OR = {
+					NOT = { exists = c:YN1 }
+					c:YN1 = { NOT = { is_subject_of = root } }
+				}
+			}
+			custom_tooltip = {
+				text = ce_usm_civilwar_journal_invalid.t1
+				always = yes
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = ce_usm_civilwar_journal_invalid.t2
+				root.var:usm_opposition_country_choice <= 0
+				root.var:usm_opposition_country_count <= 0
+			}
+		}
+	}
+	
+	on_invalid = {
+		trigger_event = { id = usm_civilwar.3 popup = yes }
+		hidden_effect = {
+			remove_variable = ce_usm_civilwar_journal_trigger
+			remove_variable = usm_subject_country_count
+			remove_variable = usm_opposition_country_choice_tt_var
+			remove_variable = usm_opposition_country_count
+			remove_variable = usm_opposition_country_choice
+		}
+	}
+	
+	timeout = 730
+	
+	on_timeout = {
+		trigger_event = { id = usm_civilwar.3 popup = yes }
+		hidden_effect = {
+			remove_variable = ce_usm_civilwar_journal_trigger
+			remove_variable = usm_subject_country_count
+			remove_variable = usm_opposition_country_choice_tt_var
+			remove_variable = usm_opposition_country_count
+			remove_variable = usm_opposition_country_choice
+		}
+	}
+
+	weight = 1
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+ce_usm_suppress_rebellion = {
+	icon = "gfx/interface/icons/politics_icons/radicalized.dds"
+	
+	can_revolution_inherit = yes
+	group = je_group_historical_content
+
+	complete = {
+		OR = {
+			c:SIH ?= {  
+				custom_tooltip = { 
+					text = not_an_opposition_usm_tooltip.1
+					OR = {
+						NOT = { has_variable = usm_opposition_country }
+						is_subject_of = root
+					}
+				}
+			}
+			custom_tooltip = {
+				text = usm_cw.sichuan_contoller_tooltip
+				OR = {
+					country_or_subject_owns_entire_state_region = STATE_SICHUAN
+					s:STATE_SICHUAN = { 
+						any_scope_state = { 
+							#owner = c:SIH
+							owner = {
+								c:SIH ?= This
+							}
+							controller = root 
+						}
+					}
+					s:STATE_SICHUAN = { 
+						any_scope_state = {  
+							owner = { c:SIH ?= This }
+							controller = { is_subject_of = root } 
+						} 
+					}
+					s:STATE_SICHUAN = { 
+						any_scope_state = { 
+							owner = {
+								c:SIH ?= This
+							}
+							controller = { 
+								
+								any_scope_ally={ c:USM ?= This }
+							} 
+						}
+					}
+				}
+			}
+		}
+		OR = {
+			c:HNA ?= {  
+				custom_tooltip = { 
+					text = not_an_opposition_usm_tooltip.2
+					OR = {
+						NOT = { has_variable = usm_opposition_country }
+						is_subject_of = root
+					}
+				}
+			}
+
+			custom_tooltip = {
+				text = usm_cw.hubei_contoller_tooltip
+				OR = {
+					country_or_subject_owns_entire_state_region = STATE_WESTERN_HUBEI
+					s:STATE_WESTERN_HUBEI = { 
+						any_scope_state = { 
+							owner = {
+								c:HNA ?= This
+							}
+							controller = root 
+						}
+					}
+					s:STATE_WESTERN_HUBEI = { 
+						any_scope_state = {  owner = { c:HNA ?= This } controller = { is_subject_of = root } } 
+					}
+					s:STATE_WESTERN_HUBEI = { 
+						any_scope_state = { 
+							owner = {
+								c:HNA ?= This
+							}
+							controller = { 
+								
+								any_scope_ally={ c:USM ?= This }
+							} 
+						}
+					}
+				}
+			}
+		}
+		OR = {
+			c:GNG ?= {  
+				custom_tooltip = { 
+					text = not_an_opposition_usm_tooltip.3
+					OR = {
+						NOT = { has_variable = usm_opposition_country }
+						is_subject_of = root
+					}
+				}
+			}
+			#country_or_subject_owns_entire_state_region = STATE_GUANGXI
+			custom_tooltip = {
+				text = usm_cw.guangxi_contoller_tooltip
+				OR = {
+					country_or_subject_owns_entire_state_region = STATE_GUANGXI
+					s:STATE_GUANGXI = { 
+						any_scope_state = { 
+							
+							owner = {
+								c:GNG ?= This
+							}
+							controller = root 
+						}
+					}
+					s:STATE_GUANGXI = { 
+						any_scope_state = {  owner = { c:GNG ?= This } controller = { is_subject_of = root } } 
+					}
+					s:STATE_GUANGXI = { 
+						any_scope_state = { 
+							#owner = c:GNG
+							owner = {
+								c:GNG ?= This
+							}
+							controller = { 
+								
+								any_scope_ally={ c:USM ?= This }
+							} 
+						}
+					}
+				}
+			}
+		}
+		OR = {
+			c:PHI ?= {  
+				custom_tooltip = { 
+					text = not_an_opposition_usm_tooltip.4
+					OR = {
+						NOT = { has_variable = usm_opposition_country }
+						is_subject_of = root
+					}
+				}
+			}
+			custom_tooltip = {
+				text = usm_cw.luzon_contoller_tooltip
+				OR = {
+					country_or_subject_owns_entire_state_region = STATE_LUZON
+					s:STATE_LUZON = { 
+						any_scope_state = { 
+							owner = {
+								c:PHI ?= This
+							}
+							controller = root 
+						}
+					}
+					s:STATE_LUZON = { 
+						any_scope_state = { owner = { c:PHI ?= This } controller = { is_subject_of = root } } 
+					}
+					s:STATE_LUZON = { 
+						any_scope_state = { 
+							owner = {
+								c:PHI ?= This
+							}
+							controller = { 
+								
+								any_scope_ally={ c:USM ?= This }
+							} 
+						}
+					}
+				}
+			}
+		#	country_or_subject_owns_entire_state_region = STATE_LUZON
+		}
+		OR = {
+			c:YN1 ?= {  
+				custom_tooltip = { 
+					text = not_an_opposition_usm_tooltip.5 
+					OR = {
+						NOT = { has_variable = usm_opposition_country }
+						is_subject_of = root
+					}
+				}
+			}
+			custom_tooltip = {
+				text = usm_cw.yuannan_contoller_tooltip
+				OR = {
+					country_or_subject_owns_entire_state_region = STATE_NEW_SOUTH_WALES
+					#s:STATE_NEW_SOUTH_WALES = { controller = root }
+					s:STATE_NEW_SOUTH_WALES = { 
+						any_scope_state = { 
+							owner = {
+								c:YN1 ?= This
+							}
+							controller = root 
+						}
+					}
+					s:STATE_NEW_SOUTH_WALES = { 
+						any_scope_state = {  owner = c:YN1 controller = { is_subject_of = root } } 
+					}
+					s:STATE_NEW_SOUTH_WALES = { 
+						any_scope_state = { 
+							#owner = c:YN1
+							owner = {
+								c:YN1 ?= This
+							}
+							controller = { 
+								
+								any_scope_ally={ c:USM ?= This }
+							} 
+						}
+					}
+				}
+			}
+			#country_or_subject_owns_entire_state_region = STATE_NEW_SOUTH_WALES
+		}
+		OR = {
+			c:DEI ?= {  
+				custom_tooltip = { 
+					text = not_an_opposition_usm_tooltip.6 
+					OR = {
+						NOT = { has_variable = usm_opposition_country }
+						is_subject_of = root
+					}
+				}
+			}
+			custom_tooltip = {
+				text = usm_cw.sumatra_contoller_tooltip
+				country_or_subject_owns_entire_state_region = STATE_SOUTH_SUMATRA
+			#	s:STATE_SOUTH_SUMATRA = { controller = root }
+				s:STATE_SOUTH_SUMATRA = { 
+					any_scope_state = { 
+						owner = { c:DEI ?= This }
+						controller = root 
+					}
+				}
+				s:STATE_SOUTH_SUMATRA = { 
+					any_scope_state = {  owner = { c:DEI ?= This } controller = { is_subject_of = root } } 
+				}
+				s:STATE_SOUTH_SUMATRA = { 
+					any_scope_state = { 
+						owner = { c:DEI ?= This }
+						controller = { 
+							
+							any_scope_ally={ c:USM ?= This }
+						} 
+					}
+				}
+			}
+			#country_or_subject_owns_entire_state_region = STATE_SOUTH_SUMATRA
+		}
+	}
+
+	on_complete = {
+		trigger_event = { id = usm_civilwar.8 popup = yes }
+		hidden_effect = {
+			every_country = {
+				limit = {
+					has_variable = usm_opposition_country
+				}
+				trigger_event = { id = usm_civilwar.4 popup = yes weeks = 1 }
+			}
+			set_variable = usm_government_winner_civilwar
+		}
+	}
+	
+	fail = {
+		is_at_war = no
+		NOT = {
+			custom_tooltip = {
+				text = paradox_you_are_stubid.tt.usm_cw
+				any_diplomatic_play = {
+					initiator = { c:USM ?= This }
+					target = { has_variable = usm_opposition_country_leader_var }
+				}
+			}
+		}
+		custom_tooltip = {
+			text = information_on_the_other_side_usm_cw.usm
+			always = yes
+		}
+		trigger_if = {
+			limit = {
+				NOT = {
+					has_global_variable = usm_civilwar_status_quo
+				}
+			}
+			custom_tooltip = {
+				text = usm_surrender_to_target_country.1
+				NOT = {
+					has_variable = usm_won_the_civil_war
+				}
+				OR = {
+					any_country = {
+						has_variable = usm_opposition_country_leader_var
+						has_truce_with = root
+					}
+					NOT = {
+						any_country = { has_variable = usm_opposition_country_leader_var }
+					}
+				}
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = usm_civilwar.9.t.happened
+				always = yes
+			}
+		}
+	}
+	
+	on_fail = {
+		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+	}
+	
+	timeout = 3650
+	
+	on_timeout = {
+		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+	}
+
+	weight = 1000
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+ce_usm_restoration_of_ming = {
+	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+	
+	can_revolution_inherit = yes
+	group = je_group_historical_content
+	
+	immediate = {
+		s:STATE_NANJING = {
+			add_claim = ROOT
+		}
+		capital = {
+			state_region = {
+				add_claim = c:USM
+			}
+		}
+		if = {
+			limit = { exists = c:USM }
+			add_change_relations_progress = {
+				country = c:USM
+				value = -100
+			}
+			c:USM = {
+				add_change_relations_progress = {
+					country = root
+					value = -100
+				}
+			}
+		}
+	}
+	
+	on_monthly_pulse = {
+		effect = {
+			if = {
+				limit = {
+					NOT = { has_variable = usm_opposition_country_leader_var }
+					NOT = {
+						any_country = {
+							has_variable = usm_opposition_country_leader_var
+						}
+					}
+					has_variable = usm_opposition_country
+				}
+				set_variable = usm_opposition_country_leader_var
+			}
+			
+			if = {
+				limit = {
+					is_at_war = no
+					NOT = {
+						any_country = {
+							has_variable = usm_opposition_country
+							is_at_war = yes
+						}
+					}
+					NOT = {
+						any_diplomatic_play = {
+							initiator = { c:USM ?= This }
+							target = { has_variable = usm_opposition_country_leader_var }
+						}
+					}
+					has_variable = usm_opposition_country_leader_var
+					NOT = {
+						has_variable = usm_cw_this_is_truce
+					}
+					exists = c:USM
+				}
+				set_variable = usm_cw_this_is_truce
+				create_bidirectional_truce = {
+					country = c:USM
+					months = 120
+				}
+			}
+			
+			if = {
+				limit = {
+					exists = c:USM
+					any_country = {
+						has_variable = usm_opposition_country_leader_var
+						has_war_with = c:USM
+					}
+				}
+				random_diplomatic_play = {
+					limit = {
+						target = {
+							NOT = { this = root }
+							has_variable = usm_opposition_country_leader_var
+						}
+						initiator = {
+							c:USM = This
+						}	
+					}
+					add_target_backers = { root }
+				}
+			}
+		}
+	}
+	
+	complete = {
+		OR = {
+			c:USM ?= {  
+				is_subject_of = root
+			}
+			country_or_subject_owns_entire_state_region = STATE_NANJING
+			s:STATE_NANJING = { 
+				region_state:USM = {
+					controller = root
+				}
+			}
+		}
+	}
+
+	on_complete = {
+		trigger_event = { id = usm_civilwar.10 popup = yes }
+		custom_tooltip = become_who_have_overthrown_usm
+		hidden_effect = {
+			set_variable = ce_usm_restoration_of_ming_var
+			set_variable = usm_rebel_winner_of_the_civil_war
+		}
+	}
+	
+	fail = {
+		is_at_war = no
+		NOT = {
+			custom_tooltip = {
+				text = paradox_you_are_stubid.tt.usm_cw
+				any_diplomatic_play = {
+					initiator = { c:USM ?= This }
+					target = { has_variable = usm_opposition_country_leader_var }
+				}
+			}
+		}
+		custom_tooltip = {
+			text = information_on_the_other_side_usm_cw.rebel
+			always = yes
+		}
+		trigger_if = {
+			limit = {
+				NOT = { has_global_variable = usm_civilwar_status_quo }
+				NOT = { has_variable = usm_opposition_country_leader_var }
+			}
+			OR = { 
+				any_country = {
+					has_variable = usm_opposition_country_leader_var
+					has_truce_with = c:USM
+				}
+				NOT = { exists = c:USM }
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				NOT = { has_global_variable = usm_civilwar_status_quo }
+				has_variable = usm_opposition_country_leader_var
+			}
+			OR = {
+				has_truce_with = c:USM
+				NOT = { exists = c:USM }
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = usm_civilwar.9.t.happened
+				always = yes
+			}
+		}
+	}
+	
+	on_fail = {
+		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+	}
+	
+	invalid = {
+		custom_tooltip = {
+			text = others_have_overthrown_usm
+			any_country = {
+				has_variable = usm_rebel_winner_of_the_civil_war
+			}
+		}
+	}
+	
+	on_invalid = {
+		trigger_event = { id = usm_civilwar.11 popup = yes } # subject of another
+	}
+	
+	timeout = 3650
+	
+	on_timeout = {
+		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+	}
+
+	weight = 1000
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+ce_usm_acheive_revolution = {
+	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+	
+	can_revolution_inherit = yes
+	group = je_group_historical_content
+	
+	immediate = {
+		s:STATE_NANJING = {
+			add_claim = ROOT
+		}
+		capital = {
+			state_region = {
+				add_claim = c:USM
+			}
+		}
+		if = {
+			limit = { exists = c:USM }
+			add_change_relations_progress = {
+				country = c:USM
+				value = -100
+			}
+			c:USM = {
+				add_change_relations_progress = {
+					country = root
+					value = -100
+				}
+			}
+		}
+	}
+	
+	on_monthly_pulse = {
+		effect = {
+			if = {
+				limit = {
+					NOT = { has_variable = usm_opposition_country_leader_var }
+					NOT = {
+						any_country = {
+							has_variable = usm_opposition_country_leader_var
+						}
+					}
+					has_variable = usm_opposition_country
+				}
+				set_variable = usm_opposition_country_leader_var
+			}
+			
+			if = {
+				limit = {
+					is_at_war = no
+					NOT = {
+						any_diplomatic_play = {
+							initiator = { c:USM ?= This }
+							target = { has_variable = usm_opposition_country_leader_var }
+						}
+					}
+					has_variable = usm_opposition_country_leader_var
+					NOT = {
+						any_country = {
+							has_variable = usm_opposition_country
+							is_at_war = yes
+						}
+					}
+					NOT = {
+						has_variable = usm_cw_this_is_truce
+					}
+					exists = c:USM
+				}
+				set_variable = usm_cw_this_is_truce
+				create_bidirectional_truce = {
+					country = c:USM
+					months = 120
+				}
+			}
+			
+			if = {
+				limit = {
+					exists = c:USM
+					any_country = {
+						has_variable = usm_opposition_country_leader_var
+						has_war_with = c:USM
+					}
+					#is_at_war = no
+				}
+				random_diplomatic_play = {
+					limit = {
+						#is_war = yes
+						target = {
+							NOT = { this = root }
+							has_variable = usm_opposition_country_leader_var
+						}
+						initiator = {
+							c:USM = This
+						}
+					}
+					add_target_backers = { root }
+					#add_escalation = 80
+				}
+			}
+		}
+	}
+	
+	complete = {
+		OR = {
+			c:USM ?= {  
+				is_subject_of = root
+			}
+			country_or_subject_owns_entire_state_region = STATE_NANJING
+			AND = {
+				c:USM ?= { capital = { controller = root } }
+				s:STATE_NANJING = { 
+					region_state:USM = {
+						controller = root
+					}
+				}
+				s:STATE_ZHEJIANG = { 
+					region_state:USM = {
+						controller = root
+					}
+				}
+				s:STATE_FUJIAN = { 
+					region_state:USM = {
+						controller = root
+					}
+				}
+			}
+		}
+	}
+
+	on_complete = {
+		trigger_event = { id = usm_civilwar.10 popup = yes }
+		custom_tooltip = become_who_have_overthrown_usm
+		hidden_effect = {
+			set_variable = ce_usm_republican_revolution_tag
+			set_variable = usm_rebel_winner_of_the_civil_war
+		}
+	}
+	
+	fail = {
+		is_at_war = no
+		NOT = {
+			custom_tooltip = {
+				text = paradox_you_are_stubid.tt.usm_cw
+				any_diplomatic_play = {
+					initiator = { c:USM ?= This }
+					target = { has_variable = usm_opposition_country_leader_var }
+				}
+			}
+		}
+		custom_tooltip = {
+			text = information_on_the_other_side_usm_cw.rebel
+			always = yes
+		}
+		trigger_if = {
+			limit = {
+				NOT = { has_global_variable = usm_civilwar_status_quo }
+				NOT = { has_variable = usm_opposition_country_leader_var }
+			}
+			OR = { 
+				any_country = {
+					has_variable = usm_opposition_country_leader_var
+					has_truce_with = c:USM
+				}
+				NOT = { exists = c:USM }
+			}
+		}
+		trigger_else_if = {
+			limit = {
+				NOT = { has_global_variable = usm_civilwar_status_quo }
+				has_variable = usm_opposition_country_leader_var
+			}
+			OR = {
+				has_truce_with = c:USM
+				NOT = { exists = c:USM }
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = usm_civilwar.9.t.happened
+				always = yes
+			}
+		}
+	}
+	
+	on_fail = {
+		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+	}
+	
+	invalid = {
+		custom_tooltip = {
+			text = others_have_overthrown_usm
+			any_country = {
+				has_variable = usm_rebel_winner_of_the_civil_war
+			}
+		}
+	}
+	
+	on_invalid = {
+		trigger_event = { id = usm_civilwar.11 popup = yes } # subject of another
+	}
+	
+	timeout = 3650
+	
+	on_timeout = {
+		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+	}
+
+	weight = 1000
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+ce_usm_cw_japanese_interest = { # 历史转折中的和族
+	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+	
+	can_revolution_inherit = yes
+	group = je_group_historical_content
+
+	immediate = {
+		hidden_effect = {
+			set_variable = usmcw_je_this_is_jap_var
+		}
+	}
+
+	complete = {
+		#is_at_war = no
+		trigger_if = {
+			limit = { 
+				OR = {
+					any_scope_ally = { c:USM = This }
+					is_subject_of = c:USM
+					has_variable = ce_usm_cw_ally_with_mng
+				}
+			}
+			custom_tooltip = you_are_here_because_you_are_usm_side_tt
+			OR= {
+				custom_tooltip = {
+					text = usm_won_the_civil_war_tt
+					c:USM ?= { has_variable = usm_government_winner_civilwar }
+				}
+				custom_tooltip = {
+					text = usm_civilwar.9.t.happened
+					has_global_variable = usm_civilwar_status_quo
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { 
+				has_variable = usm_opposition_country
+			}
+			custom_tooltip = you_are_here_because_you_are_rebel_side_tt
+			custom_tooltip = {
+				text = usm_cw.kyushu_contoller_tooltip
+				OR = {
+					country_or_subject_owns_entire_state_region = STATE_KYUSHU
+					s:STATE_KYUSHU = { 
+						any_scope_state = { 
+							owner = { NOT = { has_variable = usmcw_je_this_is_jap_var } } 
+							controller = root 
+						}
+					}
+					s:STATE_KYUSHU = { 
+						any_scope_state = {  owner = { NOT = { has_variable = usmcw_je_this_is_jap_var } } controller = { is_subject_of = root } } 
+					}
+					s:STATE_KYUSHU = { 
+						any_scope_state = { 
+							owner = {
+								NOT = { has_variable = usmcw_je_this_is_jap_var }
+							}
+							controller = { 
+								any_scope_ally={ c:USM ?= This }
+							} 
+						}
+					}
+				}
+			}
+		}
+		trigger_else = {
+			custom_tooltip = you_are_here_because_you_are_not_involved_tt
+			OR = {
+				custom_tooltip = {
+					text = usm_loss_the_civil_war_tt
+					OR = {	
+						has_variable = usm_rebel_winner_of_the_civil_war
+						any_country = {
+							has_variable = usm_rebel_winner_of_the_civil_war
+						}
+					}
+				}
+				custom_tooltip = {
+					text = usm_civilwar.9.t.happened
+					has_global_variable = usm_civilwar_status_quo
+				}
+			}
+		}
+	}
+
+	on_complete = {
+		
+		if = {
+			limit = { 
+				OR = {
+					any_scope_ally = { c:USM = This }
+					is_subject_of = c:USM
+					has_variable = ce_usm_cw_ally_with_mng
+				}
+			}
+			custom_tooltip = you_are_here_because_you_are_usm_side_tt
+			trigger_event = { id = usm_civilwar.14 popup = yes }
+			hidden_effect = {
+				set_variable = ce_japan_kyushu_winner
+			}
+		}
+		else_if = {
+			limit = { 
+				has_variable = usm_opposition_country
+			}
+			custom_tooltip = you_are_here_because_you_are_rebel_side_tt
+			trigger_event = { id = usm_civilwar.17 popup = yes }
+			hidden_effect = {
+				every_country = {
+					limit = {
+						has_variable = usm_opposition_country
+					}
+					trigger_event = { id = usm_civilwar.19 popup = yes months = 1 }
+				}
+			}
+		}
+		else = {
+			custom_tooltip = you_are_here_because_you_are_not_involved_tt
+			trigger_event = { id = usm_civilwar.17 popup = yes }
+			hidden_effect = {
+				every_country = {
+					limit = {
+						has_variable = usm_opposition_country
+					}
+					trigger_event = { id = usm_civilwar.19 popup = yes months = 1 }
+				}
+			}
+		}
+	}
+	
+	fail = {
+		is_at_war = no
+		trigger_if = {
+			limit = { 
+				OR = {
+					any_scope_ally = { c:USM = This }
+					is_subject_of = c:USM
+					has_variable = ce_usm_cw_ally_with_mng
+				}
+			}
+			custom_tooltip = you_are_here_because_you_are_usm_side_tt
+			custom_tooltip = {
+				text = usm_loss_the_civil_war_tt
+				OR = {	
+					has_variable = usm_rebel_winner_of_the_civil_war
+					any_country = {
+						has_variable = usm_rebel_winner_of_the_civil_war
+					}
+				}
+			}
+		}
+		trigger_else_if = {
+			limit = { 
+				has_variable = usm_opposition_country
+			}
+			custom_tooltip = you_are_here_because_you_are_rebel_side_tt
+			custom_tooltip = {
+				text = usm_won_the_civil_war_tt
+				c:USM ?= { has_variable = usm_government_winner_civilwar }
+			}
+		}
+		trigger_else = {
+			custom_tooltip = you_are_here_because_you_are_not_involved_tt
+			custom_tooltip = {
+				text = usm_civilwar.9.t.happened
+				always = yes
+			}
+		}
+	}
+	
+	on_fail = {
+		if = {
+			limit = { 
+				OR = {
+					any_scope_ally = { c:USM = This }
+					is_subject_of = c:USM
+					has_variable = ce_usm_cw_ally_with_mng
+				}
+			}
+			custom_tooltip = you_are_here_because_you_are_usm_side_tt
+			trigger_event = { id = usm_civilwar.20 popup = yes months = 3 }
+			hidden_effect = {
+				set_variable = usm_cw_jap_loss_when_pro_usm
+			}
+		}
+		else_if = {
+			limit = { 
+				has_variable = usm_opposition_country
+			}
+			custom_tooltip = you_are_here_because_you_are_rebel_side_tt
+			if = {
+				limit = {
+					exists = c:USM
+				}
+				trigger_event = { id = usm_civilwar.22 popup = yes months = 1 }
+			}
+			else = {
+				trigger_event = { id = usm_civilwar.20 popup = yes months = 1 }
+			}	
+		}
+		else = {
+			custom_tooltip = you_are_here_because_you_are_not_involved_tt
+			trigger_event = { id = usm_civilwar.20 popup = yes months = 1 }
+		}
+	}
+	
+	invalid = {
+		trigger_if = {
+			limit = { 
+				has_variable = usm_opposition_country
+			}
+			custom_tooltip = {
+				text = usm_civilwar.9.t.happened
+				has_global_variable = usm_civilwar_status_quo
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = trigger_zone_no_valid_ce.tt
+				always = no
+			}
+		}
+	}
+	
+	on_invalid = {
+		trigger_event = { id = usm_civilwar.20 popup = yes months = 1 } # 
+	}
+
+	weight = 1000
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}

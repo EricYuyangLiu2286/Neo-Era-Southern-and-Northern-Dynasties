@@ -1,0 +1,2720 @@
+﻿# Country scope
+ce_reset_french_empire_stablity_factors = {
+	set_variable = { name = ce_french_empire_industry_count value = 0 }
+	#
+	set_variable = { name = ce_french_empire_stability_from_characters value = 0 }
+	set_variable = { name = ce_french_empire_instability_from_characters value = 0 }
+	#
+	set_variable = { name = ce_french_empire_ig_support_count value = 0 }
+	#
+	set_variable = { name = ce_french_empire_law_diff value = 0 }
+	#
+	set_variable = { name = ce_french_empire_sol_count value = 0 }
+	#
+	set_variable = { name = ce_french_empire_movement_count value = 0 }
+	set_variable = { name = ce_french_empire_anti_movement_count value = 0 }
+	#
+	set_variable = { name = ce_french_empire_scoial_instituion_count value = 0 }
+	set_variable = { name = ce_french_empire_security_instituion_count value = 0 }
+	#
+	# set_variable = { name = ce_french_empire_powerbloc_major_count value = 0 }
+	# set_variable = { name = ce_french_empire_powerbloc_anti_count value = 0 }
+}
+
+ce_remove_all_french_empire_variable = {
+	if = {
+		limit = { has_variable = ce_french_empire_industry_count }
+		remove_variable = ce_french_empire_industry_count
+	}
+	if = {
+		limit = { has_variable = ce_french_empire_stability_from_characters }
+		remove_variable = ce_french_empire_stability_from_characters
+	}
+	if = {
+		limit = { has_variable = ce_french_empire_instability_from_characters }
+		remove_variable = ce_french_empire_instability_from_characters
+	}
+	if = {
+		limit = { has_variable = ce_french_empire_ig_support_count }
+		remove_variable = ce_french_empire_ig_support_count
+	}
+	if = {
+		limit = { has_variable = ce_french_empire_law_diff }
+		remove_variable = ce_french_empire_law_diff
+	}
+	if = {
+		limit = { has_variable = ce_french_empire_sol_count }
+		remove_variable = ce_french_empire_sol_count
+	}
+	if = {
+		limit = { has_variable = ce_french_empire_movement_count }
+		remove_variable = ce_french_empire_movement_count
+	}
+	if = {
+		limit = { has_variable = ce_french_empire_anti_movement_count }
+		remove_variable = ce_french_empire_anti_movement_count
+	}
+	if = {
+		limit = { has_variable = ce_french_empire_scoial_instituion_count }
+		remove_variable = ce_french_empire_scoial_instituion_count
+	}
+	if = {
+		limit = { has_global_variable = ce_french_empire_has_made_choice }
+		remove_global_variable = ce_french_empire_has_made_choice
+	}
+}
+
+ce_french_empire_je_update_progress_effect = {
+	ce_calculate_french_empire_stability_from_characters_factors = yes
+	ce_calculate_french_empire_instability_from_characters_factors = yes
+	ce_calculate_french_empire_industry_country_factors = yes
+	ce_calculate_french_empire_ig_support_factors = yes
+	ce_calculate_french_empire_law_factors = yes
+	ce_calculate_french_empire_sol_factors = yes
+	ce_calculate_french_empire_movement_factors = yes
+	ce_calculate_french_empire_anti_movement_factors = yes
+	ce_calculate_french_empire_scoial_instituion_factor = yes
+	ce_calculate_french_empire_security_instituion_factor = yes
+}
+
+ce_calculate_french_empire_stability_from_characters_factors = {
+	if = {
+		limit = { has_variable = ce_french_empire_stability_from_characters }
+		every_scope_character = {
+			limit = {
+				OR = {
+					has_ideology = ideology:ideology_bonapartist
+					has_ideology = ideology:ideology_reformer
+					has_ideology = ideology:ideology_royalist
+				}
+			}
+			ROOT = {
+				change_variable = { name = ce_french_empire_stability_from_characters add = prev.popularity }
+			}
+		}
+		change_variable = { name = ce_french_empire_stability_from_characters divide = 100 }
+	}
+}
+
+ce_calculate_french_empire_instability_from_characters_factors = {
+	if = {
+		limit = { has_variable = ce_french_empire_instability_from_characters }
+		every_scope_character = {
+			limit = {
+				OR = {
+					has_ideology = ideology:ideology_traditionalist
+					has_ideology = ideology:ideology_radical
+					has_ideology = ideology:ideology_republican_leader
+					has_ideology = ideology:ideology_liberal_leader
+					has_ideology = ideology:ideology_social_democrat
+					has_ideology = ideology:ideology_communist
+					has_ideology = ideology:ideology_market_liberal
+					has_ideology = ideology:ideology_anarchist
+					has_ideology = ideology:ideology_vanguardist
+					has_ideology = ideology:ideology_fascist
+					has_ideology = ideology:ideology_sovereignist_leader
+					has_ideology = ideology:ideology_orleanist # Louis-Philippe is secretly a leader opposing the ruling dynasty
+					has_ideology = ideology:ideology_legitimist # they shouldn't be here, but just in case
+				}
+			}
+			ROOT = {
+				change_variable = { name = ce_french_empire_instability_from_characters subtract = prev.popularity }
+			}
+		}
+		change_variable = { name = ce_french_empire_instability_from_characters divide = 100 }
+	}
+}
+
+ce_calculate_french_empire_industry_country_factors = {
+	if = {
+		limit = { has_variable = ce_french_empire_industry_count }
+		every_scope_building = {
+			limit = {
+				is_building_group = bg_manufacturing
+				weekly_profit > 0
+			}
+			ROOT = {
+				change_variable = { name = ce_french_empire_industry_count add = prev.level }
+			}
+		}
+		change_variable = { name = ce_french_empire_industry_count divide = 100 }
+	}
+}
+
+ce_calculate_french_empire_ig_support_factors = {
+	if = {
+		limit = { has_variable = ce_french_empire_ig_support_count }
+		every_interest_group = {
+			limit = {
+				leader = {
+					has_ideology = ideology:ideology_bonapartist
+				}
+			}
+			ROOT = {
+				set_variable = { name = ig_weight value = prev.ig_clout }
+			}
+			if = {
+				limit = {
+					is_in_government = yes
+				}
+				ROOT = {
+					change_variable = { name = ig_weight multiply = 2 }
+				}
+			}
+			ROOT = {
+				change_variable = { name = ce_french_empire_ig_support_count add = var:ig_weight }
+			}
+		}
+		every_interest_group = {
+			limit = {
+				leader = {
+					OR = {
+						has_ideology = ideology:ideology_traditionalist
+						has_ideology = ideology:ideology_radical
+						has_ideology = ideology:ideology_republican_leader
+						has_ideology = ideology:ideology_liberal_leader
+						has_ideology = ideology:ideology_social_democrat
+						has_ideology = ideology:ideology_communist
+						has_ideology = ideology:ideology_market_liberal
+						has_ideology = ideology:ideology_anarchist
+						has_ideology = ideology:ideology_vanguardist
+						has_ideology = ideology:ideology_fascist
+						has_ideology = ideology:ideology_sovereignist_leader
+						has_ideology = ideology:ideology_orleanist # Louis-Philippe is secretly a leader opposing the ruling dynasty
+						has_ideology = ideology:ideology_legitimist # they shouldn't be here, but just in case
+					}
+				}
+			}
+			ROOT = {
+				set_variable = { name = ig_weight value = prev.ig_clout }
+			}
+			if = {
+				limit = {
+					is_in_government = yes
+				}
+				ROOT = {
+					change_variable = { name = ig_weight multiply = 2 }
+				}
+			}
+			ROOT = {
+				change_variable = { name = ce_french_empire_ig_support_count subtract = var:ig_weight }
+			}
+		}
+	}
+}
+
+ce_calculate_french_empire_law_factors = {
+	if = {
+		limit = { has_variable = ce_french_empire_law_diff }
+		set_variable = { name = ce_french_empire_pro_empire_law_count value = 0 }
+		set_variable = { name = ce_french_empire_aginst_empire_law_count value = 0 }
+		# PRO
+		if = {
+			limit = { has_law_or_variant = law_type:law_single_party_state }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_universal_suffrage }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_census_voting }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_mass_conscription }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_professional_army }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_interventionism }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_factory_councils }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_corporatized_unions }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_anti_strike_laws }
+			change_variable = { name = ce_french_empire_pro_empire_law_count add = 5 }
+		}
+		# ANTI
+		if = {
+			limit = { has_law_or_variant = law_type:law_anarchy }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_technocracy }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_autocracy }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_oligarchy }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_national_militia }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_peasant_levies }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_agrarianism }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_traditionalism }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_cooperative_ownership }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_command_economy }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_industry_banned }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_extraction_economy }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_combination_acts }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_guild_system }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_factory_councils }
+			change_variable = { name = ce_french_empire_aginst_empire_law_count add = 5 }
+		}
+		set_variable = {
+			name = ce_french_empire_law_diff
+			value = var:ce_french_empire_pro_empire_law_count
+		}
+		change_variable = {
+			name = ce_french_empire_law_diff
+			subtract = var:ce_french_empire_aginst_empire_law_count
+		}
+		remove_variable = ce_french_empire_pro_empire_law_count
+		remove_variable = ce_french_empire_aginst_empire_law_count
+	}
+}
+
+ce_calculate_french_empire_sol_factors = {
+	if = {
+		limit = { has_variable = ce_french_empire_sol_count }
+		set_variable = { name = ce_french_number_of_incorperated_state value = 0 }
+		every_scope_state = {
+			limit = {
+				is_incorporated = yes
+			}
+			ROOT = {
+				set_variable = { name = ce_french_incorporated_state_sol value = 0 }
+				change_variable = { name = ce_french_number_of_incorperated_state add = 1 }
+				change_variable = { name = ce_french_incorporated_state_sol add = prev.average_sol }
+				change_variable = { name = ce_french_incorporated_state_sol subtract = 9 } # below 9 count as negative
+				change_variable = { name = ce_french_empire_sol_count add = var:ce_french_incorporated_state_sol } # below 9 count as negative
+				remove_variable = ce_french_incorporated_state_sol # save memory
+				# it is possible to also bring-in population as a multipler, but that would degrate performances further, so I decide not to
+			}
+		}
+		change_variable = { name = ce_french_empire_sol_count divide = var:ce_french_number_of_incorperated_state }
+		change_variable = { name = ce_french_empire_sol_count multiply = 5 } # if every incor. state has 20 avg. sol, then the value would be ((10-9)*N/N)*20 = 20
+		remove_variable = ce_french_number_of_incorperated_state	
+	}
+}
+
+ce_calculate_french_empire_movement_factors = {
+	if = {
+		limit = { has_variable = ce_french_empire_movement_count }
+		
+		if = {
+			limit = {
+				any_political_movement = {
+					OR = {
+						is_political_movement_type = movement_cultural_majority
+						is_political_movement_type = movement_royalist_constitutional
+					}
+				}
+			}
+			every_political_movement = {
+				limit = {
+					OR = {
+						is_political_movement_type = movement_cultural_majority
+						is_political_movement_type = movement_royalist_constitutional
+					}
+				}
+				ROOT = {
+					set_variable  = { name = ce_french_empire_pro_movement_local_variable value = prev.political_movement_support }
+					change_variable = { name = ce_french_empire_pro_movement_local_variable multiply = 10 }
+					#
+					change_variable = { name = ce_french_empire_movement_count add = var:ce_french_empire_pro_movement_local_variable }
+					remove_variable = ce_french_empire_pro_movement_local_variable
+				}
+			}
+		}
+		if = {
+			limit = {
+				any_political_movement = {
+					is_political_movement_type = movement_bonapartist
+				}
+			}
+			random_political_movement = {
+				limit = {
+					is_political_movement_type = movement_bonapartist
+				}
+				ROOT = {
+					set_variable  = { name = ce_french_empire_pro_movement_local_variable value = prev.political_movement_support }
+					change_variable = { name = ce_french_empire_pro_movement_local_variable multiply = 20 }
+					#
+					change_variable = { name = ce_french_empire_movement_count add = var:ce_french_empire_pro_movement_local_variable }
+					remove_variable = ce_french_empire_pro_movement_local_variable
+				}
+			}
+		}
+	}
+}
+
+ce_calculate_french_empire_anti_movement_factors = {
+	if = {
+		limit = { has_variable = ce_french_empire_anti_movement_count }
+		if = {
+			limit = {
+				any_political_movement = {
+					OR = {
+						#is_political_movement_type = movement_liberal
+						is_political_movement_type = movement_radical
+						is_political_movement_type = movement_reactionary
+					}
+				}
+			}
+			every_political_movement = {
+				limit = {
+					OR = {
+						#is_political_movement_type = movement_liberal
+						is_political_movement_type = movement_radical
+						is_political_movement_type = movement_reactionary
+					}
+				}
+				ROOT = {
+					set_variable  = { name = ce_french_empire_anti_movement_local_variable value = prev.political_movement_support }
+					change_variable = { name = ce_french_empire_anti_movement_local_variable multiply = 10 }
+					#
+					change_variable = { name = ce_french_empire_anti_movement_count add = var:ce_french_empire_anti_movement_local_variable }
+					remove_variable = ce_french_empire_anti_movement_local_variable
+				}
+			}
+		}
+		if = {
+			limit = {
+				any_political_movement = {
+					is_political_movement_type = movement_radical
+				}
+			}
+			random_political_movement = {
+				limit = {
+					is_political_movement_type = movement_radical
+				}
+				ROOT = {
+					set_variable  = { name = ce_french_empire_anti_movement_local_variable value = prev.political_movement_support }
+					change_variable = { name = ce_french_empire_anti_movement_local_variable multiply = 20 }
+					#
+					change_variable = { name = ce_french_empire_anti_movement_count add = var:ce_french_empire_anti_movement_local_variable }
+					remove_variable = ce_french_empire_anti_movement_local_variable
+				}
+			}
+		}
+	}
+}
+
+ce_calculate_french_empire_scoial_instituion_factor = {
+	if = {
+		limit = {
+			has_variable = ce_french_empire_scoial_instituion_count
+		}
+
+		# Health system
+		if = {
+			limit = {
+				has_institution = institution_health_system
+			}
+			change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_health_system
+						value >= 2
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_health_system
+						value >= 3
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_health_system
+						value >= 4
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_health_system
+						value >= 5
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+		}
+		else = { change_variable = { name = ce_french_empire_scoial_instituion_count subtract = 5 } }
+		
+		# institution_social_security
+		if = {
+			limit = {
+				has_institution = institution_social_security
+			}
+			change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_social_security
+						value >= 2
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_social_security
+						value >= 3
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_social_security
+						value >= 4
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_social_security
+						value >= 5
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+		}
+		else = { change_variable = { name = ce_french_empire_scoial_instituion_count subtract = 5 } }
+		
+		# institution_workplace_safety
+		if = {
+			limit = {
+				has_institution = institution_workplace_safety
+			}
+			change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_workplace_safety
+						value >= 2
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_workplace_safety
+						value >= 3
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_workplace_safety
+						value >= 4
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_workplace_safety
+						value >= 5
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+		}
+		else = { change_variable = { name = ce_french_empire_scoial_instituion_count subtract = 5 } }
+		
+	}
+}
+
+ce_calculate_french_empire_security_instituion_factor = {
+	if = {
+		limit = {
+			has_variable = ce_french_empire_security_instituion_count
+		}
+
+		# institution_police
+		if = {
+			limit = {
+				has_institution = institution_police
+			}
+			change_variable = { name = ce_french_empire_security_instituion_count add = 5 }
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_police
+						value >= 2
+					}
+				}
+				change_variable = { name = ce_french_empire_security_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_police
+						value >= 3
+					}
+				}
+				change_variable = { name = ce_french_empire_security_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_police
+						value >= 4
+					}
+				}
+				change_variable = { name = ce_french_empire_security_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_police
+						value >= 5
+					}
+				}
+				change_variable = { name = ce_french_empire_security_instituion_count add = 5 }
+			}
+		}
+		
+		# institution_home_affairs
+		if = {
+			limit = {
+				has_institution = institution_home_affairs
+			}
+			change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_home_affairs
+						value >= 2
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_home_affairs
+						value >= 3
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_home_affairs
+						value >= 4
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+			if = {
+				limit = {
+					institution_investment_level = {
+						institution = institution_home_affairs
+						value >= 5
+					}
+				}
+				change_variable = { name = ce_french_empire_scoial_instituion_count add = 5 }
+			}
+		}
+		
+	}
+}
+
+ce_manual_trigger_fra_unrest_event_13_effect = {
+	if = {
+		limit = {
+			NOT = {
+				custom_tooltip = {
+					text = ce_french_opposition_action_on_goging_tt
+					has_variable = ce_french_opposition_movement_var
+				}
+			}
+		}
+		hidden_effect = {
+			set_variable = ce_french_opposition_movement_var
+		}
+		trigger_event = { id = fra_unrest.13 popup = yes }
+	}
+}
+
+ce_manual_trigger_fra_unrest_event_14_effect = {
+	if = {
+		limit = {
+			NOT = {
+				custom_tooltip = {
+					text = ce_french_opposition_action_on_goging_tt
+					has_variable = ce_french_opposition_movement_var
+				}
+			}
+			any_scope_character = {
+				OR = {
+					has_role_of_type = admiral
+					has_role_of_type = general
+				}
+				interest_group ?= {
+					NOR = {
+						is_interest_group_type = ig_landowners
+						is_interest_group_type = ig_intelligentsia
+						is_interest_group_type = ig_trade_unions
+					}
+				}
+				NOT = { has_modifier = ce_french_republican_approached }
+			}
+		}
+		hidden_effect = {
+			set_variable = ce_french_opposition_movement_var
+			random_scope_character = {
+				limit = {
+					OR = {
+						has_role_of_type = admiral
+						has_role_of_type = general
+					}
+					interest_group ?= {
+						NOR = {
+							is_interest_group_type = ig_landowners
+							is_interest_group_type = ig_intelligentsia
+							is_interest_group_type = ig_trade_unions
+						}
+					}
+					NOT = { has_modifier = ce_french_republican_approached }
+				}
+				add_modifier = {
+					name = ce_french_republican_approached
+					months = 6
+				}
+				save_scope_as = ce_french_republican_buying
+			}
+		}
+		trigger_event = { id = fra_unrest.14 popup = yes }
+	}
+}
+
+ce_manual_trigger_fra_unrest_event_15_effect = {
+	if = {
+		limit = {
+			NOT = {
+				custom_tooltip = {
+					text = ce_french_opposition_action_on_goging_tt
+					has_variable = ce_french_opposition_movement_var
+				}
+			}
+			any_interest_group = {
+				OR = {
+					is_interest_group_type = ig_intelligentsia
+					is_interest_group_type = ig_trade_unions
+				}
+				
+				NOT = { has_modifier = ce_french_republican_unity }
+			}
+		}
+		hidden_effect = {
+			set_variable = ce_french_opposition_movement_var
+			random_interest_group = {
+				limit = {
+					OR = {
+						is_interest_group_type = ig_intelligentsia
+						is_interest_group_type = ig_trade_unions
+					}
+				}
+				
+				save_scope_as = ce_republican_ig
+			}
+		}
+		trigger_event = { id = fra_unrest.15 popup = yes }
+	}
+}
+
+ce_manual_trigger_fra_unrest_event_16_effect = {
+	if = {
+		limit = {
+			NOT = {
+				custom_tooltip = {
+					text = ce_french_opposition_action_on_goging_tt
+					has_variable = ce_french_opposition_movement_var
+				}
+			}
+			any_scope_character = {
+				has_ideology = ideology:ideology_bonapartist
+				
+				NOT = { has_modifier = scandalous }
+			}
+		}
+		hidden_effect = {
+			set_variable = ce_french_opposition_movement_var
+			random_scope_character = {
+				limit = {
+					has_ideology = ideology:ideology_bonapartist
+					NOT = { has_modifier = scandalous }
+				}
+				
+				save_scope_as = ce_republican_attacked
+			}
+		}
+		trigger_event = { id = fra_unrest.16 popup = yes }
+	}
+}
+
+ce_orleans_dynasty_support_variable_reset = {
+	set_variable = { name = ce_orl_french_empire_stability_from_characters value = 0 }
+	set_variable = { name = ce_orl_french_empire_instability_from_characters value = 0 }
+	#
+	#set_variable = { name = ce_orl_french_empire_ig_support_count value = 0 }
+	#
+	set_variable = { name = ce_orl_french_empire_movement_count value = 0 }
+	set_variable = { name = ce_orl_french_empire_anti_movement_count value = 0 }
+}
+
+ce_calculate_french_empire_orleans_from_characters_factors = {
+	if = {
+		limit = { has_variable = ce_orl_french_empire_stability_from_characters }
+		every_scope_character = {
+			limit = {
+				has_ideology = ideology:ideology_orleanist
+			}
+			ROOT = {
+				change_variable = { name = ce_orl_french_empire_stability_from_characters add = prev.popularity }
+			}
+		}
+		change_variable = { name = ce_orl_french_empire_stability_from_characters divide = 100 }
+	}
+}
+
+ce_calculate_french_empire_notorleans_from_characters_factors = {
+	if = {
+		limit = { has_variable = ce_orl_french_empire_instability_from_characters }
+		every_scope_character = {
+			limit = {
+				has_ideology = ideology:ideology_bonapartist # 
+			}
+			ROOT = {
+				change_variable = { name = ce_orl_french_empire_instability_from_characters subtract = prev.popularity }
+			}
+		}
+		change_variable = { name = ce_orl_french_empire_instability_from_characters divide = 100 }
+	}
+}
+
+ce_calculate_french_empire_orl_movement_factors = {
+	if = {
+		limit = { has_variable = ce_orl_french_empire_movement_count }
+		if = {
+			limit = {
+				any_political_movement = {
+					OR = {
+						is_political_movement_type = movement_liberal
+						is_political_movement_type = movement_orleanist
+					}
+						
+				}
+			}
+			random_political_movement = {
+				limit = {
+					OR = {
+						is_political_movement_type = movement_liberal
+						is_political_movement_type = movement_orleanist
+					}
+				}
+				ROOT = {
+					set_variable  = { name = ce_french_empire_pro_orl_movement_local_variable value = prev.political_movement_support }
+					change_variable = { name = ce_french_empire_pro_orl_movement_local_variable multiply = 1 }
+					#
+					change_variable = { name = ce_orl_french_empire_movement_count add = var:ce_french_empire_pro_orl_movement_local_variable }
+					remove_variable = ce_french_empire_pro_orl_movement_local_variable
+				}
+			}
+		}
+	}
+}
+
+ce_calculate_french_empire_orl_anti_movement_factors = {
+	if = {
+		limit = { has_variable = ce_orl_french_empire_anti_movement_count }
+		if = {
+			limit = {
+				any_political_movement = {
+					is_political_movement_type = movement_bonapartist
+				}
+			}
+			random_political_movement = {
+				limit = {
+					is_political_movement_type = movement_bonapartist
+				}
+				ROOT = {
+					set_variable  = { name = ce_french_empire_anti_orl_movement_local_variable value = prev.political_movement_support }
+					change_variable = { name = ce_french_empire_anti_orl_movement_local_variable multiply = 1 }
+					#
+					change_variable = { name = ce_orl_french_empire_anti_movement_count add = var:ce_french_empire_anti_orl_movement_local_variable }
+					remove_variable = ce_french_empire_anti_orl_movement_local_variable
+				}
+			}
+		}
+	}
+}
+
+#
+ce_bourbon_dynasty_support_variable_reset = {
+	set_variable = { name = ce_bor_french_empire_stability_from_characters value = 0 }
+	set_variable = { name = ce_bor_french_empire_instability_from_characters value = 0 }
+	#
+	#set_variable = { name = ce_bor_french_empire_ig_support_count value = 0 }
+	#
+	set_variable = { name = ce_bor_french_empire_movement_count value = 0 }
+	set_variable = { name = ce_bor_french_empire_anti_movement_count value = 0 }
+}
+
+ce_calculate_french_empire_borpon_from_characters_factors = {
+	if = {
+		limit = { has_variable = ce_bor_french_empire_stability_from_characters }
+		every_scope_character = {
+			limit = {
+				has_ideology = ideology:ideology_legitimist
+			}
+			ROOT = {
+				change_variable = { name = ce_bor_french_empire_stability_from_characters add = prev.popularity }
+			}
+		}
+		change_variable = { name = ce_bor_french_empire_stability_from_characters divide = 100 }
+	}
+}
+
+ce_calculate_french_empire_notbourbon_from_characters_factors = {
+	if = {
+		limit = { has_variable = ce_bor_french_empire_instability_from_characters }
+		every_scope_character = {
+			limit = {
+				has_ideology = ideology:ideology_bonapartist # 
+			}
+			ROOT = {
+				change_variable = { name = ce_bor_french_empire_instability_from_characters subtract = prev.popularity }
+			}
+		}
+		change_variable = { name = ce_bor_french_empire_instability_from_characters divide = 100 }
+	}
+}
+
+ce_calculate_french_empire_bor_movement_factors = {
+	if = {
+		limit = { has_variable = ce_bor_french_empire_movement_count }
+		if = {
+			limit = {
+				any_political_movement = {
+					OR = {
+						is_political_movement_type = movement_legitimist
+						is_political_movement_type = movement_cultural_majority
+					}
+						
+				}
+			}
+			random_political_movement = {
+				limit = {
+					OR = {
+						is_political_movement_type = movement_legitimist
+						is_political_movement_type = movement_cultural_majority
+					}
+				}
+				ROOT = {
+					set_variable  = { name = ce_french_empire_pro_bor_movement_local_variable value = prev.political_movement_support }
+					change_variable = { name = ce_french_empire_pro_bor_movement_local_variable multiply = 1 }
+					#
+					change_variable = { name = ce_bor_french_empire_movement_count add = var:ce_french_empire_pro_bor_movement_local_variable }
+					remove_variable = ce_french_empire_pro_bor_movement_local_variable
+				}
+			}
+		}
+	}
+}
+
+ce_calculate_french_empire_bor_anti_movement_factors = {
+	if = {
+		limit = { has_variable = ce_bor_french_empire_anti_movement_count }
+		if = {
+			limit = {
+				any_political_movement = {
+					is_political_movement_type = movement_bonapartist
+				}
+			}
+			random_political_movement = {
+				limit = {
+					is_political_movement_type = movement_bonapartist
+				}
+				ROOT = {
+					set_variable  = { name = ce_french_empire_anti_bor_movement_local_variable value = prev.political_movement_support }
+					change_variable = { name = ce_french_empire_anti_bor_movement_local_variable multiply = 1 }
+					#
+					change_variable = { name = ce_bor_french_empire_anti_movement_count add = var:ce_french_empire_anti_bor_movement_local_variable }
+					remove_variable = ce_french_empire_anti_bor_movement_local_variable
+				}
+			}
+		}
+	}
+}
+#
+
+ce_set_orleanist_ruler = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_variable = house_orleans_leader
+				}
+			}
+		}
+		ce_create_orleanist_ig_leader = yes
+	}
+
+	if = {
+		limit = {
+			has_variable = bonapartist_restoration_var
+		}
+		remove_variable = bonapartist_restoration_var
+	}
+
+	if = {
+		limit = {
+			NOT = { has_variable = orleanist_restoration_var }
+		}
+		remove_variable = orleanist_restoration_var
+	}
+
+	if = {
+		limit = {
+			any_scope_character = {
+				has_variable = house_orleans_leader
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_variable = house_orleans_leader
+			}
+			cleanup_ruler_character_roles = yes
+		
+			set_character_as_ruler = yes
+			add_character_role = politician
+		}
+	}
+	else_if = {
+		limit = {
+			any_scope_character = {
+				has_template = FRA_louis_philippe
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = FRA_louis_philippe
+			}
+			cleanup_ruler_character_roles = yes
+		
+			set_character_as_ruler = yes
+			add_character_role = politician
+		}
+	}
+	else_if = {
+		limit = {
+			year <= 1850
+		}
+		create_character = {
+			template = FRA_ferdinand_philippe
+		}
+		random_scope_character = {
+			limit = {
+				has_template = FRA_ferdinand_philippe
+			}
+			
+			cleanup_ruler_character_roles = yes
+			set_character_as_ruler = yes
+			add_character_role = politician
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1850
+			year < 1894
+		}
+		create_character = {
+			template = FRA_philippe_de_orleans_of_paris
+			on_created = {#
+				cleanup_ruler_character_roles = yes
+				set_character_as_ruler = yes
+				add_character_role = politician
+			}
+		}
+		if = {
+			limit = {
+				year >= 1870
+				year < 1894
+			}
+			create_character = {
+				template = FRA_philippe_de_orleans_of_orleans
+				on_created = {
+					cleanup_ruler_character_roles = yes
+					set_character_as_ruler = yes
+					add_character_role = politician
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1894
+			year < 1926
+		}
+		create_character = {
+			template = FRA_philippe_de_orleans_of_orleans
+			on_created = {
+				cleanup_ruler_character_roles = yes
+				set_character_as_ruler = yes
+				add_character_role = politician
+			}
+		}
+		create_character = {
+			template = FRA_jean_de_orleans
+		}
+	}
+	else = {
+		create_character = {
+			last_name = d_Orleans
+			female = no
+			culture = primary_culture
+			ig_leader = yes
+			interest_group = ig:ig_petty_bourgeoisie
+			ideology = ideology_orleanist
+			age = 21
+			on_created = {
+				cleanup_ruler_character_roles = yes
+				set_variable = {
+					name = is_married
+				}
+				add_character_role = politician
+				set_variable = house_orleans
+				set_character_as_ruler = yes
+				save_scope_as = FRA_ce_orl_leader_scope
+			}
+		}
+	}
+	random_scope_character = {
+		limit = {
+			is_ruler_of_own_country = yes
+		}
+		save_scope_as = french_monarch_scope
+	}
+}
+
+ce_set_legitimist_ruler = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_variable = house_bourbon_leader
+				}
+			}
+		}
+		ce_create_legitimist_ig_leader = yes
+	}
+
+	if = {
+		limit = {
+			has_variable = bonapartist_restoration_var
+		}
+		remove_variable = bonapartist_restoration_var
+	}
+
+	if = {
+		limit = {
+			NOT = { has_variable = legitimist_restoration_var }
+		}
+		remove_variable = legitimist_restoration_var
+	}
+
+	if = {
+		limit = {
+			any_scope_character = {
+				has_variable = house_bourbon_leader
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_variable = house_bourbon_leader
+			}
+			cleanup_ruler_character_roles = yes
+		
+			set_character_as_ruler = yes
+			add_character_role = politician
+		}
+	}
+	
+	random_scope_character = {
+		limit = {
+			is_ruler_of_own_country = yes
+		}
+		save_scope_as = french_monarch_scope
+	}
+}
+
+ce_create_orleanist_ig_leader = {
+	if = {
+		limit = {
+			any_scope_character = {
+				has_template = FRA_louis_philippe
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = FRA_louis_philippe
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+				}
+				set_interest_group = ig:ig_petty_bourgeoisie
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_orleanist }
+				}
+				set_ideology = ideology:ideology_orleanist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_orl_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans }
+				}
+				set_variable = house_orleans
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans_leader }
+				}
+				set_variable = house_orleans_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_variable = house_orleans_leader
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_variable = house_orleans_leader
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+				}
+				set_interest_group = ig:ig_petty_bourgeoisie
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_orleanist }
+				}
+				set_ideology = ideology:ideology_orleanist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_orl_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans }
+				}
+				set_variable = house_orleans
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans_leader }
+				}
+				set_variable = house_orleans_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_template = FRA_louis_philippe
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_template = FRA_louis_philippe
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+				}
+				set_interest_group = ig:ig_petty_bourgeoisie
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_orleanist }
+				}
+				set_ideology = ideology:ideology_orleanist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_orl_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans }
+				}
+				set_variable = house_orleans
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans_leader }
+				}
+				set_variable = house_orleans_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_template = FRA_ferdinand_philippe
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_template = FRA_ferdinand_philippe
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+				}
+				set_interest_group = ig:ig_petty_bourgeoisie
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_orleanist }
+				}
+				set_ideology = ideology:ideology_orleanist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_orl_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans }
+				}
+				set_variable = house_orleans
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans_leader }
+				}
+				set_variable = house_orleans_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_template = FRA_philippe_de_orleans_of_paris
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_template = FRA_philippe_de_orleans_of_paris
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+				}
+				set_interest_group = ig:ig_petty_bourgeoisie
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_orleanist }
+				}
+				set_ideology = ideology:ideology_orleanist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_orl_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans }
+				}
+				set_variable = house_orleans
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans_leader }
+				}
+				set_variable = house_orleans_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year <= 1850
+		}
+		create_character = {
+			template = FRA_ferdinand_philippe
+		}
+		random_scope_character = {
+			limit = {
+				has_template = FRA_ferdinand_philippe
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+				}
+				set_interest_group = ig:ig_petty_bourgeoisie
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_orleanist }
+				}
+				set_ideology = ideology:ideology_orleanist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans }
+				}
+				set_variable = house_orleans
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_orleans_leader }
+				}
+				set_variable = house_orleans_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+			set_as_interest_group_leader = yes
+			save_scope_as = FRA_ce_orl_leader_scope
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1850
+			year < 1894
+		}
+		create_character = {
+			template = FRA_philippe_de_orleans_of_paris
+			on_created = {
+				cleanup_ruler_character_roles = yes
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+					}
+					set_interest_group = ig:ig_petty_bourgeoisie
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_orleanist }
+					}
+					set_ideology = ideology:ideology_orleanist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_orleans }
+					}
+					set_variable = house_orleans
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_orleans_leader }
+					}
+					set_variable = house_orleans_leader
+				}
+				set_as_interest_group_leader = yes
+				save_scope_as = FRA_ce_orl_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+		# if = {
+		# 	limit = {
+		# 		year >= 1870
+		# 		year < 1894
+		# 	}
+		# 	create_character = {
+		# 		template = FRA_philippe_de_orleans_of_orleans
+		# 		on_created = {
+		# 			cleanup_ruler_character_roles = yes
+		# 			add_character_role = politician
+		# 			if = {
+		# 				limit = {
+		# 					NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+		# 				}
+		# 				set_interest_group = ig:ig_petty_bourgeoisie
+		# 			}
+		# 			if = {
+		# 				limit = {
+		# 					NOT = { has_ideology = ideology:ideology_orleanist }
+		# 				}
+		# 				set_ideology = ideology:ideology_orleanist
+		# 			}
+		# 			set_as_interest_group_leader = yes
+		# 			save_scope_as = FRA_ce_orl_leader_scope
+		# 		}
+		# 	}
+		# }
+	}
+	else_if = {
+		limit = {
+			year >= 1894
+			year < 1926
+		}
+		create_character = {
+			template = FRA_philippe_de_orleans_of_orleans
+			on_created = {
+				cleanup_ruler_character_roles = yes
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+					}
+					set_interest_group = ig:ig_petty_bourgeoisie
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_orleanist }
+					}
+					set_ideology = ideology:ideology_orleanist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_orleans }
+					}
+					set_variable = house_orleans
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_orleans_leader }
+					}
+					set_variable = house_orleans_leader
+				}
+				set_as_interest_group_leader = yes
+				save_scope_as = FRA_ce_orl_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+	else = {
+		create_character = {
+			last_name = d_Orleans
+			female = no
+			culture = primary_culture
+			ig_leader = yes
+			interest_group = ig:ig_petty_bourgeoisie
+			ideology = ideology_orleanist
+			age = 21
+			on_created = {
+				cleanup_ruler_character_roles = yes
+				set_variable = {
+					name = is_married
+				}
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_petty_bourgeoisie }
+					}
+					set_interest_group = ig:ig_petty_bourgeoisie
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_orleanist }
+					}
+					set_ideology = ideology:ideology_orleanist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_orleans }
+					}
+					set_variable = house_orleans
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_orleans_leader }
+					}
+					set_variable = house_orleans_leader
+				}
+				set_as_interest_group_leader = yes
+				save_scope_as = FRA_ce_orl_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+}
+
+ce_create_legitimist_ig_leader = {
+	if = {
+		limit = {
+			any_scope_character = {
+				has_template = FRA_louis_antoine_de_bourbon
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = FRA_louis_antoine_de_bourbon
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_devout }
+				}
+				set_interest_group = ig:ig_devout
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_legitimist }
+				}
+				set_ideology = ideology:ideology_legitimist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_bor_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon }
+				}
+				set_variable = house_bourbon
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon_leader }
+				}
+				set_variable = house_bourbon_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_variable = house_bourbon_leader
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_variable = house_bourbon_leader
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_devout }
+				}
+				set_interest_group = ig:ig_devout
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_legitimist }
+				}
+				set_ideology = ideology:ideology_legitimist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_bor_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon }
+				}
+				set_variable = house_bourbon
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_template = FRA_louis_antoine_de_bourbon
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_template = FRA_louis_antoine_de_bourbon
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_devout }
+				}
+				set_interest_group = ig:ig_devout
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_legitimist }
+				}
+				set_ideology = ideology:ideology_legitimist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_bor_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon }
+				}
+				set_variable = house_bourbon
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon_leader }
+				}
+				set_variable = house_bourbon_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_template = FRA_henri_de_bourbon
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_template = FRA_henri_de_bourbon
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_devout }
+				}
+				set_interest_group = ig:ig_devout
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_legitimist }
+				}
+				set_ideology = ideology:ideology_legitimist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_bor_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon }
+				}
+				set_variable = house_bourbon
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon_leader }
+				}
+				set_variable = house_bourbon_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_template = SPC_juan_iii_de_borbon_template
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_template = SPC_juan_iii_de_borbon_template
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_devout }
+				}
+				set_interest_group = ig:ig_devout
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_legitimist }
+				}
+				set_ideology = ideology:ideology_legitimist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_bor_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon }
+				}
+				set_variable = house_bourbon
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon_leader }
+				}
+				set_variable = house_bourbon_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_template = SPC_carlos_vii_de_borbon_template
+			}
+		}
+		random_character_in_exile_pool =  {
+			limit = {
+				has_template = SPC_carlos_vii_de_borbon_template
+			}
+			transfer_character = root
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+			
+			if = {
+				limit = {
+					has_role_of_type = agitator
+				}
+				remove_character_role = agitator
+			}
+			cleanup_ruler_character_roles = yes
+			add_character_role = politician
+			if = {
+				limit = {
+					NOT = { is_interest_group_type = ig_devout }
+				}
+				set_interest_group = ig:ig_devout
+			}
+			if = {
+				limit = {
+					NOT = { has_ideology = ideology:ideology_legitimist }
+				}
+				set_ideology = ideology:ideology_legitimist
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = ce_historical_ig_leader }
+				}
+				set_as_interest_group_leader = yes
+			}
+			save_scope_as = FRA_ce_bor_leader_scope
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon }
+				}
+				set_variable = house_bourbon
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = house_bourbon_leader }
+				}
+				set_variable = house_bourbon_leader
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = commander_doing_coup_on_player_behalf }
+				}
+				set_variable = commander_doing_coup_on_player_behalf
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year < 1844
+		}
+		create_character = {
+			template = FRA_louis_antoine_de_bourbon
+			on_created = {
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_devout }
+					}
+					set_interest_group = ig:ig_devout
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_legitimist }
+					}
+					set_ideology = ideology:ideology_legitimist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = ce_historical_ig_leader }
+					}
+					set_as_interest_group_leader = yes
+				}
+				save_scope_as = FRA_ce_bor_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon }
+					}
+					set_variable = house_bourbon
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon_leader }
+					}
+					set_variable = house_bourbon_leader
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1844
+			year < 1883
+		}
+		create_character = {
+			template = FRA_henri_de_bourbon
+			on_created = {
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_devout }
+					}
+					set_interest_group = ig:ig_devout
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_legitimist }
+					}
+					set_ideology = ideology:ideology_legitimist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = ce_historical_ig_leader }
+					}
+					set_as_interest_group_leader = yes
+				}
+				save_scope_as = FRA_ce_bor_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon }
+					}
+					set_variable = house_bourbon
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon_leader }
+					}
+					set_variable = house_bourbon_leader
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1883
+			year < 1887
+		}
+		create_character = {
+			template = SPC_juan_iii_de_borbon_template
+			on_created = {
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_devout }
+					}
+					set_interest_group = ig:ig_devout
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_legitimist }
+					}
+					set_ideology = ideology:ideology_legitimist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = ce_historical_ig_leader }
+					}
+					set_as_interest_group_leader = yes
+				}
+				save_scope_as = FRA_ce_bor_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon }
+					}
+					set_variable = house_bourbon
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon_leader }
+					}
+					set_variable = house_bourbon_leader
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1887
+			year < 1909
+		}
+		create_character = {
+			template = SPC_carlos_vii_de_borbon_template
+			on_created = {
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_devout }
+					}
+					set_interest_group = ig:ig_devout
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_legitimist }
+					}
+					set_ideology = ideology:ideology_legitimist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = ce_historical_ig_leader }
+					}
+					set_as_interest_group_leader = yes
+				}
+				save_scope_as = FRA_ce_bor_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon }
+					}
+					set_variable = house_bourbon
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon_leader }
+					}
+					set_variable = house_bourbon_leader
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1909
+			year < 1931
+		}
+		create_character = {
+			template = SPC_jaime_iii_de_borbon_template
+			on_created = {
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_devout }
+					}
+					set_interest_group = ig:ig_devout
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_legitimist }
+					}
+					set_ideology = ideology:ideology_legitimist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = ce_historical_ig_leader }
+					}
+					set_as_interest_group_leader = yes
+				}
+				save_scope_as = FRA_ce_bor_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon }
+					}
+					set_variable = house_bourbon
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon_leader }
+					}
+					set_variable = house_bourbon_leader
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1931
+		}
+		create_character = {
+			template = SPC_alfonso_i_de_borbon_template
+			on_created = {
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_devout }
+					}
+					set_interest_group = ig:ig_devout
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_legitimist }
+					}
+					set_ideology = ideology:ideology_legitimist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = ce_historical_ig_leader }
+					}
+					set_as_interest_group_leader = yes
+				}
+				save_scope_as = FRA_ce_bor_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon }
+					}
+					set_variable = house_bourbon
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon_leader }
+					}
+					set_variable = house_bourbon_leader
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+	else = {
+		create_character = {
+			last_name = de_Bourbon
+			female = no
+			culture = primary_culture
+			ig_leader = yes
+			interest_group = ig:ig_devout
+			ideology = ideology_legitimist
+			age = 21
+			on_created = {
+				add_character_role = politician
+				if = {
+					limit = {
+						NOT = { is_interest_group_type = ig_devout }
+					}
+					set_interest_group = ig:ig_devout
+				}
+				if = {
+					limit = {
+						NOT = { has_ideology = ideology:ideology_legitimist }
+					}
+					set_ideology = ideology:ideology_legitimist
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = ce_historical_ig_leader }
+					}
+					set_as_interest_group_leader = yes
+				}
+				save_scope_as = FRA_ce_bor_leader_scope
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon }
+					}
+					set_variable = house_bourbon
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = house_bourbon_leader }
+					}
+					set_variable = house_bourbon_leader
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = commander_doing_coup_on_player_behalf }
+					}
+					set_variable = commander_doing_coup_on_player_behalf
+				}
+			}
+		}
+	}
+}
+
+ce_find_bonaparte_in_exile_effect = {
+	if = {
+		limit = {
+			any_scope_character = {
+				has_template = fra_napoleon_iii_character_template
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = fra_napoleon_iii_character_template
+			}
+			exile_character_with_martyrdom = yes
+			save_scope_as = fra_old_ruler_scope
+		}
+	}
+	else_if = {
+		limit = {
+			any_character = {
+				has_template = fra_napoleon_iii_character_template
+				is_in_exile_pool = no
+			}
+		}
+		random_character = {
+			limit = {
+				has_template = fra_napoleon_iii_character_template
+			}
+			exile_character_with_martyrdom = yes
+			save_scope_as = fra_old_ruler_scope
+		}
+	}
+	else_if = {
+		limit = {
+			any_character = {
+				has_template = fra_napoleon_iii_character_template
+				is_in_exile_pool = yes
+			}
+		}
+		hidden_effect = {
+			random_character = {
+				limit = {
+					has_template = fra_napoleon_iii_character_template
+				}
+				save_scope_as = fra_old_ruler_scope
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = fra_napoleon_iii_character_template
+				}
+				any_character = {
+					has_template = fra_napoleon_iii_character_template
+				}
+			}
+			any_scope_character = {
+				has_template = FRA_Jerome_Bonaparte
+				is_heir_of_own_country = no
+			}
+		}
+		hidden_effect = {
+			random_scope_character = {
+				limit = {
+					has_template = FRA_Jerome_Bonaparte
+				}
+				save_scope_as = fra_old_ruler_scope
+				exile_character_with_martyrdom = yes
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = fra_napoleon_iii_character_template
+				}
+				any_character = {
+					has_template = fra_napoleon_iii_character_template
+				}
+			}
+			any_character = {
+				has_template = FRA_Jerome_Bonaparte
+			}
+		}
+		hidden_effect = {
+			random_character = {
+				limit = {
+					has_template = FRA_Jerome_Bonaparte
+				}
+				save_scope_as = fra_old_ruler_scope
+			}
+		}
+			
+	}
+	else_if = {
+		limit = {
+			any_scope_character = {
+				has_ideology = ideology:ideology_bonapartist
+			}
+		}
+		hidden_effect = {
+			random_scope_character = {
+				limit = {
+					has_ideology = ideology:ideology_bonapartist
+				}
+				exile_character_with_martyrdom = yes
+				save_scope_as = fra_old_ruler_scope
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character = {
+				has_ideology = ideology:ideology_bonapartist
+				is_in_exile_pool = yes
+			}
+		}
+		hidden_effect = {
+			random_character = {
+				limit = {
+					has_ideology = ideology:ideology_bonapartist
+					is_in_exile_pool = yes
+				}
+				save_scope_as = fra_old_ruler_scope
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			any_character = {
+				has_ideology = ideology:ideology_bonapartist
+				is_in_exile_pool = no
+			}
+		}
+		hidden_effect = {
+			random_character = {
+				limit = {
+					has_ideology = ideology:ideology_bonapartist
+					is_in_exile_pool = no
+				}
+				exile_character_with_martyrdom = yes
+				save_scope_as = fra_old_ruler_scope
+			}
+		}
+	}
+	else = {
+		hidden_effect = {
+			ce_create_bonapart_character_for_exile = yes
+		}
+	}
+}
+
+ce_create_bonapart_character_for_exile = {
+	if = {
+		limit = {
+			year < 1873
+			NOT = {
+				any_character = {
+					has_template = fra_napoleon_iii_character_template
+				}
+			}
+		}
+		if = {
+			limit = {
+				year >= 1857
+				year < 1873
+			}
+			create_character = {
+				template = FRA_napoleon_eugene_louis_bonaparte
+				on_created = {
+					cleanup_ruler_character_roles = yes
+					add_character_role = general
+				}
+			}
+			random_scope_character = {
+				limit = {
+					has_template = FRA_napoleon_eugene_louis_bonaparte
+				}
+				exile_character_with_martyrdom = yes
+				save_scope_as = fra_old_ruler_scope
+			}
+		}
+		else = {
+			create_character = { # El Generico
+				first_name = "NapoleO_n"
+				last_name = "Bonaparte"
+				culture = cu:french
+				interest_group = ig_petty_bourgeoisie
+				ruler = yes
+				ideology = ideology_bonapartist
+				on_created = {
+
+					cleanup_ruler_character_roles = yes
+					set_variable = house_bonaparte
+					set_variable = temp_bonaparte
+					add_character_role = general
+				}
+			}
+			random_scope_character = {
+				limit = {
+					has_variable = temp_bonaparte
+				}
+				exile_character_with_martyrdom = yes
+				remove_variable = temp_bonaparte
+				save_scope_as = fra_old_ruler_scope
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1873
+			year < 1879
+			NOT = {
+				any_character = {
+					has_template = fra_napoleon_iii_character_template
+				}
+			}
+		}
+		create_character = {
+			template = FRA_napoleon_eugene_louis_bonaparte
+			on_created = {
+				cleanup_ruler_character_roles = yes
+				add_character_role = general
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = FRA_napoleon_eugene_louis_bonaparte
+			}
+			exile_character_with_martyrdom = yes
+			save_scope_as = fra_old_ruler_scope
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1879
+			year < 1926
+			NOT = {
+				any_character = {
+					has_template = fra_napoleon_iii_character_template
+				}
+			}
+		}
+		create_character = {
+			template = FRA_victor_bonaparte
+			on_created = {
+				cleanup_ruler_character_roles = yes
+				add_character_role = general
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = FRA_victor_bonaparte
+			}
+			exile_character_with_martyrdom = yes
+			save_scope_as = fra_old_ruler_scope
+		}
+	}
+	else_if = {
+		limit = {
+			year >= 1926
+			NOT = {
+				any_character = {
+					has_template = fra_napoleon_iii_character_template
+				}
+			}
+		}
+		create_character = {
+			template = FRA_louis_bonaparte
+			on_created = {
+				cleanup_ruler_character_roles = yes
+				add_character_role = general
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = FRA_louis_bonaparte
+			}
+			exile_character_with_martyrdom = yes
+			save_scope_as = fra_old_ruler_scope
+		}
+	}
+}

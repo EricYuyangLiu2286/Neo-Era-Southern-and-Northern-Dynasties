@@ -1,0 +1,1369 @@
+﻿namespace = flavorCNE
+
+# Regicide
+# Triggered from enactment pulse
+flavorCNE.1 = {
+	type = country_event
+	placement = root
+	title = flavorCNE.1.t
+	# 地权革命与帝国现状
+	desc = flavorCNE.1.d
+	# 
+
+	flavor = flavorCNE.1.f
+	# 政治是有关现实可能性的艺术。 ——本杰明·富兰克林
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_2.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# 
+		exists = c:CNE
+		c:CNE ?= This	
+		NOT = { has_global_variable = flavorCNE_1_happened_global }
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_global_variable = flavorCNE_1_happened_global # make sure this even happen only once per gameplay
+			
+			#set_variable = {
+			#	name = flavorCNE_1_happened
+			#	value = yes
+			#}
+			
+			set_variable = {
+				name = flavorCNE_land_reform_value
+				value = yes
+			}
+			add_modifier = {
+				name = CNE_land_draft_debuff
+				months = 9999
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.1.1
+		default_option = yes
+		show_as_tooltip = {
+			add_modifier = {
+				name = CNE_land_draft_debuff
+				months = 9999
+			}
+			add_journal_entry = {
+				type = ce_cne_land_reform
+			}
+			add_journal_entry = {
+				type = ce_cne_land_draft_failing
+			}
+		}
+	}
+	
+	after = {
+		
+	}
+}
+
+flavorCNE.2 = {
+	type = country_event
+	placement = root
+	title = flavorCNE.2.t
+	# 土地改革失道
+	desc = flavorCNE.2.d
+	# 
+
+	flavor = flavorCNE.2.f
+	# 民众之利益构建帝国，无能维护者虽强亦亡。 \n——牧仲棠《巡海河谕臣十句》
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+	
+	trigger = {
+		has_variable = flavorCNE_land_reform_value
+		NOT = {
+			THIS = c:CNE
+		}
+	}
+
+	immediate = {
+		hidden_effect = {
+			remove_variable = flavorCNE_land_reform_value
+			remove_modifier = CNE_land_draft_debuff
+			add_modifier = {
+				name = CNE_missed_land_draft
+				months = stupidly_long_modifier_time
+			}
+		}
+	}
+
+	option = { # 我们承认失败，维持现状。
+		name = flavorCNE.2.1
+		default_option = yes
+		custom_tooltip = ce_cne_land_reform_remove
+		show_as_tooltip = {
+			remove_modifier = CNE_land_draft_debuff
+			add_modifier = {
+				name = CNE_missed_land_draft
+				months = stupidly_long_modifier_time
+			}
+		}
+	}
+	
+}
+
+flavorCNE.3 = {
+	type = country_event
+	placement = root
+	title = flavorCNE.3.t
+	# 地权革命结束
+	desc = flavorCNE.3.d
+	# 
+
+	flavor = flavorCNE.3.f
+	# 各尽所能，自由意志。民抒所愿，众建帝国。 \n——查万方《众人授权为帝命疏》
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_3.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by JE
+	}
+
+	immediate = {
+		hidden_effect = {
+			remove_variable = flavorCNE_land_reform_value
+
+			remove_modifier = CNE_land_draft_debuff
+
+			add_modifier = {
+				name = CNE_post_landdraft_modifier
+				months = long_modifier_time
+			}
+		}
+	}
+
+	option = { # 人类的力量为改变其命运而抒发，是至上的财富之源。
+		name = flavorCNE.3.1
+		default_option = yes
+		custom_tooltip = ce_cne_land_reform_remove
+		show_as_tooltip = {
+			
+			remove_modifier = CNE_land_draft_debuff
+
+			add_modifier = {
+				name = CNE_post_landdraft_modifier
+				months = long_modifier_time
+			}
+		}
+	}
+	
+}
+
+flavorCNE.4 = { # 士绅把握地权
+	type = country_event
+	placement = root
+	title = flavorCNE.4.t
+	# 地权革命结束
+	desc = flavorCNE.4.d
+	# 
+
+	flavor = flavorCNE.4.f
+	# 
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/asia_union_leader.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by JE
+	}
+
+	immediate = {
+		hidden_effect = {
+			random_scope_state = {
+				limit = {
+					is_modern_china_state = yes
+					is_split_state = no
+					NOT = { has_modifier = CNE_land_related_uprising }
+				}
+				save_scope_as = cne_land_reform_uprising_state
+			}
+
+			ig:ig_rural_folk = {
+				save_scope_as = ce_rural_folk_ig
+			}
+
+			ig:ig_landowners = {
+				save_scope_as = ce_landowners_ig
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.4.1
+		scope:cne_land_reform_uprising_state = {
+			add_radicals_in_state = {
+			   	value = small_radicals
+			   	interest_group = scope:ce_rural_folk_ig
+			}
+			add_radicals_in_state = {
+			   	value = medium_radicals
+			   	interest_group = scope:ce_landowners_ig
+			}
+		}
+		custom_tooltip = {
+			text = cne_landreform_completion_tracker_add_3
+			change_variable = {
+				name = cne_landreform_completion_tracker
+				add = 3
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.4.2
+		default_option = yes
+		scope:cne_land_reform_uprising_state = {
+			add_modifier = {
+				name = CNE_land_related_uprising
+				months = 36
+			}
+		}
+		custom_tooltip = {
+			text = cne_landreform_completion_tracker_minus_1
+			if = {
+				limit = {
+					root.var:cne_landreform_completion_tracker >= 1
+				}
+				change_variable = {
+					name = cne_landreform_completion_tracker
+					add = -1
+				}
+			}
+		}
+	}
+	
+}
+
+flavorCNE.5 = { # 飞舞的雪片
+	type = country_event
+	placement = root
+	title = flavorCNE.5.t
+	# 
+	desc = flavorCNE.5.d
+	# 
+
+	flavor = flavorCNE.5.f
+	# 
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_military_parade.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by JE
+	}
+
+	immediate = {
+		hidden_effect = {
+			random_scope_state = {
+				limit = {
+					is_modern_china_state = yes
+					is_split_state = no
+				}
+				save_scope_as = cne_land_reform_army_state
+			}
+
+			ig:ig_armed_forces = {
+				save_scope_as = ce_armed_forces_ig
+			}
+
+			ig:ig_landowners = {
+				save_scope_as = ce_landowners_ig
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.5.1
+		add_radicals = {
+		   	value = 0.02
+		   	interest_group = scope:ce_armed_forces_ig
+	    }
+		default_option = yes
+	    add_modifier = {
+	    	name = CNE_appease_army_je
+	    	months = 36
+	    }
+		custom_tooltip = {
+			text = cne_landreform_completion_tracker_add_3
+			change_variable = {
+				name = cne_landreform_completion_tracker
+				add = 3
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.5.2
+		scope:cne_land_reform_army_state = {
+			add_radicals_in_state = {
+			   	value = medium_radicals
+			   	interest_group = scope:ce_armed_forces_ig
+			}
+			add_radicals_in_state = {
+			   	value = small_radicals
+			   	interest_group = scope:ce_landowners_ig
+			}
+		}
+		custom_tooltip = {
+			text = cne_landreform_completion_tracker_minus_1
+			if = {
+				limit = {
+					root.var:cne_landreform_completion_tracker >= 1
+				}
+				change_variable = {
+					name = cne_landreform_completion_tracker
+					add = -1
+				}
+			}
+		}
+	}
+	
+}
+
+flavorCNE.6 = { # 滥捕事件
+	type = country_event
+	placement = root
+	title = flavorCNE.6.t
+	# 
+	desc = flavorCNE.6.d
+	# 
+
+	flavor = flavorCNE.6.f
+	# 
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_vandalized_storefront.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by JE
+	}
+
+	immediate = {
+		hidden_effect = {
+			random_scope_state = {
+				limit = {
+					is_modern_china_state = yes
+					is_split_state = no
+				}
+				save_scope_as = cne_land_reform_mess_imprisonment_state
+			}
+
+			ig:ig_intelligentsia = {
+				save_scope_as = ce_intelligentsia_ig
+			}
+
+			ig:ig_landowners = {
+				save_scope_as = ce_landowners_ig
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.6.1
+		default_option = yes
+		scope:cne_land_reform_mess_imprisonment_state = {
+			add_loyalists_in_state = {
+			   	value = 0.15
+			   	interest_group = scope:ce_armed_forces_ig
+			}
+			add_radicals_in_state = {
+			   	value = medium_radicals
+			   	interest_group = scope:ce_intelligentsia_ig
+			}
+			add_radicals_in_state = {
+			   	value = medium_radicals
+			   	interest_group = scope:ce_landowners_ig
+			}
+		}
+
+	}
+
+	option = { # 
+		name = flavorCNE.6.2
+		custom_tooltip = {
+			text = cne_landreform_completion_tracker_minus_1
+			if = {
+				limit = {
+					root.var:cne_landreform_completion_tracker >= 1
+				}
+				change_variable = {
+					name = cne_landreform_completion_tracker
+					add = -1
+				}
+			}
+		}
+	}
+	
+}
+
+flavorCNE.7 = { # 产业界支持
+	type = country_event
+	placement = root
+	title = flavorCNE.7.t
+	# 
+	desc = flavorCNE.7.d
+	# 
+
+	flavor = flavorCNE.7.f
+	# 
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_gears_pistons.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by JE
+	}
+
+	immediate = {
+		hidden_effect = {
+			random_scope_state = {
+				limit = {
+					is_modern_china_state = yes
+					is_split_state = no
+					NOT = { has_modifier = CNE_local_industrial_broom }
+				}
+				save_scope_as = cne_land_reform_industrialists_support_state
+			}
+
+			ig:ig_industrialists = {
+				save_scope_as = ce_industrialists_ig
+			}
+
+			ig:ig_landowners = {
+				save_scope_as = ce_landowners_ig
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.7.1
+		
+	    scope:cne_land_reform_industrialists_support_state = {
+	    	add_loyalists_in_state = {
+			   	value = 0.15
+			   	interest_group = scope:ce_industrialists_ig
+		    }
+		    add_modifier = {
+		    	name = CNE_local_industrial_broom
+		    	months = 36
+		    }
+		}
+
+	}
+
+	option = { # 
+		name = flavorCNE.7.2
+		default_option = yes
+		add_modifier = {
+	    	name = CNE_industrialists_in_government
+	    	months = 36
+	    }
+		custom_tooltip = {
+			text = cne_landreform_completion_tracker_add_2
+			change_variable = {
+				name = cne_landreform_completion_tracker
+				add = 2
+			}
+		}
+	}
+	
+}
+
+flavorCNE.8 = { # 农人涌入城市
+	type = country_event
+	placement = root
+	title = flavorCNE.8.t
+	# 
+	desc = flavorCNE.8.d
+	# 
+
+	flavor = flavorCNE.8.f
+	# 
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/asia_poor_people_moving.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by JE
+	}
+
+	immediate = {
+		hidden_effect = {
+			random_scope_state = {
+				limit = {
+					is_modern_china_state = yes
+					is_split_state = no
+					NOT = { has_modifier = CNE_crack_local_gangs }
+					NOT = { has_modifier = CNE_local_gangs_triumph }
+				}
+				save_scope_as = cne_land_reform_peasants_in_city_state
+			}
+
+			ig:ig_industrialists = {
+				save_scope_as = ce_industrialists_ig
+			}
+
+			ig:ig_landowners = {
+				save_scope_as = ce_landowners_ig
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.8.1
+		
+		scope:cne_land_reform_peasants_in_city_state = {
+			add_radicals_in_state = {
+			   	value = 0.05
+			   	interest_group = scope:ce_industrialists_ig
+			}
+			add_radicals_in_state = {
+				value = 0.1
+			   	interest_group = scope:ce_landowners_ig
+			}
+			add_modifier = {
+				name = CNE_crack_local_gangs
+				months = 36
+			}
+		}
+		custom_tooltip = {
+			text = cne_landreform_completion_tracker_add_2
+			change_variable = {
+				name = cne_landreform_completion_tracker
+				add = 2
+			}
+		}
+		
+	}
+
+	option = { # 
+		name = flavorCNE.8.2
+		default_option = yes
+
+		scope:cne_land_reform_peasants_in_city_state = {
+			add_modifier = {
+				name = CNE_local_gangs_triumph
+				months = 36
+			}
+		}
+		custom_tooltip = {
+			text = cne_landreform_completion_tracker_add_3
+			change_variable = {
+				name = cne_landreform_completion_tracker
+				add = 3
+			}
+		}
+	}
+	
+}
+
+flavorCNE.9 = {
+	type = country_event
+	placement = root
+	title = flavorCNE.2.t
+	# 
+	desc = flavorCNE.2.d
+	# 
+
+	flavor = flavorCNE.2.f
+	# 民众之利益构建帝国，无能维护者虽强亦亡。 \n——牧仲棠《巡海河谕臣十句》
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by JE
+	}
+
+	immediate = {
+		hidden_effect = {
+			remove_variable = flavorCNE_land_reform_value
+			remove_modifier = CNE_land_draft_debuff
+			add_modifier = {
+				name = CNE_missed_land_draft
+				months = stupidly_long_modifier_time
+			}
+		}
+	}
+
+	option = { # 我们承认失败，维持现状。
+		name = flavorCNE.2.1
+		custom_tooltip = ce_cne_land_reform_remove
+		show_as_tooltip = {
+			remove_modifier = CNE_land_draft_debuff
+			add_modifier = {
+				name = CNE_missed_land_draft
+				months = stupidly_long_modifier_time
+			}
+		}
+	}
+	
+}
+
+flavorCNE.10 = {
+	type = country_event
+	placement = root
+	title = flavorCNE.2.t
+	# 土地改革失道
+	desc = flavorCNE.2.d
+	# 
+
+	flavor = flavorCNE.2.f
+	# 民众之利益构建帝国，无能维护者虽强亦亡。 \n——牧仲棠《巡海河谕臣十句》
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by JE
+	}
+
+	immediate = {
+		hidden_effect = {
+			remove_variable = flavorCNE_land_reform_value
+			remove_modifier = CNE_land_draft_debuff
+			add_modifier = {
+				name = CNE_missed_land_draft
+				months = stupidly_long_modifier_time
+			}
+			ig:ig_rural_folk = {
+				save_scope_as = ce_rural_folk_ig
+			}
+
+			ig:ig_landowners = {
+				save_scope_as = ce_landowners_ig
+			}
+			
+			ig:ig_armed_forces = {
+				save_scope_as = ce_armed_forces_ig
+			}
+			
+			ig:ig_trade_unions = {
+				save_scope_as = ce_union_ig
+			}
+
+		}
+	}
+
+	option = { # 我们承认失败，维持现状。
+		name = flavorCNE.2.1
+		custom_tooltip = ce_cne_land_reform_remove
+		if = {
+			limit = { exists = scope:ce_armed_forces_ig }
+			scope:ce_armed_forces_ig = {
+				remove_ideology = ideology_populist
+				remove_ideology = ideology_patriotic
+				add_ideology = ideology_caudillismo
+			}
+		}
+		if = {
+			limit = { exists = scope:ce_landowners_ig }
+			scope:ce_landowners_ig = {
+				remove_ideology = ideology_oligarchic
+				# add_ideology = ideology_utilitarian_millian
+				add_ideology = ideology_paternalistic
+			}
+		}
+		if = {
+			limit = { exists = scope:ce_rural_folk_ig }
+			add_radicals = {
+				value = 0.03
+				interest_group = scope:ce_rural_folk_ig
+			}
+		}
+		if = {
+			limit = { exists = scope:ce_union_ig }
+			add_radicals = {
+				value = 0.05
+				interest_group = scope:ce_union_ig
+			}
+		}
+		
+		show_as_tooltip = {
+			remove_modifier = CNE_land_draft_debuff
+			add_modifier = {
+				name = CNE_missed_land_draft
+				months = stupidly_long_modifier_time
+			}
+		}
+	}
+	
+}
+
+flavorCNE.11 = { # 
+	type = country_event
+	placement = root
+	title = flavorCNE.11.t
+	# 土地改革失道
+	desc = flavorCNE.11.d
+	# 
+
+	flavor = flavorCNE.11.f
+	# 民众之利益构建帝国，无能维护者虽强亦亡。 \n——牧仲棠《巡海河谕臣十句》
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by ACTION
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_variable = CE_news_variable_1
+			if = {
+				limit = {
+					any_country = {
+						is_ai = no
+						NOT = { has_variable = CE_news_variable_1 }
+					}
+				}
+				random_country = {
+					limit = {
+						is_ai = no
+						NOT = { has_variable = CE_news_variable_1 }
+					}
+					trigger_event = { id = flavorCNE.11 popup = yes }
+				}
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.11.1
+		
+	}
+	
+}
+
+flavorCNE.12 = { # 牧仲棠逝世
+	type = country_event
+	placement = root
+	title = flavorCNE.12.t
+	# 
+
+	desc = flavorCNE.12.d
+	# 
+
+	flavor = flavorCNE.12.f
+	# 无念尔祖，聿修厥德。永言配命，自求多福。
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_6.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by on_actions
+		NOT = { has_global_variable = ce_cne_events_12_happened_flag }
+	}
+
+	immediate = {
+		hidden_effect = {
+			ruler = {
+				save_scope_as = emperor_of_china_scope
+			}
+			
+			if = {
+				limit = { NOT = { has_global_variable = ce_cne_events_12_happened_flag } }
+				set_global_variable = ce_cne_events_12_happened_flag
+			}	
+		
+			create_character = {
+				template = CNE_mu_chiwu
+				save_scope_as = ce_muchiwu_scope
+			}
+			create_character = {
+				# 
+				#role = politician # Remove this line
+				first_name = "Chisheng"
+				last_name = "Mu"
+				age = 27
+				female = no
+				culture = cu:ce_laoqin
+				interest_group = ig_intelligentsia
+				ideology = ideology_traditionalist
+				save_scope_as = ce_muchisheng_scope
+				traits = {
+					reserved
+				}
+			}
+
+		}
+	}
+
+	option = { # 扶保太子，屏退乱贼！
+		name = flavorCNE.12.1
+		default_option = yes
+		
+		show_as_tooltip = {
+			scope:emperor_of_china_scope = {
+				set_character_as_ruler = yes
+			}
+		}
+		
+		add_radicals = {
+			value = medium_radicals
+			interest_group = ig:ig_armed_forces
+		}
+		
+		create_character = {
+			# 
+			#role = politician # Remove this line
+			first_name = "Deyu"
+			last_name = "Mu"
+			heir = yes
+			age = 16
+			female = no
+			culture = cu:ce_laoqin
+			interest_group = ig_landowners
+			ideology = ideology_traditionalist
+			
+			traits = {
+				reserved
+			}
+			#save_scope_as = ce_mudeyu_scope
+			on_created = {
+				set_variable = this_is_mu_deyu 
+			}
+		}
+
+		hidden_effect = {
+			random_list = {
+				80 = {
+					trigger_event = { id = flavorCNE.13 months = 1 }
+				}
+				20 = {
+					#trigger_event = { id = flavorCNE.13 months = 1 }
+					if = {
+						limit = {
+							any_scope_character = {
+								has_template = CNE_mu_muzi
+							}
+						}
+						trigger_event = { id = flavorCNE.14 months = 5 }
+					}
+				}
+			}
+		}
+	}
+
+	option = { # 太子素来孱弱，为君岂能安国？二皇子牧驰声贤望也，可王中国。
+		name = flavorCNE.12.2
+		
+		
+		
+		scope:ce_muchisheng_scope = {
+			set_character_as_ruler = yes
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					any_scope_character = {
+						has_template = CNE_mu_muzi
+					}
+				}
+				trigger_event = { id = flavorCNE.14 months = 4 }
+			}
+		}	
+	}
+
+	
+}
+
+flavorCNE.13 = { # 1.2.1 诸子之乱
+	type = country_event
+	placement = root
+	title = flavorCNE.13.t
+	# 
+
+	desc = flavorCNE.13.d
+	# 十月初牧仲棠驾崩后，其长皇子牧驰悯在东陪都青岛即皇帝位。随后他紧急赶回京师汴梁，会见了包括莒王牧驰声、太宰查万方、中都守华莱石等涉及继位事宜的重要官员。第二天，新皇便召集分镇四方的牧氏诸王回京吊丧。其真正意图不明。\n\n十一月十八日，牧朝五皇子牧驰武、六皇子牧驰光抵达当夜，牧驰悯突然心绞痛病发而死。死前并未选任继承人，仅留下两个未成年的幼子。皇位空悬之下，牧朝诸子之乱爆发。
+
+	flavor = flavorCNE.13.f
+	# 
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_5.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by another event
+	}
+
+	immediate = {
+		hidden_effect = {
+			if = {
+				limit = { NOT = { has_global_variable = ce_cne_events_12_happened_flag } }
+				set_global_variable = ce_cne_events_12_happened_flag
+			}	
+			ruler = { kill_character = yes }
+			random_scope_character = {
+				limit = {
+					has_variable = this_is_mu_deyu
+				}
+				save_scope_as = ce_mudeyu_scope
+			}
+		}
+	}
+
+	option = { # 依国法，父子相继。我等当扶保太孙。
+		name = flavorCNE.13.1
+		show_as_tooltip = { ruler = { kill_character = yes } }
+		
+		add_radicals = {
+			value = medium_radicals
+			interest_group = ig:ig_armed_forces
+		}
+		
+		add_radicals = {
+			value = medium_radicals
+			interest_group = ig:ig_rural_folk
+		}
+		
+		if = {
+			limit = { exists = scope:ce_mudeyu_scope }
+			scope:ce_mudeyu_scope = {
+				set_character_as_ruler = yes
+			}
+		}
+		else = {
+			create_character = {
+				# 
+				#role = politician # Remove this line
+				first_name = "Deyong"
+				last_name = "Mu"
+				ruler = yes
+				age = 13
+				female = no
+				culture = cu:ce_laoqin
+				interest_group = ig_landowners
+				ideology = ideology_traditionalist
+				save_scope_as = ce_mudeyong_scope
+				traits = {
+					reserved
+				}
+			}
+		}
+	}
+
+	option = { # 南方未定，西秦扰攘。当立长君！
+		name = flavorCNE.13.2
+		default_option = yes
+		
+		capital = {
+			add_radicals_in_state = {
+				value = medium_radicals
+			}
+		}
+		
+		if = {
+			limit = { exists = scope:ce_muchisheng_scope }
+			scope:ce_muchisheng_scope = {
+				set_character_as_ruler = yes
+			}
+		}
+		else_if = {
+			limit = { exists = scope:ce_muchiwu_scope }
+			scope:ce_muchiwu_scope = {
+				set_character_as_ruler = yes
+			}
+		}
+		else = {
+			create_character = {
+				# 
+				#role = politician # Remove this line
+				first_name = "Chiguang"
+				last_name = "Mu"
+				is_general = yes
+				age = 19
+				female = no
+				ruler = yes
+				culture = cu:ce_laoqin
+				interest_group = ig_armed_forces
+				ideology = ideology_traditionalist
+				save_scope_as = ce_muchiguang_scope
+				traits = {
+					reserved
+				}
+			}	
+		}
+	}
+	after = {
+		if = {
+			limit = {
+				any_scope_character = {
+					has_template = CNE_mu_muzi
+				}
+				any_country = {
+					any_scope_state = {
+						state_region = s:STATE_CALIFORNIA
+					}
+				}
+			}
+			trigger_event = { id = flavorCNE.14 months = 4 }
+		}
+	}
+}
+
+flavorCNE.14 = { # 木沐子离开
+	type = country_event
+	placement = root
+	title = flavorCNE.14.t
+	# 
+
+	desc = flavorCNE.14.d
+	# 
+
+	flavor = flavorCNE.14.f
+	# 
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_steam_ship.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by another event		
+	}
+
+	immediate = {
+		hidden_effect = {
+			ig:ig_rural_folk = {
+				save_scope_as = ce_rural_folk_ig
+			}
+			random_country = {
+				limit = {
+					any_scope_state = {
+						state_region = s:STATE_CALIFORNIA
+					}
+				}
+				save_scope_as = mu_muzi_new_home
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.14.1
+		default_option = yes
+		add_radicals = {
+			value = medium_radicals
+			interest_group = ig:ig_rural_folk
+		}
+		
+		random_scope_character = {
+			limit = { has_template = CNE_mu_muzi }
+			transfer_character = scope:mu_muzi_new_home
+		}
+		
+		random_scope_character = {
+			limit = { has_template = CNE_fei_xiyi }
+			transfer_character = scope:mu_muzi_new_home
+		}
+	}
+
+	option = { #
+		name = flavorCNE.14.2
+	#	default_option = yes
+		trigger = {
+			any_scope_character = {
+				has_template = CNE_fei_xiyi
+			}
+		}
+		
+		random_scope_character = {
+			limit = { has_template = CNE_fei_xiyi }
+			set_as_interest_group_leader = yes
+		}
+		
+		add_loyalists = {
+			value = medium_radicals
+			interest_group = ig:ig_rural_folk
+		}
+		
+		if = {
+			limit = { exists = scope:ce_rural_folk_ig }
+			scope:ce_rural_folk_ig = {
+				remove_ideology = ideology_agrarian
+				add_ideology = ideology_ce_feixiyism
+				add_modifier = {
+					name = CNE_attrative_general_as_leader
+					months = 120
+				}
+			}
+		}
+		
+	}	
+}
+
+flavorCNE.15 = { # 
+	type = country_event
+	placement = root
+	title = flavorCNE.15.t
+	# 
+
+	desc = flavorCNE.15.d
+	# 
+
+	flavor = flavorCNE.15.f
+	# 
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_2.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# triggered by another event	
+		any_scope_character = {
+			has_template = CNE_mu_muzi
+		}
+		game_date >= 1871.5.15
+		NOT = {
+			has_global_variable = bm_the_book_has_written
+		}
+	}
+
+	immediate = {
+		hidden_effect = {
+			set_global_variable = bm_the_book_has_written
+			random_scope_character = {
+				limit = { has_template = CNE_mu_muzi }
+				save_scope_as = mu_muzi_scope
+			}
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.15.1
+		if = {
+			limit = { exists = scope:mu_muzi_scope }
+			scope:mu_muzi_scope = {
+				add_trait = ce_novelist
+			}
+		}
+		add_modifier = {
+			name = bm_the_book
+			months = 120
+		}
+	}
+
+}
+
+flavorCNE.999 = { # JE DEBUG, CAN SET TO ANY CHANGE_VARIABLE
+	type = country_event
+	placement = root
+	title = flavorCNE.13.t
+	# 地权革命与帝国现状
+	desc = flavorCNE.13.d
+	# 
+
+	flavor = flavorCNE.13.f
+	# 
+	duration = 3
+
+	event_image = {
+		video = "gfx/event_pictures/unspecific_ruler_speaking_to_people.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
+
+	trigger = {
+		# DEBUG EVENT HAS NO TRIGGER 
+	}
+
+	immediate = {
+		hidden_effect = {
+			
+		}
+	}
+
+	option = { # 
+		name = flavorCNE.13.1
+		default_option = yes
+		random_diplomatic_play = {
+			limit = {
+				is_war = yes
+				target = {
+					NOT = { this = root }
+					has_variable = usm_opposition_country_leader_var
+				}
+				initiator = {
+					c:USM = This
+				}
+			}
+			add_target_backers = { root }
+			#add_escalation = 80
+		}
+	}
+	
+	option = { # 
+		name = flavorCNE.13.1
+		#default_option = yes
+		random_diplomatic_play = {
+			limit = {
+				#is_war = yes
+				target = {
+					NOT = { this = root }
+					has_variable = usm_opposition_country_leader_var
+				}
+				initiator = {
+					c:USM = This
+				}
+			}
+			add_target_backers = { root }
+			#add_escalation = 80
+		}
+	}
+	option = { # 
+		name = flavorCNE.13.1
+		trigger = {
+			any_diplomatic_play = {
+				initiator = { c:USM ?= This }
+				target = { has_variable = usm_opposition_country_leader_var }
+			}
+		}
+		random_country = {
+			limit = { has_variable = usm_opposition_country_leader_var }
+			add_treasury = 10000
+		}
+		random_country = {
+			limit = { has_variable = usm_opposition_country }
+			add_treasury = 123
+		}
+		random_country = {
+			limit = { has_variable = usm_opposition_country }
+			add_treasury = 123
+		}
+		random_country = {
+			limit = { has_variable = usm_opposition_country }
+			add_treasury = 123
+		}
+		random_country = {
+			limit = { has_variable = usm_opposition_country }
+			add_treasury = 123
+		}
+		if = {
+			limit = {
+				NOT = {
+					any_country = { has_variable = usm_opposition_country_leader_var }
+				}
+			}
+			add_treasury = 500
+			
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_variable = usm_opposition_country_leader_var
+				}
+			}
+			add_treasury = 2286
+			
+		}
+		if = {
+			limit = {
+				has_variable = usm_opposition_country
+			}
+			add_treasury = 222
+			
+		}
+		
+	}
+}
