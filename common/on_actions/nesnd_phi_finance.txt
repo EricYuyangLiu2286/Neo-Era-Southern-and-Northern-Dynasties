@@ -1,0 +1,107 @@
+﻿on_game_started_after_lobby = { on_actions = { nesnd_phi_after_lobby } }
+nesnd_phi_after_lobby = { effect = {
+    c:PHI ?= { nesnd_phi_initialize = yes }
+    }
+}
+on_monthly_pulse_country = { on_actions = { nesnd_phi_monthly } }
+nesnd_phi_monthly = { effect = {
+    if = { limit = { c:PHI ?= this is_country_alive = yes } nesnd_phi_month = yes }
+    if = { limit = { c:USM ?= this is_country_alive = yes } nesnd_phi_payer_month = yes }
+    }
+}
+on_treaty_entered_into_force = { on_actions = { nesnd_phi_bind_created_treaty } }
+# Root is the newly in-force Treaty, as in current 00_code_on_actions.txt:3408.
+nesnd_phi_bind_created_treaty = {
+	effect = {
+		if = {
+			limit = {
+				c:PHI ?= {
+					has_variable = nesnd_phi_active
+					exists = var:nesnd_phi_treaty
+				}
+				OR = {
+					this = c:PHI.var:nesnd_phi_treaty
+					AND = {
+						exists = amended_treaty
+						amended_treaty = c:PHI.var:nesnd_phi_treaty
+					}
+				}
+			}
+			c:PHI = {
+				set_variable = nesnd_phi_native_amendment
+				nesnd_phi_clear_active = yes
+				trigger_event = {
+					id = nesnd_phi_finance.10
+					popup = yes
+				}
+			}
+		}
+		if = {
+			limit = {
+				binds = c:USM
+				binds = c:PHI
+				NOT = {
+					exists = amended_treaty
+				}
+				NOT = {
+					any_scope_article = {
+						count > 1
+						always = yes
+					}
+				}
+				c:PHI = {
+					has_variable = nesnd_phi_creating
+					var:nesnd_phi_stage = 3
+					has_variable = nesnd_phi_pending
+					nesnd_phi_relation_valid = yes
+					NOT = {
+						has_variable = nesnd_phi_active
+					}
+					OR = {
+						AND = {
+							NOT = {
+								has_variable = nesnd_phi_requested_cash
+							}
+							var:nesnd_phi_requested_route = 1
+							var:nesnd_phi_quote = 8000
+							nesnd_phi_political_accord_valid = yes
+						}
+						AND = {
+							NOT = {
+								has_variable = nesnd_phi_requested_cash
+							}
+							var:nesnd_phi_requested_route = 2
+							var:nesnd_phi_quote = 3000
+							nesnd_phi_b_ships_available = yes
+						}
+						AND = {
+							has_variable = nesnd_phi_requested_cash
+							var:nesnd_phi_requested_route = 1
+							var:nesnd_phi_quote = 8700
+							nesnd_phi_cash_alternative_available = yes
+							nesnd_phi_political_accord_valid = yes
+						}
+						AND = {
+							has_variable = nesnd_phi_requested_cash
+							var:nesnd_phi_requested_route = 2
+							var:nesnd_phi_quote = 3700
+							nesnd_phi_cash_alternative_available = yes
+							nesnd_phi_b_ships_available = yes
+						}
+					}
+				}
+				any_scope_article = {
+					has_type = money_transfer
+					source_country = c:USM
+					target_country = c:PHI
+					input_quantity = c:PHI.var:nesnd_phi_quote
+				}
+			}
+			save_scope_as = nesnd_phi_new_treaty
+			c:PHI = {
+				nesnd_phi_finish_creation = yes
+			}
+		}
+	}
+}
+

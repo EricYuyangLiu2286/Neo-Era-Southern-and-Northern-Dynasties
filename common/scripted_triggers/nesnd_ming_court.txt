@@ -1,0 +1,54 @@
+﻿nesnd_ming_host_candidate = {
+    is_country_alive = yes is_player = no num_states > 0 exists = capital
+    capital = { controller = prev }
+    OR = { c:HNA ?= this c:SIH ?= this }
+    OR = { nesnd_board_stance_value = 0 nesnd_board_stance_value = 1 }
+    NOT = { has_variable = ce_usm_republican_revolution_tag }
+    NOT = { has_variable = tag_WUU_var }
+}
+nesnd_ming_host_rebel = {
+    nesnd_ming_host_candidate = yes has_variable = usm_opposition_country
+}
+nesnd_ming_accession_can_execute = {
+    c:USM ?= this NOT = { has_variable = tag_WUU_var }
+    NOT = { has_global_variable = nesnd_south_settled }
+    NOT = { has_variable = nesnd_accession_executed }
+    NOT = { has_variable = nesnd_accession_deferred }
+    trigger_if = { limit = { is_player = yes nesnd_board_stance_value = 1 }
+        OR = { c:HNA ?= { nesnd_ming_host_candidate = yes } c:SIH ?= { nesnd_ming_host_candidate = yes } }
+    }
+}
+nesnd_ming_has_existing_claimant = {
+    OR = {
+        any_country = { any_scope_character = { has_variable = nesnd_ming_claimant nesnd_ming_claimant_available = yes } }
+        any_country = { any_scope_character = { has_template = USM_zhu_jingyin nesnd_ming_claimant_available = yes } }
+    }
+}
+
+nesnd_ming_can_retry_flight = {
+    c:USM ?= this is_player = yes has_variable = nesnd_ming_player_intent nesnd_board_stance_value = 1
+    NOT = { has_variable = nesnd_ming_player_transferred }
+    NOT = { has_global_variable = nesnd_south_settled }
+    OR = {
+        any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var initiator = root }
+        any_country = { has_variable = usm_opposition_country has_war_with = root }
+    }
+    OR = {
+        c:HNA ?= { nesnd_ming_host_rebel = yes is_subject = no }
+        c:SIH ?= { nesnd_ming_host_rebel = yes is_subject = no }
+    }
+}
+
+nesnd_ming_authorized_dynast = {
+	OR = {
+		has_variable = nesnd_ming_dynastic_verified
+		has_template = USM_zhu_kuobing
+		has_template = USM_zhu_zuoyu
+		has_template = USM_zhu_yuanwei
+		has_template = USM_zhu_zixin
+		has_template = USM_zhu_jingyin
+		has_template = USM_zhu_zhongying
+		has_template = USM_zhu_shenhui
+		has_template = USM_zhu_jiangchen
+	}
+}

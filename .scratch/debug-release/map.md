@@ -9,7 +9,7 @@ Updated: 2026-11-01
 
 ## Notes
 
-- 用户已进一步授权：先完成原版参考流程、中国女性发型、指定地图细化及 DEBUG 延续，再做完整改革、明吴多结局、编辑器；海外市场退出降低优先级。用户休息期间明确不提问，合理实现选择由代理处理。独立候选、备份、验证和 Git 保存持续执行；此前主 MOD 最终合并清单审批保留，当前不发起问题。
+- 用户已进一步授权：先完成原版参考流程、中国女性发型、指定地图细化及 DEBUG 延续，再做完整改革、明吴多结局、编辑器；海外市场退出降低优先级。用户休息期间明确不提问，合理实现选择由代理处理。独立候选、备份、验证和 Git 保存持续执行；2026-11-01最新授权已改为：修复已知BUG、完成必要检查及备份后直接整合主MOD与主Git分支。
 - 当前为明确授权的执行图；下列子任务是 implementation，不是默认 wayfinder 决策票。
 - 领域与工程职责见 [工程适配](../../docs/agents/engineering-skills.md)；任务字段见 [任务约定](../../docs/agents/issue-tracker.md)。
 - 详细设计继续使用 [原始范围账](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/12-scope-ledger.md>)和 [批次计划40](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/40-batched-debug-and-delivery.md>)。其中旧进度描述以精确候选及本轮结果为准，不删除原账。
@@ -61,3 +61,11 @@ Updated: 2026-11-01
 [完整旧交接存档](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/archive/engineering-entry-20261101T002933Z/references/active-work.md>)保留此前运行记录；当前进程/窗口必须重新枚举。
 
 旧回合 CUA在Lin夹具操作期间返回“physical Escape”停止信号，故当时停止 UI，Lin 未通过。2026-11-01用户明确 resume 并说明进程关闭，本轮重新枚举进程/窗口后恢复隔离运行；旧窗口与 exec ID 均失效。范围修订前文档保存在[归档](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/archive/accepted-failure-20261101T010339Z/manifest.json>)。
+
+## 最新纠正：日志优先收口
+
+进港已正常，停止反复开局/读档/截图。优先修supply按钮预览缺失scope及其他error.log根因，运行外部静态/MCP检查；正式包不含QA覆盖层。已知问题修复与必要检查后直接备份合入。完整规则见技能log-first-delivery.md。原始功能欠账保留，未完成候选不混入本次BUG修复正式包。
+
+## 已整合：日志修复正式包
+
+主MOD已按最新授权备份合入，零文件删除/零冲突，metadata和当前文档保留。供给按钮缺失对象及17处其他清理保护已修；源码23→0，Tiger零新增，MCP4查询通过。正式包无QA覆盖层。详细范围、未新跑引擎及后续功能欠账见WORK/reports/logfix-release-20261101/release-notes.md。此节取代上方旧“主MOD未合入/等待审批”状态；旧阶段记录保留。

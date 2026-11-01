@@ -1,0 +1,98 @@
+﻿nesnd_reform_measure = {
+    if = { limit = { NOT = { has_variable = nesnd_reform_workforce_metrics } }
+        set_variable = nesnd_reform_workforce_metrics
+        set_variable = { name = nesnd_reform_good_months value = 0 }
+        set_variable = { name = nesnd_reform_bad_months value = 0 }
+        nesnd_reform_clear_local = yes
+    }
+    set_variable = { name = nesnd_reform_native_unemployment value = 0 }
+
+    set_variable = { name = nesnd_reform_population value = nesnd_reform_population_sum }
+    set_variable = { name = nesnd_reform_workforce value = nesnd_reform_workforce_sum }
+    set_variable = { name = nesnd_reform_unemployment value = 1 }
+    set_variable = { name = nesnd_reform_access value = 0 }
+    set_variable = { name = nesnd_reform_sol value = 0 }
+    set_variable = { name = nesnd_reform_starving value = 1 }
+    if = { limit = { var:nesnd_reform_population > 0 }
+        set_variable = { name = nesnd_reform_native_unemployment value = { value = nesnd_reform_native_unemployment_sum divide = var:nesnd_reform_population } }
+        set_variable = { name = nesnd_reform_access value = { value = nesnd_reform_access_sum divide = var:nesnd_reform_population } }
+    }
+    if = { limit = { var:nesnd_reform_workforce > 0 }
+        set_variable = { name = nesnd_reform_unemployment value = { value = nesnd_reform_unemployment_sum divide = var:nesnd_reform_workforce } }
+        set_variable = { name = nesnd_reform_sol value = { value = nesnd_reform_sol_sum divide = var:nesnd_reform_workforce } }
+        set_variable = { name = nesnd_reform_starving value = { value = nesnd_reform_starving_sum divide = var:nesnd_reform_workforce } }
+    }
+    every_scope_state = {
+        limit = { nesnd_reform_region = yes }
+        set_variable = { name = nesnd_reform_state_workforce value = nesnd_reform_state_workforce_sum }
+        set_variable = { name = nesnd_reform_state_unemployment value = nesnd_reform_state_unemployment_rate }
+        set_variable = { name = nesnd_reform_state_starving value = 0 }
+        set_variable = { name = nesnd_reform_state_severe value = 0 }
+        if = { limit = { var:nesnd_reform_state_workforce > 0 }
+            set_variable = { name = nesnd_reform_state_starving value = { value = nesnd_reform_state_starving_sum divide = var:nesnd_reform_state_workforce } }
+            set_variable = { name = nesnd_reform_state_severe value = { value = nesnd_reform_state_severe_sum divide = var:nesnd_reform_state_workforce } }
+        }
+    }
+    set_variable = { name = nesnd_reform_neglected_regions value = nesnd_reform_neglected_region_count }
+    set_variable = { name = nesnd_reform_current_cost value = nesnd_reform_investment_cost }
+    set_variable = { name = nesnd_reform_current_review_cost value = nesnd_reform_review_cost }
+}
+nesnd_reform_invest = {
+    if = { limit = { nesnd_reform_can_invest = yes }
+        add_treasury = nesnd_reform_investment_debit
+        set_variable = { name = nesnd_reform_investment_cooldown months = 12 }
+        ordered_scope_state = {
+            limit = { nesnd_reform_region = yes }
+            order_by = nesnd_reform_state_unemployment_rate position = 0 check_range_bounds = no
+            add_modifier = { name = nesnd_reform_public_workshops months = 12 }
+        }
+        nesnd_reform_measure = yes
+    }
+}
+nesnd_reform_review = {
+    if = { limit = { nesnd_reform_can_review = yes }
+        add_treasury = nesnd_reform_review_debit
+        set_variable = { name = nesnd_reform_review_cooldown months = 12 }
+        add_modifier = { name = nesnd_land_appeals months = 12 }
+        change_variable = { name = cne_landreform_failure_tracker add = -5 }
+        clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+        nesnd_reform_measure = yes
+        nesnd_refresh_land_display = yes
+    }
+}
+nesnd_reform_relieve = {
+    if = { limit = { nesnd_reform_can_relieve = yes }
+        add_treasury = nesnd_reform_review_debit
+        set_variable = { name = nesnd_reform_relief_cooldown months = 12 }
+        ordered_scope_state = {
+            limit = { nesnd_reform_region = yes any_scope_pop = { OR = { is_in_mild_starvation = yes is_in_severe_starvation = yes } } }
+            order_by = nesnd_reform_state_unemployment_rate position = 0 check_range_bounds = no
+            add_modifier = { name = nesnd_reform_transitional_relief months = 12 }
+        }
+        nesnd_reform_measure = yes
+    }
+}
+nesnd_reform_clear_local = {
+    every_scope_state = {
+        remove_variable = nesnd_reform_local_bad_months
+        remove_variable = nesnd_reform_local_recent
+        remove_variable = nesnd_reform_deprivation_months
+    }
+}
+nesnd_reform_regional_monthly = {
+    every_scope_state = {
+        limit = { nesnd_reform_region = yes }
+        if = { limit = { NOT = { has_variable = nesnd_reform_local_recent } }
+            set_variable = { name = nesnd_reform_local_bad_months value = 0 }
+            set_variable = { name = nesnd_reform_deprivation_months value = 0 }
+        }
+        set_variable = { name = nesnd_reform_local_recent months = 2 }
+        if = { limit = { nesnd_reform_state_unemployment_rate > 0.10 turmoil > 0.25 }
+            change_variable = { name = nesnd_reform_local_bad_months add = 1 }
+        } else = { set_variable = { name = nesnd_reform_local_bad_months value = 0 } }
+        if = { limit = { nesnd_reform_regional_deprivation = yes }
+            change_variable = { name = nesnd_reform_deprivation_months add = 1 }
+        } else = { set_variable = { name = nesnd_reform_deprivation_months value = 0 } }
+    }
+    set_variable = { name = nesnd_reform_neglected_regions value = nesnd_reform_neglected_region_count }
+}

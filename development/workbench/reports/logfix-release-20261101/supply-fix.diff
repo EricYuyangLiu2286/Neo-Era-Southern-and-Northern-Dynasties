@@ -1,0 +1,1430 @@
+--- common/scripted_triggers/nesnd_supply_triggers.txt before
++++ common/scripted_triggers/nesnd_supply_triggers.txt after
+@@ -40,19 +40,45 @@
+     capital.market = { mg:grain = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } }
+ }
+ nesnd_supply_partner_valid = {
+-    exists = var:nesnd_supply_partner
+-    var:nesnd_supply_partner = { is_country_alive = yes }
+-    NOT = { has_war_with = var:nesnd_supply_partner }
+-    OR = {
+-        AND = { is_subject = yes overlord = var:nesnd_supply_sponsor }
+-        AND = { is_subject = no this = var:nesnd_supply_sponsor }
+-    }
+-    var:nesnd_supply_partner = {
+-        OR = {
+-            AND = { is_subject = yes overlord = prev.var:nesnd_supply_partner_sponsor }
+-            AND = { is_subject = no this = prev.var:nesnd_supply_partner_sponsor }
+-        }
+-    }
++	trigger_if = {
++		limit = {
++			exists = var:nesnd_supply_partner
++			exists = var:nesnd_supply_sponsor
++			exists = var:nesnd_supply_partner_sponsor
++		}
++		exists = var:nesnd_supply_partner
++		var:nesnd_supply_partner ?= {
++			is_country_alive = yes
++		}
++		NOT = {
++			has_war_with = var:nesnd_supply_partner
++		}
++		OR = {
++			AND = {
++				is_subject = yes
++				overlord = var:nesnd_supply_sponsor
++			}
++			AND = {
++				is_subject = no
++				this = var:nesnd_supply_sponsor
++			}
++		}
++		var:nesnd_supply_partner ?= {
++			OR = {
++				AND = {
++					is_subject = yes
++					overlord = prev.var:nesnd_supply_partner_sponsor
++				}
++				AND = {
++					is_subject = no
++					this = prev.var:nesnd_supply_partner_sponsor
++				}
++			}
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ nesnd_supply_diplomacy_ready = {
+     OR = { has_variable = nesnd_supply_self_reliance nesnd_supply_partner_valid = yes }
+@@ -67,34 +93,103 @@
+     nesnd_supply_diplomacy_ready = yes
+ }
+ nesnd_supply_request_valid = {
+-    exists = scope:nesnd_supply_requester
+-    is_country_alive = yes
+-    OR = {
+-        AND = { is_subject = yes overlord = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor }
+-        AND = { is_subject = no this = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor }
+-    }
+-
+-    scope:nesnd_supply_requester = {
+-        is_country_alive = yes OR = { has_journal_entry = nesnd_supply_preparations has_journal_entry = nesnd_supply_hus_preparations }
+-        NOT = { has_variable = nesnd_supply_dismissed }
+-        OR = { AND = { is_subject = yes overlord = var:nesnd_supply_sponsor } AND = { is_subject = no this = var:nesnd_supply_sponsor } }
+-        has_variable = nesnd_supply_pending
+-        var:nesnd_supply_pending = root
+-        NOT = { has_war_with = root }
+-    }
++	trigger_if = {
++		limit = {
++			exists = scope:nesnd_supply_requester
++		}
++		trigger_if = {
++			limit = {
++				scope:nesnd_supply_requester ?= {
++					exists = var:nesnd_supply_pending_sponsor
++					exists = var:nesnd_supply_sponsor
++					exists = var:nesnd_supply_pending
++				}
++			}
++			exists = scope:nesnd_supply_requester
++			is_country_alive = yes
++			OR = {
++				AND = {
++					is_subject = yes
++					overlord = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor
++				}
++				AND = {
++					is_subject = no
++					this = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor
++				}
++			}
++			scope:nesnd_supply_requester ?= {
++				is_country_alive = yes
++				OR = {
++					has_journal_entry = nesnd_supply_preparations
++					has_journal_entry = nesnd_supply_hus_preparations
++				}
++				NOT = {
++					has_variable = nesnd_supply_dismissed
++				}
++				OR = {
++					AND = {
++						is_subject = yes
++						overlord = var:nesnd_supply_sponsor
++					}
++					AND = {
++						is_subject = no
++						this = var:nesnd_supply_sponsor
++					}
++				}
++				has_variable = nesnd_supply_pending
++				var:nesnd_supply_pending = root
++				NOT = {
++					has_war_with = root
++				}
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+ 
+ nesnd_supply_trade_request_valid = {
+- exists = scope:nesnd_supply_requester
+- is_country_alive = yes
+- scope:nesnd_supply_requester = {
+-  is_country_alive = yes is_at_war = no
+-  OR = { has_journal_entry = nesnd_supply_preparations has_journal_entry = nesnd_supply_hus_preparations }
+-  NOT = { has_variable = nesnd_supply_dismissed }
+-  NOT = { has_variable = nesnd_supply_done }
+-  has_variable = nesnd_supply_trade_pending
+-  var:nesnd_supply_trade_pending = root
+-  var:nesnd_supply_partner = root
+-  nesnd_supply_partner_valid = yes
+- }
++	trigger_if = {
++		limit = {
++			exists = scope:nesnd_supply_requester
++		}
++		trigger_if = {
++			limit = {
++				scope:nesnd_supply_requester ?= {
++					exists = var:nesnd_supply_trade_pending
++					exists = var:nesnd_supply_partner
++				}
++			}
++			exists = scope:nesnd_supply_requester
++			is_country_alive = yes
++			scope:nesnd_supply_requester ?= {
++				is_country_alive = yes
++				is_at_war = no
++				OR = {
++					has_journal_entry = nesnd_supply_preparations
++					has_journal_entry = nesnd_supply_hus_preparations
++				}
++				NOT = {
++					has_variable = nesnd_supply_dismissed
++				}
++				NOT = {
++					has_variable = nesnd_supply_done
++				}
++				has_variable = nesnd_supply_trade_pending
++				var:nesnd_supply_trade_pending = root
++				var:nesnd_supply_partner = root
++				nesnd_supply_partner_valid = yes
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	trigger_else = {
++		always = no
++	}
+ }
+--- common/scripted_effects/nesnd_supply_effects.txt before
++++ common/scripted_effects/nesnd_supply_effects.txt after
+@@ -1,13 +1,33 @@
+ nesnd_supply_clear_legacy = {
+-    remove_variable = nesnd_hna_ready
+-    remove_variable = nesnd_hna_preparation
+-    remove_variable = nesnd_hna_academy_built
+-    remove_variable = nesnd_hna_supply_built
+-    remove_variable = nesnd_hna_veterans_built
+-    remove_modifier = nesnd_hna_prepared
+-    remove_modifier = nesnd_hna_academy
+-    remove_modifier = nesnd_hna_supply
+-    remove_modifier = nesnd_hna_veterans
++	remove_variable = nesnd_hna_ready
++	remove_variable = nesnd_hna_preparation
++	remove_variable = nesnd_hna_academy_built
++	remove_variable = nesnd_hna_supply_built
++	remove_variable = nesnd_hna_veterans_built
++	if = {
++		limit = {
++			has_modifier = nesnd_hna_prepared
++		}
++		remove_modifier = nesnd_hna_prepared
++	}
++	if = {
++		limit = {
++			has_modifier = nesnd_hna_academy
++		}
++		remove_modifier = nesnd_hna_academy
++	}
++	if = {
++		limit = {
++			has_modifier = nesnd_hna_supply
++		}
++		remove_modifier = nesnd_hna_supply
++	}
++	if = {
++		limit = {
++			has_modifier = nesnd_hna_veterans
++		}
++		remove_modifier = nesnd_hna_veterans
++	}
+ }
+ nesnd_supply_clear_partner = {
+     remove_variable = nesnd_supply_partner
+@@ -30,24 +50,125 @@
+     nesnd_supply_refresh = yes
+ }
+ nesnd_supply_refresh = {
+-    nesnd_supply_measure_workforce = yes
+-    if = { limit = { NOT = { has_variable = nesnd_supply_pending } } remove_variable = nesnd_supply_pending_sponsor }
+-    if = { limit = { NOT = { OR = { AND = { is_subject = yes overlord = var:nesnd_supply_sponsor } AND = { is_subject = no this = var:nesnd_supply_sponsor } } } } nesnd_supply_clear_partner = yes }
+-    if = { limit = { has_variable = nesnd_supply_partner NOT = { nesnd_supply_partner_valid = yes } }
+-        nesnd_supply_clear_partner = yes
+-    }
+-    if = { limit = { NOT = { capital.market = var:nesnd_supply_market } }
+-        set_variable = { name = nesnd_supply_weeks value = 0 }
+-        set_variable = { name = nesnd_supply_market value = capital.market }
+-    }
+-    nesnd_supply_save_sponsor = yes
+-    set_variable = { name = nesnd_supply_score value = 0 }
+-    if = { limit = { nesnd_supply_inputs_ready = yes } change_variable = { name = nesnd_supply_score add = 1 } }
+-    if = { limit = { nesnd_supply_jobs_ready = yes } change_variable = { name = nesnd_supply_score add = 1 } }
+-    if = { limit = { nesnd_supply_livelihood_ready = yes } change_variable = { name = nesnd_supply_score add = 1 } }
+-    if = { limit = { nesnd_supply_diplomacy_ready = yes } change_variable = { name = nesnd_supply_score add = 1 } }
+-    if = { limit = { NOT = { nesnd_supply_all_ready = yes } } set_variable = { name = nesnd_supply_weeks value = 0 } }
+-    nesnd_supply_update_display = yes
++	nesnd_supply_measure_workforce = yes
++	if = {
++		limit = {
++			NOT = {
++				has_variable = nesnd_supply_pending
++			}
++		}
++		remove_variable = nesnd_supply_pending_sponsor
++	}
++	if = {
++		limit = {
++			trigger_if = {
++				limit = {
++					exists = var:nesnd_supply_sponsor
++				}
++				NOT = {
++					OR = {
++						AND = {
++							is_subject = yes
++							overlord = var:nesnd_supply_sponsor
++						}
++						AND = {
++							is_subject = no
++							this = var:nesnd_supply_sponsor
++						}
++					}
++				}
++			}
++			trigger_else = {
++				always = yes
++			}
++		}
++		nesnd_supply_clear_partner = yes
++	}
++	if = {
++		limit = {
++			has_variable = nesnd_supply_partner
++			NOT = {
++				nesnd_supply_partner_valid = yes
++			}
++		}
++		nesnd_supply_clear_partner = yes
++	}
++	if = {
++		limit = {
++			trigger_if = {
++				limit = {
++					exists = var:nesnd_supply_market
++				}
++				NOT = {
++					capital.market = var:nesnd_supply_market
++				}
++			}
++			trigger_else = {
++				always = yes
++			}
++		}
++		set_variable = {
++			name = nesnd_supply_weeks
++			value = 0
++		}
++		set_variable = {
++			name = nesnd_supply_market
++			value = capital.market
++		}
++	}
++	nesnd_supply_save_sponsor = yes
++	set_variable = {
++		name = nesnd_supply_score
++		value = 0
++	}
++	if = {
++		limit = {
++			nesnd_supply_inputs_ready = yes
++		}
++		change_variable = {
++			name = nesnd_supply_score
++			add = 1
++		}
++	}
++	if = {
++		limit = {
++			nesnd_supply_jobs_ready = yes
++		}
++		change_variable = {
++			name = nesnd_supply_score
++			add = 1
++		}
++	}
++	if = {
++		limit = {
++			nesnd_supply_livelihood_ready = yes
++		}
++		change_variable = {
++			name = nesnd_supply_score
++			add = 1
++		}
++	}
++	if = {
++		limit = {
++			nesnd_supply_diplomacy_ready = yes
++		}
++		change_variable = {
++			name = nesnd_supply_score
++			add = 1
++		}
++	}
++	if = {
++		limit = {
++			NOT = {
++				nesnd_supply_all_ready = yes
++			}
++		}
++		set_variable = {
++			name = nesnd_supply_weeks
++			value = 0
++		}
++	}
++	nesnd_supply_update_display = yes
+ }
+ nesnd_supply_week = {
+     nesnd_supply_refresh = yes
+@@ -72,9 +193,28 @@
+ }
+ 
+ nesnd_supply_save_pending_sponsor = {
+- if = { limit = { var:nesnd_supply_pending = { is_subject = yes } }
+-  set_variable = { name = nesnd_supply_pending_sponsor value = var:nesnd_supply_pending.overlord }
+- } else = { set_variable = { name = nesnd_supply_pending_sponsor value = var:nesnd_supply_pending } }
++	if = {
++		limit = {
++			exists = var:nesnd_supply_pending
++		}
++		if = {
++			limit = {
++				var:nesnd_supply_pending ?= {
++					is_subject = yes
++				}
++			}
++			set_variable = {
++				name = nesnd_supply_pending_sponsor
++				value = var:nesnd_supply_pending.overlord
++			}
++		}
++		else = {
++			set_variable = {
++				name = nesnd_supply_pending_sponsor
++				value = var:nesnd_supply_pending
++			}
++		}
++	}
+ }
+ 
+ # First refresh migrates old-save timing once. Live completion gates do not trust these display caches.
+@@ -89,13 +229,30 @@
+     set_variable = { name = nesnd_supply_critical_states value = nesnd_supply_critical_employment_states }
+ }
+ nesnd_supply_update_display = {
+-    save_scope_as = nesnd_supply_display
+-    je:nesnd_supply_preparations ?= {
+-        set_bar_progress = { name = nesnd_supply_readiness_bar value = scope:nesnd_supply_display.var:nesnd_supply_score }
+-        set_bar_progress = { name = nesnd_supply_continuity_bar value = scope:nesnd_supply_display.var:nesnd_supply_weeks }
+-    }
+-    je:nesnd_supply_hus_preparations ?= {
+-        set_bar_progress = { name = nesnd_supply_readiness_bar value = scope:nesnd_supply_display.var:nesnd_supply_score }
+-        set_bar_progress = { name = nesnd_supply_continuity_bar value = scope:nesnd_supply_display.var:nesnd_supply_weeks }
+-    }
+-}
++	save_scope_as = nesnd_supply_display
++	if = {
++		limit = {
++			exists = scope:nesnd_supply_display
++		}
++		je:nesnd_supply_preparations ?= {
++			set_bar_progress = {
++				name = nesnd_supply_readiness_bar
++				value = scope:nesnd_supply_display.nesnd_supply_score_value
++			}
++			set_bar_progress = {
++				name = nesnd_supply_continuity_bar
++				value = scope:nesnd_supply_display.nesnd_supply_weeks_value
++			}
++		}
++		je:nesnd_supply_hus_preparations ?= {
++			set_bar_progress = {
++				name = nesnd_supply_readiness_bar
++				value = scope:nesnd_supply_display.nesnd_supply_score_value
++			}
++			set_bar_progress = {
++				name = nesnd_supply_continuity_bar
++				value = scope:nesnd_supply_display.nesnd_supply_weeks_value
++			}
++		}
++	}
++}
+--- common/scripted_buttons/nesnd_supply_buttons.txt before
++++ common/scripted_buttons/nesnd_supply_buttons.txt after
+@@ -1,54 +1,488 @@
+ nesnd_supply_invite_hna = {
+- name = nesnd_supply_invite_hna desc = nesnd_supply_invite_desc
+- visible = { NOT = { c:HUS ?= this } NOT = { c:HNA ?= this } }
+- possible = { exists = c:HNA c:HNA = { is_country_alive = yes } is_at_war = no NOT = { has_war_with = c:HNA } influence >= 15 NOT = { has_variable = nesnd_supply_pending } NOT = { has_variable = nesnd_supply_partner } NOT = { has_variable = nesnd_supply_cooldown }  OR = { is_ai = no NOT = { has_variable = nesnd_supply_self_reliance } } }
+- ai_chance = { value = 1 }
+- effect = { remove_variable = nesnd_supply_self_reliance set_variable = { name = nesnd_supply_pending value = c:HNA days = 30 } set_variable = { name = nesnd_supply_cooldown months = 6 } add_modifier = { name = nesnd_supply_envoys months = 6 } nesnd_supply_save_pending_sponsor = yes save_scope_as = nesnd_supply_requester c:HNA = { trigger_event = { id = nesnd_supply.1 days = 7 popup = yes } } custom_tooltip = nesnd_supply_invitation_tt }
++	name = nesnd_supply_invite_hna
++	desc = nesnd_supply_invite_desc
++	visible = {
++		NOT = {
++			c:HUS ?= this
++		}
++		NOT = {
++			c:HNA ?= this
++		}
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:HNA
++			}
++			exists = c:HNA
++			c:HNA = {
++				is_country_alive = yes
++			}
++			is_at_war = no
++			NOT = {
++				has_war_with = c:HNA
++			}
++			influence >= 15
++			NOT = {
++				has_variable = nesnd_supply_pending
++			}
++			NOT = {
++				has_variable = nesnd_supply_partner
++			}
++			NOT = {
++				has_variable = nesnd_supply_cooldown
++			}
++			OR = {
++				is_ai = no
++				NOT = {
++					has_variable = nesnd_supply_self_reliance
++				}
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				exists = c:HNA
++			}
++			remove_variable = nesnd_supply_self_reliance
++			set_variable = {
++				name = nesnd_supply_pending
++				value = c:HNA
++				days = 30
++			}
++			set_variable = {
++				name = nesnd_supply_cooldown
++				months = 6
++			}
++			add_modifier = {
++				name = nesnd_supply_envoys
++				months = 6
++			}
++			nesnd_supply_save_pending_sponsor = yes
++			save_scope_as = nesnd_supply_requester
++			c:HNA = {
++				trigger_event = {
++					id = nesnd_supply.1
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_supply_invitation_tt
++		}
++	}
+ }
+ 
+ 
+ nesnd_supply_invite_sih = {
+- name = nesnd_supply_invite_sih desc = nesnd_supply_invite_desc
+- visible = { NOT = { c:HUS ?= this } NOT = { c:SIH ?= this } }
+- possible = { exists = c:SIH c:SIH = { is_country_alive = yes } is_at_war = no NOT = { has_war_with = c:SIH } influence >= 15 NOT = { has_variable = nesnd_supply_pending } NOT = { has_variable = nesnd_supply_partner } NOT = { has_variable = nesnd_supply_cooldown }  OR = { is_ai = no NOT = { has_variable = nesnd_supply_self_reliance } } }
+- ai_chance = { value = 1 }
+- effect = { remove_variable = nesnd_supply_self_reliance set_variable = { name = nesnd_supply_pending value = c:SIH days = 30 } set_variable = { name = nesnd_supply_cooldown months = 6 } add_modifier = { name = nesnd_supply_envoys months = 6 } nesnd_supply_save_pending_sponsor = yes save_scope_as = nesnd_supply_requester c:SIH = { trigger_event = { id = nesnd_supply.1 days = 7 popup = yes } } custom_tooltip = nesnd_supply_invitation_tt }
++	name = nesnd_supply_invite_sih
++	desc = nesnd_supply_invite_desc
++	visible = {
++		NOT = {
++			c:HUS ?= this
++		}
++		NOT = {
++			c:SIH ?= this
++		}
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:SIH
++			}
++			exists = c:SIH
++			c:SIH = {
++				is_country_alive = yes
++			}
++			is_at_war = no
++			NOT = {
++				has_war_with = c:SIH
++			}
++			influence >= 15
++			NOT = {
++				has_variable = nesnd_supply_pending
++			}
++			NOT = {
++				has_variable = nesnd_supply_partner
++			}
++			NOT = {
++				has_variable = nesnd_supply_cooldown
++			}
++			OR = {
++				is_ai = no
++				NOT = {
++					has_variable = nesnd_supply_self_reliance
++				}
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				exists = c:SIH
++			}
++			remove_variable = nesnd_supply_self_reliance
++			set_variable = {
++				name = nesnd_supply_pending
++				value = c:SIH
++				days = 30
++			}
++			set_variable = {
++				name = nesnd_supply_cooldown
++				months = 6
++			}
++			add_modifier = {
++				name = nesnd_supply_envoys
++				months = 6
++			}
++			nesnd_supply_save_pending_sponsor = yes
++			save_scope_as = nesnd_supply_requester
++			c:SIH = {
++				trigger_event = {
++					id = nesnd_supply.1
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_supply_invitation_tt
++		}
++	}
+ }
+ 
+ 
+ nesnd_supply_invite_gng = {
+- name = nesnd_supply_invite_gng desc = nesnd_supply_invite_desc
+- visible = { NOT = { c:HUS ?= this } NOT = { c:GNG ?= this } }
+- possible = { exists = c:GNG c:GNG = { is_country_alive = yes } is_at_war = no NOT = { has_war_with = c:GNG } influence >= 15 NOT = { has_variable = nesnd_supply_pending } NOT = { has_variable = nesnd_supply_partner } NOT = { has_variable = nesnd_supply_cooldown }  OR = { is_ai = no NOT = { has_variable = nesnd_supply_self_reliance } } }
+- ai_chance = { value = 1 }
+- effect = { remove_variable = nesnd_supply_self_reliance set_variable = { name = nesnd_supply_pending value = c:GNG days = 30 } set_variable = { name = nesnd_supply_cooldown months = 6 } add_modifier = { name = nesnd_supply_envoys months = 6 } nesnd_supply_save_pending_sponsor = yes save_scope_as = nesnd_supply_requester c:GNG = { trigger_event = { id = nesnd_supply.1 days = 7 popup = yes } } custom_tooltip = nesnd_supply_invitation_tt }
++	name = nesnd_supply_invite_gng
++	desc = nesnd_supply_invite_desc
++	visible = {
++		NOT = {
++			c:HUS ?= this
++		}
++		NOT = {
++			c:GNG ?= this
++		}
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:GNG
++			}
++			exists = c:GNG
++			c:GNG = {
++				is_country_alive = yes
++			}
++			is_at_war = no
++			NOT = {
++				has_war_with = c:GNG
++			}
++			influence >= 15
++			NOT = {
++				has_variable = nesnd_supply_pending
++			}
++			NOT = {
++				has_variable = nesnd_supply_partner
++			}
++			NOT = {
++				has_variable = nesnd_supply_cooldown
++			}
++			OR = {
++				is_ai = no
++				NOT = {
++					has_variable = nesnd_supply_self_reliance
++				}
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				exists = c:GNG
++			}
++			remove_variable = nesnd_supply_self_reliance
++			set_variable = {
++				name = nesnd_supply_pending
++				value = c:GNG
++				days = 30
++			}
++			set_variable = {
++				name = nesnd_supply_cooldown
++				months = 6
++			}
++			add_modifier = {
++				name = nesnd_supply_envoys
++				months = 6
++			}
++			nesnd_supply_save_pending_sponsor = yes
++			save_scope_as = nesnd_supply_requester
++			c:GNG = {
++				trigger_event = {
++					id = nesnd_supply.1
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_supply_invitation_tt
++		}
++	}
+ }
+ 
+ 
+ nesnd_supply_invite_yn1 = {
+- name = nesnd_supply_invite_yn1 desc = nesnd_supply_invite_desc
+- visible = { NOT = { c:HUS ?= this } NOT = { c:YN1 ?= this } }
+- possible = { exists = c:YN1 c:YN1 = { is_country_alive = yes } is_at_war = no NOT = { has_war_with = c:YN1 } influence >= 15 NOT = { has_variable = nesnd_supply_pending } NOT = { has_variable = nesnd_supply_partner } NOT = { has_variable = nesnd_supply_cooldown }  OR = { is_ai = no NOT = { has_variable = nesnd_supply_self_reliance } } }
+- ai_chance = { value = 1 }
+- effect = { remove_variable = nesnd_supply_self_reliance set_variable = { name = nesnd_supply_pending value = c:YN1 days = 30 } set_variable = { name = nesnd_supply_cooldown months = 6 } add_modifier = { name = nesnd_supply_envoys months = 6 } nesnd_supply_save_pending_sponsor = yes save_scope_as = nesnd_supply_requester c:YN1 = { trigger_event = { id = nesnd_supply.1 days = 7 popup = yes } } custom_tooltip = nesnd_supply_invitation_tt }
++	name = nesnd_supply_invite_yn1
++	desc = nesnd_supply_invite_desc
++	visible = {
++		NOT = {
++			c:HUS ?= this
++		}
++		NOT = {
++			c:YN1 ?= this
++		}
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:YN1
++			}
++			exists = c:YN1
++			c:YN1 = {
++				is_country_alive = yes
++			}
++			is_at_war = no
++			NOT = {
++				has_war_with = c:YN1
++			}
++			influence >= 15
++			NOT = {
++				has_variable = nesnd_supply_pending
++			}
++			NOT = {
++				has_variable = nesnd_supply_partner
++			}
++			NOT = {
++				has_variable = nesnd_supply_cooldown
++			}
++			OR = {
++				is_ai = no
++				NOT = {
++					has_variable = nesnd_supply_self_reliance
++				}
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				exists = c:YN1
++			}
++			remove_variable = nesnd_supply_self_reliance
++			set_variable = {
++				name = nesnd_supply_pending
++				value = c:YN1
++				days = 30
++			}
++			set_variable = {
++				name = nesnd_supply_cooldown
++				months = 6
++			}
++			add_modifier = {
++				name = nesnd_supply_envoys
++				months = 6
++			}
++			nesnd_supply_save_pending_sponsor = yes
++			save_scope_as = nesnd_supply_requester
++			c:YN1 = {
++				trigger_event = {
++					id = nesnd_supply.1
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_supply_invitation_tt
++		}
++	}
+ }
+ 
+ 
+ nesnd_supply_invite_cne = {
+- name = nesnd_supply_invite_cne desc = nesnd_supply_invite_desc
+- visible = { c:HUS ?= this NOT = { c:CNE ?= this } }
+- possible = { exists = c:CNE c:CNE = { is_country_alive = yes } is_at_war = no NOT = { has_war_with = c:CNE } influence >= 15 NOT = { has_variable = nesnd_supply_pending } NOT = { has_variable = nesnd_supply_partner } NOT = { has_variable = nesnd_supply_cooldown }  OR = { is_ai = no NOT = { has_variable = nesnd_supply_self_reliance } } }
+- ai_chance = { value = 1 }
+- effect = { remove_variable = nesnd_supply_self_reliance set_variable = { name = nesnd_supply_pending value = c:CNE days = 30 } set_variable = { name = nesnd_supply_cooldown months = 6 } add_modifier = { name = nesnd_supply_envoys months = 6 } nesnd_supply_save_pending_sponsor = yes save_scope_as = nesnd_supply_requester c:CNE = { trigger_event = { id = nesnd_supply.1 days = 7 popup = yes } } custom_tooltip = nesnd_supply_invitation_tt }
++	name = nesnd_supply_invite_cne
++	desc = nesnd_supply_invite_desc
++	visible = {
++		c:HUS ?= this
++		NOT = {
++			c:CNE ?= this
++		}
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:CNE
++			}
++			exists = c:CNE
++			c:CNE = {
++				is_country_alive = yes
++			}
++			is_at_war = no
++			NOT = {
++				has_war_with = c:CNE
++			}
++			influence >= 15
++			NOT = {
++				has_variable = nesnd_supply_pending
++			}
++			NOT = {
++				has_variable = nesnd_supply_partner
++			}
++			NOT = {
++				has_variable = nesnd_supply_cooldown
++			}
++			OR = {
++				is_ai = no
++				NOT = {
++					has_variable = nesnd_supply_self_reliance
++				}
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				exists = c:CNE
++			}
++			remove_variable = nesnd_supply_self_reliance
++			set_variable = {
++				name = nesnd_supply_pending
++				value = c:CNE
++				days = 30
++			}
++			set_variable = {
++				name = nesnd_supply_cooldown
++				months = 6
++			}
++			add_modifier = {
++				name = nesnd_supply_envoys
++				months = 6
++			}
++			nesnd_supply_save_pending_sponsor = yes
++			save_scope_as = nesnd_supply_requester
++			c:CNE = {
++				trigger_event = {
++					id = nesnd_supply.1
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_supply_invitation_tt
++		}
++	}
+ }
+ 
+ 
+ nesnd_supply_invite_fra = {
+- name = nesnd_supply_invite_fra desc = nesnd_supply_invite_desc
+- visible = { c:HUS ?= this NOT = { c:FRA ?= this } }
+- possible = { exists = c:FRA c:FRA = { is_country_alive = yes } is_at_war = no NOT = { has_war_with = c:FRA } influence >= 15 NOT = { has_variable = nesnd_supply_pending } NOT = { has_variable = nesnd_supply_partner } NOT = { has_variable = nesnd_supply_cooldown }  OR = { is_ai = no NOT = { has_variable = nesnd_supply_self_reliance } } }
+- ai_chance = { value = 1 }
+- effect = { remove_variable = nesnd_supply_self_reliance set_variable = { name = nesnd_supply_pending value = c:FRA days = 30 } set_variable = { name = nesnd_supply_cooldown months = 6 } add_modifier = { name = nesnd_supply_envoys months = 6 } nesnd_supply_save_pending_sponsor = yes save_scope_as = nesnd_supply_requester c:FRA = { trigger_event = { id = nesnd_supply.1 days = 7 popup = yes } } custom_tooltip = nesnd_supply_invitation_tt }
++	name = nesnd_supply_invite_fra
++	desc = nesnd_supply_invite_desc
++	visible = {
++		c:HUS ?= this
++		NOT = {
++			c:FRA ?= this
++		}
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = c:FRA
++			}
++			exists = c:FRA
++			c:FRA = {
++				is_country_alive = yes
++			}
++			is_at_war = no
++			NOT = {
++				has_war_with = c:FRA
++			}
++			influence >= 15
++			NOT = {
++				has_variable = nesnd_supply_pending
++			}
++			NOT = {
++				has_variable = nesnd_supply_partner
++			}
++			NOT = {
++				has_variable = nesnd_supply_cooldown
++			}
++			OR = {
++				is_ai = no
++				NOT = {
++					has_variable = nesnd_supply_self_reliance
++				}
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				exists = c:FRA
++			}
++			remove_variable = nesnd_supply_self_reliance
++			set_variable = {
++				name = nesnd_supply_pending
++				value = c:FRA
++				days = 30
++			}
++			set_variable = {
++				name = nesnd_supply_cooldown
++				months = 6
++			}
++			add_modifier = {
++				name = nesnd_supply_envoys
++				months = 6
++			}
++			nesnd_supply_save_pending_sponsor = yes
++			save_scope_as = nesnd_supply_requester
++			c:FRA = {
++				trigger_event = {
++					id = nesnd_supply.1
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_supply_invitation_tt
++		}
++	}
+ }
+ 
+ 
+@@ -65,18 +499,93 @@
+  effect = { nesnd_supply_clear_partner = yes nesnd_supply_refresh = yes custom_tooltip = nesnd_supply_end_contact_tt }
+ }
+ nesnd_supply_trade = {
+- name = nesnd_supply_trade desc = nesnd_supply_trade_desc
+- visible = { has_variable = nesnd_supply_partner }
+- possible = { nesnd_supply_partner_valid = yes is_at_war = no NOT = { has_variable = nesnd_supply_trade_cooldown } can_create_treaty = { first_country = root second_country = var:nesnd_supply_partner is_draft = no binding_period = { years = 2 } articles_to_create = { { article = trade_privilege source_country = root target_country = var:nesnd_supply_partner } { article = trade_privilege source_country = var:nesnd_supply_partner target_country = root } } } }
+- ai_chance = { value = 1 }
+- effect = { set_variable = { name = nesnd_supply_trade_pending value = var:nesnd_supply_partner days = 30 } set_variable = { name = nesnd_supply_trade_cooldown months = 6 } save_scope_as = nesnd_supply_requester var:nesnd_supply_partner = { trigger_event = { id = nesnd_supply.2 days = 7 popup = yes } } custom_tooltip = nesnd_supply_trade_request_tt }
++	name = nesnd_supply_trade
++	desc = nesnd_supply_trade_desc
++	visible = {
++		has_variable = nesnd_supply_partner
++	}
++	possible = {
++		trigger_if = {
++			limit = {
++				exists = var:nesnd_supply_partner
++			}
++			nesnd_supply_partner_valid = yes
++			is_at_war = no
++			NOT = {
++				has_variable = nesnd_supply_trade_cooldown
++			}
++			can_create_treaty = {
++				first_country = root
++				second_country = var:nesnd_supply_partner
++				is_draft = no
++				binding_period = {
++					years = 2
++				}
++				articles_to_create = {
++					{
++						article = trade_privilege
++						source_country = root
++						target_country = var:nesnd_supply_partner
++					}
++					{
++						article = trade_privilege
++						source_country = var:nesnd_supply_partner
++						target_country = root
++					}
++				}
++			}
++		}
++		trigger_else = {
++			always = no
++		}
++	}
++	ai_chance = {
++		value = 1
++	}
++	effect = {
++		if = {
++			limit = {
++				exists = var:nesnd_supply_partner
++			}
++			set_variable = {
++				name = nesnd_supply_trade_pending
++				value = var:nesnd_supply_partner
++				days = 30
++			}
++			set_variable = {
++				name = nesnd_supply_trade_cooldown
++				months = 6
++			}
++			save_scope_as = nesnd_supply_requester
++			var:nesnd_supply_partner ?= {
++				trigger_event = {
++					id = nesnd_supply.2
++					days = 7
++					popup = yes
++				}
++			}
++			custom_tooltip = nesnd_supply_trade_request_tt
++		}
++	}
+ }
+ nesnd_supply_finish = {
+- name = nesnd_supply_finish desc = nesnd_supply_finish_desc
+- visible = { NOT = { c:HUS ?= this } }
+- possible = { nesnd_supply_all_ready = yes var:nesnd_supply_weeks >= 12 }
+- ai_chance = { value = 10 }
+- effect = { set_variable = nesnd_supply_done }
++	name = nesnd_supply_finish
++	desc = nesnd_supply_finish_desc
++	visible = {
++		NOT = {
++			c:HUS ?= this
++		}
++	}
++	possible = {
++		nesnd_supply_all_ready = yes
++		nesnd_supply_weeks_value >= 12
++	}
++	ai_chance = {
++		value = 10
++	}
++	effect = {
++		set_variable = nesnd_supply_done
++	}
+ }
+ nesnd_supply_dismiss = {
+  name = nesnd_supply_dismiss desc = nesnd_supply_dismiss_desc
+@@ -86,17 +595,43 @@
+ }
+ 
+ nesnd_supply_finish_shared = {
+- name = nesnd_supply_finish_shared desc = nesnd_supply_finish_shared_desc
+- visible = { c:HUS ?= this NOT = { market.owner = root } }
+- possible = { nesnd_supply_all_ready = yes var:nesnd_supply_weeks >= 12 }
+- ai_chance = { value = 10 }
+- effect = { set_variable = nesnd_supply_shared_reviewed set_variable = nesnd_supply_done }
++	name = nesnd_supply_finish_shared
++	desc = nesnd_supply_finish_shared_desc
++	visible = {
++		c:HUS ?= this
++		NOT = {
++			market.owner = root
++		}
++	}
++	possible = {
++		nesnd_supply_all_ready = yes
++		nesnd_supply_weeks_value >= 12
++	}
++	ai_chance = {
++		value = 10
++	}
++	effect = {
++		set_variable = nesnd_supply_shared_reviewed
++		set_variable = nesnd_supply_done
++	}
+ }
+ 
+ nesnd_supply_finish_autonomous = {
+- name = nesnd_supply_finish_autonomous desc = nesnd_supply_finish_autonomous_desc
+- visible = { c:HUS ?= this market.owner = root }
+- possible = { nesnd_supply_all_ready = yes var:nesnd_supply_weeks >= 12 }
+- ai_chance = { value = 10 }
+- effect = { set_variable = nesnd_supply_autonomous_reviewed set_variable = nesnd_supply_done }
+-}
++	name = nesnd_supply_finish_autonomous
++	desc = nesnd_supply_finish_autonomous_desc
++	visible = {
++		c:HUS ?= this
++		market.owner = root
++	}
++	possible = {
++		nesnd_supply_all_ready = yes
++		nesnd_supply_weeks_value >= 12
++	}
++	ai_chance = {
++		value = 10
++	}
++	effect = {
++		set_variable = nesnd_supply_autonomous_reviewed
++		set_variable = nesnd_supply_done
++	}
++}
+--- events/nesnd_supply_events.txt before
++++ events/nesnd_supply_events.txt after
+@@ -1,48 +1,252 @@
+ namespace = nesnd_supply
+ nesnd_supply.1 = {
+- type = country_event placement = root duration = 3
+- title = nesnd_supply.1.t desc = nesnd_supply.1.d
+- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+- trigger = { nesnd_supply_request_valid = yes }
+- option = {
+-  name = nesnd_supply.1.a
+-  trigger = { nesnd_supply_request_valid = yes is_at_war = no }
+-  ai_chance = { base = 50 modifier = { add = 50 trigger = { "relations(scope:nesnd_supply_requester)" >= relations_threshold:cordial } } modifier = { add = -50 trigger = { "relations(scope:nesnd_supply_requester)" < relations_threshold:poor } } }
+-  if = { limit = {  nesnd_supply_request_valid = yes is_at_war = no  }
+-save_scope_as = nesnd_supply_receiver
+-  scope:nesnd_supply_requester = {
+-   set_variable = { name = nesnd_supply_partner value = root }
+-   remove_variable = nesnd_supply_pending
+-   remove_variable = nesnd_supply_pending_sponsor
+-   remove_variable = nesnd_supply_self_reliance
+-   nesnd_supply_save_sponsor = yes
+-   if = { limit = { root = { is_subject = yes } } set_variable = { name = nesnd_supply_partner_sponsor value = root.overlord } }
+-   else = { set_variable = { name = nesnd_supply_partner_sponsor value = root } }
+-   change_relations = { country = root value = 10 }
+-  }
+- }
+-  custom_tooltip = nesnd_supply_accept_tt
+- }
+- option = { name = nesnd_supply.1.b default_option = yes ai_chance = { base = 50 }
+-  scope:nesnd_supply_requester ?= { if = { limit = { has_variable = nesnd_supply_pending var:nesnd_supply_pending = root }  remove_variable = nesnd_supply_pending  remove_variable = nesnd_supply_pending_sponsor  } }
+- }
++	type = country_event
++	placement = root
++	duration = 3
++	title = nesnd_supply.1.t
++	desc = nesnd_supply.1.d
++	event_image = {
++		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
++	}
++	trigger = {
++		nesnd_supply_request_valid = yes
++	}
++	option = {
++		name = nesnd_supply.1.a
++		trigger = {
++			nesnd_supply_request_valid = yes
++			is_at_war = no
++		}
++		ai_chance = {
++			base = 50
++			modifier = {
++				add = 50
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_supply_requester
++						}
++						"relations(scope:nesnd_supply_requester)" >= relations_threshold:cordial
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++			modifier = {
++				add = -50
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_supply_requester
++						}
++						"relations(scope:nesnd_supply_requester)" < relations_threshold:poor
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++		}
++		if = {
++			limit = {
++				nesnd_supply_request_valid = yes
++				is_at_war = no
++			}
++			save_scope_as = nesnd_supply_receiver
++			scope:nesnd_supply_requester ?= {
++				set_variable = {
++					name = nesnd_supply_partner
++					value = root
++				}
++				remove_variable = nesnd_supply_pending
++				remove_variable = nesnd_supply_pending_sponsor
++				remove_variable = nesnd_supply_self_reliance
++				nesnd_supply_save_sponsor = yes
++				if = {
++					limit = {
++						root = {
++							is_subject = yes
++						}
++					}
++					set_variable = {
++						name = nesnd_supply_partner_sponsor
++						value = root.overlord
++					}
++				}
++				else = {
++					set_variable = {
++						name = nesnd_supply_partner_sponsor
++						value = root
++					}
++				}
++				change_relations = {
++					country = root
++					value = 10
++				}
++			}
++		}
++		custom_tooltip = nesnd_supply_accept_tt
++	}
++	option = {
++		name = nesnd_supply.1.b
++		default_option = yes
++		ai_chance = {
++			base = 50
++		}
++		scope:nesnd_supply_requester ?= {
++			if = {
++				limit = {
++					has_variable = nesnd_supply_pending
++					var:nesnd_supply_pending ?= root
++				}
++				remove_variable = nesnd_supply_pending
++				remove_variable = nesnd_supply_pending_sponsor
++			}
++		}
++	}
+ }
+ nesnd_supply.2 = {
+- type = country_event placement = root duration = 3
+- title = nesnd_supply.2.t desc = nesnd_supply.2.d
+- event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+- trigger = { nesnd_supply_trade_request_valid = yes }
+- option = { name = nesnd_supply.2.a
+-  trigger = { nesnd_supply_trade_request_valid = yes  can_create_treaty = { first_country = scope:nesnd_supply_requester second_country = root is_draft = no binding_period = { years = 2 } articles_to_create = { { article = trade_privilege source_country = root target_country = scope:nesnd_supply_requester } { article = trade_privilege source_country = scope:nesnd_supply_requester target_country = root } } } }
+-  ai_chance = { base = 50 modifier = { add = 50 trigger = { "relations(scope:nesnd_supply_requester)" >= relations_threshold:cordial } } }
+-  if = { limit = {  nesnd_supply_trade_request_valid = yes  can_create_treaty = { first_country = scope:nesnd_supply_requester second_country = root is_draft = no binding_period = { years = 2 } articles_to_create = { { article = trade_privilege source_country = root target_country = scope:nesnd_supply_requester } { article = trade_privilege source_country = scope:nesnd_supply_requester target_country = root } } }  }
+-create_treaty = { name = nesnd_supply_treaty first_country = scope:nesnd_supply_requester second_country = root is_draft = no binding_period = { years = 2 } articles_to_create = { { article = trade_privilege source_country = root target_country = scope:nesnd_supply_requester } { article = trade_privilege source_country = scope:nesnd_supply_requester target_country = root } } }
+-  scope:nesnd_supply_requester = { remove_variable = nesnd_supply_trade_pending }
+- }
+- }
+- option = { name = nesnd_supply.2.b default_option = yes ai_chance = { base = 50 }
+-  scope:nesnd_supply_requester ?= { if = { limit = { has_variable = nesnd_supply_trade_pending var:nesnd_supply_trade_pending = root }  remove_variable = nesnd_supply_trade_pending  } }
+- }
++	type = country_event
++	placement = root
++	duration = 3
++	title = nesnd_supply.2.t
++	desc = nesnd_supply.2.d
++	event_image = {
++		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
++	}
++	trigger = {
++		nesnd_supply_trade_request_valid = yes
++	}
++	option = {
++		name = nesnd_supply.2.a
++		trigger = {
++			nesnd_supply_trade_request_valid = yes
++			trigger_if = {
++				limit = {
++					exists = scope:nesnd_supply_requester
++				}
++				can_create_treaty = {
++					first_country = scope:nesnd_supply_requester
++					second_country = root
++					is_draft = no
++					binding_period = {
++						years = 2
++					}
++					articles_to_create = {
++						{
++							article = trade_privilege
++							source_country = root
++							target_country = scope:nesnd_supply_requester
++						}
++						{
++							article = trade_privilege
++							source_country = scope:nesnd_supply_requester
++							target_country = root
++						}
++					}
++				}
++			}
++			trigger_else = {
++				always = no
++			}
++		}
++		ai_chance = {
++			base = 50
++			modifier = {
++				add = 50
++				trigger = {
++					trigger_if = {
++						limit = {
++							exists = scope:nesnd_supply_requester
++						}
++						"relations(scope:nesnd_supply_requester)" >= relations_threshold:cordial
++					}
++					trigger_else = {
++						always = no
++					}
++				}
++			}
++		}
++		if = {
++			limit = {
++				nesnd_supply_trade_request_valid = yes
++				trigger_if = {
++					limit = {
++						exists = scope:nesnd_supply_requester
++					}
++					can_create_treaty = {
++						first_country = scope:nesnd_supply_requester
++						second_country = root
++						is_draft = no
++						binding_period = {
++							years = 2
++						}
++						articles_to_create = {
++							{
++								article = trade_privilege
++								source_country = root
++								target_country = scope:nesnd_supply_requester
++							}
++							{
++								article = trade_privilege
++								source_country = scope:nesnd_supply_requester
++								target_country = root
++							}
++						}
++					}
++				}
++				trigger_else = {
++					always = no
++				}
++			}
++			if = {
++				limit = {
++					exists = scope:nesnd_supply_requester
++				}
++				create_treaty = {
++					name = nesnd_supply_treaty
++					first_country = scope:nesnd_supply_requester
++					second_country = root
++					is_draft = no
++					binding_period = {
++						years = 2
++					}
++					articles_to_create = {
++						{
++							article = trade_privilege
++							source_country = root
++							target_country = scope:nesnd_supply_requester
++						}
++						{
++							article = trade_privilege
++							source_country = scope:nesnd_supply_requester
++							target_country = root
++						}
++					}
++				}
++			}
++			scope:nesnd_supply_requester ?= {
++				remove_variable = nesnd_supply_trade_pending
++			}
++		}
++	}
++	option = {
++		name = nesnd_supply.2.b
++		default_option = yes
++		ai_chance = {
++			base = 50
++		}
++		scope:nesnd_supply_requester ?= {
++			if = {
++				limit = {
++					has_variable = nesnd_supply_trade_pending
++					var:nesnd_supply_trade_pending ?= root
++				}
++				remove_variable = nesnd_supply_trade_pending
++			}
++		}
++	}
+ }
+ nesnd_supply.3 = {
+  type = country_event placement = root duration = 3

@@ -1,0 +1,384 @@
+﻿nesnd_japan_capture_territory = {
+	if = {
+		limit = {
+			c:JAP ?= {
+				is_country_alive = yes
+				NOT = {
+					has_variable = nesnd_japan_recovery_created
+				}
+			}
+			NOT = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+		}
+		every_country = {
+			every_scope_state = {
+				limit = {
+					has_variable = nesnd_japan_before_annex
+				}
+				remove_variable = nesnd_japan_before_annex
+			}
+		}
+		c:JAP = {
+			every_scope_state = {
+				set_variable = nesnd_japan_before_annex
+			}
+		}
+	}
+}
+
+nesnd_japan_recovery_request = {
+	if = {
+		limit = {
+			c:USM ?= this
+			is_country_alive = yes
+			has_variable = tag_WUU_var
+			has_variable = nesnd_japan_recovery_pending
+			NOT = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+			NOT = {
+				has_variable = nesnd_japan_recovery_queued
+			}
+		}
+		set_variable = nesnd_japan_recovery_queued
+		trigger_event = {
+			id = nesnd_japan_recovery.1
+			days = 1
+		}
+	}
+}
+
+nesnd_japan_recovery_init_identity = {
+	remove_variable = tag_WUU_var
+	remove_variable = nesnd_ming_court
+	remove_variable = nesnd_ming_court_player_intent
+	remove_variable = nesnd_ming_court_waiting_flight
+	remove_variable = ce_usm_restoration_of_ming_var
+	remove_variable = ce_usm_republican_revolution_tag
+	remove_variable = usm_rebel_winner_of_the_civil_war
+	remove_variable = usm_government_winner_civilwar
+	remove_variable = nesnd_japan_unity_entered
+	remove_variable = nesnd_japan_unified
+	remove_variable = emperor_var
+	save_scope_as = nesnd_japan_new_country
+	add_primary_culture = cu:japanese
+	every_primary_culture = {
+		limit = {
+			NOT = {
+				this = cu:japanese
+			}
+		}
+		save_scope_as = nesnd_japan_inherited_culture
+		scope:nesnd_japan_new_country = {
+			remove_primary_culture = scope:nesnd_japan_inherited_culture
+		}
+	}
+	activate_law = law_type:law_monarchy
+	activate_law = law_type:law_autocracy
+	set_variable = nesnd_japan_recovery_created
+}
+
+nesnd_japan_recovery_commit = {
+	if = {
+		limit = {
+			has_global_variable = nesnd_japan_partitioned
+		}
+		remove_variable = nesnd_japan_recovery_pending
+		remove_variable = nesnd_japan_recovery_blocked
+	}
+	if = {
+		limit = {
+			nesnd_japan_recovery_safe_context = yes
+		}
+		if = {
+			limit = {
+				NOT = {
+					c:JAP ?= {
+						is_country_alive = yes
+					}
+				}
+				nesnd_japan_recovery_anchor_states = yes
+			}
+			clear_saved_scope = nesnd_recovery_toyotomi
+			clear_saved_scope = nesnd_recovery_tokugawa
+			clear_saved_scope = nesnd_recovery_yamato
+			if = {
+				limit = {
+					any_scope_character = {
+						has_variable = house_toyotomi
+						is_character_alive = yes
+						is_ruler_of_own_country = no
+						is_heir_of_own_country = no
+						is_in_exile_pool = no
+					}
+				}
+				random_scope_character = {
+					limit = {
+						has_variable = house_toyotomi
+						is_character_alive = yes
+						is_ruler_of_own_country = no
+						is_heir_of_own_country = no
+						is_in_exile_pool = no
+					}
+					save_scope_as = nesnd_recovery_toyotomi
+				}
+			}
+			if = {
+				limit = {
+					any_scope_character = {
+						has_variable = house_tokugawa
+						is_character_alive = yes
+						is_ruler_of_own_country = no
+						is_heir_of_own_country = no
+						is_in_exile_pool = no
+					}
+				}
+				random_scope_character = {
+					limit = {
+						has_variable = house_tokugawa
+						is_character_alive = yes
+						is_ruler_of_own_country = no
+						is_heir_of_own_country = no
+						is_in_exile_pool = no
+					}
+					save_scope_as = nesnd_recovery_tokugawa
+				}
+			}
+			if = {
+				limit = {
+					any_scope_character = {
+						has_variable = house_yamato
+						is_character_alive = yes
+						is_ruler_of_own_country = no
+						is_heir_of_own_country = no
+						is_in_exile_pool = no
+					}
+				}
+				random_scope_character = {
+					limit = {
+						has_variable = house_yamato
+						is_character_alive = yes
+						is_ruler_of_own_country = no
+						is_heir_of_own_country = no
+						is_in_exile_pool = no
+					}
+					save_scope_as = nesnd_recovery_yamato
+				}
+			}
+			create_country = {
+				tag = JAP
+				origin = c:USM
+				state = s:STATE_CHUGOKU.region_state:USM
+				on_created = {
+					nesnd_japan_recovery_init_identity = yes
+					set_capital = STATE_CHUGOKU
+					set_variable = nesnd_toyotomi_remnant
+					if = {
+						limit = {
+							exists = scope:nesnd_recovery_toyotomi
+							scope:nesnd_recovery_toyotomi = {
+								is_character_alive = yes
+								owner = c:USM
+								is_ruler_of_own_country = no
+								is_heir_of_own_country = no
+							}
+						}
+						scope:nesnd_recovery_toyotomi = {
+							transfer_character = c:JAP
+							set_character_as_ruler = yes
+						}
+					}
+					else = {
+						create_character = {
+							culture = cu:japanese
+							age = 30
+							ruler = yes
+							interest_group = ig_landowners
+							ideology = ideology_moderate
+							on_created = {
+								set_variable = house_toyotomi
+							}
+						}
+					}
+					if = {
+						limit = {
+							exists = scope:nesnd_recovery_tokugawa
+							scope:nesnd_recovery_tokugawa = {
+								is_character_alive = yes
+								owner = c:USM
+								is_ruler_of_own_country = no
+								is_heir_of_own_country = no
+							}
+						}
+						scope:nesnd_recovery_tokugawa = {
+							transfer_character = c:JAP
+						}
+					}
+					if = {
+						limit = {
+							exists = scope:nesnd_recovery_yamato
+							scope:nesnd_recovery_yamato = {
+								is_character_alive = yes
+								owner = c:USM
+								is_ruler_of_own_country = no
+								is_heir_of_own_country = no
+							}
+						}
+						scope:nesnd_recovery_yamato = {
+							transfer_character = c:JAP
+						}
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				c:JAP ?= {
+					is_country_alive = yes
+					has_variable = nesnd_japan_recovery_created
+				}
+			}
+			every_scope_state = {
+				limit = {
+					controller = owner
+					NOR = {
+						state_region = s:STATE_KYUSHU
+						state_region = s:STATE_SHIKOKU
+					}
+					OR = {
+						has_variable = nesnd_japan_before_annex
+						state_region = s:STATE_KANTO
+						state_region = s:STATE_KYOTO
+						state_region = s:STATE_KANSAI
+						state_region = s:STATE_CHUGOKU
+						state_region = s:STATE_TOHOKU
+						state_region = s:STATE_TOKAI
+						state_region = s:STATE_HOKUSHINETSU
+						state_region = s:STATE_HOKKAIDO
+					}
+				}
+				set_state_owner = c:JAP
+			}
+			c:JAP = {
+				nesnd_partition_japan = yes
+			}
+		}
+		if = {
+			limit = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+			remove_variable = nesnd_japan_recovery_pending
+			remove_variable = nesnd_japan_recovery_blocked
+		}
+		else = {
+			set_variable = nesnd_japan_recovery_blocked
+		}
+	}
+	else_if = {
+		limit = {
+			c:USM ?= this
+			has_variable = nesnd_japan_recovery_pending
+			NOT = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+		}
+		set_variable = nesnd_japan_recovery_blocked
+	}
+}
+
+nesnd_japan_register_annex_target = {
+	if = {
+		limit = {
+			c:USM ?= this
+			is_country_alive = yes
+			has_variable = tag_WUU_var
+			NOT = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+			c:JAP ?= {
+				is_country_alive = yes
+				NOT = {
+					has_variable = nesnd_japan_recovery_created
+				}
+			}
+		}
+		set_variable = {
+			name = nesnd_japan_annex_expected_country
+			value = c:JAP
+		}
+		nesnd_japan_capture_territory = yes
+	}
+}
+
+nesnd_japan_confirm_native_annex = {
+	if = {
+		limit = {
+			c:USM ?= this
+			is_country_alive = yes
+			has_variable = tag_WUU_var
+			NOT = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+			exists = scope:nesnd_japan_annex_callback_target
+			exists = var:nesnd_japan_annex_expected_country
+			scope:nesnd_japan_annex_callback_target = var:nesnd_japan_annex_expected_country
+			NOT = {
+				c:JAP ?= {
+					is_country_alive = yes
+				}
+			}
+		}
+		set_variable = nesnd_japan_recovery_pending
+		remove_variable = nesnd_japan_annex_expected_country
+		nesnd_japan_recovery_request = yes
+	}
+}
+
+nesnd_japan_register_existing_play = {
+	if = {
+		limit = {
+			c:USM ?= this
+			is_country_alive = yes
+			has_variable = tag_WUU_var
+			NOT = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+			c:JAP ?= {
+				is_country_alive = yes
+			}
+			any_diplomatic_play = {
+				is_diplomatic_play_type = dp_usm_civil_war
+				initiator = c:USM
+				target = c:JAP
+			}
+		}
+		nesnd_japan_register_annex_target = yes
+	}
+}
+
+nesnd_japan_clear_unused_registration = {
+	if = {
+		limit = {
+			c:USM ?= this
+			has_variable = nesnd_japan_annex_expected_country
+			NOT = {
+				has_variable = nesnd_japan_recovery_pending
+			}
+			c:JAP ?= {
+				is_country_alive = yes
+			}
+			NOT = {
+				has_war_with = c:JAP
+			}
+			NOT = {
+				any_diplomatic_play = {
+					is_diplomatic_play_type = dp_usm_civil_war
+					initiator = c:USM
+					target = c:JAP
+				}
+			}
+		}
+		remove_variable = nesnd_japan_annex_expected_country
+	}
+}

@@ -1,0 +1,268 @@
+﻿# Country scope. Save an explicit country for inner building/ship/market scopes.
+nesnd_south_measure_readiness = {
+	hidden_effect = {
+		save_scope_as = nesnd_ready_country
+		nesnd_south_measure_domestic = yes
+		set_variable = nesnd_ready_known
+		set_variable = {
+			name = nesnd_ready_finance
+			value = nesnd_south_finance_value
+		}
+		set_variable = {
+			name = nesnd_ready_domestic
+			value = nesnd_south_domestic_value
+		}
+		set_variable = {
+			name = nesnd_ready_barrack_levels
+			value = 0
+		}
+		set_variable = {
+			name = nesnd_ready_barrack_staffed
+			value = 0
+		}
+		set_variable = {
+			name = nesnd_ready_ships
+			value = 0
+		}
+		set_variable = {
+			name = nesnd_ready_ships_ready
+			value = 0
+		}
+		set_variable = {
+			name = nesnd_ready_actual_crew
+			value = 0
+		}
+		every_scope_building = {
+			limit = {
+				is_building_type = building_barrack
+			}
+			scope:nesnd_ready_country ?= {
+				change_variable = {
+					name = nesnd_ready_barrack_levels
+					add = prev.level
+				}
+				change_variable = {
+					name = nesnd_ready_barrack_staffed
+					add = {
+						value = prev.level
+						multiply = prev.occupancy
+					}
+				}
+			}
+		}
+		every_scope_ship = {
+			scope:nesnd_ready_country ?= {
+				change_variable = {
+					name = nesnd_ready_ships
+					add = 1
+				}
+				change_variable = {
+					name = nesnd_ready_actual_crew
+					add = prev.crew
+				}
+			}
+			if = {
+				limit = {
+					crew_percent >= 0.7
+				}
+				scope:nesnd_ready_country ?= {
+					change_variable = {
+						name = nesnd_ready_ships_ready
+						add = 1
+					}
+				}
+			}
+		}
+		set_variable = {
+			name = nesnd_ready_army_ratio
+			value = 0
+		}
+		set_variable = {
+			name = nesnd_ready_navy_ratio
+			value = 0
+		}
+		if = {
+			limit = {
+				nesnd_preview_c_ready_barrack_levels_value > 0
+			}
+			set_variable = {
+				name = nesnd_ready_army_ratio
+				value = {
+					value = nesnd_preview_c_ready_barrack_staffed_value
+					divide = nesnd_preview_c_ready_barrack_levels_divisor
+				}
+			}
+		}
+		if = {
+			limit = {
+				nesnd_preview_c_ready_ships_value > 0
+			}
+			set_variable = {
+				name = nesnd_ready_navy_ratio
+				value = {
+					value = nesnd_preview_c_ready_ships_ready_value
+					divide = nesnd_preview_c_ready_ships_divisor
+				}
+			}
+		}
+		set_variable = {
+			name = nesnd_ready_military
+			value = 0
+		}
+		if = {
+			limit = {
+				nesnd_preview_c_ready_barrack_levels_value > 0
+				nesnd_preview_c_ready_ships_value > 0
+			}
+			change_variable = {
+				name = nesnd_ready_military
+				add = {
+					value = nesnd_preview_c_ready_army_ratio_value
+					multiply = 25
+				}
+			}
+			change_variable = {
+				name = nesnd_ready_military
+				add = {
+					value = nesnd_preview_c_ready_navy_ratio_value
+					multiply = 10
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				nesnd_preview_c_ready_barrack_levels_value > 0
+			}
+			change_variable = {
+				name = nesnd_ready_military
+				add = {
+					value = nesnd_preview_c_ready_army_ratio_value
+					multiply = 35
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				nesnd_preview_c_ready_ships_value > 0
+			}
+			change_variable = {
+				name = nesnd_ready_military
+				add = {
+					value = nesnd_preview_c_ready_navy_ratio_value
+					multiply = 35
+				}
+			}
+		}
+		set_variable = {
+			name = nesnd_ready_supply
+			value = 0
+		}
+		if = {
+			limit = {
+				exists = capital
+				capital ?= {
+					exists = market
+				}
+			}
+			capital.market ?= {
+				mg:paper = {
+					if = {
+						limit = {
+							market_goods_pricier <= 0.5
+							trigger_if = {
+								limit = {
+									exists = scope:nesnd_ready_country
+								}
+								NOT = {
+									country_has_local_shortage = scope:nesnd_ready_country
+								}
+							}
+							trigger_else = {
+								always = no
+							}
+						}
+						scope:nesnd_ready_country ?= {
+							change_variable = {
+								name = nesnd_ready_supply
+								add = 8
+							}
+						}
+					}
+				}
+				mg:tools = {
+					if = {
+						limit = {
+							market_goods_pricier <= 0.5
+							trigger_if = {
+								limit = {
+									exists = scope:nesnd_ready_country
+								}
+								NOT = {
+									country_has_local_shortage = scope:nesnd_ready_country
+								}
+							}
+							trigger_else = {
+								always = no
+							}
+						}
+						scope:nesnd_ready_country ?= {
+							change_variable = {
+								name = nesnd_ready_supply
+								add = 8
+							}
+						}
+					}
+				}
+				mg:small_arms = {
+					if = {
+						limit = {
+							market_goods_pricier <= 0.5
+							trigger_if = {
+								limit = {
+									exists = scope:nesnd_ready_country
+								}
+								NOT = {
+									country_has_local_shortage = scope:nesnd_ready_country
+								}
+							}
+							trigger_else = {
+								always = no
+							}
+						}
+						scope:nesnd_ready_country ?= {
+							change_variable = {
+								name = nesnd_ready_supply
+								add = 9
+							}
+						}
+					}
+				}
+			}
+		}
+		set_variable = {
+			name = nesnd_ready_total
+			value = nesnd_preview_c_ready_finance_value
+		}
+		change_variable = {
+			name = nesnd_ready_total
+			add = nesnd_preview_c_ready_military_value
+		}
+		change_variable = {
+			name = nesnd_ready_total
+			add = nesnd_preview_c_ready_supply_value
+		}
+		change_variable = {
+			name = nesnd_ready_total
+			add = nesnd_preview_c_ready_domestic_value
+		}
+		clamp_variable = {
+			name = nesnd_ready_total
+			min = 0
+			max = 100
+		}
+		set_variable = {
+			name = nesnd_ready_naval_projection
+			value = naval_power_projection
+		}
+	}
+}

@@ -1,0 +1,702 @@
+﻿nesnd_phi_initialize = {
+    if = { limit = { NOT = { has_variable = nesnd_phi_initialized } }
+        set_variable = nesnd_phi_initialized
+        set_variable = { name = nesnd_phi_stage value = 0 }
+        set_variable = { name = nesnd_phi_contract_serial value = 0 }
+        set_variable = { name = nesnd_phi_requested_route value = 0 }
+        set_variable = { name = nesnd_phi_active_route value = 0 }
+        set_variable = { name = nesnd_phi_last_route value = 1 }
+        set_variable = { name = nesnd_phi_quote value = 0 }
+        set_variable = { name = nesnd_phi_score value = 0 }
+        set_variable = { name = nesnd_phi_good_months value = 0 }
+        set_variable = { name = nesnd_phi_finish_reason value = 0 }
+        set_variable = { name = nesnd_phi_unemployment value = 0 }
+        set_variable = { name = nesnd_phi_starving value = 0 }
+        set_variable = { name = nesnd_phi_budget value = 0 }
+        set_variable = { name = nesnd_phi_needed_crew value = 0 }
+    }
+}
+nesnd_phi_measure = {
+    nesnd_phi_initialize = yes
+    set_variable = { name = nesnd_phi_budget value = net_fixed_income }
+    set_variable = { name = nesnd_phi_needed_crew value = this.total_crew_needed }
+    set_variable = { name = nesnd_phi_unemployment value = 1 }
+    set_variable = { name = nesnd_phi_starving value = 1 }
+    if = { limit = { nesnd_phi_workforce > 0 }
+        set_variable = { name = nesnd_phi_unemployment value = { value = nesnd_phi_unemployed divide = nesnd_phi_workforce } }
+        set_variable = { name = nesnd_phi_starving value = { value = nesnd_phi_starving divide = nesnd_phi_workforce } }
+    }
+    set_variable = { name = nesnd_phi_score value = 0 }
+    if = { limit = { nesnd_phi_fiscal_ready = yes } change_variable = { name = nesnd_phi_score add = 1 } }
+    if = { limit = { army_size >= 35 } change_variable = { name = nesnd_phi_score add = 1 } }
+    if = { limit = { nesnd_phi_fleet_ready = yes } change_variable = { name = nesnd_phi_score add = 1 } }
+    if = { limit = { nesnd_phi_households_ready = yes } change_variable = { name = nesnd_phi_score add = 1 } }
+}
+nesnd_phi_display = {
+    save_scope_as = nesnd_phi_display_country
+    je:nesnd_phi_service_recovery ?= {
+        set_bar_progress = { name = nesnd_phi_service_bar value = scope:nesnd_phi_display_country.var:nesnd_phi_score }
+        set_bar_progress = { name = nesnd_phi_continuity_bar value = scope:nesnd_phi_display_country.var:nesnd_phi_good_months }
+    }
+}
+nesnd_phi_clear_pending = {
+	remove_variable = nesnd_phi_requested_cash
+	remove_variable = nesnd_phi_pending
+	remove_variable = nesnd_phi_creating
+	set_variable = {
+		name = nesnd_phi_stage
+		value = 0
+	}
+}
+nesnd_phi_request_a = {
+	if = {
+		limit = {
+			nesnd_phi_can_request_a = yes
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = {
+						has_variable = nesnd_phi_proposal_serial
+					}
+				}
+				set_variable = {
+					name = nesnd_phi_proposal_serial
+					value = 0
+				}
+			}
+			change_variable = {
+				name = nesnd_phi_proposal_serial
+				add = 1
+			}
+			save_scope_value_as = {
+				name = nesnd_phi_proposal_serial
+				value = nesnd_phi_proposal_serial_for_event
+			}
+			remove_variable = nesnd_phi_requested_cash
+			set_variable = {
+				name = nesnd_phi_requested_route
+				value = 1
+			}
+			set_variable = {
+				name = nesnd_phi_quote
+				value = 8000
+			}
+			set_variable = {
+				name = nesnd_phi_pending
+				days = 120
+			}
+			set_variable = {
+				name = nesnd_phi_stage
+				value = 1
+			}
+			c:USM = {
+				trigger_event = {
+					id = nesnd_phi_finance.1
+					popup = yes
+				}
+			}
+		}
+		custom_tooltip = nesnd_phi_propose_native_a_tt
+	}
+}
+nesnd_phi_request_b = {
+	if = {
+		limit = {
+			nesnd_phi_can_request_b = yes
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = {
+						has_variable = nesnd_phi_proposal_serial
+					}
+				}
+				set_variable = {
+					name = nesnd_phi_proposal_serial
+					value = 0
+				}
+			}
+			change_variable = {
+				name = nesnd_phi_proposal_serial
+				add = 1
+			}
+			save_scope_value_as = {
+				name = nesnd_phi_proposal_serial
+				value = nesnd_phi_proposal_serial_for_event
+			}
+			remove_variable = nesnd_phi_requested_cash
+			set_variable = {
+				name = nesnd_phi_requested_route
+				value = 2
+			}
+			set_variable = {
+				name = nesnd_phi_quote
+				value = 3000
+			}
+			set_variable = {
+				name = nesnd_phi_pending
+				days = 120
+			}
+			set_variable = {
+				name = nesnd_phi_stage
+				value = 1
+			}
+			c:USM = {
+				trigger_event = {
+					id = nesnd_phi_finance.2
+					popup = yes
+				}
+			}
+		}
+		custom_tooltip = nesnd_phi_propose_native_b_tt
+	}
+}
+# Runs in PHI after both governments confirmed. The on-action binds identity and commits side effects.
+nesnd_phi_commit = {
+	if = {
+		limit = {
+			nesnd_phi_commit_allowed = yes
+		}
+		hidden_effect = {
+			set_variable = {
+				name = nesnd_phi_creating
+				days = 1
+			}
+			set_variable = {
+				name = nesnd_phi_stage
+				value = 3
+			}
+			if = {
+				limit = {
+					has_variable = nesnd_phi_requested_cash
+				}
+				if = {
+					limit = {
+						var:nesnd_phi_requested_route = 1
+					}
+					c:USM = {
+						create_treaty = {
+							first_country = c:USM
+							second_country = c:PHI
+							is_draft = no
+							binding_period = {
+								months = 12
+							}
+							articles_to_create = {
+								{
+									article = money_transfer
+									source_country = c:USM
+									target_country = c:PHI
+									inputs = {
+										{
+											quantity = 8700
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				else = {
+					c:USM = {
+						create_treaty = {
+							first_country = c:USM
+							second_country = c:PHI
+							is_draft = no
+							binding_period = {
+								months = 12
+							}
+							articles_to_create = {
+								{
+									article = money_transfer
+									source_country = c:USM
+									target_country = c:PHI
+									inputs = {
+										{
+											quantity = 3700
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					var:nesnd_phi_requested_route = 1
+				}
+				c:USM = {
+					create_treaty = {
+						first_country = c:USM
+						second_country = c:PHI
+						is_draft = no
+						binding_period = {
+							months = 12
+						}
+						articles_to_create = {
+							{
+								article = money_transfer
+								source_country = c:USM
+								target_country = c:PHI
+								inputs = {
+									{
+										quantity = 8000
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			else = {
+				c:USM = {
+					create_treaty = {
+						first_country = c:USM
+						second_country = c:PHI
+						is_draft = no
+						binding_period = {
+							months = 12
+						}
+						articles_to_create = {
+							{
+								article = money_transfer
+								source_country = c:USM
+								target_country = c:PHI
+								inputs = {
+									{
+										quantity = 3000
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if = {
+				limit = {
+					has_variable = nesnd_phi_creating
+				}
+				set_variable = nesnd_phi_creation_unbound
+				remove_variable = nesnd_phi_creating
+			}
+		}
+	}
+}
+# Called only by the treaty-root on-action, after saving its real typed scope.
+nesnd_phi_finish_creation = {
+	if = {
+		limit = {
+			has_variable = nesnd_phi_requested_cash
+		}
+		set_variable = nesnd_phi_active_cash
+	}
+	else = {
+		remove_variable = nesnd_phi_active_cash
+	}
+	set_variable = {
+		name = nesnd_phi_treaty
+		value = scope:nesnd_phi_new_treaty
+	}
+	set_variable = {
+		name = nesnd_phi_original_binding
+		value = scope:nesnd_phi_new_treaty.binding_period
+	}
+	set_variable = {
+		name = nesnd_phi_active_route
+		value = var:nesnd_phi_requested_route
+	}
+	set_variable = {
+		name = nesnd_phi_last_route
+		value = var:nesnd_phi_requested_route
+	}
+	set_variable = nesnd_phi_active
+	set_variable = nesnd_phi_ever_received
+	set_variable = {
+		name = nesnd_phi_term
+		months = 12
+	}
+	change_variable = {
+		name = nesnd_phi_contract_serial
+		add = 1
+	}
+	save_scope_value_as = {
+		name = nesnd_phi_expiry_serial
+		value = var:nesnd_phi_contract_serial
+	}
+	trigger_event = {
+		id = nesnd_phi_finance.9
+		months = 12
+	}
+	set_variable = {
+		name = nesnd_phi_good_months
+		value = 0
+	}
+	c:USM = {
+		set_variable = {
+			name = nesnd_phi_treaty_mirror
+			value = scope:nesnd_phi_new_treaty
+		}
+		set_variable = {
+			name = nesnd_phi_quote_mirror
+			value = c:PHI.var:nesnd_phi_quote
+		}
+		set_variable = {
+			name = nesnd_phi_binding_mirror
+			value = c:PHI.var:nesnd_phi_original_binding
+		}
+		set_variable = {
+			name = nesnd_phi_term_mirror
+			months = 12
+		}
+		set_variable = nesnd_phi_payer_active
+		if = {
+			limit = {
+				c:PHI = {
+					NOT = {
+						has_variable = nesnd_phi_active_cash
+					}
+				}
+				NOT = {
+					has_diplomatic_pact = {
+						who = c:PHI
+						type = decrease_payments
+						is_initiator = yes
+					}
+				}
+			}
+			create_diplomatic_pact = {
+				country = c:PHI
+				type = decrease_payments
+			}
+		}
+	}
+	if = {
+		limit = {
+			var:nesnd_phi_active_route = 2
+		}
+		c:USM = {
+			if = {
+				limit = {
+					NOT = {
+						has_diplomatic_pact = {
+							who = c:PHI
+							type = exempt_from_service
+							is_initiator = yes
+						}
+					}
+				}
+				create_diplomatic_pact = {
+					country = c:PHI
+					type = exempt_from_service
+				}
+			}
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_variable = nesnd_phi_b_transferred
+				}
+			}
+			ordered_scope_ship = {
+				limit = {
+					owner = c:PHI
+					is_ship_type = ship_type:ship_type_ship_of_the_line
+					is_in_battle = no
+					hit_points > 0
+				}
+				order_by = 1
+				max = 20
+				check_range_bounds = no
+				set_ship_owner_multiple = c:USM
+			}
+			c:USM = {
+				clear_ownership_transfer_fleet = yes
+			}
+			set_variable = nesnd_phi_b_transferred
+		}
+	}
+	nesnd_phi_clear_pending = yes
+	set_variable = {
+		name = nesnd_phi_stage
+		value = 4
+	}
+	nesnd_phi_measure = yes
+	nesnd_phi_display = yes
+	trigger_event = {
+		id = nesnd_phi_finance.5
+		popup = yes
+	}
+}
+# Clear only this module's transient state; leave native tribute/exemption pacts and political accords alone.
+nesnd_phi_clear_active = {
+	remove_variable = nesnd_phi_binding_recheck_pending
+	remove_variable = nesnd_phi_active_cash
+	remove_variable = nesnd_phi_active
+	remove_variable = nesnd_phi_term
+	remove_variable = nesnd_phi_treaty
+	remove_variable = nesnd_phi_stalled
+	set_variable = {
+		name = nesnd_phi_stage
+		value = 0
+	}
+	set_variable = {
+		name = nesnd_phi_good_months
+		value = 0
+	}
+	set_variable = {
+		name = nesnd_phi_cooldown
+		days = 30
+	}
+	c:USM ?= {
+		remove_variable = nesnd_phi_treaty_mirror
+		remove_variable = nesnd_phi_term_mirror
+		remove_variable = nesnd_phi_payer_active
+		remove_variable = nesnd_phi_quote_mirror
+		remove_variable = nesnd_phi_binding_mirror
+	}
+}
+nesnd_phi_expire_contract = {
+    if = { limit = { nesnd_phi_owned_treaty_live = yes
+        NOT = { nesnd_phi_owned_treaty_unamended = yes }
+    }
+        # Actual changes of articles, quote or original binding belong to native diplomacy.
+        set_variable = nesnd_phi_native_amendment
+        nesnd_phi_clear_active = yes
+        trigger_event = { id = nesnd_phi_finance.10 popup = yes }
+    }
+    else_if = { limit = {
+        nesnd_phi_owned_treaty_unamended = yes
+        var:nesnd_phi_treaty = { remaining_binding_period > 0 }
+    }
+        # The native treaty can retain one binding day after the 360-day script timer.
+        # Preserve all typed identity and payer mirrors; this is not an amendment.
+        nesnd_phi_queue_binding_recheck = yes
+    }
+    else = {
+        if = { limit = { nesnd_phi_owned_treaty_unamended = yes }
+            var:nesnd_phi_treaty = { withdraw = { country = c:USM apply_break_penalties = yes } }
+        }
+        set_variable = { name = nesnd_phi_finish_reason value = 1 }
+        nesnd_phi_clear_active = yes
+        trigger_event = { id = nesnd_phi_finance.6 popup = yes }
+    }
+}
+
+nesnd_phi_voluntary_withdraw = {
+    if = { limit = { nesnd_phi_owned_treaty_unamended = yes }
+        var:nesnd_phi_treaty = { withdraw = { country = c:PHI apply_break_penalties = yes } }
+    }
+    set_variable = { name = nesnd_phi_finish_reason value = 2 }
+    set_variable = nesnd_phi_broken
+    nesnd_phi_clear_active = yes
+}
+nesnd_phi_month = {
+    nesnd_phi_initialize = yes
+    if = { limit = { has_variable = nesnd_phi_active }
+        if = { limit = { NOT = { nesnd_phi_owned_treaty_live = yes } }
+            set_variable = { name = nesnd_phi_finish_reason value = 4 }
+            nesnd_phi_clear_active = yes
+            trigger_event = { id = nesnd_phi_finance.7 popup = yes }
+        }
+        else_if = { limit = { NOT = { nesnd_phi_owned_treaty_unamended = yes } }
+            # A user/native amendment supersedes this agreement; never withdraw unrelated added articles.
+            set_variable = nesnd_phi_native_amendment
+            nesnd_phi_clear_active = yes
+            trigger_event = { id = nesnd_phi_finance.10 popup = yes }
+        }
+        else_if = { limit = { NOT = { nesnd_phi_contract_valid = yes } }
+            if = { limit = { c:USM ?= { is_country_alive = yes } NOT = { has_war_with = c:USM } }
+                nesnd_phi_voluntary_withdraw = yes
+            }
+            else = {
+                if = { limit = { nesnd_phi_owned_treaty_live = yes }
+                    var:nesnd_phi_treaty = { withdraw = { country = c:PHI apply_break_penalties = no } }
+                }
+                nesnd_phi_clear_active = yes
+            }
+            set_variable = { name = nesnd_phi_finish_reason value = 3 }
+            trigger_event = { id = nesnd_phi_finance.7 popup = yes }
+        }
+        else_if = { limit = { NOT = { has_variable = nesnd_phi_term } } nesnd_phi_expire_contract = yes }
+        else_if = { limit = { NOT = { nesnd_phi_concessions_intact = yes } }
+            var:nesnd_phi_treaty = { withdraw = { country = c:USM apply_break_penalties = yes } }
+            set_variable = nesnd_phi_broken_by_payer
+            set_variable = { name = nesnd_phi_finish_reason value = 5 }
+            nesnd_phi_clear_active = yes
+            trigger_event = { id = nesnd_phi_finance.7 popup = yes }
+        }
+        else = {
+            if = { limit = { var:nesnd_phi_treaty = { is_fulfilled_by = c:USM } } remove_variable = nesnd_phi_stalled }
+            else = { set_variable = nesnd_phi_stalled }
+        }
+    }
+    if = { limit = { OR = { var:nesnd_phi_stage = 1 var:nesnd_phi_stage = 2 var:nesnd_phi_stage = 3 } NOT = { nesnd_phi_pending_valid = yes } }
+        nesnd_phi_clear_pending = yes
+        set_variable = { name = nesnd_phi_cooldown days = 30 }
+    }
+    # A failed create cannot leave a permanent pending phase or transfer assets.
+    if = { limit = { var:nesnd_phi_stage = 3 NOT = { has_variable = nesnd_phi_creating } }
+        nesnd_phi_clear_pending = yes set_variable = { name = nesnd_phi_cooldown days = 30 }
+    }
+    nesnd_phi_measure = yes
+    if = { limit = { var:nesnd_phi_score = 4 is_at_war = no }
+        change_variable = { name = nesnd_phi_good_months add = 1 }
+    }
+    else = { set_variable = { name = nesnd_phi_good_months value = 0 } }
+    clamp_variable = { name = nesnd_phi_good_months min = 0 max = 3 }
+    nesnd_phi_display = yes
+}
+# Payer-side death/term guard: recipient monthly events may no longer run after annexation.
+nesnd_phi_payer_month = {
+    if = { limit = { has_variable = nesnd_phi_payer_active }
+        if = { limit = { NOT = { c:PHI ?= { is_country_alive = yes } } }
+            if = { limit = { exists = var:nesnd_phi_treaty_mirror
+                any_scope_treaty = {
+                    this = c:USM.var:nesnd_phi_treaty_mirror binds = c:USM
+                    binding_period = c:USM.var:nesnd_phi_binding_mirror
+                    NOT = { any_scope_article = { count > 1 always = yes } }
+                    any_scope_article = { has_type = money_transfer source_country = c:USM input_quantity = c:USM.var:nesnd_phi_quote_mirror }
+                }
+            }
+                var:nesnd_phi_treaty_mirror = { withdraw = { country = c:USM apply_break_penalties = no } }
+            }
+            remove_variable = nesnd_phi_treaty_mirror remove_variable = nesnd_phi_term_mirror remove_variable = nesnd_phi_payer_active remove_variable = nesnd_phi_quote_mirror remove_variable = nesnd_phi_binding_mirror
+        }
+        else_if = { limit = { NOT = { has_variable = nesnd_phi_term_mirror } }
+            c:PHI = { if = { limit = { has_variable = nesnd_phi_active } if = {
+                limit = { nesnd_phi_owned_treaty_live = yes }
+                nesnd_phi_expire_contract = yes
+            }
+            else = {
+                # PHI_month's first branch handles the missing exact treaty as interruption.
+                # It cannot reach its later expiry branch under this same not-live condition.
+                nesnd_phi_month = yes
+            } } }
+        }
+    }
+}
+
+nesnd_phi_request_cash_a = {
+	if = {
+		limit = {
+			nesnd_phi_can_request_cash_a = yes
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = {
+						has_variable = nesnd_phi_proposal_serial
+					}
+				}
+				set_variable = {
+					name = nesnd_phi_proposal_serial
+					value = 0
+				}
+			}
+			change_variable = {
+				name = nesnd_phi_proposal_serial
+				add = 1
+			}
+			save_scope_value_as = {
+				name = nesnd_phi_proposal_serial
+				value = nesnd_phi_proposal_serial_for_event
+			}
+			set_variable = nesnd_phi_requested_cash
+			set_variable = {
+				name = nesnd_phi_requested_route
+				value = 1
+			}
+			set_variable = {
+				name = nesnd_phi_quote
+				value = 8700
+			}
+			set_variable = {
+				name = nesnd_phi_pending
+				days = 120
+			}
+			set_variable = {
+				name = nesnd_phi_stage
+				value = 1
+			}
+			c:USM = {
+				trigger_event = {
+					id = nesnd_phi_finance.11
+					popup = yes
+				}
+			}
+		}
+		custom_tooltip = nesnd_phi_propose_cash_a_tt
+	}
+}
+nesnd_phi_request_cash_b = {
+	if = {
+		limit = {
+			nesnd_phi_can_request_cash_b = yes
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = {
+						has_variable = nesnd_phi_proposal_serial
+					}
+				}
+				set_variable = {
+					name = nesnd_phi_proposal_serial
+					value = 0
+				}
+			}
+			change_variable = {
+				name = nesnd_phi_proposal_serial
+				add = 1
+			}
+			save_scope_value_as = {
+				name = nesnd_phi_proposal_serial
+				value = nesnd_phi_proposal_serial_for_event
+			}
+			set_variable = nesnd_phi_requested_cash
+			set_variable = {
+				name = nesnd_phi_requested_route
+				value = 2
+			}
+			set_variable = {
+				name = nesnd_phi_quote
+				value = 3700
+			}
+			set_variable = {
+				name = nesnd_phi_pending
+				days = 120
+			}
+			set_variable = {
+				name = nesnd_phi_stage
+				value = 1
+			}
+			c:USM = {
+				trigger_event = {
+					id = nesnd_phi_finance.13
+					popup = yes
+				}
+			}
+		}
+		custom_tooltip = nesnd_phi_propose_cash_b_tt
+	}
+}
+# Called in PHI by the formal expiry event or either country's monthly fallback.
+# Independent captured scope/serial makes it safe when no original .9 scope exists.
+nesnd_phi_queue_binding_recheck = {
+    if = { limit = {
+        has_variable = nesnd_phi_active
+        has_variable = nesnd_phi_contract_serial
+        nesnd_phi_owned_treaty_unamended = yes
+        NOT = { has_variable = nesnd_phi_binding_recheck_pending }
+    }
+        set_variable = { name = nesnd_phi_binding_recheck_pending days = 2 }
+        save_scope_value_as = {
+            name = nesnd_phi_binding_recheck_serial
+            value = nesnd_phi_contract_serial_for_event
+        }
+        var:nesnd_phi_treaty = { save_scope_as = nesnd_phi_binding_recheck_treaty }
+        trigger_event = { id = nesnd_phi_finance.15 days = 1 }
+    }
+}

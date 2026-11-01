@@ -1,0 +1,41 @@
+﻿# Country scope. A finite opportunity window, not an enactment command.
+nesnd_cne_ai_reform_window = {
+    c:CNE ?= this
+    is_ai = yes
+    nesnd_reform_active = yes
+    has_variable = nesnd_land_months
+    var:nesnd_land_months <= 96
+    is_at_war = no
+    bureaucracy >= 0
+    NOT = { has_modifier = declared_bankruptcy }
+}
+nesnd_cne_ai_education_needed = {
+    has_law_or_variant = law_type:law_public_schools
+    literacy_rate < 0.48
+    institution_investment_level = { institution = institution_schools value < 3 }
+}
+nesnd_cne_ai_peasant_support = {
+    OR = {
+        any_interest_group = { is_in_government = yes law_enactment_stance = { law = law_type:law_peasant_proprietorship value > neutral } }
+        any_political_movement = { political_movement_support >= 0.10 law_enactment_stance = { law = law_type:law_peasant_proprietorship value > neutral } }
+    }
+}
+nesnd_cne_ai_child_support = {
+    OR = {
+        any_interest_group = { is_in_government = yes law_enactment_stance = { law = law_type:law_restricted_child_labor value > neutral } }
+        any_political_movement = { political_movement_support >= 0.10 law_enactment_stance = { law = law_type:law_restricted_child_labor value > neutral } }
+    }
+}
+nesnd_cne_ai_agenda_needed = {
+    OR = {
+        AND = { NOT = { nesnd_reform_land_rights = yes } nesnd_cne_ai_peasant_support = yes }
+        AND = {
+            nesnd_cne_ai_education_needed = yes
+            OR = {
+                has_law_or_variant = law_type:law_restricted_child_labor
+                has_law_or_variant = law_type:law_compulsory_primary_school
+                AND = { has_law_or_variant = law_type:law_child_labor_allowed has_technology_researched = labor_movement nesnd_cne_ai_child_support = yes }
+            }
+        }
+    }
+}

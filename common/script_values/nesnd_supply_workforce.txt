@@ -1,0 +1,27 @@
+﻿# Country and state scopes use the same actual-pop workforce denominator.
+# is_employed/workforce: current 1.13.11 engine docs; subsistence workers are employed.
+nesnd_supply_workforce_sum = { value = 0 every_scope_state = { every_scope_pop = { add = workforce } } }
+nesnd_supply_unemployed_sum = { value = 0 every_scope_state = { every_scope_pop = { limit = { is_employed = no } add = workforce } } }
+nesnd_supply_workforce_unemployment = {
+    value = 1
+    if = { limit = { nesnd_supply_workforce_sum > 0 }
+        value = nesnd_supply_unemployed_sum
+        divide = nesnd_supply_workforce_sum
+    }
+}
+nesnd_supply_state_workforce_sum = { value = 0 every_scope_pop = { add = workforce } }
+nesnd_supply_state_unemployed_sum = { value = 0 every_scope_pop = { limit = { is_employed = no } add = workforce } }
+nesnd_supply_state_workforce_unemployment = {
+    value = 0
+    if = { limit = { nesnd_supply_state_workforce_sum > 0 }
+        value = nesnd_supply_state_unemployed_sum
+        divide = nesnd_supply_state_workforce_sum
+    }
+}
+nesnd_supply_critical_employment_states = {
+    value = 0
+    every_scope_state = {
+        limit = { nesnd_supply_state_workforce_sum >= 50000 nesnd_supply_state_workforce_unemployment > 0.20 }
+        add = 1
+    }
+}

@@ -1,0 +1,75 @@
+﻿# Character scope: an eligible existing officer still owned by USM.
+# Native civil-war recovery must not depend on the later send-terms button.
+nesnd_japan_lin_candidate_eligible = {
+ has_template = USM_lin_hanhan
+ is_character_alive = yes
+ owner = c:USM
+ is_ruler_of_own_country = no
+ is_heir_of_own_country = no
+ is_in_exile_pool = no
+}
+
+# Country scope: USM. Only the actual completed three-subject settlement qualifies.
+nesnd_japan_lin_realm_ready = {
+ c:USM ?= this
+ is_country_alive = yes
+ has_variable = tag_WUU_var
+ has_global_variable = nesnd_japan_partitioned
+ c:JAP ?= {
+  is_country_alive = yes
+  has_variable = nesnd_japan_partition_state
+  is_subject_of = c:USM
+  has_law_or_variant = law_type:law_monarchy
+  country_has_primary_culture = cu:japanese
+  NOT = { has_war_with = c:USM }
+ }
+ c:JTK ?= { is_country_alive = yes is_subject_of = c:USM }
+ c:JIM ?= { is_country_alive = yes is_subject_of = c:USM }
+}
+
+# Only the explicitly captured actor/recipient can resume a partial transfer.
+# A foreign owner, dead actor or replacement recipient cannot be seized.
+nesnd_japan_lin_pending_identity_valid = {
+ exists = var:nesnd_japan_lin_pending_country
+ var:nesnd_japan_lin_pending_country ?= c:JAP
+ exists = var:nesnd_japan_lin_pending_officer
+ var:nesnd_japan_lin_pending_officer ?= {
+  has_template = USM_lin_hanhan
+  is_character_alive = yes
+  is_in_exile_pool = no
+  is_heir_of_own_country = no
+  OR = {
+   AND = { owner = c:USM is_ruler_of_own_country = no }
+   owner = c:JAP
+  }
+ }
+}
+
+nesnd_japan_lin_can_be_appointed = {
+ nesnd_japan_lin_realm_ready = yes
+ NOT = { has_variable = nesnd_japan_lin_commission_completed }
+ c:JAP ?= { NOT = { has_variable = nesnd_japan_lin_regency_appointed } }
+ OR = {
+  nesnd_japan_lin_pending_identity_valid = yes
+  any_scope_character = { nesnd_japan_lin_candidate_eligible = yes }
+ }
+}
+
+# Country scope: the actual recipient object, not merely a recycled JAP tag.
+nesnd_japan_lin_regency_is_active = {
+ c:JAP ?= this
+ is_country_alive = yes
+ has_variable = nesnd_japan_lin_regency_active
+ is_subject_of = c:USM
+ has_law_or_variant = law_type:law_monarchy
+ NOT = { has_war_with = c:USM }
+ c:USM ?= { is_country_alive = yes has_variable = tag_WUU_var }
+ exists = var:nesnd_japan_lin_regent
+ var:nesnd_japan_lin_regent ?= {
+  has_template = USM_lin_hanhan
+  is_character_alive = yes
+  owner = c:JAP
+  is_ruler_of_own_country = yes
+  has_variable = nesnd_japan_lin_commissioned
+ }
+}

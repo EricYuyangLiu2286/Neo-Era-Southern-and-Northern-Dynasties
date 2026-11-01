@@ -1,0 +1,443 @@
+﻿nesnd_south_chinese_state = {
+	OR = {
+		state_region = s:STATE_ALXA
+		state_region = s:STATE_AMUR
+		state_region = s:STATE_BEIJING
+		state_region = s:STATE_CHENGDE
+		state_region = s:STATE_CHONGQING
+		state_region = s:STATE_CHUANNAN
+		OR = { state_region = s:STATE_DZUNGARIA state_region = s:STATE_ILI }
+		state_region = s:STATE_EASTERN_HUBEI
+		state_region = s:STATE_FORMOSA
+		OR = { state_region = s:STATE_FUJIAN state_region = s:STATE_NORTHERN_FUJIAN }
+		OR = { state_region = s:STATE_GANSU state_region = s:STATE_HEXI }
+		state_region = s:STATE_GANZHOU
+		OR = { state_region = s:STATE_GUANGDONG state_region = s:STATE_GAOLIANG }
+		state_region = s:STATE_GUANGXI
+		state_region = s:STATE_GUILIN
+		state_region = s:STATE_GUIZHOU
+		state_region = s:STATE_HAINAN
+		state_region = s:STATE_HANZHONG
+		state_region = s:STATE_HENAN
+		state_region = s:STATE_HINGGAN
+		state_region = s:STATE_HUNAN
+		state_region = s:STATE_JIANGSU
+		state_region = s:STATE_JIANGXI
+		state_region = s:STATE_JINBEI
+		state_region = s:STATE_LHASA
+		state_region = s:STATE_NANJING
+		state_region = s:STATE_NGARI
+		state_region = s:STATE_NINGXIA
+		state_region = s:STATE_NORTHERN_ANHUI
+		state_region = s:STATE_NORTHERN_MANCHURIA
+		state_region = s:STATE_OUTER_MANCHURIA
+		state_region = s:STATE_QINGHAI
+		state_region = s:STATE_SHAANBEI
+		state_region = s:STATE_SHANDONG
+		state_region = s:STATE_SHANXI
+		state_region = s:STATE_SHAOZHOU
+		state_region = s:STATE_SHENGJING
+		state_region = s:STATE_SICHUAN
+		state_region = s:STATE_SONGJIANG
+		state_region = s:STATE_SOUTHERN_ANHUI
+		state_region = s:STATE_SOUTHERN_MANCHURIA
+		state_region = s:STATE_SUZHOU
+		OR = { state_region = s:STATE_TIANSHAN state_region = s:STATE_WESTERN_TIANSHAN }
+		state_region = s:STATE_WESTERN_HUBEI
+		state_region = s:STATE_XIAN
+		state_region = s:STATE_XIANGYANG
+		state_region = s:STATE_YUNNAN
+		state_region = s:STATE_ZHEJIANG
+		state_region = s:STATE_ZHILI
+		state_region = s:STATE_ZITONG
+	}
+}
+
+nesnd_south_political_member = {
+	OR = {
+		is_subject = no
+		is_subject_of = c:USM
+	}
+	is_country_alive = yes
+	NOT = {
+		c:USM ?= this
+	}
+	OR = {
+		has_variable = nesnd_south_member
+		c:HNA ?= this
+		c:SIH ?= this
+		c:GNG ?= this
+		c:JAP ?= this
+		c:JTK ?= this
+		c:JIM ?= this
+		AND = {
+			exists = c:USM
+			is_subject_of = c:USM
+		}
+	}
+	NOR = {
+		c:CNE ?= this
+		c:QE1 ?= this
+		c:HUS ?= this
+		c:FRA ?= this
+		c:MUG ?= this
+		c:SHA ?= this
+		c:GBR ?= this
+		c:RUS ?= this
+	}
+}
+
+nesnd_south_mainland_member = {
+	nesnd_south_political_member = yes
+	OR = {
+		c:HNA ?= this
+		c:SIH ?= this
+		c:GNG ?= this
+	}
+}
+
+nesnd_south_integration_member = {
+	nesnd_south_political_member = yes
+	NOT = {
+		nesnd_south_japan_member = yes
+	}
+	any_scope_state = {
+		nesnd_south_chinese_state = yes
+	}
+}
+
+nesnd_south_protected_overseas = {
+	OR = {
+		c:PHI ?= this
+		c:DEI ?= this
+		c:YN1 ?= this
+	}
+}
+
+nesnd_south_japan_member = {
+	nesnd_south_political_member = yes
+	OR = {
+		c:JAP ?= this
+		c:JTK ?= this
+		c:JIM ?= this
+	}
+}
+
+nesnd_south_overseas_member = {
+	nesnd_south_political_member = yes
+	NOT = {
+		nesnd_south_mainland_member = yes
+	}
+	NOT = {
+		nesnd_south_japan_member = yes
+	}
+}
+
+nesnd_south_accord_valid = {
+	has_variable = nesnd_south_accord_active
+	exists = c:USM
+	NOT = {
+		has_war_with = c:USM
+	}
+	NOT = {
+		has_variable = nesnd_south_accord_broken
+	}
+	nesnd_south_political_member = yes
+	OR = {
+		is_subject = no
+		is_subject_of = c:USM
+	}
+	OR = {
+		AND = {
+			nesnd_south_accord_side_value = 1
+			nesnd_board_stance_value = 1
+		}
+		AND = {
+			nesnd_south_accord_side_value = 2
+			nesnd_board_stance_value = 2
+		}
+	}
+}
+
+nesnd_south_can_receive_accord = {
+	nesnd_south_political_member = yes
+	is_at_war = no
+	NOT = {
+		has_variable = nesnd_south_accord_pending
+	}
+	OR = {
+		is_subject = no
+		is_subject_of = c:USM
+	}
+}
+
+nesnd_south_can_offer_accord = {
+	c:USM ?= this
+	is_at_war = no
+	in_default = no
+	NOT = {
+		has_global_variable = nesnd_south_settled
+	}
+	NOT = {
+		has_global_variable = usm_civilwar_occured
+	}
+	NOT = {
+		has_variable = nesnd_south_offer_cooldown
+	}
+	OR = {
+		nesnd_board_stance_value = 1
+		nesnd_board_stance_value = 2
+	}
+	any_country = {
+		nesnd_south_can_receive_accord = yes
+	}
+}
+
+nesnd_south_accord_reply_valid = {
+	has_variable = nesnd_south_accord_pending
+	exists = c:USM
+	nesnd_south_political_member = yes
+	is_at_war = no
+	OR = {
+		is_subject = no
+		is_subject_of = c:USM
+	}
+	NOT = {
+		has_global_variable = nesnd_south_settled
+	}
+	NOT = {
+		has_global_variable = usm_civilwar_occured
+	}
+	OR = {
+		AND = {
+			nesnd_south_pending_side_value = 1
+			c:USM = {
+				nesnd_board_stance_value = 1
+				NOT = {
+					has_variable = tag_WUU_var
+				}
+			}
+		}
+		AND = {
+			nesnd_south_pending_side_value = 2
+			c:USM = {
+				nesnd_board_stance_value = 2
+			}
+		}
+	}
+}
+
+nesnd_south_member_can_integrate = {
+	nesnd_south_integration_member = yes
+	is_at_war = no
+	OR = {
+		is_subject = no
+		is_subject_of = c:USM
+	}
+	nesnd_south_accord_valid = yes
+	nesnd_south_accord_side_value = 2
+	has_variable = nesnd_south_accepts_integration
+	trigger_if = {
+		limit = {
+			nesnd_south_protected_overseas = yes
+		}
+		any_scope_state = {
+			NOT = {
+				nesnd_south_chinese_state = yes
+			}
+			controller = owner
+		}
+	}
+	trigger_if = {
+		limit = {
+			any_scope_state = {
+				NOT = {
+					nesnd_south_chinese_state = yes
+				}
+			}
+		}
+		any_scope_state = {
+			NOT = {
+				nesnd_south_chinese_state = yes
+			}
+			controller = owner
+		}
+	}
+	NOT = {
+		any_scope_state = {
+			nesnd_south_chinese_state = yes
+			NOT = {
+				controller = owner
+			}
+		}
+	}
+	trigger_if = {
+		limit = {
+			is_player = yes
+		}
+		c:USM = {
+			is_player = no
+		}
+	}
+}
+
+nesnd_south_japan_can_cede = {
+	nesnd_south_japan_member = yes
+	is_at_war = no
+	nesnd_south_accord_valid = yes
+	nesnd_south_accord_side_value = 2
+	has_variable = nesnd_south_accepts_japan_concession
+	OR = {
+		is_subject = no
+		is_subject_of = c:USM
+	}
+	trigger_if = {
+		limit = {
+			any_scope_state = {
+				OR = {
+					state_region = s:STATE_SHIKOKU
+					state_region = s:STATE_KYUSHU
+				}
+			}
+		}
+		any_scope_state = {
+			NOR = {
+				state_region = s:STATE_SHIKOKU
+				state_region = s:STATE_KYUSHU
+			}
+			controller = owner
+		}
+		NOT = {
+			any_scope_state = {
+				OR = {
+					state_region = s:STATE_SHIKOKU
+					state_region = s:STATE_KYUSHU
+				}
+				NOT = {
+					controller = owner
+				}
+			}
+		}
+	}
+}
+
+nesnd_south_ming_peace_ready = {
+ custom_tooltip = { text = nesnd_south_peace_stability_tt
+    nesnd_south_pressure_value < 60
+    NOT = { has_modifier = declared_bankruptcy }
+ }
+ custom_tooltip = { text = nesnd_south_ming_supply_tt nesnd_south_ming_supply_ready = yes }
+
+	c:USM ?= this
+	nesnd_board_stance_value = 1
+	NOT = {
+		has_variable = tag_WUU_var
+	}
+	NOT = {
+		has_variable = nesnd_south_peace_committed
+	}
+	NOT = {
+		has_global_variable = nesnd_south_settled
+	}
+	NOT = {
+		has_global_variable = usm_civilwar_occured
+	}
+	is_at_war = no
+	in_default = no
+	bureaucracy >= 0
+	has_law_or_variant = law_type:law_monarchy
+	exists = ruler
+	ruler = {
+		is_character_alive = yes
+		nesnd_ming_authorized_dynast = yes
+		has_variable = nesnd_ming_claimant
+	}
+	nesnd_south_ming_strength >= 85
+	nesnd_south_ming_lead >= 20
+	nesnd_south_ming_accord >= 75
+	any_country = {
+		count >= 2
+		nesnd_south_mainland_member = yes
+		nesnd_south_accord_valid = yes
+		nesnd_south_accord_side_value = 1
+	}
+}
+
+nesnd_south_wu_peace_ready = {
+ custom_tooltip = { text = nesnd_south_peace_stability_tt
+    nesnd_south_pressure_value < 60
+    NOT = { has_modifier = declared_bankruptcy }
+ }
+
+	c:USM ?= this
+	nesnd_board_stance_value = 2
+	NOT = {
+		has_variable = nesnd_south_peace_committed
+	}
+	NOT = {
+		has_global_variable = nesnd_south_settled
+	}
+	NOT = {
+		has_global_variable = usm_civilwar_occured
+	}
+	is_at_war = no
+	in_default = no
+	bureaucracy >= 0
+	nesnd_south_wu_strength >= 85
+	nesnd_south_wu_lead >= 20
+	nesnd_south_wu_accord >= 80
+	any_country = {
+		count >= 2
+		nesnd_south_mainland_member = yes
+	}
+	NOT = {
+		any_country = {
+			nesnd_south_integration_member = yes
+			NOT = {
+				nesnd_south_member_can_integrate = yes
+			}
+		}
+	}
+	any_scope_ship = {
+		count >= 1
+	}
+	any_scope_ship = {
+		percent >= 0.75
+		crew_percent >= 0.7
+	}
+	military_ship_maintenance_fulfillment >= 0.75
+	NOT = {
+		any_country = {
+			nesnd_south_japan_member = yes
+			NOT = {
+				nesnd_south_japan_can_cede = yes
+			}
+		}
+	}
+}
+
+nesnd_south_ming_observation_complete = {
+	has_variable = nesnd_south_ming_observation_started
+	NOT = {
+		has_variable = nesnd_south_ming_observation_hold
+	}
+	nesnd_south_ming_months_value >= 12
+}
+
+nesnd_south_wu_observation_complete = {
+	has_variable = nesnd_south_wu_observation_started
+	NOT = {
+		has_variable = nesnd_south_wu_observation_hold
+	}
+	nesnd_south_wu_months_value >= 12
+}
+# Same three goods/price/shortage tests as nesnd_supply_inputs_ready, with an explicit USM target
+# because this trigger is also called from a contextless JE and foreign reply events.
+nesnd_south_ming_supply_ready = {
+    c:USM ?= this
+    capital.market = {
+        mg:paper = { market_goods_pricier <= 0.5 NOT = { country_has_local_shortage = c:USM } }
+        mg:tools = { market_goods_pricier <= 0.5 NOT = { country_has_local_shortage = c:USM } }
+        mg:small_arms = { market_goods_pricier <= 0.5 NOT = { country_has_local_shortage = c:USM } }
+    }
+}

@@ -1,0 +1,77 @@
+﻿nesnd_external_country = { OR = { c:HUS ?= this c:FRA ?= this c:QE1 ?= this c:SHA ?= this c:BUR ?= this c:MUG ?= this c:GBR ?= this c:RUS ?= this } }
+nesnd_external_target_valid = {
+ exists = var:nesnd_external_target
+ var:nesnd_external_target = { is_country_alive = yes }
+ NOT = { this = var:nesnd_external_target }
+ NOT = { has_war_with = var:nesnd_external_target }
+ OR = {
+  c:USM ?= var:nesnd_external_target
+  AND = { var:nesnd_external_target = { has_variable = usm_opposition_country_leader_var } is_subject = no }
+  AND = { c:QE1 ?= this c:SIH ?= var:nesnd_external_target }
+  AND = { c:SHA ?= this c:HUS ?= var:nesnd_external_target }
+  AND = { c:MUG ?= this c:FRA ?= var:nesnd_external_target }
+ }
+}
+nesnd_external_request_valid = {
+ exists = scope:nesnd_external_requester is_country_alive = yes
+ NOT = { has_global_variable = nesnd_south_settled }
+ scope:nesnd_external_requester = {
+  is_country_alive = yes is_at_war = no has_journal_entry = nesnd_external_policy
+  NOT = { has_variable = nesnd_external_dismissed } NOT = { has_variable = nesnd_external_aid_committed }
+  has_variable = nesnd_external_pending var:nesnd_external_pending = root
+  nesnd_external_target_valid = yes var:nesnd_external_target = root
+  OR = { AND = { is_subject = yes overlord = var:nesnd_external_requester_sponsor } AND = { is_subject = no this = var:nesnd_external_requester_sponsor } }
+  root = { OR = { AND = { is_subject = yes overlord = prev.var:nesnd_external_receiver_sponsor } AND = { is_subject = no this = prev.var:nesnd_external_receiver_sponsor } } }
+ }
+}
+
+nesnd_external_can_offer_money = { nesnd_external_target_valid = yes is_at_war = no NOT = { has_variable = nesnd_external_cooldown } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } NOT = { has_global_variable = nesnd_south_settled } is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 5000 net_total_income >= 1000 gold_reserves >= 26000 can_create_treaty = { first_country = root second_country = var:nesnd_external_target is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = root target_country = var:nesnd_external_target inputs = { { quantity = 500 } } } } } }
+nesnd_external_can_offer_arms = { nesnd_external_target_valid = yes is_at_war = no NOT = { has_variable = nesnd_external_cooldown } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } NOT = { has_global_variable = nesnd_south_settled } is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } capital.market = { mg:small_arms = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } } can_create_treaty = { first_country = root second_country = var:nesnd_external_target is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = root target_country = var:nesnd_external_target inputs = { { quantity = 10 } { good = g:small_arms } } } } } }
+nesnd_external_can_request_money = { nesnd_external_target_valid = yes is_at_war = no NOT = { has_variable = nesnd_external_cooldown } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } NOT = { has_global_variable = nesnd_south_settled }
+ var:nesnd_external_target = { is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } net_fixed_income >= 5000 net_total_income >= 1000 gold_reserves >= 26000 }
+ can_create_treaty = { first_country = var:nesnd_external_target second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = money_transfer source_country = var:nesnd_external_target target_country = root inputs = { { quantity = 500 } } } } } }
+nesnd_external_can_request_arms = { nesnd_external_target_valid = yes is_at_war = no NOT = { has_variable = nesnd_external_cooldown } NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_aid_committed } NOT = { has_global_variable = nesnd_south_settled }
+ var:nesnd_external_target = { is_at_war = no in_default = no NOT = { has_modifier = declared_bankruptcy } capital.market = { mg:small_arms = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root.var:nesnd_external_target } } } }
+ can_create_treaty = { first_country = var:nesnd_external_target second_country = root is_draft = no binding_period = { years = 1 } articles_to_create = { { article = goods_transfer source_country = var:nesnd_external_target target_country = root inputs = { { quantity = 10 } { good = g:small_arms } } } } } }
+
+nesnd_external_any_legal_aid = {
+ exists = var:nesnd_external_target
+ OR = {
+  AND = {
+   NOR = { c:MUG ?= this c:SHA ?= this }
+   OR = { nesnd_external_can_offer_money = yes nesnd_external_can_offer_arms = yes }
+  }
+  AND = {
+   OR = { c:MUG ?= this c:SHA ?= this }
+   OR = { nesnd_external_can_request_money = yes nesnd_external_can_request_arms = yes }
+  }
+ }
+}
+nesnd_external_any_partner_available = {
+ trigger_if = { limit = { c:MUG ?= this }
+  exists = c:FRA c:FRA = { is_country_alive = yes } NOT = { has_war_with = c:FRA }
+ }
+ trigger_else_if = { limit = { c:SHA ?= this }
+  exists = c:HUS c:HUS = { is_country_alive = yes } NOT = { has_war_with = c:HUS }
+ }
+ trigger_else = {
+  OR = {
+   AND = { exists = c:USM c:USM = { is_country_alive = yes } NOT = { has_war_with = c:USM } }
+   AND = { c:QE1 ?= this exists = c:SIH c:SIH = { is_country_alive = yes } NOT = { has_war_with = c:SIH } }
+   AND = { is_subject = no any_country = { has_variable = usm_opposition_country_leader_var is_country_alive = yes NOT = { has_war_with = root } } }
+  }
+ }
+}
+nesnd_external_pending_politics_valid = {
+ exists = var:nesnd_external_target
+ OR = {
+  AND = { is_subject = yes overlord = var:nesnd_external_requester_sponsor }
+  AND = { is_subject = no this = var:nesnd_external_requester_sponsor }
+ }
+ var:nesnd_external_target = {
+  OR = {
+   AND = { is_subject = yes overlord = prev.var:nesnd_external_receiver_sponsor }
+   AND = { is_subject = no this = prev.var:nesnd_external_receiver_sponsor }
+  }
+ }
+}

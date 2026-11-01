@@ -1,0 +1,91 @@
+﻿nesnd_ten_measure = {
+    set_variable = { name = nesnd_ten_population value = nesnd_ten_population_sum }
+    set_variable = { name = nesnd_ten_workforce value = nesnd_ten_workforce_sum }
+    set_variable = { name = nesnd_ten_unemployment value = 1 }
+    set_variable = { name = nesnd_ten_starving value = 1 }
+    set_variable = { name = nesnd_ten_working_hungry value = 1 }
+    set_variable = { name = nesnd_ten_sol value = 0 }
+    set_variable = { name = nesnd_ten_access value = 0 }
+    if = { limit = { var:nesnd_ten_workforce > 0 }
+        set_variable = { name = nesnd_ten_unemployment value = { value = nesnd_ten_unemployed_sum divide = var:nesnd_ten_workforce } }
+        set_variable = { name = nesnd_ten_starving value = { value = nesnd_ten_starving_sum divide = var:nesnd_ten_workforce } }
+        set_variable = { name = nesnd_ten_working_hungry value = { value = nesnd_ten_working_hungry_sum divide = var:nesnd_ten_workforce } }
+        set_variable = { name = nesnd_ten_sol value = { value = nesnd_ten_sol_sum divide = var:nesnd_ten_workforce } }
+    }
+    if = { limit = { var:nesnd_ten_population > 0 }
+        set_variable = { name = nesnd_ten_access value = { value = nesnd_ten_access_sum divide = var:nesnd_ten_population } }
+    }
+    set_variable = { name = nesnd_ten_training_quote value = nesnd_ten_training_cost }
+    set_variable = { name = nesnd_ten_compromise_quote value = nesnd_ten_compromise_cost }
+    set_variable = { name = nesnd_ten_score value = 0 }
+    if = { limit = { nesnd_ten_jobs_ready = yes } change_variable = { name = nesnd_ten_score add = 1 } }
+    if = { limit = { nesnd_ten_livelihood_ready = yes } change_variable = { name = nesnd_ten_score add = 1 } }
+    if = { limit = { var:nesnd_ten_access >= 0.85 } change_variable = { name = nesnd_ten_score add = 1 } }
+    if = { limit = { is_at_war = no NOT = { has_modifier = declared_bankruptcy } } change_variable = { name = nesnd_ten_score add = 1 } }
+}
+nesnd_ten_display = {
+    save_scope_as = nesnd_ten_display_country
+    je:nesnd_tenasserim_recovery ?= {
+        set_bar_progress = { name = nesnd_ten_conditions_bar value = scope:nesnd_ten_display_country.var:nesnd_ten_score }
+        set_bar_progress = { name = nesnd_ten_continuity_bar value = scope:nesnd_ten_display_country.var:nesnd_ten_good_months }
+    }
+}
+nesnd_ten_initialize = {
+    if = { limit = { NOT = { has_variable = nesnd_ten_initialized } }
+        set_variable = nesnd_ten_initialized
+        set_variable = { name = nesnd_ten_orders value = 0 }
+        set_variable = { name = nesnd_ten_samples value = 0 }
+    }
+    set_variable = { name = nesnd_ten_good_months value = 0 }
+    set_variable = { name = nesnd_ten_bad_months value = 0 }
+    set_variable = { name = nesnd_ten_target value = s:STATE_TENASSERIM.region_state:DEI }
+    nesnd_ten_measure = yes nesnd_ten_display = yes
+}
+nesnd_ten_month = {
+    if = { limit = { nesnd_ten_active = yes }
+        change_variable = { name = nesnd_ten_samples add = 1 }
+        nesnd_ten_measure = yes
+        if = { limit = { nesnd_ten_healthy = yes } change_variable = { name = nesnd_ten_good_months add = 1 } }
+        else = { set_variable = { name = nesnd_ten_good_months value = 0 } }
+        clamp_variable = { name = nesnd_ten_good_months min = 0 max = 6 }
+        if = { limit = { nesnd_ten_distress = yes } change_variable = { name = nesnd_ten_bad_months add = 1 } }
+        else = { set_variable = { name = nesnd_ten_bad_months value = 0 } }
+        if = { limit = { var:nesnd_ten_samples >= 24 var:nesnd_ten_bad_months >= 12 NOT = { has_variable = nesnd_ten_review_seen } }
+            set_variable = nesnd_ten_review_seen
+            trigger_event = { id = nesnd_tenasserim.1 popup = yes }
+        }
+        nesnd_ten_display = yes
+    }
+}
+nesnd_ten_build = {
+    if = { limit = { nesnd_ten_can_build = yes }
+        s:STATE_TENASSERIM.region_state:DEI = { start_building_construction = building_logging_camp }
+        change_variable = { name = nesnd_ten_orders add = 1 }
+        set_variable = { name = nesnd_ten_build_cooldown months = 6 }
+        custom_tooltip = nesnd_ten_build_result_tt
+        nesnd_ten_measure = yes nesnd_ten_display = yes
+    }
+}
+nesnd_ten_train = {
+    if = { limit = { nesnd_ten_can_train = yes }
+        add_treasury = nesnd_ten_training_debit
+        set_variable = { name = nesnd_ten_training_cooldown months = 12 }
+        s:STATE_TENASSERIM.region_state:DEI = { add_modifier = { name = nesnd_ten_training months = 12 } }
+        nesnd_ten_measure = yes
+    }
+}
+nesnd_ten_compromise = {
+    if = { limit = { nesnd_ten_can_compromise = yes }
+        add_treasury = nesnd_ten_compromise_debit
+        set_variable = { name = nesnd_ten_compromise_cooldown months = 24 }
+        ig:ig_landowners = { add_modifier = { name = nesnd_ten_landowners_compromise months = 24 } }
+        nesnd_ten_measure = yes
+    }
+}
+nesnd_ten_cleanup = {
+    if = { limit = { exists = var:nesnd_ten_target }
+        var:nesnd_ten_target = { if = { limit = { has_modifier = nesnd_ten_training } remove_modifier = nesnd_ten_training } }
+    }
+    remove_variable = nesnd_ten_target
+    set_variable = { name = nesnd_ten_good_months value = 0 }
+}

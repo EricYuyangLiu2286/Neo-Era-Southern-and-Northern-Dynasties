@@ -3,7 +3,7 @@
 Record: implementation
 Category: bug
 Status: ready-for-agent
-Execution: claimed
+Execution: completed
 Assignee: root
 Blocked by: 01
 Validation: ENGINE_PARTIAL
@@ -34,3 +34,9 @@ F2已从冻结F1精确复制514文件，并保存pre-change-f2-closure-entry-202
 ## Comments
 
 F1 中 Japan A1、Lin、字面 scope 修复已合入；旧计划的“待实现/待合并”不代表当前候选仍缺这些代码。用户已接受玩家GAME OVER，玩家确认和日本旧终局独立候选均未选用，不因存在旧断开事件就接回叙事。当前在综合A继续真实机制顺序审计；F2别名版及后续父链均保留。
+
+## 2026-11-01 收口
+
+依用户最新指令复用已有机制、地图/进港证据，停止重复开局/读档。日志优先修复及主MOD整合已完成；具体范围与未新跑引擎边界见WORK/reports/logfix-release-20261101/release-notes.md。旧未测组合不扩写为全部通过。
+
+完成范围按2026-11-01用户修订的日志优先验收执行；ENGINE_PARTIAL保留实际历史覆盖边界，新按钮修复为STATIC_PASS。

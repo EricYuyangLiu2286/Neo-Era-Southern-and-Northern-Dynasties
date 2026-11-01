@@ -6,8 +6,8 @@ nesnd_crisis.30 = {
     
     event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-    trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } }
-    immediate = {  }
+    trigger = { nesnd_reform_active = yes NOT = { has_variable = nesnd_reform_petition_event_seen } }
+    immediate = { set_variable = nesnd_reform_petition_event_seen }
     option = { name = nesnd_crisis.30.a
         default_option = yes
         ai_chance = { base = 65 }
@@ -40,8 +40,8 @@ nesnd_crisis.33 = {
     
     event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-    trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } var:cne_landreform_failure_tracker >= 60 }
-    immediate = {  }
+    trigger = { nesnd_reform_local_crisis = yes NOT = { has_variable = nesnd_reform_local_event_seen } }
+    immediate = { set_variable = nesnd_reform_local_event_seen }
     option = { name = nesnd_crisis.33.a
         default_option = yes
         ai_chance = { base = 65 }
@@ -69,12 +69,12 @@ nesnd_crisis.31 = {
     
     event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-    trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } }
-    immediate = {  }
+    trigger = { nesnd_reform_active = yes has_variable = nesnd_reform_terminal_pending NOT = { has_variable = nesnd_reform_terminal_event_seen } }
+    immediate = { set_variable = nesnd_reform_terminal_event_seen }
     option = { name = nesnd_crisis.31.a
         default_option = yes
         ai_chance = { base = 55 }
-        trigger = { is_at_war = no bureaucracy >= 0 }
+        trigger = { nesnd_reform_active = yes }
         nesnd_land_choice_31_a = yes 
     } option = { name = nesnd_crisis.31.b
         
@@ -98,7 +98,7 @@ nesnd_crisis.32 = {
     
     event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-    trigger = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } }
+    trigger = { nesnd_reform_active = yes }
     immediate = {  }
     option = { name = nesnd_crisis.32.a
         
@@ -145,32 +145,8 @@ nesnd_crisis.10 = {
     flavor = nesnd_crisis.10.f
 }
 
-nesnd_crisis.11 = {
-    type = country_event placement = root duration = 3
-    title = nesnd_crisis.11.t desc = nesnd_crisis.11.d
-    
-    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
-    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-    trigger = {  }
-    immediate = {  }
-    option = { name = nesnd_crisis.11.a
-        default_option = yes
-        ai_chance = { base = 65 }
-        
-        change_variable = { name = usm_conflicts_within_tracker add = -8 } clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 } add_radicals = { value = 0.03 interest_group = ig:ig_armed_forces }
-    } option = { name = nesnd_crisis.11.b
-        
-        ai_chance = { base = 35 }
-        
-        add_modifier = { name = nesnd_court_protection months = 60 }
-    }
-
-    
-
-    
-
-    flavor = nesnd_crisis.11.f
-}
+# Legacy queued success notice. It can no longer grant years of protection.
+nesnd_crisis.11 = { type = country_event hidden = yes immediate = { nesnd_chen_security_maintenance = yes } }
 
 nesnd_crisis.20 = {
     type = country_event placement = root duration = 3
@@ -189,12 +165,14 @@ nesnd_crisis.20 = {
         
         ai_chance = { base = 25 }
         trigger = { exists = c:HNA NOT = { has_modifier = declared_bankruptcy } }
-        set_variable = nesnd_foreign_aid add_modifier = { name = nesnd_foreign_commitment months = 36 } c:HNA ?= { add_modifier = { name = nesnd_foreign_supplies months = 36 } } if = { limit = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } } change_variable = { name = cne_landreform_failure_tracker add = 8 } }
+        set_variable = nesnd_foreign_aid add_modifier = { name = nesnd_foreign_commitment months = 36 } c:HNA ?= { add_modifier = { name = nesnd_foreign_supplies months = 36 } } if = { limit = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } } custom_tooltip = nesnd_cne_feedback_disorder_up_8
+change_variable = { name = cne_landreform_failure_tracker add = 8 } }
     } option = { name = nesnd_crisis.20.c
         
         ai_chance = { base = 10 }
         trigger = { bureaucracy > 0 is_at_war = no NOT = { has_modifier = declared_bankruptcy } }
-        set_variable = nesnd_north_intervention add_modifier = { name = nesnd_foreign_commitment months = 60 } if = { limit = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } } change_variable = { name = cne_landreform_failure_tracker add = 15 } } nesnd_join_opposition_play = yes
+        set_variable = nesnd_north_intervention add_modifier = { name = nesnd_foreign_commitment months = 60 } if = { limit = { has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } } custom_tooltip = nesnd_cne_feedback_disorder_up_15
+change_variable = { name = cne_landreform_failure_tracker add = 15 } } nesnd_join_opposition_play = yes
     }
 
     
@@ -204,36 +182,14 @@ nesnd_crisis.20 = {
     flavor = nesnd_crisis.20.f
 }
 
-nesnd_crisis.21 = {
-    type = country_event placement = root duration = 3
-    title = nesnd_crisis.21.t desc = nesnd_crisis.21.d
-    
-    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
-    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-    trigger = { NOT = { has_variable = nesnd_foreign_policy_seen } }
-    immediate = { set_variable = nesnd_foreign_policy_seen }
-    option = { name = nesnd_crisis.21.a
-        default_option = yes
-        ai_chance = { base = 60 }
-        
-        set_variable = nesnd_foreign_observer add_modifier = { name = nesnd_maritime_security months = 36 }
-    } option = { name = nesnd_crisis.21.b
-        
-        ai_chance = { base = 30 }
-        
-        set_variable = nesnd_refugee_policy add_modifier = { name = nesnd_refugee_reception months = 60 }
-    } option = { name = nesnd_crisis.21.c
-        
-        ai_chance = { base = 10 }
-        trigger = { exists = c:HNA NOT = { has_modifier = declared_bankruptcy } }
-        set_variable = nesnd_foreign_aid add_modifier = { name = nesnd_foreign_commitment months = 36 } c:HNA ?= { add_modifier = { name = nesnd_foreign_supplies months = 36 } }
-    }
-
-    
-
-    
-
-    flavor = nesnd_crisis.21.f
+# Compatibility entry: actual foreign responses live in nesnd_external.
+# Compatibility entry: actual foreign responses live in nesnd_external.
+# Compatibility entry: actual foreign responses live in nesnd_external.
+# Compatibility entry: actual foreign responses live in nesnd_external.
+# Compatibility entry: actual foreign responses live in nesnd_external.
+nesnd_crisis.21 = { type = country_event hidden = yes
+ trigger = { NOT = { has_variable = nesnd_foreign_policy_seen } }
+ immediate = { set_variable = nesnd_foreign_policy_seen trigger_event = { id = nesnd_external.1 popup = yes } }
 }
 
 nesnd_crisis.40 = {

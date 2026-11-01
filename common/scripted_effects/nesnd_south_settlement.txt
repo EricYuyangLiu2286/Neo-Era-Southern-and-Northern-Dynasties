@@ -1,0 +1,42 @@
+﻿nesnd_commit_rebel_settlement = {
+    # Called within the guarded option, after the constitutional/royal selection.
+    ruler ?= { save_scope_as = nesnd_selected_postwar_ruler }
+    if = { limit = { exists = c:USM NOT = { c:USM ?= this } }
+        c:USM = { every_scope_character = { limit = { is_character_alive = yes } transfer_character = root } }
+        annex_as_civil_war = c:USM
+    }
+    change_tag = USM
+    remove_variable = nesnd_ming_interregnum
+    remove_global_variable = usm_civilwar_status_quo
+    remove_variable = tag_WUU_var
+    if = { limit = { exists = scope:nesnd_selected_postwar_ruler }
+        scope:nesnd_selected_postwar_ruler = {
+            if = { limit = { is_character_alive = yes owner = root } set_character_as_ruler = yes }
+        }
+    }
+    set_variable = nesnd_rebel_settlement_seen
+    set_variable = usm_rebel_winner_of_the_civil_war
+    set_global_variable = nesnd_south_settled
+    remove_variable = nesnd_rebel_settlement_waiting
+    remove_variable = nesnd_rebel_settlement_pending
+    c:CNE ?= { remove_variable = nesnd_north_intervention }
+    nesnd_notify_jingyin_origin = yes
+}
+nesnd_south_settlement_retry = {
+    if = { limit = { has_variable = nesnd_rebel_settlement_waiting is_country_alive = yes }
+        if = { limit = { has_global_variable = nesnd_south_settled NOT = { AND = { has_variable = nesnd_ming_court has_global_variable = usm_civilwar_status_quo } } }
+            remove_variable = nesnd_rebel_settlement_waiting
+            remove_variable = nesnd_rebel_settlement_pending
+        } else_if = { limit = { nesnd_rebel_can_offer_settlement = yes }
+            trigger_event = { id = usm_civilwar.10 popup = yes }
+        } else_if = { limit = {
+            NOT = { has_variable = nesnd_rebel_settlement_pending }
+            NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
+            NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+            NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country has_war_with = c:USM } }
+        } trigger_event = { id = usm_civilwar.9 popup = yes } }
+    }
+    if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } }
+        trigger_event = { id = usm_civilwar.11 popup = yes }
+    }
+}

@@ -1,0 +1,80 @@
+﻿# Country-scope predicates. All named-country accesses have alive guards.
+nesnd_japan_partition_possible = {
+	OR = {
+		AND = {
+			NOT = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+			NOT = {
+				exists = c:JTK
+			}
+			NOT = {
+				exists = c:JIM
+			}
+			c:USM ?= {
+				is_country_alive = yes
+				has_variable = tag_WUU_var
+			}
+			c:JAP ?= {
+				is_country_alive = yes
+				has_law = law_type:law_monarchy
+				ruler ?= {
+					has_variable = house_toyotomi
+				}
+				OR = {
+					is_subject = no
+					is_subject_of = c:USM
+				}
+				owns_entire_state_region = STATE_KANTO
+				owns_entire_state_region = STATE_KYOTO
+				owns_entire_state_region = STATE_KANSAI
+				owns_entire_state_region = STATE_CHUGOKU
+			}
+		}
+		AND = {
+			NOT = {
+				has_global_variable = nesnd_japan_partitioned
+			}
+			nesnd_japan_recovery_partition_possible = yes
+		}
+	}
+}
+nesnd_japan_fiscal_ready = { bureaucracy >= 0 net_total_income >= 0 }
+nesnd_japan_army_ready = {
+    government_legitimacy >= 50
+    army_power_projection > 0
+    c:JAP ?= { army_power_projection <= root.army_power_projection }
+}
+nesnd_japan_navy_ready = {
+    naval_power_projection > 0
+    military_ship_maintenance_fulfillment >= 0.9
+    c:JAP ?= { naval_power_projection <= root.naval_power_projection }
+}
+nesnd_japan_can_send = {
+    c:USM ?= this
+    is_country_alive = yes
+    has_variable = tag_WUU_var
+    has_global_variable = nesnd_south_settled
+    NOT = { has_global_variable = nesnd_japan_dossier_closed }
+    NOT = { has_global_variable = nesnd_japan_offer_sent }
+    is_at_war = no
+    NOT = { has_truce_with = c:JAP }
+    nesnd_japan_partition_possible = yes
+    nesnd_japan_fiscal_ready = yes
+    nesnd_japan_army_ready = yes
+    nesnd_japan_navy_ready = yes
+    c:JAP ?= { is_at_war = no is_diplomatic_play_committed_participant = no }
+    is_diplomatic_play_committed_participant = no
+}
+nesnd_japan_is_united = {
+    owns_entire_state_region = STATE_KANTO
+    owns_entire_state_region = STATE_KYOTO
+    owns_entire_state_region = STATE_KANSAI
+    owns_entire_state_region = STATE_CHUGOKU
+    owns_entire_state_region = STATE_KYUSHU
+    owns_entire_state_region = STATE_SHIKOKU
+    owns_entire_state_region = STATE_TOKAI
+    owns_entire_state_region = STATE_TOHOKU
+    owns_entire_state_region = STATE_HOKUSHINETSU
+    is_subject = no
+}

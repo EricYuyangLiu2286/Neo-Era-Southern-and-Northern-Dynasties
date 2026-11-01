@@ -1,5 +1,7 @@
 # 工具和真实引擎验证
 
+当前优先：[日志优先的增量交付](log-first-delivery.md)。2026-11-01用户已取消重复进港/读档/截图验收，要求修日志错误、外部检查优先、正式包排除QA，并授权修复后直接整合。以下历史流程仅按受改范围选用。
+
 验收先对照当前用户认可的结果。2026-11-01已接受玩家失国/GAME OVER（含日本）；实际失败画面如实留证，不再单凭它判定BUG或要求救援。世界机制可在明确记录的观察者继续过程中核验，不能改写为玩家自动续玩。当前重点是既定事件链的顺序、可达条件、完成结果及难度/行动空间证据；具体范围见[当前任务索引](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/map.md>)。
 
 ## hidden_effect 的真实边界（1.13.11，run211226反证）

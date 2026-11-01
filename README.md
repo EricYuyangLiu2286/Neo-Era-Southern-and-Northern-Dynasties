@@ -8,7 +8,7 @@ Victoria 3 架空历史 MOD；当前源码核验环境为 1.13.11 / Steam build 
 - `main-snapshot-20261101`：本轮开始时的主 MOD，318 个文件；保留既有游戏内容及 Matt Pocock 工程技能配置。
 - `candidate/f1` / `f1-frozen-20261101`：514 文件的冻结调试候选。已有检查为 12 PASS、2 FAIL、3 NOT_RUN，未完成整体验收。
 - candidate/f2 保存526文件的别名修复版；后续 sequence、Lin resume、female-hair A/B、map-refinement 与 resumed-integrated 共6条独立候选分支已推送并逐字核对 Git archive。
-- 当前运行 candidate/resumed-integrated-a（553文件，提交5edbdf6d671f023c9a4d39026152de8e6402b6bb）。女性发型的同人对照及综合新局BOM复核已完成；地图、机制顺序和集中验收仍为ENGINE_PARTIAL。主MOD玩法尚未合入。
+- 2026-11-01：综合候选及供给按钮日志修复已备份合入主MOD与main。保留原发布标识和当前文档；正式包排除QA。女性发型、地图初始化/三港、日本恢复/Lin和陈压力初始化已有实际证据；新的按钮修复通过外部检查，未重复开局/读档。详见 `development/workbench/reports/logfix-release-20261101/release-notes.md`。
 
 标签用于保存精确历史，不表示全部游戏机制已验证。当前主分支不是未经限定的“全部功能验收通过”发布版。
 
@@ -22,6 +22,6 @@ Victoria 3 架空历史 MOD；当前源码核验环境为 1.13.11 / Steam build 
 
 保存原始版本、主 MOD 和候选的独立提交／标签，保留远端既有历史，不强制推送或重写已保存历史。
 候选须保留共同父版本、源文件指纹、静态检查及实际运行证据；按差异合并，保护新文档、原有机制和游戏数据。
-Python、Tiger 和 MCP 查询不替代实际游戏入口、走时、人物／领土状态及存读档验证。
+日志、parser、Tiger与MCP优先；已有行为证据按受改范围复用，仅新的未决引擎语义做一次定向验证。具体规则见 `development/nesnd-skill/references/log-first-delivery.md`。
 
 East Asian Clothes: Redux 同时启用时仅引用其资源接口；仓库不收录该作者的模型、纹理、附件或动画。

@@ -1,0 +1,119 @@
+﻿# USM scope. Native recovery and expedition partition share this completion path.
+nesnd_japan_lin_clear_pending = {
+ remove_variable = nesnd_japan_lin_pending_officer
+ remove_variable = nesnd_japan_lin_pending_country
+ remove_variable = nesnd_japan_lin_pending_previous_ruler
+}
+
+nesnd_japan_lin_try_appoint = {
+ if = { limit = {
+  OR = {
+   has_variable = nesnd_japan_lin_pending_officer
+   has_variable = nesnd_japan_lin_pending_country
+  }
+  NOT = { nesnd_japan_lin_pending_identity_valid = yes }
+ }
+  nesnd_japan_lin_clear_pending = yes
+ }
+ if = { limit = { nesnd_japan_lin_can_be_appointed = yes }
+  clear_saved_scope = nesnd_japan_lin_candidate
+  clear_saved_scope = nesnd_japan_lin_recipient
+  clear_saved_scope = nesnd_japan_lin_previous_ruler
+  if = { limit = { NOT = { nesnd_japan_lin_pending_identity_valid = yes } }
+   random_scope_character = {
+    limit = { nesnd_japan_lin_candidate_eligible = yes }
+    save_scope_as = nesnd_japan_lin_candidate
+   }
+   if = { limit = {
+    exists = scope:nesnd_japan_lin_candidate
+    scope:nesnd_japan_lin_candidate ?= { nesnd_japan_lin_candidate_eligible = yes }
+   }
+    set_variable = { name = nesnd_japan_lin_pending_officer value = scope:nesnd_japan_lin_candidate }
+    set_variable = { name = nesnd_japan_lin_pending_country value = c:JAP }
+    remove_variable = nesnd_japan_lin_pending_previous_ruler
+    c:JAP = { ruler ?= { save_scope_as = nesnd_japan_lin_previous_ruler } }
+    if = { limit = { exists = scope:nesnd_japan_lin_previous_ruler }
+     set_variable = { name = nesnd_japan_lin_pending_previous_ruler value = scope:nesnd_japan_lin_previous_ruler }
+    }
+   }
+  }
+  if = { limit = {
+   nesnd_japan_lin_pending_identity_valid = yes
+   nesnd_japan_lin_realm_ready = yes
+  }
+   var:nesnd_japan_lin_pending_officer = { save_scope_as = nesnd_japan_lin_candidate }
+   var:nesnd_japan_lin_pending_country = { save_scope_as = nesnd_japan_lin_recipient }
+   if = { limit = { exists = var:nesnd_japan_lin_pending_previous_ruler }
+    var:nesnd_japan_lin_pending_previous_ruler ?= { save_scope_as = nesnd_japan_lin_previous_ruler }
+   }
+   # Retry transfer only while the exact captured person still belongs to USM.
+   if = { limit = { scope:nesnd_japan_lin_candidate ?= { owner = c:USM } }
+    scope:nesnd_japan_lin_candidate = { transfer_character = scope:nesnd_japan_lin_recipient }
+   }
+   if = { limit = {
+    nesnd_japan_lin_pending_identity_valid = yes
+    nesnd_japan_lin_realm_ready = yes
+    scope:nesnd_japan_lin_candidate ?= {
+     is_character_alive = yes
+     owner = scope:nesnd_japan_lin_recipient
+     is_in_exile_pool = no
+     is_heir_of_own_country = no
+    }
+   }
+    if = { limit = { scope:nesnd_japan_lin_candidate = { is_ruler_of_own_country = no } }
+     scope:nesnd_japan_lin_candidate = { set_character_as_ruler = yes }
+    }
+    if = { limit = {
+     scope:nesnd_japan_lin_candidate ?= {
+      is_character_alive = yes
+      owner = scope:nesnd_japan_lin_recipient
+      is_ruler_of_own_country = yes
+     }
+    }
+     scope:nesnd_japan_lin_candidate = { set_variable = nesnd_japan_lin_commissioned }
+     set_variable = nesnd_japan_lin_commission_completed
+     set_variable = { name = nesnd_japan_lin_regency_country value = scope:nesnd_japan_lin_recipient }
+     set_variable = { name = nesnd_japan_lin_commissioned_officer value = scope:nesnd_japan_lin_candidate }
+     scope:nesnd_japan_lin_recipient = {
+      set_variable = nesnd_japan_lin_regency_appointed
+      set_variable = nesnd_japan_lin_regency_active
+      set_variable = { name = nesnd_japan_lin_regent value = scope:nesnd_japan_lin_candidate }
+      if = { limit = { exists = scope:nesnd_japan_lin_previous_ruler }
+       set_variable = { name = nesnd_japan_lin_previous_ruler value = scope:nesnd_japan_lin_previous_ruler }
+      }
+     }
+     nesnd_japan_lin_clear_pending = yes
+    }
+   }
+  }
+ }
+}
+
+# Recipient scope: revoke only this module's commission, never change ruler,
+# country, law, identity or succession. The appointment-once marker is retained.
+nesnd_japan_lin_clear_recipient = {
+ if = {
+  limit = { exists = var:nesnd_japan_lin_regent }
+  var:nesnd_japan_lin_regent ?= { remove_variable = nesnd_japan_lin_commissioned }
+ }
+ remove_variable = nesnd_japan_lin_regency_active
+ remove_variable = nesnd_japan_lin_regent
+ remove_variable = nesnd_japan_lin_previous_ruler
+}
+
+# Sponsor scope: exact stored recipient; do not find or seize a replacement tag.
+nesnd_japan_lin_maintain_commission = {
+ if = {
+  limit = {
+   c:USM ?= this
+   has_variable = nesnd_japan_lin_regency_country
+   NOT = {
+    exists = var:nesnd_japan_lin_regency_country
+    var:nesnd_japan_lin_regency_country ?= { nesnd_japan_lin_regency_is_active = yes }
+   }
+  }
+  var:nesnd_japan_lin_regency_country ?= { nesnd_japan_lin_clear_recipient = yes }
+  remove_variable = nesnd_japan_lin_regency_country
+  remove_variable = nesnd_japan_lin_commissioned_officer
+ }
+}

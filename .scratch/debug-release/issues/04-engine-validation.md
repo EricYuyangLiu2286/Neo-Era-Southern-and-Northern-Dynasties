@@ -3,7 +3,7 @@
 Record: implementation
 Category: bug
 Status: ready-for-agent
-Execution: claimed
+Execution: completed
 Assignee: root
 Blocked by: 03
 Validation: ENGINE_PARTIAL
@@ -35,3 +35,9 @@ run20261101T003815Z已在F2别名版真实新开USM，原生JAP让步确认后�
 ## Comments
 
 旧 C5 现金A正常到期/提前撤约、旧版陈案和 E1 港口实例化证据保留，不自动认证 F2。
+
+## 2026-11-01 收口
+
+依用户最新指令复用已有机制、地图/进港证据，停止重复开局/读档。日志优先修复及主MOD整合已完成；具体范围与未新跑引擎边界见WORK/reports/logfix-release-20261101/release-notes.md。旧未测组合不扩写为全部通过。
+
+完成范围按2026-11-01用户修订的日志优先验收执行；ENGINE_PARTIAL保留实际历史覆盖边界，新按钮修复为STATIC_PASS。

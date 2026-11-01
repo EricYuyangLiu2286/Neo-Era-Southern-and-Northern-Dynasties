@@ -1,0 +1,128 @@
+﻿# All effects use country scope. No immortality or resurrection is applied.
+nesnd_chen_clear_security = {
+ remove_variable = nesnd_chen_protected
+ remove_variable = nesnd_chen_guard_active
+ remove_variable = nesnd_chen_relocated
+ remove_variable = nesnd_chen_intel_ready
+ remove_variable = nesnd_chen_renew_lock
+ if = { limit = { has_modifier = nesnd_court_protection } remove_modifier = nesnd_court_protection }
+ if = { limit = { has_modifier = nesnd_chen_inner_guard } remove_modifier = nesnd_chen_inner_guard }
+ if = { limit = { has_modifier = nesnd_chen_residence_guard } remove_modifier = nesnd_chen_residence_guard }
+ if = { limit = { has_modifier = nesnd_chen_intelligence } remove_modifier = nesnd_chen_intelligence }
+}
+nesnd_chen_security_maintenance = {
+ if = { limit = { has_variable = nesnd_chen_protected }
+  remove_variable = nesnd_chen_protected
+  if = { limit = { has_modifier = nesnd_court_protection } remove_modifier = nesnd_court_protection }
+  if = { limit = { nesnd_chen_security_active = yes }
+   set_variable = { name = nesnd_chen_guard_active months = 6 }
+   set_variable = { name = nesnd_chen_renew_lock months = 5 }
+   add_modifier = { name = nesnd_chen_inner_guard months = 6 }
+  }
+ }
+ if = { limit = { NOT = { nesnd_chen_security_active = yes } } nesnd_chen_clear_security = yes }
+ if = { limit = { NOT = { has_variable = nesnd_chen_guard_active } }
+  remove_variable = nesnd_chen_relocated remove_variable = nesnd_chen_intel_ready
+  if = { limit = { has_modifier = nesnd_chen_inner_guard } remove_modifier = nesnd_chen_inner_guard } if = { limit = { has_modifier = nesnd_chen_residence_guard } remove_modifier = nesnd_chen_residence_guard } if = { limit = { has_modifier = nesnd_chen_intelligence } remove_modifier = nesnd_chen_intelligence }
+ }
+}
+nesnd_chen_buy_guard = {
+ if = { limit = { nesnd_chen_can_renew = yes gold_reserves >= 12000 }
+  add_treasury = -12000
+  remove_variable = nesnd_chen_relocated
+  if = { limit = { has_modifier = nesnd_chen_residence_guard } remove_modifier = nesnd_chen_residence_guard } if = { limit = { has_modifier = nesnd_chen_inner_guard } remove_modifier = nesnd_chen_inner_guard }
+  set_variable = { name = nesnd_chen_guard_active months = 6 }
+  set_variable = { name = nesnd_chen_renew_lock months = 5 }
+  add_modifier = { name = nesnd_chen_inner_guard months = 6 }
+ }
+}
+nesnd_chen_buy_residence = {
+ if = { limit = { nesnd_chen_can_renew = yes gold_reserves >= 24000 }
+  add_treasury = -24000
+  if = { limit = { has_modifier = nesnd_chen_residence_guard } remove_modifier = nesnd_chen_residence_guard } if = { limit = { has_modifier = nesnd_chen_inner_guard } remove_modifier = nesnd_chen_inner_guard }
+  set_variable = { name = nesnd_chen_guard_active months = 6 }
+  set_variable = { name = nesnd_chen_relocated months = 6 }
+  set_variable = { name = nesnd_chen_renew_lock months = 5 }
+  add_modifier = { name = nesnd_chen_residence_guard months = 6 }
+ }
+}
+nesnd_chen_investigate = {
+ if = { limit = { nesnd_chen_can_investigate = yes }
+  add_treasury = -18000
+  set_variable = { name = nesnd_chen_intel_ready months = 6 }
+  if = { limit = { has_modifier = nesnd_chen_intelligence } remove_modifier = nesnd_chen_intelligence }
+  add_modifier = { name = nesnd_chen_intelligence months = 6 }
+ }
+}
+# Reuses the one historical successor. Never respawns a dead/departed Hao.
+nesnd_chen_after_death = {
+ if = { limit = { NOT = { any_character = { has_template = USM_chen_dongyang is_character_alive = yes } } }
+ ig:ig_rural_folk = { save_scope_as = ce_rural_folk_ig }
+ ig:ig_landowners = { save_scope_as = ce_ig_landowners }
+ ig:ig_armed_forces = { save_scope_as = ce_ig_armed_forces }
+ ig:ig_intelligentsia = { save_scope_as = ce_ig_intelligentsia }
+ clear_saved_scope = hao_tingjiang_scope
+ if = { limit = { any_scope_character = { has_template = USM_hao_tingjiang is_character_alive = yes } }
+  random_scope_character = { limit = { has_template = USM_hao_tingjiang is_character_alive = yes } save_scope_as = hao_tingjiang_scope }
+ }
+ else_if = { limit = { NOT = { has_global_variable = nesnd_born_usm_hao_tingjiang } NOT = { any_character = { has_template = USM_hao_tingjiang } } }
+  create_character = { template = USM_hao_tingjiang save_scope_as = hao_tingjiang_scope }
+ }
+ if = { limit = { exists = scope:hao_tingjiang_scope }
+  scope:hao_tingjiang_scope = { if = { limit = { is_character_alive = yes owner = root is_ruler_of_own_country = no } set_as_interest_group_leader = yes } }
+ }
+ if = { limit = { has_variable = started_with_chendongyang }
+  nesnd_south_initialize = yes
+  change_variable = { name = usm_conflicts_within_tracker add = 25 }
+  clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+  remove_variable = started_with_chendongyang
+ }
+ nesnd_chen_clear_security = yes
+ }
+}
+nesnd_chen_case_death = {
+ set_variable = { name = nesnd_chen_case_pending_death days = 7 }
+ trigger_event = { id = flavorUSM.5 days = 1 popup = yes }
+}
+nesnd_chen_case_wounded = {
+ scope:chen_dongyang_scope ?= { if = { limit = { is_character_alive = yes owner = root } add_trait = wounded } }
+ nesnd_south_initialize = yes
+ change_variable = { name = usm_conflicts_within_tracker add = 10 }
+ clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+ nesnd_chen_clear_security = yes
+ trigger_event = { id = nesnd_chen.3 popup = yes }
+}
+nesnd_chen_case_escape = {
+ nesnd_south_initialize = yes
+ change_variable = { name = usm_conflicts_within_tracker add = 3 }
+ clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+ nesnd_chen_clear_security = yes
+ trigger_event = { id = nesnd_chen.4 popup = yes }
+}
+
+# Shared preparation for production chance and separately labelled QA outcomes.
+nesnd_chen_prepare_case = {
+	if = {
+		limit = {
+			nesnd_chen_case_possible = yes
+		}
+		random_scope_character = {
+			limit = {
+				has_template = USM_chen_dongyang
+				is_character_alive = yes
+			}
+			save_scope_as = chen_dongyang_scope
+		}
+		set_variable = nesnd_assassination_resolved
+		if = {
+			limit = {
+				has_variable = nesnd_chen_relocated
+				has_variable = nesnd_chen_guard_active
+			}
+			set_variable = {
+				name = nesnd_chen_case_residence
+				months = 4
+			}
+		}
+	}
+}
