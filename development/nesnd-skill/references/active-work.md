@@ -1,9 +1,9 @@
-# 当前交接：南朝战争修复与政治重构计划
+# 当前交接：中华帝国土改三个子日志
 
-Updated: 2026-11-01
+Updated: 2026-11-01。主MOD已合入cne-reform-subjournals-20261101-a；[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/cne-reform-subjournals-20261101/release-notes.md>)与[项目任务13](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/13-cne-subjournals.md>)是最新入口。
 
-当前入口：[主项目执行图](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/map.md>)；[战争交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/south-war-collapse-20261101/release-notes.md>)。本轮恢复首都投降、日本双州崩溃与无针对要求败退，加入一次共享日志、等待结算保护和襄阳军事支持；西益改名，甘肃保持原版。32项源码检查、Tiger零新增、4项MCP查询、两轴复查完成；ENGINE_NOT_RUN，用户自行测试，禁止代理开游戏。
+已实现土地商品化、国家城市化、结束营产三个子日志；22州营产启停、实际IG与军官影响、父结束清理、AI45/65滞回及上限3州、具名拨款确认、真实政变成功导致失败。259项源码检查、Tiger零新增、5次MCP查询、两轴复查完成。ENGINE_NOT_RUN，用户自行测试；不要打开游戏。现有进度、地图/历史数据、先前南朝战争修复保持。
 
-[南朝新政治计划](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/20261101-southern-allegiances-envoys-plan.md>)已经拆成7项任务；概率/密使/遣使重议/新评分尚未实现，HNA当前代码仍是上一轮固定明。最新用户暂定SIH/HNA90M/5W/5北方求援、GNG95M/5W。原始改革、明吴多结局及编辑器欠账继续保留，优先读计划与现有任务，避免重新制作已完成地图/发型/海运。
+南朝概率/北方密使/遣使重议/权重仍处于[详细计划](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/20261101-southern-allegiances-envoys-plan.md>)，未混入本轮CNE实施。原始范围账和其他欠账继续由主计划链接，勿把本轮完成外推为全部开发完成。
 
-此前完整交接逐字归档：[修改前active-work](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/south-war-collapse-20261101/skill-before/references/active-work.md>)，继续保留其中所有历史证据链接；旧“当前”标题不再表示主MOD现状。早先甘肃map-only候选已被用户最新要求取代，未合入；不要部署。
+此前交接及其旧证据链逐字保留：[修改前active-work](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/cne-reform-subjournals-20261101/skill-before/references/active-work.md>). 本轮正式包排除工具与QA，独立备份及Git交付记录见交付报告。

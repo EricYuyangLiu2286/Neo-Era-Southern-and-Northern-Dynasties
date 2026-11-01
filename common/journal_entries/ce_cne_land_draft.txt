@@ -3,17 +3,18 @@
     group = je_group_historical_content can_revolution_inherit = no
     is_shown_when_inactive = { c:CNE ?= this has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } }
     possible = { c:CNE ?= this has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done } }
-    immediate = { nesnd_land_init = yes 
+    immediate = { nesnd_land_init = yes
     nesnd_refresh_land_display = yes
 }
-    scripted_button = nesnd_land_survey
+
     scripted_button = nesnd_land_review
-    scripted_button = nesnd_land_military
+
     scripted_button = nesnd_land_suspend
     on_monthly_pulse = { effect = { nesnd_land_monthly = yes } }
     on_yearly_pulse = { random_events = { 50 = 0 10 = flavorCNE.4 10 = flavorCNE.5 10 = flavorCNE.6 10 = flavorCNE.7 10 = flavorCNE.8 } }
-      
+
     complete = {
+ NOT = { nesnd_cne_coup_has_succeeded = yes }
     custom_tooltip = { text = nesnd_reform_completion_tt
         nesnd_reform_healthy = yes
         var:cne_landreform_completion_tracker >= 100
@@ -22,32 +23,26 @@
     }
 }
     on_complete = { nesnd_land_success = yes }
-    fail = { custom_tooltip = { text = nesnd_reform_failure_tt nesnd_reform_extreme_crisis = yes } }
-    on_fail = { set_variable = nesnd_reform_terminal_pending trigger_event = { id = nesnd_crisis.31 popup = yes } }
-    invalid = { OR = { has_variable = ce_CNE_land_reform_done NOT = { c:CNE ?= this } } }
-on_invalid = {
-    if = { limit = { NOT = { c:CNE ?= this } }
-        remove_variable = flavorCNE_land_reform_value
-        if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff }
-        nesnd_reform_clear_local = yes
-    }
-}
+    fail = { custom_tooltip = { text = nesnd_reform_failure_tt OR = { nesnd_reform_extreme_crisis = yes nesnd_cne_coup_has_succeeded = yes } } }
+    on_fail = { nesnd_cne_programs_cleanup = yes set_variable = nesnd_reform_terminal_pending trigger_event = { id = nesnd_crisis.31 popup = yes } }
+    invalid = { OR = { has_variable = ce_CNE_land_reform_done NOT = { c:CNE ?= this } NOT = { has_variable = flavorCNE_land_reform_value } } }
+on_invalid = { nesnd_cne_programs_cleanup = yes remove_variable = flavorCNE_land_reform_value if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff } nesnd_reform_clear_local = yes }
     weight = 1200 should_be_pinned_by_default_uninvolved_or_context = yes
 
-    
-    
-    
-    
-    
 
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
 
     scripted_progress_bar = nesnd_land_completion_bar
     scripted_progress_bar = nesnd_land_disorder_bar
-    on_weekly_pulse = { effect = { nesnd_land_init = yes nesnd_refresh_land_display = yes } }
+    on_weekly_pulse = { effect = { nesnd_land_init = yes nesnd_cne_check_coup = yes nesnd_refresh_land_display = yes } }
     status_desc = { first_valid = {
     triggered_desc = { trigger = { OR = { NOT = { has_variable = nesnd_reform_v2 } var:nesnd_reform_samples < 3 } } desc = nesnd_reform_status_warmup }
     triggered_desc = { trigger = { var:nesnd_reform_neglected_regions > 0 } desc = nesnd_reform_status_regions }
@@ -61,21 +56,21 @@ on_invalid = {
 ce_cne_land_draft_failing = {
     icon = "gfx/interface/icons/politics_icons/radicalized.dds"
     group = je_group_historical_content can_revolution_inherit = no
-    
-    
+
+
     immediate = { nesnd_land_init = yes }
     progressbar = yes current_value = { value = root.var:cne_landreform_failure_tracker } goal_add_value = { value = 100 }
     complete = { always = no }
-    
+
     weight = 1100 should_be_pinned_by_default_uninvolved_or_context = yes
 
-    
-    
-    
 
-    
-    
-    
+
+
+
+
+
+
 
     is_shown_when_inactive = { always = no }
     possible = { always = no }

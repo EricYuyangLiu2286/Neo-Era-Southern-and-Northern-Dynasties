@@ -37,3 +37,12 @@
 动态读数和机制链接依照所处数据上下文：bar desc中的`JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)`，国家tooltip中的`Country.MakeScope.Var('...').GetValue`，事件中的`ROOT.GetCountry`并不互换。已有候选可参考`zzzzz_nesnd_south_journal_ui_*`；具体链接仍需首次打开和悬停实测，不能因原生API存在就声称展示已通过。
 
 “马 马”已由原生角色字段证明是随机名池组合，不是作者模板。随机名字修订改`common/cultures/CE_cultures.txt`对应名池和独立`nesnd_given_*`键，不全局重译Ma；混合文化保留其其他片段，固定历史人物和旧存档已保存的名字不自动变化。单字名或名姓同字并非语言上必错，是否回避是本项目命名设计。完整溯源与候选见WORK/plans/two-empires/32-names-and-test-harness.md。
+
+
+## 改革子日志与具名目标（2026-11-01）
+
+长改革把各项目的建设/法律条件、启停和真实利益得失放入对应子日志；主日志保留总进度、失序与终局。删减主tooltip时把仍在使用的完成阈值迁到子日志，统一有效本地化键，检查旧replace层是否还保留过时的进度说明。主成功/失败/invalid/主动结束及意外移除都清理临时项目，子日志依赖实际父JE，不能仅靠永久flag。
+
+涉及“最高失业州”等动态目标时，先通过具名州的placement/本地化确认事件展示目标与实际费用，再扣款；保存目标不在确认时悄悄换州。确认、取消和执行检查这个保存对象的资格，而不只检查全国还有任一合格对象。当前CNE例子见WORK/reports/cne-reform-subjournals-20261101，尚未引擎验收。
+
+IG吸引力、IG支持与角色忠诚各用自己的实际修正。逐州军队支持是国家修正，军官忠诚是角色修正，不能把character_loyalty_add塞进国家修正并假设传给全体军官。按州唯一key对应开始/暂停/终局清理；显示可叠加的实际代价。角色维护按受影响对象列表处理，参照原版00_sgui_effects的daimyos_list与00_victoria_ep2_scripted_effects的variable列表迭代；新任、转属、退役和终局分别处理，避免月度全世界人物扫描。

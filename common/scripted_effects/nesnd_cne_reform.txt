@@ -38,16 +38,15 @@
     set_variable = { name = nesnd_reform_current_review_cost value = nesnd_reform_review_cost }
 }
 nesnd_reform_invest = {
-    if = { limit = { nesnd_reform_can_invest = yes }
-        add_treasury = nesnd_reform_investment_debit
-        set_variable = { name = nesnd_reform_investment_cooldown months = 12 }
-        ordered_scope_state = {
-            limit = { nesnd_reform_region = yes }
-            order_by = nesnd_reform_state_unemployment_rate position = 0 check_range_bounds = no
-            add_modifier = { name = nesnd_reform_public_workshops months = 12 }
-        }
-        nesnd_reform_measure = yes
-    }
+ if = { limit = { nesnd_reform_can_invest = yes NOT = { has_variable = nesnd_cne_funding_pending } }
+  clear_saved_scope = nesnd_cne_funding_state
+  ordered_scope_state = { limit = { nesnd_reform_region = yes } order_by = nesnd_reform_state_unemployment_rate position = 0 check_range_bounds = no save_scope_as = nesnd_cne_funding_state }
+  if = { limit = { exists = scope:nesnd_cne_funding_state }
+  set_variable = { name = nesnd_cne_funding_pending months = 2 }
+  trigger_event = { id = nesnd_cne_funding.1 popup = yes }
+ }
+
+ }
 }
 nesnd_reform_review = {
     if = { limit = { nesnd_reform_can_review = yes }
@@ -61,16 +60,15 @@ nesnd_reform_review = {
     }
 }
 nesnd_reform_relieve = {
-    if = { limit = { nesnd_reform_can_relieve = yes }
-        add_treasury = nesnd_reform_review_debit
-        set_variable = { name = nesnd_reform_relief_cooldown months = 12 }
-        ordered_scope_state = {
-            limit = { nesnd_reform_region = yes any_scope_pop = { OR = { is_in_mild_starvation = yes is_in_severe_starvation = yes } } }
-            order_by = nesnd_reform_state_unemployment_rate position = 0 check_range_bounds = no
-            add_modifier = { name = nesnd_reform_transitional_relief months = 12 }
-        }
-        nesnd_reform_measure = yes
-    }
+ if = { limit = { nesnd_reform_can_relieve = yes NOT = { has_variable = nesnd_cne_funding_pending } }
+  clear_saved_scope = nesnd_cne_funding_state
+  ordered_scope_state = { limit = { nesnd_reform_region = yes any_scope_pop = { OR = { is_in_mild_starvation = yes is_in_severe_starvation = yes } } } order_by = nesnd_reform_state_unemployment_rate position = 0 check_range_bounds = no save_scope_as = nesnd_cne_funding_state }
+  if = { limit = { exists = scope:nesnd_cne_funding_state }
+  set_variable = { name = nesnd_cne_funding_pending months = 2 }
+  trigger_event = { id = nesnd_cne_funding.2 popup = yes }
+ }
+
+ }
 }
 nesnd_reform_clear_local = {
     every_scope_state = {

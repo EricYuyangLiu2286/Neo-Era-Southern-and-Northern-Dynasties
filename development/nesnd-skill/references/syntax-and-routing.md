@@ -89,3 +89,8 @@ trigger_else = { always = no }
 - 战斗结束的on_action先排队次日检查，待占领刷新；用日志周度检查补漏。实际执行重新核战争与controller，友军控制不算敌占。所有回调共用一次标记与同一个提交效果，不能按每个观察国各吞并一次。
 - 同一日志供各国查看时，使用`context=none`的journal_entry_group、should_be_involved/should_show_when_not_involved，并按原版01_ryukyu_rivalry方式动态add/remove_involved_country。全局副作用放单次全局回调，个人通知才用all_involved。`scope:journal_entry`只在已附着的JE上下文访问；一次激活与一次提交分开记录，既有状态不随读档清零。
 - 湖泊外观疑点先对照有效default.map.lakes、province_terrains和相邻state_region，区分原版分类与MOD误分配。本轮甘肃xBD5671与原版一致，按用户要求保留；不能只把它塞进州而忘了湖泊/地形层。
+
+
+政变成功检测读实际效果：1.13.11中je_ip4_coup.on_complete先弹事件，ip4_coup_victory_effect的government分支才给国家modifier_government_recently_couped；modifier_successful_coup加在IG。不要把JE进度达标、show_as_tooltip或政变开始当作已成功。新改革登记既有政变修正基线，避免旧档误触；成功/失败共用实际结果谓词，防同帧双结算。
+
+事件duration按本机NEvents.DEFAULT_MONTHS_VALID及原版实例理解为月，不能与变量days等同。异步请求的锁覆盖事件窗口；实际答复提前清理，父任务结束使请求失效。若不能证明锁与事件不会重叠，增加请求身份检查；不要仅凭同名pending变量认定旧回复属于新请求。
