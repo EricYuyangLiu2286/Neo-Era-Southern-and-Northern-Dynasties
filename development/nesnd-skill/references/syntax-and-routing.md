@@ -94,3 +94,8 @@ trigger_else = { always = no }
 政变成功检测读实际效果：1.13.11中je_ip4_coup.on_complete先弹事件，ip4_coup_victory_effect的government分支才给国家modifier_government_recently_couped；modifier_successful_coup加在IG。不要把JE进度达标、show_as_tooltip或政变开始当作已成功。新改革登记既有政变修正基线，避免旧档误触；成功/失败共用实际结果谓词，防同帧双结算。
 
 事件duration按本机NEvents.DEFAULT_MONTHS_VALID及原版实例理解为月，不能与变量days等同。异步请求的锁覆盖事件窗口；实际答复提前清理，父任务结束使请求失效。若不能证明锁与事件不会重叠，增加请求身份检查；不要仅凭同名pending变量认定旧回复属于新请求。
+
+## 1.13.11 本机接口与创建回调
+
+IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列表中的简名误当trigger。文化数据使用 `heritage` / `language` / `traditions`，特质查询用 `has_discrimination_trait`。营房标准键是 `building_barrack`，历史复数别名需确认解析后再统计。
+跨 `create_country.on_created` 回调不假定外层root或saved scope自动可用：对固定国家先exists再进入c:TAG；遍历内确需回到调用country时按实际scope栈用prev，不能把全局history或after-lobby的none root当country。原版链条、错误名纠正与最终检查见 WORK/reports/qin-persia-20261102/native-political-contracts.md、source-name-corrections.json。

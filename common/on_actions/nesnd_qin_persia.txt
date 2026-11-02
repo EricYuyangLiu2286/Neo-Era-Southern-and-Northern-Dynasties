@@ -1,0 +1,28 @@
+﻿on_monthly_pulse_country = { on_actions = { nesnd_qin_persia_monthly_maintenance } }
+nesnd_qin_persia_monthly_maintenance = {
+	trigger = { OR = { nesnd_qe1_country = yes nesnd_per_country = yes has_variable = nesnd_qe1_civil_challenger has_variable = nesnd_qe1_breakaway_attacker } }
+	effect = {
+		if = { limit = { nesnd_qe1_country = yes } nesnd_qe1_bootstrap = yes nesnd_qe1_measure_sol_bonus = yes every_scope_state = { nesnd_qe1_clear_orphan_cohort = yes } }
+		if = { limit = { nesnd_per_country = yes } nesnd_per_bootstrap = yes }
+		if = { limit = { exists = c:QRC c:QRC ?= this has_variable = nesnd_qe1_civil_challenger } nesnd_qe1_start_civil_war = yes }
+		if = { limit = { has_variable = nesnd_qe1_breakaway_attacker } nesnd_qe1_start_frontier_war = yes }
+	}
+}
+on_ruler_selected = { on_actions = { nesnd_qe1_new_ruler } }
+nesnd_qe1_new_ruler = { trigger = { exists = owner owner = { nesnd_qe1_country = yes } } effect = { nesnd_qe1_assign_ruler = yes } }
+on_state_owner_change = { on_actions = { nesnd_qe1_state_changed } }
+nesnd_qe1_state_changed = {
+	effect = {
+		if = { limit = { has_variable = nesnd_qe1_sol_tracked } nesnd_qe1_clear_sol_state = yes }
+		nesnd_qe1_clear_orphan_cohort = yes
+		if = { limit = { owner = { nesnd_qe1_unity_live = yes } } owner = { set_variable = { name = nesnd_qe1_new_land_prestige months = 12 } } }
+	}
+}
+on_wargoal_enforced = { on_actions = { nesnd_qe1_border_victory } }
+nesnd_qe1_border_victory = {
+	trigger = { nesnd_qe1_unity_live = yes NOT = { has_variable = nesnd_qe1_victory_cooldown } }
+	effect = { set_variable = { name = nesnd_qe1_victory_cooldown years = 1 } set_variable = { name = nesnd_qe1_victory_prestige months = 24 } }
+}
+
+on_game_started_after_lobby = { on_actions = { nesnd_qe1_capture_initial_army } }
+nesnd_qe1_capture_initial_army = { effect = { if = { limit = { exists = c:QE1 } c:QE1 = { set_variable = nesnd_qe1_runtime_ready nesnd_qe1_bootstrap = yes nesnd_qe1_capture_barracks = yes } } } }

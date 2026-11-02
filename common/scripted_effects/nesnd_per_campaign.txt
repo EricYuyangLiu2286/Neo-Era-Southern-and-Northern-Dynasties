@@ -1,0 +1,57 @@
+﻿nesnd_per_initialize = {
+	if = { limit = { nesnd_per_country = yes NOT = { has_variable = nesnd_per_campaign_v1 } }
+		set_variable = nesnd_per_campaign_v1 set_variable = { name = nesnd_per_future_progress value = 0 }
+	}
+}
+nesnd_per_future_sync = { if = { limit = { has_journal_entry = nesnd_per_future_journal } je:nesnd_per_future_journal = { set_bar_progress = { name = nesnd_per_future_bar value = root.var:nesnd_per_future_progress } } } }
+nesnd_per_future_monthly = {
+	if = { limit = { nesnd_per_future_live = yes }
+		if = { limit = { is_ai = yes nesnd_per_route_unset = yes } random_list = { 75 = { set_variable = nesnd_per_route_aid } 25 = { set_variable = nesnd_per_route_covert } } }
+		change_variable = { name = nesnd_per_future_progress add = nesnd_per_future_delta }
+		clamp_variable = { name = nesnd_per_future_progress min = 0 max = 100 }
+		if = { limit = { nesnd_per_aid_live = yes var:nesnd_per_future_progress < 100 }
+			random_list = { 70 = { } 10 = { trigger = { NOT = { has_modifier = nesnd_per_aid_law } } trigger_event = { id = nesnd_per.1 popup = yes } } 10 = { trigger = { NOT = { has_modifier = nesnd_per_aid_building } } trigger_event = { id = nesnd_per.2 popup = yes } } 10 = { trigger = { NOT = { has_modifier = nesnd_per_aid_legitimacy } } trigger_event = { id = nesnd_per.3 popup = yes } } }
+		}
+		nesnd_per_future_sync = yes
+	}
+}
+nesnd_per_ensure_frontier = {
+	if = { limit = { nesnd_per_west_eligible = yes NOT = { has_journal_entry = nesnd_per_west_journal } } add_journal_entry = { type = nesnd_per_west_journal } }
+	if = { limit = { nesnd_per_east_eligible = yes NOT = { has_journal_entry = nesnd_per_east_journal } } add_journal_entry = { type = nesnd_per_east_journal } }
+}
+nesnd_per_settle_future = {
+	if = { limit = { nesnd_per_future_eligible = yes has_variable = nesnd_per_future_progress }
+		if = { limit = { var:nesnd_per_future_progress >= 100 }
+			set_variable = nesnd_per_future_done
+			if = { limit = { has_variable = nesnd_per_route_aid }
+				if = { limit = { exists = c:QE1 }
+					if = { limit = { is_subject_of = c:QE1 } change_subject_type = subject_type_tributary }
+					else_if = { limit = { is_subject = no c:QE1 = { can_create_diplomatic_pact = { target = root type = tributary } } } c:QE1 = { create_diplomatic_pact = { country = root type = tributary } } }
+					else = { set_variable = nesnd_per_aid_relation_unavailable }
+				} else = { set_variable = nesnd_per_aid_relation_unavailable }
+				trigger_event = { id = nesnd_per.4 popup = yes }
+			} else = {
+				if = { limit = { exists = c:QE1 } if = { limit = { is_subject_of = c:QE1 } make_independent = yes } }
+				trigger_event = { id = nesnd_per.5 popup = yes }
+			}
+			nesnd_per_ensure_frontier = yes
+		}
+	}
+}
+
+nesnd_per_attempt_claim = {
+	if = { limit = { nesnd_per_country = yes NOT = { has_variable = nesnd_per_claim_cooldown } exists = scope:nesnd_per_claim_state exists = scope:nesnd_per_claim_region }
+		set_variable = { name = nesnd_per_claim_cooldown months = 1 }
+		add_modifier = { name = nesnd_per_claim_cost months = 1 }
+		clear_saved_scope = nesnd_per_obstructor
+		every_country = {
+			limit = { OR = { AND = { exists = c:FRA c:FRA ?= this } AND = { exists = c:MUG c:MUG ?= this } AND = { exists = c:USM c:USM ?= this } AND = { exists = c:RUS c:RUS ?= this } AND = { exists = c:QE1 c:QE1 ?= this } country_rank >= rank_value:major_power country_rank = rank_value:unrecognized_major_power } }
+			if = { limit = { NOT = { exists = scope:nesnd_per_obstructor } }
+				save_scope_as = nesnd_per_potential_obstructor
+				if = { limit = { nesnd_per_claim_obstructor = yes } save_scope_as = nesnd_per_obstructor }
+			}
+		}
+		if = { limit = { exists = scope:nesnd_per_obstructor } trigger_event = { id = nesnd_per.7 popup = yes } }
+		else = { scope:nesnd_per_claim_region = { add_claim = root } trigger_event = { id = nesnd_per.6 popup = yes } }
+	}
+}

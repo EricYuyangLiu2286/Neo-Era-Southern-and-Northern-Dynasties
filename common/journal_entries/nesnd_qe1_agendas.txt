@@ -1,0 +1,61 @@
+﻿nesnd_qe1_agenda_journal = {
+	icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
+	group = je_group_historical_content
+	can_revolution_inherit = yes
+	is_shown_when_inactive = { nesnd_qe1_agenda_eligible = yes }
+	possible = { nesnd_qe1_agenda_eligible = yes }
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	weight = 1000
+
+	immediate = { nesnd_qe1_initialize = yes nesnd_qe1_start_agenda_clock = yes nesnd_qe1_ensure_agenda_children = yes nesnd_qe1_agenda_sync = yes }
+	scripted_progress_bar = nesnd_qe1_balance_bar
+	complete = { num_states >= 4 OR = { nesnd_qe1_economic_victory = yes nesnd_qe1_military_victory = yes } }
+	on_complete = { nesnd_qe1_settle_agenda = yes }
+	fail = { num_states >= 4 has_variable = nesnd_qe1_agenda_started NOT = { has_variable = nesnd_qe1_agenda_clock } NOR = { nesnd_qe1_economic_victory = yes nesnd_qe1_military_victory = yes } }
+	on_fail = { nesnd_qe1_agenda_timeout = yes }
+	timeout = 3650
+	on_timeout = { nesnd_qe1_agenda_timeout = yes }
+	invalid = { NOT = { nesnd_qe1_agenda_eligible = yes } }
+	on_invalid = { nesnd_qe1_close_agenda = yes }
+	on_monthly_pulse = { effect = { nesnd_qe1_agenda_monthly = yes } }
+	on_weekly_pulse = { effect = { nesnd_qe1_watch_endpoints = yes nesnd_qe1_check_civil_conflict = yes nesnd_qe1_ensure_agenda_children = yes } }
+	status_desc = { first_valid = {
+			triggered_desc = { trigger = { var:nesnd_qe1_balance < -10 } desc = nesnd_qe1_agenda_status_econ }
+			triggered_desc = { trigger = { var:nesnd_qe1_balance > 10 } desc = nesnd_qe1_agenda_status_army }
+			desc = nesnd_qe1_agenda_status_neutral
+		} }
+
+}
+nesnd_qe1_economy_journal = {
+	icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
+	group = je_group_historical_content
+	can_revolution_inherit = yes
+	is_shown_when_inactive = { nesnd_qe1_agenda_live = yes }
+	possible = { nesnd_qe1_agenda_live = yes }
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	weight = 1000
+
+	scripted_button = nesnd_qe1_economy_petition_button
+	scripted_button = nesnd_qe1_law_push_button
+	scripted_button = nesnd_qe1_economy_push_button
+
+	invalid = { NOT = { nesnd_qe1_agenda_live = yes } }
+	status_desc = { first_valid = { triggered_desc = { trigger = { nesnd_qe1_economy_ready = yes } desc = nesnd_qe1_econ_ready_status } desc = nesnd_qe1_quiet_status } }
+
+}
+nesnd_qe1_army_journal = {
+	icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
+	group = je_group_historical_content
+	can_revolution_inherit = yes
+	is_shown_when_inactive = { nesnd_qe1_agenda_live = yes }
+	possible = { nesnd_qe1_agenda_live = yes }
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	weight = 1000
+
+	scripted_button = nesnd_qe1_military_budget_button
+	scripted_button = nesnd_qe1_army_petition_button
+
+	invalid = { NOT = { nesnd_qe1_agenda_live = yes } }
+	status_desc = { first_valid = { triggered_desc = { trigger = { nesnd_qe1_army_ready = yes } desc = nesnd_qe1_army_ready_status } desc = nesnd_qe1_quiet_status } }
+
+}

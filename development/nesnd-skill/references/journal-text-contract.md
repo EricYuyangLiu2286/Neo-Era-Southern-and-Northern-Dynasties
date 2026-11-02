@@ -69,3 +69,9 @@ GAME/common/scripted_progress_bars/scripted_progress_bars.md与本MOD ce_french_
 - 检查同国同时激活的全部 JE 挂载。两个名称不同、调用同一操作的按钮依然可能重复；删除冗余挂载不删除其他日志或 AI 使用的 effect。
 
 本轮来源与前后对照：WORK/reports/ui-trade-feedback-20261102/research.md、WORK/reports/ui-poland-tributary-20261102。源码检查不能证明实际UI布局。
+
+## 非开局入口、终局回调与镜像条
+
+新增父子JE或后继JE时，画“初始化→添加父JE→添加子JE”有向图；初始化effect不反向添加自己的JE。possible不能正向依赖自己的has_journal_entry；完成effect判断持久资格、进度和done，不要求该JE仍在活动列表。显式添加与自动possible入口共用终局锁，维护回调补漏不重置既有进度。
+有期限的JE保留country期限标记，意外移除再添加不得刷新十年；端点保持时间必须离开后清除重计。军事基线在大厅结束后读实际建筑数量，日志初始化过早时使用有界次日恢复及旧档月度入口，不能把未初始化的0当正常基线。
+通常由本JE独占country结算及条同步；父/子需要镜像时仍只有一个country写入者，每个JE自身回调做绝对同步，并覆盖两种回调顺序。外部顺序模型只证明脚本约定，不能替代引擎时序验收。实例与12项生命周期矩阵见 WORK/reports/qin-persia-20261102/。

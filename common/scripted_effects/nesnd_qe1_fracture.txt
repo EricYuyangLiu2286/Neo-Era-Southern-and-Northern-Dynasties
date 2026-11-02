@@ -1,0 +1,399 @@
+﻿nesnd_qe1_check_civil_conflict = {
+	if = { limit = { nesnd_qe1_civil_danger = yes any_scope_state = { is_capital = no } }
+		set_variable = nesnd_qe1_civil_raised
+		ordered_scope_state = { limit = { is_capital = no } order_by = state_population position = 0 check_range_bounds = no save_scope_as = nesnd_qe1_rebel_seed }
+		if = { limit = { exists = scope:nesnd_qe1_rebel_seed }
+			create_country = { tag = QRC origin = root state = scope:nesnd_qe1_rebel_seed on_created = {
+					set_variable = nesnd_qe1_civil_challenger set_variable = { name = nesnd_qe1_war_launch_window days = 90 }
+					if = { limit = { trigger_if = { limit = { exists = c:QE1 } c:QE1 = { trigger_if = { limit = { has_variable = nesnd_qe1_balance } var:nesnd_qe1_balance <= -35 } trigger_else = { always = no } } } trigger_else = { always = no } }
+						activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy
+						set_ruling_interest_groups = { ig_armed_forces ig_landowners }
+						set_variable = nesnd_qe1_rebel_military
+					} else = {
+						activate_law = law_type:law_presidential_republic activate_law = law_type:law_wealth_voting
+						set_ruling_interest_groups = { ig_intelligentsia ig_industrialists }
+						set_variable = nesnd_qe1_rebel_economic
+					}
+					nesnd_qe1_setup_civil_challenger = yes
+				} }
+			if = { limit = { exists = c:QRC }
+				trigger_event = { id = nesnd_qe1_fracture.1 popup = yes }
+				c:QRC = { trigger_event = { id = nesnd_qe1_fracture.90 days = 1 popup = no } }
+			}
+		}
+	}
+}
+nesnd_qe1_setup_civil_challenger = {
+	if = { limit = { has_modifier = nesnd_qe1_law_push } remove_modifier = nesnd_qe1_law_push } if = { limit = { has_modifier = nesnd_qe1_economy_push } remove_modifier = nesnd_qe1_economy_push } if = { limit = { has_modifier = nesnd_qe1_angovernment } remove_modifier = nesnd_qe1_angovernment } if = { limit = { has_modifier = nesnd_qe1_military_government } remove_modifier = nesnd_qe1_military_government } if = { limit = { has_modifier = nesnd_qe1_stalled } remove_modifier = nesnd_qe1_stalled } if = { limit = { has_modifier = nesnd_qe1_patronage_crown } remove_modifier = nesnd_qe1_patronage_crown } if = { limit = { has_modifier = nesnd_qe1_patronage_literati } remove_modifier = nesnd_qe1_patronage_literati } if = { limit = { has_modifier = nesnd_qe1_patronage_army } remove_modifier = nesnd_qe1_patronage_army } if = { limit = { has_modifier = nesnd_qe1_recovered_military } remove_modifier = nesnd_qe1_recovered_military } if = { limit = { has_modifier = nesnd_qe1_recovered_civil } remove_modifier = nesnd_qe1_recovered_civil }
+	save_scope_as = nesnd_qe1_new_challenger
+	create_military_formation = { name = nesnd_qe1_rebel_army type = army hq_region = scope:nesnd_qe1_new_challenger.capital.region
+		combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = scope:nesnd_qe1_new_challenger.capital.state_region count = 16 }
+		combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = scope:nesnd_qe1_new_challenger.capital.state_region count = 4 }
+	}
+	create_character = { first_name = nesnd_qe1_commander_first last_name = nesnd_qe1_commander_last is_general = yes interest_group = ig_armed_forces ideology = ideology_jingoist }
+}
+nesnd_qe1_start_civil_war = {
+	if = { limit = { c:QRC ?= this exists = c:QE1 has_variable = nesnd_qe1_civil_challenger has_variable = nesnd_qe1_war_launch_window NOT = { has_variable = nesnd_qe1_civil_war_started } }
+		if = { limit = { is_subject = no is_diplomatic_play_committed_participant = no c:QE1 = { is_subject = no } NOT = { has_war_with = c:QE1 } }
+			end_truce = c:QE1
+			create_diplomatic_play = { type = dp_nesnd_qe1_civil target_country = c:QE1 war = yes annex_as_civil_war = no }
+		}
+		if = { limit = { OR = { has_war_with = c:QE1 any_diplomatic_play = { initiator = root target = c:QE1 is_diplomatic_play_type = dp_nesnd_qe1_civil } } } set_variable = nesnd_qe1_civil_war_started }
+	}
+}
+nesnd_qe1_prepare_frontier_army = {
+	if = { limit = { has_modifier = nesnd_qe1_law_push } remove_modifier = nesnd_qe1_law_push } if = { limit = { has_modifier = nesnd_qe1_economy_push } remove_modifier = nesnd_qe1_economy_push } if = { limit = { has_modifier = nesnd_qe1_angovernment } remove_modifier = nesnd_qe1_angovernment } if = { limit = { has_modifier = nesnd_qe1_military_government } remove_modifier = nesnd_qe1_military_government } if = { limit = { has_modifier = nesnd_qe1_stalled } remove_modifier = nesnd_qe1_stalled } if = { limit = { has_modifier = nesnd_qe1_patronage_crown } remove_modifier = nesnd_qe1_patronage_crown } if = { limit = { has_modifier = nesnd_qe1_patronage_literati } remove_modifier = nesnd_qe1_patronage_literati } if = { limit = { has_modifier = nesnd_qe1_patronage_army } remove_modifier = nesnd_qe1_patronage_army } if = { limit = { has_modifier = nesnd_qe1_recovered_military } remove_modifier = nesnd_qe1_recovered_military } if = { limit = { has_modifier = nesnd_qe1_recovered_civil } remove_modifier = nesnd_qe1_recovered_civil }
+	save_scope_as = nesnd_qe1_new_frontier
+	create_military_formation = { name = nesnd_qe1_frontier_army type = army hq_region = scope:nesnd_qe1_new_frontier.capital.region
+		combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = scope:nesnd_qe1_new_frontier.capital.state_region count = 6 }
+		combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = scope:nesnd_qe1_new_frontier.capital.state_region count = 2 }
+	}
+}
+nesnd_qe1_start_frontier_war = {
+	if = { limit = { has_variable = nesnd_qe1_breakaway_attacker has_variable = nesnd_qe1_war_launch_window exists = c:QE1 NOT = { has_variable = nesnd_qe1_frontier_war_started } }
+		clear_saved_scope = nesnd_qe1_frontier_play
+		random_diplomatic_play = {
+			limit = { target = c:QE1 is_diplomatic_play_type = dp_nesnd_qe1_frontier initiator = { has_variable = nesnd_qe1_breakaway_attacker } }
+			save_scope_as = nesnd_qe1_frontier_play
+		}
+		if = { limit = { exists = scope:nesnd_qe1_frontier_play }
+			if = { limit = { is_subject = no NOT = { has_war_with = scope:nesnd_qe1_frontier_play.initiator } }
+				scope:nesnd_qe1_frontier_play = {
+					if = { limit = { is_war = yes exists = war }
+						war = { if = { limit = { NOT = { is_war_participant = root } } join_war = { target = root side = scope:nesnd_qe1_frontier_play.initiator } } }
+					} else_if = { limit = { is_war = no NOT = { any_scope_play_involved = { this = root } } } add_initiator_backers = { root } }
+				}
+			}
+		} else = {
+			if = { limit = { is_subject = no is_diplomatic_play_committed_participant = no c:QE1 = { is_subject = no } NOT = { has_war_with = c:QE1 } }
+				end_truce = c:QE1
+				create_diplomatic_play = { type = dp_nesnd_qe1_frontier target_country = c:QE1 war = yes annex_as_civil_war = no }
+			}
+		}
+		if = { limit = { OR = { has_war_with = c:QE1 nesnd_qe1_has_frontier_play = yes } } set_variable = nesnd_qe1_frontier_war_started }
+	}
+}
+nesnd_qe1_release_xin = {
+	if = { limit = { any_scope_state = { OR = { state_region = s:STATE_TIANSHAN state_region = s:STATE_WESTERN_TIANSHAN } } }
+		if = { limit = { NOT = { exists = c:XIN } }
+			random_scope_state = { limit = { OR = { state_region = s:STATE_TIANSHAN state_region = s:STATE_WESTERN_TIANSHAN } } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = XIN origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:uighur
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:XIN }
+			c:XIN = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { OR = { state_region = s:STATE_TIANSHAN state_region = s:STATE_WESTERN_TIANSHAN } } set_state_owner = c:XIN }
+			c:XIN = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_release_uzb = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_FERGANA } }
+		if = { limit = { NOT = { exists = c:UZB } }
+			random_scope_state = { limit = { state_region = s:STATE_FERGANA } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = UZB origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:uzbek
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:UZB }
+			c:UZB = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { state_region = s:STATE_FERGANA } set_state_owner = c:UZB }
+			c:UZB = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_release_buk = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_UZBEKIA } }
+		if = { limit = { NOT = { exists = c:BUK } }
+			random_scope_state = { limit = { state_region = s:STATE_UZBEKIA } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = BUK origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:uzbek
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:BUK }
+			c:BUK = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { state_region = s:STATE_UZBEKIA } set_state_owner = c:BUK }
+			c:BUK = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_release_khi = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_KHIVA } }
+		if = { limit = { NOT = { exists = c:KHI } }
+			random_scope_state = { limit = { state_region = s:STATE_KHIVA } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = KHI origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:uzbek
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:KHI }
+			c:KHI = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { state_region = s:STATE_KHIVA } set_state_owner = c:KHI }
+			c:KHI = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_release_trc = {
+	if = { limit = { any_scope_state = { OR = { state_region = s:STATE_TURKMENIA state_region = s:STATE_MERZ } } }
+		if = { limit = { NOT = { exists = c:TRC } }
+			random_scope_state = { limit = { OR = { state_region = s:STATE_TURKMENIA state_region = s:STATE_MERZ } } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = TRC origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:turkmen
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:TRC }
+			c:TRC = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { OR = { state_region = s:STATE_TURKMENIA state_region = s:STATE_MERZ } } set_state_owner = c:TRC }
+			c:TRC = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_release_kyr = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_KIRGHIZIA } }
+		if = { limit = { NOT = { exists = c:KYR } }
+			random_scope_state = { limit = { state_region = s:STATE_KIRGHIZIA } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = KYR origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:kirgiz
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:KYR }
+			c:KYR = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { state_region = s:STATE_KIRGHIZIA } set_state_owner = c:KYR }
+			c:KYR = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_release_tji = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_TAJIKISTAN } }
+		if = { limit = { NOT = { exists = c:TJI } }
+			random_scope_state = { limit = { state_region = s:STATE_TAJIKISTAN } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = TJI origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:tajik
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:TJI }
+			c:TJI = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { state_region = s:STATE_TAJIKISTAN } set_state_owner = c:TJI }
+			c:TJI = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_release_kaz = {
+	if = { limit = { any_scope_state = { OR = { state_region = s:STATE_AKTOBE state_region = s:STATE_CHELYABINSK state_region = s:STATE_URALSK state_region = s:STATE_SAMARA state_region = s:STATE_SEMIRECHE state_region = s:STATE_SYRDARYA } } }
+		if = { limit = { NOT = { exists = c:KAZ } }
+			random_scope_state = { limit = { OR = { state_region = s:STATE_AKTOBE state_region = s:STATE_CHELYABINSK state_region = s:STATE_URALSK state_region = s:STATE_SAMARA state_region = s:STATE_SEMIRECHE state_region = s:STATE_SYRDARYA } } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = KAZ origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:kazak
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:KAZ }
+			c:KAZ = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { OR = { state_region = s:STATE_AKTOBE state_region = s:STATE_CHELYABINSK state_region = s:STATE_URALSK state_region = s:STATE_SAMARA state_region = s:STATE_SEMIRECHE state_region = s:STATE_SYRDARYA } } set_state_owner = c:KAZ }
+			c:KAZ = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_release_afg = {
+	if = { limit = { any_scope_state = { OR = { state_region = s:STATE_BALKH state_region = s:STATE_CENTRAL_HIGHLANDS state_region = s:STATE_HERAT state_region = s:STATE_KABUL state_region = s:STATE_KANDAHAR state_region = s:STATE_PASHTUNISTAN state_region = s:STATE_QUETTA } } }
+		if = { limit = { NOT = { exists = c:AFG } }
+			random_scope_state = { limit = { OR = { state_region = s:STATE_BALKH state_region = s:STATE_CENTRAL_HIGHLANDS state_region = s:STATE_HERAT state_region = s:STATE_KABUL state_region = s:STATE_KANDAHAR state_region = s:STATE_PASHTUNISTAN state_region = s:STATE_QUETTA } } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = AFG origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:pashtun
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:AFG }
+			c:AFG = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { OR = { state_region = s:STATE_BALKH state_region = s:STATE_CENTRAL_HIGHLANDS state_region = s:STATE_HERAT state_region = s:STATE_KABUL state_region = s:STATE_KANDAHAR state_region = s:STATE_PASHTUNISTAN state_region = s:STATE_QUETTA } } set_state_owner = c:AFG }
+
+		}
+	}
+}
+nesnd_qe1_release_kal = {
+	if = { limit = { any_scope_state = { OR = { state_region = s:STATE_BALUCHISTAN state_region = s:STATE_NORTHERN_BALUCHISTAN } } }
+		if = { limit = { NOT = { exists = c:KAL } }
+			random_scope_state = { limit = { OR = { state_region = s:STATE_BALUCHISTAN state_region = s:STATE_NORTHERN_BALUCHISTAN } } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = KAL origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:baluchi
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:KAL }
+			c:KAL = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { OR = { state_region = s:STATE_BALUCHISTAN state_region = s:STATE_NORTHERN_BALUCHISTAN } } set_state_owner = c:KAL }
+
+		}
+	}
+}
+nesnd_qe1_release_per = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_SISTAN } }
+		if = { limit = { NOT = { exists = c:PER } }
+			random_scope_state = { limit = { state_region = s:STATE_SISTAN } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = PER origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:persian
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:shiite
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:PER }
+			c:PER = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { state_region = s:STATE_SISTAN } set_state_owner = c:PER }
+
+		}
+	}
+}
+nesnd_qe1_release_tib = {
+	if = { limit = { any_scope_state = { OR = { state_region = s:STATE_LHASA state_region = s:STATE_NGARI state_region = s:STATE_QINGHAI state_region = s:STATE_EASTERN_HIMALAYAS } } }
+		if = { limit = { NOT = { exists = c:TIB } }
+			random_scope_state = { limit = { OR = { state_region = s:STATE_LHASA state_region = s:STATE_NGARI state_region = s:STATE_QINGHAI state_region = s:STATE_EASTERN_HIMALAYAS } } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = TIB origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:tibetan
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:gelugpa
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:TIB }
+			c:TIB = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { OR = { state_region = s:STATE_LHASA state_region = s:STATE_NGARI state_region = s:STATE_QINGHAI state_region = s:STATE_EASTERN_HIMALAYAS } } set_state_owner = c:TIB }
+
+		}
+	}
+}
+nesnd_qe1_release_kas = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_KASHMIR } }
+		if = { limit = { NOT = { exists = c:KAS } }
+			random_scope_state = { limit = { state_region = s:STATE_KASHMIR } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = KAS origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:kashmiri
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:sunni
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:KAS }
+			c:KAS = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { state_region = s:STATE_KASHMIR } set_state_owner = c:KAS }
+
+		}
+	}
+}
+nesnd_qe1_release_mgl = {
+	if = { limit = { any_scope_state = { OR = { state_region = s:STATE_ALTAI state_region = s:STATE_ULIASTAI } } }
+		if = { limit = { NOT = { exists = c:MGL } }
+			random_scope_state = { limit = { OR = { state_region = s:STATE_ALTAI state_region = s:STATE_ULIASTAI } } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = MGL origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:mongol
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:gelugpa
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:MGL }
+			c:MGL = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { OR = { state_region = s:STATE_ALTAI state_region = s:STATE_ULIASTAI } } set_state_owner = c:MGL }
+
+		}
+	}
+}
+nesnd_qe1_release_tuv = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_TUVA } }
+		if = { limit = { NOT = { exists = c:TUV } }
+			random_scope_state = { limit = { state_region = s:STATE_TUVA } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = TUV origin = root state = scope:nesnd_qe1_secession_seed on_created = {
+					set_variable = nesnd_qe1_newly_restored
+					add_primary_culture = cu:tuvan
+					add_primary_culture = cu:ce_xiyu remove_primary_culture = cu:ce_xibei remove_primary_culture = cu:ce_laoqin
+					set_state_religion = rel:gelugpa
+					nesnd_qe1_prepare_frontier_army = yes
+				} }
+		}
+		if = { limit = { exists = c:TUV }
+			c:TUV = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { state_region = s:STATE_TUVA } set_state_owner = c:TUV }
+
+		}
+	}
+}
+nesnd_qe1_release_other_provinces = {
+	if = { limit = { any_scope_state = { NOT = { nesnd_qe1_core_region = yes } } }
+		if = { limit = { NOT = { exists = c:QFR } }
+			random_scope_state = { limit = { NOT = { nesnd_qe1_core_region = yes } } save_scope_as = nesnd_qe1_secession_seed }
+			create_country = { tag = QFR origin = root state = scope:nesnd_qe1_secession_seed on_created = { nesnd_qe1_prepare_frontier_army = yes } }
+		}
+		if = { limit = { exists = c:QFR }
+			c:QFR = { if = { limit = { is_subject_of = root } make_independent = yes } }
+			every_scope_state = { limit = { NOT = { nesnd_qe1_core_region = yes } } set_state_owner = c:QFR }
+			c:QFR = { if = { limit = { is_subject = no } set_variable = nesnd_qe1_breakaway_attacker set_variable = { name = nesnd_qe1_war_launch_window days = 90 } trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no } } }
+		}
+	}
+}
+nesnd_qe1_breakup = {
+	if = { limit = { nesnd_qe1_country = yes NOT = { has_variable = nesnd_qe1_dissolved } }
+		set_variable = nesnd_qe1_dissolved
+		nesnd_qe1_close_agenda = yes nesnd_qe1_archive_court = yes
+		nesnd_qe1_release_xin = yes
+		nesnd_qe1_release_uzb = yes
+		nesnd_qe1_release_buk = yes
+		nesnd_qe1_release_khi = yes
+		nesnd_qe1_release_trc = yes
+		nesnd_qe1_release_kyr = yes
+		nesnd_qe1_release_tji = yes
+		nesnd_qe1_release_kaz = yes
+		nesnd_qe1_release_afg = yes
+		nesnd_qe1_release_kal = yes
+		nesnd_qe1_release_per = yes
+		nesnd_qe1_release_tib = yes
+		nesnd_qe1_release_kas = yes
+		nesnd_qe1_release_mgl = yes
+		nesnd_qe1_release_tuv = yes
+
+		nesnd_qe1_release_other_provinces = yes
+		if = { limit = { exists = c:QE1 }
+			c:QE1 = { if = { limit = { exists = s:STATE_ILI.region_state:QE1 } set_capital = STATE_ILI } trigger_event = { id = nesnd_qe1_fracture.2 popup = yes } }
+		}
+	}
+}

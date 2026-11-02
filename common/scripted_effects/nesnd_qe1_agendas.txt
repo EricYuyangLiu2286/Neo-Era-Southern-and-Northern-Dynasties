@@ -1,0 +1,112 @@
+﻿nesnd_qe1_initialize = {
+	if = { limit = { nesnd_qe1_country = yes }
+		if = { limit = { NOT = { has_variable = nesnd_qe1_campaign_v1 } }
+			set_variable = nesnd_qe1_campaign_v1
+			set_variable = { name = nesnd_qe1_balance value = 0 }
+			set_variable = { name = nesnd_qe1_barracks_goal value = 107 }
+			set_variable = nesnd_qe1_barracks_snapshot_pending
+			trigger_event = { id = nesnd_qe1.90 days = 1 popup = no }
+			set_variable = { name = nesnd_qe1_unity value = 70 }
+			set_variable = { name = nesnd_qe1_uprising value = 0 }
+			set_variable = { name = nesnd_qe1_war_months value = 0 }
+			set_variable = nesnd_qe1_ruler_economic
+			if = { limit = { exists = ruler } ruler = { nesnd_qe1_assign_ruler = yes } }
+		}
+	}
+}
+nesnd_qe1_assign_ruler = {
+	if = { limit = { exists = owner owner = { nesnd_qe1_country = yes } }
+		if = { limit = { owner = { country_has_monarchy_law = yes } }
+
+			if = { limit = { NOT = { has_variable = nesnd_qe1_ruler_registered } }
+				set_variable = nesnd_qe1_ruler_registered
+				if = { limit = { has_template = QE1_chen_wuxing }
+					set_variable = nesnd_qe1_person_economic
+				} else = { random_list = { 60 = { set_variable = nesnd_qe1_person_economic } 40 = { set_variable = nesnd_qe1_person_military } } }
+			}
+			owner = {
+				remove_variable = nesnd_qe1_ruler_economic remove_variable = nesnd_qe1_ruler_military
+				if = { limit = { prev = { has_variable = nesnd_qe1_person_economic } } set_variable = nesnd_qe1_ruler_economic }
+				else = { set_variable = nesnd_qe1_ruler_military }
+			}
+
+		} else = { owner = { remove_variable = nesnd_qe1_ruler_economic remove_variable = nesnd_qe1_ruler_military } }
+	}
+}
+nesnd_qe1_ensure_agenda_children = {
+	if = { limit = { nesnd_qe1_agenda_live = yes }
+		if = { limit = { NOT = { has_journal_entry = nesnd_qe1_economy_journal } } add_journal_entry = { type = nesnd_qe1_economy_journal } }
+		if = { limit = { NOT = { has_journal_entry = nesnd_qe1_army_journal } } add_journal_entry = { type = nesnd_qe1_army_journal } }
+	}
+}
+nesnd_qe1_agenda_sync = {
+	clamp_variable = { name = nesnd_qe1_balance min = -50 max = 50 }
+	if = { limit = { has_journal_entry = nesnd_qe1_agenda_journal } je:nesnd_qe1_agenda_journal = { set_bar_progress = { name = nesnd_qe1_balance_bar value = root.var:nesnd_qe1_balance } } }
+}
+nesnd_qe1_watch_endpoints = {
+	if = { limit = { nesnd_qe1_agenda_live = yes }
+		clamp_variable = { name = nesnd_qe1_balance min = -50 max = 50 }
+		if = { limit = { var:nesnd_qe1_balance <= -50 }
+			if = { limit = { NOT = { has_variable = nesnd_qe1_econ_edge } } set_variable = nesnd_qe1_econ_edge set_variable = { name = nesnd_qe1_econ_wait days = 29 } }
+		} else = { remove_variable = nesnd_qe1_econ_edge remove_variable = nesnd_qe1_econ_wait }
+		if = { limit = { var:nesnd_qe1_balance >= 50 }
+			if = { limit = { NOT = { has_variable = nesnd_qe1_army_edge } } set_variable = nesnd_qe1_army_edge set_variable = { name = nesnd_qe1_army_wait days = 29 } }
+		} else = { remove_variable = nesnd_qe1_army_edge remove_variable = nesnd_qe1_army_wait }
+	}
+}
+nesnd_qe1_agenda_monthly = {
+	if = { limit = { nesnd_qe1_agenda_live = yes }
+		change_variable = { name = nesnd_qe1_balance add = nesnd_qe1_agenda_delta }
+		nesnd_qe1_watch_endpoints = yes nesnd_qe1_agenda_sync = yes
+		nesnd_qe1_check_civil_conflict = yes
+	}
+}
+nesnd_qe1_close_agenda = {
+	set_variable = nesnd_qe1_agenda_done
+	remove_variable = nesnd_qe1_econ_edge remove_variable = nesnd_qe1_econ_wait
+	remove_variable = nesnd_qe1_army_edge remove_variable = nesnd_qe1_army_wait
+	if = { limit = { has_modifier = nesnd_qe1_law_push } remove_modifier = nesnd_qe1_law_push } if = { limit = { has_modifier = nesnd_qe1_economy_push } remove_modifier = nesnd_qe1_economy_push } if = { limit = { has_modifier = nesnd_qe1_military_preparations } remove_modifier = nesnd_qe1_military_preparations }
+}
+nesnd_qe1_settle_agenda = {
+	if = { limit = { NOT = { has_variable = nesnd_qe1_agenda_done } }
+		if = { limit = { var:nesnd_qe1_balance <= -50 }
+			add_modifier = { name = nesnd_qe1_angovernment years = 10 }
+			nesnd_qe1_start_sol_observation = yes
+			set_variable = nesnd_qe1_economic_winner
+			trigger_event = { id = nesnd_qe1.1 popup = yes }
+		} else = {
+			add_modifier = { name = nesnd_qe1_military_government years = 10 }
+			set_variable = nesnd_qe1_military_winner
+			trigger_event = { id = nesnd_qe1.2 popup = yes }
+		}
+		nesnd_qe1_close_agenda = yes
+	}
+}
+nesnd_qe1_agenda_timeout = {
+	if = { limit = { NOT = { has_variable = nesnd_qe1_agenda_done } }
+		if = { limit = { num_states < 4 } nesnd_qe1_close_agenda = yes }
+		else_if = { limit = { OR = { nesnd_qe1_economic_victory = yes nesnd_qe1_military_victory = yes } } nesnd_qe1_settle_agenda = yes }
+		else = {
+			nesnd_qe1_close_agenda = yes
+			add_modifier = { name = nesnd_qe1_stalled years = 10 }
+			nesnd_qe1_start_sol_observation = yes
+			trigger_event = { id = nesnd_qe1.3 popup = yes }
+		}
+	}
+}
+
+
+nesnd_qe1_capture_barracks = {
+	if = { limit = { nesnd_qe1_country = yes has_variable = nesnd_qe1_barracks_snapshot_pending NOT = { has_variable = nesnd_qe1_barracks_snapshot_done } OR = { game_date > 1836.1.1 has_variable = nesnd_qe1_runtime_ready } }
+		set_variable = { name = nesnd_qe1_barracks_base value = nesnd_qe1_barracks_total }
+		set_variable = { name = nesnd_qe1_barracks_goal value = { value = var:nesnd_qe1_barracks_base add = 25 } }
+		set_variable = nesnd_qe1_barracks_snapshot_done
+		remove_variable = nesnd_qe1_barracks_snapshot_pending
+	}
+}
+
+nesnd_qe1_start_agenda_clock = {
+	if = { limit = { NOT = { has_variable = nesnd_qe1_agenda_started } NOT = { has_variable = nesnd_qe1_agenda_done } }
+		set_variable = nesnd_qe1_agenda_started set_variable = { name = nesnd_qe1_agenda_clock years = 10 }
+	}
+}

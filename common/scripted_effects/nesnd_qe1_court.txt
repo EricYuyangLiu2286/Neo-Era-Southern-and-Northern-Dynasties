@@ -1,0 +1,40 @@
+﻿nesnd_qe1_compute_court = {
+	if = { limit = { nesnd_qe1_court_live = yes }
+		nesnd_qe1_calculate_power_values = yes
+
+
+
+
+
+		nesnd_qe1_prune_patronage = yes
+		if = { limit = { has_variable = nesnd_qe1_power_recalculate } remove_variable = nesnd_qe1_power_recalculate nesnd_qe1_calculate_power_values = yes }
+		je:nesnd_qe1_court_journal = {
+			set_bar_progress = { name = nesnd_qe1_crown_bar value = root.var:nesnd_qe1_power_crown }
+			set_bar_progress = { name = nesnd_qe1_literati_bar value = root.var:nesnd_qe1_power_literati }
+			set_bar_progress = { name = nesnd_qe1_army_bar value = root.var:nesnd_qe1_power_army }
+		}
+	}
+}
+nesnd_qe1_clear_patronage = {
+	remove_variable = nesnd_qe1_patron_crown remove_variable = nesnd_qe1_patron_literati remove_variable = nesnd_qe1_patron_army
+	if = { limit = { has_modifier = nesnd_qe1_patronage_crown } remove_modifier = nesnd_qe1_patronage_crown } if = { limit = { has_modifier = nesnd_qe1_patronage_literati } remove_modifier = nesnd_qe1_patronage_literati } if = { limit = { has_modifier = nesnd_qe1_patronage_army } remove_modifier = nesnd_qe1_patronage_army }
+}
+nesnd_qe1_prune_patronage = {
+	if = { limit = { has_variable = nesnd_qe1_patron_crown has_variable = nesnd_qe1_power_crown }
+		if = { limit = { var:nesnd_qe1_power_crown < 40 } set_variable = nesnd_qe1_power_recalculate remove_variable = nesnd_qe1_patron_crown if = { limit = { has_modifier = nesnd_qe1_patronage_crown } remove_modifier = nesnd_qe1_patronage_crown } }
+	}
+	if = { limit = { has_variable = nesnd_qe1_patron_literati has_variable = nesnd_qe1_power_literati }
+		if = { limit = { var:nesnd_qe1_power_literati < 40 } set_variable = nesnd_qe1_power_recalculate remove_variable = nesnd_qe1_patron_literati if = { limit = { has_modifier = nesnd_qe1_patronage_literati } remove_modifier = nesnd_qe1_patronage_literati } }
+	}
+	if = { limit = { has_variable = nesnd_qe1_patron_army has_variable = nesnd_qe1_power_army }
+		if = { limit = { var:nesnd_qe1_power_army < 40 } set_variable = nesnd_qe1_power_recalculate remove_variable = nesnd_qe1_patron_army if = { limit = { has_modifier = nesnd_qe1_patronage_army } remove_modifier = nesnd_qe1_patronage_army } }
+	}
+}
+nesnd_qe1_archive_court = { set_variable = nesnd_qe1_court_archived nesnd_qe1_clear_patronage = yes }
+
+nesnd_qe1_calculate_power_values = {
+	set_variable = { name = nesnd_qe1_power_total value = { value = nesnd_qe1_crown_raw add = nesnd_qe1_literati_raw add = nesnd_qe1_army_raw } }
+	set_variable = { name = nesnd_qe1_power_crown value = { value = nesnd_qe1_crown_raw divide = var:nesnd_qe1_power_total multiply = 100 } }
+	set_variable = { name = nesnd_qe1_power_literati value = { value = nesnd_qe1_literati_raw divide = var:nesnd_qe1_power_total multiply = 100 } }
+	set_variable = { name = nesnd_qe1_power_army value = { value = nesnd_qe1_army_raw divide = var:nesnd_qe1_power_total multiply = 100 } }
+}

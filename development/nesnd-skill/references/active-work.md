@@ -1,7 +1,9 @@
-# 当前交接：原生条件、波兰修复与西秦方案
+# 当前交接：西秦与唐衣大食
 
-Updated: 2026-11-02。当前候选ui-poland-tributary-20261102-a，父版本044de73。主MOD/Git实际状态以[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/ui-poland-tributary-20261102/release-notes.md>)及同目录main-merge.json、git-delivery.json为准；[任务15](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/15-ui-poland-qin.md>)为入口。旧交接逐字备份于本轮skill-before。
+Updated: 2026-11-02。候选qin-persia-campaign-20261102-a，父版本c0e11fe。[任务16](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/16-qin-persia-campaign.md>)和[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/qin-persia-20261102/release-notes.md>)为当前入口；实际主MOD/Git/压缩包看同目录main-merge.json、git-delivery.json、package.json。上一份交接保留于本目录对应报告的documentation-before。
 
-完成：CNE原生全国建筑/分项条件、AI护栏分离、短状态；USM遣使去重；波兰11项与迟答/终局/存在性闭包；商路数值和请求期限；PER新局朝贡。日本、地图/人口/建筑/肖像保留。90源码检查、202算术样本、Tiger零新增、MCP5、两轴复核。未开游戏，ENGINE_NOT_RUN。
+12个新JE及完整配套：短期经济/军府争权、团结归化与复归、暴动解体、故土奖励、三权法律路线、波斯援秦或秘密运动和后继扩张。原始人口/地图/建筑/人物/日本保留；只追加QE1/PER历史入口。外部源码、边界算术、Tiger差分、实际MCP查询与两轴审查；未开游戏，ENGINE_NOT_RUN。
 
-独立写作流程入口为nesnd-player-writing；每次改数值必读numeric-scale-contract.md。西秦新内容仅实施方案，详见WORK/plans/two-empires/20261102-western-qin-design.md；原始规则差异及暂缓项见本轮original-rule-decisions.md。南朝新概率/密使仍未实施，保留原任务图。不要重跑一次性构建脚本覆盖后续修订。
+实施规格为 WORK/plans/two-empires/20261102-qin-persia-implementation.md。原生君主＋技官取代不可共存的专制＋技官；单向SoL奖励为月度采样近似。文化三遍转换、动态战争联盟及引擎回调仍未实机核验。原版677地区配对不代表真实祖源。
+
+不要重跑一次性构建脚本覆盖后续修订。技能新增证据分别在numeric-scale-contract、journal-text-contract、syntax-and-routing及content-development末节。南朝概率/密使任务仍未实施，保留原任务图；以前的日志修复与实机记录只覆盖各自版本。
