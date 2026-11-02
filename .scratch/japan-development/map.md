@@ -29,3 +29,7 @@ Blocked by: none
 ## 修订2：作者新要求
 
 天皇JIM即林摄政政权；当前JAP受任代码是待同步修正项，不能继续把其当计划。JIM需加入ce_wuu主流并保持日本兼容身份。扶国矿业军工船业、桑国轻纺消费品SOL、和国粮食城市食品链；JIM排除轻纺日志。独立后国家发展总JE及每国每月30%→一州总人口10%的文化转换列入方案。详见20261102-japan-development-design.md第九节。尚未写入玩法。
+
+## 修订3：宗主与阶段交接
+
+主方案第十节把宗属、明吴立场、条约/市场、实际战争分开，联动建设、统一自主、团结和朝鲜。旧JAP林统治者迁JIM需合法接任与精确人物登记；同市场供给需核接口，不能强制不合法商品条约。共同24类异常场景和源码复核见[本轮报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-india-plan-revision-20261102/release-notes.md>)。仍为方案，既有崩溃/恢复保持。

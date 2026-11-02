@@ -91,3 +91,7 @@ flowchart TD
 ## 日本修订2与印度研究（2026-11-02）
 
 日本方案明确JIM天皇—林摄政、三国产业、独立后发展与30%/州10%团结文化转换，仍待实现；当前JAP任命列首批修正。印度三份原始来源研究及少剧情制度方案完成，见20261102-india-development-design.md。证据与实际保存状态见WORK/reports/india-research-20261102/release-notes.md；本轮无玩法变更。
+
+## 2026-11-02 日本/印度关系修订
+
+日本方案第十节修订3、印度第十至十三节修订2及[共同生命周期](20261102-japan-india-lifecycle.md)是最新关系与收尾规格。工作范围仅研究/计划，主MOD玩法不变。证据见WORK/reports/japan-india-plan-revision-20261102/；任务20。

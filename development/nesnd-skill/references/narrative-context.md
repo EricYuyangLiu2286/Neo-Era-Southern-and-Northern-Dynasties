@@ -41,3 +41,5 @@
 
 涉及日本林摄政/文化同化/三国产业时，先读最新日本方案第九节和WORK/reports/japan-research-20261102/revision-2：作者已明确天皇政权JIM就是林摄政，旧JAP任命为待改实现，不能再当未决设定。数值和主流修改是否上线以任务19与交付记录为准。
 涉及莫卧儿/明属印度/法国援助/种姓时，读WORK/reports/india-research-20261102的native-india.md、current-mod-india.md、india-canon.md。王朝历史出身、国家主文化、宗教和种姓适用群体分别核实；旧.bak不是活动定义，不同名history不会覆盖原版。海军原稿的人物年代与1836分开。实施方案在WORK/plans/two-empires/20261102-india-development-design.md；具体法援同时读native-treaty-aid.md。
+
+日本／印度宗属、土邦起义或法国政体分支实施前，读取WORK/plans/two-empires/20261102-japan-development-design.md第十节、20261102-india-development-design.md第十至十三节及20261102-japan-india-lifecycle.md。修订报告在WORK/reports/japan-india-plan-revision-20261102/。它们是设计与源码证据，尚非新玩法；现行政体、当朝身份、现实宗属与承诺分开，不能按显示国名套关系。

@@ -21,3 +21,7 @@ Blocked by: none
 ## Not yet implemented
 
 本轮没有实施印度新机制、改初始军队或文化，也没有改州归属。报告中的人口与产业是静态输入，非运行SOL/GDP；未开游戏。
+
+## 修订2：地区起义、土邦与法国
+
+主方案第十至十三节纳入USM南印度策动、土邦独立/属国分支、法国内政分类与双向选择。共同生命周期覆盖24类异常；来源与复核见[本轮报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-india-plan-revision-20261102/release-notes.md>)。下一批实施仍需先处理基线和共同请求/收尾，尚未写入玩法。

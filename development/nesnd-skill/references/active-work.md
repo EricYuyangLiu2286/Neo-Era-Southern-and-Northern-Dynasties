@@ -1,9 +1,9 @@
-# 当前交接：日本修订2与印度研究
+# 当前交接：日本与印度关系方案修订
 
-Updated: 2026-11-02；研究基线717c901。[任务19](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/19-japan-india-research.md>)、[报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/india-research-20261102/release-notes.md>)为当前入口；仓库保存核对见同目录git-delivery.json。本轮无玩法变更，未开游戏。
+Updated: 2026-11-02；基线d2a7f30。[任务20](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/20-japan-india-relations-plan.md>)与[交付说明](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-india-plan-revision-20261102/release-notes.md>)为入口。本轮只改方案/研究/任务文档，游戏未运行。仓库保存记录见同目录delivery-verification.json。
 
-日本：作者明确JIM天皇＝林摄政；当前代码JAP任命仍待按完整链改，JIM主流ce_wuu待添加。三国产业、独立后发展、每国每月30%抽一州总人口10%文化转换已入计划，绝不称已上线。最新日本方案第九节优先，旧方案独立保存在revision-2。
+日本第十节修订3：USM明/吴与现实宗属分开，CNE可改朝；供给/条约、独立统一、朝鲜治理/交涉与团结有不同出口。林JIM迁移、三国产业和文化转换仍待实施；旧JAP已任林统治者的存档须单独迁移接任链。
 
-印度：原版23JE/125事件索引、当前MOD人口产业与初始化、PPT/海军全篇/HOI4/策划图研究完成。少剧情制度方案完成。下一批先审MUG不同名history叠加、活动国家定义、人物、编制/公司和BIC绑定，再做改革/法援/民族/种姓/统一。法援一年binding_period不是到期，已有规则须继续读取。
+印度修订2：独立或足够强大后逐地区策动；43个有组织本地国家中42个无开局宗属、TRA属USM，另4个decentralized不套普通模板。土邦有自己的守土/自主议程；法国按现行法律及可靠当朝身份分类，旧旗标不能覆盖。补齐筹备→战争交接、永久无目标、部分建国失败和条约收尾。
 
-西秦上一轮阶段修正已交付：开局4JE、后继三权/故土、危机暴动，旧档已开启保留。本轮不修改该玩法。日本/印度开发map是计划入口；未实现部分不要因研究resolved误当游戏功能completed。
+共用20261102-japan-india-lifecycle.md的24场景是实施验收要求，不是已经通过的游戏测试。原研究与旧方案保留。下一批先处理MUG初始化/人物/军力/公司/BIC绑定和JIM身份接口，再实现阶段与关系，不在开局全开后期JE。西秦上一轮阶段修正保持，当前没有新增玩法合入。
