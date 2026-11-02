@@ -1,7 +1,7 @@
-# 当前交接：帝国人民的信心与地权革命入口
+# 当前交接：原生条件、波兰修复与西秦方案
 
-Updated: 2026-11-02。最新候选cne-confidence-20261101-a，主MOD/主Git实际交付状态以[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/cne-confidence-20261101/release-notes.md>)及该目录main-merge.json、git-delivery.json为准；[任务14](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/14-cne-confidence.md>)是本轮入口。
+Updated: 2026-11-02。当前候选ui-poland-tributary-20261102-a，父版本044de73。主MOD/Git实际状态以[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/ui-poland-tributary-20261102/release-notes.md>)及同目录main-merge.json、git-delivery.json为准；[任务15](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/15-ui-poland-qin.md>)为入口。旧交接逐字备份于本轮skill-before。
 
-三个项目子JE自锁恢复、信心1000与500共和起义、普通双向吞并战争、0/废君主/原生内战失败、少于4州失效、22州失去归属的按钮和收益清理；原生月度/年度明细与玩家文本自检均已实施。112项新断言、259旧回归、1024年度/128月度组合、Tiger零新增、MCP5。ENGINE_NOT_RUN；不开游戏，用户自测。旧进度和原始地图/历史/肖像保持。
+完成：CNE原生全国建筑/分项条件、AI护栏分离、短状态；USM遣使去重；波兰11项与迟答/终局/存在性闭包；商路数值和请求期限；PER新局朝贡。日本、地图/人口/建筑/肖像保留。90源码检查、202算术样本、Tiger零新增、MCP5、两轴复核。未开游戏，ENGINE_NOT_RUN。
 
-南朝概率/密使/遣使重议/权重仍在详细政治计划，未混入本轮。旧交接逐字保留于WORK/reports/cne-confidence-20261101/skill-before/references/active-work.md。源码是最终权威，WORK的分阶段构建脚本是当轮一次性工具，不可重跑覆盖后续审查修订。
+独立写作流程入口为nesnd-player-writing；每次改数值必读numeric-scale-contract.md。西秦新内容仅实施方案，详见WORK/plans/two-empires/20261102-western-qin-design.md；原始规则差异及暂缓项见本轮original-rule-decisions.md。南朝新概率/密使仍未实施，保留原任务图。不要重跑一次性构建脚本覆盖后续修订。

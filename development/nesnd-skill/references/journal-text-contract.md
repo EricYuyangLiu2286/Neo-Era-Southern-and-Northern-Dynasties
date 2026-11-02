@@ -57,3 +57,15 @@ GAME/common/scripted_progress_bars/scripted_progress_bars.md与本MOD ce_french_
 一次性schema/init标记与可恢复running标记分开。若开场事件在父JE加入前初始化，孤儿清理可删running；后续恢复不可因init已存在而永远跳过。实际父JE有效且无终局时，恢复running并用has_journal_entry保护显式补齐子JE；不重置进度/信心。on_fail/on_invalid与旧档迁移都应覆盖。
 
 州按钮的开始与暂停都看所属州是否仍存在于本国。原生on_state_owner_change/on_state_created的root为state（GAME/00_code_on_actions，ip4_on_actions有移除州modifier实例）；检查父JE有效后清理失去的州，再用具名国家事件清理对应国家/人物惩罚，保留其他州。补周度检查覆盖旧档与部分割地。普通脚本战争与原生revolution/secession分别判定，不能用is_at_war代替内战。
+
+
+## 原生条件优先与状态节制（2026-11-02）
+
+- 先读作者原始日志/按钮的 trigger，再查当前 GAME 同类条目。能直接呈现的法律、科技、机构、建筑、国库等条件直接写在 possible/complete，独立条件各占原生勾叉。不要把多项真实门槛塞入一个 custom_tooltip；换行不能替代独立真假状态。
+- 全国等级用 country_has_building_type_levels = { target = bt:building_iron_mine value >= 25 }（GAME/common/scripted_buttons/07_japan_buttons.txt）；州分布另用 any_scope_state 的 count 与 state_has_building_type_levels。五州各有五级城镇中心不等于每州须同时达到全国工业总量。
+- custom_tooltip 只用于原生显示无法说明的自定义统计/对象选择，以及未自动呈现的必要效果；写最短的可判断条件。原生 effect 已显示关系变化，就不再加一行相同数字。内部存在性、schema、重复执行保护用 hidden_trigger，但不能隐藏真实玩家资格或费用。GAME/common/scripted_buttons/00_balkan_wars_buttons.txt 有原生隐藏示例。
+- AI 谨慎阈值与玩家资格分别维护。用户指定仅供 AI 的政力、破产、失序限制，放 is_ai 分支/AI选择权重，不能悄悄变成玩家硬门槛。玩家仍须支付实际费用；该规则不自动删除完成条件或进度公式里的同名指标。
+- status_desc 用 first_valid/triggered_desc 呈现当前阶段；没有新增信息时留空。未发生的起义不在开场预告。状态不复述按钮已列的门槛；按钮 desc 不复述原生效果。统计面板只保留读数。
+- 检查同国同时激活的全部 JE 挂载。两个名称不同、调用同一操作的按钮依然可能重复；删除冗余挂载不删除其他日志或 AI 使用的 effect。
+
+本轮来源与前后对照：WORK/reports/ui-trade-feedback-20261102/research.md、WORK/reports/ui-poland-tributary-20261102。源码检查不能证明实际UI布局。

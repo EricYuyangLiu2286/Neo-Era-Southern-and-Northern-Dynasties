@@ -1,0 +1,87 @@
+﻿nesnd_poland_active = {
+	exists = c:KRA
+	NOT = { has_global_variable = ce_poland_problem_end }
+}
+# Country scope; no reference to an absent private journal is evaluated.
+nesnd_poland_can_issue_ultimatum = {
+	c:KRA ?= { is_subject = no is_diplomatic_play_committed_participant = no }
+	nesnd_poland_active = yes
+	is_at_war = no
+	NOT = { has_variable = nesnd_polish_pending_state }
+	trigger_if = { limit = { has_journal_entry = je_ce_polish_war_preparation }
+		je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 100 }
+	}
+	trigger_else_if = { limit = { has_journal_entry = je_ce_polish_territory_claim }
+		je:je_ce_polish_territory_claim = { "scripted_bar_progress(ce_polish_territory_claim_bar)" >= 100 }
+	}
+	trigger_else = { always = no }
+}
+# State scope. Shared by availability, selection and reply-time validation.
+nesnd_poland_ultimatum_state = {
+	trigger_if = { limit = { exists = c:KRA exists = owner }
+		NOT = { owner = c:KRA }
+		has_claim_by = c:KRA
+		owner = {
+			is_at_war = no
+			NOR = {
+				has_subject_relation_with = c:KRA
+				is_in_same_power_bloc = c:KRA
+				any_scope_treaty = { binds = c:KRA any_scope_article = { has_type = alliance } }
+				any_scope_treaty = { binds = c:KRA any_scope_article = { has_type = defensive_pact } }
+				any_scope_treaty = { binds = c:KRA any_scope_article = { has_type = guarantee_independence } }
+			}
+		}
+	}
+	trigger_else = { always = no }
+}
+nesnd_poland_ultimatum_valid = {
+	trigger_if = { limit = { exists = c:KRA exists = scope:target_diplo_play_state exists = scope:ce_from_country }
+		nesnd_poland_active = yes
+		is_at_war = no
+		c:KRA = { is_subject = no is_diplomatic_play_committed_participant = no }
+		scope:ce_from_country = { is_country_alive = yes nesnd_poland_matching_pending = yes }
+		scope:target_diplo_play_state = { owner = root nesnd_poland_ultimatum_state = yes }
+	}
+	trigger_else = { always = no }
+}
+nesnd_poland_join_invitation_valid = {
+	trigger_if = { limit = { exists = scope:ce_poland_return_land_dp exists = c:KRA }
+		nesnd_poland_active = yes
+		has_variable = ce_pro_polish_variable
+		is_diplomatic_play_committed_participant = no
+		NOT = { has_war_with = c:KRA }
+		scope:ce_poland_return_land_dp = { is_war = no initiator = c:KRA NOT = { target = root } NOT = { any_scope_play_involved = { this = root } } }
+	}
+	trigger_else = { always = no }
+}
+nesnd_poland_existing_successor = {
+	OR = { nesnd_poland_existing_pol = yes nesnd_poland_existing_plc = yes }
+}
+nesnd_poland_existing_pol = {
+	trigger_if = { limit = { exists = c:POL } c:POL = { is_subject = no num_incorporated_states >= 3 } }
+	trigger_else = { always = no }
+}
+nesnd_poland_existing_plc = {
+	trigger_if = { limit = { exists = c:PLC } c:PLC = { is_subject = no num_incorporated_states >= 3 } }
+	trigger_else = { always = no }
+}
+nesnd_poland_can_declare_victory = {
+	c:KRA ?= this
+	nesnd_poland_active = yes
+	NOT = { exists = c:POL }
+	NOT = { has_variable = ce_polish_victory_declared }
+	nesnd_poland_live_control_count >= 5
+}
+nesnd_poland_many_claims = {
+	trigger_if = { limit = { has_global_variable = ce_polish_claim_state_count } global_var:ce_polish_claim_state_count >= 3 }
+	trigger_else = { always = no }
+}
+nesnd_poland_matching_pending = {
+	trigger_if = { limit = { has_variable = nesnd_polish_pending_state }
+		trigger_if = { limit = { exists = var:nesnd_polish_pending_state }
+			var:nesnd_polish_pending_state = scope:target_diplo_play_state
+		}
+		trigger_else = { always = no }
+	}
+	trigger_else = { always = no }
+}

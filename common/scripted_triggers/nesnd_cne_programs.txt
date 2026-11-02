@@ -8,35 +8,27 @@
 	NOT = { nesnd_cne_reform_failed = yes }
 }
 nesnd_cne_program_can_start = {
-	trigger_if = {
-		limit = { has_variable = cne_landreform_failure_tracker }
-		nesnd_cne_programs_live = yes
-		bureaucracy >= 0
-		NOT = { has_modifier = declared_bankruptcy }
-		var:cne_landreform_failure_tracker < 65
-	}
-	trigger_else = { always = no }
+ nesnd_cne_programs_live = yes
+ trigger_if = { limit = { is_ai = yes } nesnd_cne_ai_program_safe = yes }
 }
 nesnd_cne_land_start_ready = { nesnd_cne_program_can_start = yes nesnd_cne_land_foundation = yes }
 nesnd_cne_land_foundation = {
-
-	has_technology_researched = intensive_agriculture
-	nesnd_cne_agricultural_share >= 0.06
+ has_technology_researched = intensive_agriculture
+ custom_tooltip = { text = nesnd_cne_arable_share_tt nesnd_cne_agricultural_share >= 0.06 }
 }
 nesnd_cne_urban_start_ready = { nesnd_cne_program_can_start = yes nesnd_cne_urban_foundation = yes }
 nesnd_cne_urban_foundation = {
-
-	any_scope_state = { count >= 5 any_scope_building = { is_building_type = building_urban_center level >= 5 } }
-	OR = { has_technology_researched = democracy has_technology_researched = labor_movement has_technology_researched = human_rights }
-	OR = { has_law_or_variant = law_type:law_poor_laws has_law_or_variant = law_type:law_wage_subsidies has_law_or_variant = law_type:law_old_age_pension }
-	institution_investment_level = { institution = institution_social_security value >= 1 }
-	nesnd_cne_iron_levels >= 25
-	nesnd_cne_coal_levels >= 40
-	nesnd_cne_steel_levels >= 10
-	nesnd_cne_tools_levels >= 30
-	nesnd_cne_engines_levels >= 6
-	nesnd_cne_timber_levels >= 60
-	nesnd_cne_ships_levels >= 12
+ nesnd_cne_urban_centres_ready = yes
+ country_has_building_type_levels = { target = bt:building_iron_mine value >= 25 }
+ country_has_building_type_levels = { target = bt:building_coal_mine value >= 40 }
+ country_has_building_type_levels = { target = bt:building_steel_mill value >= 10 }
+ country_has_building_type_levels = { target = bt:building_tooling_workshop value >= 30 }
+ country_has_building_type_levels = { target = bt:building_motor_industry value >= 6 }
+ country_has_building_type_levels = { target = bt:building_logging_camp value >= 60 }
+ country_has_building_type_levels = { target = bt:building_shipyard value >= 12 }
+ nesnd_cne_urban_welfare_technology = yes
+ nesnd_cne_urban_welfare_law = yes
+ institution_investment_level = { institution = institution_social_security value >= 1 }
 }
 
 
@@ -243,4 +235,29 @@ nesnd_cne_relief_target_valid = {
 		scope:nesnd_cne_funding_state = { any_scope_pop = { OR = { is_in_mild_starvation = yes is_in_severe_starvation = yes } } }
 	}
 	trigger_else = { always = no }
+}
+nesnd_cne_ai_program_safe = {
+ trigger_if = { limit = { has_variable = cne_landreform_failure_tracker }
+  bureaucracy >= 0
+  NOT = { has_modifier = declared_bankruptcy }
+  var:cne_landreform_failure_tracker < 65
+ }
+ trigger_else = { always = no }
+}
+nesnd_cne_urban_centres_ready = {
+ any_scope_state = { count >= 5 state_has_building_type_levels = { target = bt:building_urban_center value >= 5 } }
+}
+nesnd_cne_urban_welfare_technology = {
+ OR = { has_technology_researched = democracy has_technology_researched = labor_movement has_technology_researched = human_rights }
+}
+nesnd_cne_urban_welfare_law = {
+ OR = { has_law_or_variant = law_type:law_poor_laws has_law_or_variant = law_type:law_wage_subsidies has_law_or_variant = law_type:law_old_age_pension }
+}
+nesnd_cne_republic_is_fighting = {
+ trigger_if = { limit = { exists = c:NRP exists = c:CNE } c:NRP = { has_war_with = c:CNE } }
+ trigger_else = { always = no }
+}
+nesnd_cne_confidence_is_waning = {
+ trigger_if = { limit = { has_variable = nesnd_cne_confidence } var:nesnd_cne_confidence < 750 }
+ trigger_else = { always = no }
 }

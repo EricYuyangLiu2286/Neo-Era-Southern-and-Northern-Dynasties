@@ -43,9 +43,9 @@ ce_poland_events.1 = {
 			remove_variable = ce_pro_polish_variable
 			#remove_journal_entry = je_ce_polish_territory_claim
 			set_variable = ce_anti_polish_variable
-			if = { limit = { NOT = { has_journal_entry = je_ce_block_polish_advance } } 
-# Journal entry activates from its possible trigger.
- }
+			if = { limit = { NOT = { has_journal_entry = je_ce_block_polish_advance } }
+				# Journal entry activates from its possible trigger.
+			}
 		}
 		change_relations = {
 			country = c:KRA
@@ -77,37 +77,37 @@ ce_poland_events.2 = {
 		ai_chance = {
 			base = 1
 		}
-		# Yield
-		change_infamy = -5
-		
-		hidden_effect = {
-			if = {
-				limit = {
-					has_modifier = ce_backoff_on_territorial_claims
-				}
-				remove_modifier = ce_backoff_on_territorial_claims
-			}
-		}
-		
-		add_modifier = {
-			name = ce_backoff_on_territorial_claims
-			months = 12
-		}
+		if = { limit = { nesnd_poland_ultimatum_valid = yes }
+			nesnd_poland_clear_request = yes
 
-		scope:target_diplo_play_state = {
+			change_infamy = -5
 			hidden_effect = {
 				if = {
 					limit = {
-						has_modifier = ce_peaceful_vote_for_polish
+						has_modifier = ce_backoff_on_territorial_claims
 					}
-					remove_modifier = ce_peaceful_vote_for_polish
+					remove_modifier = ce_backoff_on_territorial_claims
 				}
 			}
-			#c:KRA = { set_state_owner = prev }
-			set_state_owner = c:KRA
 			add_modifier = {
-				name = ce_peaceful_vote_for_polish
+				name = ce_backoff_on_territorial_claims
 				months = 12
+			}
+			scope:target_diplo_play_state = {
+				hidden_effect = {
+					if = {
+						limit = {
+							has_modifier = ce_peaceful_vote_for_polish
+						}
+						remove_modifier = ce_peaceful_vote_for_polish
+					}
+				}
+				#c:KRA = { set_state_owner = prev }
+				set_state_owner = c:KRA
+				add_modifier = {
+					name = ce_peaceful_vote_for_polish
+					months = 12
+				}
 			}
 		}
 	}
@@ -117,50 +117,46 @@ ce_poland_events.2 = {
 		ai_chance = {
 			base = 9
 		}
-		# Fight!
 		default_option = yes
-		c:KRA = {
-			create_diplomatic_play = {
-				#name = ce_poland_diplo_play_name
-				escalation = 50
-				target_country = root
-				type = dp_return_state
+		if = { limit = { nesnd_poland_ultimatum_valid = yes }
+			nesnd_poland_clear_request = yes
 
-				add_war_goal = { holder = root target_country = c:KRA type = annex_country }
-
-				add_war_goal = {
-					holder = c:KRA
-					type = return_state
-					target_state = scope:target_diplo_play_state
+			c:KRA = {
+				create_diplomatic_play = {
+					#name = ce_poland_diplo_play_name
+					escalation = 50
 					target_country = root
-				}
-			}
-			add_modifier = {
-				name = ce_poland_war_prep_diplo_play_buff
-				months = 12
-			}
-		}
+					target_state = scope:target_diplo_play_state
+					type = dp_return_state
 
-		random_diplomatic_play = {
-			limit = {
-				c:KRA ?= {
-					is_diplomatic_play_initiator = yes
+					add_war_goal = { holder = root target_country = c:KRA type = annex_country }
+
+
 				}
-				root = {
-					is_diplomatic_play_target = yes
+				add_modifier = {
+					name = ce_poland_war_prep_diplo_play_buff
+					months = 12
 				}
 			}
-			save_scope_as = ce_poland_return_land_dp
-		}
-
-		every_country = {
-			limit = { has_variable = ce_pro_polish_variable }
-			# scope:ce_poland_return_land_dp = {
-			# 	add_initiator_backers = { prev }
-			# }
-			trigger_event = { id = ce_poland_events.7 popup = yes }
+			random_diplomatic_play = {
+				limit = { initiator = c:KRA target = root is_diplomatic_play_type = dp_return_state is_war = no }
+				save_scope_as = ce_poland_return_land_dp
+			}
+			every_country = {
+				limit = { has_variable = ce_pro_polish_variable NOT = { c:KRA ?= this } NOT = { this = root } exists = scope:ce_poland_return_land_dp }
+				# scope:ce_poland_return_land_dp = {
+				# 	add_initiator_backers = { prev }
+				# }
+				trigger_event = { id = ce_poland_events.7 popup = yes }
+			}
 		}
 	}
+
+	trigger = { nesnd_poland_ultimatum_valid = yes }
+
+	cancellation_trigger = { NOT = { nesnd_poland_ultimatum_valid = yes } }
+
+	after = { nesnd_poland_clear_request = yes }
 }
 
 # Event 3: KRA announces victory button
@@ -177,10 +173,7 @@ ce_poland_events.3 = {
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 
-	option = {
-		name = ce_poland_events.3.a
-		set_variable = ce_polish_victory_declared
-	}
+	option = { name = ce_poland_events.3.a default_option = yes }
 }
 
 # Event 4: KRA receives radicals
@@ -204,55 +197,16 @@ ce_poland_events.4 = {
 
 	option = {
 		name = ce_poland_events.4.a
-		# Nothing extra, just info
-		custom_tooltip = lost_progress_ce_poland_war
-		if = {
-			limit = { 
-				has_journal_entry = je_ce_polish_war_preparation 
-				je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 10 }
-			}
+		if = { limit = { has_journal_entry = je_ce_polish_war_preparation }
 			je:je_ce_polish_war_preparation = {
-				add_progress = {
-					value = -10
-					name = ce_polish_reconquest_war_prep_bar
-				}
+				if = { limit = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 10 } add_progress = { name = ce_polish_reconquest_war_prep_bar value = -10 } }
+				else = { set_bar_progress = { name = ce_polish_reconquest_war_prep_bar value = 0 } }
 			}
 		}
-		if = {
-			limit = { 
-				has_journal_entry = je_ce_polish_war_preparation 
-				NOT = { je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 10 } }
-			}
-			je:je_ce_polish_war_preparation = {
-				set_bar_progress = {
-					value = 0
-					name = ce_polish_reconquest_war_prep_bar
-				}
-			}
-		}
-		#
-		if = {
-			limit = { 
-				has_journal_entry = je_ce_polish_war_preparation 
-				je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 10 }
-			}
+		if = { limit = { has_journal_entry = je_ce_polish_reconquest }
 			je:je_ce_polish_reconquest = {
-				add_progress = {
-					value = -10
-					name = ce_polish_reconquest_energy_bar
-				}
-			}
-		}
-		if = {
-			limit = { 
-				has_journal_entry = je_ce_polish_war_preparation 
-				NOT = { je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 10 } }
-			}
-			je:je_ce_polish_reconquest = {
-				set_bar_progress = {
-					value = 0
-					name = ce_polish_reconquest_energy_bar
-				}
+				if = { limit = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 10 } add_progress = { name = ce_polish_reconquest_energy_bar value = -10 } }
+				else = { set_bar_progress = { name = ce_polish_reconquest_energy_bar value = 0 } }
 			}
 		}
 	}
@@ -276,7 +230,7 @@ ce_poland_events.5 = {
 			}
 			c:KRA ={ save_scope_as = ce_to_country }
 		}
-			
+
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -299,7 +253,7 @@ ce_poland_events.5 = {
 					}
 				}
 			}
-			
+
 		}
 	}
 }
@@ -331,8 +285,8 @@ ce_poland_events.6 = {
 		name = ce_poland_events.6.a
 		default_option = yes
 		scope:ce_polish_event_6_state = {
-			create_building = { 
-				building = "building_steel_mill" 
+			create_building = {
+				building = "building_steel_mill"
 				# add_ownership = {
 				# 	country={
 				# 		country=ROOT
@@ -340,16 +294,16 @@ ce_poland_events.6 = {
 				# 	}
 				# }
 				reserves = 1
-				level = 1 
+				level = 1
 			}
-			
+
 		}
 	}
 	option = {
 		name = ce_poland_events.6.b
 		scope:ce_polish_event_6_state = {
-			create_building = { 
-				building = "building_arms_industry" 
+			create_building = {
+				building = "building_arms_industry"
 				# add_ownership = {
 				# 	country={
 				# 		country=ROOT
@@ -357,15 +311,15 @@ ce_poland_events.6 = {
 				# 	}
 				# }
 				reserves = 1
-				level = 1 
+				level = 1
 			}
 		}
 	}
 	option = {
 		name = ce_poland_events.6.c
 		scope:ce_polish_event_6_state = {
-			create_building = { 
-				building = "building_explosives_factory" 
+			create_building = {
+				building = "building_explosives_factory"
 				# add_ownership = {
 				# 	country={
 				# 		country=ROOT
@@ -373,9 +327,9 @@ ce_poland_events.6 = {
 				# 	}
 				# }
 				reserves = 1
-				level = 1 
+				level = 1
 			}
-			
+
 		}
 	}
 }
@@ -400,11 +354,12 @@ ce_poland_events.7 = {
 		ai_chance = {
 			base = 1
 		}
-		
-		change_infamy = 5
-		add_modifier = {
-			name = ce_poland_betray_your_commitment
-			months = 12
+		if = { limit = { nesnd_poland_join_invitation_valid = yes }
+			change_infamy = 5
+			add_modifier = {
+				name = ce_poland_betray_your_commitment
+				months = 12
+			}
 		}
 	}
 
@@ -413,13 +368,17 @@ ce_poland_events.7 = {
 		ai_chance = {
 			base = 9
 		}
-		# Fight!
 		default_option = yes
-
-		scope:ce_poland_return_land_dp = {
-			add_initiator_backers = { Root }
+		if = { limit = { nesnd_poland_join_invitation_valid = yes }
+			scope:ce_poland_return_land_dp = {
+				add_initiator_backers = { Root }
+			}
 		}
 	}
+
+	trigger = { nesnd_poland_join_invitation_valid = yes }
+
+	cancellation_trigger = { NOT = { nesnd_poland_join_invitation_valid = yes } }
 }
 
 # Polish: Controller of our fate
@@ -458,189 +417,192 @@ ce_poland_events.10 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 
 	immediate = {
-		if = {
-			limit = { has_variable = ce_pro_polish_variable }
+		nesnd_poland_snapshot_stance = yes
+		if = { limit = { NOT = { has_variable = nesnd_polish_result_resolved } }
+			set_variable = nesnd_polish_result_resolved
+			if = {
+				limit = { has_variable = nesnd_polish_result_pro }
 
-			every_scope_state = {
-				limit = {
-					any_scope_pop = { culture = cu:polish }
-				}
-				
-
-				root = {
-add_to_variable_list = {
-					name = ce_list_state_effective
-					target = prev
-				}
-}
-			}
-			
-		}
-		if = {
-			limit = { has_variable = ce_anti_polish_variable }
-			hidden_effect = {
 				every_scope_state = {
 					limit = {
 						any_scope_pop = { culture = cu:polish }
 					}
-					
+
 
 					root = {
-add_to_variable_list = {
-						name = ce_list_state_effective
-						target = prev
+						add_to_variable_list = {
+							name = ce_list_state_effective
+							target = prev
+						}
 					}
-}
 				}
+
 			}
-			
-		}
-	}
-
-	option = {
-		name = ce_poland_events.10.a
-		if = {
-			limit = { has_variable = ce_pro_polish_variable }
-				
-			every_in_list = {
-				variable = ce_list_state_effective
-				add_loyalists_in_state = {
-					value = 0.5
-					culture = cu:polish
-				}
-			}
-
-			clear_variable_list = ce_list_state_effective
-		}
-		if = {
-			limit = { has_variable = ce_anti_polish_variable }
-
-			every_in_list = {
-				variable = ce_list_state_effective
-				add_radicals_in_state = {
-					value = 0.5
-					culture = cu:polish
-				}
-			}
-
-			clear_variable_list = ce_list_state_effective
-		}
-		if = {
-			limit = { exists = c:KRA c:KRA ?= this }
-			change_tag = POL
-
 			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_WEST_GALICIA } 
-					NOT = { has_claim = s:STATE_WEST_GALICIA }
-				}
-				s:STATE_WEST_GALICIA = { add_claim = c:POL }
-			}
+				limit = { has_variable = nesnd_polish_result_anti }
+				hidden_effect = {
+					every_scope_state = {
+						limit = {
+							any_scope_pop = { culture = cu:polish }
+						}
 
-			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_UPPER_SILESIA } 
-					NOT = { has_claim = s:STATE_UPPER_SILESIA }
-				}
-				s:STATE_UPPER_SILESIA = { add_claim = c:POL }
-			}
 
-			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_EAST_GALICIA } 
-					NOT = { has_claim = s:STATE_EAST_GALICIA }
+						root = {
+							add_to_variable_list = {
+								name = ce_list_state_effective
+								target = prev
+							}
+						}
+					}
 				}
-				s:STATE_EAST_GALICIA = { add_claim = c:POL }
-			}
-				
-			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_POSEN } 
-					NOT = { has_claim = s:STATE_POSEN }
-				}
-				s:STATE_POSEN = { add_claim = c:POL }
-			}
-			
-			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_KAUNAS } 
-					NOT = { has_claim = s:STATE_KAUNAS }
-				}
-				s:STATE_KAUNAS = { add_claim = c:POL }
-			}
 
-			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_BREST } 
-					NOT = { has_claim = s:STATE_BREST }
-				}
-				s:STATE_BREST = { add_claim = c:POL }
 			}
+			if = {
+				limit = { has_variable = nesnd_polish_result_pro }
 
-			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_VOLHYNIA } 
-					NOT = { has_claim = s:STATE_VOLHYNIA }
+				every_in_list = {
+					variable = ce_list_state_effective
+					add_loyalists_in_state = {
+						value = 0.5
+						culture = cu:polish
+					}
 				}
-				s:STATE_VOLHYNIA = { add_claim = c:POL }
-			}
 
-			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_WEST_PRUSSIA } 
-					NOT = { has_claim = s:STATE_WEST_PRUSSIA }
-				}
-				s:STATE_WEST_PRUSSIA = { add_claim = c:POL }
+				clear_variable_list = ce_list_state_effective
 			}
-			
 			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_GREATER_POLAND } 
-					NOT = { has_claim = s:STATE_GREATER_POLAND }
-				}
-				s:STATE_GREATER_POLAND = { add_claim = c:POL }
-			}
+				limit = { has_variable = nesnd_polish_result_anti }
 
-			if = {
-				limit = { 
-					NOT = { owns_entire_state_region = STATE_LESSER_POLAND } 
-					NOT = { has_claim = s:STATE_LESSER_POLAND }
+				every_in_list = {
+					variable = ce_list_state_effective
+					add_radicals_in_state = {
+						value = 0.5
+						culture = cu:polish
+					}
 				}
-				s:STATE_LESSER_POLAND = { add_claim = c:POL }
-			}
 
-			hidden_effect = {
-				every_state = {
+				clear_variable_list = ce_list_state_effective
+			}
+			if = {
+				limit = { c:KRA ?= this NOT = { exists = c:POL } }
+				change_tag = POL
+
+				if = {
 					limit = {
-						culture_percent_state = {
-							target = cu:polish
-							value >= 0.33
-						}	
+						NOT = { owns_entire_state_region = STATE_WEST_GALICIA }
+						NOT = { has_claim = s:STATE_WEST_GALICIA }
 					}
-
-					root = {
-add_to_variable_list = {
-						name = ce_list_state_effective
-						target = prev
-					}
-}
-
+					s:STATE_WEST_GALICIA = { add_claim = root }
 				}
-			}	
 
-			every_in_list = {
-				variable = ce_list_state_effective
-				state_region = { add_homeland = cu:polish }
-			}
-				
-			add_modifier = {
-				name = ce_poland_victory_buff
-				months = 120
-			}
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_UPPER_SILESIA }
+						NOT = { has_claim = s:STATE_UPPER_SILESIA }
+					}
+					s:STATE_UPPER_SILESIA = { add_claim = root }
+				}
 
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_EAST_GALICIA }
+						NOT = { has_claim = s:STATE_EAST_GALICIA }
+					}
+					s:STATE_EAST_GALICIA = { add_claim = root }
+				}
+
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_POSEN }
+						NOT = { has_claim = s:STATE_POSEN }
+					}
+					s:STATE_POSEN = { add_claim = root }
+				}
+
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_KAUNAS }
+						NOT = { has_claim = s:STATE_KAUNAS }
+					}
+					s:STATE_KAUNAS = { add_claim = root }
+				}
+
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_BREST }
+						NOT = { has_claim = s:STATE_BREST }
+					}
+					s:STATE_BREST = { add_claim = root }
+				}
+
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_VOLHYNIA }
+						NOT = { has_claim = s:STATE_VOLHYNIA }
+					}
+					s:STATE_VOLHYNIA = { add_claim = root }
+				}
+
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_WEST_PRUSSIA }
+						NOT = { has_claim = s:STATE_WEST_PRUSSIA }
+					}
+					s:STATE_WEST_PRUSSIA = { add_claim = root }
+				}
+
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_GREATER_POLAND }
+						NOT = { has_claim = s:STATE_GREATER_POLAND }
+					}
+					s:STATE_GREATER_POLAND = { add_claim = root }
+				}
+
+				if = {
+					limit = {
+						NOT = { owns_entire_state_region = STATE_LESSER_POLAND }
+						NOT = { has_claim = s:STATE_LESSER_POLAND }
+					}
+					s:STATE_LESSER_POLAND = { add_claim = root }
+				}
+
+				hidden_effect = {
+					every_state = {
+						limit = {
+							culture_percent_state = {
+								target = cu:polish
+								value >= 0.33
+							}
+						}
+
+						root = {
+							add_to_variable_list = {
+								name = ce_list_state_effective
+								target = prev
+							}
+						}
+
+					}
+				}
+
+				every_in_list = {
+					variable = ce_list_state_effective
+					state_region = { add_homeland = cu:polish }
+				}
+
+				add_modifier = {
+					name = ce_poland_victory_buff
+					months = 120
+				}
+
+				clear_variable_list = ce_list_state_effective
+			}
 			clear_variable_list = ce_list_state_effective
 		}
 	}
+
+	option = { name = ce_poland_events.10.a default_option = yes }
 }
 
 # Event 11: Failure
@@ -657,185 +619,92 @@ ce_poland_events.11 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 
 	immediate = {
-		if = {
-			limit = { has_variable = ce_pro_polish_variable }
-			
-			
-			every_interest_group = {
-				limit = {
-					OR = {
-						is_interest_group_type = ig_landowners
-						is_interest_group_type = ig_intelligentsia
-						is_interest_group_type = ig_petty_bourgeoisie
-					}
-				}
-				add_modifier = {
-					name = ce_poland_lobby_approval_debuff
-					months = 12
-				}
-			}
-		}
-		
-		
-	}
-
-	option = {
-		name = ce_poland_events.11.a
-		if = {
-			limit = { exists = c:KRA c:KRA ?= this }
-			add_modifier = {
-				name = ce_poland_failure_pro_debuff
-				months = 120
-			}
-			# Independence for Lithuania and Belarus
+		nesnd_poland_snapshot_stance = yes
+		if = { limit = { NOT = { has_variable = nesnd_polish_result_resolved } }
+			set_variable = nesnd_polish_result_resolved
 			if = {
-				limit = {
-					OR = {
-						owns_entire_state_region = STATE_KAUNAS 
-						owns_entire_state_region = STATE_BREST
-					}
-				}
-			
-				if = {
-					limit = { 
-						owns_entire_state_region = STATE_KAUNAS 
-					}
-					hidden_effect = {
-						s:STATE_KAUNAS = {
-							if = {
-								limit = {
-									NOT = { is_homeland = cu:lithuanian }
-								}
-								add_homeland = cu:lithuanian
-							}
-						}
-					}
-						
-					create_country = {
-						tag = LIT
-						origin = root
-						state = s:STATE_KAUNAS.region_state:KRA
-					}
+				limit = { has_variable = nesnd_polish_result_pro }
 
-					hidden_effect = {
-						c:LIT = { set_capital = STATE_KAUNAS }
-						s:STATE_KAUNAS = {
-							add_claim = root
-						}
-					}
 
-					create_diplomatic_play = {
-						target_state = c:LIT.capital
-
-						war = yes
-
-						type = dp_annex_war
-
-						add_war_goal = {
-							holder = c:KRA
-							type = annex_country
-							target_country = c:LIT
-						}
-
-						add_war_goal = {
-							holder = c:LIT
-							type = make_protectorate
-							target_country = c:KRA
-						}
-					}
-						
-				}
-				else = {
-					every_scope_state = {
-						add_radicals_in_state = { value = 0.05 }
-					}
-				}
-				#
-				if = {
-					limit = { owns_entire_state_region = STATE_BREST }
-
-					hidden_effect = {
-						s:STATE_BREST = {
-							if = {
-								limit = {
-									NOT = { is_homeland = cu:byelorussian }
-								}
-								add_homeland = cu:byelorussian
-							}
-						}
-					}
-						
-					create_country = {
-						tag = BYE
-						origin = root
-						state = s:STATE_BREST.region_state:KRA
-					}
-				}
-				else = {
-					every_scope_state = {
-						add_radicals_in_state = { value = 0.05 }
-					}
-				}
-			}
-			else = {
-				every_scope_state = {
-					add_radicals_in_state = { value = 0.1 }
-				}
-			}
-		}
-
-		if = {
-			limit = { has_variable = ce_pro_polish_variable }
-			add_modifier = {
-				name = ce_poland_failure_pro_debuff
-				months = 120
-			}
-			custom_tooltip = {
-				text = ce_scope_state_polish_gain_radicals
-				every_scope_state = {
+				every_interest_group = {
 					limit = {
-						any_scope_pop = { culture = cu:polish }
+						OR = {
+							is_interest_group_type = ig_landowners
+							is_interest_group_type = ig_intelligentsia
+							is_interest_group_type = ig_petty_bourgeoisie
+						}
 					}
-					add_radicals_in_state = {
-						value = 0.10
-						culture = cu:polish
+					add_modifier = {
+						name = ce_poland_lobby_approval_debuff
+						months = 12
 					}
 				}
 			}
-			
-			custom_tooltip = ce_supporters_of_polish_disappointed
-		}
-
-		if = {
-			limit = { has_variable = ce_anti_polish_variable }
-			add_modifier = {
-				name = ce_poland_failure_anti_buff
-				months = 120
-			}
-
-			s:STATE_WEST_GALICIA = { add_claim = root }
-			s:STATE_UPPER_SILESIA = { add_claim = root }
-			s:STATE_EAST_GALICIA = { add_claim = root }
-			s:STATE_POSEN = { add_claim = root }
-			s:STATE_KAUNAS = { add_claim = root }
-			s:STATE_BREST = { add_claim = root }
-			s:STATE_VOLHYNIA = { add_claim = root }
-			s:STATE_WEST_PRUSSIA = { add_claim = root }
-			s:STATE_LESSER_POLAND = { add_claim = root }
-			
-			custom_tooltip = {
-				text = ce_polish_lost_homeland_in_our_tag_tt
-				every_scope_state = {
-					limit = {
-						NOT = { state_region = s:STATE_GREATER_POLAND }
-						state_region = { is_homeland = cu:polish }
-					}
-					state_region = { remove_homeland = cu:polish }
+			if = {
+				limit = { exists = c:KRA c:KRA ?= this }
+				add_modifier = {
+					name = ce_poland_failure_pro_debuff
+					months = 120
 				}
+				# Independence for Lithuania and Belarus
+				nesnd_poland_failure_secessions = yes
+
 			}
-				
+			if = {
+				limit = { has_variable = nesnd_polish_result_pro }
+				add_modifier = {
+					name = ce_poland_failure_pro_debuff
+					months = 120
+				}
+				custom_tooltip = {
+					text = ce_scope_state_polish_gain_radicals
+					every_scope_state = {
+						limit = {
+							any_scope_pop = { culture = cu:polish }
+						}
+						add_radicals_in_state = {
+							value = 0.10
+							culture = cu:polish
+						}
+					}
+				}
+
+				custom_tooltip = ce_supporters_of_polish_disappointed
+			}
+			if = {
+				limit = { has_variable = nesnd_polish_result_anti }
+				add_modifier = {
+					name = ce_poland_failure_anti_buff
+					months = 120
+				}
+
+				s:STATE_WEST_GALICIA = { add_claim = root }
+				s:STATE_UPPER_SILESIA = { add_claim = root }
+				s:STATE_EAST_GALICIA = { add_claim = root }
+				s:STATE_POSEN = { add_claim = root }
+				s:STATE_KAUNAS = { add_claim = root }
+				s:STATE_BREST = { add_claim = root }
+				s:STATE_VOLHYNIA = { add_claim = root }
+				s:STATE_WEST_PRUSSIA = { add_claim = root }
+				s:STATE_LESSER_POLAND = { add_claim = root }
+
+				custom_tooltip = {
+					text = ce_polish_lost_homeland_in_our_tag_tt
+					every_scope_state = {
+						limit = {
+							NOT = { state_region = s:STATE_GREATER_POLAND }
+							state_region = { is_homeland = cu:polish }
+						}
+						state_region = { remove_homeland = cu:polish }
+					}
+				}
+
+			}
+			clear_variable_list = ce_list_state_effective
 		}
 	}
+
+	option = { name = ce_poland_events.11.a default_option = yes }
 }
 
 # Event 12: Invalid
@@ -883,7 +752,7 @@ ce_poland_events.13 = {
 				}
 			}
 		}
-		
+
 	}
 	option = {
 		name = ce_poland_events.13.b
@@ -953,7 +822,7 @@ ce_poland_events.15 = {
 		default_option = yes
 		add_modifier = {
 			name = ce_pro_poland_spend_buff
-			
+
 			months = 12
 		}
 	}
@@ -972,28 +841,30 @@ ce_poland_events.97 = {
 	}
 
 	trigger = {
-		exists = c:KRA
+		nesnd_poland_active = yes
 		#NOT = { c:KRA ?= This }
 
 		NOT = { has_variable = ce_pro_polish_variable }
 		NOT = { has_variable = ce_anti_polish_variable }
 	}
+	cancellation_trigger = { NOT = { nesnd_poland_active = yes } }
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	option = { # polish
+	option = {
 		name = ce_poland_events.97.c
 		trigger = {
 			exists = c:KRA
 			c:KRA ?= This
 		}
-		hidden_effect = {
-			set_variable = is_ce_council_poland_variable
+		if = { limit = { nesnd_poland_active = yes }
+			hidden_effect = {
+				set_variable = is_ce_council_poland_variable
+			}
 		}
 	}
 
-	option = { # pro
+	option = {
 		name = ce_poland_events.97.a
-
 		ai_chance = {
 			base = 1
 			modifier = {
@@ -1029,7 +900,6 @@ ce_poland_events.97 = {
 				add = 1000
 			}
 		}
-	
 		trigger = {
 			exists = c:KRA
 			NOT = { c:KRA ?= this }
@@ -1043,53 +913,47 @@ ce_poland_events.97 = {
 				has_war_with = c:KRA
 			}
 		}
-
-		set_variable = ce_pro_polish_variable
-		
-			
-		if = { limit = { NOT = { has_journal_entry = je_ce_polish_territory_claim } } 
-# Journal entry activates from its possible trigger.
- }
-		
-		create_bidirectional_truce = {
-			country = c:KRA
-			months = 2400
-		}
-			
-		custom_tooltip = ce_poland_events.97.a.tt
-		
-		hidden_effect = {
-			if = {
-				limit = { has_variable = ce_anti_polish_variable }
-				remove_variable = ce_anti_polish_variable
+		if = { limit = { nesnd_poland_active = yes }
+			set_variable = ce_pro_polish_variable
+			if = { limit = { NOT = { has_journal_entry = je_ce_polish_territory_claim } }
+				# Journal entry activates from its possible trigger.
 			}
-
-			every_scope_state = {
-				limit = {
-					has_claim_by = c:KRA
+			create_bidirectional_truce = {
+				country = c:KRA
+				months = 2400
+			}
+			custom_tooltip = ce_poland_events.97.a.tt
+			hidden_effect = {
+				if = {
+					limit = { has_variable = ce_anti_polish_variable }
+					remove_variable = ce_anti_polish_variable
 				}
-				state_region = { remove_claim = c:KRA }
-			}
 
-			ce_update_poland_supporter_and_haters_effect = yes
-		}
-		
-		if = {
-			limit = { any_country = { has_variable = ce_pro_polish_variable } }
-			every_in_global_list = {
-				variable = ce_temp_pro_pol_tag
-				limit = { NOT = { this = root } }
-				change_relations = {
-					country = root
-					value = 20
+				every_scope_state = {
+					limit = {
+						has_claim_by = c:KRA
+					}
+					state_region = { remove_claim = c:KRA }
+				}
+
+				ce_update_poland_supporter_and_haters_effect = yes
+			}
+			if = {
+				limit = { any_country = { has_variable = ce_pro_polish_variable } }
+				every_in_global_list = {
+					variable = ce_temp_pro_pol_tag
+					limit = { NOT = { this = root } }
+					change_relations = {
+						country = root
+						value = 20
+					}
 				}
 			}
 		}
 	}
-	option = { # oppose
+	option = {
 		name = ce_poland_events.97.b
 		default_option = yes
-
 		trigger = {
 			exists = c:KRA
 			NOT = { c:KRA ?= this }
@@ -1118,7 +982,6 @@ ce_poland_events.97 = {
 				}
 			}
 		}
-
 		ai_chance = {
 			base = 4
 			modifier = {
@@ -1154,29 +1017,29 @@ ce_poland_events.97 = {
 				add = -1000
 			}
 		}
-
-		set_variable = ce_anti_polish_variable
-		if = { limit = { NOT = { has_journal_entry = je_ce_block_polish_advance } } 
-# Journal entry activates from its possible trigger.
- }
-		hidden_effect = {
-
-			if = {
-				limit = { has_variable = ce_pro_polish_variable }
-				remove_variable = ce_pro_polish_variable
+		if = { limit = { nesnd_poland_active = yes }
+			set_variable = ce_anti_polish_variable
+			if = { limit = { NOT = { has_journal_entry = je_ce_block_polish_advance } }
+				# Journal entry activates from its possible trigger.
 			}
+			hidden_effect = {
 
-			ce_update_poland_supporter_and_haters_effect = yes
-		}
+				if = {
+					limit = { has_variable = ce_pro_polish_variable }
+					remove_variable = ce_pro_polish_variable
+				}
 
-		if = {
-			limit = { any_country = { has_variable = ce_anti_polish_variable } }
-			every_in_global_list = {
-				variable = ce_temp_anti_pol_tag
-				limit = { NOT = { this = root } }
-				change_relations = {
-					country = root
-					value = 20
+				ce_update_poland_supporter_and_haters_effect = yes
+			}
+			if = {
+				limit = { any_country = { has_variable = ce_anti_polish_variable } }
+				every_in_global_list = {
+					variable = ce_temp_anti_pol_tag
+					limit = { NOT = { this = root } }
+					change_relations = {
+						country = root
+						value = 20
+					}
 				}
 			}
 		}
@@ -1196,7 +1059,7 @@ ce_poland_events.98 = {
 	immediate = {
 		if = {
 			limit = { exists = c:KRA c:KRA ?= this }
-			
+
 			# Check war prep progress bar for infamy addition
 			if = {
 				limit = {
@@ -1206,14 +1069,14 @@ ce_poland_events.98 = {
 				}
 				change_infamy = 0.05
 			}
-				
+
 			# Calculate owned polish states
 			set_variable = {
 				name = ce_poland_owned_polish_states
 				value = 0
 			}
-			
-			
+
+
 			if = { limit = { owns_entire_state_region = STATE_WEST_GALICIA } change_variable = { name = ce_poland_owned_polish_states add = 1 } }
 			if = { limit = { owns_entire_state_region = STATE_UPPER_SILESIA } change_variable = { name = ce_poland_owned_polish_states add = 1 } }
 			if = { limit = { owns_entire_state_region = STATE_EAST_GALICIA } change_variable = { name = ce_poland_owned_polish_states add = 1 } }
@@ -1224,12 +1087,12 @@ ce_poland_events.98 = {
 			if = { limit = { owns_entire_state_region = STATE_WEST_PRUSSIA } change_variable = { name = ce_poland_owned_polish_states add = 1 } }
 			if = { limit = { owns_entire_state_region = STATE_GREATER_POLAND } change_variable = { name = ce_poland_owned_polish_states add = 1 } }
 			if = { limit = { owns_entire_state_region = STATE_LESSER_POLAND } change_variable = { name = ce_poland_owned_polish_states add = 1 } }
-			
+
 			set_global_variable = {
 				name = ce_poland_owned_polish_states_global
 				value = var:ce_poland_owned_polish_states
 			}
-			
+
 			ce_update_poland_supporter_and_haters_effect = yes
 
 			set_global_variable = {
@@ -1274,7 +1137,7 @@ ce_poland_events.98 = {
 # 			limit = { has_truce_with = c:KRA }
 # 			end_truce = c:KRA
 # 		}
-			
+
 # 		create_bidirectional_truce = {
 # 			country = c:KRA
 # 			months = 24

@@ -1,0 +1,72 @@
+﻿nesnd_poland_pay_ultimatum = {
+	if = { limit = { has_journal_entry = je_ce_polish_war_preparation }
+		je:je_ce_polish_war_preparation = { add_progress = { name = ce_polish_reconquest_war_prep_bar value = -50 } }
+	} else_if = { limit = { has_journal_entry = je_ce_polish_territory_claim }
+		je:je_ce_polish_territory_claim = { add_progress = { name = ce_polish_territory_claim_bar value = -50 } }
+	}
+}
+nesnd_poland_clear_request = {
+	if = { limit = { exists = scope:ce_from_country exists = scope:target_diplo_play_state }
+		scope:ce_from_country = { if = { limit = { nesnd_poland_matching_pending = yes } remove_variable = nesnd_polish_pending_state } }
+	}
+}
+nesnd_poland_snapshot_stance = {
+	if = { limit = { NOT = { has_variable = nesnd_polish_result_resolved } }
+		if = { limit = { has_variable = ce_pro_polish_variable } set_variable = nesnd_polish_result_pro remove_variable = nesnd_polish_result_anti }
+		else_if = { limit = { has_variable = ce_anti_polish_variable } set_variable = nesnd_polish_result_anti remove_variable = nesnd_polish_result_pro }
+	}
+}
+nesnd_poland_enrol_country = {
+	if = { limit = { NOT = { has_variable = nesnd_polish_stance_invited } NOT = { has_global_variable = ce_poland_problem_end } }
+		set_variable = nesnd_polish_stance_invited
+		if = { limit = { NOR = { has_variable = ce_pro_polish_variable has_variable = ce_anti_polish_variable } }
+			trigger_event = { id = ce_poland_events.97 popup = yes }
+		}
+	}
+}
+# Called by the contextless JE; scope:journal_entry belongs to this active instance.
+nesnd_poland_refresh_participants = {
+	if = { limit = { NOT = { has_global_variable = ce_poland_problem_end } exists = scope:journal_entry }
+		every_country = { limit = { OR = { has_variable = ce_participated_in_polish_problem any_scope_state = { OR = {
+							state_region = s:STATE_WEST_GALICIA
+							state_region = s:STATE_UPPER_SILESIA
+							state_region = s:STATE_EAST_GALICIA
+							state_region = s:STATE_POSEN
+							state_region = s:STATE_KAUNAS
+							state_region = s:STATE_BREST
+							state_region = s:STATE_VOLHYNIA
+							state_region = s:STATE_WEST_PRUSSIA
+							state_region = s:STATE_GREATER_POLAND
+							state_region = s:STATE_LESSER_POLAND
+						} } } NOT = { is_involved_in_journal_entry = je_ce_the_polish_problem } }
+			set_variable = ce_participated_in_polish_problem
+			scope:journal_entry = { add_involved_country = prev }
+			nesnd_poland_enrol_country = yes
+		}
+	}
+}
+nesnd_poland_failure_secessions = {
+	if = { limit = { c:KRA ?= this }
+		if = { limit = { OR = { owns_entire_state_region = STATE_KAUNAS owns_entire_state_region = STATE_BREST } }
+
+			if = { limit = { owns_entire_state_region = STATE_KAUNAS }
+				s:STATE_KAUNAS = { add_homeland = cu:lithuanian add_claim = root }
+				if = { limit = { NOT = { exists = c:LIT } }
+					create_country = { tag = LIT origin = root state = s:STATE_KAUNAS.region_state:KRA on_created = { set_capital = STATE_KAUNAS } }
+				} else = { s:STATE_KAUNAS.region_state:KRA = { set_state_owner = c:LIT } }
+				if = { limit = { exists = c:LIT }
+					if = { limit = { NOT = { has_war_with = c:LIT } c:LIT = { is_subject = no } is_diplomatic_play_committed_participant = no }
+						create_diplomatic_play = { target_country = c:LIT type = dp_annex_war war = yes add_war_goal = { holder = c:LIT type = make_protectorate target_country = root } }
+					}
+				}
+			} else = { every_scope_state = { add_radicals_in_state = { value = 0.05 } } }
+			if = { limit = { owns_entire_state_region = STATE_BREST }
+				s:STATE_BREST = { add_homeland = cu:byelorussian }
+				if = { limit = { NOT = { exists = c:BYE } } create_country = { tag = BYE origin = root state = s:STATE_BREST.region_state:KRA } }
+				else = { s:STATE_BREST.region_state:KRA = { set_state_owner = c:BYE } }
+			} else = { every_scope_state = { add_radicals_in_state = { value = 0.05 } } }
+
+		}
+		else = { every_scope_state = { add_radicals_in_state = { value = 0.10 } } }
+	}
+}
