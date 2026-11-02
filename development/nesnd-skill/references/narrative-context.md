@@ -36,3 +36,8 @@
 ## 日本资料专题
 
 研究日本丰臣/德川/天皇、三国、九州或朝鲜时，先读WORK/reports/japan-research-20261102/{native-japan,current-mod-japan,japan-canon}.md。PPT27是1847–1852未来线（三日本政权＋吴直辖），1936/1950地图更晚；最新用户三局面目标不等于唯一正史。当前游戏林汉涵等名优先，异文保留研究说明。原版锁国九州入口、幕府法退出、JAP/DLC硬绑和大名/武士global标记需逐项适配，不能整套移给三个新国家。开发提案在WORK/plans/two-empires/20261102-japan-development-design.md，未实施部分明确分列。
+
+## 日本修订2与印度专题
+
+涉及日本林摄政/文化同化/三国产业时，先读最新日本方案第九节和WORK/reports/japan-research-20261102/revision-2：作者已明确天皇政权JIM就是林摄政，旧JAP任命为待改实现，不能再当未决设定。数值和主流修改是否上线以任务19与交付记录为准。
+涉及莫卧儿/明属印度/法国援助/种姓时，读WORK/reports/india-research-20261102的native-india.md、current-mod-india.md、india-canon.md。王朝历史出身、国家主文化、宗教和种姓适用群体分别核实；旧.bak不是活动定义，不同名history不会覆盖原版。海军原稿的人物年代与1836分开。实施方案在WORK/plans/two-empires/20261102-india-development-design.md；具体法援同时读native-treaty-aid.md。

@@ -87,3 +87,7 @@ flowchart TD
 ## 日本三局面研究与西秦阶段（2026-11-02）
 
 研究与下一步方案见20261102-japan-development-design.md；源码/原稿证据在WORK/reports/japan-research-20261102。日本新内容未实施。西秦后继日志已按任务18制作阶段修正并外部核验，实际交付状态见同目录release-notes/main-merge/git-delivery。
+
+## 日本修订2与印度研究（2026-11-02）
+
+日本方案明确JIM天皇—林摄政、三国产业、独立后发展与30%/州10%团结文化转换，仍待实现；当前JAP任命列首批修正。印度三份原始来源研究及少剧情制度方案完成，见20261102-india-development-design.md。证据与实际保存状态见WORK/reports/india-research-20261102/release-notes.md；本轮无玩法变更。

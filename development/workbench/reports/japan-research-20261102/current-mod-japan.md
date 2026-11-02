@@ -151,3 +151,7 @@ PM 已有差异：建设含 wooden 与 iron_frame；铁矿含 picks_and_shovels 
 | [common/history/pops/11_east_asia.txt](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/common/history/pops/11_east_asia.txt:1>) | `85b9ef1a805b3b033fb31009b55d270c8d83736749c6255f8d1f4ab45711fd6b` |
 | [common/history/buildings/11_east_asia.txt](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/common/history/buildings/11_east_asia.txt:1>) | `4879dbe1af1d432616d3954b7154b79ae28169cbfe715e68fd1dfa583a9c5238` |
 | [common/laws/ce_trade_policy.txt](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/common/laws/ce_trade_policy.txt:1>) | `54585b30dc129f18ca827b0c15b9f86a29aace68b04f72a4ca5d1f9c50e82505` |
+
+## 后续作者修订与现有实现的区别
+
+用户随后明确天皇JIM就是林摄政政权；本文记录的JAP任命是717c901之前的真实实现，并非新方案。最新计划已列JIM目标、主流ce_wuu及整条任命/恢复/保存对象迁移；本轮研究未改玩法，不能只看计划便认为游戏已切换受任国。见同目录revision-2/revision-record.json。

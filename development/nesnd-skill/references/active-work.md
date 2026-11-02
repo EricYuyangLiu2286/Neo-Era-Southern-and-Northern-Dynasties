@@ -1,9 +1,9 @@
-# 当前交接：日本研究与西秦日志阶段
+# 当前交接：日本修订2与印度研究
 
-Updated: 2026-11-02。父版本a7b445b，候选qin-journal-stages-20261102-a。[任务18](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/18-qin-journal-stages.md>)与[交付说明](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-research-20261102/release-notes.md>)为入口；实际主MOD/Git保存看同目录main-merge.json、git-delivery.json。旧交接在documentation-before。
+Updated: 2026-11-02；研究基线717c901。[任务19](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/19-japan-india-research.md>)、[报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/india-research-20261102/release-notes.md>)为当前入口；仓库保存核对见同目录git-delivery.json。本轮无玩法变更，未开游戏。
 
-日本：原版15JE/124事件/112角色、当前MOD人口产业/人物/分封/旧失联事件、PPT/旧地图/HOI4专题研究与三局面方案完成。新日本政治/统一/朝鲜玩法仍是提案，入口为.scratch/japan-development/map.md。
+日本：作者明确JIM天皇＝林摄政；当前代码JAP任命仍待按完整链改，JIM主流ce_wuu待添加。三国产业、独立后发展、每国每月30%抽一州总人口10%文化转换已入计划，绝不称已上线。最新日本方案第九节优先，旧方案独立保存在revision-2。
 
-西秦：新档朝议3JE＋团结开局；三权/故土后继，提前收回西北可先开故土，旧档已开启JE保留。五玩法脚本、24有限条件检查、MCP4、Tiger零新增、两轴复核；未开游戏。其余原有数据/日本机制不改。
+印度：原版23JE/125事件索引、当前MOD人口产业与初始化、PPT/海军全篇/HOI4/策划图研究完成。少剧情制度方案完成。下一批先审MUG不同名history叠加、活动国家定义、人物、编制/公司和BIC绑定，再做改革/法援/民族/种姓/统一。法援一年binding_period不是到期，已有规则须继续读取。
 
-全局历史资源缺项和旧验证登记仍看任务17报告；本轮不将它们清绿。不要重跑一次性构建脚本覆盖后续修订。源资料有年代/名字冲突时按当前用户要求与实际游戏对象处理，不把旧世界图强套开局。
+西秦上一轮阶段修正已交付：开局4JE、后继三权/故土、危机暴动，旧档已开启保留。本轮不修改该玩法。日本/印度开发map是计划入口；未实现部分不要因研究resolved误当游戏功能completed。
