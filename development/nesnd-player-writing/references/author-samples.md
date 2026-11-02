@@ -28,3 +28,7 @@
 ## 代价承担者对读
 
 2026-11-02西秦“责令议法”：初稿写“军府与军士”，实际effect降低军队与地主支持；改为“军府与地主”。作者地权革命正文逐一指出转出与取得利益的阶层。写按钮时据effect点名实际承担者，不能用相近政治名词替换。完整原文与逐条复核见 WORK/reports/qin-persia-20261102/writing-comparison.md。
+
+## 英文玩家文本
+
+英文槽中的中文回退不能记作完成英译。英文修订先核作者世界专名，再读当前原版同类JE/事件，以自然英文表达人物、制度、行动和代价；精确保留动态scope、概念、颜色和实际数值。把“elapsed-time guard”“preparation snapshot”“monthly calculations”改为玩家可理解的等待期、准备状况和改革效果。未发生剧情的日期与结局不写进无条件常驻说明；删除预测须人工记录，不能靠数值token相等判定文意完整。2026-11-02已对读20条原文、逐项审查720键，见 WORK/reports/integrity-recheck-20261102/english/editorial-comparison.md。

@@ -99,3 +99,9 @@ trigger_else = { always = no }
 
 IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列表中的简名误当trigger。文化数据使用 `heritage` / `language` / `traditions`，特质查询用 `has_discrimination_trait`。营房标准键是 `building_barrack`，历史复数别名需确认解析后再统计。
 跨 `create_country.on_created` 回调不假定外层root或saved scope自动可用：对固定国家先exists再进入c:TAG；遍历内确需回到调用country时按实际scope栈用prev，不能把全局history或after-lobby的none root当country。原版链条、错误名纠正与最终检查见 WORK/reports/qin-persia-20261102/native-political-contracts.md、source-name-corrections.json。
+
+## 人物、日志局部scope及重复字段
+
+角色当前IG由 `owner.ig:...` 取得；`ig:`只支持country/political_movement，不能直接从character调用。人物转国后应指向转国后的owner。比较法律对象时两端均用law；只有明确比较law_type才取`.type`。JE在immediate保存的事件链scope不自动成为全局AI法案评估scope；固定法案目标可直接比较当前law的type。
+同一事件的cancellation_trigger只定义一次，按完整OR语义合并所有取消理由；缺对象先分支判定，再检查人物存活。避免将原本可重复的option/modifier与本应单一的条件字段混为一类。全局on_action调用country效果时不要把全局root当当前country，需在country入口明确保存行动者。
+以上修正以1.13.11 event_targets/effects及原版调用链查证，26处人物IG、Donghak三scope、法国取消条件的定位见 WORK/reports/integrity-recheck-20261102/tiger-source-review.json。

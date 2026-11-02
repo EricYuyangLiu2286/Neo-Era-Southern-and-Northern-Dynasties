@@ -107,3 +107,8 @@ JE immediate时country的has_journal_entry查询可能尚不包含新加入JE；
 `WORK/tools/qa_batch_probe.py build --candidate <候选> --out <新probe目录>`生成独立QA事件/on_action和SHA清单；`collect --log <profile/logs/debug.log> --manifest <PROBE-MANIFEST.json> --run <run.json> --out <报告>`读取引擎输出并绑定加载指纹。脚本不会启动新局或模拟Clausewitz。实际进入国家后日/月脉冲可自动检查生产变量并记录PASS/FAIL/SKIP；无标记是NOT_RUN，缺失或截断不能算通过。当前仅两条USM变量初始化/范围谓词，扩充按实际新功能逐项加，不能称完整事件链已自动验收。
 
 2026-10-31 run180905已实际加载并自然走时：日志激活前两周期SKIP，激活后的usm_init/usm_pressure_range完整PASS；正常退出flush后，run/candidate/挂载probe/轮转日志指纹绑定通过。证据WORK/plans/two-empires/evidence/batch-probe-runtime-180905-final.json，仅证明这两条真实谓词，不是整个事件链或经济验收。正式effect提取后由QA调用同一effect可覆盖结果分支；自然触发、AI概率、按钮可点性及UI仍单独验证。现有查询MCP/Tiger/CWTools不执行游戏，VSCode任务可组织流程但不提供已经证实的Vic3无界面解释器。
+
+## 编辑器报红与源码闭包（CWTools 0.10.31实证）
+
+遇到“自定义trigger is unexpected / CW262”，先查有效数据库定义、完整括号和实际调用，再以安装的语言服务器冷启动复核。仅看定义存在不能证明工具索引正常；仅看红线也不能认定游戏脚本无效。本轮CNE两个福利trigger在同文件250/253有定义，冷加载无对应诊断；独立全MOD反例删除这两定义后准确产生两个CW262。源码保持，编辑器可重载规则/窗口以刷新索引，不能删除有效判定迁就缓存。
+LSP初始空诊断不是最终通过：等待规则重建及后续文件诊断，URI比较先统一百分号编码。引用检查要有已运行的缺定义反例。证据与可复用探测工具在 WORK/reports/integrity-recheck-20261102/cwtools-*.json、WORK/tools/probe_cwtools_integrity.py；它只启动语言服务器，缓存与反例在WORK，不改用户IDE配置、不启动游戏。
