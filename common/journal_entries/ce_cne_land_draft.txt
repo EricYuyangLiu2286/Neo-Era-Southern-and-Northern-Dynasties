@@ -14,7 +14,8 @@
     on_yearly_pulse = { random_events = { 50 = 0 10 = flavorCNE.4 10 = flavorCNE.5 10 = flavorCNE.6 10 = flavorCNE.7 10 = flavorCNE.8 } }
 
     complete = {
- NOT = { nesnd_cne_coup_has_succeeded = yes }
+ num_states >= 4
+ NOT = { nesnd_cne_reform_failed = yes }
     custom_tooltip = { text = nesnd_reform_completion_tt
         nesnd_reform_healthy = yes
         var:cne_landreform_completion_tracker >= 100
@@ -23,9 +24,9 @@
     }
 }
     on_complete = { nesnd_land_success = yes }
-    fail = { custom_tooltip = { text = nesnd_reform_failure_tt OR = { nesnd_reform_extreme_crisis = yes nesnd_cne_coup_has_succeeded = yes } } }
-    on_fail = { nesnd_cne_programs_cleanup = yes set_variable = nesnd_reform_terminal_pending trigger_event = { id = nesnd_crisis.31 popup = yes } }
-    invalid = { OR = { has_variable = ce_CNE_land_reform_done NOT = { c:CNE ?= this } NOT = { has_variable = flavorCNE_land_reform_value } } }
+    fail = { custom_tooltip = { text = nesnd_reform_failure_tt nesnd_cne_reform_failed = yes } }
+    on_fail = { nesnd_cne_end_failed_reform = yes }
+    invalid = { OR = { num_states < 4 has_variable = ce_CNE_land_reform_done NOT = { c:CNE ?= this } NOT = { has_variable = flavorCNE_land_reform_value } } }
 on_invalid = { nesnd_cne_programs_cleanup = yes remove_variable = flavorCNE_land_reform_value if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff } nesnd_reform_clear_local = yes }
     weight = 1200 should_be_pinned_by_default_uninvolved_or_context = yes
 
@@ -42,7 +43,7 @@ on_invalid = { nesnd_cne_programs_cleanup = yes remove_variable = flavorCNE_land
 
     scripted_progress_bar = nesnd_land_completion_bar
     scripted_progress_bar = nesnd_land_disorder_bar
-    on_weekly_pulse = { effect = { nesnd_land_init = yes nesnd_cne_check_coup = yes nesnd_refresh_land_display = yes } }
+    on_weekly_pulse = { effect = { nesnd_land_init = yes nesnd_cne_check_coup = yes nesnd_cne_prune_lost_estates = yes nesnd_cne_confidence_watch = yes nesnd_refresh_land_display = yes } }
     status_desc = { first_valid = {
     triggered_desc = { trigger = { OR = { NOT = { has_variable = nesnd_reform_v2 } var:nesnd_reform_samples < 3 } } desc = nesnd_reform_status_warmup }
     triggered_desc = { trigger = { var:nesnd_reform_neglected_regions > 0 } desc = nesnd_reform_status_regions }

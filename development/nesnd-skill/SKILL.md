@@ -31,6 +31,10 @@ description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚�
 - East Asian Clothes: Redux (`3704408897`) 是另一个作者的 MOD。**不得复制、打包、改名搬运其模型、纹理、附件、动画等素材到本 MOD 或发布物。** 假定同时开启两者，只用独立兼容脚本引用其资源/接口。不得为换衣服篡改文化或宗教。检查已有工作；只撤销有证据是本次工作引入的复制。见 [服装与 UI](references/compatibility.md)。
 - 整文件覆盖会冻结原版更新。新的本地功能优先独立前缀文件；只有该数据库确实支持时才用 `REPLACE:` / `REPLACE_OR_CREATE:` / `INJECT:`。history/map/gui 的覆盖语义必须分别验证，不能全局套用。
 
+## 玩家文本发布前硬性检查
+
+交付前逐条复核本轮新增、修改及所引用的有效游戏文本，按[作者语体](references/author-prose-profile.md#发布前逐条文本检查)确认它是在向玩家讲述世界、说明行动或呈现必要条件。开发计划、更新历史和实现说明写入交接，不进入游戏。循环增减用原生进度条明细展示，机制名沿用已定名称；具体步骤见[日志与进度条](references/journal-text-contract.md#原生进度条与初始化恢复)。
+
 ## 更新技能
 
 每次会话开始和交付前按 [技能维护与适用边界](references/skill-maintenance.md) 审查新证据、用户纠正、失败案例与源文件变化。有实际变化才改条目；无变化记录复核，不堆规则。不同技能按任务取用，不将纯列传流程的免测试约定用于游戏脚本。

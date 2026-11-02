@@ -1,9 +1,7 @@
-# 当前交接：中华帝国土改三个子日志
+# 当前交接：帝国人民的信心与地权革命入口
 
-Updated: 2026-11-01。主MOD已合入cne-reform-subjournals-20261101-a；[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/cne-reform-subjournals-20261101/release-notes.md>)与[项目任务13](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/13-cne-subjournals.md>)是最新入口。
+Updated: 2026-11-02。最新候选cne-confidence-20261101-a，主MOD/主Git实际交付状态以[交付记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/cne-confidence-20261101/release-notes.md>)及该目录main-merge.json、git-delivery.json为准；[任务14](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/14-cne-confidence.md>)是本轮入口。
 
-已实现土地商品化、国家城市化、结束营产三个子日志；22州营产启停、实际IG与军官影响、父结束清理、AI45/65滞回及上限3州、具名拨款确认、真实政变成功导致失败。259项源码检查、Tiger零新增、5次MCP查询、两轴复查完成。ENGINE_NOT_RUN，用户自行测试；不要打开游戏。现有进度、地图/历史数据、先前南朝战争修复保持。
+三个项目子JE自锁恢复、信心1000与500共和起义、普通双向吞并战争、0/废君主/原生内战失败、少于4州失效、22州失去归属的按钮和收益清理；原生月度/年度明细与玩家文本自检均已实施。112项新断言、259旧回归、1024年度/128月度组合、Tiger零新增、MCP5。ENGINE_NOT_RUN；不开游戏，用户自测。旧进度和原始地图/历史/肖像保持。
 
-南朝概率/北方密使/遣使重议/权重仍处于[详细计划](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/20261101-southern-allegiances-envoys-plan.md>)，未混入本轮CNE实施。原始范围账和其他欠账继续由主计划链接，勿把本轮完成外推为全部开发完成。
-
-此前交接及其旧证据链逐字保留：[修改前active-work](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/cne-reform-subjournals-20261101/skill-before/references/active-work.md>). 本轮正式包排除工具与QA，独立备份及Git交付记录见交付报告。
+南朝概率/密使/遣使重议/权重仍在详细政治计划，未混入本轮。旧交接逐字保留于WORK/reports/cne-confidence-20261101/skill-before/references/active-work.md。源码是最终权威，WORK的分阶段构建脚本是当轮一次性工具，不可重跑覆盖后续审查修订。

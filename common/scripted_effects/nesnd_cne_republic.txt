@@ -1,0 +1,149 @@
+﻿nesnd_cne_spawn_republicans = {
+ if = { limit = { c:CNE ?= this NOT = { exists = c:NRP } NOT = { has_variable = nesnd_cne_republican_rose } num_states > 1
+  OR = { AND = { any_scope_state = { nesnd_cne_republic_west_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_west_region = yes } } } AND = { any_scope_state = { nesnd_cne_republic_northeast_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_northeast_region = yes } } } AND = { any_scope_state = { nesnd_cne_republic_north_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_north_region = yes } } } }
+ }
+  random_list = {
+   1 = {
+    trigger = { any_scope_state = { nesnd_cne_republic_west_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_west_region = yes } } }
+    nesnd_cne_republic_raise_west = yes
+   }
+   1 = {
+    trigger = { any_scope_state = { nesnd_cne_republic_northeast_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_northeast_region = yes } } }
+    nesnd_cne_republic_raise_northeast = yes
+   }
+   1 = {
+    trigger = { any_scope_state = { nesnd_cne_republic_north_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_north_region = yes } } }
+    nesnd_cne_republic_raise_north = yes
+   }
+  }
+  if = { limit = { c:NRP ?= { has_variable = nesnd_cne_republican_challenger } }
+   set_variable = nesnd_cne_republican_rose
+   # Removed regional programmes must stop charging CNE immediately after the split.
+   nesnd_cne_programs_maintenance = yes
+   c:NRP = { nesnd_cne_republic_setup = yes }
+   nesnd_cne_start_republic_war = yes
+   trigger_event = { id = nesnd_cne_confidence.1 popup = yes }
+  }
+ }
+}
+nesnd_cne_republic_raise_west = {
+ random_scope_state = { limit = { nesnd_cne_republic_west_region = yes } save_scope_as = nesnd_cne_republic_seed }
+ if = { limit = { exists = scope:nesnd_cne_republic_seed }
+  create_country = { tag = NRP origin = root state = scope:nesnd_cne_republic_seed
+   on_created = { set_variable = nesnd_cne_republican_challenger }
+  }
+  if = { limit = { exists = c:NRP }
+   every_scope_state = { limit = { nesnd_cne_republic_west_region = yes } set_state_owner = c:NRP }
+  }
+ }
+}
+nesnd_cne_republic_raise_northeast = {
+ random_scope_state = { limit = { nesnd_cne_republic_northeast_region = yes } save_scope_as = nesnd_cne_republic_seed }
+ if = { limit = { exists = scope:nesnd_cne_republic_seed }
+  create_country = { tag = NRP origin = root state = scope:nesnd_cne_republic_seed
+   on_created = { set_variable = nesnd_cne_republican_challenger }
+  }
+  if = { limit = { exists = c:NRP }
+   every_scope_state = { limit = { nesnd_cne_republic_northeast_region = yes } set_state_owner = c:NRP }
+  }
+ }
+}
+nesnd_cne_republic_raise_north = {
+ random_scope_state = { limit = { nesnd_cne_republic_north_region = yes } save_scope_as = nesnd_cne_republic_seed }
+ if = { limit = { exists = scope:nesnd_cne_republic_seed }
+  create_country = { tag = NRP origin = root state = scope:nesnd_cne_republic_seed
+   on_created = { set_variable = nesnd_cne_republican_challenger }
+  }
+  if = { limit = { exists = c:NRP }
+   every_scope_state = { limit = { nesnd_cne_republic_north_region = yes } set_state_owner = c:NRP }
+  }
+ }
+}
+nesnd_cne_republic_setup = {
+ # Local-only inherited cleanup, never global CNE cleanup from the new country.
+ nesnd_land_cleanup = yes
+ activate_law = law_type:law_presidential_republic
+ activate_law = law_type:law_census_voting
+ activate_law = law_type:law_slavery_banned
+ set_ruling_interest_groups = { ig_intelligentsia ig_armed_forces ig_rural_folk }
+ set_variable = nesnd_cne_republican_challenger
+ set_variable = { name = nesnd_cne_republic_launch_grace days = 7 }
+ save_scope_as = nesnd_cne_new_republic
+ create_military_formation = {
+  name = nesnd_cne_republic_army
+  type = army
+  hq_region = scope:nesnd_cne_new_republic.capital.region
+  combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = scope:nesnd_cne_new_republic.capital.state_region count = 12 }
+  combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = scope:nesnd_cne_new_republic.capital.state_region count = 3 }
+ }
+ create_character = { first_name = nesnd_republic_commander_first last_name = nesnd_republic_commander_last is_general = yes interest_group = ig_armed_forces ideology = ideology_republican }
+ add_journal_entry = { type = nesnd_cne_republic_journal }
+ trigger_event = { id = nesnd_cne_confidence.2 popup = yes }
+}
+nesnd_cne_start_republic_war = {
+ if = { limit = { c:CNE ?= this nesnd_cne_republic_target_available = yes NOT = { nesnd_cne_republic_has_play = yes } }
+  end_truce = c:NRP
+  create_diplomatic_play = {
+   name = nesnd_cne_republic_war
+   type = dp_nesnd_cne_republic
+   target_country = c:NRP
+   war = yes
+   annex_as_civil_war = no
+  }
+  if = { limit = { nesnd_cne_republic_has_play = yes }
+   c:NRP = { set_variable = nesnd_cne_republic_war_created }
+  }
+ }
+}
+nesnd_cne_republic_watch = {
+ if = { limit = { c:NRP ?= this has_variable = nesnd_cne_republican_challenger }
+  if = { limit = { nesnd_cne_republic_at_war = yes } set_variable = nesnd_cne_republic_war_seen }
+  # Retry only an uncreated war, never restart a settled one.
+  if = { limit = { exists = c:CNE NOT = { has_variable = nesnd_cne_republic_war_created } NOT = { has_variable = nesnd_cne_republic_war_seen } }
+   c:CNE = { nesnd_cne_start_republic_war = yes }
+  }
+ }
+}
+nesnd_cne_republic_victory = {
+ if = { limit = { c:NRP ?= this has_variable = nesnd_cne_republican_challenger }
+  if = { limit = { exists = c:CNE }
+   # End all imperial reform effects before changing identities.
+   c:CNE = { nesnd_land_cleanup = yes }
+   annex_with_incorporation = c:CNE
+  }
+  if = { limit = { NOT = { exists = c:CNE } }
+   change_tag = CNE
+   activate_law = law_type:law_presidential_republic
+   set_variable = nesnd_cne_republic_restored
+   nesnd_land_cleanup = yes
+   remove_variable = nesnd_cne_republican_challenger
+   nesnd_cne_republic_southern_claims = yes
+   trigger_event = { id = nesnd_cne_confidence.3 popup = yes }
+  }
+ }
+}
+nesnd_cne_republic_defeat = {
+ if = { limit = { c:NRP ?= this exists = c:CNE has_variable = nesnd_cne_republican_challenger NOT = { nesnd_cne_republic_at_war = yes } }
+  c:CNE = { annex_with_incorporation = prev trigger_event = { id = nesnd_cne_confidence.4 popup = yes } }
+ }
+}
+nesnd_cne_republic_southern_claims = {
+ s:STATE_HUNAN = {
+  if = { limit = { any_scope_state = { owner = { NOR = { this = root is_subject_of = root } } } } add_claim = root }
+ }
+ s:STATE_EASTERN_HUBEI = {
+  if = { limit = { any_scope_state = { owner = { NOR = { this = root is_subject_of = root } } } } add_claim = root }
+ }
+ s:STATE_WESTERN_HUBEI = {
+  if = { limit = { any_scope_state = { owner = { NOR = { this = root is_subject_of = root } } } } add_claim = root }
+ }
+ s:STATE_XIANGYANG = {
+  if = { limit = { any_scope_state = { owner = { NOR = { this = root is_subject_of = root } } } } add_claim = root }
+ }
+ s:STATE_SICHUAN = {
+  if = { limit = { any_scope_state = { owner = { NOR = { this = root is_subject_of = root } } } } add_claim = root }
+ }
+ s:STATE_CHONGQING = {
+  if = { limit = { any_scope_state = { owner = { NOR = { this = root is_subject_of = root } } } } add_claim = root }
+ }
+}

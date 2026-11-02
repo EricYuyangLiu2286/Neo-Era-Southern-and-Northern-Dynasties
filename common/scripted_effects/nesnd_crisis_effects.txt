@@ -21,26 +21,24 @@ nesnd_land_monthly = {
         nesnd_cne_programs_maintenance = yes
         if = { limit = { var:nesnd_reform_samples > 3 }
             nesnd_reform_regional_monthly = yes
-            if = { limit = { nesnd_cne_programs_live = yes } change_variable = { name = cne_landreform_completion_tracker add = nesnd_cne_program_monthly_progress } }
+            change_variable = { name = cne_landreform_failure_tracker add = nesnd_cne_order_monthly_delta }
+            if = { limit = { nesnd_cne_programs_live = yes } change_variable = { name = cne_landreform_completion_tracker add = nesnd_cne_land_monthly_delta } }
             if = { limit = { nesnd_reform_healthy = yes }
                 change_variable = { name = nesnd_reform_good_months add = 1 }
-
-                change_variable = { name = cne_landreform_failure_tracker add = -1 }
             } else = {
                 set_variable = { name = nesnd_reform_good_months value = 0 }
 
             }
             if = { limit = { nesnd_reform_distress = yes }
                 change_variable = { name = nesnd_reform_bad_months add = 1 }
-                change_variable = { name = cne_landreform_failure_tracker add = 1 }
             } else = { set_variable = { name = nesnd_reform_bad_months value = 0 } }
-            if = { limit = { bureaucracy < 0 } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
-            if = { limit = { country_turmoil > 0.25 } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
-            if = { limit = { is_at_war = yes } change_variable = { name = cne_landreform_failure_tracker add = 0.5 } }
-            if = { limit = { has_modifier = declared_bankruptcy } change_variable = { name = cne_landreform_failure_tracker add = 1 } }
 
 
-            if = { limit = { has_modifier = nesnd_land_appeals } change_variable = { name = cne_landreform_failure_tracker add = -0.5 } }
+
+
+
+
+
             if = { limit = { var:cne_landreform_failure_tracker >= 55 NOT = { has_variable = nesnd_land_petition_seen } }
                 set_variable = nesnd_land_petition_seen
                 trigger_event = { id = nesnd_crisis.30 popup = yes }
@@ -65,7 +63,7 @@ nesnd_land_cleanup = {
  if = { limit = { c:CNE ?= this } nesnd_cne_programs_cleanup = yes } else = { nesnd_cne_cleanup_inherited_programs = yes }
 }
 nesnd_land_success = {
-    if = { limit = { nesnd_reform_active = yes NOT = { nesnd_cne_coup_has_succeeded = yes } nesnd_reform_healthy = yes var:nesnd_reform_good_months >= 12 var:cne_landreform_completion_tracker >= 100 }
+    if = { limit = { nesnd_reform_active = yes NOT = { nesnd_cne_reform_failed = yes } nesnd_reform_healthy = yes var:nesnd_reform_good_months >= 12 var:cne_landreform_completion_tracker >= 100 }
         set_variable = nesnd_land_succeeded
         if = { limit = { var:nesnd_land_months <= 48 var:nesnd_reform_good_months >= 24 var:cne_landreform_failure_tracker < 30 }
             set_variable = nesnd_land_rapid_success

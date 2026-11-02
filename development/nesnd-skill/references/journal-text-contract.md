@@ -46,3 +46,14 @@
 涉及“最高失业州”等动态目标时，先通过具名州的placement/本地化确认事件展示目标与实际费用，再扣款；保存目标不在确认时悄悄换州。确认、取消和执行检查这个保存对象的资格，而不只检查全国还有任一合格对象。当前CNE例子见WORK/reports/cne-reform-subjournals-20261101，尚未引擎验收。
 
 IG吸引力、IG支持与角色忠诚各用自己的实际修正。逐州军队支持是国家修正，军官忠诚是角色修正，不能把character_loyalty_add塞进国家修正并假设传给全体军官。按州唯一key对应开始/暂停/终局清理；显示可叠加的实际代价。角色维护按受影响对象列表处理，参照原版00_sgui_effects的daimyos_list与00_victoria_ep2_scripted_effects的variable列表迭代；新任、转属、退役和终局分别处理，避免月度全世界人物扫描。
+
+
+## 原生进度条与初始化恢复
+
+GAME/common/scripted_progress_bars/scripted_progress_bars.md与本MOD ce_french_empire_progress_bars.txt支持monthly_progress/yearly_progress内具名add={desc=... value=...}，value可用脚本值或有守卫的变量。先用原生明细呈现来源，勿用长篇更新说明替代空白条。
+
+已有国家变量供存档与事件使用时，允许同一条公式供原生明细与实际结算共同调用；原生条先于同周期JE脉冲运行，随后JE更新国家变量并绝对set_bar_progress。必须在同一JE完成周期计分与同步；不得再把已经自动增长的bar读回后加同一增量。跨父子JE年度顺序无此保证。新建/旧档、月年同日、按钮改变与临时scope预览都分别查；源码公式相同不等于引擎验收。
+
+一次性schema/init标记与可恢复running标记分开。若开场事件在父JE加入前初始化，孤儿清理可删running；后续恢复不可因init已存在而永远跳过。实际父JE有效且无终局时，恢复running并用has_journal_entry保护显式补齐子JE；不重置进度/信心。on_fail/on_invalid与旧档迁移都应覆盖。
+
+州按钮的开始与暂停都看所属州是否仍存在于本国。原生on_state_owner_change/on_state_created的root为state（GAME/00_code_on_actions，ip4_on_actions有移除州modifier实例）；检查父JE有效后清理失去的州，再用具名国家事件清理对应国家/人物惩罚，保留其他州。补周度检查覆盖旧档与部分割地。普通脚本战争与原生revolution/secession分别判定，不能用is_at_war代替内战。
