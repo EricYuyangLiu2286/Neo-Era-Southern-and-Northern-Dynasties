@@ -1,0 +1,142 @@
+﻿REPLACE:country_restore_japanese_emperor = {
+    if = { limit = { nesnd_jp_country = no }
+
+        if = {
+            limit = {
+                any_scope_character = {
+                    has_trait = special_character_japanese_emperor
+                }
+            }
+            if = {
+                limit = {
+                    has_gov_regency = yes
+                }
+                heir ?= {
+                    remove_character_role = heir # Child-Shoguns get no shot
+                }
+                remove_regency_modifier = yes
+            }
+            else = {
+                heir ?= {
+                    retire_character = yes
+                }
+                ruler ?= {
+                    if = {
+                        limit = {
+                            OR = {
+                                has_role = character_role_general
+                                has_role = character_role_admiral
+                            }
+                        }
+                        set_commander_rank = 3
+                    }
+                    if = {
+                        limit = {
+                            NOT = {
+                                has_role = character_role_politician
+                            }
+                        }
+                        add_character_role = character_role_politician
+                    }
+                    set_variable = former_shogun_var # designates Taikun
+                    set_as_interest_group_leader = yes # Landowners leader, typically
+                    hidden_effect = { set_character_immortal = yes }
+                    set_variable = { name = temporary_immortality_var value = 36 }
+                }
+            }
+            random_scope_character = {
+                limit = {
+                    has_trait = special_character_japanese_emperor
+                }
+                set_character_as_ruler = yes
+            }
+            japan_generate_scripted_heirs = yes
+        }
+        else = { # Should never happen, but just in case
+            if = {
+                limit = {
+                    has_gov_regency = yes
+                }
+                heir ?= {
+                    remove_character_role = heir # Child-Shoguns get no shot
+                }
+                remove_regency_modifier = yes
+            }
+            else = {
+                heir ?= {
+                    retire_character = yes
+                }
+                ruler ?= {
+                    set_variable = former_shogun_var # designates Taikun
+                    set_as_interest_group_leader = yes # Landowners leader, typically
+                    set_character_immortal = yes
+                    set_variable = { name = temporary_immortality_var value = 36 }
+                }
+            }
+            country_generate_japanese_emperor = yes
+        }
+
+    }
+}
+REPLACE:character_appoint_new_shogun_when_no_heir = {
+    if = { limit = { owner = { nesnd_jp_country = no } }
+
+        if = {
+            limit = {
+                NOT = { exists = owner.heir }
+            }
+            owner ?= {
+                if = {
+                    limit = {
+                        any_scope_character = {
+                            is_adult = yes
+                            has_variable = house_tokugawa
+                            NOT = { has_role_of_type = ruler }
+                        }
+                    }
+                    ordered_scope_character = {
+                        limit = {
+                            is_adult = yes
+                            has_variable = house_tokugawa
+                            NOT = { has_role_of_type = ruler }
+                        }
+                        order_by = prominence
+                        position = 0
+                        set_character_as_ruler = yes
+                        if = {
+                            limit = {
+                                has_variable = daimyo_var
+                            }
+                            JAP_character_generate_new_daimyo = yes
+                            character_clear_daimyo_status = yes
+                        }
+                        set_variable = shogun_var
+                    }
+                }
+                else = {
+                    create_character = {
+                        template = JAP_backup_shogun_template
+                        on_created = {
+                            set_variable = shogun_var
+                            set_character_as_ruler = yes
+                        }
+                    }
+                }
+            }
+        }
+        else_if = {
+            limit = {
+                owner.heir ?= {
+                    NOT = {
+                        has_variable = house_tokugawa
+                    }
+                }
+            }
+            owner.heir ?= {
+                character_adopt_into_tokugawa = yes
+                set_variable = shogun_var
+            }
+        }
+
+    }
+}

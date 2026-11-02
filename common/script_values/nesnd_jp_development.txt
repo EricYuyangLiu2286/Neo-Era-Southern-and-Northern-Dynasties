@@ -1,0 +1,73 @@
+﻿nesnd_jp_population = { value = total_population }
+nesnd_jp_scale = { value = 1 if = { limit = { total_population >= 5000000 } value = 2 } if = { limit = { total_population >= 15000000 } value = 4 } }
+nesnd_jp_conversion_fraction_japanese = {
+    value = 0.1 divide = { value = 1 subtract = "culture_percent_state(cu:japanese)" min = 0.00001 } min = 0 max = 1
+}
+nesnd_jp_conversion_fraction_jiangnan = {
+    value = 0.1 divide = { value = 1 subtract = "culture_percent_state(cu:ce_wuu)" min = 0.00001 } min = 0 max = 1
+}
+nesnd_jp_cohesion_order = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_jp_statistics_ready }
+        value = 0 if = { limit = { government_legitimacy >= 60 } add = 0.15 } else_if = { limit = { government_legitimacy < 25 } add = -0.3 }
+    }
+}
+nesnd_jp_cohesion_living = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_jp_statistics_ready }
+
+        value = 0
+        if = { limit = { average_sol >= 15 } add = 0.25 }
+        if = { limit = { average_sol < 9 } add = -0.5 }
+        if = { limit = { has_variable = nesnd_jp_sol_change }
+            if = { limit = { var:nesnd_jp_sol_change >= 0.05 } add = 0.25 }
+            if = { limit = { var:nesnd_jp_sol_change <= -0.05 } add = -0.4 }
+        }
+        if = { limit = { has_modifier = declared_bankruptcy } add = -1 }
+
+    }
+}
+nesnd_jp_cohesion_learning = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_jp_statistics_ready }
+
+        value = 0
+        if = { limit = { institution_investment_level = { institution = institution_schools value >= 1 } } add = 0.1 }
+        if = { limit = { institution_investment_level = { institution = institution_schools value >= 3 } } add = 0.1 }
+        if = { limit = { bureaucracy >= 0 } add = 0.05 } else = { add = -0.2 }
+
+    }
+}
+nesnd_jp_cohesion_conflict = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_jp_statistics_ready }
+
+        value = 0
+        if = { limit = { radical_population_fraction >= 0.2 } add = -0.4 }
+        if = { limit = { is_at_war = yes } add = -0.25
+            if = { limit = { has_variable = nesnd_jp_war_months } if = { limit = { var:nesnd_jp_war_months >= 12 } add = -0.25 } }
+        }
+        if = { limit = { has_variable = nesnd_jp_diplomatic_humiliation } add = -0.2 }
+
+    }
+}
+nesnd_jp_cohesion_victory = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_jp_statistics_ready }
+
+        value = 0
+        if = { limit = { has_variable = nesnd_jp_victory } add = 0.3 }
+        if = { limit = { has_variable = nesnd_jp_defeat } add = -0.4 }
+
+    }
+}
+nesnd_jp_cohesion_delta = { value = nesnd_jp_cohesion_order add = nesnd_jp_cohesion_living add = nesnd_jp_cohesion_learning add = nesnd_jp_cohesion_conflict add = nesnd_jp_cohesion_victory }
+nesnd_jp_negotiation_cost = { value = net_fixed_income multiply = 2 min = 5000 max = 100000 }
+nesnd_jp_industrial_grant = { value = net_fixed_income multiply = 4 min = 25000 max = 150000 }
+
+nesnd_jp_cohesion_value = { value = 70 if = { limit = { has_variable = nesnd_jp_cohesion } value = var:nesnd_jp_cohesion } }

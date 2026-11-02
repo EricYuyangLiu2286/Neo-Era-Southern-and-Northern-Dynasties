@@ -1,0 +1,72 @@
+﻿nesnd_jp_nation = {
+    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
+    group = je_group_historical_content can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_jp_nation_available = yes }
+    possible = { nesnd_jp_nation_available = yes }
+    immediate = { nesnd_jp_initialize = yes set_variable = nesnd_jp_nation_opened nesnd_jp_nation_sync = yes }
+    scripted_progress_bar = nesnd_jp_nation_bar
+    complete = { is_subject = no is_at_war = no custom_tooltip = { text = nesnd_jp_nation_complete nesnd_jp_nation_score >= 3 nesnd_jp_sovereign_months >= 12 } }
+    on_complete = { if = { limit = { NOT = { has_variable = nesnd_jp_nation_done } }
+            set_variable = nesnd_jp_nation_done capital ?= { set_variable = nesnd_jp_nation_done }
+            add_modifier = { name = nesnd_jp_independent_state months = 120 }
+            trigger_event = { id = nesnd_jp_development.1 popup = yes }
+        }
+    }
+    invalid = { OR = { NOT = { nesnd_jp_country = yes } has_variable = nesnd_jp_nation_done } }
+    on_monthly_pulse = { effect = { nesnd_jp_nation_monthly = yes } }
+    status_desc = { first_valid = { triggered_desc = { trigger = { is_subject = yes } desc = nesnd_jp_nation_subject } desc = nesnd_jp_nation_independent } }
+    weight = 800 should_be_pinned_by_default_uninvolved_or_context = yes
+}
+nesnd_jp_new_army = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds" group = je_group_historical_content can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_jp_nation_live = yes NOT = { has_variable = nesnd_jp_army_done } }
+    possible = { nesnd_jp_nation_live = yes NOT = { has_variable = nesnd_jp_army_done } }
+    complete = { hidden_trigger = { nesnd_jp_nation_live = yes } nesnd_jp_army_ready = yes }
+    on_complete = { set_variable = nesnd_jp_army_done
+        ig:ig_armed_forces ?= {
+            set_interest_group_name = ig_armed_forces
+            if = { limit = { has_ideology = ideology:ideology_bakufu } remove_ideology = ideology_bakufu }
+        }
+        nesnd_jp_nation_sync = yes
+    }
+    invalid = { OR = { NOT = { nesnd_jp_nation_live = yes } has_variable = nesnd_jp_army_done } }
+    weight = 680 should_be_pinned_by_default_uninvolved_or_context = yes
+}
+nesnd_jp_open_diplomacy = {
+    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_jp_nation_live = yes NOT = { has_variable = nesnd_jp_diplomacy_done } }
+    possible = { nesnd_jp_nation_live = yes NOT = { has_variable = nesnd_jp_diplomacy_done } }
+    complete = { hidden_trigger = { nesnd_jp_nation_live = yes } nesnd_jp_diplomacy_ready = yes }
+    on_complete = { set_variable = nesnd_jp_diplomacy_done nesnd_jp_nation_sync = yes }
+    invalid = { OR = { NOT = { nesnd_jp_nation_live = yes } has_variable = nesnd_jp_diplomacy_done } }
+    weight = 680 should_be_pinned_by_default_uninvolved_or_context = yes
+}
+nesnd_jp_open_ports = {
+    icon = "gfx/interface/icons/event_icons/event_industry.dds" group = je_group_historical_content can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_jp_ports_available = yes }
+    possible = { nesnd_jp_ports_available = yes }
+    scripted_button = nesnd_jp_mercantile_ports
+    scripted_button = nesnd_jp_protected_ports
+    complete = { NOT = { has_law_or_variant = law_type:law_isolationism } }
+    on_complete = { set_variable = nesnd_jp_ports_opened nesnd_jp_ensure_industry = yes }
+    invalid = { OR = { NOT = { nesnd_jp_country = yes } has_variable = nesnd_jp_ports_opened } }
+    weight = 750 should_be_pinned_by_default_uninvolved_or_context = yes
+}
+nesnd_jp_islands = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds" group = je_group_historical_content can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_jp_islands_available = yes }
+    possible = { nesnd_jp_islands_available = yes }
+    immediate = {
+        if = { limit = { NOT = { has_variable = nesnd_jp_islands_claimed } }
+            s:STATE_KYUSHU = { add_claim = root }
+            s:STATE_SHIKOKU = { add_claim = root }
+            set_variable = nesnd_jp_islands_claimed
+        }
+    }
+    progressbar = yes current_value = { value = nesnd_jp_islands_score } goal_add_value = { value = 2 }
+    scripted_button = nesnd_jp_islands_settlement
+    complete = { is_subject = no owns_entire_state_region = STATE_KYUSHU owns_entire_state_region = STATE_SHIKOKU NOT = { has_variable = nesnd_jp_islands_closed } }
+    on_complete = { set_variable = nesnd_jp_islands_closed add_modifier = { name = nesnd_jp_home_waters months = 120 } }
+    invalid = { OR = { NOT = { nesnd_jp_country = yes } has_variable = nesnd_jp_islands_closed } }
+    weight = 600
+}

@@ -1,0 +1,492 @@
+{
+  "status": "READ_ONLY_AUDIT_AND_REPAIR_PROPOSAL_NO_ENGINE_RUN",
+  "code_changes": [
+    {
+      "file": "common/scripted_triggers/nesnd_supply_triggers.txt",
+      "find": "nesnd_supply_diplomacy_ready = {\n    OR = { has_variable = nesnd_supply_self_reliance nesnd_supply_partner_valid = yes }\n}",
+      "replace": "nesnd_supply_diplomacy_ready = {\n    OR = {\n        capital.market = { participants >= 2 }\n        has_variable = nesnd_supply_self_reliance\n        nesnd_supply_partner_valid = yes\n    }\n}",
+      "count": 1,
+      "reason": "Read actual current capital market participants. A shared market already provides the commercial framework; do not require a fictitious procurement handshake. Preserve independent-market diplomatic policy choices.",
+      "match_counts": {
+        "main": 1,
+        "candidate": 1
+      }
+    },
+    {
+      "file": "common/scripted_effects/nesnd_supply_effects.txt",
+      "find": "nesnd_supply_clear_partner = {\n    remove_variable = nesnd_supply_partner\n    remove_variable = nesnd_supply_partner_sponsor\n    remove_variable = nesnd_supply_pending\n    remove_variable = nesnd_supply_pending_sponsor\n    remove_variable = nesnd_supply_trade_pending\n    set_variable = { name = nesnd_supply_weeks value = 0 }\n}",
+      "replace": "nesnd_supply_clear_partner = {\n    remove_variable = nesnd_supply_partner\n    remove_variable = nesnd_supply_partner_sponsor\n    remove_variable = nesnd_supply_pending\n    remove_variable = nesnd_supply_pending_sponsor\n    remove_variable = nesnd_supply_trade_pending\n}",
+      "count": 1,
+      "reason": "Ending an optional diplomatic contact does not interrupt existing common-market buy/sell orders. Actual market changes and genuinely failed live requirements retain their existing weekly reset.",
+      "match_counts": {
+        "main": 1,
+        "candidate": 1
+      }
+    }
+  ],
+  "localization": {
+    "nesnd_supply_status_diplomacy": {
+      "zh": "商贸联络的安排尚未议定。可以派使接洽，也可以交由商人自行往来。\\n$nesnd_supply_rules_link$",
+      "en": "Commercial contacts remain undecided. Send envoys to discuss them, or leave merchants to maintain their own dealings.\\n$nesnd_supply_rules_link$",
+      "reason": "Shared-market members now bypass this status automatically; independent-market political choice remains, without suggesting goods begin flowing only after acceptance.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "各方商路尚待议定。可以遣使联络邻邦，也可以交由本国商帮筹措。\\n$nesnd_supply_rules_link$",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 8
+      },
+      "current_en": {
+        "text": "Trading arrangements remain undecided. Send envoys abroad or rely on merchants at home.\\n$nesnd_supply_rules_link$",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 8
+      }
+    },
+    "nesnd_supply_self": {
+      "zh": "由商人自行往来",
+      "en": "Leave Commerce to the Merchants",
+      "reason": "Actual effect only selects a policy flag and clears contacts. It does not improve production or jobs, so do not call it industrial reorganisation.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "依靠本国商帮",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 17
+      },
+      "current_en": {
+        "text": "Rely on Domestic Merchants",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 17
+      }
+    },
+    "nesnd_supply_self_desc": {
+      "zh": "撤回专项使团与待答请求，由商人继续经营现有买卖。市场归属和已经签署的条约照旧。",
+      "en": "Withdraw the special mission and pending requests, leaving merchants to continue their existing trade. Market membership and signed treaties remain unchanged.",
+      "reason": "Describe the actual clear_partner/self flag; no production, procurement, stock or access effect exists.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "请本国商人自行安排采购，召回此前遣出的使者。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 18
+      },
+      "current_en": {
+        "text": "Ask our merchants to arrange procurement and recall the envoys already sent.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 18
+      }
+    },
+    "nesnd_supply_invite_desc": {
+      "zh": "派使与对方商议商业往来，争取更好的两国关系。现有市场中的买卖照常进行。",
+      "en": "Send envoys to discuss commercial relations and improve diplomatic ties. Existing market exchange continues.",
+      "reason": "The first accepted contact changes relations by +25. It neither creates goods nor establishes a market connection.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "遣使与对方商议商人往来和采购联络，听取他们的条件。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 14
+      },
+      "current_en": {
+        "text": "Send envoys to discuss merchant contacts and procurement arrangements, and hear the other government’s terms.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 14
+      }
+    },
+    "nesnd_supply_invitation_tt": {
+      "zh": "商使将在#v 7日#!后抵达。使团任期#v 6个月#!，期间[concept_influence]#n −100#!。",
+      "en": "The envoys arrive in #v 7 days#!. The mission lasts #v 6 months#! and applies #n −100#! [concept_influence] during that time.",
+      "reason": "State existing diplomatic influence cost; no fictitious purchase fee or commodity payment.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "商使将在七日后抵达；本次使团任期六个月。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 15
+      },
+      "current_en": {
+        "text": "The envoys arrive in seven days and serve for six months.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 15
+      }
+    },
+    "nesnd_supply_accept_tt": {
+      "zh": "建立商业联络；首次接受时，两国关系#p +25#!。",
+      "en": "Establish commercial contacts. The first acceptance improves relations by #p 25#!.",
+      "reason": "Exact event1 first_contact_rewarded effect; do not claim guaranteed supply.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "建立通商联络。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 16
+      },
+      "current_en": {
+        "text": "Establish commercial contact.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 16
+      }
+    },
+    "nesnd_supply_end_contact_desc": {
+      "zh": "召回专项使团，结束此次商业联络。现有市场中的买卖与已签条约继续有效。",
+      "en": "Recall the mission and end these commercial contacts. Existing market exchange and signed treaties continue.",
+      "reason": "Contact is diplomatic, not a pipe that switches ordinary common-market production on or off.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "召回驻外使者，另寻能够长久往来的商路。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 20
+      },
+      "current_en": {
+        "text": "Recall our envoys and seek trade routes that can be sustained.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 20
+      }
+    },
+    "nesnd_supply_end_contact_tt": {
+      "zh": "结束此次联络。若商贸安排因此中断，连续稳定周数重新累计；已经签署的正式条约仍依约履行。",
+      "en": "End these contacts. If this leaves commercial arrangements unresolved, consecutive stable weeks restart; signed treaties remain in force.",
+      "reason": "No unconditional zero when shared-market arrangements remain valid; independent-market selection still follows live qualification.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "结束此次联络，连续安定周数归零；已经签署的正式条约仍依约履行。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 21
+      },
+      "current_en": {
+        "text": "End these contacts and reset consecutive weeks of stability. Formal treaties already signed remain in force.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 21
+      }
+    },
+    "nesnd_supply_finish_desc": {
+      "zh": "货源、工场、民生与商贸安排连续安定#v 12周#!后，首次获得持续#v 2年#!的[concept_influence]#p +100#!。",
+      "en": "After supplies, employment, livelihoods and commercial arrangements remain stable for #v 12 weeks#!, first completion grants #p +100#! [concept_influence] for #v 2 years#!.",
+      "reason": "The reward is influence capacity, not extra goods or income; preserve exact +100/24-month modifier.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "货源、工场、民生与通商安排连续安定#v 12周#!后，首次获得持续#v 2年#!的通商收益。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 26
+      },
+      "current_en": {
+        "text": "After supply, employment, livelihoods and commercial arrangements remain stable for #v 12 weeks#!, gain trade benefits for #v 2 years#! on the first completion.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 26
+      }
+    },
+    "nesnd_supply_finish_shared_desc": {
+      "zh": "继续在现有共同市场中经营。各项条件连续维持#v 12周#!后，首次获得持续#v 2年#!的[concept_influence]#p +100#!。",
+      "en": "Continue trading in the existing common market. Maintain all conditions for #v 12 weeks#! to gain #p +100#! [concept_influence] for #v 2 years#! on first completion.",
+      "reason": "The button only records completion. It does not create or preserve a new market treaty.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "继续在共同市场中经营，保留既有盟约。货源与生计连续安定#v 12周#!，首次获得#v 2年#!通商收益。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 54
+      },
+      "current_en": {
+        "text": "Continue trading in the common market and retain existing agreements. Supply and livelihoods must remain stable for #v 12 weeks#!; first completion grants trade benefits for #v 2 years#!.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 54
+      }
+    },
+    "nesnd_supply_finish_autonomous_desc": {
+      "zh": "在本国掌管的市场中继续经营。各项条件连续维持#v 12周#!后，首次获得持续#v 2年#!的[concept_influence]#p +100#!。",
+      "en": "Continue trading in the market our country already controls. Maintain all conditions for #v 12 weeks#! to gain #p +100#! [concept_influence] for #v 2 years#! on first completion.",
+      "reason": "Requires market.owner=root before click; no market secession happens here. Avoid saying the button takes control of the market.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "由本国掌管市场，安排对外通商。各项条件连续维持#v 12周#!，首次获得#v 2年#!通商收益。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 56
+      },
+      "current_en": {
+        "text": "Control our own market and commercial arrangements. Maintain all conditions for #v 12 weeks#!; first completion grants trade benefits for #v 2 years#!.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 56
+      }
+    },
+    "nesnd_supply_rules": {
+      "zh": "#bold 货源#!\\n纸张、工具、小武器无本国短缺，价格涨幅不超过#v 50%#!；东洲另需硬木。\\n\\n#bold 工场与人手#!\\n所需建筑各有至少一座雇员达到#v 75%#!，且不缺生产投入。湖广为大学与军营；四川为工具厂，以及铁矿或伐木场；广西为纸厂与伐木场；东洲为港口与官署。招工困难时可查看[concept_pop_qualifications]、[concept_building_wage]与原料供应。\\n\\n#bold 生计#!\\n全国无业劳动力不超过#v 12%#!；劳动力至少#v 5万#!的州不超过#v 20%#!。自给农民属于有业人口。全国无饥荒，粮食无本国短缺且涨价不超过#v 25%#!。\\n现有无业劳动力：#v [Country.MakeScope.Var('nesnd_supply_unemployed').GetValue|0] / [Country.MakeScope.Var('nesnd_supply_workforce').GetValue|0]#!（#v [Country.MakeScope.Var('nesnd_supply_unemployment').GetValue|%1]#!）；超过地方失业界线的州：#v [Country.MakeScope.Var('nesnd_supply_critical_states').GetValue|0]#!。\\n\\n#bold 商路安定#!\\n处于共同市场时，商贸安排自动满足；本国单独掌管市场时，可确定联络伙伴或由商人自行往来。四项条件连续维持#v 12周#!。战争、破产、市场改变或任一条件不满足，连续周数重新计算。",
+      "en": "#bold Supplies#!\\nPaper, tools and small arms must have no local shortages and cost no more than #v 50%#! above base price; Dongzhou also requires hardwood.\\n\\n#bold Buildings and workers#!\\nEach required building type must have at least one building staffed to #v 75%#! without input shortages. Huguang requires a university and barracks; Sichuan a tooling workshop and either an iron mine or logging camp; Guangxi a paper mill and logging camp; Dongzhou a port and government administration. If recruitment is difficult, check [concept_pop_qualifications], [concept_building_wage] and input supplies.\\n\\n#bold Livelihoods#!\\nUnemployed workers may be at most #v 12%#! of the national workforce. States with at least #v 50,000#! workers have a limit of #v 20%#!. Subsistence workers count as employed. There must be no famine or local grain shortage, and grain must cost no more than #v 25%#! above base price.\\nUnemployed workforce: #v [Country.MakeScope.Var('nesnd_supply_unemployed').GetValue|0] / [Country.MakeScope.Var('nesnd_supply_workforce').GetValue|0]#! (#v [Country.MakeScope.Var('nesnd_supply_unemployment').GetValue|%1]#!). States above the local unemployment limit: #v [Country.MakeScope.Var('nesnd_supply_critical_states').GetValue|0]#!.\\n\\n#bold Stable commerce#!\\nA shared market automatically fulfils the commercial-arrangements requirement. A country alone in its market may choose a contact or leave dealings to its merchants. Maintain all four conditions for #v 12 weeks#!. War, bankruptcy, a change of market or failure of any condition restarts the consecutive count.",
+      "reason": "Explain the actual market read and retained independent-market policy choice. Prices, local shortages and domestic specialisations remain unchanged; no autarky requirement is added.",
+      "mechanic": "Display only; code changes above are a prerequisite for descriptions of automatic shared-market qualification. No goods stock, prepayment, purchase order or production effect is introduced.",
+      "current_zh": {
+        "text": "#bold 货源#!\\n纸张、工具、小武器无本国短缺，价格涨幅不超过#v 50%#!；东洲另需硬木。\\n\\n#bold 工场与人手#!\\n所需建筑各有至少一座雇员达到#v 75%#!，且不缺生产投入。湖广为大学与军营；四川为工具厂，以及铁矿或伐木场；广西为纸厂与伐木场；东洲为港口与官署。招工困难时可查看[concept_pop_qualifications]、[concept_building_wage]与原料供应。\\n\\n#bold 生计#!\\n全国无业劳动力不超过#v 12%#!；劳动力至少#v 5万#!的州不超过#v 20%#!。自给农民属于有业人口。全国无饥荒，粮食无本国短缺且涨价不超过#v 25%#!。\\n现有无业劳动力：#v [Country.MakeScope.Var('nesnd_supply_unemployed').GetValue|0] / [Country.MakeScope.Var('nesnd_supply_workforce').GetValue|0]#!（#v [Country.MakeScope.Var('nesnd_supply_unemployment').GetValue|%1]#!）；超过地方失业界线的州：#v [Country.MakeScope.Var('nesnd_supply_critical_states').GetValue|0]#!。\\n\\n#bold 商路安定#!\\n确定联络伙伴或依靠本国商帮，四项条件连续维持#v 12周#!。战争、破产、市场改变或任一条件不满足，连续周数重新计算。",
+        "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+        "line": 60
+      },
+      "current_en": {
+        "text": "#bold Supplies#!\\nPaper, tools and small arms must have no local shortages and cost no more than #v 50%#! above base price; Dongzhou also requires hardwood.\\n\\n#bold Buildings and workers#!\\nEach required building type must have at least one building staffed to #v 75%#! without input shortages. Huguang requires a university and barracks; Sichuan a tooling workshop and either an iron mine or logging camp; Guangxi a paper mill and logging camp; Dongzhou a port and government administration. If recruitment is difficult, check [concept_pop_qualifications], [concept_building_wage] and input supplies.\\n\\n#bold Livelihoods#!\\nUnemployed workers may be at most #v 12%#! of the national workforce. States with at least #v 50,000#! workers have a limit of #v 20%#!. Subsistence workers count as employed. There must be no famine or local grain shortage, and grain must cost no more than #v 25%#! above base price.\\nUnemployed workforce: #v [Country.MakeScope.Var('nesnd_supply_unemployed').GetValue|0] / [Country.MakeScope.Var('nesnd_supply_workforce').GetValue|0]#! (#v [Country.MakeScope.Var('nesnd_supply_unemployment').GetValue|%1]#!). States above the local unemployment limit: #v [Country.MakeScope.Var('nesnd_supply_critical_states').GetValue|0]#!.\\n\\n#bold Stable commerce#!\\nChoose a commercial partner or rely on domestic merchants, and maintain all four conditions for #v 12 weeks#!. War, bankruptcy, a change of market or failure of any condition restarts the consecutive count.",
+        "file": "localization/english/nesnd_supply_l_english.yml",
+        "line": 60
+      }
+    }
+  },
+  "checks": {
+    "no_code_or_main_edits": true,
+    "engine_run": false,
+    "scopes_equal": true,
+    "exact_matches": true,
+    "scope_files": 42,
+    "different_files": []
+  },
+  "preserve": [
+    "PHI money_transfer, tribute changes, military exemptions, set_ship_owner_multiple and clear_ownership_transfer_fleet",
+    "Tenasserim start_building_construction, qualifications, enacted laws and cash compensation",
+    "Existing real external goods_transfer and money_transfer treaties; same-market production needs no new agreement",
+    "Supply current prices, country-local shortages, country-specific staffed buildings, unemployment, famine, grain conditions, durations and existing one-time reward flags"
+  ],
+  "excluded_false_positive": {
+    "good_vs_goods": "Do not normalise: current engine triggers.log:8930 documents good for can_create_treaty; effects.log:1030 documents goods for create_treaty. Native article required_inputs alone does not prove trigger input spelling is wrong."
+  },
+  "manifest": [
+    {
+      "file": "common/decisions/nesnd_external_decisions.txt",
+      "main_sha256": "7b2df60305a037345b944c25cd2b42420917596fbd2dc0d86a288a7aaccb3b21",
+      "candidate_sha256": "7b2df60305a037345b944c25cd2b42420917596fbd2dc0d86a288a7aaccb3b21",
+      "same": true
+    },
+    {
+      "file": "common/decisions/nesnd_supply_decisions.txt",
+      "main_sha256": "4bc7d9b4a1e8b5e06b94631fb43b67e99dc7640627fd09b1b368508a3384ca0e",
+      "candidate_sha256": "4bc7d9b4a1e8b5e06b94631fb43b67e99dc7640627fd09b1b368508a3384ca0e",
+      "same": true
+    },
+    {
+      "file": "common/decisions/nesnd_tenasserim.txt",
+      "main_sha256": "99efd560e5429988bfaf67461065909b802e573760ef2572cf5f87fcd3e8ad34",
+      "candidate_sha256": "99efd560e5429988bfaf67461065909b802e573760ef2572cf5f87fcd3e8ad34",
+      "same": true
+    },
+    {
+      "file": "common/journal_entries/nesnd_external_journal.txt",
+      "main_sha256": "7adda3f57c93331b8c85865f05874c9ce2b47fb44956365d44a3cf8a193d144e",
+      "candidate_sha256": "7adda3f57c93331b8c85865f05874c9ce2b47fb44956365d44a3cf8a193d144e",
+      "same": true
+    },
+    {
+      "file": "common/journal_entries/nesnd_phi_finance.txt",
+      "main_sha256": "53cb0d7e79dcfd1812f1d9d780408500f319c48504cf41dbe4de1f9aeba62ead",
+      "candidate_sha256": "53cb0d7e79dcfd1812f1d9d780408500f319c48504cf41dbe4de1f9aeba62ead",
+      "same": true
+    },
+    {
+      "file": "common/journal_entries/nesnd_supply_journals.txt",
+      "main_sha256": "060d6d03ecffafd1696e90348d3593a36b2a8f9ef36eced1ce31fad8945e450a",
+      "candidate_sha256": "060d6d03ecffafd1696e90348d3593a36b2a8f9ef36eced1ce31fad8945e450a",
+      "same": true
+    },
+    {
+      "file": "common/journal_entries/nesnd_tenasserim.txt",
+      "main_sha256": "c315413710c9e7a3c40150a16b0e49b3995c5a3124bc1b07accfbf918c78b807",
+      "candidate_sha256": "c315413710c9e7a3c40150a16b0e49b3995c5a3124bc1b07accfbf918c78b807",
+      "same": true
+    },
+    {
+      "file": "common/on_actions/nesnd_phi_finance.txt",
+      "main_sha256": "d47b15a1e5d9d35143f4dfba2e62ded99c310dbfd278e829d3b46fd40789a976",
+      "candidate_sha256": "d47b15a1e5d9d35143f4dfba2e62ded99c310dbfd278e829d3b46fd40789a976",
+      "same": true
+    },
+    {
+      "file": "common/script_values/nesnd_external_preview_values.txt",
+      "main_sha256": "ebe7a922e14c66797848d067e3742fedc36a68bb22c68ec515d36a1a8f52a3a3",
+      "candidate_sha256": "ebe7a922e14c66797848d067e3742fedc36a68bb22c68ec515d36a1a8f52a3a3",
+      "same": true
+    },
+    {
+      "file": "common/script_values/nesnd_phi_finance.txt",
+      "main_sha256": "89fbcce3c47ff0766424e1d801c54d6d2c41537cad14672cd8b135b28f40d26a",
+      "candidate_sha256": "89fbcce3c47ff0766424e1d801c54d6d2c41537cad14672cd8b135b28f40d26a",
+      "same": true
+    },
+    {
+      "file": "common/script_values/nesnd_supply_preview_values.txt",
+      "main_sha256": "3e3bece79fd7b50943e8dbe4aa694ce87a300e91835b7bdf082027725c36f7bc",
+      "candidate_sha256": "3e3bece79fd7b50943e8dbe4aa694ce87a300e91835b7bdf082027725c36f7bc",
+      "same": true
+    },
+    {
+      "file": "common/script_values/nesnd_supply_workforce.txt",
+      "main_sha256": "df24560553736c6283be61d105b95009a526efb51bf4bc01d37d4caf753a3c71",
+      "candidate_sha256": "df24560553736c6283be61d105b95009a526efb51bf4bc01d37d4caf753a3c71",
+      "same": true
+    },
+    {
+      "file": "common/script_values/nesnd_tenasserim.txt",
+      "main_sha256": "6cd3668e92518fc3032567c15e8c0fd86547bd8c8617dfb24b4dc8579f5a0825",
+      "candidate_sha256": "6cd3668e92518fc3032567c15e8c0fd86547bd8c8617dfb24b4dc8579f5a0825",
+      "same": true
+    },
+    {
+      "file": "common/scripted_buttons/nesnd_external_buttons.txt",
+      "main_sha256": "6c362de3f1bb51ec56f10478895e2fafa1666c19088ed586415227ff430083d6",
+      "candidate_sha256": "6c362de3f1bb51ec56f10478895e2fafa1666c19088ed586415227ff430083d6",
+      "same": true
+    },
+    {
+      "file": "common/scripted_buttons/nesnd_phi_finance.txt",
+      "main_sha256": "d4e00cab515b3820884ba132e0e34b793f37e1a27f5111628f373da76a50d44a",
+      "candidate_sha256": "d4e00cab515b3820884ba132e0e34b793f37e1a27f5111628f373da76a50d44a",
+      "same": true
+    },
+    {
+      "file": "common/scripted_buttons/nesnd_supply_buttons.txt",
+      "main_sha256": "26a490567875574232c07a0af12e0e7ff71124773231fa406008319e6e7eb4b4",
+      "candidate_sha256": "26a490567875574232c07a0af12e0e7ff71124773231fa406008319e6e7eb4b4",
+      "same": true
+    },
+    {
+      "file": "common/scripted_buttons/nesnd_tenasserim.txt",
+      "main_sha256": "2f6fc209379deddaefbbb58581cdfb7aea9485c4e2383248bdc5541ee2d6393b",
+      "candidate_sha256": "2f6fc209379deddaefbbb58581cdfb7aea9485c4e2383248bdc5541ee2d6393b",
+      "same": true
+    },
+    {
+      "file": "common/scripted_effects/nesnd_external_effects.txt",
+      "main_sha256": "245da31f194fdf7281b14a63b438a23cf1d444f7c116e2c0b2fb74aa5054a873",
+      "candidate_sha256": "245da31f194fdf7281b14a63b438a23cf1d444f7c116e2c0b2fb74aa5054a873",
+      "same": true
+    },
+    {
+      "file": "common/scripted_effects/nesnd_phi_finance.txt",
+      "main_sha256": "b930560066f6c62ce2cd5ba0e14ab194f5579c570e68180b152a7b628c383a80",
+      "candidate_sha256": "b930560066f6c62ce2cd5ba0e14ab194f5579c570e68180b152a7b628c383a80",
+      "same": true
+    },
+    {
+      "file": "common/scripted_effects/nesnd_supply_effects.txt",
+      "main_sha256": "97602af82481cd82c2f47e73cad3ad1e28c1966d5cc8ebaa4d08e2116857b874",
+      "candidate_sha256": "97602af82481cd82c2f47e73cad3ad1e28c1966d5cc8ebaa4d08e2116857b874",
+      "same": true
+    },
+    {
+      "file": "common/scripted_effects/nesnd_tenasserim.txt",
+      "main_sha256": "44f0542ed2b3649d463f94fb4894a4cfc7aae6e74dddd3eaedcc9fdd1c3176b3",
+      "candidate_sha256": "44f0542ed2b3649d463f94fb4894a4cfc7aae6e74dddd3eaedcc9fdd1c3176b3",
+      "same": true
+    },
+    {
+      "file": "common/scripted_progress_bars/nesnd_phi_finance.txt",
+      "main_sha256": "763b373c287650f65fbb2b7d59cbc185965d527f9ea976adea9dc0def17ead4d",
+      "candidate_sha256": "763b373c287650f65fbb2b7d59cbc185965d527f9ea976adea9dc0def17ead4d",
+      "same": true
+    },
+    {
+      "file": "common/scripted_progress_bars/nesnd_supply_bars.txt",
+      "main_sha256": "7128f38ea7ffc8fce4109f2320f1097a6189febe8c9e5b0ab3716a6d18bfd46a",
+      "candidate_sha256": "7128f38ea7ffc8fce4109f2320f1097a6189febe8c9e5b0ab3716a6d18bfd46a",
+      "same": true
+    },
+    {
+      "file": "common/scripted_progress_bars/nesnd_tenasserim.txt",
+      "main_sha256": "b7eada43d8d17c96ddf78f501373c689dda44774bec40adfc8f92613a844cc71",
+      "candidate_sha256": "b7eada43d8d17c96ddf78f501373c689dda44774bec40adfc8f92613a844cc71",
+      "same": true
+    },
+    {
+      "file": "common/scripted_triggers/nesnd_external_triggers.txt",
+      "main_sha256": "01861eb1cdc486108ddad1f77d83080a227fe18107614120162825dbd4b03227",
+      "candidate_sha256": "01861eb1cdc486108ddad1f77d83080a227fe18107614120162825dbd4b03227",
+      "same": true
+    },
+    {
+      "file": "common/scripted_triggers/nesnd_phi_finance.txt",
+      "main_sha256": "394954cd72315c3a5142325506479cf8ba68d50578ebbb60966e95a40c91eb61",
+      "candidate_sha256": "394954cd72315c3a5142325506479cf8ba68d50578ebbb60966e95a40c91eb61",
+      "same": true
+    },
+    {
+      "file": "common/scripted_triggers/nesnd_supply_triggers.txt",
+      "main_sha256": "620f10fbc185b30e94c5bd8425412ee1fda8e8ef0a40a75c8a00df311a07efd8",
+      "candidate_sha256": "620f10fbc185b30e94c5bd8425412ee1fda8e8ef0a40a75c8a00df311a07efd8",
+      "same": true
+    },
+    {
+      "file": "common/scripted_triggers/nesnd_tenasserim.txt",
+      "main_sha256": "49c80c7cf8faa9354008eeacf0403585fdb9e63b0e71e68df4279ee9e2137180",
+      "candidate_sha256": "49c80c7cf8faa9354008eeacf0403585fdb9e63b0e71e68df4279ee9e2137180",
+      "same": true
+    },
+    {
+      "file": "common/static_modifiers/nesnd_supply_modifiers.txt",
+      "main_sha256": "2f06d33a6c3108f0b1b29ef4757141f0929b47db2527ca9384d86d5de8ff732b",
+      "candidate_sha256": "2f06d33a6c3108f0b1b29ef4757141f0929b47db2527ca9384d86d5de8ff732b",
+      "same": true
+    },
+    {
+      "file": "common/static_modifiers/nesnd_tenasserim.txt",
+      "main_sha256": "6ad595c2c4730c37bf5dc8712460f4df7e182a70bbb7309d4d96dd3d2cceb0fd",
+      "candidate_sha256": "6ad595c2c4730c37bf5dc8712460f4df7e182a70bbb7309d4d96dd3d2cceb0fd",
+      "same": true
+    },
+    {
+      "file": "events/nesnd_external_events.txt",
+      "main_sha256": "66a88ac04086284176a99ae1f81c06037b45cb985f98ea87f637ce07e74648dc",
+      "candidate_sha256": "66a88ac04086284176a99ae1f81c06037b45cb985f98ea87f637ce07e74648dc",
+      "same": true
+    },
+    {
+      "file": "events/nesnd_phi_finance.txt",
+      "main_sha256": "81e95fc45107fb27ba5d6d597abf11012dbbd6d9da597b51c0b3ae678d6ed128",
+      "candidate_sha256": "81e95fc45107fb27ba5d6d597abf11012dbbd6d9da597b51c0b3ae678d6ed128",
+      "same": true
+    },
+    {
+      "file": "events/nesnd_supply_events.txt",
+      "main_sha256": "2e27f4b54b2eb9be60bbfdd88d1b93617159bd428697d1f77ea715585800042b",
+      "candidate_sha256": "2e27f4b54b2eb9be60bbfdd88d1b93617159bd428697d1f77ea715585800042b",
+      "same": true
+    },
+    {
+      "file": "events/nesnd_tenasserim.txt",
+      "main_sha256": "9dfb578d5b90e9ad28557337128aa83327b1eb1f59e9563cec59a61fdd883520",
+      "candidate_sha256": "9dfb578d5b90e9ad28557337128aa83327b1eb1f59e9563cec59a61fdd883520",
+      "same": true
+    },
+    {
+      "file": "localization/english/nesnd_external_l_english.yml",
+      "main_sha256": "dd47977401e3e5595a51ddceaf2a1b2ef66f07dff93c61f4e1967c4476a1b4ee",
+      "candidate_sha256": "dd47977401e3e5595a51ddceaf2a1b2ef66f07dff93c61f4e1967c4476a1b4ee",
+      "same": true
+    },
+    {
+      "file": "localization/english/nesnd_phi_finance_l_english.yml",
+      "main_sha256": "3b6d48081846a1b81f007b95b45c8f779b87f207653c44e91647215e30f4d574",
+      "candidate_sha256": "3b6d48081846a1b81f007b95b45c8f779b87f207653c44e91647215e30f4d574",
+      "same": true
+    },
+    {
+      "file": "localization/english/nesnd_supply_l_english.yml",
+      "main_sha256": "01666a74b1ed64ab837c611056a35cb4bcc0de21accf92ba79b6811e253de665",
+      "candidate_sha256": "01666a74b1ed64ab837c611056a35cb4bcc0de21accf92ba79b6811e253de665",
+      "same": true
+    },
+    {
+      "file": "localization/english/nesnd_tenasserim_l_english.yml",
+      "main_sha256": "de21bb6b528a8840b113ba2df952095c21c043c2078b07af3921d7703e01e7fa",
+      "candidate_sha256": "de21bb6b528a8840b113ba2df952095c21c043c2078b07af3921d7703e01e7fa",
+      "same": true
+    },
+    {
+      "file": "localization/simp_chinese/nesnd_external_l_simp_chinese.yml",
+      "main_sha256": "bf5b2dbc3f3fa221b26d1f0509a194f68a21ffe826d22ef68c3a40575f1afa64",
+      "candidate_sha256": "bf5b2dbc3f3fa221b26d1f0509a194f68a21ffe826d22ef68c3a40575f1afa64",
+      "same": true
+    },
+    {
+      "file": "localization/simp_chinese/nesnd_phi_finance_l_simp_chinese.yml",
+      "main_sha256": "b230b2f2b40dfc8e6dbba37ad726164c67d50d84d8eee5fcf8c70c2e0c79b7e1",
+      "candidate_sha256": "b230b2f2b40dfc8e6dbba37ad726164c67d50d84d8eee5fcf8c70c2e0c79b7e1",
+      "same": true
+    },
+    {
+      "file": "localization/simp_chinese/nesnd_supply_l_simp_chinese.yml",
+      "main_sha256": "a919f92203aa9c072596e0c7b88b76972bb109553850ba84f11fd9a8cd221a52",
+      "candidate_sha256": "a919f92203aa9c072596e0c7b88b76972bb109553850ba84f11fd9a8cd221a52",
+      "same": true
+    },
+    {
+      "file": "localization/simp_chinese/nesnd_tenasserim_l_simp_chinese.yml",
+      "main_sha256": "7f7c15e8a6fb9e3193fb357cc081347ea930c8733e7526bd332b81d352d5f575",
+      "candidate_sha256": "7f7c15e8a6fb9e3193fb357cc081347ea930c8733e7526bd332b81d352d5f575",
+      "same": true
+    }
+  ]
+}

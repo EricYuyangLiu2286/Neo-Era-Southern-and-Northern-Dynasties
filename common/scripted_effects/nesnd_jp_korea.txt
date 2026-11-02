@@ -1,0 +1,62 @@
+﻿# State scope. Clear only the policy attached by this module.
+nesnd_jp_clear_korean_state = {
+    if = { limit = { has_modifier = nesnd_jp_korea_governor } remove_modifier = nesnd_jp_korea_governor }
+    if = { limit = { has_modifier = nesnd_jp_korea_councils } remove_modifier = nesnd_jp_korea_councils }
+    remove_variable = nesnd_jp_korea_administrator
+}
+nesnd_jp_check_korean_state = {
+    if = { limit = { has_variable = nesnd_jp_korea_administrator }
+        if = { limit = { exists = var:nesnd_jp_korea_administrator }
+            if = { limit = { NOT = { owner = var:nesnd_jp_korea_administrator } } nesnd_jp_clear_korean_state = yes }
+        } else = { nesnd_jp_clear_korean_state = yes }
+    }
+}
+# Country scope; an explicit actor survives calls from state callbacks and foreign events.
+nesnd_jp_apply_korean_policy = {
+    if = { limit = { nesnd_jp_korea_policy_value = 1 } nesnd_jp_apply_korean_governor = yes }
+    else_if = { limit = { nesnd_jp_korea_policy_value = 2 } nesnd_jp_apply_korean_councils = yes }
+}
+nesnd_jp_close_korean_governance = {
+    if = { limit = { has_modifier = nesnd_jp_korea_administration } remove_modifier = nesnd_jp_korea_administration }
+    every_scope_state = { limit = { OR = { has_modifier = nesnd_jp_korea_governor has_modifier = nesnd_jp_korea_councils } } nesnd_jp_clear_korean_state = yes }
+}
+nesnd_jp_ensure_korea = {
+    if = { limit = { nesnd_jp_korea_available = yes NOT = { has_journal_entry = nesnd_jp_korea } } add_journal_entry = { type = nesnd_jp_korea } }
+    if = { limit = { nesnd_jp_owned_korea = yes } nesnd_jp_apply_korean_policy = yes }
+    else = { nesnd_jp_close_korean_governance = yes }
+}
+nesnd_jp_korean_settlement = {
+    if = { limit = { exists = scope:jp_korea exists = scope:jp_sender }
+        if = { limit = { scope:jp_korea = { is_country_alive = yes } is_subject = no }
+            nesnd_jp_close_korean_governance = yes
+            every_scope_state = { limit = { OR = { state_region = s:STATE_BUSAN state_region = s:STATE_YANGHO } } set_state_owner = scope:jp_korea }
+
+            s:STATE_BUSAN = { remove_claim = scope:jp_sender }
+            s:STATE_YANGHO = { remove_claim = scope:jp_sender }
+            set_variable = nesnd_jp_korea_settled
+            remove_variable = nesnd_jp_korea_policy
+            if = { limit = { NOT = { scope:jp_korea = scope:jp_partner } } change_relations = { country = scope:jp_korea value = 25 } }
+        }
+    }
+}
+
+
+nesnd_jp_apply_korean_governor = {
+    every_scope_state = {
+        limit = { OR = { state_region = s:STATE_BUSAN state_region = s:STATE_YANGHO } }
+        set_variable = { name = nesnd_jp_korea_administrator value = owner }
+        if = { limit = { has_modifier = nesnd_jp_korea_councils } remove_modifier = nesnd_jp_korea_councils }
+        if = { limit = { NOT = { has_modifier = nesnd_jp_korea_governor } } add_modifier = { name = nesnd_jp_korea_governor } }
+    }
+    if = { limit = { nesnd_jp_owned_korea = yes NOT = { has_modifier = nesnd_jp_korea_administration } } add_modifier = { name = nesnd_jp_korea_administration } }
+}
+
+nesnd_jp_apply_korean_councils = {
+    every_scope_state = {
+        limit = { OR = { state_region = s:STATE_BUSAN state_region = s:STATE_YANGHO } }
+        set_variable = { name = nesnd_jp_korea_administrator value = owner }
+        if = { limit = { has_modifier = nesnd_jp_korea_governor } remove_modifier = nesnd_jp_korea_governor }
+        if = { limit = { NOT = { has_modifier = nesnd_jp_korea_councils } } add_modifier = { name = nesnd_jp_korea_councils } }
+    }
+    if = { limit = { nesnd_jp_owned_korea = yes NOT = { has_modifier = nesnd_jp_korea_administration } } add_modifier = { name = nesnd_jp_korea_administration } }
+}

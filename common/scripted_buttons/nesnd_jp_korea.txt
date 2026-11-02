@@ -1,0 +1,49 @@
+﻿nesnd_jp_korean_governor = {
+    name = nesnd_jp_korean_governor desc = nesnd_jp_korean_governor_desc
+    visible = { nesnd_jp_owned_korea = yes NOT = { nesnd_jp_korea_policy_value = 1 } }
+    possible = { gold_reserves >= nesnd_jp_negotiation_cost hidden_trigger = { nesnd_jp_can_change_korea = yes } }
+    effect = { if = { limit = { nesnd_jp_can_change_korea = yes NOT = { nesnd_jp_korea_policy_value = 1 } }
+            add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
+            set_variable = { name = nesnd_jp_korea_policy value = 1 }
+            set_variable = { name = nesnd_jp_korea_policy_cooldown months = 24 }
+            nesnd_jp_apply_korean_governor = yes
+        }
+    }
+    ai_chance = { value = 10 if = { limit = { nesnd_jp_route_military = yes } add = 20 } }
+}
+nesnd_jp_korean_councils = {
+    name = nesnd_jp_korean_councils desc = nesnd_jp_korean_councils_desc
+    visible = { nesnd_jp_owned_korea = yes NOT = { nesnd_jp_korea_policy_value = 2 } }
+    possible = { gold_reserves >= nesnd_jp_negotiation_cost hidden_trigger = { nesnd_jp_can_change_korea = yes } }
+    effect = { if = { limit = { nesnd_jp_can_change_korea = yes NOT = { nesnd_jp_korea_policy_value = 2 } }
+            add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
+            set_variable = { name = nesnd_jp_korea_policy value = 2 }
+            set_variable = { name = nesnd_jp_korea_policy_cooldown months = 24 }
+            nesnd_jp_apply_korean_councils = yes
+        }
+    }
+    ai_chance = { value = 10 if = { limit = { nesnd_jp_route_representative = yes } add = 20 } }
+}
+nesnd_jp_korean_envoy = {
+    name = nesnd_jp_korean_envoy desc = nesnd_jp_korean_envoy_desc
+    visible = { is_subject = no c:KOR ?= { is_country_alive = yes NOT = { is_direct_subject_of = prev } } NOT = { has_variable = nesnd_jp_korea_settled } NOT = { has_variable = nesnd_jp_request_cooldown } }
+    possible = { gold_reserves >= nesnd_jp_negotiation_cost hidden_trigger = { nesnd_jp_korean_envoy_available = yes }
+        is_at_war = no
+        is_active_in_diplomatic_play = no
+        NOT = { any_scope_state = { OR = { state_region = s:STATE_BUSAN state_region = s:STATE_YANGHO } NOT = { controller = owner } } }
+        trigger_if = { limit = { exists = c:KOR }
+            c:KOR = { NOT = { is_direct_subject_of = prev } }
+            trigger_if = { limit = { c:KOR = { is_subject = yes exists = overlord } } NOT = { has_war_with = c:KOR.overlord } }
+        }
+    }
+    effect = { if = { limit = { nesnd_jp_korean_envoy_available = yes }
+            c:KOR = {
+                save_scope_as = jp_korea
+                if = { limit = { is_subject = yes } overlord = { save_scope_as = jp_partner } }
+                else = { save_scope_as = jp_partner }
+            }
+            nesnd_jp_send_request = { KIND = 5 }
+        }
+    }
+    ai_chance = { value = 1 if = { limit = { nesnd_jp_route_representative = yes } add = 5 } }
+}

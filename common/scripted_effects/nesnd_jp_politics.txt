@@ -1,0 +1,91 @@
+﻿nesnd_jp_political_clear_costs = {
+    if = { limit = { has_modifier = nesnd_jp_reform_effort } remove_modifier = nesnd_jp_reform_effort }
+    if = { limit = { has_modifier = nesnd_jp_court_debate } remove_modifier = nesnd_jp_court_debate }
+    if = { limit = { has_modifier = nesnd_jp_military_debate } remove_modifier = nesnd_jp_military_debate }
+    if = { limit = { has_modifier = nesnd_jp_representative_debate } remove_modifier = nesnd_jp_representative_debate }
+}
+nesnd_jp_political_sync = {
+    save_scope_as = jp_bar_owner
+    if = { limit = { has_journal_entry = nesnd_jp_politics exists = scope:jp_bar_owner }
+        je:nesnd_jp_politics = { set_bar_progress = { name = nesnd_jp_political_bar value = scope:jp_bar_owner.nesnd_jp_political_progress } }
+    }
+}
+nesnd_jp_political_monthly = {
+    if = { limit = { nesnd_jp_politics_live = yes has_variable = nesnd_jp_political_started }
+        set_variable = { name = nesnd_jp_political_progress value = { value = nesnd_jp_political_progress add = nesnd_jp_political_delta } }
+        clamp_variable = { name = nesnd_jp_political_progress min = 0 max = 100 }
+        if = { limit = { nesnd_jp_political_ready = yes } set_variable = { name = nesnd_jp_political_good_months value = { value = nesnd_jp_political_good_months add = 1 } } }
+        else = { set_variable = { name = nesnd_jp_political_good_months value = 0 } }
+        nesnd_jp_political_sync = yes
+    }
+}
+nesnd_jp_political_stop = {
+    nesnd_jp_political_clear_costs = yes
+    remove_variable = nesnd_jp_political_started
+    remove_variable = nesnd_jp_political_route
+    set_variable = { name = nesnd_jp_political_setback months = 24 }
+    set_variable = { name = nesnd_jp_political_progress value = 0 }
+    set_variable = { name = nesnd_jp_political_good_months value = 0 }
+}
+
+nesnd_jp_choose_court = {
+    add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
+    nesnd_jp_political_clear_costs = yes
+    set_variable = { name = nesnd_jp_political_route value = 1 }
+    set_variable = nesnd_jp_political_started
+    set_variable = { name = nesnd_jp_policy_cooldown months = 12 }
+    set_variable = { name = nesnd_jp_political_progress value = 0 }
+    set_variable = { name = nesnd_jp_political_good_months value = 0 }
+    add_modifier = { name = nesnd_jp_court_debate }
+    nesnd_jp_ensure_politics = yes
+    nesnd_jp_ensure_industry = yes
+    nesnd_jp_political_sync = yes
+}
+nesnd_jp_choose_military = {
+    add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
+    nesnd_jp_political_clear_costs = yes
+    set_variable = { name = nesnd_jp_political_route value = 2 }
+    set_variable = nesnd_jp_political_started
+    set_variable = { name = nesnd_jp_policy_cooldown months = 12 }
+    set_variable = { name = nesnd_jp_political_progress value = 0 }
+    set_variable = { name = nesnd_jp_political_good_months value = 0 }
+    add_modifier = { name = nesnd_jp_military_debate }
+    nesnd_jp_ensure_politics = yes
+    nesnd_jp_ensure_industry = yes
+    nesnd_jp_political_sync = yes
+}
+nesnd_jp_choose_representative = {
+    add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
+    nesnd_jp_political_clear_costs = yes
+    set_variable = { name = nesnd_jp_political_route value = 3 }
+    set_variable = nesnd_jp_political_started
+    set_variable = { name = nesnd_jp_policy_cooldown months = 12 }
+    set_variable = { name = nesnd_jp_political_progress value = 0 }
+    set_variable = { name = nesnd_jp_political_good_months value = 0 }
+    add_modifier = { name = nesnd_jp_representative_debate }
+    nesnd_jp_ensure_politics = yes
+    nesnd_jp_ensure_industry = yes
+    nesnd_jp_political_sync = yes
+}
+nesnd_jp_ensure_politics = {
+    if = { limit = { nesnd_jp_politics_available = yes }
+        if = { limit = { NOT = { has_journal_entry = nesnd_jp_politics } } add_journal_entry = { type = nesnd_jp_politics } }
+        if = { limit = { nesnd_jp_route_court = yes NOT = { nesnd_jp_court_ready = yes } NOT = { has_journal_entry = nesnd_jp_court_reform } } add_journal_entry = { type = nesnd_jp_court_reform } }
+        if = { limit = { nesnd_jp_route_military = yes NOT = { nesnd_jp_military_ready = yes } NOT = { has_journal_entry = nesnd_jp_military_reform } } add_journal_entry = { type = nesnd_jp_military_reform } }
+        if = { limit = { nesnd_jp_route_representative = yes NOT = { nesnd_jp_representative_ready = yes } NOT = { has_journal_entry = nesnd_jp_representative_reform } } add_journal_entry = { type = nesnd_jp_representative_reform } }
+    }
+    if = { limit = { NOT = { nesnd_jp_politics_live = yes } } nesnd_jp_political_clear_costs = yes }
+}
+nesnd_jp_political_finish = { if = { limit = { NOT = { has_variable = nesnd_jp_political_done } }
+        if = { limit = { nesnd_jp_route_court = yes } set_variable = nesnd_jp_court_reformed add_modifier = { name = nesnd_jp_court_settlement months = 120 } }
+        if = { limit = { nesnd_jp_route_military = yes } set_variable = nesnd_jp_military_reformed add_modifier = { name = nesnd_jp_military_settlement months = 120 } }
+        if = { limit = { nesnd_jp_route_representative = yes } set_variable = nesnd_jp_representative_reformed add_modifier = { name = nesnd_jp_representative_settlement months = 120 } }
+        every_scope_character = { limit = { has_variable = daimyo_var } character_clear_daimyo_status = yes }
+        set_variable = nesnd_jp_political_done
+        if = { limit = { c:JAP ?= this } capital ?= { set_variable = nesnd_jp_political_receipt_JAP } }
+        if = { limit = { c:JTK ?= this } capital ?= { set_variable = nesnd_jp_political_receipt_JTK } }
+        if = { limit = { c:JIM ?= this } capital ?= { set_variable = nesnd_jp_political_receipt_JIM } }
+        nesnd_jp_political_clear_costs = yes
+        trigger_event = { id = nesnd_jp_development.2 popup = yes }
+    }
+}

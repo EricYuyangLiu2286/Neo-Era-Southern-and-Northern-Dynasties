@@ -1,0 +1,35 @@
+﻿on_monthly_pulse_country = { on_actions = { nesnd_jp_monthly_maintenance } }
+nesnd_jp_monthly_maintenance = {
+    trigger = { nesnd_jp_country = yes }
+    effect = { nesnd_jp_bootstrap = yes }
+}
+on_game_started_after_lobby = { on_actions = { nesnd_jp_startup } }
+nesnd_jp_startup = { effect = {
+        if = { limit = { c:USM ?= { is_country_alive = yes } } c:USM = { nesnd_jp_migrate_legacy_lin = yes } }
+        else = { c:JAP ?= { if = { limit = { is_country_alive = yes } nesnd_jp_migrate_legacy_lin = yes } } }
+        c:JAP ?= { if = { limit = { is_country_alive = yes } nesnd_jp_bootstrap = yes } }
+        c:JTK ?= { if = { limit = { is_country_alive = yes } nesnd_jp_bootstrap = yes } }
+        c:JIM ?= { if = { limit = { is_country_alive = yes } nesnd_jp_bootstrap = yes } }
+    }
+}
+on_wargoal_enforced = { on_actions = { nesnd_jp_record_war_result } }
+nesnd_jp_record_war_result = { effect = {
+        if = { limit = { nesnd_jp_country = yes NOT = { has_variable = nesnd_jp_victory_lock } }
+            set_variable = { name = nesnd_jp_victory months = 24 }
+            set_variable = { name = nesnd_jp_victory_lock months = 12 }
+        }
+        if = { limit = { exists = scope:target }
+            scope:target = { if = { limit = { nesnd_jp_country = yes NOT = { has_variable = nesnd_jp_defeat_lock } }
+                    set_variable = { name = nesnd_jp_defeat months = 12 }
+                    set_variable = { name = nesnd_jp_defeat_lock months = 12 }
+                }
+            }
+        }
+    }
+}
+
+on_character_death = { on_actions = { nesnd_jp_record_heikatsu_death } }
+nesnd_jp_record_heikatsu_death = {
+    trigger = { nesnd_jp_is_heikatsu = yes }
+    effect = { set_global_variable = nesnd_jp_heikatsu_ever_created }
+}

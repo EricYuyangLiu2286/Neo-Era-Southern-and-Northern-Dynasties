@@ -40,48 +40,52 @@ nesnd_supply_livelihood_ready = {
     capital.market = { mg:grain = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } }
 }
 nesnd_supply_partner_valid = {
-	trigger_if = {
-		limit = {
-			exists = var:nesnd_supply_partner
-			exists = var:nesnd_supply_sponsor
-			exists = var:nesnd_supply_partner_sponsor
-		}
-		exists = var:nesnd_supply_partner
-		var:nesnd_supply_partner ?= {
-			is_country_alive = yes
-		}
-		NOT = {
-			has_war_with = var:nesnd_supply_partner
-		}
-		OR = {
-			AND = {
-				is_subject = yes
-				overlord = var:nesnd_supply_sponsor
-			}
-			AND = {
-				is_subject = no
-				this = var:nesnd_supply_sponsor
-			}
-		}
-		var:nesnd_supply_partner ?= {
-			OR = {
-				AND = {
-					is_subject = yes
-					overlord = prev.var:nesnd_supply_partner_sponsor
-				}
-				AND = {
-					is_subject = no
-					this = prev.var:nesnd_supply_partner_sponsor
-				}
-			}
-		}
-	}
-	trigger_else = {
-		always = no
-	}
+    trigger_if = {
+        limit = {
+            exists = var:nesnd_supply_partner
+            exists = var:nesnd_supply_sponsor
+            exists = var:nesnd_supply_partner_sponsor
+        }
+        exists = var:nesnd_supply_partner
+        var:nesnd_supply_partner ?= {
+            is_country_alive = yes
+        }
+        NOT = {
+            has_war_with = var:nesnd_supply_partner
+        }
+        OR = {
+            AND = {
+                is_subject = yes
+                overlord = var:nesnd_supply_sponsor
+            }
+            AND = {
+                is_subject = no
+                this = var:nesnd_supply_sponsor
+            }
+        }
+        var:nesnd_supply_partner ?= {
+            OR = {
+                AND = {
+                    is_subject = yes
+                    overlord = prev.var:nesnd_supply_partner_sponsor
+                }
+                AND = {
+                    is_subject = no
+                    this = prev.var:nesnd_supply_partner_sponsor
+                }
+            }
+        }
+    }
+    trigger_else = {
+        always = no
+    }
 }
 nesnd_supply_diplomacy_ready = {
-    OR = { has_variable = nesnd_supply_self_reliance nesnd_supply_partner_valid = yes }
+    OR = {
+        trigger_if = { limit = { exists = capital.market } capital.market = { participants >= 2 } } trigger_else = { always = no }
+        has_variable = nesnd_supply_self_reliance
+        nesnd_supply_partner_valid = yes
+    }
 }
 nesnd_supply_all_ready = {
     has_variable = nesnd_supply_workforce_metrics_v1
@@ -93,103 +97,103 @@ nesnd_supply_all_ready = {
     nesnd_supply_diplomacy_ready = yes
 }
 nesnd_supply_request_valid = {
-	trigger_if = {
-		limit = {
-			exists = scope:nesnd_supply_requester
-		}
-		trigger_if = {
-			limit = {
-				scope:nesnd_supply_requester ?= {
-					exists = var:nesnd_supply_pending_sponsor
-					exists = var:nesnd_supply_sponsor
-					exists = var:nesnd_supply_pending
-				}
-			}
-			exists = scope:nesnd_supply_requester
-			is_country_alive = yes
-			OR = {
-				AND = {
-					is_subject = yes
-					overlord = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor
-				}
-				AND = {
-					is_subject = no
-					this = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor
-				}
-			}
-			scope:nesnd_supply_requester ?= {
-				is_country_alive = yes
-				OR = {
-					has_journal_entry = nesnd_supply_preparations
-					has_journal_entry = nesnd_supply_hus_preparations
-				}
-				NOT = {
-					has_variable = nesnd_supply_dismissed
-				}
-				OR = {
-					AND = {
-						is_subject = yes
-						overlord = var:nesnd_supply_sponsor
-					}
-					AND = {
-						is_subject = no
-						this = var:nesnd_supply_sponsor
-					}
-				}
-				has_variable = nesnd_supply_pending
-				var:nesnd_supply_pending = root
-				NOT = {
-					has_war_with = root
-				}
-			}
-		}
-		trigger_else = {
-			always = no
-		}
-	}
-	trigger_else = {
-		always = no
-	}
+    trigger_if = {
+        limit = {
+            exists = scope:nesnd_supply_requester
+        }
+        trigger_if = {
+            limit = {
+                scope:nesnd_supply_requester ?= {
+                    exists = var:nesnd_supply_pending_sponsor
+                    exists = var:nesnd_supply_sponsor
+                    exists = var:nesnd_supply_pending
+                }
+            }
+            exists = scope:nesnd_supply_requester
+            is_country_alive = yes
+            OR = {
+                AND = {
+                    is_subject = yes
+                    overlord = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor
+                }
+                AND = {
+                    is_subject = no
+                    this = scope:nesnd_supply_requester.var:nesnd_supply_pending_sponsor
+                }
+            }
+            scope:nesnd_supply_requester ?= {
+                is_country_alive = yes
+                OR = {
+                    has_journal_entry = nesnd_supply_preparations
+                    has_journal_entry = nesnd_supply_hus_preparations
+                }
+                NOT = {
+                    has_variable = nesnd_supply_dismissed
+                }
+                OR = {
+                    AND = {
+                        is_subject = yes
+                        overlord = var:nesnd_supply_sponsor
+                    }
+                    AND = {
+                        is_subject = no
+                        this = var:nesnd_supply_sponsor
+                    }
+                }
+                has_variable = nesnd_supply_pending
+                var:nesnd_supply_pending = root
+                NOT = {
+                    has_war_with = root
+                }
+            }
+        }
+        trigger_else = {
+            always = no
+        }
+    }
+    trigger_else = {
+        always = no
+    }
 }
 
 nesnd_supply_trade_request_valid = {
-	trigger_if = {
-		limit = {
-			exists = scope:nesnd_supply_requester
-		}
-		trigger_if = {
-			limit = {
-				scope:nesnd_supply_requester ?= {
-					exists = var:nesnd_supply_trade_pending
-					exists = var:nesnd_supply_partner
-				}
-			}
-			exists = scope:nesnd_supply_requester
-			is_country_alive = yes
-			scope:nesnd_supply_requester ?= {
-				is_country_alive = yes
-				is_at_war = no
-				OR = {
-					has_journal_entry = nesnd_supply_preparations
-					has_journal_entry = nesnd_supply_hus_preparations
-				}
-				NOT = {
-					has_variable = nesnd_supply_dismissed
-				}
-				NOT = {
-					has_variable = nesnd_supply_done
-				}
-				has_variable = nesnd_supply_trade_pending
-				var:nesnd_supply_trade_pending = root
-				var:nesnd_supply_partner = root
-				nesnd_supply_partner_valid = yes
-			}
-		}
-		trigger_else = {
-			always = no
-		}
-	}
-	trigger_else = {
-		always = no
-	}
+    trigger_if = {
+        limit = {
+            exists = scope:nesnd_supply_requester
+        }
+        trigger_if = {
+            limit = {
+                scope:nesnd_supply_requester ?= {
+                    exists = var:nesnd_supply_trade_pending
+                    exists = var:nesnd_supply_partner
+                }
+            }
+            exists = scope:nesnd_supply_requester
+            is_country_alive = yes
+            scope:nesnd_supply_requester ?= {
+                is_country_alive = yes
+                is_at_war = no
+                OR = {
+                    has_journal_entry = nesnd_supply_preparations
+                    has_journal_entry = nesnd_supply_hus_preparations
+                }
+                NOT = {
+                    has_variable = nesnd_supply_dismissed
+                }
+                NOT = {
+                    has_variable = nesnd_supply_done
+                }
+                has_variable = nesnd_supply_trade_pending
+                var:nesnd_supply_trade_pending = root
+                var:nesnd_supply_partner = root
+                nesnd_supply_partner_valid = yes
+            }
+        }
+        trigger_else = {
+            always = no
+        }
+    }
+    trigger_else = {
+        always = no
+    }
 }

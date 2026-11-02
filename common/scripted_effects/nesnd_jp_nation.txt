@@ -1,0 +1,29 @@
+﻿nesnd_jp_nation_sync = {
+    save_scope_as = jp_bar_owner
+    if = { limit = { has_journal_entry = nesnd_jp_nation exists = scope:jp_bar_owner }
+        je:nesnd_jp_nation = { set_bar_progress = { name = nesnd_jp_nation_bar value = scope:jp_bar_owner.nesnd_jp_nation_score } }
+    }
+}
+nesnd_jp_ensure_nation = {
+    if = { limit = { nesnd_jp_country = yes }
+        if = { limit = { NOT = { has_variable = nesnd_jp_nation_done } any_scope_state = { has_variable = nesnd_jp_nation_done } } set_variable = nesnd_jp_nation_done }
+        if = { limit = { has_variable = completed_je_meiji_army } set_variable = nesnd_jp_army_done }
+        if = { limit = { has_variable = completed_je_meiji_diplomacy } set_variable = nesnd_jp_diplomacy_done }
+        if = { limit = { nesnd_jp_nation_available = yes }
+            if = { limit = { NOT = { has_journal_entry = nesnd_jp_nation } } add_journal_entry = { type = nesnd_jp_nation } }
+            if = { limit = { NOT = { has_variable = nesnd_jp_army_done } NOT = { has_journal_entry = nesnd_jp_new_army } } add_journal_entry = { type = nesnd_jp_new_army } }
+            if = { limit = { NOT = { has_variable = nesnd_jp_diplomacy_done } NOT = { has_journal_entry = nesnd_jp_open_diplomacy } } add_journal_entry = { type = nesnd_jp_open_diplomacy } }
+            nesnd_jp_nation_sync = yes
+        }
+        if = { limit = { nesnd_jp_ports_available = yes NOT = { has_journal_entry = nesnd_jp_open_ports } } add_journal_entry = { type = nesnd_jp_open_ports } }
+        if = { limit = { nesnd_jp_islands_available = yes NOT = { has_journal_entry = nesnd_jp_islands } } add_journal_entry = { type = nesnd_jp_islands } }
+    }
+}
+nesnd_jp_nation_monthly = {
+    if = { limit = { nesnd_jp_nation_live = yes }
+        if = { limit = { NOT = { has_variable = nesnd_jp_sovereign_months } } set_variable = { name = nesnd_jp_sovereign_months value = 0 } }
+        if = { limit = { is_subject = no } change_variable = { name = nesnd_jp_sovereign_months add = 1 } }
+        else = { set_variable = { name = nesnd_jp_sovereign_months value = 0 } }
+        nesnd_jp_nation_sync = yes
+    }
+}

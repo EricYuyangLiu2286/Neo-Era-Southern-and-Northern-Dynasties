@@ -1,0 +1,24 @@
+﻿on_state_owner_change = { on_actions = { nesnd_jp_korean_state_changed } }
+on_state_created = { on_actions = { nesnd_jp_korean_state_changed } }
+nesnd_jp_korean_state_changed = { effect = {
+        if = { limit = { exists = var:nesnd_jp_korea_administrator }
+            var:nesnd_jp_korea_administrator = {
+                if = { limit = { is_country_alive = yes NOT = { has_variable = nesnd_jp_korea_check_pending } }
+                    set_variable = { name = nesnd_jp_korea_check_pending days = 2 }
+                    trigger_event = { id = nesnd_jp_court.2 days = 1 }
+                }
+            }
+        }
+        nesnd_jp_check_korean_state = yes
+        if = { limit = { exists = owner } owner = { if = { limit = { nesnd_jp_country = yes }
+                    remove_variable = nesnd_jp_statistics_ready
+                    if = { limit = { NOT = { has_variable = nesnd_jp_statistics_pending } }
+                        set_variable = { name = nesnd_jp_statistics_pending days = 3 }
+                        trigger_event = { id = nesnd_jp_court.3 days = 2 }
+                    }
+                    nesnd_jp_ensure_korea = yes
+                }
+            }
+        }
+    }
+}

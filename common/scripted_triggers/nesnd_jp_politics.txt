@@ -1,0 +1,37 @@
+﻿nesnd_jp_politics_eligible = { nesnd_jp_country = yes NOT = { has_variable = nesnd_jp_political_done } }
+nesnd_jp_politics_available = {
+    nesnd_jp_politics_eligible = yes
+    NOT = { has_variable = nesnd_jp_political_setback }
+    OR = { AND = { c:JAP ?= this NOT = { has_variable = nesnd_japan_partition_state } } is_subject = no has_variable = nesnd_jp_political_permission has_variable = nesnd_jp_political_started }
+}
+nesnd_jp_politics_live = { nesnd_jp_politics_eligible = yes has_journal_entry = nesnd_jp_politics }
+nesnd_jp_can_change_policy = {
+    nesnd_jp_politics_live = yes
+    NOT = { has_variable = nesnd_jp_policy_cooldown }
+    OR = { game_date >= 1840.1.1 has_variable = nesnd_japan_partition_state }
+    gold_reserves >= nesnd_jp_negotiation_cost
+}
+nesnd_jp_political_failure = {
+    trigger_if = { limit = { has_variable = nesnd_jp_political_route }
+        var:nesnd_jp_political_route = 1 NOT = { country_has_monarchy_law = yes }
+    } trigger_else = { always = no }
+}
+nesnd_jp_route_court = { trigger_if = { limit = { has_variable = nesnd_jp_political_route } var:nesnd_jp_political_route = 1 } trigger_else = { always = no } }
+nesnd_jp_court_ready = { country_has_monarchy_law = yes
+    has_law_or_variant = law_type:law_appointed_bureaucrats
+    OR = { has_law_or_variant = law_type:law_wealth_voting has_law_or_variant = law_type:law_census_voting has_law_or_variant = law_type:law_universal_suffrage }
+    institution_investment_level = { institution = institution_schools value >= 2 }
+    country_has_building_type_levels = { target = bt:building_railway value >= nesnd_jp_scale } }
+nesnd_jp_route_military = { trigger_if = { limit = { has_variable = nesnd_jp_political_route } var:nesnd_jp_political_route = 2 } trigger_else = { always = no } }
+nesnd_jp_military_ready = { has_law_or_variant = law_type:law_appointed_bureaucrats
+    OR = { has_law_or_variant = law_type:law_autocracy has_law_or_variant = law_type:law_oligarchy }
+    nesnd_jp_army_ready = yes
+    country_has_building_type_levels = { target = bt:building_arms_industry value >= nesnd_jp_goal_arms }
+    country_has_building_type_levels = { target = bt:building_tooling_workshop value >= nesnd_jp_goal_tools } }
+nesnd_jp_route_representative = { trigger_if = { limit = { has_variable = nesnd_jp_political_route } var:nesnd_jp_political_route = 3 } trigger_else = { always = no } }
+nesnd_jp_representative_ready = { OR = { has_law_or_variant = law_type:law_census_voting has_law_or_variant = law_type:law_universal_suffrage }
+    OR = { has_law_or_variant = law_type:law_right_of_assembly has_law_or_variant = law_type:law_protected_speech }
+    OR = { has_law_or_variant = law_type:law_appointed_bureaucrats has_law_or_variant = law_type:law_elected_bureaucrats }
+    institution_investment_level = { institution = institution_schools value >= 2 }
+    literacy_rate >= 0.4 }
+nesnd_jp_political_ready = { OR = { AND = { nesnd_jp_route_court = yes nesnd_jp_court_ready = yes } AND = { nesnd_jp_route_military = yes nesnd_jp_military_ready = yes } AND = { nesnd_jp_route_representative = yes nesnd_jp_representative_ready = yes } } }

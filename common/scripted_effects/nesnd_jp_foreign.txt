@@ -1,0 +1,143 @@
+﻿nesnd_jp_clear_request = {
+    remove_variable = nesnd_jp_request_clock
+    remove_variable = nesnd_jp_request_partner
+    remove_variable = nesnd_jp_request_kind
+    remove_variable = nesnd_jp_request_quote
+}
+nesnd_jp_send_request = {
+    if = { limit = { nesnd_jp_can_send_request = yes exists = scope:jp_partner }
+        if = { limit = { scope:jp_partner = { is_country_alive = yes } NOT = { has_war_with = scope:jp_partner } NOT = { this = scope:jp_partner } }
+            save_scope_as = jp_sender
+
+            save_scope_value_as = { name = jp_sender_regime value = nesnd_jp_regime }            if = { limit = { is_subject = yes } overlord = { save_scope_as = jp_sender_patron } }
+            else = { save_scope_as = jp_sender_patron }
+            scope:jp_partner = {
+                if = { limit = { is_subject = yes } overlord = { save_scope_as = jp_partner_patron } }
+                else = { save_scope_as = jp_partner_patron }
+                save_scope_value_as = { name = jp_partner_regime value = nesnd_jp_regime }
+                save_scope_value_as = { name = jp_partner_realm_revision value = nesnd_jp_realm_revision }
+            }
+            add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
+            set_variable = { name = nesnd_jp_request_number value = { value = nesnd_jp_request_number add = 1 } }
+            save_scope_value_as = { name = jp_request_number value = nesnd_jp_request_number }
+            set_variable = { name = nesnd_jp_request_kind value = $KIND$ }
+            set_variable = { name = nesnd_jp_request_quote value = nesnd_jp_industrial_grant }
+
+            set_variable = { name = nesnd_jp_request_partner value = scope:jp_partner }
+            set_variable = { name = nesnd_jp_request_clock days = 45 }
+            set_variable = { name = nesnd_jp_request_cooldown months = 6 }
+            scope:jp_partner = { trigger_event = { id = nesnd_jp_foreign.1 days = 1 popup = yes } }
+        }
+    }
+}
+nesnd_jp_ensure_foreign = {
+    if = { limit = { nesnd_jp_foreign_available = yes NOT = { has_journal_entry = nesnd_jp_foreign } } add_journal_entry = { type = nesnd_jp_foreign } }
+    if = { limit = { has_variable = nesnd_jp_request_partner NOT = { has_variable = nesnd_jp_request_clock } }
+
+        nesnd_jp_clear_request = yes
+    }
+    if = { limit = { has_variable = nesnd_jp_political_permission }
+        if = { limit = { is_subject = yes }
+            if = { limit = { exists = var:nesnd_jp_permission_patron }
+                if = { limit = { NOT = { overlord = var:nesnd_jp_permission_patron } } remove_variable = nesnd_jp_political_permission remove_variable = nesnd_jp_permission_patron }
+            } else = { remove_variable = nesnd_jp_political_permission }
+        } else = { remove_variable = nesnd_jp_permission_patron }
+    }
+    if = { limit = { has_variable = nesnd_jp_union_authorized NOT = { nesnd_jp_authorized_union = yes } } remove_variable = nesnd_jp_union_authorized remove_variable = nesnd_jp_union_patron }
+}
+nesnd_jp_refuse_request = {
+    if = { limit = { nesnd_jp_reply_valid = yes }
+        scope:jp_sender = {
+            if = { limit = { OR = { nesnd_jp_request_kind = 1 nesnd_jp_request_kind = 2 } }
+                add_liberty_desire = 10
+                create_diplomatic_catalyst = { type = catalyst_autonomy_increase_denied target = scope:jp_partner }
+                set_variable = { name = nesnd_jp_diplomatic_humiliation months = 12 }
+            }
+            change_relations = { country = scope:jp_partner value = -10 }
+
+
+            trigger_event = { id = nesnd_jp_foreign.3 popup = yes }
+            nesnd_jp_clear_request = yes
+        }
+    }
+}
+nesnd_jp_accept_request = {
+    if = { limit = { nesnd_jp_can_accept_request = yes }
+        # Root is the answering country; all actor effects explicitly return to the requester.
+
+        if = { limit = { scope:jp_sender = { nesnd_jp_request_kind = 4 } }
+            add_treasury = { value = scope:jp_sender.nesnd_jp_request_quote multiply = -1 }
+            scope:jp_sender = {
+                add_treasury = nesnd_jp_request_quote
+                add_modifier = { name = nesnd_jp_foreign_workshops months = 12 }
+                set_variable = { name = nesnd_jp_capital_aid_lock years = 3 }
+            }
+        }
+        scope:jp_sender = {
+            if = { limit = { nesnd_jp_request_kind = 1 }
+                increase_autonomy = yes add_liberty_desire = -30
+                create_bidirectional_truce = { country = scope:jp_partner months = 60 }
+                create_diplomatic_catalyst = { type = catalyst_autonomy_change_imposed target = scope:jp_partner }
+            }
+            else_if = { limit = { nesnd_jp_request_kind = 2 }
+                make_independent = yes
+                create_bidirectional_truce = { country = scope:jp_partner months = 60 }
+                set_variable = { name = nesnd_jp_sovereign_months value = 0 }
+            }
+            else_if = { limit = { nesnd_jp_request_kind = 3 }
+                set_variable = nesnd_jp_political_permission
+                set_variable = { name = nesnd_jp_permission_patron value = scope:jp_partner }
+            }
+            else_if = { limit = { nesnd_jp_request_kind = 5 } nesnd_jp_korean_settlement = yes }
+            else_if = { limit = { nesnd_jp_request_kind = 7 }
+                set_variable = nesnd_jp_union_authorized
+                set_variable = { name = nesnd_jp_union_patron value = scope:jp_partner }
+            }
+            # Union needs the explicit consent represented by this option, plus valid sovereignty.
+            if = { limit = { nesnd_jp_request_kind = 6 }
+                nesnd_jp_inherit_partner = yes
+                annex = scope:jp_partner
+            } else = {
+                change_relations = { country = scope:jp_partner value = 25 }
+                save_scope_value_as = { name = jp_reply_kind value = nesnd_jp_request_kind }
+                trigger_event = { id = nesnd_jp_foreign.2 popup = yes }
+            }
+            nesnd_jp_clear_request = yes
+            nesnd_jp_bootstrap = yes
+        }
+    }
+}
+
+nesnd_jp_inherit_partner = {
+    if = { limit = { exists = scope:jp_partner }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_mining_done } } set_variable = nesnd_jp_mining_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_arsenals_done } } set_variable = nesnd_jp_arsenals_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_metal_cities_done } } set_variable = nesnd_jp_metal_cities_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_cash_crops_done } } set_variable = nesnd_jp_cash_crops_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_textiles_done } } set_variable = nesnd_jp_textiles_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_consumer_goods_done } } set_variable = nesnd_jp_consumer_goods_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_living_standards_done } } set_variable = nesnd_jp_living_standards_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_food_supply_done } } set_variable = nesnd_jp_food_supply_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_food_cities_done } } set_variable = nesnd_jp_food_cities_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_food_processing_done } } set_variable = nesnd_jp_food_processing_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_army_done } } set_variable = nesnd_jp_army_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_diplomacy_done } } set_variable = nesnd_jp_diplomacy_done }
+        if = { limit = { scope:jp_partner = { has_variable = nesnd_jp_nation_done } } set_variable = nesnd_jp_nation_done }
+    }
+}
+
+nesnd_jp_new_realm = {
+    nesnd_jp_clear_request = yes
+    remove_variable = nesnd_jp_established
+    remove_variable = nesnd_jp_establishment_opened
+    if = { limit = { has_modifier = nesnd_jp_settled_administration } remove_modifier = nesnd_jp_settled_administration }
+    set_variable = { name = nesnd_jp_request_number value = { value = nesnd_jp_request_number add = 1 } }
+    set_variable = { name = nesnd_jp_realm_revision value = { value = nesnd_jp_realm_revision add = 1 } }
+    remove_variable = nesnd_jp_political_permission
+    remove_variable = nesnd_jp_permission_patron
+    remove_variable = nesnd_jp_union_authorized
+    remove_variable = nesnd_jp_union_patron
+    remove_variable = nesnd_jp_statistics_ready
+    remove_variable = nesnd_jp_statistics_pending
+    set_variable = { name = nesnd_jp_sovereign_months value = 0 }
+}

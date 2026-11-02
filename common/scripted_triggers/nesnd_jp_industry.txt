@@ -1,0 +1,82 @@
+﻿nesnd_jp_affordable_grain = {
+    trigger_if = { limit = { exists = capital }
+        capital = { sg:grain = { state_goods_pricier <= 0.1 } }
+    }
+    trigger_else = { always = no }
+}
+nesnd_jp_industry_metal = { nesnd_jp_industry_available = yes c:JTK ?= this }
+nesnd_jp_industry_light = { nesnd_jp_industry_available = yes c:JAP ?= this }
+nesnd_jp_industry_food = { nesnd_jp_industry_available = yes c:JIM ?= this }
+nesnd_jp_mining_available = { nesnd_jp_industry_metal = yes NOT = { has_variable = nesnd_jp_mining_done } }
+nesnd_jp_mining_ready = {
+    country_has_building_type_levels = { target = bt:building_iron_mine value >= nesnd_jp_goal_mine }
+    country_has_building_type_levels = { target = bt:building_coal_mine value >= nesnd_jp_goal_coal }
+    country_has_building_type_levels = { target = bt:building_logging_camp value >= nesnd_jp_goal_logging }
+    any_scope_building = { is_building_type = building_iron_mine occupancy >= 0.6 weekly_profit > 0 }
+}
+nesnd_jp_arsenals_available = { nesnd_jp_industry_metal = yes NOT = { has_variable = nesnd_jp_arsenals_done } has_variable = nesnd_jp_mining_done }
+nesnd_jp_arsenals_ready = {
+    country_has_building_type_levels = { target = bt:building_arms_industry value >= nesnd_jp_goal_arms }
+    country_has_building_type_levels = { target = bt:building_shipyard value >= nesnd_jp_goal_shipyard }
+    country_has_building_type_levels = { target = bt:building_steel_mill value >= nesnd_jp_goal_steel }
+    country_has_building_type_levels = { target = bt:building_tooling_workshop value >= nesnd_jp_goal_tools }
+    any_scope_building = { is_building_type = building_arms_industry occupancy >= 0.6 weekly_profit > 0 }
+    any_scope_building = { is_building_type = building_shipyard occupancy >= 0.6 weekly_profit > 0 }
+
+
+}
+nesnd_jp_metal_cities_available = { nesnd_jp_industry_metal = yes NOT = { has_variable = nesnd_jp_metal_cities_done } has_variable = nesnd_jp_arsenals_done }
+nesnd_jp_metal_cities_ready = {
+    any_scope_state = { count >= 3 state_has_building_type_levels = { target = bt:building_urban_center value >= 5 } }
+    institution_investment_level = { institution = institution_schools value >= 2 }
+}
+nesnd_jp_cash_crops_available = { nesnd_jp_industry_light = yes NOT = { has_variable = nesnd_jp_cash_crops_done } }
+nesnd_jp_cash_crops_ready = {
+    calc_true_if = { amount >= 2
+        country_has_building_type_levels = { target = bt:building_cotton_plantation value >= nesnd_jp_goal_cotton }
+        country_has_building_type_levels = { target = bt:building_silk_plantation value >= nesnd_jp_goal_silk }
+        country_has_building_type_levels = { target = bt:building_tea_plantation value >= nesnd_jp_goal_tea }
+    }
+}
+nesnd_jp_textiles_available = { nesnd_jp_industry_light = yes NOT = { has_variable = nesnd_jp_textiles_done } has_variable = nesnd_jp_cash_crops_done }
+nesnd_jp_textiles_ready = {
+    country_has_building_type_levels = { target = bt:building_textile_mill value >= nesnd_jp_goal_cloth }
+    any_scope_building = { is_building_type = building_textile_mill occupancy >= 0.6 weekly_profit > 0 }
+}
+nesnd_jp_consumer_goods_available = { nesnd_jp_industry_light = yes NOT = { has_variable = nesnd_jp_consumer_goods_done } has_variable = nesnd_jp_textiles_done }
+nesnd_jp_consumer_goods_ready = {
+    country_has_building_type_levels = { target = bt:building_food_industry value >= nesnd_jp_goal_food }
+    country_has_building_type_levels = { target = bt:building_furniture_manufactory value >= nesnd_jp_goal_consumer }
+    country_has_building_type_levels = { target = bt:building_glassworks value >= nesnd_jp_goal_consumer }
+    any_scope_building = { is_building_type = building_food_industry occupancy >= 0.6 weekly_profit > 0 }
+}
+nesnd_jp_living_standards_available = { nesnd_jp_industry_light = yes NOT = { has_variable = nesnd_jp_living_standards_done } has_variable = nesnd_jp_consumer_goods_done }
+nesnd_jp_living_standards_ready = {
+    average_sol >= 14
+    institution_investment_level = { institution = institution_schools value >= 2 }
+    any_scope_state = { state_has_building_type_levels = { target = bt:building_urban_center value >= 5 } }
+}
+nesnd_jp_food_supply_available = { nesnd_jp_industry_food = yes NOT = { has_variable = nesnd_jp_food_supply_done } }
+nesnd_jp_food_supply_ready = {
+    OR = {
+        AND = {
+            country_has_building_type_levels = { target = bt:building_rice_farm value >= nesnd_jp_goal_rice }
+            any_scope_building = { is_building_type = building_rice_farm occupancy >= 0.6 }
+        }
+        nesnd_jp_affordable_grain = yes
+    }
+    NOT = { any_scope_state = { has_famine = yes } }
+}
+nesnd_jp_food_cities_available = { nesnd_jp_industry_food = yes NOT = { has_variable = nesnd_jp_food_cities_done } has_variable = nesnd_jp_food_supply_done }
+nesnd_jp_food_cities_ready = {
+    any_scope_state = { state_has_building_type_levels = { target = bt:building_urban_center value >= 3 } }
+    country_has_building_type_levels = { target = bt:building_paper_mill value >= 1 }
+    institution_investment_level = { institution = institution_schools value >= 1 }
+}
+nesnd_jp_food_processing_available = { nesnd_jp_industry_food = yes NOT = { has_variable = nesnd_jp_food_processing_done } has_variable = nesnd_jp_food_cities_done }
+nesnd_jp_food_processing_ready = {
+    country_has_building_type_levels = { target = bt:building_food_industry value >= nesnd_jp_goal_food }
+    has_technology_researched = canneries
+    any_scope_building = { is_building_type = building_food_industry occupancy >= 0.6 weekly_profit > 0 OR = { has_active_production_method = pm_cannery has_active_production_method = pm_cannery_fish has_active_production_method = pm_vacuum_canning has_active_production_method = pm_vacuum_canning_principle_3 } }
+    any_scope_state = { state_has_building_type_levels = { target = bt:building_urban_center value >= 5 } }
+}

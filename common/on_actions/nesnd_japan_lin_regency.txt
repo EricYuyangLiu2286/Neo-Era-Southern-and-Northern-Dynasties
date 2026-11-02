@@ -1,13 +1,23 @@
 ﻿on_monthly_pulse_country = { on_actions = { nesnd_japan_lin_monthly } }
-nesnd_japan_lin_monthly = {
- effect = {
-  if = { limit = { c:USM ?= this }
-   nesnd_japan_lin_maintain_commission = yes
-   nesnd_japan_lin_try_appoint = yes
-  }
-  if = {
-   limit = { has_variable = nesnd_japan_lin_regency_active NOT = { nesnd_japan_lin_regency_is_active = yes } }
-   nesnd_japan_lin_clear_recipient = yes
-  }
- }
+nesnd_japan_lin_monthly = { effect = {
+        if = { limit = { c:USM ?= this }
+            nesnd_jp_migrate_legacy_lin = yes
+            if = { limit = { NOT = { has_variable = nesnd_jp_legacy_lin } }
+                nesnd_japan_lin_maintain_commission = yes
+                nesnd_japan_lin_try_appoint = yes
+            }
+        }
+        if = { limit = { c:JAP ?= this NOT = { c:USM ?= { is_country_alive = yes } } } nesnd_jp_migrate_legacy_lin = yes }
+        if = { limit = { c:JIM ?= this } nesnd_jp_refresh_court = yes }
+    }
+}
+on_new_ruler = { on_actions = { nesnd_jp_court_ruler_changed } }
+nesnd_jp_court_ruler_changed = { effect = {
+        if = { limit = { exists = owner } owner = { if = { limit = { c:JIM ?= this } trigger_event = { id = nesnd_jp_court.1 days = 1 } } } }
+    }
+}
+on_character_death = { on_actions = { nesnd_jp_court_character_died } }
+nesnd_jp_court_character_died = { effect = {
+        if = { limit = { exists = owner } owner = { if = { limit = { c:JIM ?= this } trigger_event = { id = nesnd_jp_court.1 days = 1 } } } }
+    }
 }
