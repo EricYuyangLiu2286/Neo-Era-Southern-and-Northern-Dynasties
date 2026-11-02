@@ -83,3 +83,7 @@ flowchart TD
 ## 西秦与唐衣大食实施（2026-11-02）
 
 新规格与完整状态见 `20261102-qin-persia-implementation.md`、WORK/reports/qin-persia-20261102/release-notes.md及主MOD任务16。12个JE及事件/按钮/文化/战争闭包已完成外部检查；ENGINE_NOT_RUN。旧国家体验矩阵保留作总体计划，不将本次范围外南朝新概率/密使标作完成。
+
+## 日本三局面研究与西秦阶段（2026-11-02）
+
+研究与下一步方案见20261102-japan-development-design.md；源码/原稿证据在WORK/reports/japan-research-20261102。日本新内容未实施。西秦后继日志已按任务18制作阶段修正并外部核验，实际交付状态见同目录release-notes/main-merge/git-delivery。

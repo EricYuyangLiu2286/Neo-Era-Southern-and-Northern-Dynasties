@@ -32,3 +32,7 @@
 ## 图片预设
 
 生成前记录年代、地点、阵营、人物当时年龄/身份、服装、建筑/舰船/武器技术、画面动作与构图及来源条目。未确认细节标为美术演绎；不搬运 EACR 素材。新图遵循 imagegen 技能，再查资源引用与实际显示。生成肖像不等于游戏 DNA，DNA 与 portrait modifier 单独实现测试。
+
+## 日本资料专题
+
+研究日本丰臣/德川/天皇、三国、九州或朝鲜时，先读WORK/reports/japan-research-20261102/{native-japan,current-mod-japan,japan-canon}.md。PPT27是1847–1852未来线（三日本政权＋吴直辖），1936/1950地图更晚；最新用户三局面目标不等于唯一正史。当前游戏林汉涵等名优先，异文保留研究说明。原版锁国九州入口、幕府法退出、JAP/DLC硬绑和大名/武士global标记需逐项适配，不能整套移给三个新国家。开发提案在WORK/plans/two-empires/20261102-japan-development-design.md，未实施部分明确分列。

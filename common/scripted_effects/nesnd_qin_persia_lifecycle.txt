@@ -18,9 +18,10 @@
 		}
 		if = { limit = { nesnd_qe1_unity_eligible = yes NOT = { has_journal_entry = nesnd_qe1_unity_journal } } add_journal_entry = { type = nesnd_qe1_unity_journal } }
 		if = { limit = { nesnd_qe1_unity_live = yes has_variable = nesnd_qe1_uprising_awakened NOT = { has_journal_entry = nesnd_qe1_uprising_journal } } add_journal_entry = { type = nesnd_qe1_uprising_journal } }
-		if = { limit = { nesnd_qe1_court_eligible = yes NOT = { has_journal_entry = nesnd_qe1_court_journal } } add_journal_entry = { type = nesnd_qe1_court_journal } }
+		nesnd_qe1_unlock_later_journals = yes
+		if = { limit = { nesnd_qe1_court_available = yes NOT = { has_journal_entry = nesnd_qe1_court_journal } } add_journal_entry = { type = nesnd_qe1_court_journal } }
 		if = { limit = { NOT = { nesnd_qe1_court_eligible = yes } NOT = { has_variable = nesnd_qe1_court_archived } } nesnd_qe1_archive_court = yes }
-		if = { limit = { nesnd_qe1_recovery_eligible = yes NOT = { has_journal_entry = nesnd_qe1_recovery_journal } } add_journal_entry = { type = nesnd_qe1_recovery_journal } }
+		if = { limit = { nesnd_qe1_recovery_available = yes NOT = { has_journal_entry = nesnd_qe1_recovery_journal } } add_journal_entry = { type = nesnd_qe1_recovery_journal } }
 		remove_variable = nesnd_qe1_bootstrap_busy
 	}
 }
@@ -33,5 +34,20 @@ nesnd_per_bootstrap = {
 		if = { limit = { NOT = { has_journal_entry = nesnd_per_economy_journal } } add_journal_entry = { type = nesnd_per_economy_journal } }
 		nesnd_per_ensure_frontier = yes
 		remove_variable = nesnd_per_bootstrap_busy
+	}
+}
+
+nesnd_qe1_unlock_later_journals = {
+	if = {
+		limit = { nesnd_qe1_country = yes }
+		# Preserve later journals already active in saves from the earlier release.
+		if = {
+			limit = { OR = { has_variable = nesnd_qe1_agenda_done has_journal_entry = nesnd_qe1_court_journal } }
+			set_variable = nesnd_qe1_court_opened
+		}
+		if = {
+			limit = { OR = { has_variable = nesnd_qe1_agenda_done has_journal_entry = nesnd_qe1_recovery_journal nesnd_qe1_has_recovery_foothold = yes } }
+			set_variable = nesnd_qe1_recovery_opened
+		}
 	}
 }
