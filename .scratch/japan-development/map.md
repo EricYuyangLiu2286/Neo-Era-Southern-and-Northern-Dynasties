@@ -33,3 +33,7 @@ Blocked by: none
 ## 修订3：宗主与阶段交接
 
 主方案第十节把宗属、明吴立场、条约/市场、实际战争分开，联动建设、统一自主、团结和朝鲜。旧JAP林统治者迁JIM需合法接任与精确人物登记；同市场供给需核接口，不能强制不合法商品条约。共同24类异常场景和源码复核见[本轮报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-india-plan-revision-20261102/release-notes.md>)。仍为方案，既有崩溃/恢复保持。
+
+## 最新实施断点（2026-11-02，取代上文尚未实施状态）
+
+[任务21](../debug-release/issues/21-japan-implementation.md)已写入WORK/exports/japan-development-20261102-a，尚待最终生命周期检查、整批外部验证和合入。[任务22](../debug-release/issues/22-canon-prose.md)的作者设定及文案修订同步进入候选。上方研究历史保留；不开游戏限制已受用户最新的一次完成后观察者运行授权取代，当前尚未运行。

@@ -2,12 +2,31 @@
 
 nesnd_crisis.30 = {
     type = country_event placement = root duration = 3
-    title = nesnd_crisis.30.t desc = nesnd_crisis.30.d
+    title = nesnd_crisis.30.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_land_petition_state }
+                desc = nesnd_crisis.30.local
+            }
+            desc = nesnd_crisis.30.d
+        }
+    }
     
     event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
     trigger = { nesnd_reform_active = yes NOT = { has_variable = nesnd_reform_petition_event_seen } }
-    immediate = { set_variable = nesnd_reform_petition_event_seen }
+    immediate = {
+        set_variable = nesnd_reform_petition_event_seen
+        clear_saved_scope = nesnd_land_petition_state
+        ordered_scope_state = {
+            limit = { nesnd_reform_region = yes }
+            order_by = nesnd_reform_state_unemployment_rate
+            position = 0
+            check_range_bounds = no
+            save_scope_as = nesnd_land_petition_state
+        }
+    }
     option = { name = nesnd_crisis.30.a
         default_option = yes
         ai_chance = { base = 65 }
