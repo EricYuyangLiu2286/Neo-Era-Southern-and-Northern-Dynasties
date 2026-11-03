@@ -156,3 +156,5 @@ Updated: 2026-11-01
 [28 CNE与原版故障](issues/28-cne-time-native-ban.md)：信心按完成的五年阶段增加年耗；原版故障入口定点关闭，保留本MOD波兰及历史数据。23外部检查/MCP5/Tiger零新增/数据图不变/两轴审查0剩余，STATIC_PASS，未开游戏。意大利方案已完成、未实施；按完整DLC环境规划。
 
 此前观察者运行已于1866.1.15暂停，完成两机位截图、存档字节核验并正常关闭。终档与完整日志在WORK/reports/observer-finish-20261103/；下次恢复不得沿用上方历史“游戏仍运行”的描述。实际部署和Git指纹见WORK/reports/cne-time-native-ban-20261103/git-delivery.json。
+
+意大利方案最新纠正：LOM是法国主导的伦巴第共和国，佩佩为亲法民族主义历史人物挪用；以法国支持下的整合为优先方向。新增加里波第全链核查及局部替换计划，尚未实现；任务28追加记录，证据WORK/reports/italy-lombardy-correction-20261103/。游戏脚本未改。

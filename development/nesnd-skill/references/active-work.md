@@ -2,7 +2,7 @@
 
 当前任务28，主MOD .scratch/debug-release/issues/28-cne-time-native-ban.md；报告WORK/reports/cne-time-native-ban-20261103/。CNE每满五年增加年耗25，既有成功/失败及恢复不变，已结算旧日志不重开。原版五事件、两个入口、两个无效权重和三海况定点停用；海战本地化方法修正。23定向检查、MCP5、Tiger零新增、数据图不变，两轴审查各0剩余，STATIC_PASS。主MOD/main/远端指纹以main-merge.json和git-delivery.json为准。
 
-意大利研究与方案已完成，尚未实现新路线；入口同报告italy-research-plan.md。新用户约定：一般不考虑DLC缺失，按完整DLC环境设计，见system-design-and-plans.md。
+意大利研究与方案已完成，尚未实现新路线；入口同报告italy-research-plan.md。作者随后纠正：LOM为法国主导的伦巴第共和国，佩佩是亲法意大利民族主义历史人物挪用；方案已据此局部修订，以亲法整合为开局政府优先方向。加里波第人物/事件/国家统一链已另核，最小适配计划见WORK/reports/italy-lombardy-correction-20261103/garibaldi-chain-audit.md，尚未改游戏脚本。新用户约定：一般不考虑DLC缺失，按完整DLC环境设计，见system-design-and-plans.md。
 
 观察者旧局adfc317已于1866.1.15完成两机位截图、存档核验和正常退出；没有活跃的游戏测试授权待执行。本轮未开游戏、未改终档。CNE该局主日志11个月后已冻结结束，信心1000是保留值，不代表1866仍在持续改革。以下是历史断点，仅供追溯。
 
