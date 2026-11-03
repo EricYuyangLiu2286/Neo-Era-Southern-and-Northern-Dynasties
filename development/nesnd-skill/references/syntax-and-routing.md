@@ -107,3 +107,7 @@ IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列�
 角色当前IG由 `owner.ig:...` 取得；`ig:`只支持country/political_movement，不能直接从character调用。人物转国后应指向转国后的owner。比较法律对象时两端均用law；只有明确比较law_type才取`.type`。JE在immediate保存的事件链scope不自动成为全局AI法案评估scope；固定法案目标可直接比较当前law的type。
 同一事件的cancellation_trigger只定义一次，按完整OR语义合并所有取消理由；缺对象先分支判定，再检查人物存活。避免将原本可重复的option/modifier与本应单一的条件字段混为一类。全局on_action调用country效果时不要把全局root当当前country，需在country入口明确保存行动者。
 以上修正以1.13.11 event_targets/effects及原版调用链查证，26处人物IG、Donghak三scope、法国取消条件的定位见 WORK/reports/integrity-recheck-20261102/tiger-source-review.json。
+
+## 宗室延续与无所属角色
+
+需要恢复人物时先查已保存身份，再查本国、every/any_character、流亡池及void，确认存活与owner；exile/void不得先无保护比较owner。移出外国在位ruler/heir须有明确剧情授权，不能将同姓当作身份。只有确定缺少可用活人且作者授权时，create_character创建新角色，不能重用旧历史template当复活。行辈/支系单独记录，淮系不能混宁系；已有姓名不回写，新出生只查自己的父系，不能为每个国家的出生扫描全球。on_created保存新角色后验证其owner，再立为君主；一次结算/创建锁避免重复刷人。当前原版法国、日本及巴西来源见WORK/reports/persia-journal-ui-20261103/ming-successor-generation.md。

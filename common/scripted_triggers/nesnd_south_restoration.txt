@@ -1,0 +1,38 @@
+﻿nesnd_rebel_unclaimed_total_victory = {
+    is_country_alive = yes
+    is_subject = no
+    has_global_variable = usm_civilwar_occured
+    has_variable = usm_opposition_country
+    NOT = { has_variable = nesnd_rebel_settlement_seen }
+    NOT = { exists = c:USM }
+    owns_entire_state_region = STATE_NANJING
+}
+# Character scope; a living foreign sovereign or designated heir is not seized.
+nesnd_postwar_original_royal_available = {
+    is_character_alive = yes
+    trigger_if = {
+        limit = { exists = owner }
+        OR = {
+            owner = root
+            NOR = { is_ruler_of_own_country = yes is_heir_of_own_country = yes }
+        }
+    }
+}
+nesnd_postwar_has_original_royal = {
+    any_character = {
+        OR = { has_variable = nesnd_original_ming_emperor has_variable = nesnd_original_ming_heir }
+        nesnd_postwar_original_royal_available = yes
+    }
+}
+nesnd_postwar_gng_has_local_dynast = {
+    OR = {
+        nesnd_postwar_ruling_dynast = yes
+        any_scope_character = { is_character_alive = yes is_heir_of_own_country = yes nesnd_ming_authorized_dynast = yes }
+    }
+}
+nesnd_postwar_special_victor = { OR = { c:SIH ?= this c:HNA ?= this c:GNG ?= this } }
+
+nesnd_postwar_ruling_dynast = {
+    trigger_if = { limit = { exists = ruler } ruler = { is_character_alive = yes nesnd_ming_authorized_dynast = yes } }
+    trigger_else = { always = no }
+}

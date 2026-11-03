@@ -1,0 +1,357 @@
+﻿# Character scope: recognize historical identities without renaming existing people.
+nesnd_ming_identify_lineage = {
+    if = { limit = { OR = { has_template = USM_zhu_kuobing has_variable = this_is_zhukuobin_var } }
+        set_variable = nesnd_ming_dynastic_verified set_variable = nesnd_ming_ning_line
+        if = { limit = { NOT = { has_variable = nesnd_ming_generation } } set_variable = { name = nesnd_ming_generation value = 0 } }
+    }
+    if = { limit = { OR = { has_template = USM_zhu_zuoyu has_variable = this_is_zhuzuoyu_var } }
+        set_variable = nesnd_ming_dynastic_verified set_variable = nesnd_ming_ning_line
+        if = { limit = { NOT = { has_variable = nesnd_ming_generation } } set_variable = { name = nesnd_ming_generation value = 1 } }
+    }
+    if = { limit = { has_template = USM_zhu_zhongying }
+        set_variable = nesnd_ming_dynastic_verified set_variable = nesnd_ming_huai_line
+        if = { limit = { NOT = { has_variable = nesnd_ming_generation } } set_variable = { name = nesnd_ming_generation value = 0 } }
+    }
+    if = { limit = { has_template = USM_zhu_jingyin }
+        set_variable = nesnd_ming_dynastic_verified set_variable = nesnd_ming_huai_line
+        if = { limit = { NOT = { has_variable = nesnd_ming_generation } } set_variable = { name = nesnd_ming_generation value = 2 } }
+    }
+}
+nesnd_ming_refresh_royal_identity = {
+    every_character = { limit = { is_character_alive = yes } nesnd_ming_identify_lineage = yes }
+    every_character_in_exile_pool = { limit = { is_character_alive = yes } nesnd_ming_identify_lineage = yes }
+    every_character_in_void = { limit = { is_character_alive = yes } nesnd_ming_identify_lineage = yes }
+    c:USM ?= { nesnd_mark_original_ming_refs = yes }
+    c:HNA ?= { nesnd_mark_original_ming_refs = yes }
+    c:SIH ?= { nesnd_mark_original_ming_refs = yes }
+    if = { limit = { NOT = { any_character = { is_character_alive = yes has_variable = nesnd_original_ming_emperor } } }
+        every_character = { limit = { is_character_alive = yes has_template = USM_zhu_kuobing NOT = { has_variable = nesnd_original_ming_heir } } set_variable = nesnd_original_ming_emperor }
+    }
+    if = { limit = { NOT = { any_character = { is_character_alive = yes has_variable = nesnd_original_ming_heir } } }
+        every_character = { limit = { is_character_alive = yes has_template = USM_zhu_zuoyu NOT = { has_variable = nesnd_original_ming_emperor } } set_variable = nesnd_original_ming_heir }
+    }
+}
+# The new character is a living guest until the accepted restoration option enthrones them.
+nesnd_ming_create_dynast = {
+    create_character = {
+        first_name = $NAME$
+        last_name = Zhu
+        female = no
+        noble = yes
+        historical = no
+        age = 21
+        culture = $CULTURE$
+        interest_group = ig_landowners
+        ideology = ideology_traditionalist
+        on_created = {
+            set_variable = nesnd_ming_dynastic_verified
+            set_variable = nesnd_ming_generated_dynast
+            set_variable = $LINE_FLAG$
+            set_variable = { name = nesnd_ming_generation value = $GENERATION$ }
+            set_variable = $NAME$
+            add_character_role = character_role_nesnd_ming_refuge
+            save_scope_as = nesnd_ming_generated_candidate
+            set_global_variable = { name = $HIGHWATER$ value = $GENERATION$ }
+        }
+    }
+}
+
+nesnd_ming_find_ning_dynast = {
+    clear_saved_scope = nesnd_ming_available_dynast
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_scope_character = { has_variable = nesnd_original_ming_emperor nesnd_ming_recruitable_royal = yes } }
+        random_scope_character = { limit = { has_variable = nesnd_original_ming_emperor nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character = { has_variable = nesnd_original_ming_emperor nesnd_ming_recruitable_royal = yes } }
+        random_character = { limit = { has_variable = nesnd_original_ming_emperor nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_exile_pool = { has_variable = nesnd_original_ming_emperor nesnd_ming_recruitable_royal = yes } }
+        random_character_in_exile_pool = { limit = { has_variable = nesnd_original_ming_emperor nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_void = { has_variable = nesnd_original_ming_emperor nesnd_ming_recruitable_royal = yes } }
+        random_character_in_void = { limit = { has_variable = nesnd_original_ming_emperor nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_scope_character = { has_variable = nesnd_original_ming_heir nesnd_ming_recruitable_royal = yes } }
+        random_scope_character = { limit = { has_variable = nesnd_original_ming_heir nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character = { has_variable = nesnd_original_ming_heir nesnd_ming_recruitable_royal = yes } }
+        random_character = { limit = { has_variable = nesnd_original_ming_heir nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_exile_pool = { has_variable = nesnd_original_ming_heir nesnd_ming_recruitable_royal = yes } }
+        random_character_in_exile_pool = { limit = { has_variable = nesnd_original_ming_heir nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_void = { has_variable = nesnd_original_ming_heir nesnd_ming_recruitable_royal = yes } }
+        random_character_in_void = { limit = { has_variable = nesnd_original_ming_heir nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_scope_character = { has_variable = nesnd_ming_ning_line nesnd_ming_recruitable_royal = yes } }
+        random_scope_character = { limit = { has_variable = nesnd_ming_ning_line nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character = { has_variable = nesnd_ming_ning_line nesnd_ming_recruitable_royal = yes } }
+        random_character = { limit = { has_variable = nesnd_ming_ning_line nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_exile_pool = { has_variable = nesnd_ming_ning_line nesnd_ming_recruitable_royal = yes } }
+        random_character_in_exile_pool = { limit = { has_variable = nesnd_ming_ning_line nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_void = { has_variable = nesnd_ming_ning_line nesnd_ming_recruitable_royal = yes } }
+        random_character_in_void = { limit = { has_variable = nesnd_ming_ning_line nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_scope_character = { nesnd_ming_recruitable_royal = yes } }
+        random_scope_character = { limit = { nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character = { nesnd_ming_recruitable_royal = yes } }
+        random_character = { limit = { nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_exile_pool = { nesnd_ming_recruitable_royal = yes } }
+        random_character_in_exile_pool = { limit = { nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_void = { nesnd_ming_recruitable_royal = yes } }
+        random_character_in_void = { limit = { nesnd_ming_recruitable_royal = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+}
+
+nesnd_ming_generate_ning_dynast = {
+    if = {
+        limit = {
+            nesnd_rebel_can_commit_settlement = yes
+            NOT = { has_variable = nesnd_ming_generation_in_progress }
+            NOT = { has_global_variable = nesnd_ming_generation_cooldown }
+            NOR = { any_character = { nesnd_ming_recruitable_royal = yes } any_character_in_exile_pool = { nesnd_ming_recruitable_royal = yes } any_character_in_void = { nesnd_ming_recruitable_royal = yes } }
+        }
+        clear_saved_scope = nesnd_ming_generated_candidate
+        set_variable = { name = nesnd_ming_generation_in_progress days = 1 }
+        set_global_variable = { name = nesnd_ming_generation_cooldown days = 1 }
+        if = { limit = { NOT = { has_global_variable = nesnd_ming_ning_generation_highwater } } set_global_variable = { name = nesnd_ming_ning_generation_highwater value = 1 } }
+        if = {
+            limit = { has_global_variable = nesnd_ming_ning_generation_highwater }
+            every_character = {
+                limit = { has_variable = nesnd_ming_ning_line has_variable = nesnd_ming_generation }
+                if = { limit = { var:nesnd_ming_generation > global_var:nesnd_ming_ning_generation_highwater } set_global_variable = { name = nesnd_ming_ning_generation_highwater value = var:nesnd_ming_generation } }
+            }
+            if = { limit = { global_var:nesnd_ming_ning_generation_highwater < 2 }
+                random_list = {
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_zhekun CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 2 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_zhetang CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 2 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_zhejun CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 2 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_zheji CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 2 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                }
+            }
+            else_if = { limit = { global_var:nesnd_ming_ning_generation_highwater < 3 }
+                random_list = {
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_xiangqin CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 3 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_xiangxuan CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 3 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_xiangduo CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 3 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_xiangming CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 3 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                }
+            }
+            else_if = { limit = { global_var:nesnd_ming_ning_generation_highwater < 4 }
+                random_list = {
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_qinzhi CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 4 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_qinhao CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 4 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_qinqing CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 4 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_qincheng CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 4 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                }
+            }
+            else_if = { limit = { global_var:nesnd_ming_ning_generation_highwater >= 4 }
+                random_list = {
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_zhongliang CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 5 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_zhonghuai CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 5 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_zhongtang CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 5 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_ning_zhongjin CULTURE = cu:ce_wuu LINE_FLAG = nesnd_ming_ning_line GENERATION = 5 HIGHWATER = nesnd_ming_ning_generation_highwater } }
+                }
+            }
+        }
+        if = {
+            limit = { exists = scope:nesnd_ming_generated_candidate }
+            if = { limit = { scope:nesnd_ming_generated_candidate = { is_character_alive = yes owner = root } }
+                scope:nesnd_ming_generated_candidate = { save_scope_as = nesnd_ming_available_dynast }
+                remove_variable = nesnd_ming_generation_in_progress
+            }
+        }
+    }
+}
+
+nesnd_ming_find_huai_dynast = {
+    clear_saved_scope = nesnd_ming_available_dynast
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_scope_character = { nesnd_ming_recruitable_huai = yes } }
+        random_scope_character = { limit = { nesnd_ming_recruitable_huai = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character = { nesnd_ming_recruitable_huai = yes } }
+        random_character = { limit = { nesnd_ming_recruitable_huai = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_exile_pool = { nesnd_ming_recruitable_huai = yes } }
+        random_character_in_exile_pool = { limit = { nesnd_ming_recruitable_huai = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+    if = {
+        limit = { NOT = { exists = scope:nesnd_ming_available_dynast } any_character_in_void = { nesnd_ming_recruitable_huai = yes } }
+        random_character_in_void = { limit = { nesnd_ming_recruitable_huai = yes } save_scope_as = nesnd_ming_available_dynast }
+    }
+}
+
+nesnd_ming_generate_huai_dynast = {
+    if = {
+        limit = {
+            nesnd_rebel_can_commit_settlement = yes
+            NOT = { has_variable = nesnd_ming_generation_in_progress }
+            NOT = { has_global_variable = nesnd_ming_generation_cooldown }
+            NOR = { any_character = { nesnd_ming_recruitable_huai = yes } any_character_in_exile_pool = { nesnd_ming_recruitable_huai = yes } any_character_in_void = { nesnd_ming_recruitable_huai = yes } }
+        }
+        clear_saved_scope = nesnd_ming_generated_candidate
+        set_variable = { name = nesnd_ming_generation_in_progress days = 1 }
+        set_global_variable = { name = nesnd_ming_generation_cooldown days = 1 }
+        if = { limit = { NOT = { has_global_variable = nesnd_ming_huai_generation_highwater } } set_global_variable = { name = nesnd_ming_huai_generation_highwater value = 2 } }
+        if = {
+            limit = { has_global_variable = nesnd_ming_huai_generation_highwater }
+            every_character = {
+                limit = { has_variable = nesnd_ming_huai_line has_variable = nesnd_ming_generation }
+                if = { limit = { var:nesnd_ming_generation > global_var:nesnd_ming_huai_generation_highwater } set_global_variable = { name = nesnd_ming_huai_generation_highwater value = var:nesnd_ming_generation } }
+            }
+            if = { limit = { global_var:nesnd_ming_huai_generation_highwater < 3 }
+                random_list = {
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_dizhao CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 3 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_difeng CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 3 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_dirui CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 3 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_dijun CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 3 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                }
+            }
+            else_if = { limit = { global_var:nesnd_ming_huai_generation_highwater < 4 }
+                random_list = {
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_xianliu CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 4 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_xianhao CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 4 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_xianqing CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 4 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_xiancheng CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 4 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                }
+            }
+            else_if = { limit = { global_var:nesnd_ming_huai_generation_highwater >= 4 }
+                random_list = {
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_youliang CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 5 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_youleng CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 5 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_yousong CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 5 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                    1 = { nesnd_ming_create_dynast = { NAME = nesnd_ming_huai_youtong CULTURE = cu:ce_xinan LINE_FLAG = nesnd_ming_huai_line GENERATION = 5 HIGHWATER = nesnd_ming_huai_generation_highwater } }
+                }
+            }
+        }
+        if = {
+            limit = { exists = scope:nesnd_ming_generated_candidate }
+            if = { limit = { scope:nesnd_ming_generated_candidate = { is_character_alive = yes owner = root } }
+                scope:nesnd_ming_generated_candidate = { save_scope_as = nesnd_ming_available_dynast }
+                remove_variable = nesnd_ming_generation_in_progress
+            }
+        }
+    }
+}
+
+nesnd_ming_name_new_dynastic_heir = {
+    if = {
+        limit = { is_historical = no NOT = { has_variable = nesnd_ming_generation } exists = owner }
+        owner = { if = { limit = { exists = ruler } ruler = { nesnd_ming_identify_lineage = yes } } }
+        if = {
+            limit = { owner = { exists = ruler } }
+            if = {
+                limit = { owner.ruler = { has_variable = nesnd_ming_ning_line has_variable = nesnd_ming_generation } }
+                set_variable = nesnd_ming_dynastic_verified
+                set_variable = nesnd_ming_ning_line
+                if = {
+                    limit = { owner.ruler = { var:nesnd_ming_generation < 5 } }
+                    set_variable = { name = nesnd_ming_generation value = { value = owner.ruler.var:nesnd_ming_generation add = 1 } }
+                    if = { limit = { var:nesnd_ming_generation = 1 } random_list = {
+                            1 = { set_first_name = nesnd_ming_ning_zuoye }
+                            1 = { set_first_name = nesnd_ming_ning_zuocan }
+                            1 = { set_first_name = nesnd_ming_ning_zuoxu }
+                            1 = { set_first_name = nesnd_ming_ning_zuoying }
+                        }
+                    }
+                    if = { limit = { var:nesnd_ming_generation = 2 } random_list = {
+                            1 = { set_first_name = nesnd_ming_ning_zhekun }
+                            1 = { set_first_name = nesnd_ming_ning_zhetang }
+                            1 = { set_first_name = nesnd_ming_ning_zhejun }
+                            1 = { set_first_name = nesnd_ming_ning_zheji }
+                        }
+                    }
+                    if = { limit = { var:nesnd_ming_generation = 3 } random_list = {
+                            1 = { set_first_name = nesnd_ming_ning_xiangqin }
+                            1 = { set_first_name = nesnd_ming_ning_xiangxuan }
+                            1 = { set_first_name = nesnd_ming_ning_xiangduo }
+                            1 = { set_first_name = nesnd_ming_ning_xiangming }
+                        }
+                    }
+                    if = { limit = { var:nesnd_ming_generation = 4 } random_list = {
+                            1 = { set_first_name = nesnd_ming_ning_qinzhi }
+                            1 = { set_first_name = nesnd_ming_ning_qinhao }
+                            1 = { set_first_name = nesnd_ming_ning_qinqing }
+                            1 = { set_first_name = nesnd_ming_ning_qincheng }
+                        }
+                    }
+                    if = { limit = { var:nesnd_ming_generation = 5 } random_list = {
+                            1 = { set_first_name = nesnd_ming_ning_zhongliang }
+                            1 = { set_first_name = nesnd_ming_ning_zhonghuai }
+                            1 = { set_first_name = nesnd_ming_ning_zhongtang }
+                            1 = { set_first_name = nesnd_ming_ning_zhongjin }
+                        }
+                    }
+                }
+            }
+            if = {
+                limit = { owner.ruler = { has_variable = nesnd_ming_huai_line has_variable = nesnd_ming_generation } }
+                set_variable = nesnd_ming_dynastic_verified
+                set_variable = nesnd_ming_huai_line
+                if = {
+                    limit = { owner.ruler = { var:nesnd_ming_generation < 5 } }
+                    set_variable = { name = nesnd_ming_generation value = { value = owner.ruler.var:nesnd_ming_generation add = 1 } }
+                    if = { limit = { var:nesnd_ming_generation = 1 } random_list = {
+                            1 = { set_first_name = nesnd_ming_huai_jianyu }
+                            1 = { set_first_name = nesnd_ming_huai_jiankun }
+                            1 = { set_first_name = nesnd_ming_huai_jianlang }
+                            1 = { set_first_name = nesnd_ming_huai_jianjiong }
+                        }
+                    }
+                    if = { limit = { var:nesnd_ming_generation = 2 } random_list = {
+                            1 = { set_first_name = nesnd_ming_huai_jingkun }
+                            1 = { set_first_name = nesnd_ming_huai_jingtang }
+                            1 = { set_first_name = nesnd_ming_huai_jingjun }
+                            1 = { set_first_name = nesnd_ming_huai_jingyuan }
+                        }
+                    }
+                    if = { limit = { var:nesnd_ming_generation = 3 } random_list = {
+                            1 = { set_first_name = nesnd_ming_huai_dizhao }
+                            1 = { set_first_name = nesnd_ming_huai_difeng }
+                            1 = { set_first_name = nesnd_ming_huai_dirui }
+                            1 = { set_first_name = nesnd_ming_huai_dijun }
+                        }
+                    }
+                    if = { limit = { var:nesnd_ming_generation = 4 } random_list = {
+                            1 = { set_first_name = nesnd_ming_huai_xianliu }
+                            1 = { set_first_name = nesnd_ming_huai_xianhao }
+                            1 = { set_first_name = nesnd_ming_huai_xianqing }
+                            1 = { set_first_name = nesnd_ming_huai_xiancheng }
+                        }
+                    }
+                    if = { limit = { var:nesnd_ming_generation = 5 } random_list = {
+                            1 = { set_first_name = nesnd_ming_huai_youliang }
+                            1 = { set_first_name = nesnd_ming_huai_youleng }
+                            1 = { set_first_name = nesnd_ming_huai_yousong }
+                            1 = { set_first_name = nesnd_ming_huai_youtong }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

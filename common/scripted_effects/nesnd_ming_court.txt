@@ -17,6 +17,7 @@ nesnd_ming_prepare_accession = {
             }
         }
     }
+    nesnd_record_original_ming_identity = yes
 }
 nesnd_ming_find_rebel_host = {
     remove_variable = nesnd_ming_receiver
@@ -31,178 +32,178 @@ nesnd_ming_find_rebel_host = {
     }
 }
 nesnd_ming_commit_player_transfer = {
-	if = {
-		limit = {
-			c:USM ?= this
-			is_player = yes
-			has_variable = nesnd_ming_player_intent
-			nesnd_board_stance_value = 1
-			NOT = {
-				has_variable = nesnd_ming_player_transferred
-			}
-			NOT = {
-				has_global_variable = nesnd_south_settled
-			}
-			OR = {
-				any_diplomatic_play = {
-					has_variable = this_is_nanming_civilwar_var
-					initiator = root
-				}
-				any_country = {
-					has_variable = usm_opposition_country
-					has_war_with = root
-				}
-			}
-		}
-		nesnd_ming_find_rebel_host = yes
-		if = {
-			limit = {
-				exists = var:nesnd_ming_receiver
-				var:nesnd_ming_receiver = {
-					nesnd_ming_host_rebel = yes
-					is_subject = no
-				}
-			}
-			var:nesnd_ming_receiver = {
-				save_scope_as = nesnd_ming_host
-			}
-			clear_saved_scope = nesnd_ming_live_claimant
-			if = {
-				limit = {
-					exists = var:nesnd_ming_claimant_ref
-					var:nesnd_ming_claimant_ref = {
-						is_character_alive = yes
-						owner = root
-						nesnd_ming_authorized_dynast = yes
-					}
-				}
-				var:nesnd_ming_claimant_ref = {
-					save_scope_as = nesnd_ming_live_claimant
-				}
-			}
-			else_if = {
-				limit = {
-					exists = var:nesnd_ming_heir_ref
-					var:nesnd_ming_heir_ref = {
-						is_character_alive = yes
-						owner = root
-						nesnd_ming_authorized_dynast = yes
-					}
-				}
-				var:nesnd_ming_heir_ref = {
-					set_variable = nesnd_ming_claimant
-					save_scope_as = nesnd_ming_live_claimant
-				}
-			}
-			scope:nesnd_ming_host = {
-				ruler ?= {
-					set_variable = nesnd_ming_local_patron
-				}
-				if = {
-					limit = {
-						exists = ruler
-					}
-					set_variable = {
-						name = nesnd_ming_local_ruler_ref
-						value = ruler
-					}
-				}
-				set_variable = nesnd_ming_court
-				set_variable = nesnd_restoration_side
-				set_variable = {
-					name = nesnd_south_stance
-					value = 1
-				}
-				remove_variable = ce_usm_republican_revolution_tag
-				if = {
-					limit = {
-						exists = scope:nesnd_ming_live_claimant
-					}
-					activate_law = law_type:law_monarchy
-					scope:nesnd_ming_live_claimant = {
-						transfer_character = scope:nesnd_ming_host
-						set_character_as_ruler = yes
-						if = {
-							limit = {
-								has_role = character_role_nesnd_ming_refuge
-							}
-							remove_character_role = character_role_nesnd_ming_refuge
-						}
-					}
-					set_variable = {
-						name = nesnd_ming_court_monarch
-						value = scope:nesnd_ming_live_claimant
-					}
-				}
-				else = {
-					set_variable = nesnd_ming_interregnum
-				}
-				if = {
-					limit = {
-						NOT = {
-							has_journal_entry = ce_usm_restoration_of_ming
-						}
-					}
-					add_journal_entry = {
-						type = ce_usm_restoration_of_ming
-					}
-				}
-				nesnd_ming_preserve_local_patron = yes
-			}
-			if = {
-				limit = {
-					exists = var:nesnd_ming_heir_ref
-					var:nesnd_ming_heir_ref = {
-						is_character_alive = yes
-						owner = root
-						is_ruler_of_own_country = no
-						nesnd_ming_authorized_dynast = yes
-					}
-				}
-				var:nesnd_ming_heir_ref = {
-					set_variable = nesnd_ming_claimant
-					transfer_character = scope:nesnd_ming_host
-					save_scope_as = nesnd_ming_moved_heir
-				}
-				scope:nesnd_ming_host = {
-					if = {
-						limit = {
-							has_law_or_variant = law_type:law_monarchy
-						}
-						set_heir = scope:nesnd_ming_moved_heir
-						scope:nesnd_ming_moved_heir = {
-							if = {
-								limit = {
-									has_role = character_role_nesnd_ming_refuge
-								}
-								remove_character_role = character_role_nesnd_ming_refuge
-							}
-						}
-					}
-				}
-			}
-			set_variable = nesnd_ming_player_transferred
-			remove_variable = nesnd_ming_player_intent
-			play_as = scope:nesnd_ming_host
-			set_variable = {
-				name = nesnd_south_stance
-				value = 2
-			}
-			scope:nesnd_ming_host = {
-				trigger_event = {
-					id = nesnd_ming_court.3
-					days = 1
-					popup = yes
-				}
-			}
-		}
-		else = {
-			trigger_event = {
-				id = nesnd_ming_court.12
-				popup = yes
-			}
-		}
-	}
+    if = {
+        limit = {
+            c:USM ?= this
+            is_player = yes
+            has_variable = nesnd_ming_player_intent
+            nesnd_board_stance_value = 1
+            NOT = {
+                has_variable = nesnd_ming_player_transferred
+            }
+            NOT = {
+                has_global_variable = nesnd_south_settled
+            }
+            OR = {
+                any_diplomatic_play = {
+                    has_variable = this_is_nanming_civilwar_var
+                    initiator = root
+                }
+                any_country = {
+                    has_variable = usm_opposition_country
+                    has_war_with = root
+                }
+            }
+        }
+        nesnd_ming_find_rebel_host = yes
+        if = {
+            limit = {
+                exists = var:nesnd_ming_receiver
+                var:nesnd_ming_receiver = {
+                    nesnd_ming_host_rebel = yes
+                    is_subject = no
+                }
+            }
+            var:nesnd_ming_receiver = {
+                save_scope_as = nesnd_ming_host
+            }
+            clear_saved_scope = nesnd_ming_live_claimant
+            if = {
+                limit = {
+                    exists = var:nesnd_ming_claimant_ref
+                    var:nesnd_ming_claimant_ref = {
+                        is_character_alive = yes
+                        owner = root
+                        nesnd_ming_authorized_dynast = yes
+                    }
+                }
+                var:nesnd_ming_claimant_ref = {
+                    save_scope_as = nesnd_ming_live_claimant
+                }
+            }
+            else_if = {
+                limit = {
+                    exists = var:nesnd_ming_heir_ref
+                    var:nesnd_ming_heir_ref = {
+                        is_character_alive = yes
+                        owner = root
+                        nesnd_ming_authorized_dynast = yes
+                    }
+                }
+                var:nesnd_ming_heir_ref = {
+                    set_variable = nesnd_ming_claimant
+                    save_scope_as = nesnd_ming_live_claimant
+                }
+            }
+            scope:nesnd_ming_host = {
+                ruler ?= {
+                    set_variable = nesnd_ming_local_patron
+                }
+                if = {
+                    limit = {
+                        exists = ruler
+                    }
+                    set_variable = {
+                        name = nesnd_ming_local_ruler_ref
+                        value = ruler
+                    }
+                }
+                set_variable = nesnd_ming_court
+                set_variable = nesnd_restoration_side
+                set_variable = {
+                    name = nesnd_south_stance
+                    value = 1
+                }
+                remove_variable = ce_usm_republican_revolution_tag
+                if = {
+                    limit = {
+                        exists = scope:nesnd_ming_live_claimant
+                    }
+                    activate_law = law_type:law_monarchy
+                    scope:nesnd_ming_live_claimant = {
+                        transfer_character = scope:nesnd_ming_host
+                        set_character_as_ruler = yes
+                        if = {
+                            limit = {
+                                has_role = character_role_nesnd_ming_refuge
+                            }
+                            remove_character_role = character_role_nesnd_ming_refuge
+                        }
+                    }
+                    set_variable = {
+                        name = nesnd_ming_court_monarch
+                        value = scope:nesnd_ming_live_claimant
+                    }
+                }
+                else = {
+                    set_variable = nesnd_ming_interregnum
+                }
+                if = {
+                    limit = {
+                        NOT = {
+                            has_journal_entry = ce_usm_restoration_of_ming
+                        }
+                    }
+                    add_journal_entry = {
+                        type = ce_usm_restoration_of_ming
+                    }
+                }
+                nesnd_ming_preserve_local_patron = yes
+            }
+            if = {
+                limit = {
+                    exists = var:nesnd_ming_heir_ref
+                    var:nesnd_ming_heir_ref = {
+                        is_character_alive = yes
+                        owner = root
+                        is_ruler_of_own_country = no
+                        nesnd_ming_authorized_dynast = yes
+                    }
+                }
+                var:nesnd_ming_heir_ref = {
+                    set_variable = nesnd_ming_claimant
+                    transfer_character = scope:nesnd_ming_host
+                    save_scope_as = nesnd_ming_moved_heir
+                }
+                scope:nesnd_ming_host = {
+                    if = {
+                        limit = {
+                            has_law_or_variant = law_type:law_monarchy
+                        }
+                        set_heir = scope:nesnd_ming_moved_heir
+                        scope:nesnd_ming_moved_heir = {
+                            if = {
+                                limit = {
+                                    has_role = character_role_nesnd_ming_refuge
+                                }
+                                remove_character_role = character_role_nesnd_ming_refuge
+                            }
+                        }
+                    }
+                }
+            }
+            set_variable = nesnd_ming_player_transferred
+            remove_variable = nesnd_ming_player_intent
+            play_as = scope:nesnd_ming_host
+            set_variable = {
+                name = nesnd_south_stance
+                value = 2
+            }
+            scope:nesnd_ming_host = {
+                trigger_event = {
+                    id = nesnd_ming_court.3
+                    days = 1
+                    popup = yes
+                }
+            }
+        }
+        else = {
+            trigger_event = {
+                id = nesnd_ming_court.12
+                popup = yes
+            }
+        }
+    }
 }
 nesnd_ming_internal_compromise = {
     if = { limit = { c:USM ?= this is_player = yes NOT = { has_global_variable = usm_civilwar_occured } }

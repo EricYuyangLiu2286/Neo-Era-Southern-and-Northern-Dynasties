@@ -1303,17 +1303,19 @@ usm_civilwar.9 = {
     }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
     trigger = {
+        NOT = { any_country = { nesnd_rebel_unclaimed_total_victory = yes } }
         NOT = { nesnd_south_defeat_resolution_pending = yes }
         NOT = {
             has_variable = nesnd_status_quo_seen
         }
     }
-    immediate = {
-        set_variable = nesnd_status_quo_seen
-        set_global_variable = usm_civilwar_status_quo
-        set_global_variable = nesnd_south_settled
-        c:CNE ?= {
-            remove_variable = nesnd_north_intervention
+    immediate = { if = { limit = { NOT = { any_country = { nesnd_rebel_unclaimed_total_victory = yes } } }
+            set_variable = nesnd_status_quo_seen
+            set_global_variable = usm_civilwar_status_quo
+            set_global_variable = nesnd_south_settled
+            c:CNE ?= {
+                remove_variable = nesnd_north_intervention
+            }
         }
     }
     option = {
@@ -1337,8 +1339,20 @@ usm_civilwar.10 = {
     type = country_event
     placement = root
     duration = 3
-    title = usm_civilwar.10.t
-    desc = usm_civilwar.10.d
+    title = { first_valid = {
+            triggered_desc = { trigger = { c:SIH ?= this } desc = nesnd_postwar_sih_title }
+            triggered_desc = { trigger = { c:HNA ?= this } desc = nesnd_postwar_hna_title }
+            triggered_desc = { trigger = { c:GNG ?= this } desc = nesnd_postwar_gng_title }
+            desc = usm_civilwar.10.t
+        }
+    }
+    desc = { first_valid = {
+            triggered_desc = { trigger = { c:SIH ?= this } desc = nesnd_postwar_sih_desc }
+            triggered_desc = { trigger = { c:HNA ?= this } desc = nesnd_postwar_hna_desc }
+            triggered_desc = { trigger = { c:GNG ?= this } desc = nesnd_postwar_gng_desc }
+            desc = usm_civilwar.10.d
+        }
+    }
     event_image = {
         video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
     }
@@ -1352,7 +1366,11 @@ usm_civilwar.10 = {
         clear_saved_scope = new_jingyin_owner
         clear_saved_scope = nesnd_restored_prince
         clear_saved_scope = nesnd_selected_postwar_ruler
-        set_variable = nesnd_rebel_settlement_pending
+        set_variable = { name = nesnd_rebel_settlement_pending months = 4 }
+        if = { limit = { c:SIH ?= this } set_variable = nesnd_postwar_origin_sih }
+        if = { limit = { c:HNA ?= this } set_variable = nesnd_postwar_origin_hna }
+        if = { limit = { c:GNG ?= this } set_variable = nesnd_postwar_origin_gng }
+        if = { limit = { OR = { c:SIH ?= this c:HNA ?= this } } nesnd_import_original_ming_identity = yes }
     }
     option = {
         name = usm_civilwar.10.1
@@ -1360,7 +1378,7 @@ usm_civilwar.10 = {
         ai_chance = {
             base = 50
         }
-        trigger = {
+        trigger = { NOT = { nesnd_postwar_special_victor = yes }
             nesnd_ming_has_existing_claimant = yes
             NOT = {
                 has_variable = ce_usm_republican_revolution_tag
@@ -1370,6 +1388,7 @@ usm_civilwar.10 = {
             limit = {
                 nesnd_ming_has_existing_claimant = yes
                 nesnd_rebel_can_commit_settlement = yes
+                NOT = { nesnd_postwar_special_victor = yes }
                 NOT = {
                     has_variable = ce_usm_republican_revolution_tag
                 }
@@ -1389,7 +1408,7 @@ usm_civilwar.10 = {
         ai_chance = {
             base = 25
         }
-        trigger = {
+        trigger = { NOT = { nesnd_postwar_special_victor = yes }
             NOT = {
                 has_variable = ce_usm_republican_revolution_tag
             }
@@ -1397,6 +1416,7 @@ usm_civilwar.10 = {
         if = {
             limit = {
                 nesnd_rebel_can_commit_settlement = yes
+                NOT = { nesnd_postwar_special_victor = yes }
                 NOT = {
                     has_variable = ce_usm_republican_revolution_tag
                 }
@@ -1412,6 +1432,7 @@ usm_civilwar.10 = {
         }
     }
     option = {
+        trigger = { NOT = { nesnd_postwar_special_victor = yes } }
         name = usm_civilwar.10.3
         ai_chance = {
             base = 25
@@ -1419,6 +1440,7 @@ usm_civilwar.10 = {
         if = {
             limit = {
                 nesnd_rebel_can_commit_settlement = yes
+                NOT = { nesnd_postwar_special_victor = yes }
             }
             set_variable = ce_usm_republican_revolution_tag
             activate_law = law_type:law_presidential_republic
@@ -1438,7 +1460,53 @@ usm_civilwar.10 = {
     after = {
         remove_variable = nesnd_rebel_settlement_pending
     }
+
+    cancellation_trigger = { NOT = { nesnd_rebel_victory_fact = yes } }
+    option = {
+        name = nesnd_postwar_restore_ming_option
+        show_as_unavailable = { always = yes }
+        trigger = { OR = { c:SIH ?= this c:HNA ?= this } }
+        ai_chance = { base = 70 }
+        custom_tooltip = nesnd_postwar_restore_ming_tt
+        show_as_tooltip = { activate_law = law_type:law_monarchy add_modifier = { name = USM_not_wuu_post_war_modifier months = 120 } }
+        hidden_effect = { nesnd_postwar_restore_original_ming = yes }
+    }
+    option = {
+        name = nesnd_postwar_great_han_option
+        default_option = yes
+        trigger = { c:SIH ?= this exists = ruler }
+        ai_chance = { base = 30 }
+        custom_tooltip = nesnd_postwar_great_han_tt
+        show_as_tooltip = { activate_law = law_type:law_monarchy }
+        hidden_effect = { nesnd_postwar_sih_great_han = yes }
+    }
+    option = {
+        name = nesnd_postwar_hna_republic_option
+        default_option = yes
+        trigger = { c:HNA ?= this }
+        ai_chance = { base = 30 }
+        custom_tooltip = nesnd_postwar_hna_republic_tt
+        show_as_tooltip = { activate_law = law_type:law_presidential_republic add_modifier = { name = nesnd_hna_republic_gentry_opposition months = 120 } }
+        hidden_effect = { nesnd_postwar_hna_republic = yes }
+    }
+    option = {
+        name = nesnd_postwar_gng_option
+        default_option = yes
+        trigger = { c:GNG ?= this }
+        ai_chance = { base = 100 }
+        custom_tooltip = nesnd_postwar_gng_tt
+        show_as_tooltip = { activate_law = law_type:law_monarchy add_modifier = { name = USM_not_wuu_post_war_modifier months = 120 } }
+        hidden_effect = { nesnd_postwar_gng_restore_ming = yes }
+    }
+    option = {
+        name = nesnd_postwar_wait_option
+        default_option = yes
+        trigger = { c:SIH ?= this NOT = { exists = ruler } NOT = { nesnd_postwar_has_original_royal = yes } }
+        ai_chance = { base = 1 }
+        custom_tooltip = nesnd_postwar_wait_tt
+    }
 }
+
 
 usm_civilwar.11 = {
     type = country_event

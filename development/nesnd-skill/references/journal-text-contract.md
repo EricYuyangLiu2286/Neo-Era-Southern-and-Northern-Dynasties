@@ -79,3 +79,13 @@ GAME/common/scripted_progress_bars/scripted_progress_bars.md与本MOD ce_french_
 ## 阶段可进入与永久结束分开
 
 跨阶段JE分别定义available（现在允许开始）与eligible（国家/制度仍允许继续）。未达到后继阶段不能被通用bootstrap当作永久invalid而提前写archived。当前已活动的旧档JE可在维护effect登记opened标记；不要把自己的has_journal_entry写进possible形成首次进入自锁。后继已解锁不因暂时丢失触发地重置，完成/封存锁仍独立阻止重领。西秦五脚本修正及原版“维新完成标记→神佛分离决议→宗教JE”来源见WORK/reports/japan-research-20261102/qin-stage-design.md。
+
+## 按钮预览与周期占比：2026-11-03实际反馈
+
+禁止滥用custom_tooltip不等于删除变量效果提示。按钮可见/可用条件不保证effect预览受同样条件约束；执行内的if在预览时可能展开内部缺值，或已设置标记使效果消失。把真实守卫留在hidden_effect，外层用简短custom_tooltip说明不可原生呈现的变量、路线与一次性期限，配show_as_tooltip显示真实modifier/law/treasury；不得重复同一收益。验证实际执行AST及提示两面。
+
+国家变量完成条件没有本地化时，只包装对应单项条件，勿用全局伪造country_var_*翻译或把无关门槛合成一个勾叉。建筑用bt引用时核对实际定义键，别名不保证可作scope：本轮error.log证明building_textile_mills失败，而building_textile_mill正确。先查同类JE/events/decisions完整链条，再决定用全国累计还是单座建筑；两者不能为显示漂亮而互换。
+
+占比条每周重算不是每月固定增量。原生weekly_progress应解释新目标减旧值，并纳入同周期扶持撤销，再由既有单一写入者绝对同步；只读预览不得改变持久变量。依据：原生00_ip4_victoria_progress_bars与本轮QE1三权来源/80组边界报告。
+
+证据：WORK/reports/persia-journal-ui-20261103/release-notes.md、sources.json、button-feedback-other-review.md、qe1-court-progress-research.md。未做引擎验收。

@@ -1,341 +1,342 @@
 ﻿# Character scope. Keep an existing royal visible without creating people or stopping natural death.
 nesnd_ming_give_guest_role = {
-	if = {
-		limit = {
-			is_character_alive = yes
-			nesnd_ming_authorized_dynast = yes
-			is_ruler_of_own_country = no
-		}
-		set_is_noble = yes
-		if = {
-			limit = {
-				is_heir_of_own_country = yes
-			}
-			remove_character_role = heir
-		}
-		if = {
-			limit = {
-				NOT = {
-					has_role = character_role_nesnd_ming_refuge
-				}
-			}
-			add_character_role = character_role_nesnd_ming_refuge
-		}
-	}
+    if = {
+        limit = {
+            is_character_alive = yes
+            nesnd_ming_authorized_dynast = yes
+            is_ruler_of_own_country = no
+        }
+        set_is_noble = yes
+        if = {
+            limit = {
+                is_heir_of_own_country = yes
+            }
+            remove_character_role = heir
+        }
+        if = {
+            limit = {
+                NOT = {
+                    has_role = character_role_nesnd_ming_refuge
+                }
+            }
+            add_character_role = character_role_nesnd_ming_refuge
+        }
+    }
 }
 # Country scope. The saved legitimate emperor/heir remain real objects after the change of ruler.
 nesnd_ming_mark_retained_royals = {
-	if = {
-		limit = {
-			c:USM ?= this
-			has_variable = tag_WUU_var
-		}
-		save_scope_as = nesnd_ming_royal_origin
-		if = {
-			limit = {
-				exists = var:nesnd_ming_claimant_ref
-				var:nesnd_ming_claimant_ref = {
-					is_character_alive = yes
-					owner = scope:nesnd_ming_royal_origin
-					is_ruler_of_own_country = no
-					nesnd_ming_authorized_dynast = yes
-				}
-			}
-			var:nesnd_ming_claimant_ref = {
-				nesnd_ming_give_guest_role = yes
-			}
-		}
-		if = {
-			limit = {
-				exists = var:nesnd_ming_heir_ref
-				var:nesnd_ming_heir_ref = {
-					is_character_alive = yes
-					owner = scope:nesnd_ming_royal_origin
-					is_ruler_of_own_country = no
-					nesnd_ming_authorized_dynast = yes
-				}
-			}
-			var:nesnd_ming_heir_ref = {
-				nesnd_ming_give_guest_role = yes
-			}
-		}
-		if = {
-			limit = {
-				any_scope_character = {
-					has_role = character_role_nesnd_ming_refuge
-					is_character_alive = yes
-				}
-			}
-			set_variable = nesnd_ming_royals_retained
-		}
-	}
+    if = {
+        limit = {
+            c:USM ?= this
+            has_variable = tag_WUU_var
+        }
+        save_scope_as = nesnd_ming_royal_origin
+        if = {
+            limit = {
+                exists = var:nesnd_ming_claimant_ref
+                var:nesnd_ming_claimant_ref = {
+                    is_character_alive = yes
+                    owner = scope:nesnd_ming_royal_origin
+                    is_ruler_of_own_country = no
+                    nesnd_ming_authorized_dynast = yes
+                }
+            }
+            var:nesnd_ming_claimant_ref = {
+                nesnd_ming_give_guest_role = yes
+            }
+        }
+        if = {
+            limit = {
+                exists = var:nesnd_ming_heir_ref
+                var:nesnd_ming_heir_ref = {
+                    is_character_alive = yes
+                    owner = scope:nesnd_ming_royal_origin
+                    is_ruler_of_own_country = no
+                    nesnd_ming_authorized_dynast = yes
+                }
+            }
+            var:nesnd_ming_heir_ref = {
+                nesnd_ming_give_guest_role = yes
+            }
+        }
+        if = {
+            limit = {
+                any_scope_character = {
+                    has_role = character_role_nesnd_ming_refuge
+                    is_character_alive = yes
+                }
+            }
+            set_variable = nesnd_ming_royals_retained
+        }
+    }
 }
 # No play_as here: AI/world characters can migrate independently of player control.
 nesnd_ming_general_refuge = {
-	if = {
-		limit = {
-			c:USM ?= this
-			has_variable = tag_WUU_var
-			NOT = {
-				has_variable = nesnd_ming_refuge_resolved
-			}
-			NOT = {
-				has_variable = nesnd_ming_player_transferred
-			}
-			NOT = {
-				has_global_variable = nesnd_south_settled
-			}
-			any_diplomatic_play = {
-				has_variable = this_is_nanming_civilwar_var
-				initiator = root
-			}
-		}
-		save_scope_as = nesnd_ming_royal_origin
-		clear_saved_scope = nesnd_ming_royal_host
-		if = {
-			limit = {
-				exists = c:HNA
-				c:HNA = {
-					nesnd_ming_royal_refuge_host = yes
-				}
-			}
-			c:HNA = {
-				save_scope_as = nesnd_ming_royal_host
-			}
-		}
-		else_if = {
-			limit = {
-				exists = c:SIH
-				c:SIH = {
-					nesnd_ming_royal_refuge_host = yes
-				}
-			}
-			c:SIH = {
-				save_scope_as = nesnd_ming_royal_host
-			}
-		}
-		nesnd_ming_mark_retained_royals = yes
-		if = {
-			limit = {
-				exists = scope:nesnd_ming_royal_host
-			}
-			scope:nesnd_ming_royal_host = {
-				set_variable = nesnd_ming_refuge_received
-			}
-			if = {
-				limit = {
-					exists = var:nesnd_ming_claimant_ref
-					var:nesnd_ming_claimant_ref = {
-						is_character_alive = yes
-						owner = scope:nesnd_ming_royal_origin
-						is_ruler_of_own_country = no
-						nesnd_ming_authorized_dynast = yes
-					}
-				}
-				var:nesnd_ming_claimant_ref = {
-					transfer_character = scope:nesnd_ming_royal_host
-					save_scope_as = nesnd_ming_refuge_character
-				}
-				scope:nesnd_ming_royal_host = {
-					set_variable = {
-						name = nesnd_ming_refuge_claimant
-						value = scope:nesnd_ming_refuge_character
-					}
-				}
-			}
-			if = {
-				limit = {
-					exists = var:nesnd_ming_heir_ref
-					var:nesnd_ming_heir_ref = {
-						is_character_alive = yes
-						owner = scope:nesnd_ming_royal_origin
-						is_ruler_of_own_country = no
-						nesnd_ming_authorized_dynast = yes
-					}
-				}
-				var:nesnd_ming_heir_ref = {
-					transfer_character = scope:nesnd_ming_royal_host
-					save_scope_as = nesnd_ming_refuge_character
-				}
-				scope:nesnd_ming_royal_host = {
-					set_variable = {
-						name = nesnd_ming_refuge_heir
-						value = scope:nesnd_ming_refuge_character
-					}
-				}
-			}
-			set_variable = nesnd_ming_refuge_resolved
-			remove_variable = nesnd_ming_player_intent
-			remove_variable = nesnd_ming_waiting_flight
-			remove_variable = nesnd_ming_royals_retained
-			if = {
-				limit = {
-					has_modifier = nesnd_ming_royal_allowance
-				}
-				remove_modifier = nesnd_ming_royal_allowance
-			}
-		}
-		else = {
-			nesnd_ming_notice_retained_royals = yes
-		}
-	}
+    if = {
+        limit = {
+            c:USM ?= this
+            has_variable = tag_WUU_var
+            NOT = {
+                has_variable = nesnd_ming_refuge_resolved
+            }
+            NOT = {
+                has_variable = nesnd_ming_player_transferred
+            }
+            NOT = {
+                has_global_variable = nesnd_south_settled
+            }
+            any_diplomatic_play = {
+                has_variable = this_is_nanming_civilwar_var
+                initiator = root
+            }
+        }
+        save_scope_as = nesnd_ming_royal_origin
+        clear_saved_scope = nesnd_ming_royal_host
+        if = {
+            limit = {
+                exists = c:HNA
+                c:HNA = {
+                    nesnd_ming_royal_refuge_host = yes
+                }
+            }
+            c:HNA = {
+                save_scope_as = nesnd_ming_royal_host
+            }
+        }
+        else_if = {
+            limit = {
+                exists = c:SIH
+                c:SIH = {
+                    nesnd_ming_royal_refuge_host = yes
+                }
+            }
+            c:SIH = {
+                save_scope_as = nesnd_ming_royal_host
+            }
+        }
+        nesnd_ming_mark_retained_royals = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_ming_royal_host
+            }
+            scope:nesnd_ming_royal_host = {
+                set_variable = nesnd_ming_refuge_received
+            }
+            if = {
+                limit = {
+                    exists = var:nesnd_ming_claimant_ref
+                    var:nesnd_ming_claimant_ref = {
+                        is_character_alive = yes
+                        owner = scope:nesnd_ming_royal_origin
+                        is_ruler_of_own_country = no
+                        nesnd_ming_authorized_dynast = yes
+                    }
+                }
+                var:nesnd_ming_claimant_ref = {
+                    transfer_character = scope:nesnd_ming_royal_host
+                    save_scope_as = nesnd_ming_refuge_character
+                }
+                scope:nesnd_ming_royal_host = {
+                    set_variable = {
+                        name = nesnd_ming_refuge_claimant
+                        value = scope:nesnd_ming_refuge_character
+                    }
+                }
+            }
+            if = {
+                limit = {
+                    exists = var:nesnd_ming_heir_ref
+                    var:nesnd_ming_heir_ref = {
+                        is_character_alive = yes
+                        owner = scope:nesnd_ming_royal_origin
+                        is_ruler_of_own_country = no
+                        nesnd_ming_authorized_dynast = yes
+                    }
+                }
+                var:nesnd_ming_heir_ref = {
+                    transfer_character = scope:nesnd_ming_royal_host
+                    save_scope_as = nesnd_ming_refuge_character
+                }
+                scope:nesnd_ming_royal_host = {
+                    set_variable = {
+                        name = nesnd_ming_refuge_heir
+                        value = scope:nesnd_ming_refuge_character
+                    }
+                }
+            }
+            set_variable = nesnd_ming_refuge_resolved
+            remove_variable = nesnd_ming_player_intent
+            remove_variable = nesnd_ming_waiting_flight
+            remove_variable = nesnd_ming_royals_retained
+            if = {
+                limit = {
+                    has_modifier = nesnd_ming_royal_allowance
+                }
+                remove_modifier = nesnd_ming_royal_allowance
+            }
+        }
+        else = {
+            nesnd_ming_notice_retained_royals = yes
+        }
+    }
 }
 nesnd_ming_resolve_court_migration = {
-	if = {
-		limit = {
-			c:USM ?= this
-			is_player = yes
-			has_variable = nesnd_ming_player_intent
-			nesnd_board_stance_value = 1
-		}
-		nesnd_ming_commit_player_transfer = yes
-	}
-	else = {
-		nesnd_ming_general_refuge = yes
-	}
+    if = {
+        limit = {
+            c:USM ?= this
+            is_player = yes
+            has_variable = nesnd_ming_player_intent
+            nesnd_board_stance_value = 1
+        }
+        nesnd_ming_commit_player_transfer = yes
+    }
+    else = {
+        nesnd_ming_general_refuge = yes
+    }
+    nesnd_ming_preserve_unhosted_royals = yes
 }
 nesnd_ming_enthrone_refuge = {
-	if = {
-		limit = {
-			has_variable = nesnd_ming_refuge_received
-			NOT = {
-				has_variable = nesnd_ming_court
-			}
-		}
-		save_scope_as = nesnd_ming_refuge_host
-		clear_saved_scope = nesnd_ming_refuge_sovereign
-		if = {
-			limit = {
-				exists = var:nesnd_ming_refuge_claimant
-				var:nesnd_ming_refuge_claimant = {
-					is_character_alive = yes
-					owner = scope:nesnd_ming_refuge_host
-					nesnd_ming_authorized_dynast = yes
-				}
-			}
-			var:nesnd_ming_refuge_claimant = {
-				save_scope_as = nesnd_ming_refuge_sovereign
-			}
-		}
-		else_if = {
-			limit = {
-				exists = var:nesnd_ming_refuge_heir
-				var:nesnd_ming_refuge_heir = {
-					is_character_alive = yes
-					owner = scope:nesnd_ming_refuge_host
-					nesnd_ming_authorized_dynast = yes
-				}
-			}
-			var:nesnd_ming_refuge_heir = {
-				save_scope_as = nesnd_ming_refuge_sovereign
-			}
-		}
-		if = {
-			limit = {
-				exists = ruler
-			}
-			set_variable = {
-				name = nesnd_ming_local_ruler_ref
-				value = ruler
-			}
-			ruler = {
-				set_variable = nesnd_ming_local_patron
-			}
-		}
-		set_variable = nesnd_ming_court
-		set_variable = nesnd_restoration_side
-		if = {
-			limit = {
-				exists = scope:nesnd_ming_refuge_sovereign
-			}
-			activate_law = law_type:law_monarchy
-			scope:nesnd_ming_refuge_sovereign = {
-				set_variable = nesnd_ming_claimant
-				set_character_as_ruler = yes
-				if = {
-					limit = {
-						has_role = character_role_nesnd_ming_refuge
-					}
-					remove_character_role = character_role_nesnd_ming_refuge
-				}
-			}
-			set_variable = {
-				name = nesnd_ming_court_monarch
-				value = scope:nesnd_ming_refuge_sovereign
-			}
-			if = {
-				limit = {
-					exists = var:nesnd_ming_refuge_heir
-					var:nesnd_ming_refuge_heir = {
-						is_character_alive = yes
-						owner = scope:nesnd_ming_refuge_host
-						is_ruler_of_own_country = no
-						nesnd_ming_authorized_dynast = yes
-					}
-				}
-				set_heir = var:nesnd_ming_refuge_heir
-				var:nesnd_ming_refuge_heir = {
-					set_variable = nesnd_ming_claimant
-					if = {
-						limit = {
-							has_role = character_role_nesnd_ming_refuge
-						}
-						remove_character_role = character_role_nesnd_ming_refuge
-					}
-				}
-			}
-		}
-		else = {
-			set_variable = nesnd_ming_interregnum
-		}
-		nesnd_ming_preserve_local_patron = yes
-	}
+    if = {
+        limit = {
+            has_variable = nesnd_ming_refuge_received
+            NOT = {
+                has_variable = nesnd_ming_court
+            }
+        }
+        save_scope_as = nesnd_ming_refuge_host
+        clear_saved_scope = nesnd_ming_refuge_sovereign
+        if = {
+            limit = {
+                exists = var:nesnd_ming_refuge_claimant
+                var:nesnd_ming_refuge_claimant = {
+                    is_character_alive = yes
+                    owner = scope:nesnd_ming_refuge_host
+                    nesnd_ming_authorized_dynast = yes
+                }
+            }
+            var:nesnd_ming_refuge_claimant = {
+                save_scope_as = nesnd_ming_refuge_sovereign
+            }
+        }
+        else_if = {
+            limit = {
+                exists = var:nesnd_ming_refuge_heir
+                var:nesnd_ming_refuge_heir = {
+                    is_character_alive = yes
+                    owner = scope:nesnd_ming_refuge_host
+                    nesnd_ming_authorized_dynast = yes
+                }
+            }
+            var:nesnd_ming_refuge_heir = {
+                save_scope_as = nesnd_ming_refuge_sovereign
+            }
+        }
+        if = {
+            limit = {
+                exists = ruler
+            }
+            set_variable = {
+                name = nesnd_ming_local_ruler_ref
+                value = ruler
+            }
+            ruler = {
+                set_variable = nesnd_ming_local_patron
+            }
+        }
+        set_variable = nesnd_ming_court
+        set_variable = nesnd_restoration_side
+        if = {
+            limit = {
+                exists = scope:nesnd_ming_refuge_sovereign
+            }
+            activate_law = law_type:law_monarchy
+            scope:nesnd_ming_refuge_sovereign = {
+                set_variable = nesnd_ming_claimant
+                set_character_as_ruler = yes
+                if = {
+                    limit = {
+                        has_role = character_role_nesnd_ming_refuge
+                    }
+                    remove_character_role = character_role_nesnd_ming_refuge
+                }
+            }
+            set_variable = {
+                name = nesnd_ming_court_monarch
+                value = scope:nesnd_ming_refuge_sovereign
+            }
+            if = {
+                limit = {
+                    exists = var:nesnd_ming_refuge_heir
+                    var:nesnd_ming_refuge_heir = {
+                        is_character_alive = yes
+                        owner = scope:nesnd_ming_refuge_host
+                        is_ruler_of_own_country = no
+                        nesnd_ming_authorized_dynast = yes
+                    }
+                }
+                set_heir = var:nesnd_ming_refuge_heir
+                var:nesnd_ming_refuge_heir = {
+                    set_variable = nesnd_ming_claimant
+                    if = {
+                        limit = {
+                            has_role = character_role_nesnd_ming_refuge
+                        }
+                        remove_character_role = character_role_nesnd_ming_refuge
+                    }
+                }
+            }
+        }
+        else = {
+            set_variable = nesnd_ming_interregnum
+        }
+        nesnd_ming_preserve_local_patron = yes
+    }
 }
 
 # Only announce an actual continuing stay, not a one-effect stop before flight.
 nesnd_ming_notice_retained_royals = {
-	if = {
-		limit = {
-			c:USM ?= this
-			has_variable = tag_WUU_var
-			has_variable = nesnd_ming_royals_retained
-			NOT = {
-				has_variable = nesnd_ming_retained_notice
-			}
-			any_scope_character = {
-				has_role = character_role_nesnd_ming_refuge
-				is_character_alive = yes
-			}
-		}
-		set_variable = nesnd_ming_retained_notice
-		trigger_event = {
-			id = nesnd_court_followup.15
-			popup = yes
-		}
-	}
+    if = {
+        limit = {
+            c:USM ?= this
+            has_variable = tag_WUU_var
+            has_variable = nesnd_ming_royals_retained
+            NOT = {
+                has_variable = nesnd_ming_retained_notice
+            }
+            any_scope_character = {
+                has_role = character_role_nesnd_ming_refuge
+                is_character_alive = yes
+            }
+        }
+        set_variable = nesnd_ming_retained_notice
+        trigger_event = {
+            id = nesnd_court_followup.15
+            popup = yes
+        }
+    }
 }
 
 # Retain the displaced local leader as a visible political patron; no new person or hereditary claim.
 nesnd_ming_preserve_local_patron = {
-	save_scope_as = nesnd_ming_patron_country
-	if = {
-		limit = {
-			exists = var:nesnd_ming_local_ruler_ref
-			var:nesnd_ming_local_ruler_ref = {
-				is_character_alive = yes
-				owner = scope:nesnd_ming_patron_country
-				is_ruler_of_own_country = no
-			}
-		}
-		var:nesnd_ming_local_ruler_ref = {
-			if = {
-				limit = {
-					NOT = {
-						has_role = character_role_nesnd_ming_patron
-					}
-				}
-				add_character_role = character_role_nesnd_ming_patron
-			}
-		}
-	}
+    save_scope_as = nesnd_ming_patron_country
+    if = {
+        limit = {
+            exists = var:nesnd_ming_local_ruler_ref
+            var:nesnd_ming_local_ruler_ref = {
+                is_character_alive = yes
+                owner = scope:nesnd_ming_patron_country
+                is_ruler_of_own_country = no
+            }
+        }
+        var:nesnd_ming_local_ruler_ref = {
+            if = {
+                limit = {
+                    NOT = {
+                        has_role = character_role_nesnd_ming_patron
+                    }
+                }
+                add_character_role = character_role_nesnd_ming_patron
+            }
+        }
+    }
 }

@@ -1,0 +1,224 @@
+﻿# Reads exact royal references; never infers a claimant from a surname.
+nesnd_mark_original_ming_refs = {
+    if = {
+        limit = { NOT = { any_character = { is_character_alive = yes has_variable = nesnd_original_ming_emperor } } }
+        if = {
+            limit = { exists = var:nesnd_ming_claimant_ref }
+            var:nesnd_ming_claimant_ref = {
+                if = {
+                    limit = { is_character_alive = yes nesnd_ming_authorized_dynast = yes }
+                    set_variable = nesnd_original_ming_emperor
+                    set_global_variable = nesnd_ming_original_identity_recorded
+                }
+            }
+        }
+    }
+    if = {
+        limit = { NOT = { any_character = { is_character_alive = yes has_variable = nesnd_original_ming_emperor } } }
+        if = {
+            limit = { exists = var:nesnd_ming_refuge_claimant }
+            var:nesnd_ming_refuge_claimant = {
+                if = {
+                    limit = { is_character_alive = yes nesnd_ming_authorized_dynast = yes }
+                    set_variable = nesnd_original_ming_emperor
+                    set_global_variable = nesnd_ming_original_identity_recorded
+                }
+            }
+        }
+    }
+    if = {
+        limit = { NOT = { any_character = { is_character_alive = yes has_variable = nesnd_original_ming_heir } } }
+        if = {
+            limit = { exists = var:nesnd_ming_heir_ref }
+            var:nesnd_ming_heir_ref = {
+                if = {
+                    limit = { is_character_alive = yes nesnd_ming_authorized_dynast = yes }
+                    set_variable = nesnd_original_ming_heir
+                    set_global_variable = nesnd_ming_original_identity_recorded
+                }
+            }
+        }
+    }
+    if = {
+        limit = { NOT = { any_character = { is_character_alive = yes has_variable = nesnd_original_ming_heir } } }
+        if = {
+            limit = { exists = var:nesnd_ming_refuge_heir }
+            var:nesnd_ming_refuge_heir = {
+                if = {
+                    limit = { is_character_alive = yes nesnd_ming_authorized_dynast = yes }
+                    set_variable = nesnd_original_ming_heir
+                    set_global_variable = nesnd_ming_original_identity_recorded
+                }
+            }
+        }
+    }
+}
+nesnd_import_original_ming_identity = {
+    if = { limit = { NOT = { has_global_variable = nesnd_ming_original_identity_recorded } } c:USM ?= { nesnd_mark_original_ming_refs = yes } }
+    if = { limit = { NOT = { has_global_variable = nesnd_ming_original_identity_recorded } } c:HNA ?= { nesnd_mark_original_ming_refs = yes } }
+    if = { limit = { NOT = { has_global_variable = nesnd_ming_original_identity_recorded } } c:SIH ?= { nesnd_mark_original_ming_refs = yes } }
+}
+nesnd_record_original_ming_identity = {
+    if = {
+        limit = { exists = var:nesnd_ming_claimant_ref }
+        if = {
+            limit = { var:nesnd_ming_claimant_ref = { is_character_alive = yes nesnd_ming_authorized_dynast = yes } }
+            every_character = {
+                limit = { OR = { has_variable = nesnd_original_ming_emperor has_variable = nesnd_original_ming_heir } }
+                remove_variable = nesnd_original_ming_emperor
+                remove_variable = nesnd_original_ming_heir
+            }
+            nesnd_mark_original_ming_refs = yes
+        }
+    }
+}
+nesnd_ming_preserve_unhosted_royals = {
+    if = {
+        limit = { c:USM ?= this has_variable = tag_WUU_var }
+        every_scope_character = {
+            limit = { is_character_alive = yes is_ruler_of_own_country = no OR = { has_variable = nesnd_original_ming_emperor has_variable = nesnd_original_ming_heir } }
+            exile_character_with_role_cleanup = yes
+        }
+    }
+}
+nesnd_select_original_ming_royal = {
+    clear_saved_scope = nesnd_postwar_original_royal
+    if = {
+        limit = { any_character = { has_variable = nesnd_original_ming_emperor nesnd_postwar_original_royal_available = yes } }
+        random_character = { limit = { has_variable = nesnd_original_ming_emperor nesnd_postwar_original_royal_available = yes } save_scope_as = nesnd_postwar_original_royal }
+    }
+    else_if = {
+        limit = { any_character = { has_variable = nesnd_original_ming_heir nesnd_postwar_original_royal_available = yes } }
+        random_character = { limit = { has_variable = nesnd_original_ming_heir nesnd_postwar_original_royal_available = yes } save_scope_as = nesnd_postwar_original_royal }
+    }
+}
+# Character scope, with an explicit saved winner. Native exile/void recruitment keeps the same person.
+nesnd_postwar_transfer_royal = {
+    if = {
+        limit = { exists = scope:nesnd_postwar_winner is_character_alive = yes }
+        save_scope_as = nesnd_postwar_moved_royal
+        clear_saved_scope = nesnd_postwar_previous_host
+        owner ?= { save_scope_as = nesnd_postwar_previous_host }
+        if = { limit = { is_in_void = yes } free_character_from_void = yes }
+        if = { limit = { is_in_exile_pool = yes } transfer_character = scope:nesnd_postwar_winner }
+        else_if = {
+            limit = { exists = owner }
+            if = { limit = { NOT = { owner = scope:nesnd_postwar_winner } } transfer_character = scope:nesnd_postwar_winner }
+        }
+        else = { transfer_character = scope:nesnd_postwar_winner }
+        if = {
+            limit = { exists = owner }
+            if = {
+                limit = { owner = scope:nesnd_postwar_winner }
+                if = { limit = { has_modifier = in_exile_modifier } remove_modifier = in_exile_modifier }
+                if = { limit = { has_role = character_role_nesnd_ming_refuge } remove_character_role = character_role_nesnd_ming_refuge }
+                if = {
+                    limit = { exists = scope:nesnd_postwar_previous_host }
+                    scope:nesnd_postwar_previous_host = {
+                        if = { limit = { exists = var:nesnd_ming_refuge_claimant } if = { limit = { var:nesnd_ming_refuge_claimant = scope:nesnd_postwar_moved_royal } remove_variable = nesnd_ming_refuge_claimant } }
+                        if = { limit = { exists = var:nesnd_ming_refuge_heir } if = { limit = { var:nesnd_ming_refuge_heir = scope:nesnd_postwar_moved_royal } remove_variable = nesnd_ming_refuge_heir } }
+                        if = { limit = { NOT = { exists = var:nesnd_ming_refuge_claimant } NOT = { exists = var:nesnd_ming_refuge_heir } } remove_variable = nesnd_ming_refuge_received }
+                    }
+                }
+            }
+        }
+    }
+}
+nesnd_postwar_clear_constitution = {
+    remove_variable = tag_WUU_var
+    remove_variable = nesnd_postwar_great_han
+    remove_variable = nesnd_ming_interregnum
+    remove_variable = nesnd_ming_court
+    remove_variable = nesnd_ming_court_monarch
+    remove_variable = ce_usm_restoration_of_ming_var
+    remove_variable = ce_usm_republican_revolution_tag
+    remove_variable = usm_dominion_of_ming_var
+}
+nesnd_postwar_restore_original_ming = {
+    if = {
+        limit = { nesnd_rebel_can_commit_settlement = yes OR = { c:SIH ?= this c:HNA ?= this } }
+        save_scope_as = nesnd_postwar_winner
+        nesnd_ming_refresh_royal_identity = yes
+        nesnd_ming_find_ning_dynast = yes
+        if = { limit = { NOT = { exists = scope:nesnd_ming_available_dynast } } nesnd_ming_generate_ning_dynast = yes }
+        clear_saved_scope = nesnd_postwar_original_royal
+        if = { limit = { exists = scope:nesnd_ming_available_dynast } scope:nesnd_ming_available_dynast = { save_scope_as = nesnd_postwar_original_royal } }
+        if = {
+            limit = { exists = scope:nesnd_postwar_original_royal }
+            if = {
+                limit = { scope:nesnd_postwar_original_royal = { nesnd_ming_recruitable_royal = yes } }
+                if = { limit = { exists = ruler } set_variable = { name = nesnd_ming_local_ruler_ref value = ruler } }
+                activate_law = law_type:law_monarchy
+                scope:nesnd_postwar_original_royal = {
+                    nesnd_postwar_transfer_royal = yes
+                    if = { limit = { owner ?= scope:nesnd_postwar_winner is_character_alive = yes } set_character_as_ruler = yes }
+                }
+                if = {
+                    limit = { ruler ?= scope:nesnd_postwar_original_royal }
+                    nesnd_postwar_clear_constitution = yes
+                    set_variable = ce_usm_restoration_of_ming_var
+                    set_variable = nesnd_restoration_side
+                    nesnd_ming_preserve_local_patron = yes
+                    clear_saved_scope = nesnd_postwar_original_heir
+                    if = {
+                        limit = { any_character = { has_variable = nesnd_original_ming_heir nesnd_postwar_original_royal_available = yes NOT = { this = scope:nesnd_postwar_original_royal } } }
+                        random_character = { limit = { has_variable = nesnd_original_ming_heir nesnd_postwar_original_royal_available = yes NOT = { this = scope:nesnd_postwar_original_royal } } save_scope_as = nesnd_postwar_original_heir nesnd_postwar_transfer_royal = yes }
+                    }
+                    if = { limit = { exists = scope:nesnd_postwar_original_heir } if = { limit = { scope:nesnd_postwar_original_heir = { owner ?= scope:nesnd_postwar_winner is_character_alive = yes } } set_heir = scope:nesnd_postwar_original_heir } }
+                    add_modifier = { name = USM_not_wuu_post_war_modifier months = 120 }
+                    nesnd_commit_rebel_settlement = yes
+                }
+            }
+        }
+    }
+}
+nesnd_postwar_sih_great_han = {
+    if = {
+        limit = { c:SIH ?= this nesnd_rebel_can_commit_settlement = yes exists = ruler }
+        ruler = { save_scope_as = nesnd_postwar_local_sovereign }
+        activate_law = law_type:law_monarchy
+        if = { limit = { exists = scope:nesnd_postwar_local_sovereign } scope:nesnd_postwar_local_sovereign = { if = { limit = { is_character_alive = yes owner = root } set_character_as_ruler = yes } } }
+        nesnd_postwar_clear_constitution = yes
+        set_variable = nesnd_postwar_great_han
+        nesnd_commit_rebel_settlement = yes
+    }
+}
+nesnd_postwar_hna_republic = {
+    if = {
+        limit = { c:HNA ?= this nesnd_rebel_can_commit_settlement = yes }
+        nesnd_postwar_clear_constitution = yes
+        set_variable = ce_usm_republican_revolution_tag
+        activate_law = law_type:law_presidential_republic
+        add_modifier = { name = nesnd_hna_republic_gentry_opposition months = 120 }
+        nesnd_commit_rebel_settlement = yes
+    }
+}
+nesnd_postwar_gng_restore_ming = {
+    if = {
+        limit = { c:GNG ?= this nesnd_rebel_can_commit_settlement = yes }
+        save_scope_as = nesnd_postwar_winner
+        nesnd_ming_refresh_royal_identity = yes
+        clear_saved_scope = nesnd_postwar_local_sovereign
+        if = { limit = { nesnd_postwar_ruling_dynast = yes ruler = { has_variable = nesnd_ming_huai_line } } ruler = { save_scope_as = nesnd_postwar_local_sovereign } }
+        else_if = { limit = { any_scope_character = { is_character_alive = yes is_heir_of_own_country = yes nesnd_ming_authorized_dynast = yes has_variable = nesnd_ming_huai_line } } random_scope_character = { limit = { is_character_alive = yes is_heir_of_own_country = yes nesnd_ming_authorized_dynast = yes has_variable = nesnd_ming_huai_line } save_scope_as = nesnd_postwar_local_sovereign } }
+        if = {
+            limit = { NOT = { exists = scope:nesnd_postwar_local_sovereign } }
+            nesnd_ming_find_huai_dynast = yes
+            if = { limit = { NOT = { exists = scope:nesnd_ming_available_dynast } } nesnd_ming_generate_huai_dynast = yes }
+            if = { limit = { exists = scope:nesnd_ming_available_dynast } scope:nesnd_ming_available_dynast = { nesnd_postwar_transfer_royal = yes save_scope_as = nesnd_postwar_local_sovereign } }
+        }
+        if = {
+            limit = { exists = scope:nesnd_postwar_local_sovereign }
+            activate_law = law_type:law_monarchy
+            scope:nesnd_postwar_local_sovereign = { if = { limit = { is_character_alive = yes owner = root } set_character_as_ruler = yes } }
+            if = {
+                limit = { ruler ?= scope:nesnd_postwar_local_sovereign }
+                nesnd_postwar_clear_constitution = yes
+                set_variable = ce_usm_restoration_of_ming_var
+                set_variable = nesnd_restoration_side
+                add_modifier = { name = USM_not_wuu_post_war_modifier months = 120 }
+                nesnd_commit_rebel_settlement = yes
+            }
+        }
+    }
+}

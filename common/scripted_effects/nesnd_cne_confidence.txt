@@ -1,56 +1,69 @@
 ﻿nesnd_cne_ensure_children = {
- if = { limit = { nesnd_cne_programs_live = yes }
-  if = { limit = { NOT = { has_journal_entry = nesnd_cne_land_journal } } add_journal_entry = { type = nesnd_cne_land_journal } }
-  if = { limit = { NOT = { has_journal_entry = nesnd_cne_urban_journal } } add_journal_entry = { type = nesnd_cne_urban_journal } }
-  if = { limit = { NOT = { has_journal_entry = nesnd_cne_camps_journal } } add_journal_entry = { type = nesnd_cne_camps_journal } }
-  if = { limit = { NOT = { has_journal_entry = nesnd_cne_confidence_journal } } add_journal_entry = { type = nesnd_cne_confidence_journal } }
- }
+    if = { limit = { nesnd_cne_programs_live = yes }
+        if = { limit = { NOT = { has_journal_entry = nesnd_cne_land_journal } } add_journal_entry = { type = nesnd_cne_land_journal } }
+        if = { limit = { NOT = { has_journal_entry = nesnd_cne_urban_journal } } add_journal_entry = { type = nesnd_cne_urban_journal } }
+        if = { limit = { NOT = { has_journal_entry = nesnd_cne_camps_journal } } add_journal_entry = { type = nesnd_cne_camps_journal } }
+        if = { limit = { NOT = { has_journal_entry = nesnd_cne_confidence_journal } } add_journal_entry = { type = nesnd_cne_confidence_journal } }
+    }
 }
 nesnd_cne_confidence_init = {
- if = { limit = { NOT = { has_variable = nesnd_cne_confidence } } set_variable = { name = nesnd_cne_confidence value = 1000 } }
+    if = { limit = { NOT = { has_variable = nesnd_cne_confidence } } set_variable = { name = nesnd_cne_confidence value = 1000 } }
 }
 nesnd_cne_confidence_watch = {
- if = { limit = { nesnd_reform_active = yes has_journal_entry = ce_cne_land_reform NOT = { has_variable = nesnd_reform_terminal_pending } }
-  nesnd_cne_confidence_init = yes
-  if = { limit = { has_modifier = declared_bankruptcy NOT = { has_variable = nesnd_cne_bankruptcy_charged } }
-   set_variable = nesnd_cne_bankruptcy_charged
-   change_variable = { name = nesnd_cne_confidence add = -500 }
-  }
-  if = { limit = { NOT = { has_modifier = declared_bankruptcy } } remove_variable = nesnd_cne_bankruptcy_charged }
-  clamp_variable = { name = nesnd_cne_confidence min = 0 max = 1000 }
-  nesnd_cne_confidence_sync = yes
-  if = { limit = { var:nesnd_cne_confidence <= 500 NOT = { has_variable = nesnd_cne_republican_rose } }
-   nesnd_cne_spawn_republicans = yes
-  }
- }
+    if = { limit = { nesnd_reform_active = yes has_journal_entry = ce_cne_land_reform NOT = { has_variable = nesnd_reform_terminal_pending } }
+        nesnd_cne_confidence_init = yes
+        if = { limit = { has_modifier = declared_bankruptcy NOT = { has_variable = nesnd_cne_bankruptcy_charged } }
+            set_variable = nesnd_cne_bankruptcy_charged
+            change_variable = { name = nesnd_cne_confidence add = -250 }
+        }
+        if = { limit = { NOT = { has_modifier = declared_bankruptcy } } remove_variable = nesnd_cne_bankruptcy_charged }
+        clamp_variable = { name = nesnd_cne_confidence min = 0 max = 1000 }
+        nesnd_cne_confidence_sync = yes
+        if = { limit = { var:nesnd_cne_confidence <= 500 NOT = { has_variable = nesnd_cne_republican_rose } }
+            nesnd_cne_spawn_republicans = yes
+        }
+    }
 }
 nesnd_cne_confidence_yearly = {
- if = { limit = { nesnd_cne_programs_live = yes }
-  nesnd_cne_confidence_init = yes
-  nesnd_cne_refresh_camp_count = yes
-  change_variable = { name = nesnd_cne_confidence add = nesnd_cne_confidence_annual_change }
-  nesnd_cne_confidence_watch = yes
- }
+    if = { limit = { nesnd_cne_programs_live = yes }
+        nesnd_cne_confidence_init = yes
+        nesnd_cne_refresh_camp_count = yes
+        change_variable = { name = nesnd_cne_confidence add = nesnd_cne_confidence_annual_change }
+        nesnd_cne_confidence_watch = yes
+    }
 }
 nesnd_cne_confidence_sync = {
- save_scope_as = nesnd_cne_confidence_country
- if = { limit = { exists = scope:nesnd_cne_confidence_country }
-  if = { limit = { scope:nesnd_cne_confidence_country = { has_variable = nesnd_cne_confidence has_journal_entry = nesnd_cne_confidence_journal } }
-   scope:nesnd_cne_confidence_country = {
-    je:nesnd_cne_confidence_journal = { set_bar_progress = { name = nesnd_cne_confidence_bar value = scope:nesnd_cne_confidence_country.var:nesnd_cne_confidence } }
-   }
-  }
- }
+    save_scope_as = nesnd_cne_confidence_country
+    if = { limit = { exists = scope:nesnd_cne_confidence_country }
+        if = { limit = { scope:nesnd_cne_confidence_country = { has_variable = nesnd_cne_confidence has_journal_entry = nesnd_cne_confidence_journal } }
+            scope:nesnd_cne_confidence_country = {
+                je:nesnd_cne_confidence_journal = { set_bar_progress = { name = nesnd_cne_confidence_bar value = scope:nesnd_cne_confidence_country.var:nesnd_cne_confidence } }
+            }
+        }
+    }
 }
 nesnd_cne_end_failed_reform = {
- nesnd_cne_programs_cleanup = yes
- if = { limit = { nesnd_reform_extreme_crisis = yes }
-  set_variable = nesnd_reform_terminal_pending
-  trigger_event = { id = nesnd_crisis.31 popup = yes }
- }
- else = {
-  set_variable = nesnd_land_failed
-  nesnd_land_cleanup = yes
-  trigger_event = { id = nesnd_cne_confidence.5 popup = yes }
- }
+    nesnd_cne_programs_cleanup = yes
+    if = { limit = { nesnd_reform_extreme_crisis = yes }
+        set_variable = nesnd_reform_terminal_pending
+        trigger_event = { id = nesnd_crisis.31 popup = yes }
+    }
+    else = {
+        set_variable = nesnd_land_failed
+        nesnd_land_cleanup = yes
+        trigger_event = { id = nesnd_cne_confidence.5 popup = yes }
+    }
+}
+
+nesnd_cne_take_respite = {
+    if = {
+        limit = { nesnd_cne_respite_ready = yes }
+        set_variable = nesnd_cne_respite_used
+        set_variable = { name = nesnd_cne_respite_active months = 6 }
+        nesnd_cne_stop_all_programs = yes
+        change_variable = { name = nesnd_cne_confidence add = 100 }
+        clamp_variable = { name = nesnd_cne_confidence min = 0 max = 1000 }
+        nesnd_cne_confidence_sync = yes
+        nesnd_refresh_land_display = yes
+    }
 }
