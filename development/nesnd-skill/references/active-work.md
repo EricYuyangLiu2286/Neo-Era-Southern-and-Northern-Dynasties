@@ -1,3 +1,9 @@
+# 当前交接：观察者日志修复（2026-11-03）
+
+任务27：用户明确“重复添加无所谓，其他修复合并”。主MOD .scratch/debug-release/issues/27-observer-logfix.md；报告WORK/reports/observer-logfix-20261103/。以adfc317为基线修复宗室owner/对象引用、三处外交关系语法、四处事件字段顺序、西秦将领意识形态、已停用印度全局JE参与及铁路显示market守卫。重复JE入口保持。24定向检查、MCP4、Tiger零新增、全局数据图一致、两轴审查通过；STATIC_PASS，修复版未重新开游戏。
+
+原观察者进程使用冻结profile 20261103T100813Z，仍加载旧代码；未操作窗口、未改变冻结副本或存档。原生日志实际失败证据已归档同run的log-audit目录。当前主MOD/main/远端保存结果见本任务main-merge.json与git-delivery.json；外部资源冲突和无定位引擎断言尚未归因。以下保留历史断点。
+
 # 当前交接：两司门槛与边界补测
 
 Updated: 2026-11-03。当前任务26：主MOD .scratch/debug-release/issues/26-commission-boundaries.md；报告WORK/reports/commission-boundaries-20261103/。父提交a062441，两司改为扩张后建立，补资格/请求/清理/建国故障边界测试。STATIC_PASS，未开游戏；主MOD与远端最终结果以main-merge.json/git-delivery.json为准。任务25印度已实施，不再是纯方案。旧记录按时序保留如下，不能用其“计划中/当前任务23”覆盖本节。

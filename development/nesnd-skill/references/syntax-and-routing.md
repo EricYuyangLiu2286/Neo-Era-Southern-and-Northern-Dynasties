@@ -105,7 +105,7 @@ IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列�
 ## 人物、日志局部scope及重复字段
 
 角色当前IG由 `owner.ig:...` 取得；`ig:`只支持country/political_movement，不能直接从character调用。人物转国后应指向转国后的owner。比较法律对象时两端均用law；只有明确比较law_type才取`.type`。JE在immediate保存的事件链scope不自动成为全局AI法案评估scope；固定法案目标可直接比较当前law的type。
-同一事件的cancellation_trigger只定义一次，按完整OR语义合并所有取消理由；缺对象先分支判定，再检查人物存活。避免将原本可重复的option/modifier与本应单一的条件字段混为一类。全局on_action调用country效果时不要把全局root当当前country，需在country入口明确保存行动者。
+事件先声明 `type = country_event` 等类型，再声明 `cancellation_trigger`；当前引擎按读取顺序解析取消条件，反序会报 invalid event type（20261103观察者日志）。同一事件的cancellation_trigger只定义一次，按完整OR语义合并所有取消理由；缺对象先分支判定，再检查人物存活。避免将原本可重复的option/modifier与本应单一的条件字段混为一类。全局on_action调用country效果时不要把全局root当当前country，需在country入口明确保存行动者。
 以上修正以1.13.11 event_targets/effects及原版调用链查证，26处人物IG、Donghak三scope、法国取消条件的定位见 WORK/reports/integrity-recheck-20261102/tiger-source-review.json。
 
 ## 宗室延续与无所属角色
@@ -120,3 +120,12 @@ IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列�
 - 原版global通过add_contextless_journal_entry显式加入的JE，禁用壳必须保留contextless组；仅改possible=no不能封住显式添加。
 
 来源与实际复查：WORK/reports/india-development-20261103/commission-execution-contract.md、uprising-execution-contract.md、india-standards-review.md。
+
+
+## 20261103 原生日志补证
+
+- saved scope 作为关系比较参数使用原生 `"relations(scope:target_country)"` 形式，并先分支确认目标存在；`relations:scope:...` 被1.13.11引擎拒绝。来源：GAME/common/diplomatic_catalysts/01_event_catalysts.txt:24、30。
+- `create_character.ideology` 查询角色意识形态数据库的 `character_ideology = yes`，不能使用同名近似的IG意识形态；例如角色使用 `ideology_jingoist_leader`。
+- 停用contextless日志仍在最终覆盖中明确 `should_be_involved = { always = no }`；保留关闭条件。优先检查最后生效定义，早期文件有字段不代表最终覆盖仍有。
+
+角色存在、存活和owner有效性分别判断；适用于前述宗室/流亡池读取规则的实际失败证据为WORK/reports/observer-logfix-20261103。图形tag中的market链接同样在不存在时显式false；同路径兼容覆盖需随原版更新重查。修复源码与静态检查不升级为实机通过。
