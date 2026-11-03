@@ -158,3 +158,7 @@ Updated: 2026-11-01
 此前观察者运行已于1866.1.15暂停，完成两机位截图、存档字节核验并正常关闭。终档与完整日志在WORK/reports/observer-finish-20261103/；下次恢复不得沿用上方历史“游戏仍运行”的描述。实际部署和Git指纹见WORK/reports/cne-time-native-ban-20261103/git-delivery.json。
 
 意大利方案最新纠正：LOM是法国主导的伦巴第共和国，佩佩为亲法民族主义历史人物挪用；以法国支持下的整合为优先方向。新增加里波第全链核查及局部替换计划，尚未实现；任务28追加记录，证据WORK/reports/italy-lombardy-correction-20261103/。游戏脚本未改。
+
+## 当前研究交付：法国政治与地区建设（2026-11-03）
+
+[29 法国方案](issues/29-france-political-planning.md)：RAHF动员与原生党派机制已核；常规目标IG执政＋合法性50，不检测党派组合。补“宫廷与外省”及共和国分配/右转的条件性路线，保留波拿巴原方向；新增政治难度技能规则。本批仅文档，未实施玩法、未开游戏。后续以WORK/reports/france-politics-plan-20261103/france-development-plan.md为准，不沿用被纠正的组合门槛。
