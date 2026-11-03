@@ -25,3 +25,7 @@ Blocked by: none
 ## 修订2：地区起义、土邦与法国
 
 主方案第十至十三节纳入USM南印度策动、土邦独立/属国分支、法国内政分类与双向选择。共同生命周期覆盖24类异常；来源与复核见[本轮报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-india-plan-revision-20261102/release-notes.md>)。下一批实施仍需先处理基线和共同请求/收尾，尚未写入玩法。
+
+## 实施记录：2026-11-03
+
+用户已明确授权开始实施及南明天竺/远山设司。既有研究与修订方案已落实到独立候选india-development-20261103-a，详见[任务25](../debug-release/issues/25-india-implementation.md)。前面的“仅计划”仅描述当时状态；484检查、MCP7与两轴复核为外部结果，不代表引擎验收。远山锚定南非，不挪到印度。

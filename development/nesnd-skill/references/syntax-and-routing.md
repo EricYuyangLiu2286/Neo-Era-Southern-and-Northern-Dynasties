@@ -111,3 +111,12 @@ IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列�
 ## 宗室延续与无所属角色
 
 需要恢复人物时先查已保存身份，再查本国、every/any_character、流亡池及void，确认存活与owner；exile/void不得先无保护比较owner。移出外国在位ruler/heir须有明确剧情授权，不能将同姓当作身份。只有确定缺少可用活人且作者授权时，create_character创建新角色，不能重用旧历史template当复活。行辈/支系单独记录，淮系不能混宁系；已有姓名不回写，新出生只查自己的父系，不能为每个国家的出生扫描全球。on_created保存新角色后验证其owner，再立为君主；一次结算/创建锁避免重复刷人。当前原版法国、日本及巴西来源见WORK/reports/persia-journal-ui-20261103/ming-successor-generation.md。
+
+## 印度实施的接口与案件隔离（1.13.11）
+
+- 固定TAG建国的state是owner-state；set_capital使用裸数据库键STATE_*，不是s:前缀。combat_unit.count需要整数常量，动态人口分档用独立if/else_if选择常量。不要把继承certain values理解为已证明军队/技术全部继承；原版条件授予技术可单项核对，transfer_to_formation仅用于人物。
+- 地区案件循环与重试每次先clear自己的临时backer/target scope。上次循环saved scope不会因下一次if不命中而自动消失。本轮已复现源码反例：第二案不合格赞助者会沿用第一案backer。
+- set_state_owner转入现存国可能合并同地区州。返还整个region_state不是返还原来的province子集；回滚须保守证明未取得第三国地块。当前新建单州案同时保存原省份数并监听后续territory变化；不能以num_states=1单独证明安全。未知回调顺序保留引擎待验，不为清理而吞并整个现存国。
+- 原版global通过add_contextless_journal_entry显式加入的JE，禁用壳必须保留contextless组；仅改possible=no不能封住显式添加。
+
+来源与实际复查：WORK/reports/india-development-20261103/commission-execution-contract.md、uprising-execution-contract.md、india-standards-review.md。

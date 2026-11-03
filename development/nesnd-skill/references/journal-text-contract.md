@@ -89,3 +89,11 @@ GAME/common/scripted_progress_bars/scripted_progress_bars.md与本MOD ce_french_
 占比条每周重算不是每月固定增量。原生weekly_progress应解释新目标减旧值，并纳入同周期扶持撤销，再由既有单一写入者绝对同步；只读预览不得改变持久变量。依据：原生00_ip4_victoria_progress_bars与本轮QE1三权来源/80组边界报告。
 
 证据：WORK/reports/persia-journal-ui-20261103/release-notes.md、sources.json、button-feedback-other-review.md、qe1-court-progress-research.md。未做引擎验收。
+
+## 阶段切换与数值同步：印度反例
+
+保存变量并不会自动初始化新加JE的条。JE immediate、保留进度后重新进入、按钮改变与外国镇压改变都调用同一个只同步效果；计分仍只有该JE的周期回调。同步时保存当前country并保护存在性，不用可能是全球调用者的root读取国家变量。跨国/全局案件只负责生命周期，避免与国家JE重复推进。
+
+暂时条件（战争、破产、军力或合法性）失去时按设计暂停、停维护费并保留案件；不要共用“新建资格”作为存续资格，导致自动清案与长冷却。建设奖JE完成之后仍需要的治理/防御按钮应挂在常驻入口。人口与领土成果不是按钮退出时的临时修正。
+
+实际前后：WORK/reports/india-development-20261103/india-spec-review.md、india-spec-review-final.md及final-validation.json。未开游戏。

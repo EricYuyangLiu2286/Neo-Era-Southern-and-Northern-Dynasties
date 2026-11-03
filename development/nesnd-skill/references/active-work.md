@@ -13,3 +13,7 @@ Updated: 2026-11-03。当前任务为主MOD .scratch/debug-release/issues/23-qe1
 ## 当前（2026-11-03）：反馈修复完成外部检查，印度进入实施
 
 主项目任务24与WORK/reports/persia-journal-ui-20261103/release-notes.md为最新断点；候选43个玩法/文本文件，639检查/MCP3/Tiger零新增，未开游戏。主MOD合入与Git结果以main-merge.json/git-delivery.json为准。作者主MOD日本改稿必须保留。下一步按WORK/reports/india-development-20261103/native-implementation-contract.md与yuanshan-tianzhu-lore.md落实印度及两司；研究不等于玩法实现。
+
+## 当前交付：印度与两司（2026-11-03）
+
+任务24已合入并推送a1f2be2；任务25印度新候选已完成484外部检查/MCP7/Tiger零新增及两轴复核，未开游戏。主MOD/Git结果看WORK/reports/india-development-20261103/main-merge.json与git-delivery.json。实施内容和未证边界见同目录release-notes.md。作者测试由作者启动；不得恢复旧观察者自动测试授权。

@@ -1,0 +1,77 @@
+﻿nesnd_india_diplomacy_live = { OR = { nesnd_india_empire = yes nesnd_india_prince = yes } }
+nesnd_india_can_send = {
+    nesnd_india_diplomacy_live = yes is_at_war = no is_active_in_diplomatic_play = no
+    NOT = { has_variable = nesnd_india_request_clock } NOT = { has_variable = nesnd_india_request_cooldown }
+    NOT = { has_variable = nesnd_external_pending } NOT = { has_variable = nesnd_external_cooldown }
+}
+nesnd_india_french_contact = {
+    nesnd_india_can_send = yes
+    NOT = { has_variable = nesnd_india_aid_lock } NOT = { has_variable = nesnd_external_aid_committed }
+    trigger_if = { limit = { exists = c:FRA }
+        NOT = { c:FRA = this } NOT = { has_war_with = c:FRA }
+        c:FRA = { is_country_alive = yes is_at_war = no }
+        OR = { is_subject = no is_subject_of = c:FRA }
+    } trigger_else = { always = no }
+}
+nesnd_india_autonomy_available = {
+    nesnd_india_can_send = yes
+    trigger_if = { limit = { is_subject = yes exists = overlord }
+        overlord = { is_country_alive = yes }
+        NOT = { has_war_with = overlord }
+    } trigger_else = { always = no }
+}
+nesnd_india_union_target = {
+    nesnd_india_prince = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no
+    NOT = { has_variable = nesnd_india_incoming_union_clock }
+    NOT = { this = root } relations:root >= 25
+    root = { is_subject = no }
+}
+nesnd_india_reply_valid = {
+    trigger_if = { limit = {
+            exists = scope:india_sender exists = scope:india_partner exists = scope:india_serial
+            exists = scope:india_sender_patron exists = scope:india_partner_patron
+            exists = scope:india_sender_regime exists = scope:india_partner_regime
+        }
+        this = scope:india_partner is_country_alive = yes is_at_war = no
+        nesnd_india_regime = scope:india_partner_regime
+        trigger_if = { limit = { is_subject = yes } overlord = scope:india_partner_patron } trigger_else = { this = scope:india_partner_patron }
+        scope:india_sender = {
+            nesnd_india_diplomacy_live = yes is_at_war = no
+            has_variable = nesnd_india_request_clock
+            nesnd_india_request_serial = scope:india_serial nesnd_india_regime = scope:india_sender_regime
+            trigger_if = { limit = { exists = var:nesnd_india_request_partner } var:nesnd_india_request_partner = scope:india_partner } trigger_else = { always = no }
+            NOT = { has_war_with = scope:india_partner }
+            trigger_if = { limit = { is_subject = yes } overlord = scope:india_sender_patron } trigger_else = { this = scope:india_sender_patron }
+            trigger_if = { limit = { nesnd_india_request_kind <= 3 }
+                trigger_if = { limit = { exists = c:FRA } c:FRA = scope:india_partner } trigger_else = { always = no } NOT = { has_variable = nesnd_india_aid_lock } NOT = { has_variable = nesnd_external_aid_committed }
+                OR = { is_subject = no is_subject_of = scope:india_partner }
+            }
+            trigger_if = { limit = { OR = { nesnd_india_request_kind = 4 nesnd_india_request_kind = 7 } } is_direct_subject_of = scope:india_partner }
+            trigger_if = { limit = { nesnd_india_request_kind = 4 } can_increase_autonomy = yes }
+            trigger_if = { limit = { nesnd_india_request_kind = 5 } is_subject = no scope:india_partner = { is_subject = no } }
+            trigger_if = { limit = { nesnd_india_request_kind = 6 }
+                nesnd_india_empire = yes is_subject = no has_variable = nesnd_india_reform_done nesnd_india_community >= 60
+                scope:india_partner = { nesnd_india_prince = yes is_subject = no is_active_in_diplomatic_play = no
+                    trigger_if = { limit = { exists = var:nesnd_india_incoming_union_sender } var:nesnd_india_incoming_union_sender = scope:india_sender has_variable = nesnd_india_incoming_union_clock } trigger_else = { always = no }
+                }
+            }
+        }
+    } trigger_else = { always = no }
+}
+nesnd_india_defence_treaty_possible = {
+    trigger_if = { limit = { exists = scope:india_sender exists = scope:india_partner }
+        can_create_treaty = {
+            first_country = scope:india_sender second_country = scope:india_partner is_draft = no
+            binding_period = { years = 3 }
+            articles_to_create = { { article = defensive_pact } }
+        }
+    } trigger_else = { always = no }
+}
+nesnd_india_reply_can_accept = {
+    nesnd_india_reply_valid = yes
+    trigger_if = { limit = { exists = scope:india_sender }
+        trigger_if = { limit = { nesnd_india_incoming_kind <= 3 } gold_reserves >= scope:india_sender.nesnd_india_request_quote in_default = no NOT = { has_modifier = declared_bankruptcy } }
+        trigger_if = { limit = { nesnd_india_incoming_kind = 5 } nesnd_india_defence_treaty_possible = yes }
+        trigger_if = { limit = { nesnd_india_incoming_kind = 6 } scope:india_sender = { gold_reserves >= nesnd_india_request_quote } }
+    } trigger_else = { always = no }
+}
