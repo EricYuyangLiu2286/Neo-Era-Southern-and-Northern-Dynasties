@@ -1,0 +1,1336 @@
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\events\movement_events.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\events\movement_events.txt
+@@ -808,120 +808,12 @@
+ 	}
+ }
+ 
+-movement_events.6 = { # Mass rally in X city for Y interest.
+-	type = country_event
+-	placement = ROOT
+-
+-	title = movement_events.6.t
+-	desc = movement_events.6.d
+-	flavor = movement_events.6.f
+-
+-	event_image = {
+-		video = "votp_agitator_speaking"
+-	}
+-
+-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+-
+-	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+-
+-	duration = 3
+-
+-	cooldown = { days = short_modifier_time }
+-
+-	trigger = {
+-		any_political_movement = {
+-            exists = most_desired_law
+-			NOT = {
+-				ROOT.currently_enacting_law.type ?= this.most_desired_law
+-			}
+-			is_revolutionary = no
+-            political_movement_radicalism >= 0.25
+-			NOT = {
+-				is_political_movement_type = movement_slave_revolt
+-			}
+-		}
+-		researched_mass_politics = yes
+-		NOT = {
+-			has_law_or_variant = law_type:law_outlawed_dissent
+-		}
+-	}
+-
+-	cancellation_trigger = {
+-		NOT = {
+-			exists = scope:relevant_movement
+-		}
+-	}
+-
+-	immediate = {
+-		random_political_movement = {
+-			limit = {
+-                exists = most_desired_law
+-				NOT = {
+-					ROOT.currently_enacting_law.type ?= this.most_desired_law
+-				}
+-				is_revolutionary = no
+-                political_movement_radicalism >= 0.25
+-				NOT = {
+-					is_political_movement_type = movement_slave_revolt
+-				}
+-			}
+-			save_scope_as = relevant_movement
+-			most_desired_law ?= {
+-				save_scope_as = relevant_law
+-			}
+-		}
+-		random_scope_state = {
+-			limit = {
+-				is_incorporated = yes
+-				NOT = {
+-					has_decree = decree_violent_suppression
+-				}
+-			}
+-			save_scope_as = relevant_state
+-		}
+-	}
+-	option = {
+-		name = movement_events.6.a
+-		default_option = yes
+-		ai_chance = {
+-			factor = 1
+-		}
+-		scope:relevant_movement ?= {
+-			add_modifier = {
+-				name = modifier_movement_rally_in_city_movement
+-				days = short_modifier_time
+-			}
+-		}
+-		scope:relevant_state = {
+-			if = {
+-				limit = {
+-					scope:relevant_movement.political_movement_radicalism <= 25
+-				}
+-				add_loyalists_in_state = {
+-					value = small_radicals
+-				}
+-			}
+-			add_modifier = {
+-				name = modifier_movement_rally_in_city
+-				days = short_modifier_time
+-			}
+-		}
+-	}
+-	option = {
+-		name = movement_events.6.b
+-		ai_chance = {
+-			factor = 1
+-		}
+-		scope:relevant_state = {
+-			add_radicals_in_state = {
+-				value = small_radicals
+-			}
+-			add_modifier = {
+-				name = modifier_movement_rally_in_city_suppressed
+-				days = short_modifier_time
+-			}
+-		}
+-	}
++movement_events.6 = {
++    type = country_event
++    hidden = yes
++    trigger = { always = no }
++    cancellation_trigger = { always = yes }
++    immediate = { }
+ }
+ 
+ movement_events.7 = { # National campaign of postering for a given issue.
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\events\poland_events.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\events\poland_events.txt
+@@ -2,415 +2,20 @@
+ 
+ # Polish Agitation
+ poland_events.1 = {
+-	type = country_event
+-	placement = root
+-
+-	title = poland_events.1.t
+-	desc = poland_events.1.d
+-	flavor = poland_events.1.f
+-
+-	duration = 3
+-
+-	event_image = {
+-		video = "votp_conspiring"
+-	}
+-
+-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+-
+-	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+-
+-	cooldown = { days = normal_modifier_time }
+-
+-
+-	trigger = {
+-		# triggered by button
+-	}
+-
+-	immediate = {
+-		save_scope_as = sent_polish_agitators_country_scope
+-		cu:polish = {
+-			save_scope_as = polish_culture_scope
+-		}
+-		random_country = {
+-			limit = {
+-				NOT = {
+-					country_has_primary_culture = cu:polish
+-				}
+-				any_scope_state = {
+-					state_region = {
+-						is_homeland = cu:polish
+-					}
+-				}
+-			}
+-			set_variable = polish_agitation_target_1_var
+-			save_scope_as = polish_agitation_target_1_scope
+-		}
+-		if = {
+-			limit = {
+-				any_country = {
+-					NOT = {
+-						country_has_primary_culture = cu:polish
+-						has_variable = polish_agitation_target_1_var
+-					}
+-					any_scope_state = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-				}
+-			}
+-			random_country = {
+-				limit = {
+-					NOT = {
+-						country_has_primary_culture = cu:polish
+-						has_variable = polish_agitation_target_1_var
+-					}
+-					any_scope_state = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-				}
+-				set_variable = polish_agitation_target_2_var
+-				save_scope_as = polish_agitation_target_2_scope
+-			}
+-		}
+-		if = {
+-			limit = {
+-				any_country = {
+-					NOT = {
+-						country_has_primary_culture = cu:polish
+-						has_variable = polish_agitation_target_1_var
+-						has_variable = polish_agitation_target_2_var
+-					}
+-					any_scope_state = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-				}
+-			}
+-			random_country = {
+-				limit = {
+-					NOT = {
+-						country_has_primary_culture = cu:polish
+-						has_variable = polish_agitation_target_1_var
+-						has_variable = polish_agitation_target_2_var
+-					}
+-					any_scope_state = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-				}
+-				set_variable = polish_agitation_target_3_var
+-				save_scope_as = polish_agitation_target_3_scope
+-			}
+-		}
+-		if = {
+-			limit = {
+-				any_country = {
+-					NOT = {
+-						country_has_primary_culture = cu:polish
+-						has_variable = polish_agitation_target_1_var
+-						has_variable = polish_agitation_target_2_var
+-						has_variable = polish_agitation_target_3_var
+-					}
+-					any_scope_state = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-				}
+-			}
+-			random_country = {
+-				limit = {
+-					NOT = {
+-						country_has_primary_culture = cu:polish
+-						has_variable = polish_agitation_target_1_var
+-						has_variable = polish_agitation_target_2_var
+-						has_variable = polish_agitation_target_3_var
+-					}
+-					any_scope_state = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-				}
+-				save_scope_as = polish_agitation_target_4_scope
+-			}
+-		}
+-	}
+-
+-	option = {
+-		name = poland_events.1.a
+-		default_option = yes
+-		scope:polish_agitation_target_1_scope = {
+-			trigger_event = { id = poland_events.2 days = 0 popup = yes }
+-			show_as_tooltip = {
+-				every_scope_state = {
+-					limit = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-					add_radicals_in_state = {
+-						culture = cu:polish
+-						value = medium_radicals
+-					}
+-				}
+-				change_relations = { country = root value = -30 }
+-			}
+-		}
+-		custom_tooltip = poland_events.1.tt
+-		add_modifier = {
+-			name = funding_polish_radicals
+-			days = normal_modifier_time
+-		}
+-	}
+-
+-	option = {
+-		name = poland_events.1.b
+-		trigger = {
+-			exists = scope:polish_agitation_target_2_scope
+-		}
+-		scope:polish_agitation_target_2_scope = {
+-			trigger_event = { id = poland_events.2 days = 0 popup = yes }
+-			show_as_tooltip = {
+-				every_scope_state = {
+-					limit = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-					add_radicals_in_state = {
+-						culture = cu:polish
+-						value = medium_radicals
+-					}
+-				}
+-				change_relations = { country = root value = -30 }
+-			}
+-		}
+-		custom_tooltip = poland_events.1.tt
+-		add_modifier = {
+-			name = funding_polish_radicals
+-			days = normal_modifier_time
+-		}
+-	}
+-
+-	option = {
+-		name = poland_events.1.c
+-		trigger = {
+-			exists = scope:polish_agitation_target_3_scope
+-		}
+-		scope:polish_agitation_target_3_scope = {
+-			trigger_event = { id = poland_events.2 days = 0 popup = yes }
+-			show_as_tooltip = {
+-				every_scope_state = {
+-					limit = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-					add_radicals_in_state = {
+-						culture = cu:polish
+-						value = medium_radicals
+-					}
+-				}
+-				change_relations = { country = root value = -30 }
+-			}
+-		}
+-		custom_tooltip = poland_events.1.tt
+-		add_modifier = {
+-			name = funding_polish_radicals
+-			days = normal_modifier_time
+-		}
+-	}
+-
+-	option = {
+-		name = poland_events.1.e
+-		trigger = {
+-			exists = scope:polish_agitation_target_4_scope
+-		}
+-		scope:polish_agitation_target_4_scope = {
+-			trigger_event = { id = poland_events.2 days = 0 popup = yes }
+-			show_as_tooltip = {
+-				every_scope_state = {
+-					limit = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-					add_radicals_in_state = {
+-						culture = cu:polish
+-						value = medium_radicals
+-					}
+-				}
+-				change_relations = { country = root value = -30 }
+-			}
+-		}
+-		custom_tooltip = poland_events.1.tt
+-		add_modifier = {
+-			name = funding_polish_radicals
+-			days = normal_modifier_time
+-		}
+-	}
++    type = country_event
++    hidden = yes
++    trigger = { always = no }
++    cancellation_trigger = { always = yes }
++    immediate = { }
+ }
+ 
+ # Polish Agitation in Your Country
+ poland_events.2 = {
+-	type = country_event
+-	placement = scope:polish_rebels_state_scope
+-
+-	title = poland_events.2.t
+-	desc = poland_events.2.d
+-	flavor = poland_events.2.f
+-
+-	duration = 3
+-
+-	event_image = {
+-		video = "votp_agitator_speaking"
+-	}
+-
+-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+-
+-	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+-
+-	cooldown = { days = normal_modifier_time }
+-
+-
+-	trigger = {
+-		# triggered by poland_events.1
+-	}
+-
+-	immediate = {
+-		cu:polish = {
+-			save_scope_as = polish_culture_scope
+-		}
+-		random_scope_state = {
+-			limit = {
+-				state_region = {
+-					is_homeland = cu:polish
+-				}
+-			}
+-			save_scope_as = polish_rebels_state_scope
+-		}
+-	}
+-
+-	option = {
+-		name = poland_events.2.a
+-		default_option = yes
+-		every_scope_state = {
+-			limit = {
+-				state_region = {
+-					is_homeland = cu:polish
+-				}
+-			}
+-			add_radicals_in_state = {
+-				culture = cu:polish
+-				value = medium_radicals
+-			}
+-			set_variable = {
+-				name = christ_of_nations_target
+-				days = long_modifier_time
+-			}
+-		}
+-		custom_tooltip = poland_events.2.tt
+-		change_relations = { country = scope:sent_polish_agitators_country_scope value = -20 }
+-	}
+-
+-	option = {
+-		name = poland_events.2.b
+-		highlighted_option = yes
+-		trigger = {
+-			has_law_or_variant = law_type:law_secret_police
+-		}
+-		random_list = {
+-			75 = {
+-				every_scope_state = {
+-					limit = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-					add_radicals_in_state = {
+-						culture = cu:polish
+-						value = small_radicals
+-					}
+-					set_variable = {
+-						name = christ_of_nations_target
+-						days = short_modifier_time
+-					}
+-				}
+-			}
+-			25 = {
+-				every_scope_state = {
+-					limit = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-					add_radicals_in_state = {
+-						culture = cu:polish
+-						value = medium_radicals
+-					}
+-					set_variable = {
+-						name = christ_of_nations_target
+-						days = long_modifier_time
+-					}
+-				}
+-			}
+-		}
+-		change_relations = { country = scope:sent_polish_agitators_country_scope value = -10 }
+-	}
+-
+-	option = {
+-		name = poland_events.2.c
+-		highlighted_option = yes
+-		trigger = {
+-			has_law_or_variant = law_type:law_national_guard
+-		}
+-		random_list = {
+-			90 = {
+-				every_scope_state = {
+-					limit = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-					add_radicals_in_state = {
+-						culture = cu:polish
+-						value = small_radicals
+-					}
+-					set_variable = {
+-						name = christ_of_nations_target
+-						days = short_modifier_time
+-					}
+-				}
+-			}
+-			10 = {
+-				every_scope_state = {
+-					limit = {
+-						state_region = {
+-							is_homeland = cu:polish
+-						}
+-					}
+-					add_radicals_in_state = {
+-						culture = cu:polish
+-						value = large_radicals
+-					}
+-					set_variable = {
+-						name = christ_of_nations_target
+-						days = long_modifier_time
+-					}
+-					state_region = {
+-						add_devastation = 5
+-					}
+-				}
+-			}
+-		}
+-		change_relations = { country = scope:sent_polish_agitators_country_scope value = -30 }
+-	}
++    type = country_event
++    hidden = yes
++    trigger = { always = no }
++    cancellation_trigger = { always = yes }
++    immediate = { }
+ }
+ 
+ # Polish Unification
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\events\zanzibar_events.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\events\zanzibar_events.txt
+@@ -2,304 +2,11 @@
+ 
+ # For OMA
+ zanzibar.1 = {
+-	type = country_event
+-	placement = scope:sultanate_of_zanzibar_capital
+-
+-	title = zanzibar.1.t
+-	desc = zanzibar.1.d
+-	flavor = zanzibar.1.f
+-
+-	gui_window = event_window_1char_tabloid
+-
+-	left_icon = scope:sultan_of_zanzibar
+-
+-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+-	on_opened_soundeffect = "event:/SFX/Events/misc/1Character_Banner"
+-
+-	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+-
+-	duration = 3
+-
+-	trigger = {
+-		# triggered by journal entry
+-	}
+-
+-	immediate = {
+-		save_scope_as = muscat_and_oman
+-		ruler = {
+-			save_scope_as = sultan_of_muscat_and_oman
+-		}
+-		create_country = {
+-			tag = ZAN
+-			origin = ROOT
+-			state = s:STATE_ZANZIBAR.region_state:OMA
+-			on_created = {
+-		 		# We are creating the Busaidi Sultanate of Zanzibar — it was very much an Arab state up until the Zanzibar Revolution
+-		 		add_primary_culture = cu:bedouin
+-		 		remove_primary_culture = cu:swahili
+-				set_state_religion = rel:ibadi
+-
+-				create_character = {
+-					template = zan_majid_bin_said # Sultan Majid of Zanzibar
+-				}
+-				if = {
+-					limit = {
+-						game_date > 1837.1.1
+-					}
+-					create_character = {
+-						template = zan_barghash_bin_said # Barghash bin Said, younger brother of Majid
+-					}
+-				}
+-			}
+-		}
+-		c:ZAN ?= {
+-			save_scope_as = sultanate_of_zanzibar
+-			ruler = {
+-				save_scope_as = sultan_of_zanzibar
+-			}
+-	 		capital = {
+-	 			save_scope_as = sultanate_of_zanzibar_capital
+-	 		}
+-		}
+-	}
+-
+-	option = {
+-		name = zanzibar.1.a
+-		custom_tooltip = zanzibar.1.a.tt
+-		default_option = yes
+-
+-		# Cede East African holdings to Zanzibar
+-		if = {
+-			limit = {
+-				exists = s:STATE_TANGANYIKA.region_state:OMA
+-			}
+-			s:STATE_TANGANYIKA.region_state:OMA = { set_state_owner = c:ZAN }
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_LINDI.region_state:OMA
+-			}
+-			s:STATE_LINDI.region_state:OMA = { set_state_owner = c:ZAN }
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_KENYA.region_state:OMA
+-			}
+-			s:STATE_KENYA.region_state:OMA = { set_state_owner = c:ZAN }
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_RIFT_VALLEY.region_state:OMA
+-			}
+-			s:STATE_RIFT_VALLEY.region_state:OMA = { set_state_owner = c:ZAN }
+-		}
+-		if = {
+-			limit = {
+-				num_subjects >= 1
+-			}
+-			every_direct_subject = {
+-				limit = {
+-					is_in_geographic_region = geographic_region_africa
+-				}
+-				c:ZAN ?= { transfer_subject = prev }
+-			}
+-		}
+-
+-		c:ZAN ?= {
+-			# if Zanzibar would not immediately trigger the fail conditions of Lion of the Zanj, give it the Lion of the Zanj JE
+-			if = {
+-				limit = {
+-			    	NOR = {
+-			    		is_subject = yes
+-				        any_neighbouring_state = {
+-				        	state_region = {
+-								OR = {
+-									this = s:STATE_KENYA
+-									this = s:STATE_RIFT_VALLEY
+-									this = s:STATE_ZANZIBAR
+-									this = s:STATE_TANGANYIKA
+-								}
+-							}
+-		        			OR = {
+-			        			owner = {
+-			        				is_not_in_geographic_region = geographic_region_africa
+-			        			}
+-			        			owner = {
+-			        				is_subject = yes
+-			        				top_overlord = {
+-			        					is_not_in_geographic_region = geographic_region_africa
+-			        				}
+-			        			}
+-		        			}
+-				        }
+-			        }
+-				}
+-
+-				add_journal_entry = { type = je_lion_of_the_zanj }
+-			}
+-		}
+-	}
+-
+-	option = {
+-		name = zanzibar.1.b
+-
+-		trigger = {
+-			is_player = yes # no point in this option for the AI
+-		}
+-
+-		play_as = c:ZAN
+-
+-		# Cede East African holdings to Zanzibar
+-		if = {
+-			limit = {
+-				exists = s:STATE_TANGANYIKA.region_state:OMA
+-			}
+-			s:STATE_TANGANYIKA.region_state:OMA = { set_state_owner = c:ZAN }
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_LINDI.region_state:OMA
+-			}
+-			s:STATE_LINDI.region_state:OMA = { set_state_owner = c:ZAN }
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_KENYA.region_state:OMA
+-			}
+-			s:STATE_KENYA.region_state:OMA = { set_state_owner = c:ZAN }
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_RIFT_VALLEY.region_state:OMA
+-			}
+-			s:STATE_RIFT_VALLEY.region_state:OMA = { set_state_owner = c:ZAN }
+-		}
+-
+-		if = {
+-			limit = {
+-				num_subjects >= 1
+-			}
+-			every_direct_subject = {
+-				limit = {
+-					is_in_geographic_region = geographic_region_africa
+-				}
+-				c:ZAN ?= { transfer_subject = prev }
+-			}
+-		}
+-
+-		c:ZAN ?= {
+-			# if Zanzibar would not immediately trigger the fail conditions of Lion of the Zanj, give it the Lion of the Zanj JE
+-			if = {
+-				limit = {
+-			    	NOR = {
+-			    		is_subject = yes
+-				        any_neighbouring_state = {
+-				        	state_region = {
+-								OR = {
+-									this = s:STATE_KENYA
+-									this = s:STATE_RIFT_VALLEY
+-									this = s:STATE_ZANZIBAR
+-									this = s:STATE_TANGANYIKA
+-								}
+-							}
+-		        			OR = {
+-			        			owner = {
+-			        				is_not_in_geographic_region = geographic_region_africa
+-			        			}
+-			        			owner = {
+-			        				is_subject = yes
+-			        				top_overlord = {
+-			        					is_not_in_geographic_region = geographic_region_africa
+-			        				}
+-			        			}
+-		        			}
+-				        }
+-			        }
+-				}
+-
+-				add_journal_entry = { type = je_lion_of_the_zanj }
+-			}
+-		}
+-	}
+-
+-	option = {
+-		name = zanzibar.1.c
+-
+-		custom_tooltip = zanzibar.1.a.tt
+-
+-		# Don't cede East African holdings to Zanzibar, and start a fight
+-
+-		s:STATE_ZANZIBAR = {
+-			add_claim = c:OMA
+-		}
+-
+-		if = {
+-			limit = {
+-				exists = s:STATE_TANGANYIKA.region_state:OMA
+-			}
+-			s:STATE_TANGANYIKA = {
+-				add_claim = c:ZAN
+-			}
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_LINDI.region_state:OMA
+-			}
+-			s:STATE_LINDI = {
+-				add_claim = c:ZAN
+-			}
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_KENYA.region_state:OMA
+-			}
+-			s:STATE_KENYA = {
+-				add_claim = c:ZAN
+-			}
+-		}
+-		if = {
+-			limit = {
+-				exists = s:STATE_RIFT_VALLEY.region_state:OMA
+-			}
+-			s:STATE_RIFT_VALLEY = {
+-				add_claim = c:ZAN
+-			}
+-		}
+-
+-		c:ZAN ?= {
+-			# if Zanzibar would not immediately trigger the fail conditions of Lion of the Zanj, give it the Lion of the Zanj JE
+-			if = {
+-				limit = {
+-			    	NOR = {
+-			    		is_subject = yes
+-				        any_neighbouring_state = {
+-				        	state_region = {
+-								OR = {
+-									this = s:STATE_KENYA
+-									this = s:STATE_RIFT_VALLEY
+-									this = s:STATE_ZANZIBAR
+-									this = s:STATE_TANGANYIKA
+-								}
+-							}
+-		        			OR = {
+-			        			owner = {
+-			        				is_not_in_geographic_region = geographic_region_africa
+-			        			}
+-			        			owner = {
+-			        				is_subject = yes
+-			        				top_overlord = {
+-			        					is_not_in_geographic_region = geographic_region_africa
+-			        				}
+-			        			}
+-		        			}
+-				        }
+-			        }
+-				}
+-
+-				add_journal_entry = { type = je_lion_of_the_zanj }
+-			}
+-		}
+-	}
++    type = country_event
++    hidden = yes
++    trigger = { always = no }
++    cancellation_trigger = { always = yes }
++    immediate = { }
+ }
+ 
+ zanzibar.2 = { # The [Nation] East African Company
+@@ -564,7 +271,7 @@
+ 						c:ZAN ?= this
+ 						AND = {
+ 							any_scope_state = {
+-					        	OR = {
++						OR = {
+ 									state_region = s:STATE_KENYA
+ 									state_region = s:STATE_RIFT_VALLEY
+ 									state_region = s:STATE_ZANZIBAR
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\localization\simp_chinese\replace\zzzzzzzzzzzzzzz_nesnd_native_errors_l_simp_chinese.yml
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\localization\simp_chinese\replace\zzzzzzzzzzzzzzz_nesnd_native_errors_l_simp_chinese.yml
+@@ -0,0 +1,6 @@
++l_simp_chinese:
++ nesnd_cne_conf_delay_desc:0 "改革久拖未成"
++ BATTLE_SHIPS_BREAKDOWN_HEADER_ATTACKER:0 "进攻方：$BATTLE_SHIPS_BREAKDOWN_HEADER$"
++ BATTLE_SHIPS_BREAKDOWN_HEADER_DEFENDER:0 "防御方：$BATTLE_SHIPS_BREAKDOWN_HEADER$"
++ BATTLE_SHIPS_BREAKDOWN_HEADER_ATTACKER_START_OF_BATTLE:0 "[ConcatIfNeitherEmpty( NAVAL_BATTLE.GetAttackerNumWantedShipsDesc, '\n' )]战斗开始时有$BATTLE_SHIPS_BREAKDOWN_HEADER$进攻"
++ BATTLE_SHIPS_BREAKDOWN_HEADER_DEFENDER_START_OF_BATTLE:0 "[ConcatIfNeitherEmpty( NAVAL_BATTLE.GetDefenderNumWantedShipsDesc, '\n' )]战斗开始时有$BATTLE_SHIPS_BREAKDOWN_HEADER$防御"
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\localization\english\replace\zzzzzzzzzzzzzzz_nesnd_native_errors_l_english.yml
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\localization\english\replace\zzzzzzzzzzzzzzz_nesnd_native_errors_l_english.yml
+@@ -0,0 +1,4 @@
++l_english:
++ nesnd_cne_conf_delay_desc:0 "Reform left unfinished"
++ BATTLE_SHIPS_BREAKDOWN_HEADER_ATTACKER:0 "Attacking: $BATTLE_SHIPS_BREAKDOWN_HEADER$"
++ BATTLE_SHIPS_BREAKDOWN_HEADER_DEFENDER:0 "Defending: $BATTLE_SHIPS_BREAKDOWN_HEADER$"
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\events\agitators_events\coup_events.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\events\agitators_events\coup_events.txt
+@@ -905,120 +905,11 @@
+ namespace = coup_aftermath_events
+ 
+ coup_aftermath_events.1 = {
+-	type = country_event
+-	placement = scope:legacy_of_democracy_state
+-
+-	title = coup_aftermath_events.1.t
+-	desc = coup_aftermath_events.1.d
+-	flavor = coup_aftermath_events.1.f
+-
+-	event_image = {
+-		video = "europenorthamerica_political_extremism"
+-	}
+-
+-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+-
+-	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+-
+-	duration = 3
+-
+-	dlc = dlc004
+-
+-	cooldown = { days = normal_modifier_time }
+-
+-	trigger = {
+-		has_variable = coup_aftermath_var
+-		country_has_voting_franchise = no
+-		any_interest_group = {
+-			law_enactment_stance = {
+-				law = law_type:law_census_voting # At the least
+-				value > neutral
+-			}
+-			is_in_government = no
+-			ig_counts_as_marginal = no
+-		}
+-		any_scope_state = {
+-			NOT = {
+-				is_capital = yes
+-			}
+-		}
+-	}
+-
+-	immediate = {
+-		random_interest_group = {
+-			limit = {
+-				law_enactment_stance = {
+-					law = law_type:law_census_voting # At the least
+-					value > neutral
+-				}
+-				is_in_government = no
+-				ig_counts_as_marginal = no
+-			}
+-			save_scope_as = legacy_of_democracy_ig
+-		}
+-		capital = {
+-			random_neighbouring_state = {
+-				limit = {
+-					owner = ROOT
+-				}
+-				save_scope_as = legacy_of_democracy_state
+-			}
+-		}
+-		random_scope_character = {
+-			limit = {
+-				is_ruler_of_own_country = yes
+-			}
+-			save_scope_as = coup_leader
+-		}
+-		remove_variable = coup_aftermath_var
+-	}
+-
+-	option = {
+-		name = coup_aftermath_events.1.a
+-		default_option = yes
+-		scope:legacy_of_democracy_ig = {
+-			add_modifier = {
+-				name = modifier_legacy_of_democratic_rule_ig
+-				days = normal_modifier_time
+-			}
+-		}
+-		scope:legacy_of_democracy_state = {
+-			add_radicals_in_state = {
+-				value = large_radicals
+-			}
+-			add_modifier = {
+-				name = modifier_legacy_of_democratic_rule_state
+-				days = normal_modifier_time
+-			}
+-		}
+-	}
+-	option = {
+-		name = coup_aftermath_events.1.b
+-		add_modifier = {
+-			name = modifier_legacy_of_democratic_rule_country
+-			days = normal_modifier_time
+-		}
+-		scope:legacy_of_democracy_state = {
+-			add_radicals_in_state = {
+-				value = medium_radicals
+-			}
+-		}
+-		capital = {
+-			add_radicals_in_state = {
+-				value = medium_radicals
+-			}
+-		}
+-		capital = {
+-			random_neighbouring_state = {
+-				limit = {
+-					owner = ROOT
+-				}
+-				add_radicals_in_state = {
+-					value = small_radicals
+-				}
+-			}
+-		}
+-	}
++    type = country_event
++    hidden = yes
++    trigger = { always = no }
++    cancellation_trigger = { always = yes }
++    immediate = { }
+ }
+ 
+ coup_aftermath_events.2 = {
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\common\ideologies\01_character_ideologies.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\common\ideologies\01_character_ideologies.txt
+@@ -1006,7 +1006,7 @@
+ 				owner = {
+ 					has_global_variable = peoples_springtime_happening
+ 					capital = {
+-					 	OR = {
++						OR = {
+ 							is_in_geographic_region = geographic_region_north_germany_old
+ 							is_in_geographic_region = geographic_region_south_germany_old
+ 							is_in_geographic_region = geographic_region_england_old
+@@ -1120,7 +1120,7 @@
+ 				owner = {
+ 					has_global_variable = peoples_springtime_happening
+ 					capital = {
+-					 	OR = {
++						OR = {
+ 							is_in_geographic_region = geographic_region_north_germany_old
+ 							is_in_geographic_region = geographic_region_south_germany_old
+ 							is_in_geographic_region = geographic_region_england_old
+@@ -1444,7 +1444,7 @@
+ 				owner = {
+ 					has_global_variable = peoples_springtime_happening
+ 					capital = {
+-					 	OR = {
++						OR = {
+ 							is_in_geographic_region = geographic_region_north_germany_old
+ 							is_in_geographic_region = geographic_region_south_germany_old
+ 							is_in_geographic_region = geographic_region_england_old
+@@ -1618,7 +1618,7 @@
+ 				owner = {
+ 					has_global_variable = peoples_springtime_happening
+ 					capital = {
+-					 	OR = {
++						OR = {
+ 							is_in_geographic_region = geographic_region_north_germany_old
+ 							is_in_geographic_region = geographic_region_south_germany_old
+ 							is_in_geographic_region = geographic_region_england_old
+@@ -8438,17 +8438,7 @@
+ 
+ 		# More likely if paying war reparations
+ 		if = {
+-			limit = {
+-				any_diplomatically_relevant_country = {
+-					any_scope_treaty = {
+-						is_enforced = yes
+-						any_scope_article = {
+-							has_type = money_transfer
+-							source_country = root.owner
+-						}
+-					}
+-				}
+-			}
++			limit = { always = no }
+ 			add = {
+ 				value = 25
+ 				desc = "WAR_REPARATIONS"
+@@ -8671,15 +8661,7 @@
+ 
+ 		# More likely if paying war reparations
+ 		if = {
+-			limit = {
+-				any_diplomatically_relevant_country = {
+-					has_diplomatic_pact = {
+-						who = root.owner
+-						type = war_reparations
+-						is_initiator = yes
+-					}
+-				}
+-			}
++			limit = { always = no }
+ 			add = 25
+ 		}
+ 
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\common\journal_entries\zzzz_nesnd_native_error_bans.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\common\journal_entries\zzzz_nesnd_native_error_bans.txt
+@@ -0,0 +1,11 @@
++# No split, territory transfer, or new ZAN creation; existing countries are untouched.
++REPLACE:je_splitting_oman = {
++    icon = "gfx/interface/icons/event_icons/event_portrait.dds"
++    group = je_group_historical_content
++    is_shown_in_lobby = { always = no }
++    is_shown_when_inactive = { always = no }
++    possible = { always = no }
++    complete = { always = no }
++    fail = { always = no }
++    invalid = { always = yes }
++}
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\common\naval_battle_conditions\00_naval_battle_conditions.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\common\naval_battle_conditions\00_naval_battle_conditions.txt
+@@ -85,50 +85,11 @@
+ }
+ 
+ naval_condition_cyclone = {
+-	icon = "gfx/interface/icons/sea_condition_icons/cyclone.dds"
+-
+-	possible = {
+-		always = yes
+-	}
+-
+-	weight = {
+-		value = 0
+-
+-		if = {
+-			limit = {
+-				scope:region = {
+-					has_harvest_condition = cyclone
+-				}
+-			}
+-			add = 15
+-		}
+-	}
+-
+-	max_hull_damage = {
+-		value = 30
+-	}
+-
+-	max_crew_damage = {
+-		value = 10
+-	}
+-
+-	period = {
+-		value = 8
+-	}
+-
+-	intensity = {
+-		fixed_range = {
+-			min = 0.3
+-			max = 0.6
+-		}
+-	}
+-
+-	modifier = {
+-		ship_accuracy_mult = -0.3
+-		ship_movement_speed_mult = -0.3
+-		ship_readiness_gain_mult = -0.3
+-		ship_screening_mult = -0.3
+-	}
++    icon = "gfx/interface/icons/sea_condition_icons/cyclone.dds"
++    possible = { always = no }
++    weight = { value = 0 }
++    period = { value = 0 }
++    intensity = { value = 0 }
+ }
+ 
+ naval_condition_ice = {
+@@ -176,100 +137,17 @@
+ }
+ 
+ naval_condition_rough_waters = {
+-	icon = "gfx/interface/icons/sea_condition_icons/rough_waters.dds"
+-
+-	possible = {
+-		always = yes
+-	}
+-
+-	weight = {
+-		value = 1
+-
+-		if = {
+-			limit = {
+-				scope:region = {
+-					has_harvest_condition = rough_waters
+-				}
+-			}
+-			multiply = 10
+-		}
+-	}
+-
+-	max_hull_damage = {
+-		value = 5
+-	}
+-
+-	max_crew_damage = {
+-		value = 1
+-	}
+-
+-	period = {
+-		value = 6
+-	}
+-
+-	intensity = {
+-		fixed_range = {
+-			min = 0.05
+-			max = 0.1
+-		}
+-	}
+-
+-	modifier = {
+-		ship_accuracy_mult = -0.1
+-		ship_movement_speed_mult = -0.2
+-	}
++    icon = "gfx/interface/icons/sea_condition_icons/rough_waters.dds"
++    possible = { always = no }
++    weight = { value = 0 }
++    period = { value = 0 }
++    intensity = { value = 0 }
+ }
+ 
+ naval_condition_tropical_storm = {
+-	icon = "gfx/interface/icons/sea_condition_icons/tropical_storm.dds"
+-
+-	possible = {
+-		always = yes
+-	}
+-
+-	weight = {
+-		value = 0
+-
+-		if = {
+-			limit = {
+-				scope:region = {
+-					has_harvest_condition = tropical_storm
+-				}
+-			}
+-			add = 10
+-		}
+-		if = {
+-			limit = {
+-				scope:region = {
+-					has_harvest_condition = cyclone
+-				}
+-			}
+-			add = 5
+-		}
+-	}
+-
+-	max_hull_damage = {
+-		value = 3
+-	}
+-
+-	max_crew_damage = {
+-		value = 2
+-	}
+-
+-	period = {
+-		value = 20
+-	}
+-
+-	intensity = {
+-		fixed_range = {
+-			min = 0.1
+-			max = 0.3
+-		}
+-	}
+-
+-	modifier = {
+-		ship_movement_speed_mult = -0.1
+-		ship_readiness_gain_mult = -0.2
+-		ship_screening_mult = -0.1
+-	}
++    icon = "gfx/interface/icons/sea_condition_icons/tropical_storm.dds"
++    possible = { always = no }
++    weight = { value = 0 }
++    period = { value = 0 }
++    intensity = { value = 0 }
+ }
+--- D:\Program Files (x86)\Steam\steamapps\common\Victoria 3\game\common\scripted_buttons\zzzz_nesnd_native_error_bans.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\common\scripted_buttons\zzzz_nesnd_native_error_bans.txt
+@@ -0,0 +1,10 @@
++# Disable the native agitator request; CE Poland keeps its own buttons/events.
++REPLACE:christ_of_nations_button = {
++    name = christ_of_nations_button
++    desc = christ_of_nations_button_desc
++    visible = { always = no }
++    possible = { always = no }
++    cooldown = { days = normal_modifier_time }
++    ai_chance = { value = 0 }
++    effect = { }
++}
+--- D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\backups\pre-change-cne-time-native-ban-20261103T124341Z\mod\common\scripted_progress_bars\nesnd_cne_confidence.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\common\scripted_progress_bars\nesnd_cne_confidence.txt
+@@ -7,6 +7,7 @@
+  default_green = yes
+  yearly_progress = {
+   add = { desc = nesnd_cne_conf_base_desc value = nesnd_cne_conf_base }
++  add = { desc = nesnd_cne_conf_delay_desc value = nesnd_cne_conf_delay }
+   add = { desc = nesnd_cne_delta_land value = nesnd_cne_conf_land }
+   add = { desc = nesnd_cne_delta_urban value = nesnd_cne_conf_urban }
+   add = { desc = nesnd_cne_delta_estates value = nesnd_cne_conf_estates }
+--- D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\backups\pre-change-cne-time-native-ban-20261103T124341Z\mod\common\script_values\nesnd_cne_confidence.txt
++++ D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\nesnd-workbench\exports\cne-time-native-ban-20261103-a\common\script_values\nesnd_cne_confidence.txt
+@@ -4,7 +4,7 @@
+     if = { limit = { has_variable = nesnd_cne_urban_program } add = 1 }
+     add = nesnd_cne_active_camp_count
+ }
+-nesnd_cne_confidence_annual_change = { value = 0 add = nesnd_cne_conf_base add = nesnd_cne_conf_land add = nesnd_cne_conf_urban add = nesnd_cne_conf_estates add = nesnd_cne_conf_war add = nesnd_cne_conf_radicals add = nesnd_cne_conf_intelligentsia add = nesnd_cne_conf_petty_bourgeoisie add = nesnd_cne_conf_trade_unions add = nesnd_cne_conf_industrialists }
++nesnd_cne_confidence_annual_change = { value = 0 add = nesnd_cne_conf_base add = nesnd_cne_conf_delay add = nesnd_cne_conf_land add = nesnd_cne_conf_urban add = nesnd_cne_conf_estates add = nesnd_cne_conf_war add = nesnd_cne_conf_radicals add = nesnd_cne_conf_intelligentsia add = nesnd_cne_conf_petty_bourgeoisie add = nesnd_cne_conf_trade_unions add = nesnd_cne_conf_industrialists }
+ nesnd_cne_conf_base = { value = 0 if = { limit = { nesnd_cne_programs_live = yes  } add = -25 } }
+ nesnd_cne_conf_land = { value = 0 if = { limit = { nesnd_cne_programs_live = yes has_variable = nesnd_cne_land_program } add = -5 } }
+ nesnd_cne_conf_urban = { value = 0 if = { limit = { nesnd_cne_programs_live = yes has_variable = nesnd_cne_urban_program } add = -5 } }
+@@ -15,3 +15,22 @@
+ nesnd_cne_conf_petty_bourgeoisie = { value = 0 if = { limit = { nesnd_cne_programs_live = yes ig:ig_petty_bourgeoisie = { is_in_government = yes } } add = 10 } }
+ nesnd_cne_conf_trade_unions = { value = 0 if = { limit = { nesnd_cne_programs_live = yes ig:ig_trade_unions = { is_in_government = yes } } add = 10 } }
+ nesnd_cne_conf_industrialists = { value = 0 if = { limit = { nesnd_cne_programs_live = yes ig:ig_industrialists = { is_in_government = yes } } add = 10 } }
++
++# Each completed five-year period adds 25 to the annual confidence cost.
++# The existing monthly age counter keeps its value in old active saves and during respite.
++nesnd_cne_conf_delay = {
++    value = 0
++    if = {
++        limit = { nesnd_cne_programs_live = yes }
++        if = {
++            limit = { has_variable = nesnd_land_months }
++            add = {
++                value = var:nesnd_land_months
++                min = 0
++                divide = 60
++                floor = yes
++                multiply = -25
++            }
++        }
++    }
++}

@@ -4,7 +4,7 @@
     if = { limit = { has_variable = nesnd_cne_urban_program } add = 1 }
     add = nesnd_cne_active_camp_count
 }
-nesnd_cne_confidence_annual_change = { value = 0 add = nesnd_cne_conf_base add = nesnd_cne_conf_land add = nesnd_cne_conf_urban add = nesnd_cne_conf_estates add = nesnd_cne_conf_war add = nesnd_cne_conf_radicals add = nesnd_cne_conf_intelligentsia add = nesnd_cne_conf_petty_bourgeoisie add = nesnd_cne_conf_trade_unions add = nesnd_cne_conf_industrialists }
+nesnd_cne_confidence_annual_change = { value = 0 add = nesnd_cne_conf_base add = nesnd_cne_conf_delay add = nesnd_cne_conf_land add = nesnd_cne_conf_urban add = nesnd_cne_conf_estates add = nesnd_cne_conf_war add = nesnd_cne_conf_radicals add = nesnd_cne_conf_intelligentsia add = nesnd_cne_conf_petty_bourgeoisie add = nesnd_cne_conf_trade_unions add = nesnd_cne_conf_industrialists }
 nesnd_cne_conf_base = { value = 0 if = { limit = { nesnd_cne_programs_live = yes  } add = -25 } }
 nesnd_cne_conf_land = { value = 0 if = { limit = { nesnd_cne_programs_live = yes has_variable = nesnd_cne_land_program } add = -5 } }
 nesnd_cne_conf_urban = { value = 0 if = { limit = { nesnd_cne_programs_live = yes has_variable = nesnd_cne_urban_program } add = -5 } }
@@ -15,3 +15,22 @@ nesnd_cne_conf_intelligentsia = { value = 0 if = { limit = { nesnd_cne_programs_
 nesnd_cne_conf_petty_bourgeoisie = { value = 0 if = { limit = { nesnd_cne_programs_live = yes ig:ig_petty_bourgeoisie = { is_in_government = yes } } add = 10 } }
 nesnd_cne_conf_trade_unions = { value = 0 if = { limit = { nesnd_cne_programs_live = yes ig:ig_trade_unions = { is_in_government = yes } } add = 10 } }
 nesnd_cne_conf_industrialists = { value = 0 if = { limit = { nesnd_cne_programs_live = yes ig:ig_industrialists = { is_in_government = yes } } add = 10 } }
+
+# Each completed five-year period adds 25 to the annual confidence cost.
+# The existing monthly age counter keeps its value in old active saves and during respite.
+nesnd_cne_conf_delay = {
+    value = 0
+    if = {
+        limit = { nesnd_cne_programs_live = yes }
+        if = {
+            limit = { has_variable = nesnd_land_months }
+            add = {
+                value = var:nesnd_land_months
+                min = 0
+                divide = 60
+                floor = yes
+                multiply = -25
+            }
+        }
+    }
+}

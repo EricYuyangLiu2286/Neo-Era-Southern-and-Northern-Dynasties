@@ -129,3 +129,9 @@ IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列�
 - 停用contextless日志仍在最终覆盖中明确 `should_be_involved = { always = no }`；保留关闭条件。优先检查最后生效定义，早期文件有字段不代表最终覆盖仍有。
 
 角色存在、存活和owner有效性分别判断；适用于前述宗室/流亡池读取规则的实际失败证据为WORK/reports/observer-logfix-20261103。图形tag中的market链接同样在不存在时显式false；同路径兼容覆盖需随原版更新重查。修复源码与静态检查不升级为实机通过。
+
+## 定点停用原版故障链
+
+用户允许从本MOD侧停用已定位的原版故障内容，其他作者MOD只读。先从error.log定位ID和完整入口链，按数据库支持选择覆盖：本项目已证JE和scripted_button可用`REPLACE:ID`，关闭visible/possible等对应trigger；事件REPLACE支持未核实时沿用同路径覆盖，只把目标事件改为hidden惰性壳（trigger always=no、cancellation_trigger always=yes、空immediate），其余定义和namespace保序保留。只关闭UI入口不能替代清除旧队列和effect中的坏引用。
+
+同路径覆盖须记录当前GAME版本/源SHA，并用保序AST比较所有非目标对象；升级时重新对照，避免冻结整文件后漏掉更新。局部坏权重只停该limit，勿关闭仍被本MOD引用的整个意识形态。scripted_button的ai_chance采用当前实例的`value=0`（00_colonial_administration_buttons.txt:40），旧Markdown的`base`不能直接当作有效语法。2026-11-03具体证据：WORK/reports/cne-time-native-ban-20261103/native-ban-contract.md。
