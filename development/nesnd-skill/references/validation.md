@@ -4,6 +4,16 @@
 
 验收先对照当前用户认可的结果。2026-11-01已接受玩家失国/GAME OVER（含日本）；实际失败画面如实留证，不再单凭它判定BUG或要求救援。世界机制可在明确记录的观察者继续过程中核验，不能改写为玩家自动续玩。当前重点是既定事件链的顺序、可达条件、完成结果及难度/行动空间证据；具体范围见[当前任务索引](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/map.md>)。
 
+## 可失败的边界检查（2026-11-03）
+
+测试计数不代表覆盖率。判断条件测试要保留操作符、数值、作用域祖先与执行顺序；只查“army_size和1存在”会让<1被误改成>1仍通过。新增门槛至少有开局、差一档、刚好满足、对象转属/消失和已完成重入案例；对旧源码跑红，再对阈值、比较符、缺守卫作内存变异，确认检查真的失败。
+
+需用外部AST子集执行时，记录支持的语义，未知节点必须报错；布尔兄弟项不能假设短路，trigger_if按分支处理。全局启动没有root，测试不能一律注入当前country来掩盖调用上下文。API结果注入只能证明脚本控制流，不能代替实际建国、转地、战争或人口引擎。
+
+报告绑定最终文件SHA；测试后编辑了条件或本地化，按变化重跑或保存可核的AST等价链。地区门槛按state_region去重，直辖与直接/间接属国区别、共享分州、占领不等于所有权均列入案例。原生largest-state算法未证实就作为明确fixture输入，不能用province数量假装引擎语义。
+
+实际反例与证据：WORK/reports/commission-boundaries-20261103/boundary-audit.md、boundary-cases.json、effect-boundaries.json、request-boundaries.json。测试仍为STATIC_PASS，未运行游戏。
+
 ## hidden_effect 的真实边界（1.13.11，run211226反证）
 
 `hidden_effect` 的引擎文档仅承诺不显示内部效果；不能把它当作“预览不求值”或“先写后读必定完成”的保证。run211226/C3 的PHI菜单已包hidden，root仍实际观察到新serial未定义被save_scope_value_as读取，error由143增至9871后关闭。E1政治隐藏包装同样不能独立证明安全。错误根因与修复候选见 WORK/plans/two-empires/evidence/politics-preview-e2-review.md；此反证不等于所有hidden都会报错。

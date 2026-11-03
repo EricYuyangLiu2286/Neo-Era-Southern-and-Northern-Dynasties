@@ -1,3 +1,7 @@
+# 当前交接：两司门槛与边界补测
+
+Updated: 2026-11-03。当前任务26：主MOD .scratch/debug-release/issues/26-commission-boundaries.md；报告WORK/reports/commission-boundaries-20261103/。父提交a062441，两司改为扩张后建立，补资格/请求/清理/建国故障边界测试。STATIC_PASS，未开游戏；主MOD与远端最终结果以main-merge.json/git-delivery.json为准。任务25印度已实施，不再是纯方案。旧记录按时序保留如下，不能用其“计划中/当前任务23”覆盖本节。
+
 # 当前交接：日本实施与共同市场修正
 
 Updated: 2026-11-03。当前任务为主MOD .scratch/debug-release/issues/23-qe1-variable-guards.md；证据 WORK/reports/qe1-variable-20261103/。日本任务21证据在WORK/reports/japan-development-20261102/。作者657键中英文案与制度批次已交付main，见任务22。新日本候选已包含该批，保留作者原稿和注释。

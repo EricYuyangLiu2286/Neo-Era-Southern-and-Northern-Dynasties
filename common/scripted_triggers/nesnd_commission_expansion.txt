@@ -1,0 +1,52 @@
+﻿nesnd_tianzhu_mainland_region = { OR = { this = s:STATE_GUJARAT this = s:STATE_SINDH this = s:STATE_CENTRAL_PROVINCES this = s:STATE_AWADH this = s:STATE_MALWA this = s:STATE_AGRA this = s:STATE_BUNDELKHAND this = s:STATE_BIHAR this = s:STATE_EAST_BENGAL this = s:STATE_WEST_BENGAL this = s:STATE_ASSAM this = s:STATE_ORISSA this = s:STATE_PUNJAB this = s:STATE_HILL_PUNJAB this = s:STATE_DELHI this = s:STATE_RAJPUTANA this = s:STATE_CIRCARS this = s:STATE_MYSORE this = s:STATE_TRAVANCORE this = s:STATE_MADRAS this = s:STATE_HYDERABAD this = s:STATE_KURNOOL this = s:STATE_BOMBAY } }
+nesnd_tianzhu_princely_region = { OR = { this = s:STATE_GUJARAT this = s:STATE_SINDH this = s:STATE_CENTRAL_PROVINCES this = s:STATE_AWADH this = s:STATE_MALWA this = s:STATE_AGRA this = s:STATE_BUNDELKHAND this = s:STATE_WEST_BENGAL this = s:STATE_ASSAM this = s:STATE_ORISSA this = s:STATE_PUNJAB this = s:STATE_HILL_PUNJAB this = s:STATE_DELHI this = s:STATE_RAJPUTANA this = s:STATE_CIRCARS this = s:STATE_TRAVANCORE this = s:STATE_HYDERABAD this = s:STATE_KURNOOL this = s:STATE_BOMBAY } }
+nesnd_tianzhu_mughal_heartland = { OR = { this = s:STATE_DELHI this = s:STATE_AGRA this = s:STATE_BIHAR this = s:STATE_WEST_BENGAL this = s:STATE_EAST_BENGAL this = s:STATE_BOMBAY } }
+nesnd_tianzhu_transfer_region = { OR = { this = s:STATE_GUJARAT this = s:STATE_SINDH this = s:STATE_CENTRAL_PROVINCES this = s:STATE_AWADH this = s:STATE_MALWA this = s:STATE_AGRA this = s:STATE_BUNDELKHAND this = s:STATE_BIHAR this = s:STATE_EAST_BENGAL this = s:STATE_WEST_BENGAL this = s:STATE_ASSAM this = s:STATE_ORISSA this = s:STATE_PUNJAB this = s:STATE_HILL_PUNJAB this = s:STATE_DELHI this = s:STATE_RAJPUTANA this = s:STATE_CIRCARS this = s:STATE_MYSORE this = s:STATE_TRAVANCORE this = s:STATE_MADRAS this = s:STATE_HYDERABAD this = s:STATE_KURNOOL this = s:STATE_BOMBAY this = s:STATE_CEYLON this = s:STATE_INDIAN_OCEAN_TERRITORY } }
+nesnd_yuanshan_target_region = { OR = { this = s:STATE_CAPE_COLONY this = s:STATE_EASTERN_CAPE this = s:STATE_NORTHERN_CAPE this = s:STATE_ZULULAND this = s:STATE_VRYSTAAT this = s:STATE_TRANSVAAL } }
+# Country scope; only actual ownership and a direct subject relationship count.
+nesnd_commission_owner_in_realm = {
+    trigger_if = { limit = { exists = c:USM }
+
+        is_country_alive = yes
+        OR = {
+            this = c:USM
+            AND = {
+                trigger_if = { limit = { is_subject = yes exists = overlord } overlord = c:USM }
+                trigger_else = { always = no }
+            }
+        }
+
+    }
+    trigger_else = { always = no }
+}
+# Region scope: outer any_state_region counts each region once, even when several members share it.
+nesnd_commission_region_controlled = {
+    any_scope_state = { state_population > 0 is_largest_state_in_region = yes owner = { nesnd_commission_owner_in_realm = yes } }
+}
+# Full legal ownership excludes a Mughal or third-country remainder; occupation is insufficient.
+nesnd_commission_region_fully_controlled = {
+    any_scope_state = { state_population > 0 }
+    NOT = { any_scope_state = { NOT = { owner = { nesnd_commission_owner_in_realm = yes } } } }
+}
+nesnd_commission_indian_prince = {
+    trigger_if = { limit = { exists = c:USM }
+
+        OR = { c:ALW ?= this c:ASM ?= this c:AWA ?= this c:BAG ?= this c:BAS ?= this c:BER ?= this c:BHO ?= this c:BHV ?= this c:BHW ?= this c:BIK ?= this c:BUN ?= this c:COC ?= this c:COO ?= this c:DHA ?= this c:GAR ?= this c:GWA ?= this c:HYD ?= this c:IDA ?= this c:IND ?= this c:JAI ?= this c:JAS ?= this c:JEY ?= this c:JHN ?= this c:JOD ?= this c:JUN ?= this c:KHP ?= this c:KNO ?= this c:KOT ?= this c:KUT ?= this c:MEW ?= this c:MNP ?= this c:MYB ?= this c:NAG ?= this c:NAR ?= this c:NAW ?= this c:PAN ?= this c:PLP ?= this c:PTA ?= this c:PTN ?= this c:SAT ?= this c:SIN ?= this c:SUR ?= this c:TRA ?= this }
+        is_country_alive = yes
+        trigger_if = { limit = { is_subject = yes exists = overlord } overlord = c:USM }
+        trigger_else = { always = no }
+        any_scope_state = { state_population > 0 state_region = { nesnd_tianzhu_mainland_region = yes } }
+
+    }
+    trigger_else = { always = no }
+}
+nesnd_tianzhu_commission_entry = {
+    nesnd_tianzhu_commission_available = yes
+    has_technology_researched = civilizing_mission
+    any_state_region = { nesnd_tianzhu_transfer_region = yes nesnd_commission_region_controlled = yes }
+}
+nesnd_yuanshan_commission_entry = {
+    nesnd_yuanshan_commission_available = yes
+    has_technology_researched = civilizing_mission
+    any_state_region = { nesnd_yuanshan_target_region = yes nesnd_commission_region_controlled = yes }
+}
