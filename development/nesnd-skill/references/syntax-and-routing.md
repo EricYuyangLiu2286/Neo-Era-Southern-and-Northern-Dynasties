@@ -30,6 +30,8 @@ ce_example.1 = {
 1. **对象先分支，再使用。** `exists`、`has_variable` 与读取并列，以及普通 AND/OR，不构成短路保证。对象变量用 `exists = var:...` 检查可解析对象；数值用 `has_variable` 检查已赋值。保护实际读取的完整链，例如 `s:STATE_TENASSERIM.region_state:DEI`，不是只检查 state_region。`has_war_with`、`has_truce_with`、`relations(...)`、条约国家参数的右侧对象也属于读取。
 2. **谓词缺对象明确返回 false。** `trigger_if` 的 limit 只做安全存在性判断，进入分支后再访问对象；配 `trigger_else = { always = no }`。多层依赖按层嵌套。检查 overlord 时按 `is_subject` 分支；独立国走 this，不让另一并列 AND 求值空 overlord。`?=` 适合允许跳过的副作用，不能单靠它证明“有效目标”条件成立。
 3. **预览与执行分开。** `visible`/`possible`/选项 `trigger` 不保护 effect 的预览；`hidden_effect` 也不建立安全边界。effect 内重新检查实际前置条件。预览不能假定前面的 `set_variable` 或 `save_scope_as` 已执行：进度条读取临时 scope 前加存在性分支；读取数值再核变量。缺值无明确默认语义时跳过刷新，不能给对象塞零。只有“未累计周数=0”等有定义的数值才用安全 script_value。
+进度条的数值函数也须独立处理未初始化上下文，不能把JE的possible、is_shown_when_inactive或immediate当作读取保护。2026-11-03真实QE1日志和存档显示：其他国家持有未激活JE，数值函数仍触发缺变量报错。用script_value的has_variable分支返回无变化值；状态文字/完成条件用trigger_if并明确缺值false。不要为消除错误向所有国家写入西秦变量，也不要重置已有进度。回归证据：WORK/reports/qe1-variable-20261103/diagnosis.md。
+
 4. **延迟回复核整个生命周期。** 沿按钮→请求标记/对象→延迟事件→选项/AI权重→取消/过期清理检查。接收国、发起国、pending、target、双方 sponsor 均可能失效。过期事件用安全的 cancellation_trigger 收尾；接受执行重新检查资格，拒绝清理只操作仍指向本事件接收国的请求。保留冷却与窗口设计，不能未经可达性核对就断言旧事件会覆盖新请求。
 5. **可用条件和实际选择同一集合。** `any_*` 的候选条件应与 `random_*`/`ordered_*` 的 limit 一致，特别是 alive、owner、已有 modifier 等排除项。检查实际执行对象，不以按钮亮起替代结果验证。
 
