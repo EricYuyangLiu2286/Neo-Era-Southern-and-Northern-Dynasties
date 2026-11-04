@@ -1,5 +1,7 @@
 # 恢复开发、DEBUG、版本保存与交付
 
+当前任务：[35 本地清理、本地化与运行错误](issues/35-maintenance-runtime-localization.md)。最新清理授权已删除旧候选/失败现场/snapshots/runtime，少量关键版与Git历史保留；旧报告路径失效是主动清理结果。外部修复通过，待合入上传后按最新授权观察者五速、存档与日志验收。继续以任务35/新交接为准。
+
 最新交付（2026-11-04）：[任务34](issues/34-canon-route-execution.md)已完成六批国家路线、HUS法律/人口/原住民汗国、各团结度及全部最新steer，主MOD和Git main/远端代码为`f05f063`。STATIC_PASS，未开游戏；187游戏文件＋2任务文档变化，无删除。实际模型与未完成旧任务见任务34和WORK/reports/canon-route-execution-20261104/work-state.md。本页下面的旧“当前”段均是历史，不能回退本次交付。
 
 

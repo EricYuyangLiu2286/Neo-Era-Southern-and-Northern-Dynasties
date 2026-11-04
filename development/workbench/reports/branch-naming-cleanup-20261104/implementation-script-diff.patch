@@ -1,0 +1,305 @@
+--- before/common/scripted_effects/nesnd_small_states.txt
++++ candidate/common/scripted_effects/nesnd_small_states.txt
+@@ -113,6 +113,7 @@
+             NOT = { nesnd_small_policy_market_valid = yes }
+         } if = { limit = { has_modifier = nesnd_small_specialised_market } remove_modifier = nesnd_small_specialised_market } remove_variable = nesnd_small_policy_market trigger_event = { id = nesnd_small_states.4 popup = yes } }
+         if = { limit = { NOT = { has_variable = nesnd_small_regional } nesnd_small_candidate_valid = yes }
++            if = { limit = { NOT = { has_variable = nesnd_small_upgrade_months } } set_variable = { name = nesnd_small_upgrade_months value = 0 } }
+             change_variable = { name = nesnd_small_upgrade_months add = 1 }
+             if = { limit = { nesnd_small_upgrade_months >= 6 }
+                 set_variable = nesnd_small_regional
+@@ -122,26 +123,31 @@
+         }
+         else = { remove_variable = nesnd_small_upgrade_months }
+         if = { limit = { has_variable = nesnd_small_regional OR = { nesnd_small_population < 1500000 nesnd_small_populated_states < 2 } }
++            if = { limit = { NOT = { has_variable = nesnd_small_decline_months } } set_variable = { name = nesnd_small_decline_months value = 0 } }
+             change_variable = { name = nesnd_small_decline_months add = 1 }
+             if = { limit = { nesnd_small_decline_months >= 6 } remove_variable = nesnd_small_regional remove_variable = nesnd_small_decline_months }
+         }
+         else = { remove_variable = nesnd_small_decline_months }
+         if = { limit = { has_variable = nesnd_small_regional }
+             if = { limit = { NOT = { has_variable = nesnd_small_regional_economy_done } nesnd_small_regional_economy = yes }
++                if = { limit = { NOT = { has_variable = nesnd_small_regional_economy_months } } set_variable = { name = nesnd_small_regional_economy_months value = 0 } }
+                 change_variable = { name = nesnd_small_regional_economy_months add = 1 }
+                 if = { limit = { nesnd_small_regional_economy_months >= 12 } set_variable = nesnd_small_regional_economy_done nesnd_small_economy_reward = yes }
+             }
+             else_if = { limit = { NOT = { has_variable = nesnd_small_regional_governance_done } nesnd_small_regional_governance = yes }
++                if = { limit = { NOT = { has_variable = nesnd_small_regional_governance_months } } set_variable = { name = nesnd_small_regional_governance_months value = 0 } }
+                 change_variable = { name = nesnd_small_regional_governance_months add = 1 }
+                 if = { limit = { nesnd_small_regional_governance_months >= 12 } set_variable = nesnd_small_regional_governance_done nesnd_small_governance_reward = yes }
+             }
+         }
+         else = {
+             if = { limit = { NOT = { has_variable = nesnd_small_economy_done } nesnd_small_compact_economy = yes }
++                if = { limit = { NOT = { has_variable = nesnd_small_economy_months } } set_variable = { name = nesnd_small_economy_months value = 0 } }
+                 change_variable = { name = nesnd_small_economy_months add = 1 }
+                 if = { limit = { nesnd_small_economy_months >= 12 } nesnd_small_economy_reward = yes }
+             }
+             else_if = { limit = { NOT = { has_variable = nesnd_small_governance_done } nesnd_small_compact_governance = yes }
++                if = { limit = { NOT = { has_variable = nesnd_small_governance_months } } set_variable = { name = nesnd_small_governance_months value = 0 } }
+                 change_variable = { name = nesnd_small_governance_months add = 1 }
+                 if = { limit = { nesnd_small_governance_months >= 12 } nesnd_small_governance_reward = yes }
+             }
+@@ -155,6 +161,7 @@
+                 set_variable = { name = nesnd_small_order_cooldown months = 12 } trigger_event = { id = nesnd_small_states.5 popup = yes }
+             }
+             else_if = { limit = { nesnd_small_order_ready = yes }
++                if = { limit = { NOT = { has_variable = nesnd_small_order_months } } set_variable = { name = nesnd_small_order_months value = 0 } }
+                 change_variable = { name = nesnd_small_order_months add = 1 }
+                 if = { limit = { nesnd_small_order_months >= 24 NOT = { has_variable = nesnd_small_order_rewarded } }
+                     set_variable = nesnd_small_order_done set_variable = nesnd_small_order_rewarded
+--- before/common/scripted_effects/nesnd_small_politics.txt
++++ candidate/common/scripted_effects/nesnd_small_politics.txt
+@@ -96,6 +96,7 @@
+         }
+     }
+     else_if = { limit = { NOT = { has_variable = nesnd_small_episode_cooldown } has_revolution = no nesnd_small_case_free = yes OR = { in_default = yes nesnd_small_pressure_coverage >= 0.2 } OR = { nesnd_small_land_issue = yes nesnd_small_labor_issue = yes nesnd_small_representation_issue = yes } }
++        if = { limit = { NOT = { has_variable = nesnd_small_pressure_months } } set_variable = { name = nesnd_small_pressure_months value = 0 } }
+         change_variable = { name = nesnd_small_pressure_months add = 1 }
+         if = { limit = { nesnd_small_pressure_months >= 6 } nesnd_small_begin_episode = yes }
+     }
+--- before/common/scripted_triggers/nesnd_qe1_campaign.txt
++++ candidate/common/scripted_triggers/nesnd_qe1_campaign.txt
+@@ -1,5 +1,5 @@
+-nesnd_qe1_country = { trigger_if = { limit = { exists = c:QE1 } c:QE1 = this is_country_alive = yes } trigger_else = { always = no } }
+-nesnd_qe1_agenda_eligible = { nesnd_qe1_country = yes num_states >= 4 NOT = { has_variable = nesnd_qe1_agenda_done } }
++nesnd_qe1_country = { custom_tooltip = { text = nesnd_qe1_condition_country trigger_if = { limit = { exists = c:QE1 } c:QE1 = this is_country_alive = yes } trigger_else = { always = no } } }
++nesnd_qe1_agenda_eligible = { nesnd_qe1_country = yes custom_tooltip = { text = nesnd_qe1_condition_states_4 num_states >= 4 } custom_tooltip = { text = nesnd_qe1_condition_agenda_open NOT = { has_variable = nesnd_qe1_agenda_done } } }
+ nesnd_qe1_agenda_live = { nesnd_qe1_agenda_eligible = yes has_journal_entry = nesnd_qe1_agenda_journal }
+ nesnd_qe1_economy_ready = {
+ 	has_law_or_variant = law_type:law_commercialized_agriculture
+@@ -8,18 +8,33 @@
+ 	country_has_building_type_levels = { target = bt:building_tooling_workshop value >= 20 }
+ 	country_has_building_type_levels = { target = bt:building_railway value >= 10 }
+ }
+-nesnd_qe1_army_ready = { trigger_if = { limit = { has_variable = nesnd_qe1_barracks_goal has_variable = nesnd_qe1_barracks_snapshot_done }
+-		country_has_building_type_levels = { target = bt:building_barrack value >= var:nesnd_qe1_barracks_goal }
+-		OR = { country_or_subject_owns_entire_state_region = STATE_PUNJAB country_or_subject_owns_entire_state_region = STATE_SINDH country_or_subject_owns_entire_state_region = STATE_GUJARAT }
+-		trigger_if = { limit = { exists = c:PER } c:PER = { is_subject_of = root } }
+-		trigger_else = { always = no }
+-		OR = { country_or_subject_owns_entire_state_region = STATE_ASTRAKHAN country_or_subject_owns_entire_state_region = STATE_UFA country_or_subject_owns_entire_state_region = STATE_TOBOLSK }
+-	} trigger_else = { always = no } }
+-nesnd_qe1_economic_victory = { trigger_if = { limit = { has_variable = nesnd_qe1_balance }  has_variable = nesnd_qe1_econ_edge NOT = { has_variable = nesnd_qe1_econ_wait } var:nesnd_qe1_balance <= -50  } trigger_else = { always = no } }
+-nesnd_qe1_military_victory = { trigger_if = { limit = { has_variable = nesnd_qe1_balance }  has_variable = nesnd_qe1_army_edge NOT = { has_variable = nesnd_qe1_army_wait } var:nesnd_qe1_balance >= 50  } trigger_else = { always = no } }
+-nesnd_qe1_court_eligible = { nesnd_qe1_country = yes num_states >= 5 NOT = { has_variable = nesnd_qe1_court_archived } NOR = { has_law_or_variant = law_type:law_universal_suffrage has_law_or_variant = law_type:law_council_republic } }
+-nesnd_qe1_unity_eligible = { nesnd_qe1_country = yes NOT = { has_variable = nesnd_qe1_dissolved } }
+-nesnd_qe1_recovery_eligible = { nesnd_qe1_country = yes NOT = { has_variable = nesnd_qe1_recovery_done } }
++nesnd_qe1_army_ready = {
++    trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_qe1_barracks_goal has_variable = nesnd_qe1_barracks_snapshot_done } }
++        custom_tooltip = { text = nesnd_qe1_condition_barracks country_has_building_type_levels = { target = bt:building_barrack value >= var:nesnd_qe1_barracks_goal } }
++        OR = { country_or_subject_owns_entire_state_region = STATE_PUNJAB country_or_subject_owns_entire_state_region = STATE_SINDH country_or_subject_owns_entire_state_region = STATE_GUJARAT }
++        trigger_if = { limit = { hidden_trigger = { exists = c:PER } } c:PER = { is_subject_of = root } }
++        trigger_else = { custom_tooltip = { text = nesnd_qe1_condition_persia_subject always = no } }
++        OR = { country_or_subject_owns_entire_state_region = STATE_ASTRAKHAN country_or_subject_owns_entire_state_region = STATE_UFA country_or_subject_owns_entire_state_region = STATE_TOBOLSK }
++    }
++    trigger_else = { custom_tooltip = { text = nesnd_qe1_condition_barracks always = no } }
++}
++nesnd_qe1_economic_victory = {
++    trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_qe1_balance } }
++        custom_tooltip = { text = nesnd_qe1_condition_econ_endpoint var:nesnd_qe1_balance <= -50 }
++        custom_tooltip = { text = nesnd_qe1_condition_econ_held has_variable = nesnd_qe1_econ_edge NOT = { has_variable = nesnd_qe1_econ_wait } }
++    }
++    trigger_else = { hidden_trigger = { always = no } }
++}
++nesnd_qe1_military_victory = {
++    trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_qe1_balance } }
++        custom_tooltip = { text = nesnd_qe1_condition_army_endpoint var:nesnd_qe1_balance >= 50 }
++        custom_tooltip = { text = nesnd_qe1_condition_army_held has_variable = nesnd_qe1_army_edge NOT = { has_variable = nesnd_qe1_army_wait } }
++    }
++    trigger_else = { hidden_trigger = { always = no } }
++}
++nesnd_qe1_court_eligible = { nesnd_qe1_country = yes custom_tooltip = { text = nesnd_qe1_condition_states_5 num_states >= 5 } custom_tooltip = { text = nesnd_qe1_condition_court_open NOT = { has_variable = nesnd_qe1_court_archived } } NOR = { has_law_or_variant = law_type:law_universal_suffrage has_law_or_variant = law_type:law_council_republic } }
++nesnd_qe1_unity_eligible = { nesnd_qe1_country = yes custom_tooltip = { text = nesnd_qe1_condition_not_dissolved NOT = { has_variable = nesnd_qe1_dissolved } } }
++nesnd_qe1_recovery_eligible = { nesnd_qe1_country = yes custom_tooltip = { text = nesnd_qe1_condition_recovery_open NOT = { has_variable = nesnd_qe1_recovery_done } } }
+ nesnd_qe1_recovery_ready = {
+ 	country_or_subject_owns_entire_state_region = STATE_HEXI
+ 	country_or_subject_owns_entire_state_region = STATE_GANSU
+@@ -30,11 +45,11 @@
+ # Entry stage is separate from permanent eligibility and terminal flags.
+ nesnd_qe1_court_available = {
+ 	nesnd_qe1_court_eligible = yes
+-	has_variable = nesnd_qe1_court_opened
++	custom_tooltip = { text = nesnd_qe1_condition_court_opened has_variable = nesnd_qe1_court_opened }
+ }
+ nesnd_qe1_recovery_available = {
+ 	nesnd_qe1_recovery_eligible = yes
+-	has_variable = nesnd_qe1_recovery_opened
++	custom_tooltip = { text = nesnd_qe1_condition_recovery_opened has_variable = nesnd_qe1_recovery_opened }
+ }
+ nesnd_qe1_has_recovery_foothold = {
+ 	OR = {
+--- before/common/scripted_triggers/nesnd_qe1_court.txt
++++ candidate/common/scripted_triggers/nesnd_qe1_court.txt
+@@ -1,11 +1,11 @@
+ nesnd_qe1_court_live = { nesnd_qe1_court_eligible = yes has_journal_entry = nesnd_qe1_court_journal }
+-nesnd_qe1_no_patronage = { NOR = { has_variable = nesnd_qe1_patron_crown has_variable = nesnd_qe1_patron_literati has_variable = nesnd_qe1_patron_army } }
+-nesnd_qe1_crown_strong = { trigger_if = { limit = { has_variable = nesnd_qe1_power_crown } var:nesnd_qe1_power_crown >= 40 } trigger_else = { always = no } }
+-nesnd_qe1_crown_peak = { trigger_if = { limit = { has_variable = nesnd_qe1_power_crown } var:nesnd_qe1_power_crown >= 60 } trigger_else = { always = no } }
+-nesnd_qe1_literati_strong = { trigger_if = { limit = { has_variable = nesnd_qe1_power_literati } var:nesnd_qe1_power_literati >= 40 } trigger_else = { always = no } }
+-nesnd_qe1_literati_peak = { trigger_if = { limit = { has_variable = nesnd_qe1_power_literati } var:nesnd_qe1_power_literati >= 60 } trigger_else = { always = no } }
+-nesnd_qe1_army_strong = { trigger_if = { limit = { has_variable = nesnd_qe1_power_army } var:nesnd_qe1_power_army >= 40 } trigger_else = { always = no } }
+-nesnd_qe1_army_peak = { trigger_if = { limit = { has_variable = nesnd_qe1_power_army } var:nesnd_qe1_power_army >= 60 } trigger_else = { always = no } }
++nesnd_qe1_no_patronage = { custom_tooltip = { text = nesnd_qe1_condition_no_patronage NOR = { has_variable = nesnd_qe1_patron_crown has_variable = nesnd_qe1_patron_literati has_variable = nesnd_qe1_patron_army } } }
++nesnd_qe1_crown_strong = { custom_tooltip = { text = nesnd_qe1_condition_crown_40 trigger_if = { limit = { has_variable = nesnd_qe1_power_crown } var:nesnd_qe1_power_crown >= 40 } trigger_else = { always = no } } }
++nesnd_qe1_crown_peak = { custom_tooltip = { text = nesnd_qe1_condition_crown_60 trigger_if = { limit = { has_variable = nesnd_qe1_power_crown } var:nesnd_qe1_power_crown >= 60 } trigger_else = { always = no } } }
++nesnd_qe1_literati_strong = { custom_tooltip = { text = nesnd_qe1_condition_literati_40 trigger_if = { limit = { has_variable = nesnd_qe1_power_literati } var:nesnd_qe1_power_literati >= 40 } trigger_else = { always = no } } }
++nesnd_qe1_literati_peak = { custom_tooltip = { text = nesnd_qe1_condition_literati_60 trigger_if = { limit = { has_variable = nesnd_qe1_power_literati } var:nesnd_qe1_power_literati >= 60 } trigger_else = { always = no } } }
++nesnd_qe1_army_strong = { custom_tooltip = { text = nesnd_qe1_condition_army_40 trigger_if = { limit = { has_variable = nesnd_qe1_power_army } var:nesnd_qe1_power_army >= 40 } trigger_else = { always = no } } }
++nesnd_qe1_army_peak = { custom_tooltip = { text = nesnd_qe1_condition_army_60 trigger_if = { limit = { has_variable = nesnd_qe1_power_army } var:nesnd_qe1_power_army >= 60 } trigger_else = { always = no } } }
+ 
+ # Retention uses the FIRST calculation, exactly as existing prune_patronage does.
+ nesnd_qe1_preview_keep_crown = { has_variable = nesnd_qe1_patron_crown nesnd_qe1_preview_first_crown >= 40 }
+--- before/common/journal_entries/nesnd_qe1_agendas.txt
++++ candidate/common/journal_entries/nesnd_qe1_agendas.txt
+@@ -10,14 +10,19 @@
+ 	immediate = { nesnd_qe1_initialize = yes nesnd_qe1_start_agenda_clock = yes nesnd_qe1_ensure_agenda_children = yes nesnd_qe1_agenda_sync = yes }
+ 	scripted_progress_bar = nesnd_qe1_balance_bar
+ 	complete = {
+-        custom_tooltip = { text = nesnd_sweep_four_states num_states >= 4 }
++        custom_tooltip = { text = nesnd_qe1_condition_states_4 num_states >= 4 }
+         OR = {
+-            custom_tooltip = { text = nesnd_sweep_economic_victory nesnd_qe1_economic_victory = yes }
+-            custom_tooltip = { text = nesnd_sweep_military_victory nesnd_qe1_military_victory = yes }
++            nesnd_qe1_economic_victory = yes
++            nesnd_qe1_military_victory = yes
+         }
+     }
+ 	on_complete = { custom_tooltip = nesnd_sweep_qin_rewards hidden_effect = { nesnd_qe1_settle_agenda = yes } }
+-	fail = { num_states >= 4 has_variable = nesnd_qe1_agenda_started NOT = { has_variable = nesnd_qe1_agenda_clock } NOR = { nesnd_qe1_economic_victory = yes nesnd_qe1_military_victory = yes } }
++	fail = {
++        custom_tooltip = { text = nesnd_qe1_condition_states_4 num_states >= 4 }
++        hidden_trigger = { has_variable = nesnd_qe1_agenda_started }
++        custom_tooltip = { text = nesnd_qe1_condition_agenda_deadline NOT = { has_variable = nesnd_qe1_agenda_clock } }
++        NOR = { nesnd_qe1_economic_victory = yes nesnd_qe1_military_victory = yes }
++    }
+ 	on_fail = { nesnd_qe1_agenda_timeout = yes }
+ 	timeout = 3650
+ 	on_timeout = { nesnd_qe1_agenda_timeout = yes }
+--- before/common/journal_entries/nesnd_qe1_identity.txt
++++ candidate/common/journal_entries/nesnd_qe1_identity.txt
+@@ -29,8 +29,8 @@
+ 	icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
+ 	group = je_group_historical_content
+ 	can_revolution_inherit = yes
+-	is_shown_when_inactive = { nesnd_qe1_unity_live = yes has_variable = nesnd_qe1_uprising_awakened }
+-	possible = { nesnd_qe1_unity_live = yes has_variable = nesnd_qe1_uprising_awakened }
++	is_shown_when_inactive = { nesnd_qe1_unity_live = yes custom_tooltip = { text = nesnd_qe1_condition_uprising_awakened has_variable = nesnd_qe1_uprising_awakened } }
++	possible = { nesnd_qe1_unity_live = yes custom_tooltip = { text = nesnd_qe1_condition_uprising_awakened has_variable = nesnd_qe1_uprising_awakened } }
+ 	should_be_pinned_by_default_uninvolved_or_context = yes
+ 	weight = 1000
+ 
+@@ -38,8 +38,7 @@
+ 	immediate = { nesnd_qe1_unity_sync = yes }
+ 	complete = {
+         nesnd_qe1_unity_live = yes
+-        trigger_if = { limit = { has_variable = nesnd_qe1_uprising } var:nesnd_qe1_uprising >= 100 }
+-        trigger_else = { always = no }
++        custom_tooltip = { text = nesnd_qe1_condition_uprising_100 trigger_if = { limit = { has_variable = nesnd_qe1_uprising } var:nesnd_qe1_uprising >= 100 } trigger_else = { always = no } }
+     }
+ 	on_complete = { nesnd_qe1_breakup = yes }
+ 	invalid = { NOT = { nesnd_qe1_unity_live = yes } }
+--- before/common/scripted_buttons/nesnd_qe1_agendas.txt
++++ candidate/common/scripted_buttons/nesnd_qe1_agendas.txt
+@@ -1,4 +1,4 @@
+-nesnd_qe1_law_push_button = { name = nesnd_qe1_law_push_button desc = nesnd_qe1_law_push_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { hidden_trigger = { NOT = { has_variable = nesnd_qe1_law_push_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_economic has_law_or_variant = law_type:law_tenant_farmers country_turmoil < 0.25 } add = 20 } } effect = {
++nesnd_qe1_law_push_button = { name = nesnd_qe1_law_push_button desc = nesnd_qe1_law_push_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { custom_tooltip = { text = nesnd_qe1_condition_law_push_cooldown NOT = { has_variable = nesnd_qe1_law_push_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_economic has_law_or_variant = law_type:law_tenant_farmers country_turmoil < 0.25 } add = 20 } } effect = {
+         custom_tooltip = nesnd_feedback_law_push_tt
+         show_as_tooltip = { add_modifier = { name = nesnd_qe1_law_push months = 6 } }
+         hidden_effect = { if = { limit = { nesnd_qe1_agenda_live = yes hidden_trigger = { NOT = { has_variable = nesnd_qe1_law_push_cooldown } } }
+@@ -8,7 +8,7 @@
+         }
+     }
+ }
+-nesnd_qe1_economy_push_button = { name = nesnd_qe1_economy_push_button desc = nesnd_qe1_economy_push_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { hidden_trigger = { NOT = { has_variable = nesnd_qe1_economy_push_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_economic var:nesnd_qe1_balance > -40 country_turmoil < 0.25 ig:ig_armed_forces = { ig_approval > -5 } } add = 8 } } effect = {
++nesnd_qe1_economy_push_button = { name = nesnd_qe1_economy_push_button desc = nesnd_qe1_economy_push_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { custom_tooltip = { text = nesnd_qe1_condition_economy_push_cooldown NOT = { has_variable = nesnd_qe1_economy_push_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_economic var:nesnd_qe1_balance > -40 country_turmoil < 0.25 ig:ig_armed_forces = { ig_approval > -5 } } add = 8 } } effect = {
+         custom_tooltip = nesnd_feedback_economy_push_tt
+         show_as_tooltip = { add_modifier = { name = nesnd_qe1_economy_push months = 6 } }
+         hidden_effect = { if = { limit = { nesnd_qe1_agenda_live = yes hidden_trigger = { NOT = { has_variable = nesnd_qe1_economy_push_cooldown } } }
+@@ -21,19 +21,19 @@
+         }
+     }
+ }
+-nesnd_qe1_army_petition_button = { name = nesnd_qe1_army_petition_button desc = nesnd_qe1_army_petition_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { nesnd_qe1_army_ready = yes hidden_trigger = { NOT = { has_variable = nesnd_qe1_army_petition_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_military } add = 20 } } effect = {
++nesnd_qe1_army_petition_button = { name = nesnd_qe1_army_petition_button desc = nesnd_qe1_army_petition_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { nesnd_qe1_army_ready = yes custom_tooltip = { text = nesnd_qe1_condition_army_petition_cooldown NOT = { has_variable = nesnd_qe1_army_petition_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_military } add = 20 } } effect = {
+         custom_tooltip = nesnd_feedback_army_petition_tt
+         hidden_effect = { if = { limit = { nesnd_qe1_agenda_live = yes nesnd_qe1_army_ready = yes hidden_trigger = { NOT = { has_variable = nesnd_qe1_army_petition_cooldown } } } set_variable = { name = nesnd_qe1_army_petition_cooldown months = 12 } change_variable = { name = nesnd_qe1_balance add = 10 }
+                 je:nesnd_qe1_agenda_journal = { add_progress = { name = nesnd_qe1_balance_bar value = 10 } } nesnd_qe1_watch_endpoints = yes nesnd_qe1_agenda_sync = yes } }
+     }
+ }
+-nesnd_qe1_economy_petition_button = { name = nesnd_qe1_economy_petition_button desc = nesnd_qe1_economy_petition_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { nesnd_qe1_economy_ready = yes hidden_trigger = { NOT = { has_variable = nesnd_qe1_economy_petition_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_economic } add = 20 } } effect = {
++nesnd_qe1_economy_petition_button = { name = nesnd_qe1_economy_petition_button desc = nesnd_qe1_economy_petition_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { nesnd_qe1_economy_ready = yes custom_tooltip = { text = nesnd_qe1_condition_economy_petition_cooldown NOT = { has_variable = nesnd_qe1_economy_petition_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_economic } add = 20 } } effect = {
+         custom_tooltip = nesnd_feedback_economy_petition_tt
+         hidden_effect = { if = { limit = { nesnd_qe1_agenda_live = yes nesnd_qe1_economy_ready = yes hidden_trigger = { NOT = { has_variable = nesnd_qe1_economy_petition_cooldown } } } set_variable = { name = nesnd_qe1_economy_petition_cooldown months = 12 } change_variable = { name = nesnd_qe1_balance add = -10 }
+                 je:nesnd_qe1_agenda_journal = { add_progress = { name = nesnd_qe1_balance_bar value = -10 } } nesnd_qe1_watch_endpoints = yes nesnd_qe1_agenda_sync = yes } }
+     }
+ }
+-nesnd_qe1_military_budget_button = { name = nesnd_qe1_military_budget_button desc = nesnd_qe1_military_budget_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { hidden_trigger = { NOT = { has_variable = nesnd_qe1_military_budget_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_military gold_reserves >= nesnd_qe1_military_budget in_default = no } add = 8 } } effect = {
++nesnd_qe1_military_budget_button = { name = nesnd_qe1_military_budget_button desc = nesnd_qe1_military_budget_button_desc visible = { nesnd_qe1_agenda_live = yes } possible = { custom_tooltip = { text = nesnd_qe1_condition_military_budget_cooldown NOT = { has_variable = nesnd_qe1_military_budget_cooldown } } } ai_chance = { value = 0 if = { limit = { has_variable = nesnd_qe1_ruler_military gold_reserves >= nesnd_qe1_military_budget in_default = no } add = 8 } } effect = {
+         custom_tooltip = nesnd_feedback_military_budget_tt
+         show_as_tooltip = { add_treasury = nesnd_qe1_military_budget_debit add_modifier = { name = nesnd_qe1_military_preparations months = 6 } }
+         hidden_effect = { if = { limit = { nesnd_qe1_agenda_live = yes hidden_trigger = { NOT = { has_variable = nesnd_qe1_military_budget_cooldown } } } set_variable = { name = nesnd_qe1_military_budget_cooldown months = 6 } add_treasury = nesnd_qe1_military_budget_debit add_modifier = { name = nesnd_qe1_military_preparations months = 6 } change_variable = { name = nesnd_qe1_balance add = 10 }
+--- before/common/scripted_buttons/nesnd_qe1_court.txt
++++ candidate/common/scripted_buttons/nesnd_qe1_court.txt
+@@ -1,16 +1,16 @@
+-nesnd_qe1_patron_crown_button = { name = nesnd_qe1_patron_crown_button desc = nesnd_qe1_patron_crown_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_crown_strong = yes } possible = { hidden_trigger = { nesnd_qe1_no_patronage = yes } } ai_chance = { value = 5 } effect = {
++nesnd_qe1_patron_crown_button = { name = nesnd_qe1_patron_crown_button desc = nesnd_qe1_patron_crown_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_crown_strong = yes } possible = { nesnd_qe1_no_patronage = yes } ai_chance = { value = 5 } effect = {
+         custom_tooltip = nesnd_feedback_patron_crown_tt
+         show_as_tooltip = { add_modifier = { name = nesnd_qe1_patronage_crown } }
+         hidden_effect = { if = { limit = { nesnd_qe1_court_live = yes nesnd_qe1_crown_strong = yes hidden_trigger = { nesnd_qe1_no_patronage = yes } } set_variable = nesnd_qe1_patron_crown add_modifier = { name = nesnd_qe1_patronage_crown } nesnd_qe1_compute_court = yes } }
+     }
+ }
+-nesnd_qe1_patron_literati_button = { name = nesnd_qe1_patron_literati_button desc = nesnd_qe1_patron_literati_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_literati_strong = yes } possible = { hidden_trigger = { nesnd_qe1_no_patronage = yes } } ai_chance = { value = 5 } effect = {
++nesnd_qe1_patron_literati_button = { name = nesnd_qe1_patron_literati_button desc = nesnd_qe1_patron_literati_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_literati_strong = yes } possible = { nesnd_qe1_no_patronage = yes } ai_chance = { value = 5 } effect = {
+         custom_tooltip = nesnd_feedback_patron_literati_tt
+         show_as_tooltip = { add_modifier = { name = nesnd_qe1_patronage_literati } }
+         hidden_effect = { if = { limit = { nesnd_qe1_court_live = yes nesnd_qe1_literati_strong = yes hidden_trigger = { nesnd_qe1_no_patronage = yes } } set_variable = nesnd_qe1_patron_literati add_modifier = { name = nesnd_qe1_patronage_literati } nesnd_qe1_compute_court = yes } }
+     }
+ }
+-nesnd_qe1_patron_army_button = { name = nesnd_qe1_patron_army_button desc = nesnd_qe1_patron_army_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_army_strong = yes } possible = { hidden_trigger = { nesnd_qe1_no_patronage = yes } } ai_chance = { value = 5 } effect = {
++nesnd_qe1_patron_army_button = { name = nesnd_qe1_patron_army_button desc = nesnd_qe1_patron_army_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_army_strong = yes } possible = { nesnd_qe1_no_patronage = yes } ai_chance = { value = 5 } effect = {
+         custom_tooltip = nesnd_feedback_patron_army_tt
+         show_as_tooltip = { add_modifier = { name = nesnd_qe1_patronage_army } }
+         hidden_effect = { if = { limit = { nesnd_qe1_court_live = yes nesnd_qe1_army_strong = yes hidden_trigger = { nesnd_qe1_no_patronage = yes } } set_variable = nesnd_qe1_patron_army add_modifier = { name = nesnd_qe1_patronage_army } nesnd_qe1_compute_court = yes } }
+@@ -21,19 +21,19 @@
+         hidden_effect = { if = { limit = { nesnd_qe1_court_live = yes NOT = { nesnd_qe1_no_patronage = yes } always = yes } nesnd_qe1_clear_patronage = yes nesnd_qe1_compute_court = yes } }
+     }
+ }
+-nesnd_qe1_coup_army_button = { name = nesnd_qe1_coup_army_button desc = nesnd_qe1_coup_army_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_army_peak = yes has_technology_researched = corporatism  NOT = { AND = { has_law_or_variant = law_type:law_autocracy has_law_or_variant = law_type:law_corporate_state } } } possible = { has_technology_researched = corporatism hidden_trigger = { NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } } } ai_chance = { value = 1 } effect = {
++nesnd_qe1_coup_army_button = { name = nesnd_qe1_coup_army_button desc = nesnd_qe1_coup_army_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_army_peak = yes has_technology_researched = corporatism  NOT = { AND = { has_law_or_variant = law_type:law_autocracy has_law_or_variant = law_type:law_corporate_state } } } possible = { has_technology_researched = corporatism custom_tooltip = { text = nesnd_qe1_condition_peaceful_coup_cooldown NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } } } ai_chance = { value = 1 } effect = {
+         custom_tooltip = nesnd_feedback_coup_tt
+         show_as_tooltip = { activate_law = law_type:law_corporate_state activate_law = law_type:law_autocracy }
+         hidden_effect = { if = { limit = { nesnd_qe1_court_live = yes nesnd_qe1_army_peak = yes has_technology_researched = corporatism has_technology_researched = corporatism hidden_trigger = { NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } } } activate_law = law_type:law_corporate_state activate_law = law_type:law_autocracy set_variable = { name = nesnd_qe1_peaceful_coup_cooldown years = 5 } nesnd_qe1_clear_patronage = yes nesnd_qe1_compute_court = yes } }
+     }
+ }
+-nesnd_qe1_coup_literati_button = { name = nesnd_qe1_coup_literati_button desc = nesnd_qe1_coup_literati_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_literati_peak = yes has_technology_researched = democracy  NOT = { AND = { has_law_or_variant = law_type:law_presidential_republic has_law_or_variant = law_type:law_nesnd_qe1_proportional_representation } } } possible = { has_technology_researched = democracy hidden_trigger = { NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } }  NOT = { has_law_or_variant = law_type:law_command_economy } } ai_chance = { value = 1 } effect = {
++nesnd_qe1_coup_literati_button = { name = nesnd_qe1_coup_literati_button desc = nesnd_qe1_coup_literati_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_literati_peak = yes has_technology_researched = democracy  NOT = { AND = { has_law_or_variant = law_type:law_presidential_republic has_law_or_variant = law_type:law_nesnd_qe1_proportional_representation } } } possible = { has_technology_researched = democracy custom_tooltip = { text = nesnd_qe1_condition_peaceful_coup_cooldown NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } }  NOT = { has_law_or_variant = law_type:law_command_economy } } ai_chance = { value = 1 } effect = {
+         custom_tooltip = nesnd_feedback_coup_tt
+         show_as_tooltip = { activate_law = law_type:law_presidential_republic activate_law = law_type:law_nesnd_qe1_proportional_representation }
+         hidden_effect = { if = { limit = { nesnd_qe1_court_live = yes nesnd_qe1_literati_peak = yes has_technology_researched = democracy has_technology_researched = democracy hidden_trigger = { NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } }  NOT = { has_law_or_variant = law_type:law_command_economy } } activate_law = law_type:law_presidential_republic activate_law = law_type:law_nesnd_qe1_proportional_representation set_variable = { name = nesnd_qe1_peaceful_coup_cooldown years = 5 } nesnd_qe1_clear_patronage = yes nesnd_qe1_compute_court = yes } }
+     }
+ }
+-nesnd_qe1_coup_crown_button = { name = nesnd_qe1_coup_crown_button desc = nesnd_qe1_coup_crown_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_crown_peak = yes has_technology_researched = central_archives  NOT = { AND = { has_law_or_variant = law_type:law_monarchy has_law_or_variant = law_type:law_technocracy } } } possible = { has_technology_researched = central_archives hidden_trigger = { NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } } } ai_chance = { value = 1 } effect = {
++nesnd_qe1_coup_crown_button = { name = nesnd_qe1_coup_crown_button desc = nesnd_qe1_coup_crown_button_desc visible = { nesnd_qe1_court_live = yes nesnd_qe1_crown_peak = yes has_technology_researched = central_archives  NOT = { AND = { has_law_or_variant = law_type:law_monarchy has_law_or_variant = law_type:law_technocracy } } } possible = { has_technology_researched = central_archives custom_tooltip = { text = nesnd_qe1_condition_peaceful_coup_cooldown NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } } } ai_chance = { value = 1 } effect = {
+         custom_tooltip = nesnd_feedback_coup_tt
+         show_as_tooltip = { activate_law = law_type:law_monarchy activate_law = law_type:law_technocracy }
+         hidden_effect = { if = { limit = { nesnd_qe1_court_live = yes nesnd_qe1_crown_peak = yes has_technology_researched = central_archives has_technology_researched = central_archives hidden_trigger = { NOT = { has_variable = nesnd_qe1_peaceful_coup_cooldown } } } activate_law = law_type:law_monarchy activate_law = law_type:law_technocracy set_variable = { name = nesnd_qe1_peaceful_coup_cooldown years = 5 } nesnd_qe1_clear_patronage = yes nesnd_qe1_compute_court = yes } }
+--- before/common/scripted_triggers/nesnd_egypt_independence.txt
++++ candidate/common/scripted_triggers/nesnd_egypt_independence.txt
+@@ -19,7 +19,7 @@
+     }
+     trigger_else = { always = no }
+ }
+-nesnd_egypt_independence_open = { c:EGY ?= this is_country_alive = yes is_subject = no NOT = { has_variable = nesnd_egypt_finished } }
++nesnd_egypt_independence_open = { hidden_trigger = { c:EGY ?= this NOT = { has_variable = nesnd_egypt_finished } } is_country_alive = yes is_subject = no }
+ nesnd_egypt_normal_choice_open = {
+     nesnd_egypt_independence_open = yes has_journal_entry = nesnd_egypt_independence
+     nesnd_egypt_independence_value > 0
+@@ -62,7 +62,7 @@
+ 
+ # Country-only patron contract; valid both before and after Egypt becomes a subject.
+ nesnd_egypt_patron_country = {
+-    nesnd_egypt_signatory = yes is_country_alive = yes is_subject = no
++    hidden_trigger = { nesnd_egypt_signatory = yes } is_country_alive = yes is_subject = no
+     NOT = { is_country_type = decentralized } can_have_subjects = yes
+ }
+ # Creation-only contract; never use for an already established relationship.

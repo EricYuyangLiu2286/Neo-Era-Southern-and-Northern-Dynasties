@@ -34,7 +34,9 @@
 
 `[concept_default]`是债务违约；`[concept_bankruptcy]`是宣告破产。若判定`has_modifier = declared_bankruptcy`，准确写“[concept_bankruptcy]后的惩罚仍生效”；不能将赤字、违约和多年破产修正混成同一事实。CNE/供给帮助文字逐条核实际条件，不用全局词语替换。
 
-动态读数和机制链接依照所处数据上下文：bar desc中的`JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)`，国家tooltip中的`Country.MakeScope.Var('...').GetValue`，事件中的`ROOT.GetCountry`并不互换。已有候选可参考`zzzzz_nesnd_south_journal_ui_*`；具体链接仍需首次打开和悬停实测，不能因原生API存在就声称展示已通过。
+动态读数和机制链接依照所处数据上下文：bar desc中的`JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)`，国家tooltip中的`Country.MakeScope.Var('...').GetValue`，事件中的`ROOT.GetCountry`并不互换。当前南朝文字维护在`nesnd_south_politics_l_<language>.yml`；具体链接仍需首次打开和悬停实测，不能因原生API存在就声称展示已通过。
+
+2026-11-04实机反例：国家JE的status_desc使用JournalEntry.GetCountry会每帧反复报“没有JournalEntry上下文”；当前原版journal_entries.md说明root为owning country，经济复兴状态用ROOT.GetCountry读取国家变量。状态按ROOT写，bar/GUI按其实际数据对象写；禁止对所有本地化盲目替换。每种语言每key只有一个维护文件，直接修改主题条目，不再加z覆盖层。
 
 “马 马”已由原生角色字段证明是随机名池组合，不是作者模板。随机名字修订改`common/cultures/CE_cultures.txt`对应名池和独立`nesnd_given_*`键，不全局重译Ma；混合文化保留其其他片段，固定历史人物和旧存档已保存的名字不自动变化。单字名或名姓同字并非语言上必错，是否回避是本项目命名设计。完整溯源与候选见WORK/plans/two-empires/32-names-and-test-harness.md。
 

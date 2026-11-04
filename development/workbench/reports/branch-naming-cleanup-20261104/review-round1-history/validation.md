@@ -1,0 +1,13 @@
+# Independent validation — STATIC_PARTIAL_FAIL
+
+Executed locally by gpt-6.1-sol / medium: `python sol-independent-check.py`; no game launched and no candidate edits. 1.13.11 / build24799966 catalog status CURRENT (0 source changes).
+
+- Frozen 1002-file manifest matches exactly; 725 common/events files parse with the ordered parser, no errors.
+- All QE1/EGY display-wrapper changes preserve predicates; three definitions differ only in implicit-AND ordering after wrapper removal. JE/button conditions, fail NOR, numeric endpoints, 29-day holds, baseline+25 and other constants remain in the same AST. HNA/SIH effective database regression is the independent blocking finding in standards-review.
+- Eight actual source increment sites tested with strict missing (no default zero). All eight B source increments throw Missing. C first/existing/reset = 1/4/1 in all 24 cases; eight invalid object-type cases still throw. Threshold 6/12/24 neighboring cases preserve +1. Removing only new guard nodes makes both effect files exactly match B AST, including original reset/removal sites and lifecycle calls. This does not execute outer country/AI eligibility in the game.
+- 312 approved language entries and 64 condition language entries exist with expected values; all referenced condition tooltips are defined. 18 status entries (nine keys × two languages) use ROOT.GetCountry. 14,267 localization key×language definitions: no duplicates/loss/BOM/header/syntax or bracket/dollar imbalance.
+- Six original error logs were read and SHA bound. 426 empty-variable records comprise compact economy166, regional economy35 and pressure225. The original 391 shorthand missed the regional35; all eight fixed counters cover it. Empty texture errors total268 and remain UNRESOLVED; blank path gives no safe attribution. JournalEntry data-context errors are supported by actual log excerpts and current native status root contract.
+
+Native reference chain personally read: GAME/common/journal_entries/journal_entries.md:175–179 (owning country or no scope); GAME/common/journal_entries/06_economic_regeneration.txt:24–38 (status selection); GAME/localization/english/ip4_spain_l_english.yml:21 (ROOT country variables). Small-state call chain: C/common/on_actions/nesnd_small_states.txt:2 → nesnd_small_monthly → nesnd_small_episode_monthly; original remove/reentry behavior preserved by AST.
+
+No new engine test, UI verification, error-count-zero claim, or global interface certification. Tiger/MCP not rerun by this reviewer. Re-run after the HNA/SIH repair and new freeze. Full fingerprints, strict negative controls and results are in validation.json and sol-independent-results.json.
