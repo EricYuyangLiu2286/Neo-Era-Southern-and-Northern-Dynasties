@@ -32,3 +32,9 @@
 受审27个变化玩法文件的逐文件原始SHA-256与保序token SHA-256保存在[最终指纹](spec-review-final-hashes.json)。聚合保序token指纹：`247cc4410af63b3f718916535f7eb3a53400e0361f44235be4570bac1e50677d`；该值排除字符串之外的空白与注释，后续仅尾空白归一化不改变此指纹，原始文件哈希可能改变。
 
 边界报告为PASS且明确`engine_verified=false`。本次结论为限定差异的源码审查，未开游戏；角色转属/流亡、吞并、旧JE恢复、外交博弈与取消时序仍不作引擎认证。
+
+## 交付冻结等价核对（2026-11-04）
+
+冻结清理后重新读取全部27个受审玩法文件，并逐项比对`spec-review-final-hashes.json`：**27/27保序token哈希一致，0个token变化**。仅`ce_diplomatic_plays.txt`、`ce_usm_the_last_days_of_ming.txt`、`zzzz_nesnd_hus_native_monarchy.txt`及`usm_civilwar_events.txt`共4个原始SHA改变，与交付说明的清理集合一致。聚合保序token SHA仍为`247cc4410af63b3f718916535f7eb3a53400e0361f44235be4570bac1e50677d`。
+
+本次核对的准确正则、序列化说明、冻结后逐文件原始SHA及比对结果见[交付等价证据](spec-review-delivery-equivalence.json)。未修改候选、未运行游戏；Spec剩余发现仍为0。

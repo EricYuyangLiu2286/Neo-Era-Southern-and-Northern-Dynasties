@@ -25,12 +25,12 @@ dump(R/'graph-audit-comparison.json',{'status':'PASS','identical_effective_graph
 # Confirm the review's token fingerprint still matches post-review whitespace-only normalization.
 review=json.loads(read(R/'spec-review-final-hashes.json'));assert review['remaining_findings']==0
 assert re.search(r'(?:remaining[^\n]*0|0[^\n]*remaining)',read(R/'standards-review.md'),re.I)
-lex=re.compile(r'\s+|#[^\r\n]*|"(?:\\.|[^"\\])*"|\?=|!=|>=|<=|[{}=<>]|[^\s{}=<>!?#"]+',re.S)
-for item in review.get('files',[]):
-    p=C/item['path']
-    if sha(p)!=item['sha256']:
-        # Strip only trailing whitespace and normalize line endings; no reviewer-content bypass.
-        assert read(p)== '\n'.join(x.rstrip() for x in read(p).splitlines())+'\n'
+import hashlib
+lex=re.compile(r'#[^\n]*|"(?:\\.|[^"\\])*"|[{}=]|[^\s{}=#"]+')
+for item in review['files']:
+    tokens=[m.group() for m in lex.finditer(read(C/item['path'])) if not m.group().startswith('#')]
+    fingerprint=hashlib.sha256(json.dumps(tokens,ensure_ascii=False,separators=(',',':')).encode()).hexdigest()
+    assert fingerprint==item['ordered_token_sha256'],item['path']
 for p in C.rglob('*.txt'):
     if p.relative_to(C).as_posix().startswith(('common/','events/')):parse(read(p))
 for rel in patch:
