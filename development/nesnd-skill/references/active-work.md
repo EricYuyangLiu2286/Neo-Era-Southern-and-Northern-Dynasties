@@ -1,4 +1,10 @@
-# 当前交接：四项日志与南明停战修复（2026-11-04）
+# 当前交接：任务31的续接总账与日志链重整（2026-11-04）
+
+先读WORK/plans/two-empires/61-continuity-and-journal-rework-20261104.md。本轮完成历史/未完成项汇总、作者−1至10顺序登记、实际代码解释及系统制作技能journal-system-design.md；新玩法未实施。任务31仍open/NOT_RUN。普通功能直接写候选MOD脚本，冻结备份不改。
+
+下一步：crisis_buttons.txt:75/84动态desc无效country归因；随后印度条件显示、西秦两端预览、日本效果反馈、法属印度舰队、波斯进度与西部置省等，完整边界在总账。源码基点a0e9061；不要把任务30的58项外部检查用于认证新要求。
+
+# 上一交付：四项日志与南明停战修复（2026-11-04）
 
 任务30，报告WORK/reports/journal-war-feedback-20261103/，父提交c462651。候选exports/journal-war-feedback-20261103-a：东洋/统一日本绝对计数；德里建设双条可见、重点切换仅暂停；HUS真实废君资格；行在吞并前迁逃明帝、剩余本土拥明国逐轮抉择。具体主MOD/main/远端提交以main-merge.json及git-delivery.json为准。
 

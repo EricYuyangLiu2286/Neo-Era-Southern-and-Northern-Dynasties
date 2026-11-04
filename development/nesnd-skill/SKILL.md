@@ -23,6 +23,8 @@ description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚�
 
 ## 这个项目的硬约束
 
+设计或修改剧情日志链、事件、决议、按钮、进度条时，先读[成体系的剧情内容](references/journal-system-design.md)：明确玩家行动、生命周期、反馈与收益节奏，再直接撰写候选MOD脚本。
+
 - 地图分四层：province（`xRRGGBB` 像素颜色）→ state_region（地图地区）→ state（地区与所有国的交集）→ strategic_region（战略区域）。不要把四者都当“省份”。
 - “地区归 XXX”默认指整个 state_region 内的国家归属变更，联动人口、建筑、当地所有权、国家首都/军事驻地和直接引用；保留显式外国投资，除非用户要求国有化。编辑器保留用户最初要求的“均分”快捷预设并显示分配预览；**正式历史地图设计不默认对半，也不以单一面积比例分配所有资产**。分别依据聚落/人口、耕地与矿带、城市产业、港口、军队及剧情政治中心安排；记录各群体与各产业依据，纯拆分总量守恒。沿用地形纹理，只移动现有 province。
 - 不把原文件 parse 成普通字典：重复的 `create_pop`、`create_building`、`option`、`resource`、`modifier` 等都有效；它们必须保序并保留重复项。

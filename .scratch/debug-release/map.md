@@ -1,5 +1,7 @@
 # 恢复开发、DEBUG、版本保存与交付
 
+最新入口（2026-11-04）：[任务31](issues/31-continuity-journal-rework.md)及其详细续接总账。旧任务、待引擎验收、新增−1至10要求已分开记录；新一轮玩法尚待实施，不沿用下方历史“已通过”概括新要求。
+
 Record: execution-map
 Updated: 2026-11-01
 
