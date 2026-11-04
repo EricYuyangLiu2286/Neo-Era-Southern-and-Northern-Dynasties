@@ -1,0 +1,61 @@
+﻿# Monthly occupation-cohort estimate, not a hook into each native SoL change.
+# The native impact function and cohort sums are already used by the Qin campaign.
+nesnd_usm_western_sample_cohort = {
+    set_variable = { name = nesnd_west_sol_n value = $N$ }
+    if = { limit = { var:nesnd_west_sol_n > 0 }
+        set_variable = { name = nesnd_west_sol_current value = { value = $S$ divide = var:nesnd_west_sol_n } }
+        set_variable = { name = nesnd_west_sol_factor value = { value = $F$ divide = var:nesnd_west_sol_n } }
+        if = { limit = { has_variable = $PREVIOUS$ }
+            if = { limit = { var:nesnd_west_sol_current < var:$PREVIOUS$ }
+                add_radicals_in_state = {
+                    pop_type = pop_type:$TYPE$
+                    value = { value = var:$PREVIOUS$ subtract = var:nesnd_west_sol_current multiply = var:nesnd_west_sol_factor multiply = 0.10 min = 0 max = 0.05 }
+                }
+            }
+        }
+        set_variable = { name = $PREVIOUS$ value = var:nesnd_west_sol_current days = 40 }
+    }
+    else = { remove_variable = $PREVIOUS$ }
+}
+nesnd_usm_western_observe = {
+    if = { limit = { nesnd_usm_western_country = yes NOT = { has_variable = nesnd_usm_western_finished } }
+        every_scope_state = {
+            nesnd_usm_western_sample_cohort = { TYPE = academics N = nesnd_qe1_sol_academics_n S = nesnd_qe1_sol_academics_s F = nesnd_qe1_sol_academics_f PREVIOUS = nesnd_west_sol_academics }
+            nesnd_usm_western_sample_cohort = { TYPE = aristocrats N = nesnd_qe1_sol_aristocrats_n S = nesnd_qe1_sol_aristocrats_s F = nesnd_qe1_sol_aristocrats_f PREVIOUS = nesnd_west_sol_aristocrats }
+            nesnd_usm_western_sample_cohort = { TYPE = bureaucrats N = nesnd_qe1_sol_bureaucrats_n S = nesnd_qe1_sol_bureaucrats_s F = nesnd_qe1_sol_bureaucrats_f PREVIOUS = nesnd_west_sol_bureaucrats }
+            nesnd_usm_western_sample_cohort = { TYPE = capitalists N = nesnd_qe1_sol_capitalists_n S = nesnd_qe1_sol_capitalists_s F = nesnd_qe1_sol_capitalists_f PREVIOUS = nesnd_west_sol_capitalists }
+            nesnd_usm_western_sample_cohort = { TYPE = clergymen N = nesnd_qe1_sol_clergymen_n S = nesnd_qe1_sol_clergymen_s F = nesnd_qe1_sol_clergymen_f PREVIOUS = nesnd_west_sol_clergymen }
+            nesnd_usm_western_sample_cohort = { TYPE = clerks N = nesnd_qe1_sol_clerks_n S = nesnd_qe1_sol_clerks_s F = nesnd_qe1_sol_clerks_f PREVIOUS = nesnd_west_sol_clerks }
+            nesnd_usm_western_sample_cohort = { TYPE = engineers N = nesnd_qe1_sol_engineers_n S = nesnd_qe1_sol_engineers_s F = nesnd_qe1_sol_engineers_f PREVIOUS = nesnd_west_sol_engineers }
+            nesnd_usm_western_sample_cohort = { TYPE = farmers N = nesnd_qe1_sol_farmers_n S = nesnd_qe1_sol_farmers_s F = nesnd_qe1_sol_farmers_f PREVIOUS = nesnd_west_sol_farmers }
+            nesnd_usm_western_sample_cohort = { TYPE = laborers N = nesnd_qe1_sol_laborers_n S = nesnd_qe1_sol_laborers_s F = nesnd_qe1_sol_laborers_f PREVIOUS = nesnd_west_sol_laborers }
+            nesnd_usm_western_sample_cohort = { TYPE = machinists N = nesnd_qe1_sol_machinists_n S = nesnd_qe1_sol_machinists_s F = nesnd_qe1_sol_machinists_f PREVIOUS = nesnd_west_sol_machinists }
+            nesnd_usm_western_sample_cohort = { TYPE = officers N = nesnd_qe1_sol_officers_n S = nesnd_qe1_sol_officers_s F = nesnd_qe1_sol_officers_f PREVIOUS = nesnd_west_sol_officers }
+            nesnd_usm_western_sample_cohort = { TYPE = peasants N = nesnd_qe1_sol_peasants_n S = nesnd_qe1_sol_peasants_s F = nesnd_qe1_sol_peasants_f PREVIOUS = nesnd_west_sol_peasants }
+            nesnd_usm_western_sample_cohort = { TYPE = shopkeepers N = nesnd_qe1_sol_shopkeepers_n S = nesnd_qe1_sol_shopkeepers_s F = nesnd_qe1_sol_shopkeepers_f PREVIOUS = nesnd_west_sol_shopkeepers }
+            nesnd_usm_western_sample_cohort = { TYPE = slaves N = nesnd_qe1_sol_slaves_n S = nesnd_qe1_sol_slaves_s F = nesnd_qe1_sol_slaves_f PREVIOUS = nesnd_west_sol_slaves }
+            nesnd_usm_western_sample_cohort = { TYPE = soldiers N = nesnd_qe1_sol_soldiers_n S = nesnd_qe1_sol_soldiers_s F = nesnd_qe1_sol_soldiers_f PREVIOUS = nesnd_west_sol_soldiers }
+            remove_variable = nesnd_west_sol_n
+            remove_variable = nesnd_west_sol_current
+            remove_variable = nesnd_west_sol_factor
+        }
+    }
+}
+nesnd_usm_western_clear_state = {
+    remove_variable = nesnd_west_sol_academics
+    remove_variable = nesnd_west_sol_aristocrats
+    remove_variable = nesnd_west_sol_bureaucrats
+    remove_variable = nesnd_west_sol_capitalists
+    remove_variable = nesnd_west_sol_clergymen
+    remove_variable = nesnd_west_sol_clerks
+    remove_variable = nesnd_west_sol_engineers
+    remove_variable = nesnd_west_sol_farmers
+    remove_variable = nesnd_west_sol_laborers
+    remove_variable = nesnd_west_sol_machinists
+    remove_variable = nesnd_west_sol_officers
+    remove_variable = nesnd_west_sol_peasants
+    remove_variable = nesnd_west_sol_shopkeepers
+    remove_variable = nesnd_west_sol_slaves
+    remove_variable = nesnd_west_sol_soldiers
+}
+nesnd_usm_western_clear_observation = { every_scope_state = { nesnd_usm_western_clear_state = yes } }

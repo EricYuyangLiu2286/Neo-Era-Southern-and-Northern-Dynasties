@@ -1,4 +1,10 @@
-# 当前交接：任务31的续接总账与日志链重整（2026-11-04）
+# 当前交接：任务32缺陷与波斯/USM实施（2026-11-04）
+
+报告WORK/reports/journal-bug-sweep-20261104/，候选exports/journal-bug-sweep-20261104-a，父提交92e4303；主MOD实际合入与远端保存以main-merge.json/git-delivery.json为准。已完成按钮scope/反馈/印度显示、西秦两端结算、原版法律variant引用、23个剧情JE钉选；波斯两种可消费资源、四类奖励、37逐州宣称；USM大陆整合与西部置省。46机制/45边界/6回归、MCP7、Tiger零新增；两轴源码审查，未开游戏。最终证据以final-validation.json为准，不用静态通过冒称引擎完成。
+
+任务31保留法国古吉拉特/两邦直辖及舰队、日本新增政治选择组；法国/意大利拓展与编辑器仍按原总账排队。用户本轮要求波斯及USM机制已落实，不能再按下方旧“未实施”段落恢复。西部SoL效果是月度15职业估算，只处理下降；引擎回调顺序、旧档JE退役与实际UI待用户测试。技能新增同类检索→实际边界回归方法，入口journal-system-design.md。
+
+# 历史交接：任务31的续接总账与日志链重整（2026-11-04）
 
 先读WORK/plans/two-empires/61-continuity-and-journal-rework-20261104.md。本轮完成历史/未完成项汇总、作者−1至10顺序登记、实际代码解释及系统制作技能journal-system-design.md；新玩法未实施。任务31仍open/NOT_RUN。普通功能直接写候选MOD脚本，冻结备份不改。
 

@@ -40,7 +40,13 @@ nesnd_per_settle_future = {
 }
 
 nesnd_per_attempt_claim = {
-	if = { limit = { nesnd_per_country = yes NOT = { has_variable = nesnd_per_claim_cooldown } exists = scope:nesnd_per_claim_state exists = scope:nesnd_per_claim_region }
+    if = { limit = { nesnd_per_country = yes nesnd_per_claim_points >= 25 NOT = { has_variable = nesnd_per_claim_cooldown }
+            trigger_if = { limit = { exists = scope:nesnd_per_claim_state exists = scope:nesnd_per_claim_region }
+                scope:nesnd_per_claim_state = { nesnd_per_border_claim_state = yes }
+            } trigger_else = { always = no }
+        }
+        change_variable = { name = nesnd_per_claim_points add = -25 }
+        nesnd_per_claim_sync = yes
 		set_variable = { name = nesnd_per_claim_cooldown months = 1 }
 		add_modifier = { name = nesnd_per_claim_cost months = 1 }
 		clear_saved_scope = nesnd_per_obstructor

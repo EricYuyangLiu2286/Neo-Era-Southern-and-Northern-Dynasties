@@ -1,0 +1,46 @@
+﻿# Mark the defeated country's actual holdings before annexation erases its states.
+nesnd_usm_mark_annex_origin = {
+    remove_variable = nesnd_usm_annex_had_mainland
+    if = { limit = { any_scope_state = { OR = { nesnd_usm_mainland_recovery_state = yes nesnd_usm_western_target = yes } } }
+        set_variable = nesnd_usm_annex_had_mainland
+    }
+}
+# Call after a civil-war annexation; existing incorporation of the three exceptions is preserved.
+nesnd_usm_integrate_recovered_mainland = {
+    if = { limit = { nesnd_usm_western_country = yes }
+        every_scope_state = { limit = { nesnd_usm_mainland_recovery_state = yes } set_state_type = incorporated }
+        nesnd_usm_western_ensure_journal = yes
+    }
+}
+nesnd_usm_western_ensure_journal = {
+    if = { limit = { nesnd_usm_western_eligible = yes NOT = { has_journal_entry = nesnd_usm_western_provinces } }
+        add_journal_entry = { type = nesnd_usm_western_provinces }
+    }
+}
+nesnd_usm_western_fail = {
+    if = { limit = { nesnd_usm_western_country = yes has_variable = nesnd_usm_western_opened NOT = { has_variable = nesnd_usm_western_finished } game_date >= 1850.1.1 }
+        set_variable = nesnd_usm_western_finished
+        set_variable = nesnd_usm_western_failed
+        add_radicals = { culture = cu:ce_chu value = 0.25 }
+        add_radicals = { culture = cu:ce_xinan value = 0.25 }
+        add_radicals = { culture = cu:hakka value = 0.25 }
+        add_radicals = { culture = cu:yue value = 0.25 }
+        nesnd_usm_western_clear_observation = yes
+        trigger_event = { id = nesnd_western_provinces.1 popup = yes }
+    }
+}
+nesnd_usm_western_maintenance = {
+    if = { limit = { nesnd_usm_western_country = yes }
+        # Once-only migration for already conquered mainland in existing saves.
+        if = { limit = { NOT = { has_variable = nesnd_usm_western_migrated } }
+            set_variable = nesnd_usm_western_migrated
+            # A legacy save with the three provinces already integrated has no reliable completion date.
+            if = { limit = { game_date >= 1850.1.1 nesnd_usm_western_integrated = yes }
+                set_variable = nesnd_usm_western_finished
+                set_variable = nesnd_usm_western_succeeded
+            }
+            nesnd_usm_integrate_recovered_mainland = yes
+        }
+        nesnd_usm_western_ensure_journal = yes
+    }
+}

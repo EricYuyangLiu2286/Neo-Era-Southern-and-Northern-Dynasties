@@ -1,0 +1,37 @@
+﻿nesnd_per_governance_points = { value = 0 if = { limit = { has_variable = nesnd_per_governance_points } value = var:nesnd_per_governance_points } }
+nesnd_per_claim_points = { value = 0 if = { limit = { has_variable = nesnd_per_claim_points } value = var:nesnd_per_claim_points } }
+nesnd_per_governance_base = { value = 1 }
+nesnd_per_governance_relations = {
+    value = 0
+    if = { limit = { exists = c:QE1 }
+        if = { limit = { "relations(c:QE1)" >= 25 NOT = { has_war_with = c:QE1 } } add = 1 }
+        else_if = { limit = { "relations(c:QE1)" <= -25 } add = -0.5 }
+    }
+}
+nesnd_per_governance_education = { value = 0 if = { limit = { nesnd_per_civil_ready = yes } add = 0.5 } }
+nesnd_per_governance_industry = { value = 0 if = { limit = { nesnd_per_economy_ready = yes } add = 0.5 } }
+nesnd_per_governance_pressure = {
+    value = 0
+    if = { limit = { is_at_war = yes } add = -0.5 }
+    if = { limit = { OR = { in_default = yes has_modifier = declared_bankruptcy } } add = -1 }
+}
+nesnd_per_governance_delta = { value = nesnd_per_governance_base add = nesnd_per_governance_relations add = nesnd_per_governance_education add = nesnd_per_governance_industry add = nesnd_per_governance_pressure }
+nesnd_per_army_position = {
+    value = 1
+    every_country = { limit = { is_country_alive = yes army_power_projection > prev.army_power_projection } add = 1 }
+}
+nesnd_per_claim_base = { value = 0.5 }
+nesnd_per_claim_rank = { value = 0 if = { limit = { OR = { country_rank >= rank_value:major_power country_rank = rank_value:unrecognized_major_power } } add = 0.5 } }
+nesnd_per_claim_economy = { value = 0 if = { limit = { gdp_ranking <= 30 } add = 0.5 } }
+nesnd_per_claim_army = { value = 0 if = { limit = { army_size >= 40 nesnd_per_army_position <= 30 } add = 0.5 } }
+nesnd_per_claim_reference = {
+    value = 0
+    if = { limit = { exists = c:QE1 }
+        if = { limit = { c:QE1 = { army_power_projection <= prev.army_power_projection } } add = 0.5 }
+    }
+    else_if = { limit = { exists = c:FRA }
+        if = { limit = { c:FRA = { army_power_projection <= prev.army_power_projection } } add = 0.5 }
+    }
+}
+nesnd_per_claim_pressure = { value = 0 if = { limit = { is_at_war = yes } add = -0.5 } if = { limit = { OR = { in_default = yes has_modifier = declared_bankruptcy } } add = -0.5 } }
+nesnd_per_claim_delta = { value = nesnd_per_claim_base add = nesnd_per_claim_rank add = nesnd_per_claim_economy add = nesnd_per_claim_army add = nesnd_per_claim_reference add = nesnd_per_claim_pressure }
