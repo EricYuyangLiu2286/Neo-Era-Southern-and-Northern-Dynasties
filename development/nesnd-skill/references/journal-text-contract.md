@@ -97,3 +97,11 @@ GAME/common/scripted_progress_bars/scripted_progress_bars.md与本MOD ce_french_
 暂时条件（战争、破产、军力或合法性）失去时按设计暂停、停维护费并保留案件；不要共用“新建资格”作为存续资格，导致自动清案与长冷却。建设奖JE完成之后仍需要的治理/防御按钮应挂在常驻入口。人口与领土成果不是按钮退出时的临时修正。
 
 实际前后：WORK/reports/india-development-20261103/india-spec-review.md、india-spec-review-final.md及final-validation.json。未开游戏。
+
+## 绝对条件数与切换重点（1851测试档反例，2026-11-04）
+
+现值条不是“从进入日志起再增加多少”。goal_add_value会保留进入时baseline；东洋JE存档baseline=2、goal=5，现值1显示−1/3。当前条件数/占领数改用有界scripted_progress_bar，immediate同步现值，周期明细算目标减当前条。旧活动JE必须迁移而不能只改定义留着旧baseline；迁移不得重置外交结果或重发奖励。
+
+互斥建设重点若仅暂停推进，显示/存续条件与计分条件分开。取消重点不等于invalid；父日志结束/不再符合国家身份才清退。复核调用者根scope：country JE/tick与JE-root bar不是同一root，跨层shortage等国家参数显式传入，并核全部调用点。别用未经验证的prev.prev链掩盖根对象不明。
+
+来源、39组文案对读、实际AST边界与局限：WORK/reports/journal-war-feedback-20261103/。静态检查不认证旧档JE重建的引擎显示时序。

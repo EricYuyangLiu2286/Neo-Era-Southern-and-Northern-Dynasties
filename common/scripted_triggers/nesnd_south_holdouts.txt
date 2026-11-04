@@ -1,0 +1,90 @@
+﻿nesnd_south_mainland_holdout = {
+    is_country_alive = yes num_states > 0
+    OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this }
+    OR = { has_variable = nesnd_restoration_side has_variable = nesnd_ming_court nesnd_board_stance_value = 1 }
+    OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court }
+}
+nesnd_south_wu_survives = {
+    trigger_if = { limit = { exists = c:USM } c:USM = { is_country_alive = yes has_variable = tag_WUU_var } }
+    trigger_else = { always = no }
+}
+nesnd_holdout_peace_eligible = {
+    nesnd_south_mainland_holdout = yes nesnd_south_wu_survives = yes
+    has_global_variable = usm_civilwar_occured
+    has_variable = nesnd_holdout_enrolled_round
+    NOT = { has_variable = nesnd_holdout_resolved }
+    is_subject = no is_at_war = no is_active_in_diplomatic_play = no
+    NOT = { has_variable = nesnd_capital_surrender_pending }
+    NOT = { has_variable = nesnd_south_defeat_confirmed }
+}
+nesnd_holdout_offer_due = {
+    nesnd_holdout_peace_eligible = yes
+    nesnd_holdout_answered_value < nesnd_holdout_round_value
+    NOT = { has_variable = nesnd_holdout_choice_pending }
+    NOT = { has_variable = nesnd_holdout_north_awaited }
+    NOT = { has_variable = nesnd_holdout_resistance_pending }
+}
+nesnd_holdout_ai_unyielding = {
+    OR = { c:HNA ?= this c:GNG ?= this has_variable = nesnd_ming_court }
+    army_size >= 10 in_default = no NOT = { has_modifier = declared_bankruptcy }
+}
+nesnd_holdout_can_seek_north = {
+    nesnd_holdout_peace_eligible = yes
+    trigger_if = { limit = { exists = c:CNE }
+        c:CNE = { is_country_alive = yes is_subject = no }
+        NOT = { has_war_with = c:CNE }
+    } trigger_else = { always = no }
+}
+nesnd_holdout_north_request_valid = {
+    c:CNE ?= this is_country_alive = yes nesnd_south_wu_survives = yes
+    trigger_if = { limit = { exists = scope:nesnd_holdout_sender exists = scope:nesnd_holdout_request_round }
+        scope:nesnd_holdout_sender = {
+            nesnd_holdout_peace_eligible = yes
+            has_variable = nesnd_holdout_north_awaited has_variable = nesnd_holdout_north_clock
+            nesnd_holdout_round_value = scope:nesnd_holdout_request_round
+        }
+    } trigger_else = { always = no }
+}
+nesnd_holdout_north_can_accept = {
+    nesnd_holdout_north_request_valid = yes
+    is_subject = no is_at_war = no is_active_in_diplomatic_play = no
+    in_default = no NOT = { has_modifier = declared_bankruptcy }
+}
+nesnd_south_campaign_peace = {
+    nesnd_south_wu_survives = yes
+    NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
+    NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+    NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country has_war_with = c:USM } }
+    NOT = { nesnd_south_defeat_resolution_pending = yes }
+}
+# Candidate countries can shelter a guest emperor without changing their own government.
+nesnd_ming_local_royal_for_flight = {
+    is_character_alive = yes nesnd_ming_authorized_dynast = yes
+    trigger_if = { limit = { exists = owner exists = scope:nesnd_court_fallen }
+        owner = scope:nesnd_court_fallen
+    } trigger_else = { always = no }
+}
+nesnd_ming_flight_host = {
+    trigger_if = { limit = { exists = scope:nesnd_court_fallen exists = capital exists = c:USM }
+        is_country_alive = yes num_states > 0
+        NOT = { this = scope:nesnd_court_fallen }
+        NOT = { c:USM ?= this }
+        NOT = { is_subject_of = c:USM }
+        OR = { has_variable = nesnd_restoration_side nesnd_board_stance_value = 1 }
+        capital = { controller = prev }
+    } trigger_else = { always = no }
+}
+
+
+nesnd_south_unresolved_holdouts = {
+    any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } }
+}
+nesnd_south_campaign_resolved = {
+    nesnd_south_campaign_peace = yes
+    NOT = { nesnd_south_unresolved_holdouts = yes }
+}
+nesnd_south_wu_total_victory = {
+    c:USM ?= this has_global_variable = usm_civilwar_occured
+    nesnd_south_campaign_resolved = yes
+    NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } }
+}

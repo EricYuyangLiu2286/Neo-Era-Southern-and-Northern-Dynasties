@@ -1,0 +1,1320 @@
+--- baseline/events/nesnd_south_holdouts.txt
++++ candidate/events/nesnd_south_holdouts.txt
+@@ -0,0 +1,110 @@
++namespace = nesnd_south_holdouts
++nesnd_south_holdouts.1 = {
++    type = country_event placement = root duration = 3
++    title = nesnd_south_holdouts.1.t desc = nesnd_south_holdouts.1.d
++    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_8.dds" }
++    trigger = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_choice_pending }
++    cancellation_trigger = { NOT = { nesnd_holdout_peace_eligible = yes } }
++    option = {
++        name = nesnd_south_holdouts.resist default_option = yes
++        custom_tooltip = nesnd_south_holdouts_resist_tt
++        ai_chance = { base = 60
++            modifier = { factor = 5 trigger = { nesnd_holdout_ai_unyielding = yes } }
++            modifier = { factor = 0.2 trigger = { OR = { in_default = yes has_modifier = declared_bankruptcy army_size < 10 } } }
++        }
++        nesnd_holdout_choose_resistance = yes
++    }
++    option = {
++        name = nesnd_south_holdouts.north
++        trigger = { nesnd_holdout_can_seek_north = yes }
++        custom_tooltip = nesnd_south_holdouts_north_tt
++        ai_chance = { base = 25
++            modifier = { factor = 0 trigger = { nesnd_holdout_ai_unyielding = yes } }
++            modifier = { factor = 2 trigger = { trigger_if = { limit = { exists = c:CNE } "relations(c:CNE)" >= 25 } trigger_else = { always = no } } }
++        }
++        nesnd_holdout_request_north = yes
++    }
++    option = {
++        name = nesnd_south_holdouts.surrender
++        custom_tooltip = nesnd_south_holdouts_surrender_tt
++        ai_chance = { base = 15
++            modifier = { factor = 0 trigger = { nesnd_holdout_ai_unyielding = yes } }
++            modifier = { factor = 5 trigger = { OR = { in_default = yes has_modifier = declared_bankruptcy army_size < 10 } } }
++        }
++        nesnd_holdout_surrender_to_wu = yes
++    }
++    after = { remove_variable = nesnd_holdout_choice_pending }
++}
++nesnd_south_holdouts.2 = {
++    type = country_event placement = root duration = 3
++    title = nesnd_south_holdouts.2.t desc = nesnd_south_holdouts.2.d
++    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_1.dds" }
++    trigger = { nesnd_holdout_north_request_valid = yes }
++    cancellation_trigger = { NOT = { nesnd_holdout_north_request_valid = yes } }
++    option = {
++        name = nesnd_south_holdouts.accept
++        trigger = { nesnd_holdout_north_can_accept = yes }
++        custom_tooltip = nesnd_south_holdouts_accept_tt
++        ai_chance = { base = 20
++            modifier = { factor = 2 trigger = { trigger_if = { limit = { exists = scope:nesnd_holdout_sender } "relations(scope:nesnd_holdout_sender)" >= 25 } trigger_else = { always = no } } }
++            modifier = { factor = 2 trigger = { trigger_if = { limit = { exists = c:USM } "relations(c:USM)" < 0 } trigger_else = { always = no } } }
++            modifier = { factor = 0.25 trigger = { trigger_if = { limit = { exists = c:USM } "relations(c:USM)" >= 50 } trigger_else = { always = no } } }
++            modifier = { factor = 2 trigger = { trigger_if = { limit = { exists = c:USM } army_power_projection >= c:USM.army_power_projection } trigger_else = { always = no } } }
++        }
++        if = { limit = { nesnd_holdout_north_can_accept = yes }
++            create_diplomatic_pact = { country = scope:nesnd_holdout_sender type = protectorate }
++            scope:nesnd_holdout_sender = {
++                if = { limit = { is_subject_of = root }
++                    set_variable = nesnd_holdout_resolved
++                    remove_variable = nesnd_holdout_resistance_pending
++                    remove_variable = nesnd_holdout_north_awaited
++                    remove_variable = nesnd_holdout_north_clock
++                    remove_variable = nesnd_holdout_north_refused
++                    trigger_event = { id = nesnd_south_holdouts.4 days = 1 popup = yes }
++                }
++            }
++        }
++    }
++    option = {
++        name = nesnd_south_holdouts.refuse default_option = yes
++        custom_tooltip = nesnd_south_holdouts_refuse_tt
++        ai_chance = { base = 80 }
++    }
++    after = {
++        if = { limit = { exists = scope:nesnd_holdout_sender exists = scope:nesnd_holdout_request_round }
++            scope:nesnd_holdout_sender = {
++                if = { limit = { is_country_alive = yes has_variable = nesnd_holdout_north_awaited nesnd_holdout_round_value = scope:nesnd_holdout_request_round }
++                    remove_variable = nesnd_holdout_north_awaited
++                    remove_variable = nesnd_holdout_north_clock
++                    if = { limit = { NOT = { has_variable = nesnd_holdout_resolved } } set_variable = nesnd_holdout_north_refused }
++                }
++            }
++        }
++    }
++}
++nesnd_south_holdouts.3 = {
++    type = country_event placement = root duration = 3
++    title = nesnd_south_holdouts.3.t desc = nesnd_south_holdouts.3.d
++    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_8.dds" }
++    trigger = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_north_refused has_variable = nesnd_holdout_choice_pending }
++    cancellation_trigger = { NOT = { nesnd_holdout_peace_eligible = yes } }
++    option = {
++        name = nesnd_south_holdouts.resist default_option = yes custom_tooltip = nesnd_south_holdouts_resist_tt
++        ai_chance = { base = 60 modifier = { factor = 5 trigger = { nesnd_holdout_ai_unyielding = yes } } modifier = { factor = 0.2 trigger = { OR = { in_default = yes has_modifier = declared_bankruptcy army_size < 10 } } } }
++        nesnd_holdout_choose_resistance = yes
++    }
++    option = {
++        name = nesnd_south_holdouts.surrender custom_tooltip = nesnd_south_holdouts_surrender_tt
++        ai_chance = { base = 40 modifier = { factor = 0 trigger = { nesnd_holdout_ai_unyielding = yes } } modifier = { factor = 5 trigger = { OR = { in_default = yes has_modifier = declared_bankruptcy army_size < 10 } } } }
++        nesnd_holdout_surrender_to_wu = yes
++    }
++    after = { remove_variable = nesnd_holdout_choice_pending }
++}
++nesnd_south_holdouts.4 = {
++    type = country_event placement = root duration = 3
++    title = nesnd_south_holdouts.4.t desc = nesnd_south_holdouts.4.d
++    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_1.dds" }
++    trigger = { has_variable = nesnd_holdout_resolved is_subject_of = c:CNE }
++    cancellation_trigger = { NOT = { is_subject_of = c:CNE } }
++    option = { name = nesnd_south_holdouts.4.a default_option = yes }
++}
+--- baseline/events/usm_civilwar_events.txt
++++ candidate/events/usm_civilwar_events.txt
+@@ -925,7 +925,7 @@
+     }
+     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+     trigger = { nesnd_south_capital_defeat = yes NOT = { has_variable = nesnd_capital_surrender_pending } }
+-    immediate = { set_variable = nesnd_capital_surrender_pending }
++    immediate = { if = { limit = { has_variable = nesnd_ming_court } nesnd_south_court_collapse = yes } else = { set_variable = nesnd_capital_surrender_pending } }
+     option = {
+         name = nesnd_capital_surrender_accept
+         default_option = yes
+@@ -934,6 +934,8 @@
+     }
+     after = {
+         if = { limit = { nesnd_south_capital_defeat = yes }
++            nesnd_ming_escape_fallen_court = yes
++            if = { limit = { NOT = { has_variable = nesnd_ming_flight_blocked } }
+ 
+             hidden_effect = {
+                 if = {
+@@ -1090,6 +1092,8 @@
+                 }
+             }
+ 
++
++            }
+         }
+         remove_variable = nesnd_capital_surrender_pending
+     }
+@@ -1263,13 +1267,12 @@
+         texture = "gfx/event_pictures/event_ce_mordern_chinese_3.dds"
+     }
+     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+-    trigger = {
+-
+-    }
+-    immediate = {
++    trigger = { nesnd_south_wu_total_victory = yes }
++    cancellation_trigger = { NOT = { nesnd_south_wu_total_victory = yes } }
++    immediate = { if = { limit = { nesnd_south_wu_total_victory = yes }
+         set_global_variable = nesnd_south_settled
+         set_variable = usm_government_winner_civilwar
+-    }
++     } }
+     option = {
+         name = usm_civilwar.8.1
+         ai_chance = {
+@@ -1283,12 +1286,12 @@
+             is_decaying = yes
+         }
+     }
+-    after = {
++    after = { if = { limit = { nesnd_south_wu_total_victory = yes }
+         trigger_event = {
+             id = nesnd_crisis.40
+             popup = yes
+         }
+-    }
++     } }
+ }
+ 
+ usm_civilwar.9 = {
+@@ -1303,16 +1306,16 @@
+     }
+     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+     trigger = {
++        nesnd_south_campaign_peace = yes
+         NOT = { any_country = { nesnd_rebel_unclaimed_total_victory = yes } }
+         NOT = { nesnd_south_defeat_resolution_pending = yes }
+         NOT = {
+             has_variable = nesnd_status_quo_seen
+         }
+     }
+-    immediate = { if = { limit = { NOT = { any_country = { nesnd_rebel_unclaimed_total_victory = yes } } }
++    immediate = { if = { limit = { nesnd_south_campaign_peace = yes NOT = { any_country = { nesnd_rebel_unclaimed_total_victory = yes } } }
+             set_variable = nesnd_status_quo_seen
+             set_global_variable = usm_civilwar_status_quo
+-            set_global_variable = nesnd_south_settled
+             c:CNE ?= {
+                 remove_variable = nesnd_north_intervention
+             }
+--- baseline/.scratch/debug-release/map.md
++++ candidate/.scratch/debug-release/map.md
+@@ -162,3 +162,7 @@
+ ## 当前研究交付：法国政治与地区建设（2026-11-03）
+ 
+ [29 法国方案](issues/29-france-political-planning.md)：RAHF动员与原生党派机制已核；常规目标IG执政＋合法性50，不检测党派组合。补“宫廷与外省”及共和国分配/右转的条件性路线，保留波拿巴原方向；新增政治难度技能规则。本批仅文档，未实施玩法、未开游戏。后续以WORK/reports/france-politics-plan-20261103/france-development-plan.md为准，不沿用被纠正的组合门槛。
++
++## 2026-11-04四项日志与停战反馈
++
++[任务30](issues/30-journal-war-feedback.md)：东洋绝对计数、德里双条显示、HUS废君入口、行在迁逃/吞并及逐轮停战处理。STATIC_PASS；未开游戏，交付指纹与剩余引擎场景见WORK/reports/journal-war-feedback-20261103/。
+--- baseline/.scratch/debug-release/issues/30-journal-war-feedback.md
++++ candidate/.scratch/debug-release/issues/30-journal-war-feedback.md
+@@ -0,0 +1,16 @@
++# 四项日志与南明停战修复
++
++Record: implementation
++Category: bug
++Status: ready-for-human
++Execution: completed
++Assignee: Codex
++Blocked by: none
++Validation: STATIC_PASS（引擎待用户测试）
++Evidence: [journal-war-feedback-20261103](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/journal-war-feedback-20261103/spec.md>)
++
++## Result
++
++东洋−1是相对基线错误；德里学校已在1851存档中活跃，修子条显示/暂停及市场国家引用；HUS开局废君源于原生政体初始化，定点限制入口与清退旧JE。南朝争端独立于单轮war，行在占领后先迁逃再吞并；本土参战国和平时每轮一次选择再战、求北朝保护、归吴。AI及例外详见spec与runtime-findings。两轴复审、定向回归、AST故障注入、MCP、Tiger差分与数据图保护结果见同目录final-validation.json。
++
++未更改地图、人口、国家历史和已验证日本三分；未开游戏。候选独立备份及合入与远端结果分别见candidate-backup.json、main-merge.json、git-delivery.json。旧HUS短暂君主历史无法可靠倒推；旧war领袖不做未经证实的引擎替换。
+--- baseline/common/diplomatic_plays/ce_diplomatic_plays.txt
++++ candidate/common/diplomatic_plays/ce_diplomatic_plays.txt
+@@ -33,8 +33,10 @@
+ 
+ 	}
+ 	on_war_begins = {
+-
+-	}
++        every_country = { limit = { nesnd_south_mainland_holdout = yes has_war_with = c:USM }
++            set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
++        }
++    }
+ 	on_war_end = {
+ 
+ 	}
+@@ -42,25 +44,25 @@
+ 
+ dp_ce_unify_china = {
+ 	war_goal = unification
+-	
++
+ 	requires_interest_marker = no
+ 	blocked_by_diplomatic_status = no
+ 	add_infamy_for_starting_initiator_wargoals = no
+-	
++
+ 	texture = "gfx/interface/icons/war_goals/unify_germany.dds"
+-	
++
+ 	selectable_in_lens = {
+ 		always = no
+ 	}
+-	
++
+ 	possible = {
+ 		NOT = { exists = c:CHI }
+ 		NOT = { is_country_type = decentralized }
+ 		has_technology_researched = pan-nationalism
+ 	}
+-	
++
+ 	on_weekly_pulse = {}
+-	
++
+ 	on_war_begins = {}
+ 
+ 	on_war_end = {}
+@@ -68,22 +70,22 @@
+ 
+ dp_ce_leadership_china = {
+ 	war_goal = unification_leadership
+-	
++
+ 	requires_interest_marker = no
+ 	mirror_war_goal = yes
+-	
++
+ 	texture = "gfx/interface/icons/war_goals/unify_germany.dds"
+-	
++
+ 	selectable_in_lens = {
+ 		always = no
+-	}	
+-	
++	}
++
+ 	possible = {
+-		has_technology_researched = nationalism			
++		has_technology_researched = nationalism
+ 	}
+-	
++
+ 	on_weekly_pulse = {}
+-	
++
+ 	on_war_begins = {}
+ 
+ 	on_war_end = {}
+@@ -117,4 +119,4 @@
+ 	on_war_begins = {}
+ 
+ 	on_war_end = {}
+-}+}
+--- baseline/common/journal_entries/ce_usm_the_last_days_of_ming.txt
++++ candidate/common/journal_entries/ce_usm_the_last_days_of_ming.txt
+@@ -277,7 +277,7 @@
+ 		}
+ 	}
+ 
+-	invalid = { OR = { has_global_variable = nesnd_south_settled 
++	invalid = { OR = { has_global_variable = nesnd_south_settled
+ 		custom_tooltip = {
+ 			text = ce_usm_conflict_looming_tt
+ 			has_variable = ce_usm_conflict_looming
+@@ -343,30 +343,25 @@
+ 	group = je_group_historical_content
+ 
+ 	complete = {
+-		NOT = { nesnd_south_defeat_resolution_pending = yes }
+-		NOT = { has_global_variable = nesnd_south_settled }
+-		has_global_variable = usm_civilwar_occured
+-		NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } }
+-	}
++        nesnd_south_wu_total_victory = yes
++        NOT = { has_global_variable = nesnd_south_settled }
++    }
+ 
+ 	on_complete = { set_global_variable = nesnd_south_settled set_variable = usm_government_winner_civilwar trigger_event = { id = usm_civilwar.8 popup = yes } }
+ 
+-	fail = {
+-		NOT = { nesnd_south_defeat_resolution_pending = yes } NOT = { has_global_variable = nesnd_south_settled }
+-		NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
+-		NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+-		NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
+-
+-	on_fail = { trigger_event = { id = usm_civilwar.9 popup = yes } }
+-
+-	timeout = 3650
+-
+-	on_timeout = { trigger_event = { id = usm_civilwar.9 popup = yes } }
++
++
++
++
++
++
++
+ 
+ 	weight = 1000
+ 	should_be_pinned_by_default_uninvolved_or_context = yes
+ 
+ 	on_weekly_pulse = { effect = { nesnd_check_war_collapses = yes } }
++    invalid = { OR = { NOT = { nesnd_south_wu_survives = yes } has_global_variable = nesnd_south_settled } }
+ }
+ 
+ ce_usm_restoration_of_ming = {
+@@ -405,25 +400,17 @@
+ 
+ 	on_complete = { set_variable = nesnd_rebel_settlement_waiting trigger_event = { id = usm_civilwar.10 popup = yes } }
+ 
+-	fail = {
+-		NOT = { nesnd_south_defeat_resolution_pending = yes } NOT = { has_global_variable = nesnd_south_settled }
+-		NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
+-		NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+-		NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
+-
+-	on_fail = {
+-		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+-	}
++
++
++
+ 
+ 	invalid = { has_global_variable = nesnd_south_settled NOT = { has_variable = usm_rebel_winner_of_the_civil_war } }
+ 
+ 	on_invalid = { if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
+ 
+-	timeout = 3650
+-
+-	on_timeout = {
+-		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+-	}
++
++
++
+ 
+ 	weight = 1000
+ 	should_be_pinned_by_default_uninvolved_or_context = yes
+@@ -465,25 +452,17 @@
+ 
+ 	on_complete = { set_variable = nesnd_rebel_settlement_waiting trigger_event = { id = usm_civilwar.10 popup = yes } }
+ 
+-	fail = {
+-		NOT = { nesnd_south_defeat_resolution_pending = yes } NOT = { has_global_variable = nesnd_south_settled }
+-		NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
+-		NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
+-		NOT = { any_country = { has_variable = usm_opposition_country has_war_with = c:USM } } }
+-
+-	on_fail = {
+-		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+-	}
++
++
++
+ 
+ 	invalid = { has_global_variable = nesnd_south_settled NOT = { has_variable = usm_rebel_winner_of_the_civil_war } }
+ 
+ 	on_invalid = { if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
+ 
+-	timeout = 3650
+-
+-	on_timeout = {
+-		trigger_event = { id = usm_civilwar.9 popup = yes } # status quo
+-	}
++
++
++
+ 
+ 	weight = 1000
+ 	should_be_pinned_by_default_uninvolved_or_context = yes
+--- baseline/common/journal_entries/nesnd_india_core.txt
++++ candidate/common/journal_entries/nesnd_india_core.txt
+@@ -1,34 +1,38 @@
+ nesnd_india_schools = {
+     icon = "gfx/interface/icons/invention_icons/mechanical_tools.dds" group = je_group_historical_content can_revolution_inherit = no
+-    is_shown_when_inactive = { nesnd_india_schools_available = yes } possible = { nesnd_india_schools_available = yes }
++    is_shown_when_inactive = { nesnd_india_schools_visible = yes } possible = { nesnd_india_schools_visible = yes }
+     immediate = { if = { limit = { NOT = { has_variable = nesnd_india_schools_months } } set_variable = { name = nesnd_india_schools_months value = 0 } }  nesnd_india_sync_schools = yes }
+     scripted_progress_bar = nesnd_india_schools_bar
+     complete = { hidden_trigger = { nesnd_india_schools_available = yes } nesnd_india_schools_ready = yes custom_tooltip = { text = nesnd_india_twelve_months_tt has_variable = nesnd_india_schools_months nesnd_india_schools_months_value >= 12 } }
+     on_complete = { if = { limit = { nesnd_india_schools_available = yes } set_variable = nesnd_india_schools_done add_modifier = { name = nesnd_india_school_service months = 120 } } }
+-    invalid = { NOT = { nesnd_india_schools_available = yes } }
++    invalid = { NOT = { nesnd_india_schools_visible = yes } }
+     on_monthly_pulse = { effect = { nesnd_india_schools_tick = yes } }
++    should_be_pinned_by_default_uninvolved_or_context = yes
++    status_desc = { first_valid = { triggered_desc = { trigger = { nesnd_india_schools_available = yes } desc = nesnd_india_schools_working } desc = nesnd_india_schools_paused } }
+     weight = 700
+ }
+ nesnd_india_industry = {
+     icon = "gfx/interface/icons/invention_icons/mechanical_tools.dds" group = je_group_historical_content can_revolution_inherit = no
+-    is_shown_when_inactive = { nesnd_india_industry_available = yes } possible = { nesnd_india_industry_available = yes }
++    is_shown_when_inactive = { nesnd_india_industry_visible = yes } possible = { nesnd_india_industry_visible = yes }
+     immediate = { if = { limit = { NOT = { has_variable = nesnd_india_industry_months } } set_variable = { name = nesnd_india_industry_months value = 0 } }  nesnd_india_sync_industry = yes }
+     scripted_progress_bar = nesnd_india_industry_bar
+-    complete = { hidden_trigger = { nesnd_india_industry_available = yes } nesnd_india_industry_ready = yes custom_tooltip = { text = nesnd_india_twelve_months_tt has_variable = nesnd_india_industry_months nesnd_india_industry_months_value >= 12 } }
++    complete = { hidden_trigger = { nesnd_india_industry_available = yes } nesnd_india_industry_ready = { COUNTRY = root } custom_tooltip = { text = nesnd_india_twelve_months_tt has_variable = nesnd_india_industry_months nesnd_india_industry_months_value >= 12 } }
+     on_complete = { if = { limit = { nesnd_india_industry_available = yes } set_variable = nesnd_india_industry_done add_modifier = { name = nesnd_india_industrial_service months = 120 } } }
+-    invalid = { NOT = { nesnd_india_industry_available = yes } }
++    invalid = { NOT = { nesnd_india_industry_visible = yes } }
+     on_monthly_pulse = { effect = { nesnd_india_industry_tick = yes } }
++    should_be_pinned_by_default_uninvolved_or_context = yes
++    status_desc = { first_valid = { triggered_desc = { trigger = { nesnd_india_industry_available = yes } desc = nesnd_india_industry_working } desc = nesnd_india_industry_paused } }
+     weight = 700
+ }
+ nesnd_india_reform = {
+     icon = "gfx/interface/icons/event_icons/event_newspaper.dds" group = je_group_historical_content can_revolution_inherit = no
+     is_shown_when_inactive = { nesnd_india_reform_live = yes } possible = { nesnd_india_reform_live = yes }
+     scripted_button = nesnd_india_choose_schools scripted_button = nesnd_india_choose_industry
+-    complete = { hidden_trigger = { nesnd_india_reform_live = yes } custom_tooltip = { text = nesnd_india_reform_finished_tt has_variable = nesnd_india_schools_done has_variable = nesnd_india_industry_done } }
++    complete = { hidden_trigger = { nesnd_india_reform_live = yes } custom_tooltip = { text = nesnd_india_schools_completed_tt has_variable = nesnd_india_schools_done } custom_tooltip = { text = nesnd_india_industry_completed_tt has_variable = nesnd_india_industry_done } }
+     on_complete = { if = { limit = { nesnd_india_reform_live = yes } set_variable = nesnd_india_reform_done remove_variable = nesnd_india_priority } }
+     invalid = { NOT = { nesnd_india_reform_live = yes } }
+     on_invalid = { remove_variable = nesnd_india_priority }
+-    status_desc = { desc = nesnd_india_reform_status }
++    status_desc = { first_valid = { triggered_desc = { trigger = { nesnd_india_priority_value = 1 } desc = nesnd_india_reform_schools_status } triggered_desc = { trigger = { nesnd_india_priority_value = 2 } desc = nesnd_india_reform_industry_status } desc = nesnd_india_reform_waiting_status } }
+     weight = 1000 should_be_pinned_by_default_uninvolved_or_context = yes
+     scripted_button = nesnd_india_request_4 scripted_button = nesnd_india_request_7
+ }
+--- baseline/common/journal_entries/nesnd_japan.txt
++++ candidate/common/journal_entries/nesnd_japan.txt
+@@ -10,7 +10,7 @@
+         NOT = { has_global_variable = nesnd_japan_dossier_closed }
+     }
+     is_shown_when_inactive = { c:USM ?= this has_variable = tag_WUU_var }
+-    immediate = { set_variable = nesnd_japan_dossier_entered }
++    immediate = { set_variable = nesnd_japan_dossier_entered set_variable = nesnd_eastern_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_eastern_readiness_bar value = owner.nesnd_japan_preparation_score } } }
+     status_desc = {
+         first_valid = {
+             triggered_desc = { trigger = { has_global_variable = nesnd_japan_war_started } desc = nesnd_wu_eastern_question_status_war }
+@@ -18,15 +18,13 @@
+             desc = nesnd_wu_eastern_question_status
+         }
+     }
+-    progressbar = yes
+-    current_value = { value = nesnd_japan_preparation_score }
+-    goal_add_value = { value = 3 }
++    scripted_progress_bar = nesnd_eastern_readiness_bar
+     scripted_button = nesnd_japan_send_terms
+     scripted_button = nesnd_japan_accept_status_quo
+-    complete = { has_global_variable = nesnd_japan_dossier_closed }
++    complete = { custom_tooltip = { text = nesnd_eastern_question_resolved_tt has_global_variable = nesnd_japan_dossier_closed } }
+     on_complete = { }
+-    invalid = { NOT = { has_variable = tag_WUU_var } }
+-    on_invalid = { set_global_variable = nesnd_japan_dossier_closed }
++    invalid = { OR = { NOT = { has_global_variable = nesnd_south_settled } NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_eastern_absolute_v2 } } }
++    on_invalid = { if = { limit = { NOT = { has_variable = tag_WUU_var } } set_global_variable = nesnd_japan_dossier_closed } else = { remove_variable = nesnd_japan_dossier_entered } }
+     on_monthly_pulse = { effect = {
+             if = { limit = {
+                     NOT = { has_global_variable = nesnd_japan_dossier_closed }
+@@ -58,11 +56,9 @@
+         NOT = { has_variable = nesnd_japan_unified }
+     }
+     is_shown_when_inactive = { OR = { c:JAP ?= this c:JTK ?= this c:JIM ?= this } }
+-    immediate = { set_variable = nesnd_japan_unity_entered }
+-    invalid = { NOT = { nesnd_jp_country = yes } }
+-    progressbar = yes
+-    current_value = { value = nesnd_japan_unity_score }
+-    goal_add_value = { value = 7 }
++    immediate = { set_variable = nesnd_japan_unity_entered set_variable = nesnd_unification_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_japan_unification_bar value = owner.nesnd_japan_unity_score } } }
++    invalid = { OR = { NOT = { nesnd_jp_country = yes } NOT = { has_variable = nesnd_unification_absolute_v2 } } }
++    scripted_progress_bar = nesnd_japan_unification_bar
+     complete = { nesnd_japan_is_united = yes }
+     on_complete = {
+         set_variable = nesnd_japan_unified
+--- baseline/common/journal_entries/nesnd_south_holdouts.txt
++++ candidate/common/journal_entries/nesnd_south_holdouts.txt
+@@ -0,0 +1,12 @@
++nesnd_south_holdout_campaign = {
++    icon = "gfx/interface/icons/politics_icons/revolution.dds"
++    group = je_group_historical_content can_revolution_inherit = no
++    possible = { c:USM ?= this nesnd_south_wu_survives = yes has_global_variable = usm_civilwar_occured
++        any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } }
++    }
++    complete = { custom_tooltip = { text = nesnd_south_holdouts_settled_tt has_global_variable = nesnd_south_settled } }
++    invalid = { NOT = { nesnd_south_wu_survives = yes } }
++    on_weekly_pulse = { effect = { nesnd_check_war_collapses = yes } }
++    status_desc = { desc = nesnd_south_holdout_campaign_status }
++    should_be_pinned_by_default_uninvolved_or_context = yes weight = 950
++}
+--- baseline/common/journal_entries/zzzz_nesnd_hus_native_monarchy.txt
++++ candidate/common/journal_entries/zzzz_nesnd_hus_native_monarchy.txt
+@@ -0,0 +1,111 @@
++# triggered by on_law_enactment_started
++REPLACE:je_abolish_monarchy = {
++	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
++
++	group = je_group_internal_affairs
++
++	on_monthly_pulse = {
++		effect = {
++			if = {
++				limit = {
++                    nesnd_native_abolish_monarchy_eligible = yes
++					NOT = { country_has_monarchy_law = yes }
++					NOT = {
++						any_civil_war = {
++							civil_war_progress >= 0.75
++							is_civil_war_type = revolution
++						}
++					}
++					NOT = {
++						any_interest_group = {
++							law_stance = {
++								law = law_type:law_monarchy
++								value > neutral
++							}
++							is_powerful = yes
++						}
++					}
++				}
++				change_variable = {
++					name = abolishing_monarchy_var
++					add = 1
++				}
++			}
++		}
++	}
++
++	complete = {
++        nesnd_native_abolish_monarchy_eligible = yes
++		scope:journal_entry = {
++			is_goal_complete = yes
++		}
++		NOT = { country_has_monarchy_law = yes }
++		NOT = {
++			any_civil_war = {
++				civil_war_progress >= 0.75
++				is_civil_war_type = revolution
++			}
++		}
++		NOT = {
++			any_interest_group = {
++				law_stance = {
++					law = law_type:law_monarchy
++					value > neutral
++				}
++				is_powerful = yes
++			}
++		}
++	}
++
++	immediate = {
++		ig:ig_landowners ?= {
++			save_scope_as = landowners_ig
++		}
++	}
++
++	on_complete = {
++		set_variable = stamped_out_monarchy_var
++		trigger_event = {
++			id = 1848.2
++		}
++		if = {
++			limit = { has_journal_entry = je_warlord_china }
++			chi_add_1_fragile_unity = yes
++			set_variable = china_warlord_abolished_monarchy
++		}
++	}
++
++	event_outcome_completed_desc = {
++		first_valid = {
++			triggered_desc = {
++				desc = event_effects_1848.2_tt
++			}
++		}
++	}
++
++	invalid = { OR = { NOT = { nesnd_native_abolish_monarchy_eligible = yes }
++		NOR = {
++			is_enacting_law = law_type:law_presidential_republic
++			is_enacting_law = law_type:law_parliamentary_republic
++			is_enacting_law = law_type:law_council_republic
++			has_law_or_variant = law_type:law_presidential_republic
++			has_law_or_variant = law_type:law_parliamentary_republic
++			has_law_or_variant = law_type:law_council_republic
++		}
++	 } }
++
++	current_value = {
++		value = root.var:abolishing_monarchy_var
++	}
++
++	goal_add_value = {
++		add = 60
++	}
++
++	progressbar = yes
++
++	weight = 100
++
++	should_be_pinned_by_default_uninvolved_or_context = no
++
++}
+--- baseline/common/on_actions/nesnd_hus_monarchy_history.txt
++++ candidate/common/on_actions/nesnd_hus_monarchy_history.txt
+@@ -0,0 +1,12 @@
++# on_law_activated is law scope; enactment-start and monthly are country scope.
++on_law_activated = { on_actions = { nesnd_hus_record_monarchy_law } }
++nesnd_hus_record_monarchy_law = { effect = {
++    owner ?= { if = { limit = { c:HUS ?= this has_game_started = yes country_has_monarchy_law = yes } set_variable = nesnd_hus_monarchy_seen } }
++    }
++}
++on_law_enactment_started = { on_actions = { nesnd_hus_record_monarchy_country } }
++on_monthly_pulse_country = { on_actions = { nesnd_hus_record_monarchy_country } }
++nesnd_hus_record_monarchy_country = { effect = {
++    if = { limit = { c:HUS ?= this has_game_started = yes country_has_monarchy_law = yes } set_variable = nesnd_hus_monarchy_seen }
++    }
++}
+--- baseline/common/on_actions/nesnd_south_holdouts.txt
++++ candidate/common/on_actions/nesnd_south_holdouts.txt
+@@ -0,0 +1,6 @@
++on_weekly_pulse_country = { on_actions = { nesnd_south_holdout_weekly } }
++nesnd_south_holdout_weekly = { effect = {
++    nesnd_south_holdout_country_tick = yes
++    nesnd_south_holdout_wu_tick = yes
++    }
++}
+--- baseline/common/on_actions/nesnd_war_collapse.txt
++++ candidate/common/on_actions/nesnd_war_collapse.txt
+@@ -7,7 +7,12 @@
+             limit = { exists = c:USM }
+             if = {
+                 limit = { OR = { c:USM ?= this scope:enemy_country ?= c:USM } }
+-                c:USM = { nesnd_queue_war_collapse_check = yes }
++                c:USM = {
++                    every_country = { limit = { has_variable = nesnd_ming_court nesnd_south_capital_defeat = yes }
++                        set_variable = nesnd_south_defeat_confirmed
++                    }
++                    nesnd_queue_war_collapse_check = yes
++                }
+             }
+         }
+     }
+@@ -22,7 +27,7 @@
+             limit = { c:USM ?= this has_variable = tag_WUU_var exists = scope:target }
+             scope:target = {
+                 if = {
+-                    limit = { is_country_alive = yes NOT = { c:USM ?= this } has_variable = usm_opposition_country }
++                    limit = { is_country_alive = yes NOT = { c:USM ?= this } OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court } }
+                     set_variable = nesnd_south_defeat_confirmed
+                 }
+             }
+--- baseline/common/scripted_effects/nesnd_india_core.txt
++++ candidate/common/scripted_effects/nesnd_india_core.txt
+@@ -9,7 +9,7 @@
+ nesnd_india_industry_tick = {
+     if = { limit = { nesnd_india_industry_available = yes }
+         if = { limit = { NOT = { has_variable = nesnd_india_industry_months } } set_variable = { name = nesnd_india_industry_months value = 0 } }
+-        if = { limit = { nesnd_india_industry_ready = yes } change_variable = { name = nesnd_india_industry_months add = 1 } }
++        if = { limit = { nesnd_india_industry_ready = { COUNTRY = root } } change_variable = { name = nesnd_india_industry_months add = 1 } }
+         clamp_variable = { name = nesnd_india_industry_months min = 0 max = 12 }
+         nesnd_india_sync_industry = yes
+     }
+@@ -26,8 +26,8 @@
+ nesnd_india_refresh = {
+     nesnd_india_initialize = yes
+     if = { limit = { nesnd_india_reform_live = yes NOT = { has_journal_entry = nesnd_india_reform } } add_journal_entry = { type = nesnd_india_reform } }
+-    if = { limit = { nesnd_india_schools_available = yes NOT = { has_journal_entry = nesnd_india_schools } } add_journal_entry = { type = nesnd_india_schools } }
+-    if = { limit = { nesnd_india_industry_available = yes NOT = { has_journal_entry = nesnd_india_industry } } add_journal_entry = { type = nesnd_india_industry } }
++    if = { limit = { nesnd_india_schools_visible = yes NOT = { has_journal_entry = nesnd_india_schools } } add_journal_entry = { type = nesnd_india_schools } }
++    if = { limit = { nesnd_india_industry_visible = yes NOT = { has_journal_entry = nesnd_india_industry } } add_journal_entry = { type = nesnd_india_industry } }
+     if = { limit = { nesnd_india_society_live = yes NOT = { has_journal_entry = nesnd_india_society } } add_journal_entry = { type = nesnd_india_society } }
+     if = { limit = { nesnd_india_caste_live = yes NOT = { has_journal_entry = nesnd_india_caste } } add_journal_entry = { type = nesnd_india_caste } }
+     if = { limit = { nesnd_india_prince = yes NOT = { has_journal_entry = nesnd_india_princes } } add_journal_entry = { type = nesnd_india_princes } }
+--- baseline/common/scripted_effects/nesnd_south_holdouts.txt
++++ candidate/common/scripted_effects/nesnd_south_holdouts.txt
+@@ -0,0 +1,242 @@
++# Character scope, called only with a saved fallen country. Confirm relocation before annexation.
++nesnd_ming_relocate_royal = {
++    if = { limit = { exists = scope:nesnd_court_flight_host }
++        transfer_character = scope:nesnd_court_flight_host
++    }
++    if = { limit = {
++            trigger_if = { limit = { exists = scope:nesnd_court_flight_host exists = owner }
++                owner = scope:nesnd_court_flight_host
++            } trigger_else = { always = no }
++        }
++        nesnd_ming_give_guest_role = yes
++    }
++    else = { exile_character_with_role_cleanup = yes }
++    if = { limit = {
++            is_in_exile_pool = no
++            trigger_if = { limit = { exists = owner } owner = scope:nesnd_court_fallen }
++            trigger_else = { always = no }
++        }
++        scope:nesnd_court_fallen = { set_variable = nesnd_ming_flight_blocked }
++    }
++}
++# Country scope. A guest emperor is protected too, without making his host a new court.
++nesnd_ming_escape_fallen_court = {
++    save_scope_as = nesnd_court_fallen
++    clear_saved_scope = nesnd_fleeing_emperor
++    clear_saved_scope = nesnd_fleeing_heir
++    clear_saved_scope = nesnd_court_flight_host
++    remove_variable = nesnd_ming_flight_blocked
++    if = { limit = {
++            trigger_if = { limit = { exists = var:nesnd_ming_court_monarch }
++                var:nesnd_ming_court_monarch = { nesnd_ming_local_royal_for_flight = yes }
++            } trigger_else = { always = no }
++        }
++        var:nesnd_ming_court_monarch = { save_scope_as = nesnd_fleeing_emperor }
++    }
++    else_if = { limit = {
++            trigger_if = { limit = { exists = var:nesnd_ming_claimant_ref }
++                var:nesnd_ming_claimant_ref = { nesnd_ming_local_royal_for_flight = yes has_variable = nesnd_ming_claimant }
++            } trigger_else = { always = no }
++        }
++        var:nesnd_ming_claimant_ref = { save_scope_as = nesnd_fleeing_emperor }
++    }
++    else_if = { limit = {
++            has_variable = nesnd_ming_court
++            trigger_if = { limit = { exists = ruler } ruler = { nesnd_ming_local_royal_for_flight = yes } }
++            trigger_else = { always = no }
++        }
++        ruler = { save_scope_as = nesnd_fleeing_emperor }
++    }
++    else_if = { limit = { any_scope_character = { nesnd_ming_local_royal_for_flight = yes has_variable = nesnd_ming_claimant } }
++        random_scope_character = { limit = { nesnd_ming_local_royal_for_flight = yes has_variable = nesnd_ming_claimant } save_scope_as = nesnd_fleeing_emperor }
++    }
++    if = { limit = { exists = scope:nesnd_fleeing_emperor }
++        # Snapshot the heir before moving the ruler, which can cause an immediate succession.
++        if = { limit = {
++                trigger_if = { limit = { exists = var:nesnd_ming_heir_ref }
++                    var:nesnd_ming_heir_ref = { nesnd_ming_local_royal_for_flight = yes }
++                } trigger_else = { always = no }
++            }
++            var:nesnd_ming_heir_ref = { save_scope_as = nesnd_fleeing_heir }
++        }
++        else_if = { limit = { has_variable = nesnd_ming_court any_scope_character = { nesnd_ming_local_royal_for_flight = yes is_heir_of_own_country = yes } }
++            random_scope_character = { limit = { nesnd_ming_local_royal_for_flight = yes is_heir_of_own_country = yes } save_scope_as = nesnd_fleeing_heir }
++        }
++        if = { limit = { any_country = { nesnd_ming_flight_host = yes } }
++            random_country = { limit = { nesnd_ming_flight_host = yes } save_scope_as = nesnd_court_flight_host }
++        }
++        scope:nesnd_fleeing_emperor = { set_variable = nesnd_ming_claimant nesnd_ming_relocate_royal = yes }
++        scope:nesnd_fleeing_heir ?= { nesnd_ming_relocate_royal = yes }
++        if = { limit = {
++                trigger_if = { limit = { exists = scope:nesnd_court_flight_host }
++                    scope:nesnd_fleeing_emperor = {
++                        trigger_if = { limit = { exists = owner } owner = scope:nesnd_court_flight_host }
++                        trigger_else = { always = no }
++                    }
++                } trigger_else = { always = no }
++            }
++            scope:nesnd_court_flight_host = {
++                set_variable = { name = nesnd_ming_claimant_ref value = scope:nesnd_fleeing_emperor }
++                set_variable = nesnd_ming_royals_retained
++                if = { limit = { exists = scope:nesnd_fleeing_heir }
++                    if = { limit = {
++                            scope:nesnd_fleeing_heir = {
++                                trigger_if = { limit = { exists = owner } owner = scope:nesnd_court_flight_host }
++                                trigger_else = { always = no }
++                            }
++                        }
++                        set_variable = { name = nesnd_ming_heir_ref value = scope:nesnd_fleeing_heir }
++                    }
++                }
++                if = { limit = { OR = { c:HNA ?= this c:SIH ?= this } }
++                    set_variable = nesnd_ming_court
++                    set_variable = { name = nesnd_ming_court_monarch value = scope:nesnd_fleeing_emperor }
++                }
++            }
++        }
++    }
++    if = { limit = { NOT = { has_variable = nesnd_ming_flight_blocked } }
++        remove_variable = nesnd_ming_court
++        remove_variable = nesnd_ming_court_monarch
++    }
++}
++
++nesnd_south_court_collapse = {
++    if = { limit = { has_variable = nesnd_ming_court nesnd_south_capital_defeat = yes }
++        save_scope_as = nesnd_court_fallen
++        nesnd_ming_escape_fallen_court = yes
++        if = { limit = { NOT = { has_variable = nesnd_ming_flight_blocked } }
++        remove_variable = nesnd_capital_surrender_pending
++        remove_variable = nesnd_south_defeat_confirmed
++        # Remaining living characters follow annexation; the emperor and heir have already left.
++        every_scope_character = { limit = { is_character_alive = yes is_in_exile_pool = no } transfer_character = c:USM }
++        c:USM = { annex_as_civil_war = scope:nesnd_court_fallen }
++        }
++    }
++}
++nesnd_holdout_mark_answer = {
++    set_variable = { name = nesnd_holdout_answered_round value = nesnd_holdout_round_value }
++    remove_variable = nesnd_holdout_choice_pending
++}
++nesnd_holdout_choose_resistance = {
++    if = { limit = { nesnd_holdout_peace_eligible = yes }
++        nesnd_holdout_mark_answer = yes
++        set_variable = nesnd_holdout_resistance_pending
++        remove_variable = nesnd_holdout_north_awaited
++        remove_variable = nesnd_holdout_north_clock
++        remove_variable = nesnd_holdout_north_refused
++    }
++}
++nesnd_holdout_surrender_to_wu = {
++    if = { limit = { nesnd_holdout_peace_eligible = yes }
++        save_scope_as = nesnd_court_fallen
++        nesnd_ming_escape_fallen_court = yes
++        if = { limit = { NOT = { has_variable = nesnd_ming_flight_blocked } }
++                every_scope_character = { limit = { is_character_alive = yes is_in_exile_pool = no } transfer_character = c:USM }
++        c:USM = { annex_as_civil_war = scope:nesnd_court_fallen }
++        if = { limit = { is_country_alive = no }
++            set_variable = nesnd_holdout_resolved
++            nesnd_holdout_mark_answer = yes
++        }
++        }
++    }
++}
++nesnd_holdout_request_north = {
++    if = { limit = { nesnd_holdout_can_seek_north = yes }
++        save_scope_as = nesnd_holdout_sender
++        save_scope_value_as = { name = nesnd_holdout_request_round value = nesnd_holdout_round_value }
++        nesnd_holdout_mark_answer = yes
++        set_variable = nesnd_holdout_north_awaited
++        set_variable = { name = nesnd_holdout_north_clock months = 4 }
++        c:CNE = { trigger_event = { id = nesnd_south_holdouts.2 days = 3 popup = yes } }
++    }
++}
++# USM opens the next play only when the previous play is gone. All willing mainland members join before countdown.
++nesnd_holdout_reopen_war = {
++    if = { limit = {
++            c:USM ?= this nesnd_south_wu_survives = yes
++            is_at_war = no is_active_in_diplomatic_play = no
++            NOT = { has_variable = nesnd_holdout_war_retry_clock }
++            any_country = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_resistance_pending }
++        }
++        set_variable = { name = nesnd_holdout_war_retry_clock days = 30 }
++        random_country = { limit = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_resistance_pending } save_scope_as = nesnd_holdout_leader }
++        scope:nesnd_holdout_leader = { end_truce = c:USM }
++        end_truce = scope:nesnd_holdout_leader
++        create_diplomatic_play = { name = usm_civilwar_play target_country = scope:nesnd_holdout_leader type = dp_usm_civil_war }
++        if = { limit = { any_diplomatic_play = { initiator = root target = scope:nesnd_holdout_leader } }
++            if = { limit = { NOT = { has_global_variable = nesnd_south_war_round } } set_global_variable = { name = nesnd_south_war_round value = 1 } }
++            change_global_variable = { name = nesnd_south_war_round add = 1 }
++            remove_global_variable = nesnd_south_settled
++            set_variable = { name = nesnd_war_opening_grace months = 2 }
++            random_diplomatic_play = { limit = { initiator = root target = scope:nesnd_holdout_leader }
++                set_variable = this_is_nanming_civilwar_var
++                save_scope_as = nesnd_holdout_new_play
++            }
++            scope:nesnd_holdout_leader = {
++                set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
++                remove_variable = nesnd_holdout_resistance_pending
++            }
++            every_country = { limit = {
++                    nesnd_south_mainland_holdout = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no
++                    has_variable = nesnd_holdout_resistance_pending
++                    NOT = { this = scope:nesnd_holdout_leader }
++                }
++                end_truce = c:USM
++                scope:nesnd_holdout_new_play = { add_target_backers = { prev } }
++                set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
++                remove_variable = nesnd_holdout_resistance_pending
++            }
++            scope:nesnd_holdout_new_play = { add_escalation = 90 }
++        }
++    }
++}
++nesnd_south_holdout_country_tick = {
++    if = { limit = { nesnd_south_mainland_holdout = yes has_global_variable = usm_civilwar_occured nesnd_south_wu_survives = yes }
++        if = { limit = { has_war_with = c:USM }
++            set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
++        }
++        # One-time recovery for an old status-quo save: membership is inferred from its stored opposition/court flags.
++        else_if = { limit = { has_global_variable = usm_civilwar_status_quo NOT = { has_variable = nesnd_holdout_enrolled_round } is_subject = no }
++            set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
++        }
++        if = { limit = { is_subject_of = c:USM }
++            set_variable = nesnd_holdout_resolved
++        }
++        if = { limit = { has_variable = nesnd_holdout_north_awaited NOT = { has_variable = nesnd_holdout_north_clock } }
++            remove_variable = nesnd_holdout_north_awaited
++            set_variable = nesnd_holdout_north_refused
++        }
++        if = { limit = { nesnd_holdout_offer_due = yes }
++            set_variable = { name = nesnd_holdout_choice_pending months = 4 }
++            trigger_event = { id = nesnd_south_holdouts.1 days = 1 popup = yes }
++        }
++        else_if = { limit = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_north_refused NOT = { has_variable = nesnd_holdout_choice_pending } }
++            set_variable = { name = nesnd_holdout_choice_pending months = 4 }
++            trigger_event = { id = nesnd_south_holdouts.3 days = 1 popup = yes }
++        }
++    }
++}
++nesnd_south_holdout_wu_tick = {
++    if = { limit = { c:USM ?= this nesnd_south_wu_survives = yes has_global_variable = usm_civilwar_occured }
++        if = { limit = { any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } } }
++            remove_global_variable = nesnd_south_settled
++            if = { limit = { NOT = { has_journal_entry = nesnd_south_holdout_campaign } } add_journal_entry = { type = nesnd_south_holdout_campaign } }
++        }
++        nesnd_holdout_reopen_war = yes
++        if = { limit = { nesnd_south_campaign_peace = yes
++                NOT = { any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } } }
++            }
++            if = { limit = { NOT = { has_global_variable = nesnd_south_settled } }
++                if = { limit = { NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } } }
++                    if = { limit = { NOT = { has_variable = usm_government_winner_civilwar } }
++                        set_variable = usm_government_winner_civilwar
++                        trigger_event = { id = usm_civilwar.8 popup = yes }
++                    }
++                }
++                else = { set_global_variable = usm_civilwar_status_quo }
++                set_global_variable = nesnd_south_settled
++            }
++        }
++    }
++}
+--- baseline/common/scripted_effects/nesnd_war_collapse.txt
++++ candidate/common/scripted_effects/nesnd_war_collapse.txt
+@@ -18,8 +18,9 @@
+     if = {
+         limit = { c:USM ?= this is_country_alive = yes }
+         every_country = {
+-            limit = { nesnd_south_capital_defeat = yes NOT = { has_variable = nesnd_capital_surrender_pending } }
+-            trigger_event = { id = usm_civilwar.5 popup = yes }
++            limit = { nesnd_south_capital_defeat = yes }
++            if = { limit = { has_variable = nesnd_ming_court } nesnd_south_court_collapse = yes }
++            else_if = { limit = { NOT = { has_variable = nesnd_capital_surrender_pending } } trigger_event = { id = usm_civilwar.5 popup = yes } }
+         }
+         nesnd_japan_commit_war_collapse = yes
+     }
+--- baseline/common/scripted_effects/zzzz_nesnd_hus_monarchy_entry.txt
++++ candidate/common/scripted_effects/zzzz_nesnd_hus_monarchy_entry.txt
+@@ -0,0 +1,32 @@
++REPLACE:transition_off_of_monarchy_effects = {
++	crown_land_republic_effect = yes
++	transition_off_of_monarchy_law_effects = yes
++	if = {
++		limit = {
++			any_interest_group = {
++				has_ideology = ideology:ideology_constitutionalist
++			}
++		}
++		every_interest_group = {
++			limit = {
++				has_ideology = ideology:ideology_constitutionalist
++			}
++			remove_ideology = ideology_constitutionalist
++			add_ideology = ideology_republican
++		}
++	}
++	if = {
++		limit = {
++			nesnd_native_abolish_monarchy_eligible = yes
++			NOR = {
++				has_journal_entry = je_abolish_monarchy
++				has_variable = monarchy_stamped_out_var
++			}
++		}
++		set_variable = {
++			name = abolishing_monarchy_var
++			value = 0
++		}
++		add_journal_entry = { type = je_abolish_monarchy }
++	}
++}
+--- baseline/common/scripted_progress_bars/nesnd_india_core.txt
++++ candidate/common/scripted_progress_bars/nesnd_india_core.txt
+@@ -2,7 +2,7 @@
+     monthly_progress = { add = { desc = nesnd_india_ready_month value = { value = 0 if = { limit = { owner = { nesnd_india_schools_available = yes nesnd_india_schools_ready = yes } } add = 1 } } } }
+ }
+ nesnd_india_industry_bar = { name = nesnd_india_program_months desc = nesnd_india_program_months default_green = yes max_value = 12 start_value = 0
+-    monthly_progress = { add = { desc = nesnd_india_ready_month value = { value = 0 if = { limit = { owner = { nesnd_india_industry_available = yes nesnd_india_industry_ready = yes } } add = 1 } } } }
++    monthly_progress = { add = { desc = nesnd_india_ready_month value = { value = 0 if = { limit = { owner = { nesnd_india_industry_available = yes nesnd_india_industry_ready = { COUNTRY = root.owner } } } add = 1 } } } }
+ }
+ nesnd_india_dynasty_bar = { name = nesnd_india_dynasty_bar desc = nesnd_india_dynasty_bar default_green = yes max_value = 100 start_value = 50 monthly_progress = {
+         add = { desc = nesnd_india_dynasty_legitimacy value = { value = 0 if = { limit = { owner = { nesnd_india_society_live = yes country_has_monarchy_law = yes } } value = owner.nesnd_india_dynasty_legitimacy } } }
+--- baseline/common/scripted_progress_bars/nesnd_japan_absolute_counters.txt
++++ candidate/common/scripted_progress_bars/nesnd_japan_absolute_counters.txt
+@@ -0,0 +1,10 @@
++nesnd_eastern_readiness_bar = {
++    name = nesnd_eastern_readiness_bar_name desc = nesnd_eastern_readiness_bar_desc
++    min_value = 0 max_value = 3 start_value = 0 default_green = yes
++    weekly_progress = { add = { desc = nesnd_eastern_readiness_bar_change value = owner.nesnd_eastern_readiness_bar_delta } }
++}
++nesnd_japan_unification_bar = {
++    name = nesnd_japan_unification_bar_name desc = nesnd_japan_unification_bar_desc
++    min_value = 0 max_value = 7 start_value = 0 default_green = yes
++    weekly_progress = { add = { desc = nesnd_japan_unification_bar_change value = owner.nesnd_japan_unification_bar_delta } }
++}
+--- baseline/common/scripted_triggers/nesnd_court_followup.txt
++++ candidate/common/scripted_triggers/nesnd_court_followup.txt
+@@ -14,6 +14,7 @@
+     nesnd_south_no_active_confrontation = yes is_at_war = no
+     nesnd_south_pressure_value >= 60
+     OR = { has_variable = tag_WUU_var has_variable = nesnd_ming_internal_agreement has_variable = nesnd_south_play_failed }
++    NOT = { AND = { has_global_variable = usm_civilwar_occured nesnd_south_unresolved_holdouts = yes } }
+ }
+ 
+ nesnd_south_ming_reconciliation_basis = {
+--- baseline/common/scripted_triggers/nesnd_hus_monarchy_history.txt
++++ candidate/common/scripted_triggers/nesnd_hus_monarchy_history.txt
+@@ -0,0 +1,3 @@
++nesnd_native_abolish_monarchy_eligible = {
++    OR = { NOT = { c:HUS ?= this } has_variable = nesnd_hus_monarchy_seen country_has_monarchy_law = yes }
++}
+--- baseline/common/scripted_triggers/nesnd_india_core.txt
++++ candidate/common/scripted_triggers/nesnd_india_core.txt
+@@ -13,10 +13,10 @@
+     literacy_rate >= 0.2
+ }
+ nesnd_india_industry_ready = {
+-    OR = { country_has_building_type_levels = { target = bt:building_coal_mine value >= 15 } trigger_if = { limit = { exists = capital } capital.market = { mg:coal = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } } } trigger_else = { always = no } }
+-    OR = { country_has_building_type_levels = { target = bt:building_iron_mine value >= 15 } trigger_if = { limit = { exists = capital } capital.market = { mg:iron = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } } } trigger_else = { always = no } }
+-    OR = { country_has_building_type_levels = { target = bt:building_tooling_workshop value >= 15 } trigger_if = { limit = { exists = capital } capital.market = { mg:tools = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } } } trigger_else = { always = no } }
+-    OR = { country_has_building_type_levels = { target = bt:building_steel_mill value >= 5 } trigger_if = { limit = { exists = capital } capital.market = { mg:steel = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } } } trigger_else = { always = no } }
++    OR = { country_has_building_type_levels = { target = bt:building_coal_mine value >= 15 } trigger_if = { limit = { exists = capital } capital = { trigger_if = { limit = { exists = market } market = { mg:coal = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = $COUNTRY$ } } } } trigger_else = { always = no } } } trigger_else = { always = no } }
++    OR = { country_has_building_type_levels = { target = bt:building_iron_mine value >= 15 } trigger_if = { limit = { exists = capital } capital = { trigger_if = { limit = { exists = market } market = { mg:iron = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = $COUNTRY$ } } } } trigger_else = { always = no } } } trigger_else = { always = no } }
++    OR = { country_has_building_type_levels = { target = bt:building_tooling_workshop value >= 15 } trigger_if = { limit = { exists = capital } capital = { trigger_if = { limit = { exists = market } market = { mg:tools = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = $COUNTRY$ } } } } trigger_else = { always = no } } } trigger_else = { always = no } }
++    OR = { country_has_building_type_levels = { target = bt:building_steel_mill value >= 5 } trigger_if = { limit = { exists = capital } capital = { trigger_if = { limit = { exists = market } market = { mg:steel = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = $COUNTRY$ } } } } trigger_else = { always = no } } } trigger_else = { always = no } }
+     country_has_building_type_levels = { target = bt:building_arms_industry value >= 10 }
+     country_has_building_type_levels = { target = bt:building_railway value >= 10 }
+     any_scope_building = { is_building_type = building_arms_industry occupancy >= 0.75 weekly_profit > 0 }
+@@ -36,3 +36,7 @@
+ 
+ nesnd_india_schools_available = { nesnd_india_reform_live = yes NOT = { has_variable = nesnd_india_schools_done } trigger_if = { limit = { has_variable = nesnd_india_priority } nesnd_india_priority_value = 1 } trigger_else = { always = no } }
+ nesnd_india_industry_available = { nesnd_india_reform_live = yes NOT = { has_variable = nesnd_india_industry_done } trigger_if = { limit = { has_variable = nesnd_india_priority } nesnd_india_priority_value = 2 } trigger_else = { always = no } }
++
++nesnd_india_schools_visible = { nesnd_india_reform_live = yes NOT = { has_variable = nesnd_india_schools_done } OR = { nesnd_india_priority_value = 1 nesnd_india_priority_value = 2 } }
++
++nesnd_india_industry_visible = { nesnd_india_reform_live = yes NOT = { has_variable = nesnd_india_industry_done } OR = { nesnd_india_priority_value = 1 nesnd_india_priority_value = 2 } }
+--- baseline/common/scripted_triggers/nesnd_japan.txt
++++ candidate/common/scripted_triggers/nesnd_japan.txt
+@@ -43,12 +43,12 @@
+ nesnd_japan_army_ready = {
+     government_legitimacy >= 50
+     army_power_projection > 0
+-    c:JAP ?= { army_power_projection <= root.army_power_projection }
++    c:JAP ?= { army_power_projection <= prev.army_power_projection }
+ }
+ nesnd_japan_navy_ready = {
+     naval_power_projection > 0
+     military_ship_maintenance_fulfillment >= 0.9
+-    c:JAP ?= { naval_power_projection <= root.naval_power_projection }
++    c:JAP ?= { naval_power_projection <= prev.naval_power_projection }
+ }
+ nesnd_japan_can_send = {
+     trigger_if = {
+--- baseline/common/scripted_triggers/nesnd_south_holdouts.txt
++++ candidate/common/scripted_triggers/nesnd_south_holdouts.txt
+@@ -0,0 +1,90 @@
++nesnd_south_mainland_holdout = {
++    is_country_alive = yes num_states > 0
++    OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this }
++    OR = { has_variable = nesnd_restoration_side has_variable = nesnd_ming_court nesnd_board_stance_value = 1 }
++    OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court }
++}
++nesnd_south_wu_survives = {
++    trigger_if = { limit = { exists = c:USM } c:USM = { is_country_alive = yes has_variable = tag_WUU_var } }
++    trigger_else = { always = no }
++}
++nesnd_holdout_peace_eligible = {
++    nesnd_south_mainland_holdout = yes nesnd_south_wu_survives = yes
++    has_global_variable = usm_civilwar_occured
++    has_variable = nesnd_holdout_enrolled_round
++    NOT = { has_variable = nesnd_holdout_resolved }
++    is_subject = no is_at_war = no is_active_in_diplomatic_play = no
++    NOT = { has_variable = nesnd_capital_surrender_pending }
++    NOT = { has_variable = nesnd_south_defeat_confirmed }
++}
++nesnd_holdout_offer_due = {
++    nesnd_holdout_peace_eligible = yes
++    nesnd_holdout_answered_value < nesnd_holdout_round_value
++    NOT = { has_variable = nesnd_holdout_choice_pending }
++    NOT = { has_variable = nesnd_holdout_north_awaited }
++    NOT = { has_variable = nesnd_holdout_resistance_pending }
++}
++nesnd_holdout_ai_unyielding = {
++    OR = { c:HNA ?= this c:GNG ?= this has_variable = nesnd_ming_court }
++    army_size >= 10 in_default = no NOT = { has_modifier = declared_bankruptcy }
++}
++nesnd_holdout_can_seek_north = {
++    nesnd_holdout_peace_eligible = yes
++    trigger_if = { limit = { exists = c:CNE }
++        c:CNE = { is_country_alive = yes is_subject = no }
++        NOT = { has_war_with = c:CNE }
++    } trigger_else = { always = no }
++}
++nesnd_holdout_north_request_valid = {
++    c:CNE ?= this is_country_alive = yes nesnd_south_wu_survives = yes
++    trigger_if = { limit = { exists = scope:nesnd_holdout_sender exists = scope:nesnd_holdout_request_round }
++        scope:nesnd_holdout_sender = {
++            nesnd_holdout_peace_eligible = yes
++            has_variable = nesnd_holdout_north_awaited has_variable = nesnd_holdout_north_clock
++            nesnd_holdout_round_value = scope:nesnd_holdout_request_round
++        }
++    } trigger_else = { always = no }
++}
++nesnd_holdout_north_can_accept = {
++    nesnd_holdout_north_request_valid = yes
++    is_subject = no is_at_war = no is_active_in_diplomatic_play = no
++    in_default = no NOT = { has_modifier = declared_bankruptcy }
++}
++nesnd_south_campaign_peace = {
++    nesnd_south_wu_survives = yes
++    NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
++    NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
++    NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country has_war_with = c:USM } }
++    NOT = { nesnd_south_defeat_resolution_pending = yes }
++}
++# Candidate countries can shelter a guest emperor without changing their own government.
++nesnd_ming_local_royal_for_flight = {
++    is_character_alive = yes nesnd_ming_authorized_dynast = yes
++    trigger_if = { limit = { exists = owner exists = scope:nesnd_court_fallen }
++        owner = scope:nesnd_court_fallen
++    } trigger_else = { always = no }
++}
++nesnd_ming_flight_host = {
++    trigger_if = { limit = { exists = scope:nesnd_court_fallen exists = capital exists = c:USM }
++        is_country_alive = yes num_states > 0
++        NOT = { this = scope:nesnd_court_fallen }
++        NOT = { c:USM ?= this }
++        NOT = { is_subject_of = c:USM }
++        OR = { has_variable = nesnd_restoration_side nesnd_board_stance_value = 1 }
++        capital = { controller = prev }
++    } trigger_else = { always = no }
++}
++
++
++nesnd_south_unresolved_holdouts = {
++    any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } }
++}
++nesnd_south_campaign_resolved = {
++    nesnd_south_campaign_peace = yes
++    NOT = { nesnd_south_unresolved_holdouts = yes }
++}
++nesnd_south_wu_total_victory = {
++    c:USM ?= this has_global_variable = usm_civilwar_occured
++    nesnd_south_campaign_resolved = yes
++    NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } }
++}
+--- baseline/common/scripted_triggers/nesnd_war_collapse.txt
++++ candidate/common/scripted_triggers/nesnd_war_collapse.txt
+@@ -3,7 +3,7 @@
+     trigger_if = {
+         limit = { exists = c:USM }
+         is_country_alive = yes
+-        has_variable = usm_opposition_country
++        OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court }
+         NOT = { c:JAP ?= this }
+         NOT = { c:USM ?= this }
+         NOT = { is_subject_of = c:USM }
+@@ -13,8 +13,11 @@
+                 has_war_with = c:USM
+                 OR = {
+                     enemy_occupation > 0.8
+-                    capital = { controller = c:USM }
+-                    capital = { controller = { is_subject_of = c:USM } }
++                    AND = {
++                        trigger_if = { limit = { exists = capital }
++                            capital = { OR = { controller = c:USM controller = { is_subject_of = c:USM } } }
++                        } trigger_else = { always = no }
++                    }
+                 }
+             }
+         }
+--- baseline/common/script_values/nesnd_japan_absolute_counters.txt
++++ candidate/common/script_values/nesnd_japan_absolute_counters.txt
+@@ -0,0 +1,14 @@
++nesnd_eastern_readiness_bar_delta = {
++    value = 0
++    if = { limit = { has_journal_entry = nesnd_wu_eastern_question }
++        value = nesnd_japan_preparation_score
++        subtract = "je:nesnd_wu_eastern_question.scripted_bar_progress(nesnd_eastern_readiness_bar)"
++    }
++}
++nesnd_japan_unification_bar_delta = {
++    value = 0
++    if = { limit = { has_journal_entry = nesnd_japan_reunification }
++        value = nesnd_japan_unity_score
++        subtract = "je:nesnd_japan_reunification.scripted_bar_progress(nesnd_japan_unification_bar)"
++    }
++}
+--- baseline/common/script_values/nesnd_south_holdouts.txt
++++ candidate/common/script_values/nesnd_south_holdouts.txt
+@@ -0,0 +1,3 @@
++nesnd_south_round_value = { value = 1 if = { limit = { has_global_variable = nesnd_south_war_round } value = global_var:nesnd_south_war_round } }
++nesnd_holdout_round_value = { value = 0 if = { limit = { has_variable = nesnd_holdout_enrolled_round } value = var:nesnd_holdout_enrolled_round } }
++nesnd_holdout_answered_value = { value = 0 if = { limit = { has_variable = nesnd_holdout_answered_round } value = var:nesnd_holdout_answered_round } }
+--- baseline/localization/english/replace/zzzzzzzzzzzzzzzz_nesnd_journal_feedback_l_english.yml
++++ candidate/localization/english/replace/zzzzzzzzzzzzzzzz_nesnd_journal_feedback_l_english.yml
+@@ -0,0 +1,40 @@
++l_english:
++ nesnd_eastern_readiness_bar_name:0 "Preparations"
++ nesnd_eastern_readiness_bar_desc:0 "Preparations: #v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 3#!"
++ nesnd_eastern_readiness_bar_change:0 "Preparations gained or lost"
++ nesnd_japan_unification_bar_name:0 "Japanese Heartland"
++ nesnd_japan_unification_bar_desc:0 "Heartland regions: #v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 7#!"
++ nesnd_japan_unification_bar_change:0 "Territorial changes"
++ nesnd_eastern_question_resolved_tt:0 "The eastern question has been resolved."
++ nesnd_india_schools_completed_tt:0 "Complete Schools and Administration."
++ nesnd_india_industry_completed_tt:0 "Complete Workshops and the Army."
++ nesnd_india_reform_schools_status:0 "The court is giving priority to schools and administration."
++ nesnd_india_reform_industry_status:0 "The court is giving priority to workshops and the army."
++ nesnd_india_reform_waiting_status:0 "Schools, offices and workshops all need funding. The court must decide where to begin."
++ nesnd_india_schools_working:0 "Work on schools and administration is under way."
++ nesnd_india_schools_paused:0 "Work on schools is suspended."
++ nesnd_india_industry_working:0 "Industrial and military preparations are under way."
++ nesnd_india_industry_paused:0 "Industrial and military preparations are suspended."
++ nesnd_south_holdout_campaign:0 "An Unsettled Southern War"
++ nesnd_south_holdout_campaign_reason:0 "Wu’s authority does not yet extend across the south. The surviving Ming loyalists are divided: some prepare to fight again, others seek northern protection, and some consider submission. The court must still reckon with those who refuse its rule."
++ nesnd_south_holdout_campaign_status:0 "Ming loyalists still hold out."
++ nesnd_south_holdouts_settled_tt:0 "The remaining Ming loyalists have settled their allegiance, and the southern fighting has ended."
++ nesnd_south_holdouts.1.t:0 "After the Armistice"
++ nesnd_south_holdouts.1.d:0 "Our part in this war has ended, but the dispute between Wu and the Ming loyalists remains unresolved. Reports of defeat and appeals for peace arrive together; some officers still refuse to lay down their arms. We must decide whether to fight again, seek northern protection, or submit to Wu."
++ nesnd_south_holdouts.resist:0 "Prepare to fight again."
++ nesnd_south_holdouts.north:0 "Send envoys north to seek protection."
++ nesnd_south_holdouts.surrender:0 "Submit to Wu."
++ nesnd_south_holdouts_resist_tt:0 "Prepare to renew the war against Wu."
++ nesnd_south_holdouts_north_tt:0 "Ask to become a protectorate of the Chinese Empire. If protection is refused, we must choose between renewed war and submission."
++ nesnd_south_holdouts_surrender_tt:0 "Our country will be annexed by Wu. A Ming emperor still sheltered here will be sent to safety first."
++ nesnd_south_holdouts.2.t:0 "Envoys from the South"
++ nesnd_south_holdouts.2.d:0 "Envoys from [SCOPE.sCountry('nesnd_holdout_sender').GetName] seek our protection. Their government offers to accept our suzerainty in return for preserving its territory and army. Accepting would give us a new responsibility in the southern dispute."
++ nesnd_south_holdouts.accept:0 "Accept their submission."
++ nesnd_south_holdouts.refuse:0 "We will not undertake this obligation."
++ nesnd_south_holdouts_accept_tt:0 "Accept the requesting country as a protectorate."
++ nesnd_south_holdouts_refuse_tt:0 "Decline protection, leaving the requesting country to decide its next course."
++ nesnd_south_holdouts.3.t:0 "Without Northern Protection"
++ nesnd_south_holdouts.3.d:0 "Northern protection has not materialised. The envoys’ journey has left us with the same choice: defend our country against Wu again, or end the struggle by submitting."
++ nesnd_south_holdouts.4.t:0 "Northern Protection"
++ nesnd_south_holdouts.4.d:0 "The envoys have returned with acceptance. Our territory and army remain intact, and the northern empire is now our overlord. Restoring livelihoods and order after the war remains our task."
++ nesnd_south_holdouts.4.a:0 "Let the people recover."
+--- baseline/localization/simp_chinese/replace/zzzzzzzzzzzzzzzz_nesnd_journal_feedback_l_simp_chinese.yml
++++ candidate/localization/simp_chinese/replace/zzzzzzzzzzzzzzzz_nesnd_journal_feedback_l_simp_chinese.yml
+@@ -0,0 +1,40 @@
++l_simp_chinese:
++ nesnd_eastern_readiness_bar_name:0 "远征条件"
++ nesnd_eastern_readiness_bar_desc:0 "远征条件：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 3#!"
++ nesnd_eastern_readiness_bar_change:0 "筹备情况变化"
++ nesnd_japan_unification_bar_name:0 "日本核心地区"
++ nesnd_japan_unification_bar_desc:0 "核心地区：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0] / 7#!"
++ nesnd_japan_unification_bar_change:0 "领土变化"
++ nesnd_eastern_question_resolved_tt:0 "东洋之议已有结果。"
++ nesnd_india_schools_completed_tt:0 "完成“学校与官署”。"
++ nesnd_india_industry_completed_tt:0 "完成“工场与军队”。"
++ nesnd_india_reform_schools_status:0 "朝廷优先筹办学校与官署。"
++ nesnd_india_reform_industry_status:0 "朝廷优先筹办工场与军队。"
++ nesnd_india_reform_waiting_status:0 "学校、官署与工场都需要经费。朝廷须先定轻重。"
++ nesnd_india_schools_working:0 "学务与官署扩建正在推进。"
++ nesnd_india_schools_paused:0 "学务暂缓。"
++ nesnd_india_industry_working:0 "工场与军队的整备正在推进。"
++ nesnd_india_industry_paused:0 "工场与军队的整备暂缓。"
++ nesnd_south_holdout_campaign:0 "未息的南朝战事"
++ nesnd_south_holdout_campaign_reason:0 "吴朝的号令尚未遍及南方。仍然拥明的诸国各有打算：有人准备再战，有人希望借北朝之力保存基业，也有人已在议论归降。停战之后，朝廷仍须面对这些未服的对手。"
++ nesnd_south_holdout_campaign_status:0 "仍有拥明势力未归附。"
++ nesnd_south_holdouts_settled_tt:0 "拥明诸国的归属已经确定，南朝战事已停。"
++ nesnd_south_holdouts.1.t:0 "停战之后"
++ nesnd_south_holdouts.1.d:0 "本国已退出这场战争，但吴朝与拥明诸国的争执并未解决。败报与求和的消息相继传来，军中仍有人不肯放下兵器。如今，我们必须决定去向：再次举兵，向北朝寻求保护，或是承认吴朝的统治。"
++ nesnd_south_holdouts.resist:0 "整军再战。"
++ nesnd_south_holdouts.north:0 "遣使北上，请求庇护。"
++ nesnd_south_holdouts.surrender:0 "向吴朝归降。"
++ nesnd_south_holdouts_resist_tt:0 "着手再战，重新与大吴争夺南朝。"
++ nesnd_south_holdouts_north_tt:0 "请求成为中华帝国的保护国。北朝将决定是否接纳；若未获保护，还须决定再战或归降。"
++ nesnd_south_holdouts_surrender_tt:0 "本国将被大吴吞并。若明帝仍在本国，先安排其逃亡。"
++ nesnd_south_holdouts.2.t:0 "南方来使"
++ nesnd_south_holdouts.2.d:0 "[SCOPE.sCountry('nesnd_holdout_sender').GetName]的使者请求北朝保护。他们愿承认帝国的宗主地位，以求保住国土与军队。接受这份请求，便意味着帝国将在南朝纷争中承担新的责任。"
++ nesnd_south_holdouts.accept:0 "接受归附。"
++ nesnd_south_holdouts.refuse:0 "帝国无意承担此事。"
++ nesnd_south_holdouts_accept_tt:0 "接纳来使所属国家为保护国。"
++ nesnd_south_holdouts_refuse_tt:0 "不提供保护，由来使所属国家另作决定。"
++ nesnd_south_holdouts.3.t:0 "北朝未允"
++ nesnd_south_holdouts.3.d:0 "北朝未能给予我们保护。使者的往返没有改变眼前的局势：要保住自己的国土，便须重新迎战吴军；要结束这场争夺，便只能向吴朝归降。"
++ nesnd_south_holdouts.4.t:0 "北朝的保护"
++ nesnd_south_holdouts.4.d:0 "使者带回了接受归附的答复。我们的国土与军队得以保留，北朝也成为本国的宗主。战后的生计与秩序，仍须由我们自己收拾。"
++ nesnd_south_holdouts.4.a:0 "先让百姓休息吧。"

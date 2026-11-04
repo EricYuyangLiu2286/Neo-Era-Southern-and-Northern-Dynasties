@@ -162,3 +162,7 @@ Updated: 2026-11-01
 ## 当前研究交付：法国政治与地区建设（2026-11-03）
 
 [29 法国方案](issues/29-france-political-planning.md)：RAHF动员与原生党派机制已核；常规目标IG执政＋合法性50，不检测党派组合。补“宫廷与外省”及共和国分配/右转的条件性路线，保留波拿巴原方向；新增政治难度技能规则。本批仅文档，未实施玩法、未开游戏。后续以WORK/reports/france-politics-plan-20261103/france-development-plan.md为准，不沿用被纠正的组合门槛。
+
+## 2026-11-04四项日志与停战反馈
+
+[任务30](issues/30-journal-war-feedback.md)：东洋绝对计数、德里双条显示、HUS废君入口、行在迁逃/吞并及逐轮停战处理。STATIC_PASS；未开游戏，交付指纹与剩余引擎场景见WORK/reports/journal-war-feedback-20261103/。

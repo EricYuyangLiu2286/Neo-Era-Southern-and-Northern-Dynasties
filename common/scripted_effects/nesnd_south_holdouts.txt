@@ -1,0 +1,242 @@
+﻿# Character scope, called only with a saved fallen country. Confirm relocation before annexation.
+nesnd_ming_relocate_royal = {
+    if = { limit = { exists = scope:nesnd_court_flight_host }
+        transfer_character = scope:nesnd_court_flight_host
+    }
+    if = { limit = {
+            trigger_if = { limit = { exists = scope:nesnd_court_flight_host exists = owner }
+                owner = scope:nesnd_court_flight_host
+            } trigger_else = { always = no }
+        }
+        nesnd_ming_give_guest_role = yes
+    }
+    else = { exile_character_with_role_cleanup = yes }
+    if = { limit = {
+            is_in_exile_pool = no
+            trigger_if = { limit = { exists = owner } owner = scope:nesnd_court_fallen }
+            trigger_else = { always = no }
+        }
+        scope:nesnd_court_fallen = { set_variable = nesnd_ming_flight_blocked }
+    }
+}
+# Country scope. A guest emperor is protected too, without making his host a new court.
+nesnd_ming_escape_fallen_court = {
+    save_scope_as = nesnd_court_fallen
+    clear_saved_scope = nesnd_fleeing_emperor
+    clear_saved_scope = nesnd_fleeing_heir
+    clear_saved_scope = nesnd_court_flight_host
+    remove_variable = nesnd_ming_flight_blocked
+    if = { limit = {
+            trigger_if = { limit = { exists = var:nesnd_ming_court_monarch }
+                var:nesnd_ming_court_monarch = { nesnd_ming_local_royal_for_flight = yes }
+            } trigger_else = { always = no }
+        }
+        var:nesnd_ming_court_monarch = { save_scope_as = nesnd_fleeing_emperor }
+    }
+    else_if = { limit = {
+            trigger_if = { limit = { exists = var:nesnd_ming_claimant_ref }
+                var:nesnd_ming_claimant_ref = { nesnd_ming_local_royal_for_flight = yes has_variable = nesnd_ming_claimant }
+            } trigger_else = { always = no }
+        }
+        var:nesnd_ming_claimant_ref = { save_scope_as = nesnd_fleeing_emperor }
+    }
+    else_if = { limit = {
+            has_variable = nesnd_ming_court
+            trigger_if = { limit = { exists = ruler } ruler = { nesnd_ming_local_royal_for_flight = yes } }
+            trigger_else = { always = no }
+        }
+        ruler = { save_scope_as = nesnd_fleeing_emperor }
+    }
+    else_if = { limit = { any_scope_character = { nesnd_ming_local_royal_for_flight = yes has_variable = nesnd_ming_claimant } }
+        random_scope_character = { limit = { nesnd_ming_local_royal_for_flight = yes has_variable = nesnd_ming_claimant } save_scope_as = nesnd_fleeing_emperor }
+    }
+    if = { limit = { exists = scope:nesnd_fleeing_emperor }
+        # Snapshot the heir before moving the ruler, which can cause an immediate succession.
+        if = { limit = {
+                trigger_if = { limit = { exists = var:nesnd_ming_heir_ref }
+                    var:nesnd_ming_heir_ref = { nesnd_ming_local_royal_for_flight = yes }
+                } trigger_else = { always = no }
+            }
+            var:nesnd_ming_heir_ref = { save_scope_as = nesnd_fleeing_heir }
+        }
+        else_if = { limit = { has_variable = nesnd_ming_court any_scope_character = { nesnd_ming_local_royal_for_flight = yes is_heir_of_own_country = yes } }
+            random_scope_character = { limit = { nesnd_ming_local_royal_for_flight = yes is_heir_of_own_country = yes } save_scope_as = nesnd_fleeing_heir }
+        }
+        if = { limit = { any_country = { nesnd_ming_flight_host = yes } }
+            random_country = { limit = { nesnd_ming_flight_host = yes } save_scope_as = nesnd_court_flight_host }
+        }
+        scope:nesnd_fleeing_emperor = { set_variable = nesnd_ming_claimant nesnd_ming_relocate_royal = yes }
+        scope:nesnd_fleeing_heir ?= { nesnd_ming_relocate_royal = yes }
+        if = { limit = {
+                trigger_if = { limit = { exists = scope:nesnd_court_flight_host }
+                    scope:nesnd_fleeing_emperor = {
+                        trigger_if = { limit = { exists = owner } owner = scope:nesnd_court_flight_host }
+                        trigger_else = { always = no }
+                    }
+                } trigger_else = { always = no }
+            }
+            scope:nesnd_court_flight_host = {
+                set_variable = { name = nesnd_ming_claimant_ref value = scope:nesnd_fleeing_emperor }
+                set_variable = nesnd_ming_royals_retained
+                if = { limit = { exists = scope:nesnd_fleeing_heir }
+                    if = { limit = {
+                            scope:nesnd_fleeing_heir = {
+                                trigger_if = { limit = { exists = owner } owner = scope:nesnd_court_flight_host }
+                                trigger_else = { always = no }
+                            }
+                        }
+                        set_variable = { name = nesnd_ming_heir_ref value = scope:nesnd_fleeing_heir }
+                    }
+                }
+                if = { limit = { OR = { c:HNA ?= this c:SIH ?= this } }
+                    set_variable = nesnd_ming_court
+                    set_variable = { name = nesnd_ming_court_monarch value = scope:nesnd_fleeing_emperor }
+                }
+            }
+        }
+    }
+    if = { limit = { NOT = { has_variable = nesnd_ming_flight_blocked } }
+        remove_variable = nesnd_ming_court
+        remove_variable = nesnd_ming_court_monarch
+    }
+}
+
+nesnd_south_court_collapse = {
+    if = { limit = { has_variable = nesnd_ming_court nesnd_south_capital_defeat = yes }
+        save_scope_as = nesnd_court_fallen
+        nesnd_ming_escape_fallen_court = yes
+        if = { limit = { NOT = { has_variable = nesnd_ming_flight_blocked } }
+        remove_variable = nesnd_capital_surrender_pending
+        remove_variable = nesnd_south_defeat_confirmed
+        # Remaining living characters follow annexation; the emperor and heir have already left.
+        every_scope_character = { limit = { is_character_alive = yes is_in_exile_pool = no } transfer_character = c:USM }
+        c:USM = { annex_as_civil_war = scope:nesnd_court_fallen }
+        }
+    }
+}
+nesnd_holdout_mark_answer = {
+    set_variable = { name = nesnd_holdout_answered_round value = nesnd_holdout_round_value }
+    remove_variable = nesnd_holdout_choice_pending
+}
+nesnd_holdout_choose_resistance = {
+    if = { limit = { nesnd_holdout_peace_eligible = yes }
+        nesnd_holdout_mark_answer = yes
+        set_variable = nesnd_holdout_resistance_pending
+        remove_variable = nesnd_holdout_north_awaited
+        remove_variable = nesnd_holdout_north_clock
+        remove_variable = nesnd_holdout_north_refused
+    }
+}
+nesnd_holdout_surrender_to_wu = {
+    if = { limit = { nesnd_holdout_peace_eligible = yes }
+        save_scope_as = nesnd_court_fallen
+        nesnd_ming_escape_fallen_court = yes
+        if = { limit = { NOT = { has_variable = nesnd_ming_flight_blocked } }
+                every_scope_character = { limit = { is_character_alive = yes is_in_exile_pool = no } transfer_character = c:USM }
+        c:USM = { annex_as_civil_war = scope:nesnd_court_fallen }
+        if = { limit = { is_country_alive = no }
+            set_variable = nesnd_holdout_resolved
+            nesnd_holdout_mark_answer = yes
+        }
+        }
+    }
+}
+nesnd_holdout_request_north = {
+    if = { limit = { nesnd_holdout_can_seek_north = yes }
+        save_scope_as = nesnd_holdout_sender
+        save_scope_value_as = { name = nesnd_holdout_request_round value = nesnd_holdout_round_value }
+        nesnd_holdout_mark_answer = yes
+        set_variable = nesnd_holdout_north_awaited
+        set_variable = { name = nesnd_holdout_north_clock months = 4 }
+        c:CNE = { trigger_event = { id = nesnd_south_holdouts.2 days = 3 popup = yes } }
+    }
+}
+# USM opens the next play only when the previous play is gone. All willing mainland members join before countdown.
+nesnd_holdout_reopen_war = {
+    if = { limit = {
+            c:USM ?= this nesnd_south_wu_survives = yes
+            is_at_war = no is_active_in_diplomatic_play = no
+            NOT = { has_variable = nesnd_holdout_war_retry_clock }
+            any_country = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_resistance_pending }
+        }
+        set_variable = { name = nesnd_holdout_war_retry_clock days = 30 }
+        random_country = { limit = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_resistance_pending } save_scope_as = nesnd_holdout_leader }
+        scope:nesnd_holdout_leader = { end_truce = c:USM }
+        end_truce = scope:nesnd_holdout_leader
+        create_diplomatic_play = { name = usm_civilwar_play target_country = scope:nesnd_holdout_leader type = dp_usm_civil_war }
+        if = { limit = { any_diplomatic_play = { initiator = root target = scope:nesnd_holdout_leader } }
+            if = { limit = { NOT = { has_global_variable = nesnd_south_war_round } } set_global_variable = { name = nesnd_south_war_round value = 1 } }
+            change_global_variable = { name = nesnd_south_war_round add = 1 }
+            remove_global_variable = nesnd_south_settled
+            set_variable = { name = nesnd_war_opening_grace months = 2 }
+            random_diplomatic_play = { limit = { initiator = root target = scope:nesnd_holdout_leader }
+                set_variable = this_is_nanming_civilwar_var
+                save_scope_as = nesnd_holdout_new_play
+            }
+            scope:nesnd_holdout_leader = {
+                set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
+                remove_variable = nesnd_holdout_resistance_pending
+            }
+            every_country = { limit = {
+                    nesnd_south_mainland_holdout = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no
+                    has_variable = nesnd_holdout_resistance_pending
+                    NOT = { this = scope:nesnd_holdout_leader }
+                }
+                end_truce = c:USM
+                scope:nesnd_holdout_new_play = { add_target_backers = { prev } }
+                set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
+                remove_variable = nesnd_holdout_resistance_pending
+            }
+            scope:nesnd_holdout_new_play = { add_escalation = 90 }
+        }
+    }
+}
+nesnd_south_holdout_country_tick = {
+    if = { limit = { nesnd_south_mainland_holdout = yes has_global_variable = usm_civilwar_occured nesnd_south_wu_survives = yes }
+        if = { limit = { has_war_with = c:USM }
+            set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
+        }
+        # One-time recovery for an old status-quo save: membership is inferred from its stored opposition/court flags.
+        else_if = { limit = { has_global_variable = usm_civilwar_status_quo NOT = { has_variable = nesnd_holdout_enrolled_round } is_subject = no }
+            set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
+        }
+        if = { limit = { is_subject_of = c:USM }
+            set_variable = nesnd_holdout_resolved
+        }
+        if = { limit = { has_variable = nesnd_holdout_north_awaited NOT = { has_variable = nesnd_holdout_north_clock } }
+            remove_variable = nesnd_holdout_north_awaited
+            set_variable = nesnd_holdout_north_refused
+        }
+        if = { limit = { nesnd_holdout_offer_due = yes }
+            set_variable = { name = nesnd_holdout_choice_pending months = 4 }
+            trigger_event = { id = nesnd_south_holdouts.1 days = 1 popup = yes }
+        }
+        else_if = { limit = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_north_refused NOT = { has_variable = nesnd_holdout_choice_pending } }
+            set_variable = { name = nesnd_holdout_choice_pending months = 4 }
+            trigger_event = { id = nesnd_south_holdouts.3 days = 1 popup = yes }
+        }
+    }
+}
+nesnd_south_holdout_wu_tick = {
+    if = { limit = { c:USM ?= this nesnd_south_wu_survives = yes has_global_variable = usm_civilwar_occured }
+        if = { limit = { any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } } }
+            remove_global_variable = nesnd_south_settled
+            if = { limit = { NOT = { has_journal_entry = nesnd_south_holdout_campaign } } add_journal_entry = { type = nesnd_south_holdout_campaign } }
+        }
+        nesnd_holdout_reopen_war = yes
+        if = { limit = { nesnd_south_campaign_peace = yes
+                NOT = { any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } } }
+            }
+            if = { limit = { NOT = { has_global_variable = nesnd_south_settled } }
+                if = { limit = { NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } } }
+                    if = { limit = { NOT = { has_variable = usm_government_winner_civilwar } }
+                        set_variable = usm_government_winner_civilwar
+                        trigger_event = { id = usm_civilwar.8 popup = yes }
+                    }
+                }
+                else = { set_global_variable = usm_civilwar_status_quo }
+                set_global_variable = nesnd_south_settled
+            }
+        }
+    }
+}

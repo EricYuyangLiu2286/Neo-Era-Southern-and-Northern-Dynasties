@@ -10,7 +10,7 @@
         NOT = { has_global_variable = nesnd_japan_dossier_closed }
     }
     is_shown_when_inactive = { c:USM ?= this has_variable = tag_WUU_var }
-    immediate = { set_variable = nesnd_japan_dossier_entered }
+    immediate = { set_variable = nesnd_japan_dossier_entered set_variable = nesnd_eastern_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_eastern_readiness_bar value = owner.nesnd_japan_preparation_score } } }
     status_desc = {
         first_valid = {
             triggered_desc = { trigger = { has_global_variable = nesnd_japan_war_started } desc = nesnd_wu_eastern_question_status_war }
@@ -18,15 +18,13 @@
             desc = nesnd_wu_eastern_question_status
         }
     }
-    progressbar = yes
-    current_value = { value = nesnd_japan_preparation_score }
-    goal_add_value = { value = 3 }
+    scripted_progress_bar = nesnd_eastern_readiness_bar
     scripted_button = nesnd_japan_send_terms
     scripted_button = nesnd_japan_accept_status_quo
-    complete = { has_global_variable = nesnd_japan_dossier_closed }
+    complete = { custom_tooltip = { text = nesnd_eastern_question_resolved_tt has_global_variable = nesnd_japan_dossier_closed } }
     on_complete = { }
-    invalid = { NOT = { has_variable = tag_WUU_var } }
-    on_invalid = { set_global_variable = nesnd_japan_dossier_closed }
+    invalid = { OR = { NOT = { has_global_variable = nesnd_south_settled } NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_eastern_absolute_v2 } } }
+    on_invalid = { if = { limit = { NOT = { has_variable = tag_WUU_var } } set_global_variable = nesnd_japan_dossier_closed } else = { remove_variable = nesnd_japan_dossier_entered } }
     on_monthly_pulse = { effect = {
             if = { limit = {
                     NOT = { has_global_variable = nesnd_japan_dossier_closed }
@@ -58,11 +56,9 @@ nesnd_japan_reunification = {
         NOT = { has_variable = nesnd_japan_unified }
     }
     is_shown_when_inactive = { OR = { c:JAP ?= this c:JTK ?= this c:JIM ?= this } }
-    immediate = { set_variable = nesnd_japan_unity_entered }
-    invalid = { NOT = { nesnd_jp_country = yes } }
-    progressbar = yes
-    current_value = { value = nesnd_japan_unity_score }
-    goal_add_value = { value = 7 }
+    immediate = { set_variable = nesnd_japan_unity_entered set_variable = nesnd_unification_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_japan_unification_bar value = owner.nesnd_japan_unity_score } } }
+    invalid = { OR = { NOT = { nesnd_jp_country = yes } NOT = { has_variable = nesnd_unification_absolute_v2 } } }
+    scripted_progress_bar = nesnd_japan_unification_bar
     complete = { nesnd_japan_is_united = yes }
     on_complete = {
         set_variable = nesnd_japan_unified

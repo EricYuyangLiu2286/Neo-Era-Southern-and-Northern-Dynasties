@@ -1,0 +1,110 @@
+﻿namespace = nesnd_south_holdouts
+nesnd_south_holdouts.1 = {
+    type = country_event placement = root duration = 3
+    title = nesnd_south_holdouts.1.t desc = nesnd_south_holdouts.1.d
+    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_8.dds" }
+    trigger = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_choice_pending }
+    cancellation_trigger = { NOT = { nesnd_holdout_peace_eligible = yes } }
+    option = {
+        name = nesnd_south_holdouts.resist default_option = yes
+        custom_tooltip = nesnd_south_holdouts_resist_tt
+        ai_chance = { base = 60
+            modifier = { factor = 5 trigger = { nesnd_holdout_ai_unyielding = yes } }
+            modifier = { factor = 0.2 trigger = { OR = { in_default = yes has_modifier = declared_bankruptcy army_size < 10 } } }
+        }
+        nesnd_holdout_choose_resistance = yes
+    }
+    option = {
+        name = nesnd_south_holdouts.north
+        trigger = { nesnd_holdout_can_seek_north = yes }
+        custom_tooltip = nesnd_south_holdouts_north_tt
+        ai_chance = { base = 25
+            modifier = { factor = 0 trigger = { nesnd_holdout_ai_unyielding = yes } }
+            modifier = { factor = 2 trigger = { trigger_if = { limit = { exists = c:CNE } "relations(c:CNE)" >= 25 } trigger_else = { always = no } } }
+        }
+        nesnd_holdout_request_north = yes
+    }
+    option = {
+        name = nesnd_south_holdouts.surrender
+        custom_tooltip = nesnd_south_holdouts_surrender_tt
+        ai_chance = { base = 15
+            modifier = { factor = 0 trigger = { nesnd_holdout_ai_unyielding = yes } }
+            modifier = { factor = 5 trigger = { OR = { in_default = yes has_modifier = declared_bankruptcy army_size < 10 } } }
+        }
+        nesnd_holdout_surrender_to_wu = yes
+    }
+    after = { remove_variable = nesnd_holdout_choice_pending }
+}
+nesnd_south_holdouts.2 = {
+    type = country_event placement = root duration = 3
+    title = nesnd_south_holdouts.2.t desc = nesnd_south_holdouts.2.d
+    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_1.dds" }
+    trigger = { nesnd_holdout_north_request_valid = yes }
+    cancellation_trigger = { NOT = { nesnd_holdout_north_request_valid = yes } }
+    option = {
+        name = nesnd_south_holdouts.accept
+        trigger = { nesnd_holdout_north_can_accept = yes }
+        custom_tooltip = nesnd_south_holdouts_accept_tt
+        ai_chance = { base = 20
+            modifier = { factor = 2 trigger = { trigger_if = { limit = { exists = scope:nesnd_holdout_sender } "relations(scope:nesnd_holdout_sender)" >= 25 } trigger_else = { always = no } } }
+            modifier = { factor = 2 trigger = { trigger_if = { limit = { exists = c:USM } "relations(c:USM)" < 0 } trigger_else = { always = no } } }
+            modifier = { factor = 0.25 trigger = { trigger_if = { limit = { exists = c:USM } "relations(c:USM)" >= 50 } trigger_else = { always = no } } }
+            modifier = { factor = 2 trigger = { trigger_if = { limit = { exists = c:USM } army_power_projection >= c:USM.army_power_projection } trigger_else = { always = no } } }
+        }
+        if = { limit = { nesnd_holdout_north_can_accept = yes }
+            create_diplomatic_pact = { country = scope:nesnd_holdout_sender type = protectorate }
+            scope:nesnd_holdout_sender = {
+                if = { limit = { is_subject_of = root }
+                    set_variable = nesnd_holdout_resolved
+                    remove_variable = nesnd_holdout_resistance_pending
+                    remove_variable = nesnd_holdout_north_awaited
+                    remove_variable = nesnd_holdout_north_clock
+                    remove_variable = nesnd_holdout_north_refused
+                    trigger_event = { id = nesnd_south_holdouts.4 days = 1 popup = yes }
+                }
+            }
+        }
+    }
+    option = {
+        name = nesnd_south_holdouts.refuse default_option = yes
+        custom_tooltip = nesnd_south_holdouts_refuse_tt
+        ai_chance = { base = 80 }
+    }
+    after = {
+        if = { limit = { exists = scope:nesnd_holdout_sender exists = scope:nesnd_holdout_request_round }
+            scope:nesnd_holdout_sender = {
+                if = { limit = { is_country_alive = yes has_variable = nesnd_holdout_north_awaited nesnd_holdout_round_value = scope:nesnd_holdout_request_round }
+                    remove_variable = nesnd_holdout_north_awaited
+                    remove_variable = nesnd_holdout_north_clock
+                    if = { limit = { NOT = { has_variable = nesnd_holdout_resolved } } set_variable = nesnd_holdout_north_refused }
+                }
+            }
+        }
+    }
+}
+nesnd_south_holdouts.3 = {
+    type = country_event placement = root duration = 3
+    title = nesnd_south_holdouts.3.t desc = nesnd_south_holdouts.3.d
+    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_8.dds" }
+    trigger = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_north_refused has_variable = nesnd_holdout_choice_pending }
+    cancellation_trigger = { NOT = { nesnd_holdout_peace_eligible = yes } }
+    option = {
+        name = nesnd_south_holdouts.resist default_option = yes custom_tooltip = nesnd_south_holdouts_resist_tt
+        ai_chance = { base = 60 modifier = { factor = 5 trigger = { nesnd_holdout_ai_unyielding = yes } } modifier = { factor = 0.2 trigger = { OR = { in_default = yes has_modifier = declared_bankruptcy army_size < 10 } } } }
+        nesnd_holdout_choose_resistance = yes
+    }
+    option = {
+        name = nesnd_south_holdouts.surrender custom_tooltip = nesnd_south_holdouts_surrender_tt
+        ai_chance = { base = 40 modifier = { factor = 0 trigger = { nesnd_holdout_ai_unyielding = yes } } modifier = { factor = 5 trigger = { OR = { in_default = yes has_modifier = declared_bankruptcy army_size < 10 } } } }
+        nesnd_holdout_surrender_to_wu = yes
+    }
+    after = { remove_variable = nesnd_holdout_choice_pending }
+}
+nesnd_south_holdouts.4 = {
+    type = country_event placement = root duration = 3
+    title = nesnd_south_holdouts.4.t desc = nesnd_south_holdouts.4.d
+    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_1.dds" }
+    trigger = { has_variable = nesnd_holdout_resolved is_subject_of = c:CNE }
+    cancellation_trigger = { NOT = { is_subject_of = c:CNE } }
+    option = { name = nesnd_south_holdouts.4.a default_option = yes }
+}

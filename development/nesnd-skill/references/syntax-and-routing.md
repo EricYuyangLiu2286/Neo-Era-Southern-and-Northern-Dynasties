@@ -135,3 +135,11 @@ IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列�
 用户允许从本MOD侧停用已定位的原版故障内容，其他作者MOD只读。先从error.log定位ID和完整入口链，按数据库支持选择覆盖：本项目已证JE和scripted_button可用`REPLACE:ID`，关闭visible/possible等对应trigger；事件REPLACE支持未核实时沿用同路径覆盖，只把目标事件改为hidden惰性壳（trigger always=no、cancellation_trigger always=yes、空immediate），其余定义和namespace保序保留。只关闭UI入口不能替代清除旧队列和effect中的坏引用。
 
 同路径覆盖须记录当前GAME版本/源SHA，并用保序AST比较所有非目标对象；升级时重新对照，避免冻结整文件后漏掉更新。局部坏权重只停该limit，勿关闭仍被本MOD引用的整个意识形态。scripted_button的ai_chance采用当前实例的`value=0`（00_colonial_administration_buttons.txt:40），旧Markdown的`base`不能直接当作有效语法。2026-11-03具体证据：WORK/reports/cne-time-native-ban-20261103/native-ban-contract.md。
+
+### 战后结算与寄居人物（2026-11-04）
+
+一轮war结束不等于整个剧情争端结束。改停战/战败链时搜索所有settled写入者，包括旧JE complete、延迟事件immediate、僵局按钮；不能让新周度队列与旧终局互相改写。按实际参战轮次登记一次答复，延迟外国回复重验对象、轮次、期限和当前关系，实际建立附属关系后才提交结果。
+
+先保存皇帝与原继承者，再转移皇帝；移动君主可能立刻触发继承。实际owner确认失败则走原生exile_character_with_role_cleanup；两者失败时阻止吞并且保留重试，不能先记录已答复把国家锁死。寄居别国的受保护人物也要避开旧随机处置链，不仅检查“行在”国名标记。不得据此自动改接收国君主、政体或玩家tag。
+
+来源：GAME/common/scripted_effects/00_scripted_effects.txt的流亡清角色；WORK/reports/journal-war-feedback-20261103/ming-war-source.md及boundary-tests.json。故障注入检验脚本分支，不是引擎迁逃验收。
