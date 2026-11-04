@@ -1,0 +1,369 @@
+﻿# All effects below use country scope. The only permanent exit is clear_hierarchy.
+nesnd_hus_clear_tiers = {
+    if = { limit = { has_modifier = nesnd_hus_acceptance_hierarchy } remove_modifier = nesnd_hus_acceptance_hierarchy }
+    if = { limit = { has_modifier = nesnd_hus_acceptance_manchu } remove_modifier = nesnd_hus_acceptance_manchu }
+    if = { limit = { has_modifier = nesnd_hus_acceptance_native } remove_modifier = nesnd_hus_acceptance_native }
+}
+# Legacy callers may still invoke this name, but never reinstall the obsolete modifiers.
+nesnd_hus_refresh_tiers = { nesnd_hus_clear_tiers = yes }
+nesnd_hus_clear_cmf_law = {
+    if = { limit = { nesnd_hus_owns_cmf_reference = yes }
+        remove_variable = custom_social_hierarchy
+    }
+    remove_variable = nesnd_hus_cmf_law
+}
+nesnd_hus_sync_cmf_law = {
+    clear_saved_scope = nesnd_hus_display_law
+    active_law:lawgroup_nesnd_hus_social_hierarchy ?= { save_scope_as = nesnd_hus_display_law }
+    if = { limit = { exists = scope:nesnd_hus_display_law }
+        set_variable = { name = custom_social_hierarchy value = scope:nesnd_hus_display_law }
+        set_variable = { name = nesnd_hus_cmf_law value = scope:nesnd_hus_display_law }
+    }
+    clear_saved_scope = nesnd_hus_display_law
+}
+nesnd_hus_uninstall_hierarchy = {
+    nesnd_hus_clear_cmf_law = yes
+    if = { limit = { has_social_hierarchy = nesnd_hus_social_hierarchy } set_social_hierarchy = default_social_hierarchy }
+    if = { limit = { has_law = law_type:law_nesnd_hus_four_tier_system } deactivate_law = law_type:law_nesnd_hus_four_tier_system }
+    if = { limit = { has_law = law_type:law_nesnd_hus_manchu_registration } deactivate_law = law_type:law_nesnd_hus_manchu_registration }
+    if = { limit = { has_law = law_type:law_nesnd_hus_native_registration } deactivate_law = law_type:law_nesnd_hus_native_registration }
+    nesnd_hus_clear_tiers = yes
+}
+# Caller already holds the synchronous mutation guard.
+nesnd_hus_install_expected_hierarchy = {
+    if = { limit = { exists = var:nesnd_hus_frozen_citizenship_type }
+        if = { limit = { NOT = { has_law = var:nesnd_hus_frozen_citizenship_type } } activate_law = var:nesnd_hus_frozen_citizenship_type }
+    }
+    else = { set_variable = nesnd_hus_migration_conflict }
+    if = { limit = { NOT = { has_social_hierarchy = nesnd_hus_social_hierarchy } } set_social_hierarchy = nesnd_hus_social_hierarchy }
+    if = { limit = { has_variable = nesnd_hus_registration_done nesnd_hus_manchu_route = yes }
+        if = { limit = { NOT = { has_law = law_type:law_nesnd_hus_manchu_registration } } activate_law = law_type:law_nesnd_hus_manchu_registration }
+    }
+    else_if = { limit = { has_variable = nesnd_hus_registration_done nesnd_hus_native_route = yes }
+        if = { limit = { NOT = { has_law = law_type:law_nesnd_hus_native_registration } } activate_law = law_type:law_nesnd_hus_native_registration }
+    }
+    else_if = { limit = { NOT = { has_variable = nesnd_hus_registration_done } }
+        if = { limit = { NOT = { has_law = law_type:law_nesnd_hus_four_tier_system } } activate_law = law_type:law_nesnd_hus_four_tier_system }
+    }
+    else = { set_variable = nesnd_hus_migration_conflict }
+    nesnd_hus_clear_tiers = yes
+    nesnd_hus_sync_cmf_law = yes
+}
+nesnd_hus_allocate_registration_epoch = {
+    if = { limit = { NOT = { has_global_variable = nesnd_hus_registration_serial } } set_global_variable = { name = nesnd_hus_registration_serial value = 0 } }
+    # Effect previews do not establish values written by preceding effects.
+    if = { limit = { has_global_variable = nesnd_hus_registration_serial }
+        change_global_variable = { name = nesnd_hus_registration_serial add = 1 }
+        set_variable = { name = nesnd_hus_registration_epoch value = global_var:nesnd_hus_registration_serial }
+    }
+    if = { limit = { has_variable = nesnd_hus_registration_epoch }
+        set_global_variable = { name = nesnd_hus_registration_record_epoch value = var:nesnd_hus_registration_epoch }
+        set_global_variable = { name = nesnd_hus_registration_record_owner value = this }
+    }
+}
+nesnd_hus_record_legacy_clock = {
+    if = { limit = { nesnd_hus_valid_registration_choice = yes NOT = { nesnd_hus_epoch_matches_record = yes } }
+        nesnd_hus_allocate_registration_epoch = yes
+        if = { limit = { has_variable = nesnd_hus_registration_done }
+            set_global_variable = { name = nesnd_hus_registration_record_state value = 3 }
+        }
+        else_if = { limit = { has_variable = nesnd_hus_registration_wait }
+            set_global_variable = { name = nesnd_hus_registration_record_state value = 5 }
+            set_variable = { name = nesnd_hus_registration_clock_source value = this }
+        }
+        else = { set_global_variable = { name = nesnd_hus_registration_record_state value = 2 } }
+    }
+}
+nesnd_hus_migrate_hierarchy = {
+    if = { limit = { nesnd_hus_original_country = yes NOT = { has_variable = nesnd_hus_hierarchy_version } }
+        set_variable = nesnd_hus_hierarchy_mutating
+        # Establish the route before replacing the legacy active citizenship law.
+        if = { limit = { has_law = law_type:law_nesnd_hus_registry_manchu }
+            if = { limit = { nesnd_hus_native_route = yes } set_variable = nesnd_hus_migration_conflict }
+            else = { set_variable = { name = nesnd_hus_registration_choice value = 1 } set_variable = nesnd_hus_registration_done }
+        }
+        if = { limit = { has_law = law_type:law_nesnd_hus_registry_native }
+            if = { limit = { nesnd_hus_manchu_route = yes } set_variable = nesnd_hus_migration_conflict }
+            else = { set_variable = { name = nesnd_hus_registration_choice value = 2 } set_variable = nesnd_hus_registration_done }
+        }
+        if = { limit = { has_variable = nesnd_hus_registration_done NOT = { nesnd_hus_valid_registration_choice = yes } }
+            if = { limit = { OR = { has_variable = nesnd_hus_manchu_exodus_pending has_variable = nesnd_hus_manchu_exodus_done } NOT = { has_variable = nesnd_khanate_campaign_started } }
+                set_variable = { name = nesnd_hus_registration_choice value = 2 }
+            }
+            else_if = { limit = { has_variable = nesnd_khanate_campaign_started NOR = { has_variable = nesnd_hus_manchu_exodus_pending has_variable = nesnd_hus_manchu_exodus_done } }
+                set_variable = { name = nesnd_hus_registration_choice value = 1 }
+            }
+            else = { set_variable = nesnd_hus_migration_conflict }
+        }
+        if = { limit = { has_variable = nesnd_hus_registration_choice NOT = { nesnd_hus_valid_registration_choice = yes } } set_variable = nesnd_hus_migration_conflict }
+        if = { limit = { OR = {
+            AND = { nesnd_hus_manchu_route = yes OR = { has_variable = nesnd_hus_manchu_exodus_pending has_variable = nesnd_hus_manchu_exodus_done } }
+            AND = { nesnd_hus_native_route = yes has_variable = nesnd_khanate_campaign_started }
+        } } set_variable = nesnd_hus_migration_conflict }
+        if = { limit = { NOT = { exists = var:nesnd_hus_frozen_citizenship_type } }
+            if = { limit = { nesnd_hus_has_legacy_law = yes }
+                set_variable = { name = nesnd_hus_frozen_citizenship_type value = law_type:law_cultural_exclusion }
+            }
+            else = {
+                clear_saved_scope = nesnd_hus_current_citizenship
+                active_law:lawgroup_citizenship ?= { save_scope_as = nesnd_hus_current_citizenship }
+                if = { limit = { exists = scope:nesnd_hus_current_citizenship }
+                    set_variable = { name = nesnd_hus_frozen_citizenship_type value = scope:nesnd_hus_current_citizenship.type }
+                }
+                else = { set_variable = { name = nesnd_hus_frozen_citizenship_type value = law_type:law_cultural_exclusion } }
+                clear_saved_scope = nesnd_hus_current_citizenship
+            }
+        }
+        set_variable = { name = nesnd_hus_hierarchy_version value = 2 }
+        set_variable = nesnd_hus_hierarchy_active
+        if = { limit = { NOT = { has_variable = nesnd_hus_migration_conflict } }
+            nesnd_hus_record_legacy_clock = yes
+            nesnd_hus_install_expected_hierarchy = yes
+        }
+        else = { nesnd_hus_clear_tiers = yes }
+        remove_variable = nesnd_hus_hierarchy_mutating
+        recalculate_pop_ig_support = yes
+    }
+}
+nesnd_hus_initialize_hierarchy = {
+    if = { limit = { nesnd_hus_original_country = yes NOT = { has_variable = nesnd_hus_hierarchy_mutating } }
+        nesnd_hus_migrate_hierarchy = yes
+        if = { limit = { has_variable = nesnd_hus_hierarchy_active NOT = { has_variable = nesnd_hus_migration_conflict } }
+            set_variable = nesnd_hus_hierarchy_mutating
+            nesnd_hus_install_expected_hierarchy = yes
+            remove_variable = nesnd_hus_hierarchy_mutating
+        }
+    }
+}
+nesnd_hus_suspend_revolution_hierarchy = {
+    if = { limit = { nesnd_hus_revolution_snapshot_valid = yes }
+        set_variable = nesnd_hus_hierarchy_mutating
+        set_variable = nesnd_hus_revolution_suspended
+        remove_variable = nesnd_hus_hierarchy_active
+        # A temporary revolutionary tag must never be classified as a permanent exit.
+        remove_variable = nesnd_hus_hierarchy_retired
+        nesnd_hus_uninstall_hierarchy = yes
+        if = { limit = { nesnd_hus_has_legacy_law = yes exists = var:nesnd_hus_frozen_citizenship_type } activate_law = var:nesnd_hus_frozen_citizenship_type }
+        remove_variable = nesnd_hus_hierarchy_mutating
+        recalculate_pop_ig_support = yes
+    }
+}
+nesnd_hus_restore_revolution_hierarchy = {
+    if = { limit = { c:HUS ?= this is_country_alive = yes nesnd_hus_revolution_snapshot_valid = yes }
+        set_variable = nesnd_hus_hierarchy_mutating
+        remove_variable = nesnd_hus_hierarchy_retired
+        remove_variable = nesnd_hus_revolution_suspended
+        set_variable = nesnd_hus_hierarchy_active
+        if = { limit = { nesnd_hus_epoch_matches_record = yes }
+            set_global_variable = { name = nesnd_hus_registration_record_owner value = this }
+            if = { limit = { has_global_variable = nesnd_hus_registration_record_state }
+                if = { limit = { global_var:nesnd_hus_registration_record_state = 3 }
+                    set_variable = nesnd_hus_registration_done
+                    if = { limit = { nesnd_hus_native_route = yes NOT = { has_variable = nesnd_hus_manchu_exodus_done } }
+                        if = { limit = { has_global_variable = nesnd_hus_registration_exodus_epoch }
+                            if = { limit = { global_var:nesnd_hus_registration_exodus_epoch = var:nesnd_hus_registration_epoch } set_variable = nesnd_hus_manchu_exodus_done }
+                        }
+                        if = { limit = { NOT = { has_variable = nesnd_hus_manchu_exodus_done } } set_variable = nesnd_hus_manchu_exodus_pending }
+                    }
+                }
+            }
+        }
+        nesnd_hus_install_expected_hierarchy = yes
+        remove_variable = nesnd_hus_hierarchy_mutating
+        recalculate_pop_ig_support = yes
+    }
+}
+nesnd_hus_clear_hierarchy = {
+    set_variable = nesnd_hus_hierarchy_mutating
+    # Only the actual current record owner can terminate a registration globally.
+    if = { limit = { nesnd_hus_epoch_matches_record = yes global_var:nesnd_hus_registration_record_owner ?= this }
+        set_global_variable = { name = nesnd_hus_registration_record_state value = 4 }
+        remove_global_variable = nesnd_hus_registration_wait
+    }
+    remove_variable = nesnd_hus_hierarchy_active
+    set_variable = nesnd_hus_hierarchy_retired
+    nesnd_hus_uninstall_hierarchy = yes
+    if = { limit = { nesnd_hus_has_legacy_law = yes }
+        if = { limit = { exists = var:nesnd_hus_frozen_citizenship_type } activate_law = var:nesnd_hus_frozen_citizenship_type }
+        else = { activate_law = law_type:law_cultural_exclusion }
+    }
+    remove_variable = nesnd_hus_registration_wait
+    remove_variable = nesnd_hus_frozen_citizenship_type
+    remove_variable = nesnd_hus_registration_clock_source
+    remove_variable = nesnd_hus_revolution_source
+    remove_variable = nesnd_hus_revolution_continuation
+    remove_variable = nesnd_hus_revolution_suspended
+    if = { limit = { has_variable = nesnd_hus_registration_epoch } change_variable = { name = nesnd_hus_registration_epoch add = 1 } }
+    remove_variable = nesnd_hus_hierarchy_mutating
+    recalculate_pop_ig_support = yes
+}
+nesnd_hus_choose_registration = {
+    if = { limit = { nesnd_hus_registration_open = yes NOT = { has_variable = nesnd_hus_registration_choice } }
+        set_variable = { name = nesnd_hus_registration_choice value = $CHOICE$ }
+        nesnd_hus_allocate_registration_epoch = yes
+        if = { limit = { has_variable = nesnd_hus_registration_epoch }
+            set_global_variable = { name = nesnd_hus_registration_record_state value = 1 }
+            set_global_variable = { name = nesnd_hus_registration_wait value = var:nesnd_hus_registration_epoch years = 1 }
+            set_variable = { name = nesnd_hus_registration_wait months = 12 }
+            save_scope_value_as = { name = nesnd_hus_delayed_epoch value = var:nesnd_hus_registration_epoch }
+            trigger_event = { id = nesnd_hus_registration.10 months = 12 }
+        }
+    }
+}
+nesnd_hus_update_registration_clock = {
+    if = { limit = { nesnd_hus_epoch_matches_record = yes has_global_variable = nesnd_hus_registration_record_state }
+        if = { limit = { global_var:nesnd_hus_registration_record_state = 1 NOT = { has_global_variable = nesnd_hus_registration_wait } }
+            set_global_variable = { name = nesnd_hus_registration_record_state value = 2 }
+        }
+        else_if = { limit = { global_var:nesnd_hus_registration_record_state = 5 }
+            if = { limit = { exists = var:nesnd_hus_registration_clock_source }
+                if = { limit = { var:nesnd_hus_registration_clock_source = { NOT = { has_variable = nesnd_hus_registration_wait } } }
+                    set_global_variable = { name = nesnd_hus_registration_record_state value = 2 }
+                }
+            }
+            else = { set_variable = nesnd_hus_migration_conflict }
+        }
+    }
+}
+nesnd_hus_registration_settle = {
+    if = { limit = { nesnd_hus_registration_open = yes nesnd_hus_valid_registration_choice = yes }
+        nesnd_hus_update_registration_clock = yes
+        if = { limit = { nesnd_hus_registration_clock_ready = yes NOT = { has_variable = nesnd_hus_migration_conflict } }
+            set_variable = nesnd_hus_hierarchy_mutating
+            if = { limit = { nesnd_hus_manchu_route = yes } activate_law = law_type:law_nesnd_hus_manchu_registration }
+            else_if = { limit = { nesnd_hus_native_route = yes } activate_law = law_type:law_nesnd_hus_native_registration }
+            if = { limit = { OR = {
+                AND = { nesnd_hus_manchu_route = yes has_law = law_type:law_nesnd_hus_manchu_registration }
+                AND = { nesnd_hus_native_route = yes has_law = law_type:law_nesnd_hus_native_registration }
+            } }
+                set_variable = nesnd_hus_registration_done
+                set_global_variable = { name = nesnd_hus_registration_record_state value = 3 }
+                remove_variable = nesnd_hus_registration_wait
+                remove_variable = nesnd_hus_registration_clock_source
+                if = { limit = { nesnd_hus_native_route = yes NOT = { has_variable = nesnd_hus_manchu_exodus_done } } set_variable = nesnd_hus_manchu_exodus_pending }
+            }
+            nesnd_hus_clear_tiers = yes nesnd_hus_sync_cmf_law = yes
+            remove_variable = nesnd_hus_hierarchy_mutating
+            recalculate_pop_ig_support = yes
+        }
+    }
+}
+
+# Country target scope; caller established the actual revolution source. Never copies timer expiry.
+nesnd_hus_copy_revolution_payload = {
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_hierarchy_version } }
+        set_variable = { name = nesnd_hus_hierarchy_version value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_hierarchy_version }
+    } else = { remove_variable = nesnd_hus_hierarchy_version }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_frozen_citizenship_type } }
+        set_variable = { name = nesnd_hus_frozen_citizenship_type value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_frozen_citizenship_type }
+    } else = { remove_variable = nesnd_hus_frozen_citizenship_type }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_registration_choice } }
+        set_variable = { name = nesnd_hus_registration_choice value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_registration_choice }
+    } else = { remove_variable = nesnd_hus_registration_choice }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_registration_done } }
+        set_variable = { name = nesnd_hus_registration_done value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_registration_done }
+    } else = { remove_variable = nesnd_hus_registration_done }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_registration_epoch } }
+        set_variable = { name = nesnd_hus_registration_epoch value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_registration_epoch }
+    } else = { remove_variable = nesnd_hus_registration_epoch }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_registration_clock_source } }
+        set_variable = { name = nesnd_hus_registration_clock_source value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_registration_clock_source }
+    } else = { remove_variable = nesnd_hus_registration_clock_source }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_manchu_exodus_pending } }
+        set_variable = { name = nesnd_hus_manchu_exodus_pending value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_manchu_exodus_pending }
+    } else = { remove_variable = nesnd_hus_manchu_exodus_pending }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_manchu_exodus_done } }
+        set_variable = { name = nesnd_hus_manchu_exodus_done value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_manchu_exodus_done }
+    } else = { remove_variable = nesnd_hus_manchu_exodus_done }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_khanate_campaign_started } }
+        set_variable = { name = nesnd_khanate_campaign_started value = scope:nesnd_hus_revolution_origin.var:nesnd_khanate_campaign_started }
+    } else = { remove_variable = nesnd_khanate_campaign_started }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_khanate_population_sent } }
+        set_variable = { name = nesnd_khanate_population_sent value = scope:nesnd_hus_revolution_origin.var:nesnd_khanate_population_sent }
+    } else = { remove_variable = nesnd_khanate_population_sent }
+    if = { limit = { scope:nesnd_hus_revolution_origin = { has_variable = nesnd_hus_migration_conflict } }
+        set_variable = { name = nesnd_hus_migration_conflict value = scope:nesnd_hus_revolution_origin.var:nesnd_hus_migration_conflict }
+    } else = { remove_variable = nesnd_hus_migration_conflict }
+}
+nesnd_hus_capture_revolution = {
+    # ROOT/source country scope, target is the native on_revolution_start target.
+    if = { limit = { nesnd_hus_original_country = yes has_variable = nesnd_hus_hierarchy_active exists = scope:target }
+        save_scope_as = nesnd_hus_revolution_origin
+        scope:target = {
+            if = { limit = { NOT = { has_variable = nesnd_hus_native_successor } NOT = { has_variable = nesnd_hus_revolution_continuation } }
+                set_variable = nesnd_hus_revolution_continuation
+                set_variable = { name = nesnd_hus_revolution_source value = scope:nesnd_hus_revolution_origin }
+                nesnd_hus_copy_revolution_payload = yes
+                remove_variable = nesnd_hus_hierarchy_retired
+                nesnd_hus_suspend_revolution_hierarchy = yes
+            }
+        }
+        clear_saved_scope = nesnd_hus_revolution_origin
+    }
+}
+nesnd_hus_reconcile_hierarchy = {
+    if = { limit = { is_country_alive = yes NOT = { has_variable = nesnd_hus_hierarchy_mutating } }
+        if = { limit = { OR = { c:NKH ?= this has_variable = nesnd_hus_native_successor } }
+            if = { limit = { OR = { has_variable = nesnd_hus_hierarchy_active has_social_hierarchy = nesnd_hus_social_hierarchy nesnd_hus_has_hierarchy_law = yes nesnd_hus_has_legacy_law = yes nesnd_hus_has_tier_modifier = yes has_variable = nesnd_hus_revolution_continuation } }
+                nesnd_hus_clear_hierarchy = yes
+            }
+            # The native successor is never subject to the HUS hierarchy or frozen citizenship.
+            if = { limit = { has_variable = nesnd_hus_native_successor NOT = { has_variable = nesnd_hus_native_legal_prepared } }
+                set_variable = nesnd_hus_native_legal_prepared
+                set_variable = nesnd_hus_hierarchy_mutating
+                set_social_hierarchy = default_social_hierarchy
+                if = { limit = { NOT = { has_law = law_type:law_racial_segregation } } activate_law = law_type:law_racial_segregation }
+                nesnd_native_primary_cultures_only = yes
+                remove_variable = nesnd_hus_hierarchy_mutating
+            }
+        }
+        else = {
+            # Recovery of a saved game already in a native revolution, before our start hook existed.
+            if = { limit = { NOT = { has_variable = nesnd_hus_revolution_continuation } is_revolutionary = yes exists = civil_war_origin_country
+                civil_war_origin_country ?= { nesnd_hus_original_country = yes has_variable = nesnd_hus_hierarchy_active }
+            }
+                civil_war_origin_country = { save_scope_as = nesnd_hus_revolution_origin }
+                set_variable = nesnd_hus_revolution_continuation
+                set_variable = { name = nesnd_hus_revolution_source value = scope:nesnd_hus_revolution_origin }
+                nesnd_hus_copy_revolution_payload = yes
+                remove_variable = nesnd_hus_hierarchy_retired
+                clear_saved_scope = nesnd_hus_revolution_origin
+            }
+            if = { limit = { c:HUS ?= this nesnd_hus_revolution_snapshot_valid = yes }
+                # Capture choices completed by the original government while the civil war ran.
+                if = { limit = { exists = var:nesnd_hus_revolution_source var:nesnd_hus_revolution_source ?= { exists = var:nesnd_hus_frozen_citizenship_type } }
+                    var:nesnd_hus_revolution_source = { save_scope_as = nesnd_hus_revolution_origin }
+                    nesnd_hus_copy_revolution_payload = yes
+                    clear_saved_scope = nesnd_hus_revolution_origin
+                }
+                nesnd_hus_restore_revolution_hierarchy = yes
+                remove_variable = nesnd_hus_revolution_continuation
+                remove_variable = nesnd_hus_revolution_source
+            }
+            else_if = { limit = { nesnd_hus_original_country = yes } nesnd_hus_initialize_hierarchy = yes }
+            else_if = { limit = { nesnd_hus_revolution_snapshot_valid = yes }
+                if = { limit = { OR = { NOT = { has_variable = nesnd_hus_revolution_suspended } has_social_hierarchy = nesnd_hus_social_hierarchy nesnd_hus_has_hierarchy_law = yes } }
+                    nesnd_hus_suspend_revolution_hierarchy = yes
+                }
+            }
+            else_if = { limit = { OR = { has_variable = nesnd_hus_hierarchy_active has_social_hierarchy = nesnd_hus_social_hierarchy nesnd_hus_has_hierarchy_law = yes nesnd_hus_has_legacy_law = yes nesnd_hus_has_tier_modifier = yes has_variable = nesnd_hus_revolution_continuation } }
+                nesnd_hus_clear_hierarchy = yes
+            }
+        }
+    }
+}
+nesnd_hus_manchu_exodus = {
+    nesnd_a2_manchu_exodus = yes
+}
+nesnd_hus_registration_maintenance = {
+    nesnd_hus_reconcile_hierarchy = yes
+    if = { limit = { nesnd_hus_original_country = yes has_variable = nesnd_hus_hierarchy_active }
+        nesnd_hus_registration_settle = yes
+        if = { limit = { nesnd_hus_registration_enacted_correctly = yes NOT = { has_variable = nesnd_hus_migration_conflict } }
+            nesnd_hus_manchu_exodus = yes
+            if = { limit = { nesnd_khanate_trigger_ready = yes NOT = { has_variable = nesnd_khanate_campaign_started } }
+                set_variable = nesnd_khanate_campaign_started
+            }
+        }
+    }
+}

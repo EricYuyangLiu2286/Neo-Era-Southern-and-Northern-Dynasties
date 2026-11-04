@@ -100,6 +100,8 @@ trigger_else = { always = no }
 ## 1.13.11 本机接口与创建回调
 
 IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列表中的简名误当trigger。文化数据使用 `heritage` / `language` / `traditions`，特质查询用 `has_discrimination_trait`。营房标准键是 `building_barrack`，历史复数别名需确认解析后再统计。
+
+角色类型与角色数据库ID也不能互换：本机原生`add_character_role = general`使用类型，而`has_role = character_role_general`查询具体角色；`has_role_of_type`另有其职责。查实际执行脚本与数据库，不以README中的简称示例推断查询接受别名。来源：GAME/common/scripted_effects/00_victoria_ep2_scripted_effects.txt及common/character_roles/00_auto_assigned_roles.txt；本轮错误筛选使真实将领未被分配到新军队，见WORK/reports/canon-route-execution-20261104的A2验证。建筑、人物、法律等引用须按所用字段解析到有效定义，不仅检查文本外形。
 跨 `create_country.on_created` 回调不假定外层root或saved scope自动可用：对固定国家先exists再进入c:TAG；遍历内确需回到调用country时按实际scope栈用prev，不能把全局history或after-lobby的none root当country。原版链条、错误名纠正与最终检查见 WORK/reports/qin-persia-20261102/native-political-contracts.md、source-name-corrections.json。
 
 ## 人物、日志局部scope及重复字段

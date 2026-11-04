@@ -1,0 +1,97 @@
+﻿nesnd_canon_clear_request = {
+    remove_variable = nesnd_canon_request_clock
+    remove_variable = nesnd_canon_request_partner
+    remove_variable = nesnd_canon_request_kind
+    remove_variable = nesnd_canon_request_sender_regime
+    remove_variable = nesnd_canon_request_partner_regime
+    remove_variable = nesnd_small_request_overlord
+    remove_variable = nesnd_small_request_market
+    remove_variable = nesnd_small_request_autonomy
+}
+nesnd_canon_send_request = {
+    clear_saved_scope = canon_sender clear_saved_scope = canon_partner
+    if = { limit = { nesnd_canon_request_free = yes exists = c:$TAG$ }
+        save_scope_as = canon_sender c:$TAG$ = { save_scope_as = canon_partner }
+        save_scope_value_as = { name = canon_kind value = $KIND$ }
+        if = { limit = { nesnd_canon_request_eligible = yes }
+            set_variable = { name = nesnd_canon_request_serial value = { value = nesnd_canon_request_serial add = 1 } }
+            set_variable = { name = nesnd_canon_request_kind value = $KIND$ }
+            set_variable = { name = nesnd_canon_request_partner value = scope:canon_partner }
+            set_variable = { name = nesnd_canon_request_clock days = 45 }
+            set_variable = { name = nesnd_canon_request_cooldown months = 6 }
+            save_scope_value_as = { name = canon_serial value = nesnd_canon_request_serial }
+            save_scope_value_as = { name = canon_sender_regime value = nesnd_canon_regime }
+            set_variable = { name = nesnd_canon_request_sender_regime value = nesnd_canon_regime }
+            if = { limit = { exists = scope:canon_partner }
+                set_variable = { name = nesnd_canon_request_partner_regime value = scope:canon_partner.nesnd_canon_regime }
+            }
+            scope:canon_partner = {
+                save_scope_value_as = { name = canon_partner_regime value = nesnd_canon_regime }
+                trigger_event = { id = nesnd_canon_diplomacy.1 days = 1 popup = yes }
+            }
+        }
+    }
+    clear_saved_scope = canon_sender clear_saved_scope = canon_partner
+}
+nesnd_canon_accept_request = {
+    if = { limit = { nesnd_small_is_request_kind = yes } nesnd_small_accept_request = yes }
+    if = { limit = { nesnd_canon_reply_valid = yes nesnd_canon_request_eligible = yes }
+        if = { limit = { scope:canon_kind = 1 }
+            create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = alliance } } }
+        }
+        else_if = { limit = { OR = { scope:canon_kind = 4 scope:canon_kind = 11 } }
+            create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = defensive_pact } } }
+        }
+        else_if = { limit = { OR = { scope:canon_kind = 2 scope:canon_kind = 5 } }
+            create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = foreign_investment_rights source_country = scope:canon_sender target_country = scope:canon_partner } } }
+        }
+        else_if = { limit = { scope:canon_kind = 3 }
+            scope:canon_sender = { set_variable = { name = nesnd_italy_french_guarantee months = 72 } add_modifier = { name = nesnd_italy_french_credit months = 72 } }
+        }
+        if = { limit = { nesnd_canon_treaty_result = yes }
+            scope:canon_sender = {
+                if = { limit = { OR = { scope:canon_kind = 2 scope:canon_kind = 5 } }
+                    set_variable = { name = nesnd_canon_investor value = scope:canon_partner }
+                    if = { limit = { scope:canon_kind = 2 NOT = { has_variable = nesnd_usa_capital_awarded } }
+                        set_variable = nesnd_usa_capital_awarded add_modifier = { name = nesnd_usa_european_capital months = 60 }
+                    }
+                    else_if = { limit = { scope:canon_kind = 5 NOT = { has_variable = nesnd_small_capital_awarded } }
+                        set_variable = nesnd_small_capital_awarded add_modifier = { name = nesnd_small_state_capital months = 60 }
+                    }
+                }
+                if = { limit = { NOT = { has_variable = nesnd_canon_first_accord } }
+                    set_variable = nesnd_canon_first_accord change_relations = { country = scope:canon_partner value = 25 }
+                }
+                nesnd_canon_clear_request = yes
+                trigger_event = { id = nesnd_canon_diplomacy.2 popup = yes }
+            }
+        }
+        else = { scope:canon_sender = { nesnd_canon_clear_request = yes trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes } } }
+    }
+}
+nesnd_canon_refuse_request = {
+    if = { limit = { nesnd_small_is_request_kind = yes } nesnd_small_refuse_request = yes }
+    if = { limit = { nesnd_canon_reply_valid = yes }
+        scope:canon_sender = { nesnd_canon_clear_request = yes trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes } }
+    }
+}
+nesnd_canon_diplomatic_maintenance = {
+    if = { limit = { has_variable = nesnd_rg_pending } set_variable = nesnd_rg_closed remove_variable = nesnd_rg_pending }
+    if = { limit = { OR = { has_variable = nesnd_canon_request_partner has_variable = nesnd_canon_request_clock has_variable = nesnd_canon_request_kind } NOT = { nesnd_canon_current_request_valid = yes } }
+        nesnd_canon_clear_request = yes trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes }
+    }
+    if = { limit = { c:USA ?= this has_variable = nesnd_canon_investor NOT = { nesnd_canon_investment_valid = yes } }
+        save_scope_as = canon_current_host clear_saved_scope = canon_remaining_investor
+        random_scope_treaty = {
+            limit = { any_scope_article = { nesnd_canon_available_european_article = yes } }
+            random_scope_article = { limit = { nesnd_canon_available_european_article = yes } target_country = { save_scope_as = canon_remaining_investor } }
+        }
+        if = { limit = { exists = scope:canon_remaining_investor } set_variable = { name = nesnd_canon_investor value = scope:canon_remaining_investor } }
+        clear_saved_scope = canon_current_host clear_saved_scope = canon_remaining_investor
+    }
+    if = { limit = { has_variable = nesnd_canon_investor NOT = { nesnd_canon_investment_valid = yes } }
+        if = { limit = { has_modifier = nesnd_usa_european_capital } remove_modifier = nesnd_usa_european_capital }
+        if = { limit = { has_modifier = nesnd_small_state_capital } remove_modifier = nesnd_small_state_capital }
+        remove_variable = nesnd_canon_investor
+    }
+}

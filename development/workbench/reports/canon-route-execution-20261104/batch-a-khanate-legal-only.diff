@@ -1,0 +1,76 @@
+--- batch-a-before/common/scripted_effects/nesnd_native_khanate.txt
++++ common/scripted_effects/nesnd_native_khanate.txt
+@@ -53,12 +53,17 @@
+ nesnd_khanate_prepare = {
+     if = { limit = { c:NKH ?= this is_country_alive = yes NOT = { has_variable = nesnd_khanate_prepared } }
+         set_variable = nesnd_khanate_prepared
++        nesnd_hus_clear_hierarchy = yes
++        set_variable = nesnd_hus_native_legal_prepared
++        set_social_hierarchy = default_social_hierarchy
++        set_variable = nesnd_hus_hierarchy_mutating
+         add_era_researched = era_1
+         activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy
+         activate_law = law_type:law_professional_army activate_law = law_type:law_slavery_banned
+         activate_law = law_type:law_racial_segregation activate_law = law_type:law_total_separation
+         activate_law = law_type:law_interventionism activate_law = law_type:law_mercantilism
+         activate_law = law_type:law_private_schools
++        remove_variable = nesnd_hus_hierarchy_mutating
+         ordered_scope_state = { order_by = state_population max = 1 state_region = { save_scope_as = nesnd_khanate_largest_region } }
+         if = { limit = { exists = scope:nesnd_khanate_largest_region } set_capital = scope:nesnd_khanate_largest_region }
+         clear_saved_scope = nesnd_khanate_largest_region
+@@ -91,21 +96,20 @@
+     }
+ }
+ nesnd_native_primary_cultures_only = {
+-    save_scope_as = nesnd_native_culture_country
+-    every_scope_culture = {
+-        limit = { nesnd_hus_native_culture = yes }
+-        scope:nesnd_native_culture_country = { add_primary_culture = prev }
++    if = { limit = { OR = { c:NKH ?= this has_variable = nesnd_hus_native_successor } }
++        save_scope_as = nesnd_native_culture_country
++        # Add a fallback before removing anything: a country must retain a primary culture.
++        if = { limit = { NOT = { any_primary_culture = { nesnd_hus_native_culture = yes } } } add_primary_culture = cu:siouan }
++        every_scope_culture = {
++            limit = { nesnd_hus_native_culture = yes }
++            scope:nesnd_native_culture_country = { add_primary_culture = prev }
++        }
++        every_primary_culture = {
++            limit = { NOT = { nesnd_hus_native_culture = yes } }
++            scope:nesnd_native_culture_country = { remove_primary_culture = prev }
++        }
++        clear_saved_scope = nesnd_native_culture_country
+     }
+-    every_scope_culture = {
+-        limit = { NOT = { nesnd_hus_native_culture = yes } is_primary_culture_of = scope:nesnd_native_culture_country }
+-        scope:nesnd_native_culture_country = { remove_primary_culture = prev }
+-    }
+-    if = { limit = { country_has_primary_culture = cu:ce_liaodong } remove_primary_culture = cu:ce_liaodong }
+-    if = { limit = { country_has_primary_culture = cu:ce_wuu } remove_primary_culture = cu:ce_wuu }
+-    if = { limit = { country_has_primary_culture = cu:hakka } remove_primary_culture = cu:hakka }
+-    if = { limit = { country_has_primary_culture = cu:manchu } remove_primary_culture = cu:manchu }
+-    if = { limit = { country_has_primary_culture = cu:mongol } remove_primary_culture = cu:mongol }
+-    clear_saved_scope = nesnd_native_culture_country
+ }
+ nesnd_khanate_start_war = {
+     if = { limit = { OR = { c:USA ?= this c:HUS ?= this } is_country_alive = yes nesnd_khanate_exists = yes NOT = { nesnd_khanate_has_play = yes } }
+@@ -129,8 +133,11 @@
+ nesnd_khanate_form_native_hus = {
+     if = { limit = { c:NKH ?= this nesnd_native_americas_unified = yes NOT = { exists = c:HUS } }
+         set_variable = nesnd_hus_native_successor
++        set_variable = nesnd_hus_native_legal_prepared
+         change_tag = HUS
+-        nesnd_hus_clear_tiers = yes
++        nesnd_hus_clear_hierarchy = yes
++        set_social_hierarchy = default_social_hierarchy
++        set_variable = nesnd_hus_hierarchy_mutating
+         activate_law = law_type:law_presidential_republic activate_law = law_type:law_total_separation
+         activate_law = law_type:law_census_voting activate_law = law_type:law_per_capita_based_taxation
+         activate_law = law_type:law_elected_bureaucrats activate_law = law_type:law_private_schools
+@@ -140,6 +147,7 @@
+         activate_law = law_type:law_censorship activate_law = law_type:law_debt_slavery
+         activate_law = law_type:law_no_womens_rights activate_law = law_type:law_frontier_colonization
+         activate_law = law_type:law_no_workers_rights activate_law = law_type:law_anti_strike_laws
++        remove_variable = nesnd_hus_hierarchy_mutating
+         nesnd_native_primary_cultures_only = yes
+     }
+ }

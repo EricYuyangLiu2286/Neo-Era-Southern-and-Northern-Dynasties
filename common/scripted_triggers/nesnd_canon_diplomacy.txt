@@ -1,0 +1,147 @@
+﻿nesnd_canon_german_country = { any_primary_culture = { OR = { this = cu:north_german this = cu:south_german } } }
+nesnd_canon_italian_country = { any_primary_culture = { OR = { this = cu:north_italian this = cu:south_italian } } }
+nesnd_canon_european_investor = { OR = { c:FRA ?= this c:GBR ?= this c:PRU ?= this c:NGF ?= this c:GER ?= this } }
+nesnd_canon_request_free = {
+    custom_tooltip = { text = nesnd_canon_no_pending_reply NOT = { has_variable = nesnd_canon_request_clock } }
+    custom_tooltip = { text = nesnd_canon_diplomatic_cooldown NOT = { has_variable = nesnd_canon_request_cooldown } }
+}
+nesnd_canon_pair_valid = {
+    trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner }
+        scope:canon_sender = { is_country_alive = yes NOT = { this = scope:canon_partner } NOT = { has_war_with = scope:canon_partner } }
+        scope:canon_partner = { is_country_alive = yes }
+    }
+    trigger_else = { always = no }
+}
+nesnd_canon_reply_valid = {
+    trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_serial exists = scope:canon_kind exists = scope:canon_sender_regime exists = scope:canon_partner_regime }
+        nesnd_canon_pair_valid = yes
+        this = scope:canon_partner
+        nesnd_canon_regime = scope:canon_partner_regime
+        scope:canon_sender = {
+            has_variable = nesnd_canon_request_clock
+            nesnd_canon_request_serial = scope:canon_serial
+            nesnd_canon_request_kind = scope:canon_kind
+            nesnd_canon_regime = scope:canon_sender_regime
+            trigger_if = { limit = { exists = var:nesnd_canon_request_partner } var:nesnd_canon_request_partner = scope:canon_partner }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_canon_request_eligible = {
+    trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
+        nesnd_canon_pair_valid = yes
+        trigger_if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 } } always = yes }
+        trigger_else = { scope:canon_sender = { "relations(scope:canon_partner)" >= 20 } }
+        trigger_if = { limit = { OR = { scope:canon_kind = 1 scope:canon_kind = 11 } }
+            scope:canon_sender = { nesnd_prussian_identity = yes is_subject = no }
+            scope:canon_partner = { nesnd_canon_german_partner = yes }
+            trigger_if = { limit = { scope:canon_kind = 1 }
+                can_create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = alliance } } }
+            }
+            trigger_else = {
+                can_create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = defensive_pact } } }
+            }
+        }
+        trigger_else_if = { limit = { OR = { scope:canon_kind = 2 scope:canon_kind = 5 } }
+            exists = scope:canon_partner
+            scope:canon_partner ?= { is_subject = no }
+            trigger_if = { limit = { scope:canon_kind = 2 }
+                scope:canon_sender = { nesnd_usa_continental_identity = yes }
+                scope:canon_partner = { nesnd_canon_european_investor = yes }
+            }
+            trigger_else = {
+                # B2 supplies the real small-state eligibility; no placeholder definition here.
+                scope:canon_sender = { nesnd_small_state_country = yes nesnd_small_investment_eligible = yes }
+                scope:canon_partner = { OR = { c:FRA ?= this c:GBR ?= this c:USM ?= this c:MUG ?= this c:HUS ?= this } }
+            }
+            can_create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = foreign_investment_rights source_country = scope:canon_sender target_country = scope:canon_partner } } }
+        }
+        trigger_else_if = { limit = { scope:canon_kind = 3 }
+            # Political credit only; the Italian route supplies its substantive policy eligibility.
+            scope:canon_sender = { nesnd_italy_country = yes NOT = { has_variable = nesnd_italy_french_guarantee } }
+            scope:canon_partner = { c:FRA ?= this }
+        }
+        trigger_else_if = { limit = { scope:canon_kind = 4 }
+            scope:canon_sender = { c:AUS ?= this is_subject = no }
+            scope:canon_partner = { nesnd_canon_italian_country = yes is_subject = no NOT = { c:ITA ?= this } }
+            can_create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = defensive_pact } } }
+        }
+        trigger_else_if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 scope:canon_kind = 9 } }
+            nesnd_small_request_eligible = yes
+        }
+        trigger_else = { always = no }
+    }
+    trigger_else = { always = no }
+}
+nesnd_canon_treaty_result = {
+    trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
+        scope:canon_sender = {
+            trigger_if = { limit = { scope:canon_kind = 1 } has_treaty_alliance_with = { TARGET = scope:canon_partner } }
+            trigger_else_if = { limit = { OR = { scope:canon_kind = 4 scope:canon_kind = 11 } } has_treaty_defensive_pact_with = { TARGET = scope:canon_partner } }
+            trigger_else_if = { limit = { OR = { scope:canon_kind = 2 scope:canon_kind = 5 } }
+                any_scope_treaty = { binds = scope:canon_partner any_scope_article = { nesnd_canon_directed_article = { TYPE = foreign_investment_rights SOURCE = scope:canon_sender TARGET = scope:canon_partner } } }
+            }
+            trigger_else_if = { limit = { scope:canon_kind = 3 } has_variable = nesnd_italy_french_guarantee has_modifier = nesnd_italy_french_credit }
+            trigger_else_if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 scope:canon_kind = 9 } } nesnd_small_request_result = yes }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_canon_investment_valid = {
+    trigger_if = { limit = { exists = var:nesnd_canon_investor }
+        var:nesnd_canon_investor = { is_country_alive = yes is_subject = no }
+        NOT = { has_war_with = var:nesnd_canon_investor }
+        save_temporary_scope_as = canon_host
+        var:nesnd_canon_investor = { save_temporary_scope_as = canon_capital_country }
+        any_scope_treaty = { binds = scope:canon_capital_country any_scope_article = { nesnd_canon_directed_article = { TYPE = foreign_investment_rights SOURCE = scope:canon_host TARGET = scope:canon_capital_country } } }
+    }
+    trigger_else = { always = no }
+}
+
+nesnd_canon_event_kind = {
+    trigger_if = { limit = { exists = scope:canon_kind } scope:canon_kind = $VALUE$ }
+    trigger_else = { always = no }
+}
+nesnd_canon_german_partner = {
+    is_country_alive = yes is_subject = no nesnd_canon_german_country = yes NOT = { c:FRM ?= this }
+    custom_tooltip = { text = nesnd_canon_no_french_alliance_tt
+        trigger_if = { limit = { exists = c:FRA } NOT = { has_treaty_alliance_with = { TARGET = c:FRA } } }
+        trigger_else = { always = yes }
+    }
+}
+
+# Mutual articles have no source/target links; inspect directed links only after presence checks.
+nesnd_canon_directed_article = {
+    trigger_if = { limit = { exists = source_country exists = target_country }
+        has_type = $TYPE$ source_country = $SOURCE$ target_country = $TARGET$
+    }
+    trigger_else = { always = no }
+}
+nesnd_canon_available_european_article = {
+    trigger_if = { limit = { exists = source_country exists = target_country exists = scope:canon_current_host }
+        has_type = foreign_investment_rights source_country = scope:canon_current_host
+        target_country = { is_country_alive = yes is_subject = no nesnd_canon_european_investor = yes NOT = { has_war_with = scope:canon_current_host } }
+    }
+    trigger_else = { always = no }
+}
+
+# Sender scope. Reconstruct only the current request; no stale event nonce is used.
+nesnd_canon_current_request_valid = {
+    trigger_if = { limit = {
+        exists = var:nesnd_canon_request_partner
+        has_variable = nesnd_canon_request_clock has_variable = nesnd_canon_request_serial
+        has_variable = nesnd_canon_request_kind
+        has_variable = nesnd_canon_request_sender_regime has_variable = nesnd_canon_request_partner_regime
+    }
+        save_temporary_scope_as = canon_sender
+        var:nesnd_canon_request_partner = { save_temporary_scope_as = canon_partner }
+        save_temporary_scope_value_as = { name = canon_kind value = var:nesnd_canon_request_kind }
+        save_temporary_scope_value_as = { name = canon_current_partner_regime value = var:nesnd_canon_request_partner_regime }
+        nesnd_canon_regime = var:nesnd_canon_request_sender_regime
+        var:nesnd_canon_request_partner = { nesnd_canon_regime = scope:canon_current_partner_regime }
+        nesnd_canon_request_eligible = yes
+    }
+    trigger_else = { always = no }
+}

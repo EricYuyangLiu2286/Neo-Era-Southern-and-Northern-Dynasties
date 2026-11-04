@@ -1,0 +1,83 @@
+﻿# Dynamic receiver is chosen before calling; all scopes are established inside hidden execution.
+nesnd_small_send_request = {
+    if = { limit = { nesnd_canon_request_free = yes exists = scope:small_receiver }
+        save_scope_as = canon_sender scope:small_receiver = { save_scope_as = canon_partner }
+        save_scope_value_as = { name = canon_kind value = $KIND$ }
+        if = { limit = { nesnd_canon_request_eligible = yes }
+            set_variable = { name = nesnd_canon_request_serial value = { value = nesnd_canon_request_serial add = 1 } }
+            set_variable = { name = nesnd_canon_request_kind value = $KIND$ }
+            set_variable = { name = nesnd_canon_request_partner value = scope:canon_partner }
+            set_variable = { name = nesnd_canon_request_clock days = 45 }
+            set_variable = { name = nesnd_canon_request_cooldown months = 6 }
+            set_variable = { name = nesnd_canon_request_sender_regime value = nesnd_canon_regime }
+            set_variable = { name = nesnd_canon_request_partner_regime value = scope:canon_partner.nesnd_canon_regime }
+            remove_variable = nesnd_small_request_overlord
+            if = { limit = { exists = overlord } set_variable = { name = nesnd_small_request_overlord value = overlord } }
+            if = { limit = { exists = market.owner } set_variable = { name = nesnd_small_request_market value = market.owner } }
+            set_variable = { name = nesnd_small_request_autonomy value = 1 }
+            if = { limit = { nesnd_small_high_autonomy = yes } set_variable = { name = nesnd_small_request_autonomy value = 2 } }
+            save_scope_value_as = { name = canon_serial value = nesnd_canon_request_serial }
+            save_scope_value_as = { name = canon_sender_regime value = nesnd_canon_regime }
+            scope:canon_partner = { save_scope_value_as = { name = canon_partner_regime value = nesnd_canon_regime } trigger_event = { id = nesnd_small_states.20 days = 1 popup = yes } }
+        }
+        clear_saved_scope = canon_sender clear_saved_scope = canon_partner
+    }
+    clear_saved_scope = small_receiver
+}
+nesnd_small_accept_request = {
+    if = { limit = { nesnd_canon_reply_valid = yes nesnd_canon_request_eligible = yes }
+        if = { limit = { scope:canon_kind = 6 }
+            scope:canon_sender = { increase_autonomy = yes add_liberty_desire = -30 create_bidirectional_truce = { country = scope:canon_partner months = 60 }
+                create_diplomatic_catalyst = { type = catalyst_autonomy_change_imposed target = scope:canon_partner }
+            }
+            scope:canon_partner = { change_relations = { country = scope:canon_sender value = -20 } create_diplomatic_catalyst = { type = catalyst_autonomy_increase_requested target = scope:canon_sender } }
+        }
+        else_if = { limit = { scope:canon_kind = 7 } scope:canon_sender = { make_independent = yes create_bidirectional_truce = { country = scope:canon_partner months = 60 } } }
+        else_if = { limit = { scope:canon_kind = 8 } create_diplomatic_pact = { country = scope:canon_sender type = grant_own_market } }
+        else_if = { limit = { scope:canon_kind = 9 } create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = defensive_pact } } } }
+        if = { limit = { nesnd_small_request_result = yes }
+            scope:canon_sender = { nesnd_canon_clear_request = yes trigger_event = { id = nesnd_canon_diplomacy.2 popup = yes } }
+        }
+        else_if = { limit = { scope:canon_kind = 8 has_diplomatic_pact = { who = scope:canon_sender type = grant_own_market is_initiator = yes } }
+            scope:canon_sender = {
+                set_variable = { name = nesnd_small_verification_partner value = scope:canon_partner }
+                set_variable = { name = nesnd_small_market_verification days = 30 }
+                set_variable = { name = nesnd_small_verification_serial value = scope:canon_serial }
+                set_variable = { name = nesnd_small_verification_regime value = nesnd_canon_regime }
+                set_variable = { name = nesnd_small_verification_partner_regime value = scope:canon_partner.nesnd_canon_regime }
+                remove_variable = nesnd_small_verification_overlord
+                if = { limit = { exists = overlord } set_variable = { name = nesnd_small_verification_overlord value = overlord } }
+                set_variable = nesnd_small_market_verifying nesnd_canon_clear_request = yes
+                trigger_event = { id = nesnd_small_states.22 days = 1 }
+            }
+        }
+        else = { scope:canon_sender = { nesnd_canon_clear_request = yes trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes } } }
+    }
+}
+nesnd_small_refuse_request = {
+    if = { limit = { nesnd_canon_reply_valid = yes }
+        if = { limit = { scope:canon_kind = 6 nesnd_canon_request_eligible = yes }
+            scope:canon_sender = { add_liberty_desire = 10 create_diplomatic_catalyst = { type = catalyst_autonomy_increase_denied target = scope:canon_partner } }
+            scope:canon_partner = { change_relations = { country = scope:canon_sender value = -30 } create_diplomatic_catalyst = { type = catalyst_autonomy_increase_requested target = scope:canon_sender } }
+        }
+        scope:canon_sender = { nesnd_canon_clear_request = yes trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes } }
+    }
+}
+nesnd_small_clear_market_verification = {
+    remove_variable = nesnd_small_market_verifying remove_variable = nesnd_small_market_verification
+    remove_variable = nesnd_small_verification_partner remove_variable = nesnd_small_verification_regime
+    remove_variable = nesnd_small_verification_partner_regime remove_variable = nesnd_small_verification_overlord
+    remove_variable = nesnd_small_verification_serial
+}
+nesnd_small_market_verify = {
+    if = { limit = { has_variable = nesnd_small_market_verifying }
+        if = { limit = { OR = { NOT = { has_variable = nesnd_small_market_verification } NOT = { nesnd_small_market_verification_valid = yes } } }
+            nesnd_small_clear_market_verification = yes
+            trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes }
+        }
+        else_if = { limit = { nesnd_small_owns_market = yes }
+            nesnd_small_clear_market_verification = yes
+            trigger_event = { id = nesnd_canon_diplomacy.2 popup = yes }
+        }
+    }
+}

@@ -1,0 +1,72 @@
+﻿nesnd_ottoman_unity_measure_cultures = {
+    set_variable = { name = nesnd_ottoman_turkish_share value = nesnd_ottoman_turkish_share_sample }
+    set_variable = { name = nesnd_ottoman_arab_share value = nesnd_ottoman_arab_share_sample }
+    set_variable = { name = nesnd_ottoman_han_share value = nesnd_ottoman_han_share_sample }
+    set_variable = { name = nesnd_ottoman_african_share value = nesnd_ottoman_african_share_sample }
+    set_variable = { name = nesnd_ottoman_slavic_share value = nesnd_ottoman_slavic_share_sample }
+}
+nesnd_ottoman_unity_initialize = {
+    if = { limit = { nesnd_ottoman_unity_available = yes }
+        set_variable = nesnd_ottoman_unity_opened
+        if = { limit = { NOT = { has_variable = nesnd_ottoman_unity } } set_variable = { name = nesnd_ottoman_unity value = 70 } }
+        if = { limit = { NOT = { has_variable = nesnd_ottoman_war_months } } set_variable = { name = nesnd_ottoman_war_months value = 0 } }
+        if = { limit = { NOT = { has_variable = nesnd_ottoman_sol_change } } set_variable = { name = nesnd_ottoman_sol_change value = 0 } }
+        if = { limit = { total_population > 0 NOT = { has_variable = nesnd_ottoman_sol_previous } } set_variable = { name = nesnd_ottoman_sol_previous value = average_sol } }
+        nesnd_ottoman_unity_measure_cultures = yes
+    }
+}
+nesnd_ottoman_unity_sync = {
+    if = { limit = { has_journal_entry = nesnd_ottoman_unity }
+        je:nesnd_ottoman_unity = { set_bar_progress = { name = nesnd_ottoman_unity_bar value = owner.nesnd_ottoman_unity_value } }
+    }
+}
+nesnd_ottoman_unity_clear_bands = {
+    if = { limit = { has_modifier = nesnd_ottoman_divided_provinces } remove_modifier = nesnd_ottoman_divided_provinces }
+    if = { limit = { has_modifier = nesnd_ottoman_common_allegiance } remove_modifier = nesnd_ottoman_common_allegiance }
+}
+nesnd_ottoman_unity_refresh_bands = {
+    if = { limit = { nesnd_ottoman_unity_live = yes }
+        if = { limit = { nesnd_ottoman_unity_value < 25 }
+            if = { limit = { has_modifier = nesnd_ottoman_common_allegiance } remove_modifier = nesnd_ottoman_common_allegiance }
+            if = { limit = { NOT = { has_modifier = nesnd_ottoman_divided_provinces } } add_modifier = { name = nesnd_ottoman_divided_provinces } }
+        }
+        else_if = { limit = { nesnd_ottoman_unity_value >= 75 }
+            if = { limit = { has_modifier = nesnd_ottoman_divided_provinces } remove_modifier = nesnd_ottoman_divided_provinces }
+            if = { limit = { NOT = { has_modifier = nesnd_ottoman_common_allegiance } } add_modifier = { name = nesnd_ottoman_common_allegiance } }
+        }
+        else = { nesnd_ottoman_unity_clear_bands = yes }
+    }
+    else = { nesnd_ottoman_unity_clear_bands = yes }
+}
+nesnd_ottoman_unity_bootstrap = {
+    if = { limit = { nesnd_ottoman_unity_available = yes }
+        nesnd_ottoman_unity_initialize = yes
+        if = { limit = { NOT = { has_journal_entry = nesnd_ottoman_unity } } add_journal_entry = { type = nesnd_ottoman_unity } }
+        nesnd_ottoman_unity_sync = yes
+    }
+    else = {
+        if = { limit = { has_variable = nesnd_ottoman_war_months } set_variable = { name = nesnd_ottoman_war_months value = 0 } }
+        remove_variable = nesnd_ottoman_sol_previous
+        if = { limit = { has_variable = nesnd_ottoman_sol_change } set_variable = { name = nesnd_ottoman_sol_change value = 0 } }
+    }
+    nesnd_ottoman_unity_refresh_bands = yes
+}
+nesnd_ottoman_unity_monthly = {
+    if = { limit = { nesnd_ottoman_unity_live = yes }
+        nesnd_ottoman_unity_initialize = yes
+        set_variable = { name = nesnd_ottoman_sol_change value = 0 }
+        if = { limit = { total_population > 0 }
+            if = { limit = { has_variable = nesnd_ottoman_sol_previous }
+                set_variable = { name = nesnd_ottoman_sol_change value = { value = average_sol subtract = var:nesnd_ottoman_sol_previous } }
+            }
+            set_variable = { name = nesnd_ottoman_sol_previous value = average_sol }
+        }
+        else = { remove_variable = nesnd_ottoman_sol_previous }
+        if = { limit = { is_at_war = yes } change_variable = { name = nesnd_ottoman_war_months add = 1 } }
+        else = { set_variable = { name = nesnd_ottoman_war_months value = 0 } }
+        change_variable = { name = nesnd_ottoman_unity add = nesnd_ottoman_unity_delta }
+        clamp_variable = { name = nesnd_ottoman_unity min = 0 max = 100 }
+        nesnd_ottoman_unity_refresh_bands = yes
+        nesnd_ottoman_unity_sync = yes
+    }
+}

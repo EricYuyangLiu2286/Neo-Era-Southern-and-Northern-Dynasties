@@ -1,0 +1,181 @@
+﻿# B2 has one monthly writer. JE definitions never advance counters.
+nesnd_small_refresh_candidates = {
+    clear_saved_scope = small_first clear_saved_scope = small_second
+    remove_variable = nesnd_small_candidate_one remove_variable = nesnd_small_candidate_two
+    ordered_scope_state = { limit = { owner = prev state_population > 0 } order_by = state_population position = 0 check_range_bounds = no save_scope_as = small_first }
+    if = { limit = { exists = scope:small_first } set_variable = { name = nesnd_small_candidate_one value = scope:small_first } }
+    if = { limit = { exists = var:nesnd_small_candidate_one }
+        ordered_scope_state = { limit = { owner = prev state_population > 0 nesnd_small_geography_one = yes } order_by = state_population position = 0 check_range_bounds = no save_scope_as = small_first }
+        if = { limit = { exists = scope:small_first } set_variable = { name = nesnd_small_candidate_one value = scope:small_first } }
+        ordered_scope_state = { limit = { owner = prev state_population > 0 nesnd_small_geography_two = yes } order_by = state_population position = 0 check_range_bounds = no save_scope_as = small_second }
+        if = { limit = { exists = scope:small_second } set_variable = { name = nesnd_small_candidate_two value = scope:small_second } }
+    }
+    clear_saved_scope = small_first clear_saved_scope = small_second
+}
+nesnd_small_register_targets = {
+    if = { limit = { nesnd_small_candidate_targets_valid = yes }
+        set_variable = { name = nesnd_small_epoch value = { value = nesnd_small_epoch add = 1 } }
+        set_variable = { name = nesnd_small_anchor_one value = var:nesnd_small_candidate_one }
+        set_variable = { name = nesnd_small_anchor_two value = var:nesnd_small_candidate_two }
+        save_scope_as = small_register_country
+        if = { limit = { exists = scope:small_register_country }
+        every_scope_state = { limit = { owner = scope:small_register_country state_population > 0 OR = { nesnd_small_geography_one = yes nesnd_small_geography_two = yes } }
+            set_variable = { name = nesnd_small_region_country value = scope:small_register_country }
+            set_variable = { name = nesnd_small_region_epoch value = scope:small_register_country.nesnd_small_epoch }
+            if = { limit = { nesnd_small_geography_one = yes } set_variable = { name = nesnd_small_region_group value = 1 } }
+            else = { set_variable = { name = nesnd_small_region_group value = 2 } }
+        }
+        }
+        clear_saved_scope = small_register_country
+    }
+}
+nesnd_small_initialize = {
+    if = { limit = { nesnd_small_state_country = yes NOT = { has_variable = nesnd_small_lineage } }
+        set_variable = nesnd_small_lineage
+        if = { limit = { nesnd_india_prince = yes } set_variable = nesnd_small_indian_line }
+        if = { limit = { nesnd_small_southern_identity = yes } set_variable = nesnd_small_southern_line }
+        if = { limit = { c:YN1 ?= this } set_variable = nesnd_small_far_south_line }
+        if = { limit = { c:BUR ?= this } set_variable = nesnd_small_burma_line }
+        if = { limit = { c:SIA ?= this } set_variable = nesnd_small_siam_line }
+        nesnd_small_refresh_candidates = yes
+        if = { limit = { nesnd_small_candidate_valid = yes } set_variable = nesnd_small_regional nesnd_small_register_targets = yes }
+    }
+}
+nesnd_small_retarget = {
+    if = { limit = { nesnd_small_can_retarget = yes }
+        set_variable = nesnd_small_generic_regions nesnd_small_refresh_candidates = yes
+        if = { limit = { nesnd_small_candidate_targets_valid = yes }
+            nesnd_small_register_targets = yes
+            set_variable = { name = nesnd_small_retarget_cooldown months = 24 }
+            remove_variable = nesnd_small_regional_economy_months remove_variable = nesnd_small_regional_governance_months remove_variable = nesnd_small_order_months
+            remove_variable = nesnd_small_regional_economy_done remove_variable = nesnd_small_regional_governance_done
+        }
+    }
+}
+nesnd_small_restore_geography = {
+    if = { limit = { nesnd_small_state_country = yes has_variable = nesnd_small_generic_regions NOT = { has_variable = nesnd_small_retarget_cooldown } nesnd_small_restore_valid = yes }
+        remove_variable = nesnd_small_generic_regions nesnd_small_refresh_candidates = yes
+        if = { limit = { nesnd_small_candidate_targets_valid = yes }
+            nesnd_small_register_targets = yes set_variable = { name = nesnd_small_retarget_cooldown months = 24 }
+            remove_variable = nesnd_small_regional_economy_months remove_variable = nesnd_small_regional_governance_months remove_variable = nesnd_small_order_months
+            remove_variable = nesnd_small_regional_economy_done remove_variable = nesnd_small_regional_governance_done
+        }
+        else = { set_variable = nesnd_small_generic_regions nesnd_small_refresh_candidates = yes }
+    }
+}
+nesnd_small_economy_reward = {
+    set_variable = nesnd_small_economy_done
+    if = { limit = { NOT = { has_variable = nesnd_small_economy_rewarded } }
+        set_variable = nesnd_small_economy_rewarded add_modifier = { name = nesnd_small_livelihood months = 36 }
+        trigger_event = { id = nesnd_small_states.2 popup = yes }
+    }
+}
+nesnd_small_governance_reward = {
+    set_variable = nesnd_small_governance_done
+    if = { limit = { NOT = { has_variable = nesnd_small_governance_rewarded } }
+        set_variable = nesnd_small_governance_rewarded add_modifier = { name = nesnd_small_learning months = 60 }
+        trigger_event = { id = nesnd_small_states.3 popup = yes }
+    }
+}
+nesnd_small_start_public = {
+    if = { limit = { nesnd_small_state_country = yes in_default = no net_fixed_income >= nesnd_small_weekly_quote NOT = { has_modifier = nesnd_small_public_investment } }
+        set_variable = { name = nesnd_small_frozen_quote value = nesnd_small_weekly_quote }
+        if = { limit = { has_variable = nesnd_small_frozen_quote }
+            add_modifier = { name = nesnd_small_public_investment months = 12 multiplier = var:nesnd_small_frozen_quote }
+            add_modifier = { name = nesnd_small_public_services months = 12 }
+        }
+    }
+}
+nesnd_small_specialise = {
+    if = { limit = { nesnd_small_state_country = yes nesnd_small_external_market = yes NOT = { has_modifier = nesnd_small_specialised_market } NOT = { has_modifier = nesnd_small_own_market } }
+        set_variable = { name = nesnd_small_policy_market value = market.owner }
+        add_modifier = { name = nesnd_small_specialised_market months = 12 }
+    }
+}
+nesnd_small_prepare_market = {
+    if = { limit = { nesnd_small_state_country = yes NOT = { has_modifier = nesnd_small_specialised_market } NOT = { has_modifier = nesnd_small_own_market } }
+        add_modifier = { name = nesnd_small_own_market months = 12 }
+        if = { limit = { nesnd_small_owns_market = yes } nesnd_small_start_public = yes }
+    }
+}
+nesnd_small_cleanup = {
+    if = { limit = { has_modifier = nesnd_small_specialised_market } remove_modifier = nesnd_small_specialised_market } if = { limit = { has_modifier = nesnd_small_own_market } remove_modifier = nesnd_small_own_market }
+    if = { limit = { has_modifier = nesnd_small_public_investment } remove_modifier = nesnd_small_public_investment } if = { limit = { has_modifier = nesnd_small_public_services } remove_modifier = nesnd_small_public_services }
+    remove_variable = nesnd_small_policy_market
+    if = { limit = { OR = { nesnd_canon_request_kind = 5 nesnd_canon_request_kind = 6 nesnd_canon_request_kind = 7 nesnd_canon_request_kind = 8 nesnd_canon_request_kind = 9 } } nesnd_canon_clear_request = yes }
+    nesnd_small_clear_market_verification = yes
+    nesnd_small_close_episode = yes
+}
+nesnd_small_monthly = {
+    if = { limit = { nesnd_small_state_country = yes }
+        nesnd_small_initialize = yes nesnd_small_refresh_candidates = yes
+        if = { limit = { has_modifier = nesnd_small_specialised_market
+            NOT = { nesnd_small_policy_market_valid = yes }
+        } if = { limit = { has_modifier = nesnd_small_specialised_market } remove_modifier = nesnd_small_specialised_market } remove_variable = nesnd_small_policy_market trigger_event = { id = nesnd_small_states.4 popup = yes } }
+        if = { limit = { NOT = { has_variable = nesnd_small_regional } nesnd_small_candidate_valid = yes }
+            change_variable = { name = nesnd_small_upgrade_months add = 1 }
+            if = { limit = { nesnd_small_upgrade_months >= 6 }
+                set_variable = nesnd_small_regional
+                if = { limit = { NOT = { has_variable = nesnd_small_epoch } } nesnd_small_register_targets = yes }
+                remove_variable = nesnd_small_upgrade_months
+            }
+        }
+        else = { remove_variable = nesnd_small_upgrade_months }
+        if = { limit = { has_variable = nesnd_small_regional OR = { nesnd_small_population < 1500000 nesnd_small_populated_states < 2 } }
+            change_variable = { name = nesnd_small_decline_months add = 1 }
+            if = { limit = { nesnd_small_decline_months >= 6 } remove_variable = nesnd_small_regional remove_variable = nesnd_small_decline_months }
+        }
+        else = { remove_variable = nesnd_small_decline_months }
+        if = { limit = { has_variable = nesnd_small_regional }
+            if = { limit = { NOT = { has_variable = nesnd_small_regional_economy_done } nesnd_small_regional_economy = yes }
+                change_variable = { name = nesnd_small_regional_economy_months add = 1 }
+                if = { limit = { nesnd_small_regional_economy_months >= 12 } set_variable = nesnd_small_regional_economy_done nesnd_small_economy_reward = yes }
+            }
+            else_if = { limit = { NOT = { has_variable = nesnd_small_regional_governance_done } nesnd_small_regional_governance = yes }
+                change_variable = { name = nesnd_small_regional_governance_months add = 1 }
+                if = { limit = { nesnd_small_regional_governance_months >= 12 } set_variable = nesnd_small_regional_governance_done nesnd_small_governance_reward = yes }
+            }
+        }
+        else = {
+            if = { limit = { NOT = { has_variable = nesnd_small_economy_done } nesnd_small_compact_economy = yes }
+                change_variable = { name = nesnd_small_economy_months add = 1 }
+                if = { limit = { nesnd_small_economy_months >= 12 } nesnd_small_economy_reward = yes }
+            }
+            else_if = { limit = { NOT = { has_variable = nesnd_small_governance_done } nesnd_small_compact_governance = yes }
+                change_variable = { name = nesnd_small_governance_months add = 1 }
+                if = { limit = { nesnd_small_governance_months >= 12 } nesnd_small_governance_reward = yes }
+            }
+        }
+        if = { limit = { has_variable = nesnd_small_order_active }
+            if = { limit = { OR = { AND = { has_variable = nesnd_small_order_subject NOT = { nesnd_small_high_autonomy = yes } } AND = { NOT = { has_variable = nesnd_small_order_subject } is_subject = yes } } }
+                remove_variable = nesnd_small_order_months remove_variable = nesnd_small_order_active remove_variable = nesnd_small_order_deadline
+            }
+            else_if = { limit = { NOT = { has_variable = nesnd_small_order_deadline } }
+                remove_variable = nesnd_small_order_months remove_variable = nesnd_small_order_active
+                set_variable = { name = nesnd_small_order_cooldown months = 12 } trigger_event = { id = nesnd_small_states.5 popup = yes }
+            }
+            else_if = { limit = { nesnd_small_order_ready = yes }
+                change_variable = { name = nesnd_small_order_months add = 1 }
+                if = { limit = { nesnd_small_order_months >= 24 NOT = { has_variable = nesnd_small_order_rewarded } }
+                    set_variable = nesnd_small_order_done set_variable = nesnd_small_order_rewarded
+                    add_modifier = { name = nesnd_small_order months = 60 }
+                    remove_variable = nesnd_small_order_active remove_variable = nesnd_small_order_deadline
+                    trigger_event = { id = nesnd_small_states.6 popup = yes }
+                }
+            }
+        }
+        nesnd_small_episode_monthly = yes
+    }
+    else = { nesnd_small_cleanup = yes }
+}
+nesnd_small_choose_order = {
+    if = { limit = { nesnd_small_state_country = yes nesnd_small_governance_done = yes
+        NOT = { has_variable = nesnd_small_order_rewarded } NOT = { has_variable = nesnd_small_order_cooldown }
+        NOT = { has_variable = nesnd_small_order_active }
+        OR = { is_subject = no AND = { has_variable = nesnd_small_regional nesnd_small_high_autonomy = yes } }
+    }
+        remove_variable = nesnd_small_order_months remove_variable = nesnd_small_order_subject
+        if = { limit = { is_subject = yes } set_variable = nesnd_small_order_subject }
+        set_variable = nesnd_small_order_active set_variable = { name = nesnd_small_order_deadline months = 120 }
+    }
+}

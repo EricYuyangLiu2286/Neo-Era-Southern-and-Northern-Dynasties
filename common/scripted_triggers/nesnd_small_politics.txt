@@ -1,0 +1,45 @@
+﻿nesnd_small_land_issue = { has_technology_researched = enclosure pop_type_percent_country = { pop_type = peasants percent > 0.25 } OR = { has_law = law_type:law_serfdom has_law = law_type:law_tenant_farmers has_law = law_type:law_debt_slavery } nesnd_small_land_population > 0 any_political_movement = { is_political_movement_type = movement_land_reform } }
+nesnd_small_labor_issue = { has_technology_researched = labor_movement has_law = law_type:law_no_workers_rights nesnd_small_labor_population > 0 any_political_movement = { is_political_movement_type = movement_labor } }
+nesnd_small_representation_issue = { OR = { has_law = law_type:law_hindu_caste_enforced has_law = law_type:law_hindu_caste_codified has_law = law_type:law_autocracy has_law = law_type:law_oligarchy } OR = { AND = { has_technology_researched = democracy any_political_movement = { is_political_movement_type = movement_liberal } } AND = { has_technology_researched = egalitarianism any_political_movement = { is_political_movement_type = movement_radical } } } }
+nesnd_small_episode_issue_live = {
+    trigger_if = { limit = { has_variable = nesnd_small_episode_issue }
+        trigger_if = { limit = { var:nesnd_small_episode_issue = 1 } nesnd_small_land_issue = yes }
+        trigger_else_if = { limit = { var:nesnd_small_episode_issue = 2 } nesnd_small_labor_issue = yes }
+        trigger_else = { nesnd_small_representation_issue = yes }
+    }
+    trigger_else = { always = no }
+}
+nesnd_small_episode_valid = {
+ trigger_if = { limit = { exists = scope:small_episode_serial exists = scope:small_episode_regime }
+  nesnd_small_state_country = yes has_revolution = no NOT = { has_variable = nesnd_small_provisional }
+  has_variable = nesnd_small_episode_active has_variable = nesnd_small_episode_clock NOT = { has_variable = nesnd_small_episode_choice }
+  nesnd_small_episode_serial = scope:small_episode_serial nesnd_canon_regime = scope:small_episode_regime
+  nesnd_small_episode_issue_live = yes
+ } trigger_else = { always = no }
+}
+nesnd_small_episode_choice_is = {
+ trigger_if = { limit = { has_variable = nesnd_small_episode_choice } var:nesnd_small_episode_choice = $VALUE$ }
+ trigger_else = { always = no }
+}
+nesnd_small_episode_issue_is = {
+ trigger_if = { limit = { has_variable = nesnd_small_episode_issue } var:nesnd_small_episode_issue = $VALUE$ }
+ trigger_else = { always = no }
+}
+nesnd_small_promised_law = {
+    trigger_if = { limit = { has_variable = nesnd_small_promise }
+        trigger_if = { limit = { var:nesnd_small_promise = 1 } OR = { has_law_or_variant = law_type:law_peasant_proprietorship has_law = law_type:law_commercialized_agriculture has_law = law_type:law_collectivized_agriculture } }
+        trigger_else_if = { limit = { var:nesnd_small_promise = 2 } has_law = law_type:law_slavery_banned }
+        trigger_else_if = { limit = { var:nesnd_small_promise = 3 } OR = { has_law = law_type:law_regulatory_bodies has_law = law_type:law_worker_protections } }
+        trigger_else_if = { limit = { var:nesnd_small_promise = 4 } OR = { has_law = law_type:law_hindu_caste_not_enforced has_law = law_type:law_affirmative_action } }
+        trigger_else = { OR = { has_law = law_type:law_wealth_voting has_law = law_type:law_census_voting has_law = law_type:law_universal_suffrage } }
+    }
+    trigger_else = { always = no }
+}
+nesnd_small_organised_movement = {
+    trigger_if = { limit = { owner = { has_variable = nesnd_small_episode_issue } }
+        trigger_if = { limit = { owner.var:nesnd_small_episode_issue = 1 } is_political_movement_type = movement_land_reform }
+        trigger_else_if = { limit = { owner.var:nesnd_small_episode_issue = 2 } is_political_movement_type = movement_labor }
+        trigger_else = { OR = { is_political_movement_type = movement_liberal is_political_movement_type = movement_radical } }
+    }
+    trigger_else = { always = no }
+}

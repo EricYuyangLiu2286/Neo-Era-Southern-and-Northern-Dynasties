@@ -1,0 +1,93 @@
+﻿# Country scope unless the predicate is explicitly a culture/state predicate.
+nesnd_hus_original_country = {
+    c:HUS ?= this is_country_alive = yes
+    NOR = { has_variable = nesnd_hus_native_successor has_variable = nesnd_hus_hierarchy_retired }
+}
+nesnd_hus_has_hierarchy_law = { OR = {
+    has_law = law_type:law_nesnd_hus_four_tier_system
+    has_law = law_type:law_nesnd_hus_manchu_registration
+    has_law = law_type:law_nesnd_hus_native_registration
+} }
+nesnd_hus_has_legacy_law = { OR = {
+    has_law = law_type:law_nesnd_hus_hierarchy
+    has_law = law_type:law_nesnd_hus_registry_manchu
+    has_law = law_type:law_nesnd_hus_registry_native
+} }
+nesnd_hus_has_tier_modifier = { OR = {
+    has_modifier = nesnd_hus_acceptance_hierarchy has_modifier = nesnd_hus_acceptance_manchu has_modifier = nesnd_hus_acceptance_native
+} }
+nesnd_hus_hierarchy_managed = { OR = {
+    c:HUS ?= this c:NKH ?= this
+    has_variable = nesnd_hus_hierarchy_version has_variable = nesnd_hus_hierarchy_active
+    has_variable = nesnd_hus_revolution_continuation
+    has_social_hierarchy = nesnd_hus_social_hierarchy
+    nesnd_hus_has_hierarchy_law = yes nesnd_hus_has_legacy_law = yes nesnd_hus_has_tier_modifier = yes
+    AND = { is_revolutionary = yes exists = civil_war_origin_country civil_war_origin_country ?= { c:HUS ?= this has_variable = nesnd_hus_hierarchy_active NOT = { has_variable = nesnd_hus_native_successor } } }
+} }
+nesnd_hus_citizenship_unlocked = {
+    custom_tooltip = { text = nesnd_hus_registration_lock_tt
+        NOR = { has_variable = nesnd_hus_hierarchy_active has_social_hierarchy = nesnd_hus_social_hierarchy nesnd_hus_has_hierarchy_law = yes nesnd_hus_has_legacy_law = yes }
+    }
+}
+nesnd_hus_registration_open = {
+    nesnd_hus_original_country = yes has_variable = nesnd_hus_hierarchy_active
+    NOR = { has_variable = nesnd_hus_registration_done has_variable = nesnd_hus_migration_conflict }
+}
+nesnd_hus_manchu_route = {
+    trigger_if = { limit = { has_variable = nesnd_hus_registration_choice } var:nesnd_hus_registration_choice = 1 }
+    trigger_else = { always = no }
+}
+nesnd_hus_native_route = {
+    trigger_if = { limit = { has_variable = nesnd_hus_registration_choice } var:nesnd_hus_registration_choice = 2 }
+    trigger_else = { always = no }
+}
+nesnd_hus_valid_registration_choice = { OR = { nesnd_hus_manchu_route = yes nesnd_hus_native_route = yes } }
+nesnd_hus_registration_enacted_correctly = {
+    has_variable = nesnd_hus_registration_done
+    OR = {
+        AND = { nesnd_hus_manchu_route = yes has_law = law_type:law_nesnd_hus_manchu_registration }
+        AND = { nesnd_hus_native_route = yes has_law = law_type:law_nesnd_hus_native_registration }
+    }
+}
+nesnd_hus_epoch_matches_record = {
+    trigger_if = { limit = { has_variable = nesnd_hus_registration_epoch has_global_variable = nesnd_hus_registration_record_epoch }
+        var:nesnd_hus_registration_epoch = global_var:nesnd_hus_registration_record_epoch
+    }
+    trigger_else = { always = no }
+}
+nesnd_hus_registration_clock_ready = {
+    nesnd_hus_epoch_matches_record = yes
+    trigger_if = { limit = { has_global_variable = nesnd_hus_registration_record_state } global_var:nesnd_hus_registration_record_state = 2 }
+    trigger_else = { always = no }
+}
+nesnd_hus_revolution_snapshot_valid = {
+    has_variable = nesnd_hus_revolution_continuation has_variable = nesnd_hus_hierarchy_version
+    exists = var:nesnd_hus_frozen_citizenship_type NOT = { has_variable = nesnd_hus_native_successor }
+}
+# Culture scope. Manchu retains global Han heritage and is classified first here.
+nesnd_hus_native_culture = { has_discrimination_trait_group = heritage_group_indigenous_american }
+nesnd_hus_manchu_culture = { OR = { this = cu:manchu has_discrimination_trait = heritage_mongolian } }
+nesnd_hus_manchu_class_culture = { nesnd_hus_manchu_culture = yes }
+nesnd_hus_han_class_culture = { has_discrimination_trait = heritage_han NOT = { nesnd_hus_manchu_culture = yes } }
+nesnd_hus_native_class_culture = { nesnd_hus_native_culture = yes NOR = { nesnd_hus_manchu_culture = yes nesnd_hus_han_class_culture = yes } }
+nesnd_hus_white_class_culture = {
+    has_discrimination_trait_group = heritage_group_european
+    NOR = { nesnd_hus_manchu_culture = yes nesnd_hus_han_class_culture = yes nesnd_hus_native_class_culture = yes }
+}
+nesnd_hus_hierarchy_culture = { OR = { nesnd_hus_han_class_culture = yes nesnd_hus_manchu_class_culture = yes nesnd_hus_native_class_culture = yes nesnd_hus_white_class_culture = yes } }
+nesnd_khanate_trigger_ready = {
+    nesnd_hus_original_country = yes nesnd_hus_registration_enacted_correctly = yes nesnd_hus_manchu_route = yes
+    has_global_variable = american_civil_war NOT = { has_global_variable = nesnd_khanate_created }
+}
+nesnd_hus_american_west_state = {
+    owner = { c:USA ?= this }
+    OR = { region = sr:region_great_plains region = sr:region_pacific_coast }
+    state_population > 0
+}
+
+nesnd_hus_owns_cmf_reference = {
+    trigger_if = { limit = { exists = var:custom_social_hierarchy exists = var:nesnd_hus_cmf_law }
+        var:custom_social_hierarchy = var:nesnd_hus_cmf_law
+    }
+    trigger_else = { always = no }
+}

@@ -1,0 +1,41 @@
+﻿nesnd_a2_manchu_exodus = {
+ if = { limit = {
+  nesnd_hus_original_country = yes nesnd_hus_native_route = yes nesnd_hus_registration_enacted_correctly = yes nesnd_hus_epoch_matches_record = yes
+  has_variable = nesnd_hus_manchu_exodus_pending NOT = { has_variable = nesnd_hus_manchu_exodus_done }
+ }
+  if = { limit = { has_global_variable = nesnd_hus_registration_exodus_epoch }
+   if = { limit = { var:nesnd_hus_registration_epoch = global_var:nesnd_hus_registration_exodus_epoch }
+    set_variable = nesnd_hus_manchu_exodus_done remove_variable = nesnd_hus_manchu_exodus_pending
+   }
+  }
+  if = { limit = { NOT = { has_variable = nesnd_hus_manchu_exodus_done } }
+   # Receipt precedes movement; every source community makes one independent lottery.
+   set_variable = nesnd_hus_manchu_exodus_done
+   set_variable = { name = nesnd_a2_exodus_result value = 4 }
+   clear_saved_scope = nesnd_hus_refuge_cne clear_saved_scope = nesnd_hus_refuge_usa
+   c:CNE ?= { random_scope_state = { limit = { state_population > 0 } save_scope_as = nesnd_hus_refuge_cne } }
+   c:USA ?= { random_scope_state = { limit = { nesnd_hus_american_west_state = yes } save_scope_as = nesnd_hus_refuge_usa } }
+   if = { limit = { exists = scope:nesnd_hus_refuge_cne exists = scope:nesnd_hus_refuge_usa } set_variable = { name = nesnd_a2_exodus_result value = 1 } }
+   else_if = { limit = { exists = scope:nesnd_hus_refuge_cne } set_variable = { name = nesnd_a2_exodus_result value = 2 } }
+   else_if = { limit = { exists = scope:nesnd_hus_refuge_usa } set_variable = { name = nesnd_a2_exodus_result value = 3 } }
+   every_scope_state = { every_scope_pop = {
+    limit = { culture = { nesnd_hus_manchu_culture = yes } }
+    clear_saved_scope = nesnd_hus_refuge_cne clear_saved_scope = nesnd_hus_refuge_usa
+    c:CNE ?= { random_scope_state = { limit = { state_population > 0 } save_scope_as = nesnd_hus_refuge_cne } }
+    c:USA ?= { random_scope_state = { limit = { nesnd_hus_american_west_state = yes } save_scope_as = nesnd_hus_refuge_usa } }
+    if = { limit = { exists = scope:nesnd_hus_refuge_cne exists = scope:nesnd_hus_refuge_usa }
+     random_list = { 70 = { move_pop = scope:nesnd_hus_refuge_cne } 30 = { move_pop = scope:nesnd_hus_refuge_usa } }
+    }
+    else_if = { limit = { exists = scope:nesnd_hus_refuge_cne } move_pop = scope:nesnd_hus_refuge_cne }
+    else_if = { limit = { exists = scope:nesnd_hus_refuge_usa } move_pop = scope:nesnd_hus_refuge_usa }
+   } }
+   remove_variable = nesnd_hus_manchu_exodus_pending
+   set_global_variable = { name = nesnd_hus_registration_exodus_epoch value = var:nesnd_hus_registration_epoch }
+   c:CNE ?= { save_scope_as = nesnd_a2_cne_country }
+   c:USA ?= { save_scope_as = nesnd_a2_usa_country }
+   trigger_event = { id = nesnd_hus_registration.2 popup = yes }
+   clear_saved_scope = nesnd_a2_cne_country clear_saved_scope = nesnd_a2_usa_country
+   clear_saved_scope = nesnd_hus_refuge_cne clear_saved_scope = nesnd_hus_refuge_usa
+  }
+ }
+}

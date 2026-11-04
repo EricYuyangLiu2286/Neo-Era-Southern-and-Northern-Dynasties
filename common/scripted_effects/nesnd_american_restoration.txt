@@ -1,0 +1,345 @@
+# A2 transaction owners are country objects. A recreated TAG is never a receipt.
+nesnd_restoration_mark_resolved = {
+ if = { limit = { OR = { c:MEX ?= this c:NAH ?= this has_variable = nesnd_restoration_mexican } } set_global_variable = nesnd_mexican_restoration_resolved }
+ else = { set_global_variable = nesnd_andean_restoration_resolved }
+}
+nesnd_restoration_initialize = {
+ if = { limit = { NOT = { has_variable = nesnd_restoration_initialized } }
+  set_variable = nesnd_restoration_initialized
+  if = { limit = { c:MEX ?= this } set_variable = nesnd_restoration_mexican }
+ }
+}
+nesnd_restoration_refugees = {
+ if = { limit = { has_variable = nesnd_restoration_refugees_pending NOT = { has_variable = nesnd_restoration_refugees_sent } NOT = { has_variable = nesnd_restoration_refugee_terminal } }
+  set_variable = { name = nesnd_restoration_refugee_state value = 1 }
+  set_variable = nesnd_restoration_refugee_terminal
+  if = { limit = { exists = c:HUS }
+   if = { limit = { NOT = { c:HUS ?= this } c:HUS = { is_country_alive = yes any_scope_state = { state_population > 0 } } }
+   every_scope_state = { every_scope_pop = {
+    limit = { culture = { nesnd_hus_native_culture = yes } }
+    clear_saved_scope = nesnd_restoration_refuge
+    c:HUS = { random_scope_state = { limit = { state_population > 0 } save_scope_as = nesnd_restoration_refuge } }
+    if = { limit = { exists = scope:nesnd_restoration_refuge scope:nesnd_restoration_refuge = { owner = c:HUS } }
+     move_partial_pop = { state = scope:nesnd_restoration_refuge population_ratio = 0.4 }
+     scope:nesnd_restoration_refuge = { if = { limit = { NOT = { has_modifier = nesnd_native_exiles } } add_modifier = { name = nesnd_native_exiles months = 60 } } }
+    }
+   } }
+   set_variable = nesnd_restoration_refugees_sent set_variable = { name = nesnd_restoration_refugee_state value = 2 }
+   c:HUS = { trigger_event = { id = nesnd_american_restoration.2 popup = yes } }
+  }
+   else = { set_variable = { name = nesnd_restoration_refugee_state value = 3 } }
+  }
+  else = { set_variable = { name = nesnd_restoration_refugee_state value = 3 } }
+  remove_variable = nesnd_restoration_refugees_pending clear_saved_scope = nesnd_restoration_refuge
+ }
+ if = { limit = { has_variable = nesnd_restoration_refugees_sent } remove_variable = nesnd_restoration_refugees_pending }
+}
+nesnd_restoration_exile_people = {
+ set_variable = { name = nesnd_restoration_exile_count value = 0 }
+ every_scope_character = {
+  limit = { has_variable = nesnd_a2_case_character is_character_alive = yes culture = { nesnd_hus_native_culture = yes } }
+  nesnd_restoration_exile_one = yes
+ }
+ every_scope_character = {
+  limit = {
+   is_character_alive = yes culture = { nesnd_hus_native_culture = yes } NOT = { has_variable = nesnd_a2_case_character }
+   OR = { is_interest_group_leader = yes has_role_of_type = agitator has_role_of_type = general has_role_of_type = ruler }
+  }
+  nesnd_restoration_exile_one = yes
+ }
+ remove_variable = nesnd_restoration_exile_count
+}
+nesnd_restoration_exile_one = {
+ if = { limit = { owner = { has_variable = nesnd_restoration_exile_count var:nesnd_restoration_exile_count < 3 } }
+  owner = { change_variable = { name = nesnd_restoration_exile_count add = 1 } }
+  exile_character_with_role_cleanup = yes
+  if = { limit = { exists = c:HUS }
+  if = { limit = {
+   c:HUS = { is_country_alive = yes empty_agitator_slots >= 1 NOT = { has_law_or_variant = law_type:law_closed_borders } }
+   character_acceptance = { target = c:HUS value >= acceptance_status_3 } can_agitate = c:HUS
+   OR = { NOT = { is_interest_group_type = ig_devout } religion = c:HUS.religion }
+   OR = { is_interest_group_type = ig_devout NOT = { c:HUS = { has_law = law_type:law_state_religion } } religion = c:HUS.religion }
+  } transfer_character = c:HUS free_from_exile_effect = yes }
+  }
+ }
+}
+nesnd_restoration_suppress = {
+ if = { limit = { nesnd_restoration_can_suppress = yes }
+  set_variable = nesnd_restoration_local_closed
+  if = { limit = { c:MEX ?= this } nesnd_restoration_mark_resolved = yes }
+  set_variable = nesnd_restoration_refugees_pending nesnd_restoration_refugees = yes
+  every_scope_culture = { limit = { nesnd_hus_native_culture = yes } prev = { add_radicals = { culture = prev value = 0.15 } } }
+  nesnd_restoration_exile_people = yes
+  trigger_event = { id = nesnd_american_restoration.3 popup = yes }
+ }
+}
+nesnd_restoration_identity = {
+ if = { limit = { has_variable = nesnd_restoration_rebel OR = { c:NAH ?= this c:TWT ?= this } }
+  save_scope_as = nesnd_restoration_country
+  set_social_hierarchy = default_social_hierarchy
+  activate_law = law_type:law_monarchy activate_law = law_type:law_freedom_of_conscience
+  activate_law = law_type:law_professional_army activate_law = law_type:law_slavery_banned
+  activate_law = law_type:law_racial_segregation activate_law = law_type:law_interventionism activate_law = law_type:law_mercantilism
+  if = { limit = { c:NAH ?= this }
+   activate_law = law_type:law_census_voting activate_law = law_type:law_elected_bureaucrats
+   add_primary_culture = cu:nahua add_primary_culture = cu:mixtec add_primary_culture = cu:zapotec add_primary_culture = cu:tarascan
+   every_primary_culture = { limit = { NOT = { OR = { this = cu:nahua this = cu:mixtec this = cu:zapotec this = cu:tarascan } } } scope:nesnd_restoration_country = { remove_primary_culture = prev } }
+  }
+  else = {
+   activate_law = law_type:law_oligarchy activate_law = law_type:law_appointed_bureaucrats set_state_religion = rel:old_confucianism
+   add_primary_culture = cu:quechua add_primary_culture = cu:aimara
+   every_primary_culture = { limit = { NOT = { OR = { this = cu:quechua this = cu:aimara } } } scope:nesnd_restoration_country = { remove_primary_culture = prev } }
+  }
+  nesnd_restoration_dynasty = yes
+  clear_saved_scope = nesnd_restoration_country
+ }
+}
+nesnd_restoration_dynasty = {
+ # Search existing living instances in countries, exile and void before any creation.
+ every_character = {
+  limit = { is_character_alive = yes }
+  if = { limit = { has_template = nesnd_a2_itzcoatl } set_global_variable = nesnd_a2_itzcoatl_seen }
+  if = { limit = { has_template = nesnd_a2_amaru } set_global_variable = nesnd_a2_amaru_seen }
+  if = { limit = { has_template = nesnd_a2_rumi } set_global_variable = nesnd_a2_rumi_seen }
+ }
+ every_character_in_exile_pool = {
+  if = { limit = { has_template = nesnd_a2_itzcoatl } set_global_variable = nesnd_a2_itzcoatl_seen }
+  if = { limit = { has_template = nesnd_a2_amaru } set_global_variable = nesnd_a2_amaru_seen }
+  if = { limit = { has_template = nesnd_a2_rumi } set_global_variable = nesnd_a2_rumi_seen }
+ }
+ every_character_in_void = {
+  if = { limit = { has_template = nesnd_a2_itzcoatl } set_global_variable = nesnd_a2_itzcoatl_seen }
+  if = { limit = { has_template = nesnd_a2_amaru } set_global_variable = nesnd_a2_amaru_seen }
+  if = { limit = { has_template = nesnd_a2_rumi } set_global_variable = nesnd_a2_rumi_seen }
+ }
+ if = { limit = { c:NAH ?= this game_date >= 1836.1.1 game_date < 1861.1.1 NOT = { has_global_variable = nesnd_a2_itzcoatl_seen } NOT = { has_global_variable = nesnd_a2_itzcoatl_dead } }
+  set_global_variable = nesnd_a2_itzcoatl_seen create_character = { template = nesnd_a2_itzcoatl on_created = { set_variable = nesnd_a2_itzcoatl set_variable = nesnd_a2_case_character } }
+ }
+ else_if = { limit = { c:TWT ?= this game_date >= 1836.1.1 game_date < 1851.1.1 NOT = { has_global_variable = nesnd_a2_amaru_seen } NOT = { has_global_variable = nesnd_a2_amaru_dead } }
+  set_global_variable = nesnd_a2_amaru_seen create_character = { template = nesnd_a2_amaru on_created = { set_variable = nesnd_a2_amaru set_variable = nesnd_a2_case_character } }
+ }
+}
+nesnd_restoration_recognize = {
+ if = { limit = { nesnd_restoration_can_recognize = yes }
+  if = { limit = { NOT = { c:MEX ?= this } exists = c:TWT }
+   remove_variable = nesnd_restoration_request_refused remove_variable = nesnd_restoration_request_expired
+   set_variable = { name = nesnd_restoration_invitation_pending days = 90 }
+   set_variable = { name = nesnd_restoration_request_cooldown months = 12 }
+   save_scope_as = nesnd_restoration_applicant
+   c:TWT = { save_scope_as = nesnd_restoration_requested_court }
+   save_scope_value_as = { name = nesnd_restoration_court_epoch value = c:TWT.var:nesnd_restoration_epoch }
+   if = { limit = { NOT = { has_variable = nesnd_restoration_request_epoch } } set_variable = { name = nesnd_restoration_request_epoch value = 0 } }
+   change_variable = { name = nesnd_restoration_request_epoch add = 1 }
+   save_scope_value_as = { name = nesnd_restoration_request_epoch value = var:nesnd_restoration_request_epoch }
+   set_variable = { name = nesnd_restoration_request_epoch value = scope:nesnd_restoration_request_epoch }
+   c:TWT = { trigger_event = { id = nesnd_american_restoration.10 popup = yes } }
+   trigger_event = { id = nesnd_american_restoration.11 days = 91 }
+  }
+  else = {
+   if = { limit = { c:MEX ?= this } change_tag = NAH }
+   else = { change_tag = TWT }
+   if = { limit = { OR = { c:NAH ?= this c:TWT ?= this } }
+    set_variable = nesnd_restoration_rebel set_variable = nesnd_a2_restoration_adopted set_variable = nesnd_restoration_local_closed
+    if = { limit = { c:TWT ?= this }
+     set_variable = { name = nesnd_restoration_epoch value = 1 }
+     nesnd_restoration_register_court = yes
+    }
+    nesnd_restoration_identity = yes nesnd_restoration_mark_resolved = yes
+    set_variable = nesnd_restoration_victory add_modifier = { name = nesnd_native_restored_rule months = 120 }
+    trigger_event = { id = nesnd_american_restoration.4 popup = yes }
+   }
+  }
+ }
+}
+nesnd_restoration_negotiate = {
+ if = { limit = { nesnd_restoration_can_negotiate = yes }
+  add_modifier = { name = nesnd_native_local_councils months = 36 }
+  if = { limit = { has_journal_entry = nesnd_american_restoration }
+   je:nesnd_american_restoration = { add_progress = { name = nesnd_restoration_pressure_bar value = -15 } }
+  }
+ }
+}
+nesnd_restoration_minimum_technology = {
+ add_technology_researched = manufacturies
+ add_technology_researched = standing_army add_technology_researched = mandatory_service
+ add_technology_researched = gunsmithing add_technology_researched = military_drill
+ add_technology_researched = artillery add_technology_researched = line_infantry
+}
+nesnd_restoration_rebel_setup = {
+ if = { limit = { NOT = { has_variable = nesnd_restoration_prepared } }
+  set_variable = nesnd_restoration_prepared nesnd_restoration_identity = yes nesnd_restoration_minimum_technology = yes
+
+  nesnd_restoration_facility = { BUILDING = building_arms_industry CAP = 1 }
+  nesnd_restoration_facility = { BUILDING = building_tooling_workshop CAP = 1 }
+  nesnd_restoration_facility = { BUILDING = building_government_administration CAP = 1 }
+  if = { limit = { total_population >= 600000 }
+   nesnd_restoration_facility = { BUILDING = building_artillery_foundry CAP = 1 }
+   nesnd_restoration_facility = { BUILDING = building_food_industry CAP = 1 }
+  }
+  if = { limit = { total_population >= 1200000 } nesnd_restoration_facility = { BUILDING = building_government_administration CAP = 2 } }
+  if = { limit = { c:TWT ?= this NOT = { has_global_variable = nesnd_a2_rumi_seen } }
+   set_global_variable = nesnd_a2_rumi_seen
+   create_character = { template = nesnd_a2_rumi on_created = { set_variable = nesnd_a2_rumi set_variable = nesnd_a2_case_character } }
+  }
+  nesnd_restoration_army = yes
+ }
+}
+nesnd_restoration_revolt = {
+ if = { limit = { nesnd_american_restoration_host = yes NOT = { exists = c:$TAG$ } NOT = { any_civil_war = { always = yes } } }
+  save_scope_as = nesnd_restoration_host clear_saved_scope = nesnd_restoration_seed clear_saved_scope = nesnd_restoration_second
+  if = { limit = { nesnd_restoration_small_country = yes }
+   ordered_scope_state = { limit = { nesnd_restoration_small_core = yes } order_by = state_population max = 1 save_scope_as = nesnd_restoration_seed }
+   if = { limit = { exists = scope:nesnd_restoration_seed }
+    nesnd_restoration_relocate_host_capital = yes
+    create_country = { tag = $TAG$ origin = this state = scope:nesnd_restoration_seed on_created = { nesnd_restoration_created = yes } }
+   }
+  }
+  else_if = { limit = { any_scope_state = { count >= 4 state_population > 0 } }
+   every_scope_state = {
+    limit = { nesnd_restoration_native_state = yes NOT = { exists = scope:nesnd_restoration_second } }
+    save_scope_as = nesnd_restoration_seed
+    random_neighbouring_state = {
+     limit = {
+      owner = scope:nesnd_restoration_host nesnd_restoration_native_state = yes
+      nesnd_restoration_pair_population >= 400000 nesnd_restoration_pair_population <= nesnd_restoration_half_host
+      nesnd_restoration_pair_remaining >= 200000
+     } save_scope_as = nesnd_restoration_second
+    }
+   }
+   if = { limit = { exists = scope:nesnd_restoration_seed exists = scope:nesnd_restoration_second }
+    nesnd_restoration_relocate_host_capital = yes
+    create_country = { tag = $TAG$ origin = this state = scope:nesnd_restoration_seed state = scope:nesnd_restoration_second on_created = { nesnd_restoration_created = yes } }
+   }
+  }
+  clear_saved_scope = nesnd_restoration_host clear_saved_scope = nesnd_restoration_seed clear_saved_scope = nesnd_restoration_second
+ }
+}
+nesnd_restoration_created = {
+ set_variable = nesnd_restoration_rebel set_variable = nesnd_a2_restoration_adopted
+ set_variable = { name = nesnd_restoration_epoch value = 1 }
+ if = { limit = { c:NAH ?= this } set_global_variable = nesnd_mexican_restoration_case_started }
+ else = { set_global_variable = nesnd_andean_restoration_case_started nesnd_restoration_register_court = yes }
+ set_variable = { name = nesnd_restoration_opponent value = scope:nesnd_restoration_host }
+ scope:nesnd_restoration_host = {
+  set_variable = nesnd_restoration_war_host set_variable = nesnd_a2_war_adopted set_variable = { name = nesnd_restoration_epoch value = 1 } set_variable = { name = nesnd_restoration_opponent value = prev }
+  set_variable = { name = nesnd_restoration_war_attempts value = 0 }
+ }
+ ordered_scope_state = { order_by = state_population max = 1 state_region = { save_scope_as = nesnd_restoration_capital } }
+ if = { limit = { exists = scope:nesnd_restoration_capital } nesnd_a2_set_capital = { TARGET = nesnd_restoration_capital } }
+ clear_saved_scope = nesnd_restoration_capital
+ nesnd_restoration_rebel_setup = yes
+ scope:nesnd_restoration_host = { nesnd_restoration_dispatch = yes trigger_event = { id = nesnd_american_restoration.1 popup = yes } }
+}
+nesnd_restoration_dispatch = {
+ if = { limit = { has_variable = nesnd_restoration_war_host exists = var:nesnd_restoration_opponent NOT = { has_variable = nesnd_restoration_war_terminal } NOT = { has_variable = nesnd_restoration_war_dispatched } NOT = { has_variable = nesnd_restoration_retry_wait } }
+  if = { limit = { NOT = { has_variable = nesnd_restoration_war_attempts } } set_variable = { name = nesnd_restoration_war_attempts value = 0 } }
+  change_variable = { name = nesnd_restoration_war_attempts add = 1 }
+  set_variable = { name = nesnd_restoration_retry_wait months = 1 }
+  save_scope_as = nesnd_restoration_host
+  if = { limit = { NOT = { has_war_with = var:nesnd_restoration_opponent } NOT = { nesnd_restoration_pair_at_war = yes } }
+   var:nesnd_restoration_opponent = {
+    create_diplomatic_play = { name = nesnd_restoration_war type = dp_nesnd_native_restoration initiator = scope:nesnd_restoration_host war = yes handle_annexation_as_civil_war = no }
+   }
+  }
+  random_diplomatic_play = {
+   limit = {
+    is_diplomatic_play_type = dp_nesnd_native_restoration initiator = scope:nesnd_restoration_host target = scope:nesnd_restoration_host.var:nesnd_restoration_opponent
+    initiator = { play_participant_has_war_goal_of_type_against = { type = wg_nesnd_restoration_settlement target = var:nesnd_restoration_opponent } }
+    target = { play_participant_has_war_goal_of_type_against = { type = wg_nesnd_restoration_settlement target = var:nesnd_restoration_opponent } }
+   }
+   save_scope_as = nesnd_restoration_play
+   initiator = { set_variable = nesnd_restoration_war_dispatched set_variable = { name = nesnd_restoration_play value = scope:nesnd_restoration_play } }
+   target = { set_variable = nesnd_restoration_war_dispatched set_variable = { name = nesnd_restoration_play value = scope:nesnd_restoration_play } }
+  }
+  if = { limit = { NOT = { has_variable = nesnd_restoration_war_dispatched } var:nesnd_restoration_war_attempts >= 12 }
+   set_variable = { name = nesnd_restoration_war_terminal value = 4 }
+   var:nesnd_restoration_opponent = { set_variable = { name = nesnd_restoration_war_terminal value = 4 } trigger_event = { id = nesnd_american_restoration.6 popup = yes } }
+   trigger_event = { id = nesnd_american_restoration.6 popup = yes }
+  }
+  clear_saved_scope = nesnd_restoration_play clear_saved_scope = nesnd_restoration_host
+ }
+}
+nesnd_restoration_settlement = {
+ if = { limit = { exists = scope:target_country exists = scope:diplomatic_play has_variable = nesnd_restoration_play }
+ if = { limit = { nesnd_restoration_goal_pair = yes var:nesnd_restoration_play = scope:diplomatic_play NOT = { has_variable = nesnd_restoration_settling } NOT = { has_variable = nesnd_restoration_settlement_done } }
+  set_variable = nesnd_restoration_settling
+  save_scope_as = nesnd_restoration_winner
+  if = { limit = { has_variable = nesnd_restoration_war_host }
+   scope:target_country = { set_variable = nesnd_restoration_refugees_pending nesnd_restoration_refugees = yes nesnd_restoration_exile_people = yes }
+  }
+  annex = scope:target_country
+  if = { limit = { scope:target_country = { is_country_alive = no } }
+   set_variable = nesnd_restoration_settlement_done set_variable = { name = nesnd_restoration_war_terminal value = 1 }
+   nesnd_restoration_mark_resolved = yes
+   if = { limit = { has_variable = nesnd_restoration_rebel }
+    set_variable = nesnd_restoration_victory add_modifier = { name = nesnd_native_restored_rule months = 120 }
+   }
+   trigger_event = { id = nesnd_american_restoration.5 popup = yes }
+  }
+  else = { set_variable = { name = nesnd_restoration_war_terminal value = 5 } }
+  remove_variable = nesnd_restoration_settling clear_saved_scope = nesnd_restoration_winner
+ }
+ }
+}
+nesnd_restoration_monthly = {
+ if = { limit = { nesnd_american_restoration_host = yes has_journal_entry = nesnd_american_restoration nesnd_restoration_pressure_value >= 100 }
+  if = { limit = { c:MEX ?= this } nesnd_restoration_revolt = { TAG = NAH } }
+  else = { nesnd_restoration_revolt = { TAG = TWT } }
+ }
+}
+nesnd_restoration_war_watch = {
+ if = { limit = { has_variable = nesnd_restoration_war_host NOT = { has_variable = nesnd_restoration_war_terminal } } nesnd_restoration_dispatch = yes }
+ if = { limit = { has_variable = nesnd_restoration_war_dispatched NOT = { has_variable = nesnd_restoration_war_terminal } }
+  if = { limit = { OR = { NOT = { exists = var:nesnd_restoration_opponent } var:nesnd_restoration_opponent ?= { is_country_alive = no } } }
+   set_variable = { name = nesnd_restoration_war_terminal value = 3 } trigger_event = { id = nesnd_american_restoration.6 popup = yes }
+  }
+  else_if = { limit = { NOT = { nesnd_restoration_pair_at_war = yes } }
+   set_variable = { name = nesnd_restoration_war_terminal value = 2 }
+   trigger_event = { id = nesnd_american_restoration.6 popup = yes }
+  }
+ }
+ nesnd_restoration_refugees = yes
+}
+nesnd_restoration_relocate_host_capital = {
+ if = { limit = { capital = { OR = { this = scope:nesnd_restoration_seed this ?= scope:nesnd_restoration_second } } }
+  ordered_scope_state = {
+   limit = { state_population > 0 NOT = { this = scope:nesnd_restoration_seed } NOT = { this ?= scope:nesnd_restoration_second } }
+   order_by = state_population max = 1 state_region = { save_scope_as = nesnd_restoration_host_capital }
+  }
+  if = { limit = { exists = scope:nesnd_restoration_host_capital } nesnd_a2_set_capital = { TARGET = nesnd_restoration_host_capital } }
+  clear_saved_scope = nesnd_restoration_host_capital
+ }
+}
+nesnd_restoration_facility = {
+ save_scope_as = nesnd_a2_facility_country
+ set_variable = { name = nesnd_a2_facility_total value = 0 }
+ set_variable = { name = nesnd_a2_facility_capital value = 0 }
+ if = { limit = { exists = scope:nesnd_a2_facility_country has_variable = nesnd_a2_facility_total has_variable = nesnd_a2_facility_capital }
+ every_scope_building = { limit = { is_building_type = $BUILDING$ }
+  scope:nesnd_a2_facility_country = { change_variable = { name = nesnd_a2_facility_total add = prev.level } }
+ }
+ capital = { every_scope_building = { limit = { is_building_type = $BUILDING$ }
+  scope:nesnd_a2_facility_country = { set_variable = { name = nesnd_a2_facility_capital value = prev.level } }
+ } }
+ if = { limit = { var:nesnd_a2_facility_total < $CAP$ }
+  set_variable = { name = nesnd_a2_facility_target value = { value = $CAP$ subtract = var:nesnd_a2_facility_total add = var:nesnd_a2_facility_capital } }
+  capital = { create_building = { building = $BUILDING$ level = owner.var:nesnd_a2_facility_target reserves = 1 } }
+ }
+ remove_variable = nesnd_a2_facility_total remove_variable = nesnd_a2_facility_capital remove_variable = nesnd_a2_facility_target
+ clear_saved_scope = nesnd_a2_facility_country
+ }
+}
+nesnd_restoration_army = {
+ nesnd_a2_raise_army = { TARGET = nesnd_restoration_army_target PER_STATE = nesnd_restoration_state_capacity ARTILLERY = 0.25 STATES = 2 }
+}
+
+# A once-only case registry binds the real court object, not a reusable TAG.
+nesnd_restoration_register_court = {
+ if = { limit = { c:TWT ?= this has_variable = nesnd_restoration_rebel has_variable = nesnd_a2_restoration_adopted has_variable = nesnd_restoration_epoch }
+  if = { limit = { NOT = { has_global_variable = nesnd_andean_restoration_case_epoch } NOT = { has_global_variable = nesnd_andean_restoration_case_country } }
+   set_global_variable = { name = nesnd_andean_restoration_case_country value = this }
+   set_global_variable = { name = nesnd_andean_restoration_case_epoch value = var:nesnd_restoration_epoch }
+   set_global_variable = nesnd_andean_restoration_case_started
+  }
+ }
+}

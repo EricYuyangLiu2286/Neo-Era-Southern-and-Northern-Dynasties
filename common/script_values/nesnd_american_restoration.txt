@@ -1,0 +1,67 @@
+# Whole population includes dependants; no workforce proxy.
+nesnd_restoration_native_share = {
+ value = 0
+ every_scope_pop = { limit = { culture = { nesnd_hus_native_culture = yes } } add = total_size }
+ if = { limit = { state_population > 0 } divide = state_population } min = 0 max = 1
+}
+nesnd_restoration_core_share = {
+ value = 0
+ every_scope_pop = {
+  limit = { OR = {
+   AND = { owner = { c:MEX ?= this } OR = { culture = cu:nahua culture = cu:mixtec culture = cu:zapotec culture = cu:tarascan } }
+   AND = { owner = { OR = { c:PEU ?= this c:NPU ?= this c:SPU ?= this } } OR = { culture = cu:quechua culture = cu:aimara } }
+  } } add = total_size
+ }
+ if = { limit = { state_population > 0 } divide = state_population } min = 0 max = 1
+}
+nesnd_restoration_country_native_share = {
+ value = 0
+ every_scope_state = { every_scope_pop = { limit = { culture = { nesnd_hus_native_culture = yes } } add = total_size } }
+ if = { limit = { total_population > 0 } divide = total_population } min = 0 max = 1
+}
+nesnd_restoration_pressure_value = {
+ value = 25
+ if = { limit = { has_journal_entry = nesnd_american_restoration }
+  je:nesnd_american_restoration = { value = "scripted_bar_progress(nesnd_restoration_pressure_bar)" }
+ } min = 0 max = 100
+}
+nesnd_restoration_pressure_base = 1
+nesnd_restoration_pressure_radicals = { value = 0 if = { limit = { radical_population_fraction > 0.15 } add = 1 } }
+nesnd_restoration_pressure_poverty = { value = 0 if = { limit = { average_sol < 10 } add = 1 } }
+nesnd_restoration_pressure_repression = { value = 0 if = { limit = { has_modifier = nesnd_native_local_councils } add = -2 } }
+nesnd_restoration_monthly_delta = { value = nesnd_restoration_pressure_base add = nesnd_restoration_pressure_radicals add = nesnd_restoration_pressure_poverty add = nesnd_restoration_pressure_repression }
+nesnd_restoration_army_target = {
+ value = 2
+ if = { limit = { total_population >= 1800000 } value = 24 }
+ else_if = { limit = { total_population >= 1200000 } value = 16 }
+ else_if = { limit = { total_population >= 900000 } value = 12 }
+ else_if = { limit = { total_population >= 600000 } value = 8 }
+ else_if = { limit = { total_population >= 300000 } value = 4 }
+}
+nesnd_restoration_missing_troops = { value = nesnd_restoration_army_target subtract = army_size min = 0 }
+nesnd_restoration_artillery = { value = nesnd_restoration_missing_troops multiply = 0.25 floor = yes }
+nesnd_restoration_infantry = { value = nesnd_restoration_missing_troops subtract = nesnd_restoration_artillery }
+nesnd_restoration_pair_population = { value = state_population add = scope:nesnd_restoration_seed.state_population }
+nesnd_restoration_pair_remaining = { value = scope:nesnd_restoration_host.total_population subtract = nesnd_restoration_pair_population }
+nesnd_restoration_half_host = { value = scope:nesnd_restoration_host.total_population multiply = 0.5 }
+nesnd_restoration_single_remaining = { value = owner.total_population subtract = state_population }
+nesnd_restoration_prospective_population = {
+ value = 0
+ if = { limit = { nesnd_restoration_small_country = yes }
+  ordered_scope_state = { limit = { nesnd_restoration_small_core = yes } order_by = state_population max = 1 add = state_population }
+ }
+ else = {
+  ordered_scope_state = { limit = { nesnd_restoration_native_state = yes } order_by = state_population max = 2 add = state_population }
+  max = { value = total_population multiply = 0.5 }
+ }
+}
+nesnd_restoration_suppression_army = {
+ value = 2
+ if = { limit = { nesnd_restoration_prospective_population >= 1800000 } value = 24 }
+ else_if = { limit = { nesnd_restoration_prospective_population >= 1200000 } value = 16 }
+ else_if = { limit = { nesnd_restoration_prospective_population >= 900000 } value = 12 }
+ else_if = { limit = { nesnd_restoration_prospective_population >= 600000 } value = 8 }
+ else_if = { limit = { nesnd_restoration_prospective_population >= 300000 } value = 4 }
+ multiply = 1.5 min = 8
+}
+nesnd_restoration_suppression_twice = { value = nesnd_restoration_suppression_army divide = 1.5 multiply = 2 }

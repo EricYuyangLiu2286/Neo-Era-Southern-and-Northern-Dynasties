@@ -1,4 +1,16 @@
-# 当前交接：任务33外部回归与区域内容（2026-11-04）
+# 当前实施：任务34作者意见1–3（2026-11-04，未交付）
+
+最新模型/流程steer：两自定义SKILL已强制Luna/high探索、Sol/medium实现审查、Astra/high计划草案；当前工具只提供gpt-6-astra，已披露不能冒称6.1。root裁架构/最终计划/数值/合入。旧未知继承代理已安全停止，新调用实际配置见WORK/reports/canon-route-execution-20261104/model-delegation-register.md。A1/B1各自STATIC_PASS；C1去掉90天待收属后repair4限定STATIC_PASS；A2/B2/C2已获GO正在编码，共享外交由B2接手。埃及exists+独立资格/取消清理、远南缅甸暹罗区域发展分支均已记入最新合同。未交付，不开游戏。恢复优先read work-state与root-b2-c2-decisions，不能按下文旧骨架状态重做。
+
+用户最新要求子智能体分批计划→编辑→测试，root仅组织审稿整合；实际安排在WORK/reports/canon-route-execution-20261104/agent-execution-plan.md。团结度法律项按法组拆行；HUS改独立阶序法组三法并冻结公民权组，旧WIP公民法变体方案不再是最终设计。恢复时先读这两份最新账，不跳过计划阶段或自己抢写所有任务。
+
+最新steer最高目标不变，详见WORK/reports/canon-route-execution-20261104/steer-implementation-ledger.md：坦志麦特失败不封TUR新内容；成功强化增长/奖励；直接领土27州开局、团结度拟36州解锁并按文化人口分组；所有文化团结/共同认同日志加两种12月不可中止补贴；HUS法条全链复核已发现施加国作用域、parent继承、真实社会阶序、退出清理和旧档入口缺口。该落实账覆盖下文较早的“哪些代码已写”摘要。主MOD仍b94582e，禁止把WIP候选当正式交付。
+
+用户否定任务33通用七国主题，并明确此前计划必须实际落库。意见3新增HUS等级制度、30%满蒙/20%原住民、12月登记法、ACW后原住民汗国、精确50%迁移、双战争及原住民HUS终局。全部仍在执行，不可只交研究。详见WORK/plans/two-empires/63-canon-route-execution.md和WORK/reports/canon-route-execution-20261104/work-state.md。
+
+主MOD仍b94582e；候选exports/canon-route-execution-20261104-a，父备份pre-change-canon-route-execution-20261104T080559Z。已写埃及历史/赞助/独立性、HUS人口重配和登记法、NKH战争迁移等部分，尚无最终本地化/验证/合入；TUR/PRU/AUS/USA/原住民复国及旧三国小国人物路线仍需实现。新候选不能沿用任务33通过结论。不开游戏，不改存档。当前进度以work-state持久断点为准。
+
+# 历史交接：任务33外部回归与区域内容（2026-11-04）
 
 父b374be5，候选exports/regional-expansion-20261104-a，报告WORK/reports/regional-expansion-20261104/。三国18名虚构＋6历史人物候选及印度/南洋路线仅升级计划，入口plans/two-empires/62-regional-chains-and-survival.md。PRU/AUS/TUR/EGY/MEX/USA/PEU七国短JE＋8事件已写入，默认后置，12累计达标月、15年上限、两项5年奖励择一；原版主线和历史数据不改。实际主MOD/Git交付见main-merge/git-delivery，不根据此摘要推断已推送。
 

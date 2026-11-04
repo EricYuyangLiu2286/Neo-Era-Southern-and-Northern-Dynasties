@@ -1,0 +1,88 @@
+﻿nesnd_egypt_signatory = { OR = { c:FRA ?= this c:USM ?= this c:SIH ?= this c:GBR ?= this c:QE1 ?= this c:TUR ?= this } }
+nesnd_egypt_historical_guarantee_pair = {
+    trigger_if = { limit = { exists = scope:source_country exists = scope:target_country }
+        game_date < 1845.1.1
+        scope:source_country = { nesnd_egypt_signatory = yes is_country_alive = yes }
+        scope:target_country = { c:EGY ?= this is_country_alive = yes is_subject = no }
+    }
+    trigger_else = { always = no }
+}
+nesnd_egypt_investor_alive = {
+    trigger_if = { limit = { exists = var:nesnd_egypt_investor }
+        var:nesnd_egypt_investor = { is_country_alive = yes NOT = { this = prev } }
+    }
+    trigger_else = { always = no }
+}
+nesnd_egypt_investor_cooperating = {
+    trigger_if = { limit = { exists = var:nesnd_egypt_investor }
+        var:nesnd_egypt_investor = { nesnd_egypt_patron_can_take_egypt = yes }
+    }
+    trigger_else = { always = no }
+}
+nesnd_egypt_independence_open = { c:EGY ?= this is_country_alive = yes is_subject = no NOT = { has_variable = nesnd_egypt_finished } }
+nesnd_egypt_normal_choice_open = {
+    nesnd_egypt_independence_open = yes has_journal_entry = nesnd_egypt_independence
+    nesnd_egypt_independence_value > 0
+}
+
+nesnd_egypt_can_select = {
+    nesnd_egypt_normal_choice_open = yes
+    exists = c:$TAG$
+    c:$TAG$ ?= { is_country_alive = yes is_subject = no nesnd_egypt_patron_can_take_egypt = yes }
+}
+nesnd_egypt_has_sponsor_mode = {
+    trigger_if = { limit = { has_variable = nesnd_egypt_sponsor_mode } var:nesnd_egypt_sponsor_mode = 1 }
+    trigger_else = { always = no }
+}
+nesnd_egypt_replacement_available = {
+    any_country = { nesnd_egypt_patron_can_take_egypt = yes }
+}
+nesnd_egypt_no_sponsor_at_zero = {
+    NOT = { nesnd_egypt_investor_cooperating = yes }
+    OR = { NOT = { nesnd_egypt_has_sponsor_mode = yes } NOT = { nesnd_egypt_replacement_available = yes } }
+}
+nesnd_egypt_protectorate_confirmed = {
+    trigger_if = { limit = { exists = var:nesnd_egypt_investor }
+        var:nesnd_egypt_investor = { nesnd_egypt_patron_country = yes }
+        is_direct_subject_of = var:nesnd_egypt_investor
+        OR = { is_subject_type = subject_type_protectorate is_subject_type = subject_type_nesnd_egypt_protectorate }
+    }
+    trigger_else = { always = no }
+}
+nesnd_egypt_capability_ready = {
+    any_scope_building = { is_building_type = building_university level >= 2 occupancy >= 0.75 }
+    any_scope_building = { is_building_type = building_tooling_workshop level >= 3 occupancy >= 0.75 }
+    any_scope_building = {
+        OR = { is_building_type = building_textile_mill is_building_type = building_arms_industry is_building_type = building_steel_mill is_building_type = building_shipyard is_building_type = building_food_industry }
+        level >= 5 occupancy >= 0.75
+    }
+}
+
+
+
+# Country-only patron contract; valid both before and after Egypt becomes a subject.
+nesnd_egypt_patron_country = {
+    nesnd_egypt_signatory = yes is_country_alive = yes is_subject = no
+    NOT = { is_country_type = decentralized } can_have_subjects = yes
+}
+# Creation-only contract; never use for an already established relationship.
+nesnd_egypt_patron_can_take_egypt = {
+    nesnd_egypt_patron_country = yes
+    trigger_if = { limit = { exists = c:EGY }
+        c:EGY = { is_country_alive = yes is_subject = no }
+        NOT = { has_war_with = c:EGY }
+        OR = {
+            can_have_as_subject = { who = c:EGY type = subject_type_protectorate }
+            can_have_as_subject = { who = c:EGY type = subject_type_nesnd_egypt_protectorate }
+        }
+    }
+    trigger_else = { always = no }
+}
+# Notifications survive removal of the active-investor variable at finish.
+nesnd_egypt_protected_fact = {
+    trigger_if = { limit = { exists = var:nesnd_egypt_final_patron }
+        is_direct_subject_of = var:nesnd_egypt_final_patron
+        OR = { is_subject_type = subject_type_protectorate is_subject_type = subject_type_nesnd_egypt_protectorate }
+    }
+    trigger_else = { always = no }
+}

@@ -1,0 +1,25 @@
+﻿nesnd_small_support_army_min = { value = army_size min = 1 }
+nesnd_small_reply_acceptance_raw = { value = 0
+ if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
+ value = 30
+    if = { limit = { scope:canon_kind = 6 } value = 25 }
+    else_if = { limit = { scope:canon_kind = 7 } value = 8 }
+    else_if = { limit = { scope:canon_kind = 8 } value = 45 }
+    if = { limit = { "relations(scope:canon_sender)" >= 50 } add = 20 }
+    if = { limit = { OR = { in_default = yes is_at_war = yes } } add = 15 }
+    if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 }
+        scope:canon_sender = { nesnd_small_reliable_support = yes } } add = 20 }
+    if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 }
+        scope:canon_sender = { economic_dependence = { target = scope:canon_partner value < 0.8 } } } add = 15 }
+    if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 }
+        scope:canon_sender = { economic_dependence = { target = scope:canon_partner value > 1.2 } } } add = -20 }
+    if = { limit = { scope:canon_kind = 7 scope:canon_sender = { nesnd_small_army_ratio >= 0.6 } } add = 20 }
+    else_if = { limit = { scope:canon_kind = 6 scope:canon_sender = { nesnd_small_army_ratio >= 0.4 } } add = 20 }
+    if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 } scope:canon_sender = { nesnd_small_gdp_ratio >= 0.4 } } add = 10 }
+ }
+}
+nesnd_small_reply_acceptance = { value = 0
+ if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
+    value = nesnd_small_reply_acceptance_raw min = 1 max = 95
+ }
+}

@@ -1,0 +1,32 @@
+﻿on_game_started_after_lobby = { on_actions = { nesnd_ottoman_unity_after_lobby } }
+nesnd_ottoman_unity_after_lobby = { effect = { c:TUR ?= { nesnd_ottoman_unity_bootstrap = yes } } }
+on_weekly_pulse_country = { on_actions = { nesnd_ottoman_unity_maintenance } }
+nesnd_ottoman_unity_maintenance = {
+    trigger = { OR = { nesnd_ottoman_unity_country = yes has_modifier = nesnd_ottoman_divided_provinces has_modifier = nesnd_ottoman_common_allegiance } }
+    effect = { nesnd_ottoman_unity_bootstrap = yes }
+}
+on_wargoal_enforced = { on_actions = { nesnd_ottoman_unity_wargoal } }
+nesnd_ottoman_unity_wargoal = {
+    trigger = { nesnd_ottoman_unity_live = yes NOT = { has_variable = nesnd_ottoman_victory_cooldown } }
+    effect = {
+        set_variable = { name = nesnd_ottoman_victory_cooldown months = 12 }
+        set_variable = { name = nesnd_ottoman_unity_victory months = 24 }
+    }
+}
+on_state_owner_change = { on_actions = { nesnd_ottoman_unity_acquisition } }
+on_state_created = { on_actions = { nesnd_ottoman_unity_acquisition } }
+nesnd_ottoman_unity_acquisition = {
+    effect = {
+        if = { limit = { exists = owner }
+            owner = {
+                if = { limit = { nesnd_ottoman_unity_country = yes has_game_started = yes }
+                    nesnd_ottoman_unity_bootstrap = yes
+                    if = { limit = { nesnd_ottoman_unity_live = yes NOT = { has_variable = nesnd_ottoman_expansion_cooldown } }
+                        set_variable = { name = nesnd_ottoman_expansion_cooldown months = 12 }
+                        set_variable = { name = nesnd_ottoman_unity_expansion months = 12 }
+                    }
+                }
+            }
+        }
+    }
+}

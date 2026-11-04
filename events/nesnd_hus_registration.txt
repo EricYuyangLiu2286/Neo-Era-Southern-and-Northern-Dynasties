@@ -1,0 +1,45 @@
+namespace = nesnd_hus_registration
+nesnd_hus_registration.1 = {
+    type = country_event placement = root duration = 3
+    title = nesnd_hus_registration.1.t desc = nesnd_hus_registration.1.d
+    event_image = { video = "europenorthamerica_native_american" }
+    trigger = { nesnd_hus_original_country = yes has_global_variable = nesnd_khanate_created }
+    option = { name = nesnd_hus_registration.1.a default_option = yes }
+}
+nesnd_hus_registration.2 = {
+    type = country_event placement = root duration = 3
+    title = nesnd_hus_registration.2.t desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_a2_exodus_result var:nesnd_a2_exodus_result = 1 } desc = nesnd_a2_exodus_both_desc }
+            triggered_desc = { trigger = { has_variable = nesnd_a2_exodus_result var:nesnd_a2_exodus_result = 2 } desc = nesnd_a2_exodus_cne_desc }
+            triggered_desc = { trigger = { has_variable = nesnd_a2_exodus_result var:nesnd_a2_exodus_result = 3 } desc = nesnd_a2_exodus_usa_desc }
+            triggered_desc = { desc = nesnd_a2_exodus_none_desc }
+        }
+    }
+    event_image = { video = "europenorthamerica_native_american" }
+    trigger = { nesnd_hus_original_country = yes has_variable = nesnd_hus_manchu_exodus_done }
+    option = { name = nesnd_hus_registration.2.a default_option = yes }
+}
+# Fixed-delay notification is optional to settlement: the global epoch clock is authoritative.
+nesnd_hus_registration.10 = {
+    type = country_event hidden = yes
+    trigger = {
+        nesnd_hus_registration_open = yes
+        trigger_if = { limit = { has_variable = nesnd_hus_registration_epoch exists = scope:nesnd_hus_delayed_epoch }
+            var:nesnd_hus_registration_epoch = scope:nesnd_hus_delayed_epoch
+        }
+        trigger_else = { always = no }
+        nesnd_hus_epoch_matches_record = yes
+    }
+    immediate = {
+        nesnd_hus_registration_settle = yes
+        if = { limit = {
+            NOT = { has_variable = nesnd_hus_registration_done }
+            has_global_variable = nesnd_hus_registration_wait
+            NOT = { exists = scope:nesnd_hus_delayed_retry }
+        }
+            save_scope_value_as = { name = nesnd_hus_delayed_retry value = 1 }
+            trigger_event = { id = nesnd_hus_registration.10 days = 1 }
+        }
+    }
+}

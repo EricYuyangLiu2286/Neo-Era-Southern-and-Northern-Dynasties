@@ -1,0 +1,210 @@
+--- B2-original/common/script_values/nesnd_small_diplomacy.txt
++++ B2-repair1/common/script_values/nesnd_small_diplomacy.txt
+@@ -1,5 +1,5 @@
+ nesnd_small_support_army_min = { value = army_size min = 1 }
+-nesnd_small_reply_acceptance = { value = 0
++nesnd_small_reply_acceptance_raw = { value = 0
+  if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
+  value = 30
+     if = { limit = { scope:canon_kind = 6 } value = 25 }
+@@ -16,6 +16,10 @@
+     if = { limit = { scope:canon_kind = 7 scope:canon_sender = { nesnd_small_army_ratio >= 0.6 } } add = 20 }
+     else_if = { limit = { scope:canon_kind = 6 scope:canon_sender = { nesnd_small_army_ratio >= 0.4 } } add = 20 }
+     if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 } scope:canon_sender = { nesnd_small_gdp_ratio >= 0.4 } } add = 10 }
+-    min = 1 max = 95
+  }
+ }
++nesnd_small_reply_acceptance = { value = 0
++ if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
++    value = nesnd_small_reply_acceptance_raw min = 1 max = 95
++ }
++}
+--- B2-original/common/scripted_effects/nesnd_small_diplomacy.txt
++++ B2-repair1/common/scripted_effects/nesnd_small_diplomacy.txt
+@@ -63,15 +63,21 @@
+         scope:canon_sender = { nesnd_canon_clear_request = yes trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes } }
+     }
+ }
++nesnd_small_clear_market_verification = {
++    remove_variable = nesnd_small_market_verifying remove_variable = nesnd_small_market_verification
++    remove_variable = nesnd_small_verification_partner remove_variable = nesnd_small_verification_regime
++    remove_variable = nesnd_small_verification_partner_regime remove_variable = nesnd_small_verification_overlord
++    remove_variable = nesnd_small_verification_serial
++}
+ nesnd_small_market_verify = {
+     if = { limit = { has_variable = nesnd_small_market_verifying }
+-        if = { limit = { nesnd_small_market_verification_valid = yes nesnd_small_owns_market = yes }
+-            remove_variable = nesnd_small_market_verifying remove_variable = nesnd_small_market_verification remove_variable = nesnd_small_verification_partner
++        if = { limit = { OR = { NOT = { has_variable = nesnd_small_market_verification } NOT = { nesnd_small_market_verification_valid = yes } } }
++            nesnd_small_clear_market_verification = yes
++            trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes }
++        }
++        else_if = { limit = { nesnd_small_owns_market = yes }
++            nesnd_small_clear_market_verification = yes
+             trigger_event = { id = nesnd_canon_diplomacy.2 popup = yes }
+-        }
+-        else_if = { limit = { OR = { NOT = { has_variable = nesnd_small_market_verification } NOT = { nesnd_small_market_verification_valid = yes } } }
+-            remove_variable = nesnd_small_market_verifying remove_variable = nesnd_small_market_verification remove_variable = nesnd_small_verification_partner
+-            trigger_event = { id = nesnd_canon_diplomacy.3 popup = yes }
+         }
+     }
+ }
+--- B2-original/common/scripted_effects/nesnd_small_politics.txt
++++ B2-repair1/common/scripted_effects/nesnd_small_politics.txt
+@@ -70,10 +70,10 @@
+ }
+ nesnd_small_episode_monthly = {
+     if = { limit = { has_variable = nesnd_small_episode_active }
+-        if = { limit = { OR = { has_revolution = yes NOT = { nesnd_small_episode_regime_valid = yes } } }
++        if = { limit = { OR = { has_revolution = yes NOT = { nesnd_small_episode_regime_valid = yes } NOT = { has_variable = nesnd_small_episode_issue } } }
+             nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
+         }
+-        else_if = { limit = { has_variable = nesnd_small_episode_choice var:nesnd_small_episode_choice = 2 nesnd_small_promised_law = yes }
++        else_if = { limit = { has_variable = nesnd_small_episode_clock nesnd_small_episode_choice_is = { VALUE = 2 } nesnd_small_promised_law = yes }
+             set_variable = nesnd_small_reform_done
+             if = { limit = { var:nesnd_small_promise = 1 } set_variable = nesnd_small_reform_law_1 }
+             else_if = { limit = { var:nesnd_small_promise = 2 } set_variable = nesnd_small_reform_law_2 }
+@@ -89,7 +89,7 @@
+             nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
+         }
+         else_if = { limit = { OR = { NOT = { has_variable = nesnd_small_episode_clock } NOT = { nesnd_small_episode_issue_live = yes } } }
+-            if = { limit = { has_variable = nesnd_small_episode_choice var:nesnd_small_episode_choice = 2 NOT = { has_variable = nesnd_small_episode_clock } nesnd_small_episode_issue_live = yes }
++            if = { limit = { nesnd_small_episode_choice_is = { VALUE = 2 } NOT = { has_variable = nesnd_small_episode_clock } nesnd_small_episode_issue_live = yes }
+                 nesnd_small_affected_radicals = { VALUE = 0.01 } trigger_event = { id = nesnd_small_states.12 popup = yes }
+             }
+             nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
+--- B2-original/common/scripted_effects/nesnd_small_states.txt
++++ B2-repair1/common/scripted_effects/nesnd_small_states.txt
+@@ -103,7 +103,7 @@
+     if = { limit = { has_modifier = nesnd_small_public_investment } remove_modifier = nesnd_small_public_investment } if = { limit = { has_modifier = nesnd_small_public_services } remove_modifier = nesnd_small_public_services }
+     remove_variable = nesnd_small_policy_market
+     if = { limit = { OR = { nesnd_canon_request_kind = 5 nesnd_canon_request_kind = 6 nesnd_canon_request_kind = 7 nesnd_canon_request_kind = 8 nesnd_canon_request_kind = 9 } } nesnd_canon_clear_request = yes }
+-    remove_variable = nesnd_small_market_verifying remove_variable = nesnd_small_market_verification remove_variable = nesnd_small_verification_partner
++    nesnd_small_clear_market_verification = yes
+     nesnd_small_close_episode = yes
+ }
+ nesnd_small_monthly = {
+--- B2-original/common/scripted_triggers/nesnd_small_politics.txt
++++ B2-repair1/common/scripted_triggers/nesnd_small_politics.txt
+@@ -12,9 +12,18 @@
+ nesnd_small_episode_valid = {
+  trigger_if = { limit = { exists = scope:small_episode_serial exists = scope:small_episode_regime }
+   nesnd_small_state_country = yes has_revolution = no NOT = { has_variable = nesnd_small_provisional }
+-  has_variable = nesnd_small_episode_active nesnd_small_episode_serial = scope:small_episode_serial nesnd_canon_regime = scope:small_episode_regime
++  has_variable = nesnd_small_episode_active has_variable = nesnd_small_episode_clock NOT = { has_variable = nesnd_small_episode_choice }
++  nesnd_small_episode_serial = scope:small_episode_serial nesnd_canon_regime = scope:small_episode_regime
+   nesnd_small_episode_issue_live = yes
+  } trigger_else = { always = no }
++}
++nesnd_small_episode_choice_is = {
++ trigger_if = { limit = { has_variable = nesnd_small_episode_choice } var:nesnd_small_episode_choice = $VALUE$ }
++ trigger_else = { always = no }
++}
++nesnd_small_episode_issue_is = {
++ trigger_if = { limit = { has_variable = nesnd_small_episode_issue } var:nesnd_small_episode_issue = $VALUE$ }
++ trigger_else = { always = no }
+ }
+ nesnd_small_promised_law = {
+     trigger_if = { limit = { has_variable = nesnd_small_promise }
+--- B2-original/common/scripted_triggers/nesnd_small_states.txt
++++ B2-repair1/common/scripted_triggers/nesnd_small_states.txt
+@@ -12,7 +12,7 @@
+ nesnd_small_state_country = {
+     hidden_trigger = {
+     is_country_alive = yes NOT = { is_country_type = decentralized }
+-    NOR = { nesnd_india_empire = yes c:TZ1 ?= this c:YU1 ?= this c:IR1 ?= this c:IR2 ?= this c:IR3 ?= this c:IR4 ?= this c:IR5 ?= this c:IR6 ?= this }
++    NOR = { nesnd_india_empire = yes has_variable = nesnd_india_imperial_line c:MUG ?= this c:BHT ?= this c:DRA ?= this c:TZ1 ?= this c:YU1 ?= this c:IR1 ?= this c:IR2 ?= this c:IR3 ?= this c:IR4 ?= this c:IR5 ?= this c:IR6 ?= this }
+     OR = { nesnd_india_prince = yes nesnd_small_southern_identity = yes has_variable = nesnd_small_indian_line }
+     nesnd_small_territory = yes
+     }
+--- B2-original/events/nesnd_small_states.txt
++++ B2-repair1/events/nesnd_small_states.txt
+@@ -29,25 +29,25 @@
+ nesnd_small_states.10 = {
+  type = country_event placement = root title = nesnd_small_states.10.t
+  desc = { first_valid = {
+- triggered_desc = { trigger = { var:nesnd_small_episode_issue = 1 } desc = nesnd_small_states.10.land }
+- triggered_desc = { trigger = { var:nesnd_small_episode_issue = 2 } desc = nesnd_small_states.10.labor }
++ triggered_desc = { trigger = { nesnd_small_episode_issue_is = { VALUE = 1 } } desc = nesnd_small_states.10.land }
++ triggered_desc = { trigger = { nesnd_small_episode_issue_is = { VALUE = 2 } } desc = nesnd_small_states.10.labor }
+  desc = nesnd_small_states.10.representation
+  } }
+- duration = 100 icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
++ duration = 1 icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+  trigger = { nesnd_small_episode_valid = yes }
+  cancellation_trigger = { NOT = { nesnd_small_episode_valid = yes } }
+  option = { name = nesnd_small_states.10.organise trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } }
+  custom_tooltip = nesnd_small_states.10.organise_tt hidden_effect = { nesnd_small_support_episode = yes } ai_chance = { base = 30 modifier = { add = 20 any_political_movement = { nesnd_small_organised_movement = yes political_movement_popular_support >= 0.1 } } } }
+- option = { name = nesnd_small_states.10.promise_land trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } var:nesnd_small_episode_issue = 1 OR = { has_law = law_type:law_serfdom has_law = law_type:law_tenant_farmers } }
+- custom_tooltip = nesnd_small_states.10.promise_land_tt hidden_effect = { if = { limit = { var:nesnd_small_episode_issue = 1 OR = { has_law = law_type:law_serfdom has_law = law_type:law_tenant_farmers } } nesnd_small_promise_episode = { LAW = 1 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
+- option = { name = nesnd_small_states.10.promise_debt trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } var:nesnd_small_episode_issue = 1 has_law = law_type:law_debt_slavery }
+- custom_tooltip = nesnd_small_states.10.promise_debt_tt hidden_effect = { if = { limit = { var:nesnd_small_episode_issue = 1 has_law = law_type:law_debt_slavery } nesnd_small_promise_episode = { LAW = 2 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
+- option = { name = nesnd_small_states.10.promise_labor trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } var:nesnd_small_episode_issue = 2 }
+- custom_tooltip = nesnd_small_states.10.promise_labor_tt hidden_effect = { if = { limit = { var:nesnd_small_episode_issue = 2 } nesnd_small_promise_episode = { LAW = 3 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
+- option = { name = nesnd_small_states.10.promise_caste trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } var:nesnd_small_episode_issue = 3 OR = { has_law = law_type:law_hindu_caste_enforced has_law = law_type:law_hindu_caste_codified } }
+- custom_tooltip = nesnd_small_states.10.promise_caste_tt hidden_effect = { if = { limit = { var:nesnd_small_episode_issue = 3 OR = { has_law = law_type:law_hindu_caste_enforced has_law = law_type:law_hindu_caste_codified } } nesnd_small_promise_episode = { LAW = 4 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
+- option = { name = nesnd_small_states.10.promise_representation trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } var:nesnd_small_episode_issue = 3 OR = { has_law = law_type:law_autocracy has_law = law_type:law_oligarchy } }
+- custom_tooltip = nesnd_small_states.10.promise_representation_tt hidden_effect = { if = { limit = { var:nesnd_small_episode_issue = 3 OR = { has_law = law_type:law_autocracy has_law = law_type:law_oligarchy } } nesnd_small_promise_episode = { LAW = 5 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
++ option = { name = nesnd_small_states.10.promise_land trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } nesnd_small_episode_issue_is = { VALUE = 1 } OR = { has_law = law_type:law_serfdom has_law = law_type:law_tenant_farmers } }
++ custom_tooltip = nesnd_small_states.10.promise_land_tt hidden_effect = { if = { limit = { nesnd_small_episode_issue_is = { VALUE = 1 } OR = { has_law = law_type:law_serfdom has_law = law_type:law_tenant_farmers } } nesnd_small_promise_episode = { LAW = 1 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
++ option = { name = nesnd_small_states.10.promise_debt trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } nesnd_small_episode_issue_is = { VALUE = 1 } has_law = law_type:law_debt_slavery }
++ custom_tooltip = nesnd_small_states.10.promise_debt_tt hidden_effect = { if = { limit = { nesnd_small_episode_issue_is = { VALUE = 1 } has_law = law_type:law_debt_slavery } nesnd_small_promise_episode = { LAW = 2 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
++ option = { name = nesnd_small_states.10.promise_labor trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } nesnd_small_episode_issue_is = { VALUE = 2 } }
++ custom_tooltip = nesnd_small_states.10.promise_labor_tt hidden_effect = { if = { limit = { nesnd_small_episode_issue_is = { VALUE = 2 } } nesnd_small_promise_episode = { LAW = 3 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
++ option = { name = nesnd_small_states.10.promise_caste trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } nesnd_small_episode_issue_is = { VALUE = 3 } OR = { has_law = law_type:law_hindu_caste_enforced has_law = law_type:law_hindu_caste_codified } }
++ custom_tooltip = nesnd_small_states.10.promise_caste_tt hidden_effect = { if = { limit = { nesnd_small_episode_issue_is = { VALUE = 3 } OR = { has_law = law_type:law_hindu_caste_enforced has_law = law_type:law_hindu_caste_codified } } nesnd_small_promise_episode = { LAW = 4 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
++ option = { name = nesnd_small_states.10.promise_representation trigger = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } nesnd_small_episode_issue_is = { VALUE = 3 } OR = { has_law = law_type:law_autocracy has_law = law_type:law_oligarchy } }
++ custom_tooltip = nesnd_small_states.10.promise_representation_tt hidden_effect = { if = { limit = { nesnd_small_episode_issue_is = { VALUE = 3 } OR = { has_law = law_type:law_autocracy has_law = law_type:law_oligarchy } } nesnd_small_promise_episode = { LAW = 5 } } } ai_chance = { base = 40 modifier = { add = 30 OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_trade_unions = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } } } } }
+  option = { name = nesnd_small_states.10.suppress trigger = { nesnd_small_episode_valid = yes nesnd_small_political = yes institution_investment_level = { institution = institution_police value >= 1 } NOT = { has_variable = nesnd_small_episode_choice } }
+  custom_tooltip = nesnd_small_states.10.suppress_tt hidden_effect = { nesnd_small_suppress_episode = yes }
+  ai_chance = { base = 20 modifier = { add = 20 ig:ig_landowners = { is_in_government = yes } } } }
+@@ -66,7 +66,32 @@
+  cancellation_trigger = { OR = { NOT = { nesnd_canon_reply_valid = yes } NOT = { nesnd_canon_request_eligible = yes } } }
+  option = { name = nesnd_canon_diplomacy.1.a trigger = { nesnd_canon_reply_valid = yes nesnd_canon_request_eligible = yes }
+  custom_tooltip = nesnd_small_accept_tt hidden_effect = { nesnd_small_accept_request = yes }
+- ai_chance = { base = nesnd_small_reply_acceptance } }
++ ai_chance = {
++  base = 30
++  modifier = { trigger = { OR = { NOT = { exists = scope:canon_sender } NOT = { exists = scope:canon_partner } NOT = { exists = scope:canon_kind } } } add = -30 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } scope:canon_kind = 6 } trigger_else = { always = no } } add = -5 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } scope:canon_kind = 7 } trigger_else = { always = no } } add = -22 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } scope:canon_kind = 8 } trigger_else = { always = no } } add = 15 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } "relations(scope:canon_sender)" >= 50 } trigger_else = { always = no } } add = 20 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } OR = { in_default = yes is_at_war = yes } } trigger_else = { always = no } } add = 15 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } OR = { scope:canon_kind = 6 scope:canon_kind = 7 } scope:canon_sender = { nesnd_small_reliable_support = yes } } trigger_else = { always = no } } add = 20 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } OR = { scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 } scope:canon_sender = { economic_dependence = { target = scope:canon_partner value < 0.8 } } } trigger_else = { always = no } } add = 15 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } OR = { scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 } scope:canon_sender = { economic_dependence = { target = scope:canon_partner value > 1.2 } } } trigger_else = { always = no } } add = -20 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } OR = { AND = { scope:canon_kind = 7 scope:canon_sender = { nesnd_small_army_ratio >= 0.6 } } AND = { scope:canon_kind = 6 scope:canon_sender = { nesnd_small_army_ratio >= 0.4 } } } } trigger_else = { always = no } } add = 20 }
++  modifier = { trigger = { trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind } OR = { scope:canon_kind = 6 scope:canon_kind = 7 } scope:canon_sender = { nesnd_small_gdp_ratio >= 0.4 } } trigger_else = { always = no } } add = 10 }
++  # Literal corrections implement the approved 1..95 clamp over the reachable raw scores.
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = -12 } add = 13 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = -2 } add = 3 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 98 } add = -3 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 100 } add = -5 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 103 } add = -8 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 105 } add = -10 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 108 } add = -13 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 110 } add = -15 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 115 } add = -20 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 120 } add = -25 }
++  modifier = { trigger = { nesnd_small_reply_acceptance_raw = 125 } add = -30 }
++ } }
+  option = { name = nesnd_canon_diplomacy.1.b default_option = yes custom_tooltip = nesnd_small_refuse_tt hidden_effect = { nesnd_small_refuse_request = yes } ai_chance = { base = 100 } }
+ }
+ nesnd_small_states.21 = {
+--- B2-original/localization/english/replace/zzzzzzzzzzzzz_nesnd_small_states_l_english.yml
++++ B2-repair1/localization/english/replace/zzzzzzzzzzzzz_nesnd_small_states_l_english.yml
+@@ -1,4 +1,5 @@
+ l_english:
++ state_pop_support_movement_land_reform_mult_desc:0 "Changes pops' inclination to support the Land Reform Movement."
+  nesnd_small_order_available_tt:0 "No political-order observation is active or awaiting its retry interval"
+  nesnd_small_retarget_ready_tt:0 "Regional targets have not been revised within the last 24 months"
+  nesnd_small_regional_status:0 "Regional centres: [JournalEntry.GetCountry.MakeScope.Var('nesnd_small_anchor_one').GetState.GetName] and [JournalEntry.GetCountry.MakeScope.Var('nesnd_small_anchor_two').GetState.GetName].\nMarket: [JournalEntry.GetCountry.GetMarket.GetName].\n[JournalEntry.GetCountry.TryGetOverlordTooltipEntry]\nPopulation in states with at least 80% market access: [JournalEntry.GetCountry.MakeScope.ScriptValue('nesnd_small_group_one_transport')|%1] and [JournalEntry.GetCountry.MakeScope.ScriptValue('nesnd_small_group_two_transport')|%1] in the two regions."
+--- B2-original/localization/simp_chinese/replace/zzzzzzzzzzzzz_nesnd_small_states_l_simp_chinese.yml
++++ B2-repair1/localization/simp_chinese/replace/zzzzzzzzzzzzz_nesnd_small_states_l_simp_chinese.yml
+@@ -1,4 +1,5 @@
+ l_simp_chinese:
++ state_pop_support_movement_land_reform_mult_desc:0 "改变人口支持土地改革运动的倾向。"
+  nesnd_small_order_available_tt:0 "当前没有正在观察的自主秩序目标，也不在重开间隔内"
+  nesnd_small_retarget_ready_tt:0 "最近24个月内没有重订地区目标"
+  nesnd_small_regional_status:0 "地区支点：[JournalEntry.GetCountry.MakeScope.Var('nesnd_small_anchor_one').GetState.GetName]、[JournalEntry.GetCountry.MakeScope.Var('nesnd_small_anchor_two').GetState.GetName]。\n市场：[JournalEntry.GetCountry.GetMarket.GetName]。\n[JournalEntry.GetCountry.TryGetOverlordTooltipEntry]\n两地区达到80%市场接入的州内人口占比分别为[JournalEntry.GetCountry.MakeScope.ScriptValue('nesnd_small_group_one_transport')|%1]、[JournalEntry.GetCountry.MakeScope.ScriptValue('nesnd_small_group_two_transport')|%1]。"

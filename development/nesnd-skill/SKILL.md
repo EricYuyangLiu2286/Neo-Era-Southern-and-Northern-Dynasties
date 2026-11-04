@@ -7,6 +7,19 @@ description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚�
 
 与 Matt Pocock 工程技能协作、恢复任务或做版本交付时，先读 [项目工程适配](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/docs/agents/engineering-skills.md>)。领域规则继续由本技能维护；当前授权、候选与进度经 [当前交接](references/active-work.md)进入项目任务索引。
 
+## 子智能体模型分工（强制）
+
+本项目必须委派下列工作，不得由主智能体默默包办：
+- **仓库探索与相关函数定位：GPT-6 Luna，High。**
+- **脚本实现审查与潜在BUG识别：GPT-6.1 Sol，Medium。**
+- **计划草案组织、资料整合与内容结构理解：GPT-6.1 Astra，High。** 子智能体提交结构化建议；最终计划结构由主智能体裁定。
+
+**架构决策、最终计划结构、数值正确性判断和最终合入主MOD由主Astra智能体负责，不得下放。** 实现可按已批准文件边界委派；同一任务按计划→编辑→冻结→测试顺序进行，不同时计划、改写和测试同一系统。
+
+**子智能体禁止使用Astra Extra High（xhigh）及以上，除非委派前明确记录具体理由。** 不因任务大、时间长或继承默认配置而自动升级。创建代理时必须显式指定模型和推理强度；模型不可用时先披露实际可用替代，不把不同版本冒称为用户指定版本。当前工具有 `gpt-6-astra`，没有 `gpt-6.1-astra`：仅以披露后的 `gpt-6-astra / high`承担Astra草案工作。Luna用 `gpt-6-luna / high`，Sol用 `gpt-6.1-sol / medium`。
+
+每个代理在执行账及交付中报告任务、实际配置的模型ID、推理强度及委派证据。旧代理只知继承配置时，明确标记“模型/推理强度未公开”，不得从代理名、任务难度或自述猜测。主智能体运行时模型同样不能伪造；无法验证时如实说明。
+
 ## 先定位，后实现
 
 1. 先读 [目录与资料路由](references/paths.md)。唯一可改的游戏 MOD 是其中的 `MOD`。本体、创意工坊、旧项目、文案和翻译资料均只读。工具、备份、报告使用 `WORK`；本技能本身可维护。

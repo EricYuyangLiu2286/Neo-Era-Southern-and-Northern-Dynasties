@@ -1,0 +1,150 @@
+﻿nesnd_prussian_identity = {
+    is_country_alive = yes
+    OR = { c:PRU ?= this AND = { OR = { has_variable = nesnd_prussian_coalition_origin has_variable = nesnd_rg_prussian_origin } OR = { c:NGF ?= this c:GER ?= this } } }
+}
+nesnd_prussian_diplomacy_open = { nesnd_prussian_identity = yes is_subject = no }
+nesnd_prussian_coalition_open = { nesnd_prussian_identity = yes NOT = { has_variable = nesnd_prussian_coalition_done } }
+nesnd_prussian_coalition_ready = {
+    is_subject = no
+    army_size >= 75
+    country_has_building_type_levels = { target = bt:building_arms_industry value >= 5 }
+    save_temporary_scope_as = nesnd_prussian_actor
+    any_country = {
+        count >= 3 nesnd_canon_german_partner = yes
+        NOT = { this = scope:nesnd_prussian_actor }
+        OR = { has_treaty_alliance_with = { TARGET = scope:nesnd_prussian_actor } has_treaty_defensive_pact_with = { TARGET = scope:nesnd_prussian_actor } }
+    }
+}
+nesnd_prussian_rhine_resolved = {
+    OR = {
+        c:GER ?= this
+        AND = {
+            trigger_if = { limit = { exists = c:FRM } c:FRM = { is_subject = no } }
+            trigger_else = { always = yes }
+            NOT = { any_country = { is_country_alive = yes nesnd_canon_german_country = yes trigger_if = { limit = { is_subject = yes exists = c:FRA } is_subject_of = c:FRA } trigger_else = { always = no } } }
+        }
+    }
+}
+nesnd_austrian_intervention_play = {
+    is_war = no
+    escalation >= define:NDiplomacy|DIPLOMATIC_PLAY_OPENING_PHASE_END
+    escalation < define:NDiplomacy|DIPLOMATIC_PLAY_CLOSING_PHASE_START
+    target = { is_country_alive = yes nesnd_canon_italian_country = yes NOT = { c:AUS ?= this } }
+    initiator = { is_country_alive = yes OR = { c:FRA ?= this nesnd_canon_italian_country = yes } }
+    OR = { has_play_goal = unification has_play_goal = conquer_state has_play_goal = return_state has_play_goal = annex_country }
+}
+# Austrian country actor, named current DP side/enemy/region. Mirrors the native scripted-rule body,
+# with separate relation, truce and already-committed safeguards for the scripted action.
+nesnd_canon_can_back_target = {
+    trigger_if = { limit = { exists = scope:canon_side exists = scope:canon_enemy exists = scope:canon_play_region }
+        is_country_alive = yes is_subject = no is_at_war = no is_diplomatic_play_committed_participant = no
+        NOT = { this = scope:canon_side } NOT = { this = scope:canon_enemy }
+        NOT = { has_war_with = scope:canon_side } NOT = { has_truce_with = scope:canon_enemy }
+        NOT = { has_treaty_alliance_with = { TARGET = scope:canon_enemy } }
+        NOT = { has_treaty_defensive_pact_with = { TARGET = scope:canon_enemy } }
+        scope:canon_side = { is_country_alive = yes }
+        scope:canon_enemy = { is_country_alive = yes NOT = { is_indirect_subject_of = prev } }
+        NOT = { AND = {
+            is_in_same_power_bloc = scope:canon_side is_in_same_power_bloc = scope:canon_enemy
+            power_bloc ?= { modifier:power_bloc_disallow_war_bool = yes }
+            scope:canon_side = { is_direct_subject_of = scope:canon_enemy }
+        } }
+        OR = {
+            has_strategic_region_interest_tier = { strategic_region = scope:canon_play_region value >= interest_tier_effect_can_join_diplomatic_plays_min_tier }
+            has_treaty_alliance_with = { TARGET = scope:canon_side }
+            has_treaty_defensive_pact_with = { TARGET = scope:canon_side }
+            scope:canon_side = { has_treaty_guarantee_independence_with = { TARGET = c:AUS } }
+            scope:canon_side = { has_treaty_support_independence_with = { TARGET = c:AUS } }
+            is_direct_subject_of = scope:canon_enemy
+            scope:canon_enemy = { is_direct_subject_of = prev }
+            is_direct_subject_of = scope:canon_side
+            scope:canon_side = { is_direct_subject_of = prev }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_austrian_intervention_ready = {
+    c:AUS ?= this NOT = { has_variable = nesnd_austrian_case_active }
+    custom_tooltip = { text = nesnd_austrian_cooldown_tt NOT = { has_variable = nesnd_austrian_intervention_cooldown } }
+    trigger_if = { limit = { exists = var:nesnd_austrian_play }
+        var:nesnd_austrian_play = {
+            nesnd_austrian_intervention_play = yes
+            target = { save_temporary_scope_as = canon_side }
+            initiator = { save_temporary_scope_as = canon_enemy }
+            region = { save_temporary_scope_as = canon_play_region }
+        }
+        nesnd_canon_can_back_target = yes
+    }
+    trigger_else = { always = no }
+}
+nesnd_austrian_target_preserved = {
+    trigger_if = { limit = { exists = var:nesnd_austrian_target exists = var:nesnd_austrian_enemy }
+        var:nesnd_austrian_target = { is_country_alive = yes NOT = { is_subject_of = prev.var:nesnd_austrian_enemy } }
+        NOT = { has_variable = nesnd_austrian_enemy_enforced }
+    }
+    trigger_else = { always = no }
+}
+nesnd_usa_continental_identity = {
+    c:USA ?= this is_country_alive = yes
+    trigger_if = { limit = { exists = c:HUS } c:HUS = { is_country_alive = yes NOT = { has_variable = nesnd_hus_native_successor } } }
+    trigger_else = { always = no }
+}
+nesnd_usa_continental_open = { nesnd_usa_continental_identity = yes }
+nesnd_usa_continental_ready = {
+    is_subject = no aggressive_diplomatic_plays_permitted = yes
+    army_size >= 60
+    country_has_building_type_levels = { target = bt:building_arms_industry value >= 8 }
+    country_has_building_type_levels = { target = bt:building_railway value >= 10 }
+    any_scope_building = { is_building_type = building_arms_industry occupancy >= 0.75 }
+    custom_tooltip = { text = nesnd_usa_european_treaty_tt nesnd_canon_investment_valid = yes }
+}
+nesnd_usa_native_civil_war = {
+    OR = { has_journal_entry = je_acw_war is_revolutionary = yes is_secessionist = yes
+        any_country = { OR = { is_revolutionary = yes is_secessionist = yes } civil_war_origin_country ?= c:USA }
+    }
+}
+# State scope; the owner-state is the requested land, never every owner's share of its region.
+nesnd_usa_border_candidate = {
+    owner = { c:HUS ?= this NOT = { has_variable = nesnd_hus_native_successor } }
+    OR = { is_in_geographic_region = geographic_region_north_america region = sr:region_central_america }
+    any_neighbouring_state = { owner = { c:USA ?= this } }
+    state_population > 0
+}
+nesnd_usa_saved_border_valid = {
+    trigger_if = { limit = { exists = var:nesnd_usa_border_state }
+        var:nesnd_usa_border_state = { nesnd_usa_border_candidate = yes }
+    }
+    trigger_else = { always = no }
+}
+nesnd_usa_border_claimable = {
+    nesnd_usa_continental_open = yes nesnd_usa_continental_ready = yes
+    custom_tooltip = { text = nesnd_usa_claim_cooldown_tt NOT = { has_variable = nesnd_usa_claim_cooldown } }
+    NOT = { has_variable = nesnd_usa_case_active } NOT = { has_variable = nesnd_usa_launching }
+    trigger_if = { limit = { exists = var:nesnd_usa_border_state }
+        var:nesnd_usa_border_state = { nesnd_usa_border_candidate = yes NOT = { has_claim_by = c:USA } }
+    }
+    trigger_else = { always = no }
+}
+nesnd_usa_border_war_ready = {
+    nesnd_usa_continental_open = yes nesnd_usa_continental_ready = yes
+    is_at_war = no is_diplomatic_play_committed_participant = no
+    custom_tooltip = { text = nesnd_usa_civil_war_pause_tt NOT = { nesnd_usa_native_civil_war = yes } }
+    custom_tooltip = { text = nesnd_usa_border_cooldown_tt NOT = { has_variable = nesnd_usa_border_cooldown } }
+    NOT = { has_variable = nesnd_usa_case_active } NOT = { has_variable = nesnd_usa_launching }
+    trigger_if = { limit = { exists = c:HUS exists = var:nesnd_usa_border_state }
+        var:nesnd_usa_border_state = { nesnd_usa_border_candidate = yes has_claim_by = c:USA }
+        c:HUS = { is_subject = no NOT = { is_country_type = decentralized } save_temporary_scope_as = target_country }
+        NOT = { has_subject_relation_with = c:HUS } NOT = { has_truce_with = c:HUS }
+        NOT = { has_treaty_alliance_with = { TARGET = c:HUS } }
+        NOT = { has_treaty_defensive_pact_with = { TARGET = c:HUS } }
+        diplomatic_play_has_no_relations_blockers = yes
+        NOT = { AND = { is_in_same_power_bloc = c:HUS power_bloc ?= { modifier:power_bloc_disallow_war_bool = yes } } }
+        var:nesnd_usa_border_state = { region = { save_temporary_scope_as = nesnd_usa_play_region } }
+        has_strategic_region_interest_tier = { strategic_region = scope:nesnd_usa_play_region value >= interest_tier_effect_can_start_diplomatic_plays_min_tier }
+    }
+    trigger_else = { always = no }
+}
+nesnd_usa_saved_land_acquired = {
+    any_in_list = { variable = nesnd_usa_claim_provinces always = yes }
+    NOT = { any_in_list = { variable = nesnd_usa_claim_provinces NOT = { owner = { c:USA ?= this } } } }
+}

@@ -1,0 +1,46 @@
+﻿on_monthly_pulse_country = { on_actions = { nesnd_hus_registration_monthly } }
+nesnd_hus_registration_monthly = {
+    trigger = { nesnd_hus_hierarchy_managed = yes }
+    effect = { nesnd_hus_registration_maintenance = yes }
+}
+on_game_started_after_lobby = { on_actions = { nesnd_hus_hierarchy_campaign_start } }
+nesnd_hus_hierarchy_campaign_start = { effect = { c:HUS ?= { if = { limit = { is_country_alive = yes } nesnd_hus_registration_maintenance = yes } } } }
+# Native root is law; lifecycle effects require its owner country.
+on_law_activated = { on_actions = { nesnd_hus_hierarchy_law_activated } }
+nesnd_hus_hierarchy_law_activated = {
+    trigger = { exists = owner owner ?= { NOT = { has_variable = nesnd_hus_hierarchy_mutating } OR = { has_variable = nesnd_hus_hierarchy_version has_variable = nesnd_hus_hierarchy_active nesnd_hus_has_hierarchy_law = yes has_variable = nesnd_hus_revolution_continuation } } }
+    effect = { owner = { nesnd_hus_reconcile_hierarchy = yes } }
+}
+on_country_formed = { on_actions = { nesnd_hus_hierarchy_country_formed } }
+nesnd_hus_hierarchy_country_formed = {
+    trigger = { nesnd_hus_hierarchy_managed = yes }
+    effect = { nesnd_hus_registration_maintenance = yes }
+}
+on_revolution_start = { on_actions = { nesnd_hus_hierarchy_revolution_start } }
+nesnd_hus_hierarchy_revolution_start = {
+    trigger = { nesnd_hus_original_country = yes exists = scope:target }
+    effect = { nesnd_hus_initialize_hierarchy = yes nesnd_hus_capture_revolution = yes }
+}
+on_revolution_end = { on_actions = { nesnd_hus_hierarchy_revolution_end } }
+nesnd_hus_hierarchy_revolution_end = { effect = {
+    if = { limit = { is_country_alive = yes nesnd_hus_hierarchy_managed = yes } nesnd_hus_registration_maintenance = yes }
+    scope:target ?= { if = { limit = { is_country_alive = yes nesnd_hus_hierarchy_managed = yes } nesnd_hus_registration_maintenance = yes } }
+} }
+on_civil_war_won = { on_actions = { nesnd_hus_hierarchy_civil_war_won } }
+nesnd_hus_hierarchy_civil_war_won = {
+    trigger = { nesnd_hus_hierarchy_managed = yes }
+    effect = { nesnd_hus_registration_maintenance = yes }
+}
+# Release and secession are independent countries, not ordinary revolutionary continuation.
+on_country_released_as_independent = { on_actions = { nesnd_hus_hierarchy_independent_target } }
+on_country_released_as_own_subject = { on_actions = { nesnd_hus_hierarchy_independent_target } }
+on_country_released_as_company_subject = { on_actions = { nesnd_hus_hierarchy_independent_target } }
+on_country_released_as_overlord_subject = { on_actions = { nesnd_hus_hierarchy_independent_target } }
+on_secession_start = { on_actions = { nesnd_hus_hierarchy_independent_target } }
+nesnd_hus_hierarchy_independent_target = {
+    effect = { scope:target ?= {
+        if = { limit = { OR = { has_variable = nesnd_hus_hierarchy_version has_variable = nesnd_hus_hierarchy_active has_variable = nesnd_hus_revolution_continuation has_social_hierarchy = nesnd_hus_social_hierarchy nesnd_hus_has_hierarchy_law = yes nesnd_hus_has_legacy_law = yes nesnd_hus_has_tier_modifier = yes } }
+            nesnd_hus_clear_hierarchy = yes
+        }
+    } }
+}

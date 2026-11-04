@@ -1,0 +1,76 @@
+﻿nesnd_egypt_independence = {
+    group = je_group_historical_content icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+    should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1000
+    is_shown_when_inactive = { nesnd_egypt_independence_open = yes }
+    possible = { nesnd_egypt_independence_open = yes }
+    immediate = { nesnd_egypt_initialize = yes scope:journal_entry ?= { set_bar_progress = { name = nesnd_egypt_independence_bar value = owner.nesnd_egypt_independence_value } } }
+    scripted_progress_bar = nesnd_egypt_independence_bar
+    scripted_button = nesnd_egypt_investor_fra
+    scripted_button = nesnd_egypt_investor_usm
+    scripted_button = nesnd_egypt_investor_sih
+    scripted_button = nesnd_egypt_investor_gbr
+    scripted_button = nesnd_egypt_investor_qe1
+    scripted_button = nesnd_egypt_investor_tur
+    scripted_button = nesnd_egypt_investor_none
+    status_desc = { first_valid = {
+        triggered_desc = { trigger = { nesnd_egypt_investor_cooperating = yes } desc = nesnd_egypt_with_investor_status }
+        triggered_desc = { trigger = { nesnd_egypt_has_sponsor_mode = yes } desc = nesnd_egypt_lost_investor_status }
+        desc = nesnd_egypt_without_investor_status
+    } }
+    on_monthly_pulse = { effect = { nesnd_egypt_monthly = yes } }
+    complete = {
+        hidden_trigger = { nesnd_egypt_independence_open = yes has_variable = nesnd_egypt_started }
+        custom_tooltip = { text = nesnd_egypt_generation_passed NOT = { has_variable = nesnd_egypt_generation } }
+        custom_tooltip = { text = nesnd_egypt_still_independent nesnd_egypt_independence_value > 0 }
+    }
+    on_complete = {
+        if = { limit = { nesnd_egypt_independence_open = yes nesnd_egypt_independence_value > 0 has_variable = nesnd_egypt_started NOT = { has_variable = nesnd_egypt_generation } }
+            set_variable = nesnd_egypt_independence_secured
+            nesnd_egypt_finish = yes
+            add_modifier = { name = nesnd_egypt_independent_generation months = 120 }
+            trigger_event = { id = nesnd_egypt.1 popup = yes }
+        }
+    }
+    fail = { hidden_trigger = { nesnd_egypt_independence_open = yes has_variable = nesnd_egypt_started } custom_tooltip = { text = nesnd_egypt_dependence_reached nesnd_egypt_independence_value <= 0 } }
+    on_fail = { hidden_effect = { nesnd_egypt_settle_dependence = yes } custom_tooltip = nesnd_egypt_dependence_result }
+    invalid = { OR = {
+        NOT = { c:EGY ?= this }
+        has_variable = nesnd_egypt_finished
+        is_subject = yes
+        
+    } }
+    on_invalid = {
+        if = { limit = { NOT = { has_variable = nesnd_egypt_finished } }
+            if = { limit = { c:EGY ?= this is_country_alive = yes }
+                if = { limit = { is_subject = yes }
+                    if = { limit = { has_variable = nesnd_egypt_settlement_pending } nesnd_egypt_settle_dependence = yes }
+                    else = { nesnd_egypt_end_external_subjection = yes }
+                }
+                else_if = { limit = { has_variable = nesnd_egypt_started nesnd_egypt_independence_value <= 0 } nesnd_egypt_settle_dependence = yes }
+                else = { nesnd_egypt_finish = yes }
+            }
+        }
+    }
+}
+nesnd_egypt_investment_accounts = {
+    group = je_group_historical_content icon = "gfx/interface/icons/event_icons/event_industry.dds"
+    should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 900
+    is_shown_when_inactive = { nesnd_egypt_independence_open = yes has_journal_entry = nesnd_egypt_independence NOT = { has_variable = nesnd_egypt_capability_done } }
+    possible = { nesnd_egypt_independence_open = yes has_journal_entry = nesnd_egypt_independence NOT = { has_variable = nesnd_egypt_capability_done } }
+    complete = { nesnd_egypt_capability_ready = yes }
+    on_complete = {
+        if = { limit = { nesnd_egypt_independence_open = yes nesnd_egypt_capability_ready = yes NOT = { has_variable = nesnd_egypt_capability_done } }
+            set_variable = nesnd_egypt_capability_done
+            add_modifier = { name = nesnd_egypt_local_capability months = 60 }
+            trigger_event = { id = nesnd_egypt.4 popup = yes }
+        }
+    }
+    invalid = { OR = { NOT = { c:EGY ?= this } NOT = { has_journal_entry = nesnd_egypt_independence } has_variable = nesnd_egypt_capability_done } }
+}
+
+# Retired compatibility definition. No lifecycle effects or buttons.
+nesnd_egypt_protection_negotiations = {
+    group = je_group_historical_content icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+    is_shown_when_inactive = { always = no } possible = { always = no }
+    invalid = { always = yes }
+}

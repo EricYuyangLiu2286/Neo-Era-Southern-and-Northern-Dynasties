@@ -1,0 +1,150 @@
+{
+  "status": "FAIL_STOPPED",
+  "at": "2026-11-04T17:19:18.784003+00:00",
+  "reviewer": "/root/sol_b2_implementation",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "configuration_evidence": "parent explicit NEW_TASK and continuation, not inferred",
+  "freeze_manifest": "D:\\Users\\Eric Liu\\Documents\\Paradox Interactive\\Victoria 3\\nesnd-workbench\\reports\\canon-route-execution-20261104\\batch-a2-repair2-freeze.json",
+  "freeze_manifest_sha256": "094950dfdda143bdec63f224b47ac3a7a34bc434e740657ed4bf3dc71f5fb89b",
+  "snapshot": "D:\\Users\\Eric Liu\\Documents\\Paradox Interactive\\Victoria 3\\nesnd-workbench\\validation\\snapshots\\canon-integration-20261104T170000Z\\mod",
+  "snapshot_manifest_sha256": "95195d9cbf3d8ca779004b5a77ad9c0f07e577b43e0c4ef8b7712bbdeb200ebb",
+  "owned_count": 33,
+  "findings": [
+    {
+      "id": "A2-R2-F01",
+      "severity": "P1",
+      "status": "CONFIRMED_ALLOCATION_CONTRACT_DEFECT_ROOT_APPROVED",
+      "paths": [
+        "common/scripted_effects/nesnd_native_khanate.txt:142",
+        "common/scripted_effects/nesnd_a2_common.txt:2"
+      ],
+      "title": "New units are spread without subtracting each state's inherited regular units",
+      "minimal": "Actual source NKH target40; four states each10 barracks; inherited20 units are10/10/0/0. Source new20 distribution5/5/5/5 produces combined15/15/5/5 against10/10/10/10. National target and summed barracks alone do not prove per-state capacity.",
+      "evidence": "source-literal-matrix.json inherited_troops_per_state_capacity_counterexample; root explicit adjudication",
+      "repair_contract": "Count actual per-state existing regular units via state->every_scope_building(limit building_barrack)->every_combat_unit. Available=max(barrack levels-existing units,0). Add only national deficit; prefer states with real spare capacity; each literal allocation <=spare. Preserve inherited units and population targets. Original per-state <=10 constrains new barracks added, not use of larger existing spare barracks. Do not create excess free barracks merely to keep an even distribution. Preserve total allocation and new-build budgets.",
+      "engine_boundary": "No claim of observed engine troop loss. Automatic barrack expansion/rejection by create_military_formation is unproven ENGINE_NOT_RUN.",
+      "stopped": "inherited deployment/formation completion and full military acceptance"
+    },
+    {
+      "id": "A2-R2-F02",
+      "severity": "P1",
+      "status": "CONFIRMED_SOURCE_REFERENCE_SAFETY_DEFECT",
+      "paths": [
+        "common/scripted_triggers/nesnd_american_restoration.txt:55",
+        "common/scripted_effects/nesnd_american_restoration.txt:268"
+      ],
+      "title": "Restoration goal/settlement still reads absent callback references in sibling guards",
+      "minimal": "Execute unchanged settlement AST on a NAH fixture with no saved diplomatic_play: goal_pair has sibling exists checks followed by scope:diplomatic_play block, yielding unguarded scope. Settlement also has same-level has_variable=nesnd_restoration_play followed by var comparison, which is not a structural guard. Incomplete old callbacks must fail without required reads.",
+      "evidence": "source-literal-matrix.json restoration_settlement_missing_callback_scope_guard",
+      "repair_contract": "Use nested trigger_if/if branches before every callback scope, opponent/epoch and stored-DP variable read; preserve exact-pair and exact-DP terminal receipts. Audit same helper's full missing/old reference closure. No changed outcomes or new mechanics.",
+      "engine_boundary": "Actual source safety red; engine reachability/timing of an incomplete legacy callback not observed.",
+      "stopped": "incomplete/legacy restoration callback and full settlement matrix"
+    },
+    {
+      "id": "A2-R2-F03",
+      "severity": "P2",
+      "status": "CONFIRMED_CURRENT_NATIVE_INTERFACE_MISMATCH",
+      "paths": [
+        "common/scripted_buttons/nesnd_american_restoration.txt:6",
+        "common/scripted_buttons/nesnd_american_restoration.txt:17",
+        "common/scripted_buttons/nesnd_american_restoration.txt:25"
+      ],
+      "title": "Scripted-button AI still uses obsolete base/modifier shape",
+      "minimal": "Repair1 followed scripted_buttons.md example. Current actual GAME has195 scripted-button AI blocks and zero direct base fields; actual 00_scripted_buttons.txt:490+ and636+ use value plus if={limit... add=N}. Tiger rejects all7 submitted base/modifier fields. Event ai_chance uses a different interface and cannot justify button shape.",
+      "evidence": "structure-and-interfaces.json native_button_AI and tiger-current-owned.json unknown-field",
+      "repair_contract": "Use current native button script-value shape value/if/limit/add. Preserve recognize base30 with+30 native share/+30 radicals; negotiate50; suppress15 with+20 army/+20 laws. Test all driver combinations against old intended numeric expressions.",
+      "stopped": "button AI numerical behavior until source shape corrected"
+    },
+    {
+      "id": "A2-R2-F04",
+      "severity": "P2",
+      "status": "CONFIRMED_EFFECTIVE_LOCALIZATION_MISSING",
+      "paths": [
+        "localization/english/replace/zzzzzzzzzzzz_nesnd_a2_native_americas_l_english.yml",
+        "localization/simp_chinese/replace/zzzzzzzzzzzz_nesnd_a2_native_americas_l_simp_chinese.yml"
+      ],
+      "title": "Six implicit UI keys missing in both effective locales",
+      "minimal": "NKH, NKH_ADJ, dp_nesnd_native_restoration_desc, dp_nesnd_native_restoration_tooltip, dp_nesnd_khanate_suppression_desc, dp_nesnd_khanate_suppression_tooltip are absent in effective GAME+snapshot CN/EN. Explicit134 paired keys do not cover these implicit database UI keys.",
+      "evidence": "structure-and-interfaces.json localization.implicit_missing; Tiger6 missing-localization",
+      "repair_contract": "Add bilingual keys using existing Great Plains Khanate and war terminology and actual outcomes. No new design or fictional effect.",
+      "stopped": "complete UI localization acceptance"
+    }
+  ],
+  "coverage": [
+    {
+      "area": "freeze/dependencies",
+      "status": "STATIC_PASS",
+      "detail": "33repair2 owned exact SHA in root170000 unified snapshot;31scripts parse; baseline is same full dependency snapshot with original A2 owned restored. C2 known errors not attributed to A2."
+    },
+    {
+      "area": "original seven red cases",
+      "status": "SOURCE_AST_PARTIAL",
+      "detail": "F1 role assignment fixed; F2first exodus all4destination combinations/70-30 actual moves and receipts fixed; F3missingHUS40% terminal fixed; F4USA/HUS exact storedDP/case/epoch/copy/terminal controls fixed; F5five helpers prior-write-free preview fixed; F6game_date source fixed but natural character ages/pools engineNOT_RUN; F7mixed same-pair treaty withdrawal with break penalties and third-party preservation source-pass."
+    },
+    {
+      "area": "literal army counts",
+      "status": "SOURCE_AST_PASS_COUNTS_ONLY",
+      "detail": "All0..40 NKH and0..24 two-state restoration source branches execute, one complete positive literal-count formation or no formation for0. All66 allocations equal execution of original dynamic-count source exactly. F01 blocks inherited per-state capacity acceptance; single-state fallback source present but not fully exhaustively run."
+    },
+    {
+      "area": "capital dispatch",
+      "status": "SOURCE_AST_PASS",
+      "detail": "All800 actual literal target branches and missing/unknown/foreign-owned no-op controls executed. Count includes sea-region definitions from99_seas, so implementation prose800land is inaccurate; owner-state guard prevents a sea capital. Do not label it observed gameplay bug."
+    },
+    {
+      "area": "territory1/2/4",
+      "status": "SOURCE_AST_PASS_LIMITED",
+      "detail": "Actual selection/create-country source1small/2large/4NKH, remaining state/population and original/new capital ownership pass; one-state/insufficient remainder/all split cores/disconnected cases reject. Native create_country operation is a fixture; military setup/war dispatch excluded on confirmed downstream defect and50%movement tested separately."
+    },
+    {
+      "area": "migration",
+      "status": "SOURCE_AST_PASS_LIMITED",
+      "detail": "Actual70/30whole-pop moves two source groups; one/no destination terminals and once-only receipt; actual two original-source50%moves preserve ceded populations;40%HUSdestination and no-HUS terminal. Full40%before-annex engine sequence remains stopped/NOT_RUN, though source ordering is refugees/exile before annex."
+    },
+    {
+      "area": "creation authorization and treaties",
+      "status": "SOURCE_AST_PASS_NATIVE_FIXTURE",
+      "detail": "BothUSA/HUS, zero/one/two matching newDP candidates: phase-valid guarded creation, temporary flags removed, only unique actual result binds; mixed original-pair treaty ends with penalties, third-party and unrelated article-only pair preserved. Native timing fixture is explicitly not engine execution."
+    },
+    {
+      "area": "exact DP goals/two wars",
+      "status": "SOURCE_AST_PASS_PARTIAL",
+      "detail": "14USA/HUS bound controls include actual humiliation on_enforced; exactDP/epoch/case/terminal/storedcopy/missing reject. Full annex settlement and terminal war end natural callbacks NOT_RUN; restoration invalid reference F02 stops affected branch."
+    },
+    {
+      "area": "NPU/SPU/PEU same TWT invitation",
+      "status": "SOURCE_AST_PASS",
+      "detail": "Actual recognize source and acceptance executed for all3after resolved=true and case_started=true, no duplicate acceptance.11stale/ineligible controls reject:nonce,expiry,legitimacy,IG,subject,war,court_epoch,recreated_receiver,registry,missingreceiver,missingpending."
+    },
+    {
+      "area": "A1/24laws/TIS/Cherokee",
+      "status": "STATIC_SOURCE_PASS",
+      "detail": "A1 non-A2 file identities preserved; HUS effects only exodus wrapper changed; native-primary helper exact;24ordinary successor laws identical to original A2 frozen helper and do not add HUS-special laws.6old Turtle Island guards executed; Cherokee stubs byte-unchanged. Full old-save adopt/war conversion natural ordering NOT_RUN."
+    },
+    {
+      "area": "characters/AI/localization",
+      "status": "PARTIAL_FAIL",
+      "detail": "Role archetype repair verified; birth/date and seen/dead guards source-reviewed but fullperson creation/exile/void/retirement native timing NOT_RUN.134explicit paired values/BOM/effective overrides pass, six implicit keys missing. Button AI F03 unresolved."
+    },
+    {
+      "area": "external tools",
+      "status": "RUN",
+      "detail": "Actual MCPinit+6symbols; actual Tiger759baseline→738current; filter33owned. Current7unknownAI,6strict-scopes,6missingloc etc classified, not blanket ignored. KnownC2diagnostics remain outside A2 finding ownership."
+    }
+  ],
+  "engine_status": "NOT_RUN",
+  "game_opened": false,
+  "source_modified": false,
+  "old_fail_preserved": true,
+  "artifact_root": "D:\\Users\\Eric Liu\\Documents\\Paradox Interactive\\Victoria 3\\nesnd-workbench\\validation\\runs\\batch-a2-repair2-20261104T170323Z",
+  "luna": {
+    "canonical": "/root/sol_b2_implementation/a2_capacity_native_interface",
+    "model": "gpt-6-luna",
+    "reasoning_effort": "high",
+    "configuration_evidence": "actual collaboration.spawn_agent(task_name=a2_capacity_native_interface,model=gpt-6-luna,reasoning_effort=high,fork_turns=none), authorized by root message",
+    "native_source": "GAME common/buildings/05_military.txt3–8; engine effects.log4671–4675 and1306–1311; triggers.log3761–3766 and146–152; createformation effects.log959–979; native00_victoria_scripted_effects.txt3–16 and00_ep1_kazakh_events.txt87–100",
+    "result": "Proven per-state barrack building combat_unit iterator. No proof of automatic barrack expansion/rejection. Root capacity contract recorded verbatim in F01."
+  },
+  "testing_stopped": true
+}

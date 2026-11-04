@@ -1,0 +1,243 @@
+﻿REPLACE:je_risorgimento_austrian_radicals_button = {
+	name = "je_risorgimento_austrian_radicals_button"
+	desc = "je_risorgimento_austrian_radicals_button_desc"
+
+	visible = {
+		NOT = {
+			is_subject = yes
+		}
+	}
+
+	cooldown = { days = normal_modifier_time }
+
+	possible = {
+		country_rank >= rank_value:minor_power
+		sr:region_southern_europe = {
+			any_scope_country = {
+				NOR = {
+					country_has_primary_culture = cu:south_italian
+					country_has_primary_culture = cu:north_italian
+				}
+				custom_tooltip = {
+					text = owns_italian_homelands_tt
+					any_scope_state = {
+						state_region = {
+							OR = {
+								is_homeland = cu:south_italian
+								is_homeland = cu:north_italian
+							}
+						}
+					}
+				}
+				relations:root <= 20
+			}
+		}
+		custom_tooltip = {
+			text = risorgimento_unifying_stance_tt
+			has_variable = risorgimento_unifying_stance
+		}
+	
+any_country = { nesnd_c2_nonitalian_agitation_target = yes }
+}
+
+	ai_chance = {
+		value = 50
+		if = {
+			limit = {
+				has_law_or_variant = law_type:law_theocracy
+			}
+			add = -70
+		}
+		if = {
+			limit = {
+				any_country = {
+					NOR = {
+						country_has_primary_culture = cu:south_italian
+						country_has_primary_culture = cu:north_italian
+					}
+					any_scope_state = {
+						state_region = {
+							OR = {
+								is_homeland = cu:south_italian
+								is_homeland = cu:north_italian
+							}
+						}
+					}
+					relations:root <= 20
+				}
+			}
+			add = 25
+		}
+	}
+
+	effect = {
+		ROOT = {
+			save_scope_as = saboteur_country
+		}
+		random_country = {
+			limit = { nesnd_c2_nonitalian_agitation_target = yes }
+			every_scope_state = {
+				limit = {
+					state_region = {
+						is_homeland = cu:north_italian
+					}
+				}
+				if = {
+					limit = {
+						ROOT = {
+							country_rank >= rank_value:major_power
+						}
+					}
+					add_radicals_in_state = {
+						value = 0.10
+						culture = cu:north_italian
+					}
+				}
+				else = {
+					add_radicals_in_state = {
+						value = 0.05
+						culture = cu:north_italian
+					}
+				}
+			}
+			every_scope_state = {
+				limit = {
+					state_region = {
+						is_homeland = cu:south_italian
+					}
+				}
+				if = {
+					limit = {
+						ROOT = {
+							country_rank >= rank_value:major_power
+						}
+					}
+					add_radicals_in_state = {
+						value = 0.10
+						culture = cu:south_italian
+					}
+				}
+				else = {
+					add_radicals_in_state = {
+						value = 0.05
+						culture = cu:south_italian
+					}
+				}
+			}
+			post_notification = nationalism_decision_agitation_occurred
+		}
+		je:je_risorgimento ?= {
+			add_modifier = {
+				name = support_separatism_nationalist_propaganda
+				multiplier = 5
+				days = 1095
+			}
+		}
+		custom_tooltip = ausrad_cooldown_year_tt
+	}
+}
+REPLACE:je_risorgimento_italian_radicals_button = {
+	name = "je_risorgimento_italian_radicals_button"
+	desc = "je_risorgimento_italian_radicals_button_desc"
+
+	visible = {
+		NOT = {
+			is_subject = yes
+		}
+	}
+
+	cooldown = { days = normal_modifier_time }
+
+	possible = {
+		custom_tooltip = {
+			text = risorgimento_unifying_stance_tt
+			has_variable = risorgimento_unifying_stance
+		}
+		country_rank >= rank_value:minor_power
+		any_diplomatically_relevant_country = {
+			OR = {
+				country_has_primary_culture = cu:south_italian
+				country_has_primary_culture = cu:north_italian
+			}
+			custom_tooltip = {
+				text = risorgimento_opposing_stance_tt
+				NOT = {
+					has_variable = risorgimento_unifying_stance
+				}
+			}
+			relations:root <= 20
+			any_political_movement = {
+				is_political_movement_type = movement_italian_national
+			}
+		}
+	
+any_diplomatically_relevant_country = { nesnd_c2_italian_agitation_target = yes }
+}
+
+	ai_chance = {
+		value = 10
+		if = {
+			limit = {
+				has_law_or_variant = law_type:law_theocracy
+			}
+			add = -10
+		}
+		if = {
+			limit = {
+				any_country = {
+					OR = {
+						country_has_primary_culture = cu:south_italian
+						country_has_primary_culture = cu:north_italian
+					}
+					NOT = {
+						has_variable = risorgimento_unifying_stance
+					}
+					relations:root >= 20
+				}
+			}
+			add = -10
+		}
+		if = {
+			limit = {
+				any_country = {
+					OR = {
+						country_has_primary_culture = cu:south_italian
+						country_has_primary_culture = cu:north_italian
+					}
+					NOT = {
+						has_variable = risorgimento_unifying_stance
+					}
+					relations:root <= 20
+				}
+			}
+			add = 10
+		}
+	}
+
+	effect = {
+		ROOT = {
+			save_scope_as = saboteur_country
+		}
+		random_diplomatically_relevant_country = {
+			limit = { nesnd_c2_italian_agitation_target = yes }
+			THIS = {
+				save_scope_as = victim_country
+			}
+			change_relations = {
+				country = ROOT
+				value = -10
+			}
+			random_political_movement = {
+				limit = {
+					is_political_movement_type = movement_italian_national
+				}
+				save_scope_as = italian_nationalist_movement
+				add_modifier = {
+					name = modifier_italian_unificationist_sentiment
+					days = normal_modifier_time
+				}
+			}
+			post_notification = sabotage_decision_agitation_occurred
+		}
+	}
+}

@@ -1,0 +1,41 @@
+﻿nesnd_c2_garibaldi_destination = {
+ is_country_alive = yes NOT = { this = root } NOT = { has_variable = rejected_garibaldi }
+ any_primary_culture = { has_discrimination_trait = heritage_italic }
+ NOT = { has_war_with = root }
+}
+nesnd_c2_garibaldi_general_here = {
+ trigger_if = { limit = { exists = scope:garibaldi_scope }
+  scope:garibaldi_scope = { is_character_alive = yes has_role_of_type = general owner = root }
+ }
+ trigger_else = { always = no }
+}
+nesnd_c2_garibaldi_departure_valid = {
+ trigger_if = { limit = { exists = scope:garibaldi_scope }
+  scope:garibaldi_scope = { is_character_alive = yes owner = root }
+  trigger_if = { limit = { exists = scope:garibaldi_italian_nation_scope }
+   scope:garibaldi_italian_nation_scope = { nesnd_c2_garibaldi_destination = yes }
+   exists = scope:nesnd_c2_garibaldi_play
+   scope:nesnd_c2_garibaldi_play ?= { is_war = yes OR = { initiator = scope:garibaldi_italian_nation_scope target = scope:garibaldi_italian_nation_scope } }
+  }
+  trigger_else = { is_at_war = no NOR = { c:ITA ?= this any_primary_culture = { has_discrimination_trait = heritage_italic } } }
+ }
+ trigger_else = { always = no }
+}
+nesnd_c2_rsm_current_play = {
+ exists = scope:rsm_scope exists = scope:rsm_revolted_scope exists = scope:rsm_diplo_play
+ scope:rsm_scope ?= { is_country_alive = yes is_secessionist = yes }
+ scope:rsm_diplo_play ?= { initiator = scope:rsm_revolted_scope target = scope:rsm_scope }
+}
+nesnd_c2_nonitalian_agitation_target = {
+ is_country_alive = yes
+ NOR = { country_has_primary_culture = cu:north_italian country_has_primary_culture = cu:south_italian }
+ any_scope_state = { state_region = { OR = { is_homeland = cu:south_italian is_homeland = cu:north_italian } } }
+ relations:root <= 20
+}
+nesnd_c2_italian_agitation_target = {
+ is_country_alive = yes NOT = { this = root }
+ OR = { country_has_primary_culture = cu:north_italian country_has_primary_culture = cu:south_italian }
+ NOT = { has_variable = risorgimento_unifying_stance }
+ relations:root <= 20
+ any_political_movement = { is_political_movement_type = movement_italian_national }
+}

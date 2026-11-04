@@ -1,0 +1,235 @@
+﻿nesnd_prussia_secure_coalition = {
+    if = { limit = { nesnd_prussian_identity = yes nesnd_prussian_coalition_ready = yes NOT = { has_variable = nesnd_prussian_coalition_done } }
+        set_variable = nesnd_prussian_coalition_done
+        set_variable = { name = nesnd_prussian_staff_window months = 120 }
+        trigger_event = { id = nesnd_europe_america.92 years = 10 }
+        add_modifier = { name = nesnd_prussian_joint_staff months = 2 }
+        save_scope_as = nesnd_prussian_claimant
+        s:STATE_ALSACE_LORRAINE = {
+            if = { limit = { exists = scope:nesnd_prussian_claimant any_scope_state = { owner = { c:FRA ?= this } } } add_claim = scope:nesnd_prussian_claimant }
+        }
+        clear_saved_scope = nesnd_prussian_claimant
+        trigger_event = { id = nesnd_europe_america.1 popup = yes }
+    }
+}
+nesnd_prussia_maintenance = {
+    if = { limit = { nesnd_prussian_identity = yes }
+        set_variable = nesnd_prussian_coalition_origin
+        if = { limit = { has_variable = nesnd_prussian_staff_window is_subject = no nesnd_prussian_coalition_ready = yes }
+            add_modifier = { name = nesnd_prussian_joint_staff months = 2 }
+        }
+        else_if = { limit = { has_modifier = nesnd_prussian_joint_staff } remove_modifier = nesnd_prussian_joint_staff }
+        if = { limit = { has_variable = nesnd_prussian_coalition_done nesnd_prussian_rhine_resolved = yes NOT = { has_variable = nesnd_prussian_rhine_settled } }
+            set_variable = nesnd_prussian_rhine_settled
+            add_modifier = { name = nesnd_prussian_rhine_settlement months = 60 }
+            trigger_event = { id = nesnd_europe_america.2 popup = yes }
+        }
+    }
+    else_if = { limit = { has_modifier = nesnd_prussian_joint_staff } remove_modifier = nesnd_prussian_joint_staff }
+}
+nesnd_austria_find_intervention = {
+    clear_saved_scope = nesnd_austrian_candidate_play
+    if = { limit = { c:AUS ?= this is_subject = no NOT = { has_variable = nesnd_austrian_case_active } }
+        if = { limit = { exists = var:nesnd_austrian_play }
+            if = { limit = { NOT = { var:nesnd_austrian_play = { nesnd_austrian_intervention_play = yes } } } remove_variable = nesnd_austrian_play remove_variable = nesnd_austrian_target remove_variable = nesnd_austrian_enemy }
+        }
+        if = { limit = { NOT = { exists = var:nesnd_austrian_play } NOT = { has_variable = nesnd_austrian_intervention_cooldown } }
+            random_diplomatic_play = { limit = { nesnd_austrian_intervention_play = yes NOT = { has_variable = nesnd_austria_declined } } save_scope_as = nesnd_austrian_candidate_play }
+            if = { limit = { exists = scope:nesnd_austrian_candidate_play } set_variable = { name = nesnd_austrian_play value = scope:nesnd_austrian_candidate_play }
+                scope:nesnd_austrian_candidate_play = { target = { save_scope_as = nesnd_austrian_visible_target } initiator = { save_scope_as = nesnd_austrian_visible_enemy } }
+                if = { limit = { exists = scope:nesnd_austrian_visible_target exists = scope:nesnd_austrian_visible_enemy }
+                    set_variable = { name = nesnd_austrian_target value = scope:nesnd_austrian_visible_target }
+                    set_variable = { name = nesnd_austrian_enemy value = scope:nesnd_austrian_visible_enemy }
+                }
+                clear_saved_scope = nesnd_austrian_visible_target clear_saved_scope = nesnd_austrian_visible_enemy }
+        }
+    }
+    clear_saved_scope = nesnd_austrian_candidate_play
+}
+nesnd_austria_intervene = {
+    if = { limit = { nesnd_austrian_intervention_ready = yes }
+        var:nesnd_austrian_play = {
+            target = { save_scope_as = nesnd_austrian_protected }
+            initiator = { save_scope_as = nesnd_austrian_opponent }
+            add_target_backers = { c:AUS }
+        }
+        if = { limit = { exists = scope:nesnd_austrian_protected exists = scope:nesnd_austrian_opponent }
+            if = { limit = { is_diplomatic_play_ally_of = scope:nesnd_austrian_protected is_diplomatic_play_enemy_of = scope:nesnd_austrian_opponent }
+                set_variable = { name = nesnd_austrian_target value = scope:nesnd_austrian_protected }
+                set_variable = { name = nesnd_austrian_enemy value = scope:nesnd_austrian_opponent }
+                set_variable = nesnd_austrian_case_active
+                add_modifier = { name = nesnd_austrian_italian_commitment months = 24 }
+                trigger_event = { id = nesnd_europe_america.3 popup = yes }
+            }
+        }
+        clear_saved_scope = nesnd_austrian_protected clear_saved_scope = nesnd_austrian_opponent
+    }
+}
+nesnd_austria_acknowledge = {
+    if = { limit = { c:AUS ?= this is_subject = no NOT = { has_variable = nesnd_austrian_case_active } exists = var:nesnd_austrian_play }
+        if = { limit = { var:nesnd_austrian_play = { nesnd_austrian_intervention_play = yes } }
+            var:nesnd_austrian_play = { set_variable = nesnd_austria_declined }
+            add_modifier = { name = nesnd_austrian_concession months = 24 }
+            set_variable = { name = nesnd_austrian_intervention_cooldown months = 24 }
+            remove_variable = nesnd_austrian_play remove_variable = nesnd_austrian_target remove_variable = nesnd_austrian_enemy
+        }
+    }
+}
+nesnd_austria_clear_case = {
+    if = { limit = { has_modifier = nesnd_austrian_italian_commitment } remove_modifier = nesnd_austrian_italian_commitment }
+    remove_variable = nesnd_austrian_case_active remove_variable = nesnd_austrian_case_ended remove_variable = nesnd_austrian_end_grace
+    remove_variable = nesnd_austrian_play remove_variable = nesnd_austrian_target remove_variable = nesnd_austrian_enemy
+    remove_variable = nesnd_austrian_victory_evidence remove_variable = nesnd_austrian_enemy_enforced
+}
+nesnd_austria_settle_case = {
+    if = { limit = { c:AUS ?= this has_variable = nesnd_austrian_case_active has_variable = nesnd_austrian_case_ended NOT = { has_variable = nesnd_austrian_end_grace } }
+        if = { limit = { NOT = { nesnd_austrian_target_preserved = yes } }
+            add_modifier = { name = nesnd_austrian_italian_defeat months = 24 }
+            trigger_event = { id = nesnd_europe_america.5 popup = yes }
+        }
+        else_if = { limit = { has_variable = nesnd_austrian_victory_evidence }
+            add_modifier = { name = nesnd_austrian_italian_influence months = 36 }
+            trigger_event = { id = nesnd_europe_america.4 popup = yes }
+        }
+        else = { trigger_event = { id = nesnd_europe_america.6 popup = yes } }
+        set_variable = { name = nesnd_austrian_intervention_cooldown months = 24 }
+        nesnd_austria_clear_case = yes
+    }
+}
+nesnd_austria_maintenance = {
+    if = { limit = { c:AUS ?= this is_subject = no }
+        if = { limit = { has_variable = nesnd_austrian_case_active }
+            if = { limit = { NOT = { exists = var:nesnd_austrian_play } NOT = { has_variable = nesnd_austrian_case_ended } } set_variable = nesnd_austrian_case_ended set_variable = { name = nesnd_austrian_end_grace days = 1 } trigger_event = { id = nesnd_europe_america.90 days = 2 } }
+            nesnd_austria_settle_case = yes
+        }
+        else = { nesnd_austria_find_intervention = yes }
+    }
+    else = { nesnd_austria_clear_case = yes }
+}
+nesnd_usa_select_border = {
+    clear_saved_scope = nesnd_usa_selected_state
+    if = { limit = { nesnd_usa_continental_open = yes NOT = { has_variable = nesnd_usa_case_active } NOT = { has_variable = nesnd_usa_launching } }
+        c:HUS = { random_scope_state = { limit = { nesnd_usa_border_candidate = yes } save_scope_as = nesnd_usa_selected_state } }
+        if = { limit = { exists = scope:nesnd_usa_selected_state }
+            set_variable = { name = nesnd_usa_border_state value = scope:nesnd_usa_selected_state }
+            scope:nesnd_usa_selected_state = { state_region = { save_scope_as = nesnd_usa_selected_region } }
+            if = { limit = { exists = scope:nesnd_usa_selected_region } set_variable = { name = nesnd_usa_border_region value = scope:nesnd_usa_selected_region } }
+        }
+    }
+    clear_saved_scope = nesnd_usa_selected_state clear_saved_scope = nesnd_usa_selected_region
+}
+nesnd_usa_claim_border = {
+    if = { limit = { nesnd_usa_border_claimable = yes }
+        var:nesnd_usa_border_state = { state_region = { add_claim = c:USA } }
+        if = { limit = { var:nesnd_usa_border_state = { has_claim_by = c:USA } }
+            set_variable = { name = nesnd_usa_claim_cooldown months = 6 }
+            add_modifier = { name = nesnd_usa_frontier_claim months = 6 }
+            change_relations = { country = c:HUS value = -10 }
+        }
+    }
+}
+nesnd_usa_press_west = {
+    if = { limit = { nesnd_usa_border_war_ready = yes }
+        clear_variable_list = nesnd_usa_claim_provinces
+        var:nesnd_usa_border_state = {
+            save_scope_as = nesnd_usa_disputed_state
+            every_province = { c:USA = { add_to_variable_list = { name = nesnd_usa_claim_provinces target = prev } } }
+            state_region = { save_scope_as = nesnd_usa_disputed_region }
+        }
+        set_variable = { name = nesnd_usa_launching days = 7 }
+        create_diplomatic_play = { name = nesnd_usa_hus_confrontation type = dp_return_state target_country = c:HUS target_state = var:nesnd_usa_border_state }
+        if = { limit = { has_variable = nesnd_usa_case_active }
+            c:HUS ?= { trigger_event = { id = nesnd_europe_america.10 popup = yes } }
+        }
+        clear_saved_scope = nesnd_usa_disputed_region clear_saved_scope = nesnd_usa_disputed_state
+    }
+}
+nesnd_usa_clear_case = {
+    remove_variable = nesnd_usa_case_active remove_variable = nesnd_usa_case_ended remove_variable = nesnd_usa_end_grace remove_variable = nesnd_usa_launching
+    remove_variable = nesnd_usa_border_play remove_variable = nesnd_usa_goal_enforced
+    clear_variable_list = nesnd_usa_claim_provinces
+}
+nesnd_usa_settle_border = {
+    if = { limit = { c:USA ?= this has_variable = nesnd_usa_case_active has_variable = nesnd_usa_case_ended NOT = { has_variable = nesnd_usa_end_grace } }
+        if = { limit = { nesnd_usa_saved_land_acquired = yes has_variable = nesnd_usa_goal_enforced }
+            if = { limit = { NOT = { has_variable = nesnd_usa_continental_done } }
+                set_variable = nesnd_usa_continental_done add_modifier = { name = nesnd_usa_continental_army months = 60 }
+            }
+            trigger_event = { id = nesnd_europe_america.7 popup = yes }
+            remove_variable = nesnd_usa_border_state remove_variable = nesnd_usa_border_region
+        }
+        else = { trigger_event = { id = nesnd_europe_america.8 popup = yes } }
+        set_variable = { name = nesnd_usa_border_cooldown months = 24 }
+        nesnd_usa_clear_case = yes
+    }
+}
+nesnd_usa_maintenance = {
+    if = { limit = { has_variable = nesnd_usa_case_active }
+        if = { limit = { NOT = { exists = var:nesnd_usa_border_play } NOT = { has_variable = nesnd_usa_case_ended } } set_variable = nesnd_usa_case_ended set_variable = { name = nesnd_usa_end_grace days = 1 } trigger_event = { id = nesnd_europe_america.91 days = 2 } }
+        nesnd_usa_settle_border = yes
+    }
+    if = { limit = { nesnd_usa_continental_open = yes }
+        if = { limit = { NOT = { has_variable = nesnd_usa_case_active } NOT = { has_variable = nesnd_usa_launching } NOT = { nesnd_usa_saved_border_valid = yes } }
+            remove_variable = nesnd_usa_border_state remove_variable = nesnd_usa_border_region
+            nesnd_usa_select_border = yes
+        }
+    }
+    else_if = { limit = { NOT = { has_variable = nesnd_usa_case_active } }
+        remove_variable = nesnd_usa_border_state remove_variable = nesnd_usa_border_region
+        nesnd_usa_clear_case = yes
+    }
+}
+# DP root. The launch token identifies our one pending request; the native callback owns identity.
+nesnd_europe_play_started = {
+    if = { limit = { is_diplomatic_play_type = dp_return_state initiator = { c:USA ?= this has_variable = nesnd_usa_launching } target = { c:HUS ?= this } }
+        save_scope_as = nesnd_europe_new_play
+        c:USA = {
+            set_variable = { name = nesnd_usa_border_play value = scope:nesnd_europe_new_play }
+            set_variable = nesnd_usa_case_active remove_variable = nesnd_usa_launching
+        }
+        clear_saved_scope = nesnd_europe_new_play
+    }
+}
+# Country root; only the native callback's exact DP can provide result evidence.
+nesnd_europe_wargoal = {
+    if = { limit = { exists = scope:diplomatic_play exists = scope:target }
+        save_scope_as = nesnd_europe_goal_holder
+        scope:target = { save_scope_as = nesnd_europe_goal_target }
+        scope:diplomatic_play = { save_scope_as = nesnd_europe_goal_play nesnd_europe_play_started = yes }
+        c:AUS ?= {
+            if = { limit = { has_variable = nesnd_austrian_case_active exists = var:nesnd_austrian_play exists = var:nesnd_austrian_enemy }
+                if = { limit = { var:nesnd_austrian_play = scope:nesnd_europe_goal_play }
+                    if = { limit = { var:nesnd_austrian_enemy = scope:nesnd_europe_goal_holder } set_variable = nesnd_austrian_enemy_enforced }
+                    if = { limit = { var:nesnd_austrian_enemy = scope:nesnd_europe_goal_target } set_variable = nesnd_austrian_victory_evidence }
+                }
+            }
+        }
+        c:USA ?= {
+            if = { limit = { has_variable = nesnd_usa_case_active exists = var:nesnd_usa_border_play }
+                if = { limit = { var:nesnd_usa_border_play = scope:nesnd_europe_goal_play scope:nesnd_europe_goal_holder = { c:USA ?= this } scope:nesnd_europe_goal_target = { c:HUS ?= this } }
+                    set_variable = nesnd_usa_goal_enforced
+                }
+            }
+        }
+        clear_saved_scope = nesnd_europe_goal_holder clear_saved_scope = nesnd_europe_goal_target clear_saved_scope = nesnd_europe_goal_play
+    }
+}
+# DP root, including backdowns handled through subsequent disappearance checks.
+nesnd_europe_play_ended = {
+    save_scope_as = nesnd_europe_ended_play
+    c:AUS ?= {
+        if = { limit = { has_variable = nesnd_austrian_case_active exists = var:nesnd_austrian_play }
+            if = { limit = { var:nesnd_austrian_play = scope:nesnd_europe_ended_play }
+                set_variable = nesnd_austrian_case_ended set_variable = { name = nesnd_austrian_end_grace days = 1 } trigger_event = { id = nesnd_europe_america.90 days = 2 }
+            }
+        }
+    }
+    c:USA ?= {
+        if = { limit = { has_variable = nesnd_usa_case_active exists = var:nesnd_usa_border_play }
+            if = { limit = { var:nesnd_usa_border_play = scope:nesnd_europe_ended_play }
+                set_variable = nesnd_usa_case_ended set_variable = { name = nesnd_usa_end_grace days = 1 } trigger_event = { id = nesnd_europe_america.91 days = 2 }
+            }
+        }
+    }
+    clear_saved_scope = nesnd_europe_ended_play
+}

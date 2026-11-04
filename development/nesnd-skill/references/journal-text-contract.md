@@ -98,6 +98,12 @@ GAME/common/scripted_progress_bars/scripted_progress_bars.md与本MOD ce_french_
 
 实际前后：WORK/reports/india-development-20261103/india-spec-review.md、india-spec-review-final.md及final-validation.json。未开游戏。
 
+## 法律影响按法组呈现
+
+进度条增减包含法律时，先按实际 `lawgroup` 拆分贡献值，并用该法组的既有本地化名作行名。一行内部用 `if/else_if/else` 表达不同现行法律即可；不同法组分别显示，便于玩家从负数找到可调整的法律。社会动荡、机构等级、经济和战争另列，避免混进“法律”行。内部总和函数可以保留，但实际结算和UI不得把分项与总和重复计入。
+
+依据：2026-11-04作者纠正；西秦旧 `nesnd_qe1_unity_laws` 混合公民权、宗教与军队法组，印度共同认同又把社会动荡与公民权混在一起。当前来源与实施要求见 WORK/reports/canon-route-execution-20261104/unity-inventory-and-native-contract.md、batch-b-unity-plan.md；最终是否通过以该批验证报告为准。
+
 ## 绝对条件数与切换重点（1851测试档反例，2026-11-04）
 
 现值条不是“从进入日志起再增加多少”。goal_add_value会保留进入时baseline；东洋JE存档baseline=2、goal=5，现值1显示−1/3。当前条件数/占领数改用有界scripted_progress_bar，immediate同步现值，周期明细算目标减当前条。旧活动JE必须迁移而不能只改定义留着旧baseline；迁移不得重置外交结果或重发奖励。

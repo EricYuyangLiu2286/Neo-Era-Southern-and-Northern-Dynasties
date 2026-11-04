@@ -1,0 +1,72 @@
+﻿nesnd_ottoman_refresh_barracks = {
+    # State scope: remove old building attachments; country modifiers now cover battalions.
+    every_scope_building = {
+        if = { limit = { has_modifier = nesnd_ottoman_qin_supply } remove_modifier = nesnd_ottoman_qin_supply }
+        if = { limit = { has_modifier = nesnd_ottoman_qin_supply_success } remove_modifier = nesnd_ottoman_qin_supply_success }
+        if = { limit = { has_modifier = nesnd_ottoman_qin_supply_failed } remove_modifier = nesnd_ottoman_qin_supply_failed }
+    }
+}
+nesnd_ottoman_sync = {
+    if = { limit = { has_journal_entry = nesnd_ottoman_recovery }
+        je:nesnd_ottoman_recovery = { set_bar_progress = { name = nesnd_ottoman_enthusiasm_bar value = owner.nesnd_ottoman_enthusiasm_value } }
+    }
+}
+nesnd_ottoman_initialize = {
+    if = { limit = { NOT = { has_variable = nesnd_ottoman_enthusiasm } } set_variable = { name = nesnd_ottoman_enthusiasm value = 25 } }
+    nesnd_ottoman_sync = yes
+}
+nesnd_ottoman_monthly = {
+    if = {
+        limit = { nesnd_ottoman_recovery_open = yes has_journal_entry = nesnd_ottoman_recovery }
+        nesnd_ottoman_initialize = yes
+        change_variable = { name = nesnd_ottoman_enthusiasm add = nesnd_ottoman_enthusiasm_monthly }
+        set_variable = { name = nesnd_ottoman_enthusiasm value = nesnd_ottoman_enthusiasm_value }
+        nesnd_ottoman_sync = yes
+    }
+}
+nesnd_ottoman_purchase_claim = {
+    if = {
+        limit = { nesnd_ottoman_recovery_open = yes nesnd_ottoman_enthusiasm_value >= nesnd_ottoman_claim_cost s:$STATE$ = { nesnd_ottoman_claim_target = yes } }
+        s:$STATE$ = { add_claim = root }
+        if = { limit = { has_claim = s:$STATE$ }
+            change_variable = { name = nesnd_ottoman_enthusiasm subtract = nesnd_ottoman_claim_cost }
+            nesnd_ottoman_sync = yes
+        }
+    }
+}
+nesnd_ottoman_clear_reform_benefits = {
+    if = { limit = { has_modifier = nesnd_ottoman_qin_reform } remove_modifier = nesnd_ottoman_qin_reform }
+    if = { limit = { has_modifier = nesnd_ottoman_qin_reform_success } remove_modifier = nesnd_ottoman_qin_reform_success }
+    if = { limit = { has_modifier = nesnd_ottoman_qin_reform_failed } remove_modifier = nesnd_ottoman_qin_reform_failed }
+    every_scope_state = { nesnd_ottoman_refresh_barracks = yes }
+}
+nesnd_ottoman_start_reform = {
+    if = {
+        limit = {
+            nesnd_ottoman_recovery_open = yes
+            NOT = { nesnd_ottoman_reform_active = yes }
+            NOT = { has_variable = nesnd_ottoman_reform_pending }
+        }
+        set_variable = nesnd_ottoman_reform_pending
+        set_variable = { name = nesnd_ottoman_reform_term months = 12 }
+        if = { limit = { nesnd_ottoman_tanzimat_success = yes } add_modifier = { name = nesnd_ottoman_qin_reform_success months = 12 } }
+        else_if = { limit = { nesnd_ottoman_tanzimat_failed = yes } add_modifier = { name = nesnd_ottoman_qin_reform_failed months = 12 } }
+        else = { add_modifier = { name = nesnd_ottoman_qin_reform months = 12 } }
+        every_scope_state = { nesnd_ottoman_refresh_barracks = yes }
+        trigger_event = { id = nesnd_ottoman_recovery.1 months = 12 popup = no }
+    }
+}
+nesnd_ottoman_finish_reform = {
+    # The term guard also rejects an old callback after a fresh renewal.
+    if = { limit = { has_variable = nesnd_ottoman_reform_pending NOT = { has_variable = nesnd_ottoman_reform_term } }
+        nesnd_ottoman_clear_reform_benefits = yes
+        remove_variable = nesnd_ottoman_reform_pending
+    }
+}
+nesnd_ottoman_reform_maintenance = {
+    if = { limit = { NOT = { nesnd_ottoman_recovery_open = yes } }
+        # Retain the original commitment marker until its own expiry.
+        nesnd_ottoman_clear_reform_benefits = yes
+    }
+    nesnd_ottoman_finish_reform = yes
+}

@@ -1,0 +1,181 @@
+﻿nesnd_egypt_clear_investment = {
+    if = { limit = { has_modifier = nesnd_egypt_investment } remove_modifier = nesnd_egypt_investment }
+    if = { limit = { has_modifier = nesnd_egypt_fra_industry } remove_modifier = nesnd_egypt_fra_industry }
+    if = { limit = { has_modifier = nesnd_egypt_usm_industry } remove_modifier = nesnd_egypt_usm_industry }
+    if = { limit = { has_modifier = nesnd_egypt_sih_industry } remove_modifier = nesnd_egypt_sih_industry }
+    if = { limit = { has_modifier = nesnd_egypt_gbr_industry } remove_modifier = nesnd_egypt_gbr_industry }
+    if = { limit = { has_modifier = nesnd_egypt_qe1_industry } remove_modifier = nesnd_egypt_qe1_industry }
+    if = { limit = { has_modifier = nesnd_egypt_tur_industry } remove_modifier = nesnd_egypt_tur_industry }
+}
+nesnd_egypt_refresh_investment = {
+    nesnd_egypt_clear_investment = yes
+    if = { limit = { nesnd_egypt_independence_open = yes nesnd_egypt_investor_cooperating = yes }
+        add_modifier = { name = nesnd_egypt_investment months = 2 }
+        if = { limit = { var:nesnd_egypt_investor = { c:FRA ?= this } } add_modifier = { name = nesnd_egypt_fra_industry months = 2 } }
+        else_if = { limit = { var:nesnd_egypt_investor = { c:USM ?= this } } add_modifier = { name = nesnd_egypt_usm_industry months = 2 } }
+        else_if = { limit = { var:nesnd_egypt_investor = { c:SIH ?= this } } add_modifier = { name = nesnd_egypt_sih_industry months = 2 } }
+        else_if = { limit = { var:nesnd_egypt_investor = { c:GBR ?= this } } add_modifier = { name = nesnd_egypt_gbr_industry months = 2 } }
+        else_if = { limit = { var:nesnd_egypt_investor = { c:QE1 ?= this } } add_modifier = { name = nesnd_egypt_qe1_industry months = 2 } }
+        else_if = { limit = { var:nesnd_egypt_investor = { c:TUR ?= this } } add_modifier = { name = nesnd_egypt_tur_industry months = 2 } }
+    }
+}
+nesnd_egypt_select_investor = {
+    if = { limit = { exists = c:$TAG$ }
+        if = { limit = { nesnd_egypt_can_select = { TAG = $TAG$ } }
+            set_variable = { name = nesnd_egypt_investor value = c:$TAG$ }
+            set_variable = { name = nesnd_egypt_sponsor_mode value = 1 }
+            nesnd_egypt_refresh_investment = yes
+        }
+    }
+}
+nesnd_egypt_choose_none = {
+    if = { limit = { nesnd_egypt_normal_choice_open = yes }
+        nesnd_egypt_clear_investment = yes remove_variable = nesnd_egypt_investor
+        set_variable = { name = nesnd_egypt_sponsor_mode value = 0 }
+    }
+}
+nesnd_egypt_replace_lost_investor = {
+    if = { limit = { nesnd_egypt_independence_open = yes nesnd_egypt_has_sponsor_mode = yes NOT = { nesnd_egypt_investor_cooperating = yes } }
+        remove_variable = nesnd_egypt_investor
+        nesnd_egypt_clear_investment = yes
+        clear_saved_scope = nesnd_egypt_replacement
+        random_country = { limit = { nesnd_egypt_patron_can_take_egypt = yes } save_scope_as = nesnd_egypt_replacement }
+        if = { limit = { exists = scope:nesnd_egypt_replacement }
+            set_variable = { name = nesnd_egypt_investor value = scope:nesnd_egypt_replacement }
+        }
+        clear_saved_scope = nesnd_egypt_replacement
+    }
+}
+nesnd_egypt_initialize = {
+    if = { limit = { NOT = { has_variable = nesnd_egypt_started } }
+        set_variable = nesnd_egypt_started
+        set_variable = { name = nesnd_egypt_independence value = 100 }
+        set_variable = { name = nesnd_egypt_generation years = 30 }
+        set_variable = { name = nesnd_egypt_sponsor_mode value = 0 }
+        set_variable = { name = nesnd_egypt_foreign_gdp value = nesnd_egypt_foreign_gdp_sample }
+    }
+}
+nesnd_egypt_sync = {
+    if = { limit = { has_journal_entry = nesnd_egypt_independence } je:nesnd_egypt_independence = { set_bar_progress = { name = nesnd_egypt_independence_bar value = owner.nesnd_egypt_independence_value } } }
+}
+nesnd_egypt_monthly = {
+    if = { limit = { nesnd_egypt_independence_open = yes has_journal_entry = nesnd_egypt_independence }
+        nesnd_egypt_initialize = yes nesnd_egypt_replace_lost_investor = yes
+        set_variable = { name = nesnd_egypt_foreign_gdp value = nesnd_egypt_foreign_gdp_sample }
+        change_variable = { name = nesnd_egypt_independence add = nesnd_egypt_monthly_delta }
+        clamp_variable = { name = nesnd_egypt_independence min = 0 max = 100 }
+        if = { limit = { nesnd_egypt_independence_value <= 0 } nesnd_egypt_settle_dependence = yes }
+        else = { nesnd_egypt_refresh_investment = yes }
+        nesnd_egypt_sync = yes
+    }
+}
+nesnd_egypt_finish = {
+    set_variable = nesnd_egypt_finished
+    nesnd_egypt_clear_investment = yes
+    remove_variable = nesnd_egypt_investor remove_variable = nesnd_egypt_sponsor_mode
+    nesnd_egypt_clear_legacy_settlement = yes
+}
+nesnd_egypt_clear_legacy_settlement = {
+    remove_variable = nesnd_egypt_settlement_pending remove_variable = nesnd_egypt_settlement_started
+    remove_variable = nesnd_egypt_settlement_deadline remove_variable = nesnd_egypt_settlement_grace
+    remove_variable = nesnd_egypt_standard_attempted remove_variable = nesnd_egypt_pending_explained
+}
+nesnd_egypt_fail_guarantees = {
+    if = { limit = { c:EGY ?= this is_country_alive = yes is_subject = no NOT = { has_variable = nesnd_egypt_finished } }
+        set_variable = nesnd_egypt_guarantees_failed
+        nesnd_egypt_finish = yes
+        add_modifier = { name = nesnd_egypt_unsecured_independence months = 60 }
+        trigger_event = { id = nesnd_egypt.3 popup = yes }
+    }
+}
+nesnd_egypt_confirm_protection = {
+    if = { limit = { nesnd_egypt_protectorate_confirmed = yes NOT = { has_variable = nesnd_egypt_finished } }
+        if = { limit = { exists = var:nesnd_egypt_investor }
+            set_variable = { name = nesnd_egypt_final_patron value = var:nesnd_egypt_investor }
+            set_variable = nesnd_egypt_protected nesnd_egypt_finish = yes
+            trigger_event = { id = nesnd_egypt.2 popup = yes }
+        }
+    }
+}
+nesnd_egypt_end_external_subjection = {
+    if = { limit = { c:EGY ?= this is_country_alive = yes is_subject = yes NOT = { has_variable = nesnd_egypt_finished } }
+        set_variable = nesnd_egypt_external_subjugation nesnd_egypt_finish = yes
+        trigger_event = { id = nesnd_egypt.6 popup = yes }
+    }
+}
+nesnd_egypt_settle_dependence = {
+    if = { limit = { c:EGY ?= this is_country_alive = yes NOT = { has_variable = nesnd_egypt_finished } }
+        nesnd_egypt_clear_investment = yes
+        if = { limit = { nesnd_egypt_protectorate_confirmed = yes }
+            nesnd_egypt_confirm_protection = yes
+        }
+        else_if = { limit = { is_subject = yes } nesnd_egypt_end_external_subjection = yes }
+        else = {
+            nesnd_egypt_replace_lost_investor = yes
+            if = { limit = { exists = var:nesnd_egypt_investor }
+                if = { limit = { nesnd_egypt_investor_cooperating = yes }
+                    # Standard path once, then the Egypt-only alternative once if still independent.
+                    if = { limit = { var:nesnd_egypt_investor = { can_have_as_subject = { who = c:EGY type = subject_type_protectorate } } }
+                        var:nesnd_egypt_investor = { create_diplomatic_pact = { country = c:EGY type = protectorate } }
+                    }
+                    if = { limit = { is_subject = no }
+                        if = { limit = { nesnd_egypt_investor_cooperating = yes }
+                            if = { limit = { var:nesnd_egypt_investor = { can_have_as_subject = { who = c:EGY type = subject_type_nesnd_egypt_protectorate } } }
+                                var:nesnd_egypt_investor = { create_diplomatic_pact = { country = c:EGY type = nesnd_egypt_protectorate } }
+                            }
+                        }
+                    }
+                    if = { limit = { nesnd_egypt_protectorate_confirmed = yes } nesnd_egypt_confirm_protection = yes }
+                    else_if = { limit = { is_subject = yes } nesnd_egypt_end_external_subjection = yes }
+                    else = { set_variable = nesnd_egypt_guarantees_unworkable }
+                }
+            }
+            if = { limit = { is_subject = no NOT = { has_variable = nesnd_egypt_finished } } nesnd_egypt_fail_guarantees = yes }
+        }
+    }
+}
+nesnd_egypt_register_historical_treaty = {
+    if = { limit = { exists = c:$TAG$ }
+        every_scope_treaty = {
+            limit = {
+                binds = c:$TAG$
+                any_scope_article = { nesnd_canon_directed_article = { TYPE = foreign_investment_rights SOURCE = c:EGY TARGET = c:$TAG$ } }
+                any_scope_article = { nesnd_canon_directed_article = { TYPE = guarantee_independence SOURCE = c:$TAG$ TARGET = c:EGY } }
+            }
+            set_variable = nesnd_egypt_1825_treaty
+        }
+    }
+}
+nesnd_egypt_startup = {
+    c:EGY ?= {
+        if = { limit = { game_date < 1845.1.1 NOT = { has_variable = nesnd_egypt_treaties_registered } }
+            nesnd_egypt_register_historical_treaty = { TAG = FRA }
+            nesnd_egypt_register_historical_treaty = { TAG = USM }
+            nesnd_egypt_register_historical_treaty = { TAG = SIH }
+            nesnd_egypt_register_historical_treaty = { TAG = GBR }
+            nesnd_egypt_register_historical_treaty = { TAG = QE1 }
+            nesnd_egypt_register_historical_treaty = { TAG = TUR }
+            set_variable = nesnd_egypt_treaties_registered
+        }
+    }
+}
+nesnd_egypt_maintenance = {
+    if = { limit = { c:EGY ?= this is_country_alive = yes }
+        if = { limit = { game_date >= 1845.1.1 }
+            every_scope_treaty = { limit = { has_variable = nesnd_egypt_1825_treaty } withdraw = { country = c:EGY apply_break_penalties = no } }
+        }
+        # Capture the old branch by entering it before clearing its marker or changing its investor.
+        if = { limit = { has_variable = nesnd_egypt_settlement_pending NOT = { has_variable = nesnd_egypt_finished } }
+            nesnd_egypt_clear_legacy_settlement = yes
+            nesnd_egypt_settle_dependence = yes
+        }
+        else = { nesnd_egypt_clear_legacy_settlement = yes }
+        if = { limit = { NOT = { has_variable = nesnd_egypt_finished } }
+            if = { limit = { is_subject = yes } nesnd_egypt_end_external_subjection = yes }
+            else_if = { limit = { has_variable = nesnd_egypt_started nesnd_egypt_independence_value <= 0 } nesnd_egypt_settle_dependence = yes }
+            else_if = { limit = { nesnd_egypt_independence_open = yes }
+                nesnd_egypt_replace_lost_investor = yes nesnd_egypt_refresh_investment = yes
+            }
+        }
+    }
+}

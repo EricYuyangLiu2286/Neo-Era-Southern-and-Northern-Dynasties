@@ -1,0 +1,102 @@
+﻿# Display only. Actual starts, payments and awards remain in their original hidden payloads.
+nesnd_final_c2_project_preview = {
+ if = { limit = { exists = $TARGET$ }
+  if = { limit = { $TARGET$ = { owner = prev } }
+   if = { limit = { $TARGET$ = { $CANDIDATE$ = yes } }
+    custom_description = { text = nesnd_c2_project_target_tt subject = $TARGET$ }
+    if = { limit = { has_variable = $QUOTE_VARIABLE$ OR = { has_variable = $ACTIVE_VARIABLE$ has_modifier = $EXPENSE$ } }
+     custom_tooltip = $LOCKED_TT$
+    }
+    else = {
+     show_as_tooltip = { add_modifier = { name = $EXPENSE$ months = 12 multiplier = $QUOTE_VALUE$ } }
+    }
+    show_as_tooltip = {
+     $TARGET$ = { add_modifier = { name = $LOCAL$ months = 24 } }
+     add_modifier = { name = $POLITICS$ months = 12 }
+    }
+    $TARGET$ = {
+     if = { limit = { has_modifier = $LOCAL$ } custom_tooltip = $LOCAL_TT$ }
+    }
+    if = { limit = { has_modifier = $POLITICS$ } custom_tooltip = $POLITICS_TT$ }
+   }
+  }
+ }
+}
+nesnd_final_c2_compact_accept_preview = {
+ if = { limit = { exists = scope:c2_compact_sender exists = scope:c2_compact_partner exists = scope:c2_compact_serial }
+  if = { limit = { $ELIGIBLE$ = yes }
+   if = { limit = { has_variable = nesnd_c2_compact_quote OR = { has_variable = nesnd_c2_compact_active has_modifier = nesnd_c2_compact_expense } }
+    custom_tooltip = nesnd_final_compact_root_locked_quote_tt
+   }
+   else = {
+    show_as_tooltip = { add_modifier = { name = nesnd_c2_compact_expense months = 12 multiplier = nesnd_c2_compact_display_quote } }
+   }
+   $PEER$ = {
+    if = { limit = { has_variable = nesnd_c2_compact_quote OR = { has_variable = nesnd_c2_compact_active has_modifier = nesnd_c2_compact_expense } }
+     custom_tooltip = $PEER_LOCKED_TT$
+    }
+    else = {
+     show_as_tooltip = { add_modifier = { name = nesnd_c2_compact_expense months = 12 multiplier = nesnd_c2_compact_display_quote } }
+    }
+   }
+  }
+ }
+}
+nesnd_final_small_own_market_preview = {
+ if = { limit = { nesnd_small_state_country = yes NOT = { has_modifier = nesnd_small_specialised_market } NOT = { has_modifier = nesnd_small_own_market } }
+  if = { limit = { nesnd_small_owns_market = yes }
+   if = { limit = { in_default = no net_fixed_income >= nesnd_small_weekly_quote NOT = { has_modifier = nesnd_small_public_investment } }
+    custom_tooltip = nesnd_final_small_own_public_tt
+    show_as_tooltip = {
+     add_modifier = { name = nesnd_small_public_investment months = 12 multiplier = nesnd_small_weekly_quote }
+     add_modifier = { name = nesnd_small_public_services months = 12 }
+    }
+    if = { limit = { has_modifier = nesnd_small_public_services } custom_tooltip = nesnd_final_small_public_existing_tt }
+   }
+  }
+ }
+}
+nesnd_final_native_recognize_preview = {
+ if = { limit = { nesnd_restoration_can_recognize = yes }
+  if = { limit = { OR = { c:MEX ?= this NOT = { exists = c:TWT } } }
+   show_as_tooltip = { add_modifier = { name = nesnd_native_restored_rule months = 120 } }
+   if = { limit = { has_modifier = nesnd_native_restored_rule } custom_tooltip = nesnd_final_native_restored_existing_tt }
+  }
+ }
+}
+nesnd_final_canon_award_preview = {
+ if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_serial exists = scope:canon_kind exists = scope:canon_sender_regime exists = scope:canon_partner_regime }
+  if = { limit = { nesnd_canon_reply_valid = yes }
+   if = { limit = { nesnd_canon_request_eligible = yes }
+    if = { limit = { OR = { scope:canon_kind = 2 scope:canon_kind = 3 scope:canon_kind = 5 } }
+     custom_tooltip = nesnd_final_canon_success_condition_tt
+     if = { limit = { scope:canon_kind = 3 }
+      show_as_tooltip = { scope:canon_sender = { add_modifier = { name = nesnd_italy_french_credit months = 72 } } }
+      scope:canon_sender = { if = { limit = { has_modifier = nesnd_italy_french_credit } custom_tooltip = nesnd_final_french_credit_existing_tt } }
+     }
+     else_if = { limit = { scope:canon_kind = 2 }
+      scope:canon_sender = {
+       if = { limit = { NOT = { has_variable = nesnd_usa_capital_awarded } }
+        show_as_tooltip = { add_modifier = { name = nesnd_usa_european_capital months = 60 } }
+        if = { limit = { has_modifier = nesnd_usa_european_capital } custom_tooltip = nesnd_final_usa_capital_existing_tt }
+       }
+      }
+     }
+     else_if = { limit = { scope:canon_kind = 5 }
+      scope:canon_sender = {
+       if = { limit = { NOT = { has_variable = nesnd_small_capital_awarded } }
+        show_as_tooltip = { add_modifier = { name = nesnd_small_state_capital months = 60 } }
+        if = { limit = { has_modifier = nesnd_small_state_capital } custom_tooltip = nesnd_final_small_capital_existing_tt }
+       }
+      }
+     }
+     scope:canon_sender = {
+      if = { limit = { NOT = { has_variable = nesnd_canon_first_accord } }
+       show_as_tooltip = { change_relations = { country = scope:canon_partner value = 25 } }
+      }
+     }
+    }
+   }
+  }
+ }
+}

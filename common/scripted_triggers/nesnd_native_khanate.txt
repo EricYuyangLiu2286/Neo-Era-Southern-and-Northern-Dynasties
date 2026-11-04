@@ -1,0 +1,163 @@
+nesnd_khanate_eligible_state = { owner = { c:USA ?= this } region = sr:region_great_plains state_population > 0 }
+nesnd_khanate_selected_neighbour = {
+ nesnd_khanate_eligible_state = yes NOT = { has_variable = nesnd_khanate_selected }
+ any_neighbouring_state = { has_variable = nesnd_khanate_selected owner = { c:USA ?= this } }
+}
+nesnd_khanate_exists = {
+ trigger_if = { limit = { exists = c:NKH } c:NKH = { is_country_alive = yes has_variable = nesnd_native_khanate } }
+ trigger_else = { always = no }
+}
+nesnd_khanate_has_play = {
+ trigger_if = { limit = { nesnd_khanate_exists = yes }
+  trigger_if = { limit = { has_variable = nesnd_khanate_war_dispatched }
+   trigger_if = { limit = { exists = var:nesnd_khanate_play }
+    any_diplomatic_play = { this = prev.var:nesnd_khanate_play is_diplomatic_play_type = dp_nesnd_khanate_suppression initiator = prev target = c:NKH }
+   }
+   trigger_else = { always = no }
+  }
+  trigger_else = { any_diplomatic_play = { initiator = prev target = c:NKH is_diplomatic_play_type = dp_nesnd_khanate_suppression } }
+ }
+ trigger_else = { always = no }
+}
+nesnd_khanate_north_america = {
+ OR = { is_in_geographic_region = geographic_region_north_america region = sr:region_central_america this = s:STATE_GREENLAND }
+}
+nesnd_native_americas_unified = {
+ NOT = { any_state_region = {
+  OR = { is_in_geographic_region = geographic_region_americas this = s:STATE_GREENLAND }
+  NOT = { root = { owns_entire_state_region = prev } }
+ } }
+}
+nesnd_khanate_can_form_hus = {
+ c:NKH ?= this has_variable = nesnd_native_khanate nesnd_native_americas_unified = yes
+ NOT = { exists = c:HUS } NOT = { is_at_war = yes } NOT = { has_variable = nesnd_khanate_forming_hus }
+ has_variable = nesnd_khanate_survived_wars NOT = { has_variable = nesnd_khanate_legacy_invalid }
+}
+nesnd_khanate_goal_bound_pair = {
+ trigger_if = { limit = { exists = scope:target_country exists = scope:diplomatic_play }
+  scope:diplomatic_play = { is_diplomatic_play_type = dp_nesnd_khanate_suppression }
+  OR = {
+   AND = {
+    scope:target_country = { c:NKH ?= this has_variable = nesnd_native_khanate }
+    scope:diplomatic_play = { initiator = root target = scope:target_country }
+    root = {
+     nesnd_khanate_original_opponent = yes
+     NOT = { has_variable = nesnd_khanate_war_outcome }
+     trigger_if = { limit = { has_variable = nesnd_khanate_war_dispatched has_variable = nesnd_khanate_war_epoch exists = var:nesnd_khanate_case exists = var:nesnd_khanate_play }
+      var:nesnd_khanate_case = scope:target_country var:nesnd_khanate_play = scope:diplomatic_play
+     }
+     trigger_else = { always = no }
+    }
+    OR = {
+     AND = {
+      scope:target_country = {
+       var:nesnd_khanate_original_usa ?= root
+       trigger_if = { limit = { has_variable = nesnd_khanate_usa_epoch exists = var:nesnd_khanate_usa_play }
+        trigger_if = { limit = { root = { has_variable = nesnd_khanate_war_epoch } }
+         var:nesnd_khanate_usa_epoch = root.var:nesnd_khanate_war_epoch var:nesnd_khanate_usa_play = scope:diplomatic_play
+        }
+        trigger_else = { always = no }
+       }
+       trigger_else = { always = no }
+      }
+     }
+     AND = {
+      scope:target_country = {
+       var:nesnd_khanate_original_hus ?= root
+       trigger_if = { limit = { has_variable = nesnd_khanate_hus_epoch exists = var:nesnd_khanate_hus_play }
+        trigger_if = { limit = { root = { has_variable = nesnd_khanate_war_epoch } }
+         var:nesnd_khanate_hus_epoch = root.var:nesnd_khanate_war_epoch var:nesnd_khanate_hus_play = scope:diplomatic_play
+        }
+        trigger_else = { always = no }
+       }
+       trigger_else = { always = no }
+      }
+     }
+    }
+   }
+   AND = {
+    root = { c:NKH ?= this has_variable = nesnd_native_khanate }
+    scope:diplomatic_play = { initiator = scope:target_country target = root }
+    scope:target_country = {
+     nesnd_khanate_original_opponent = yes
+     NOT = { has_variable = nesnd_khanate_war_outcome }
+     trigger_if = { limit = { has_variable = nesnd_khanate_war_dispatched has_variable = nesnd_khanate_war_epoch exists = var:nesnd_khanate_case exists = var:nesnd_khanate_play }
+      var:nesnd_khanate_case = root var:nesnd_khanate_play = scope:diplomatic_play
+     }
+     trigger_else = { always = no }
+    }
+    OR = {
+     AND = {
+      root = {
+       var:nesnd_khanate_original_usa ?= scope:target_country
+       trigger_if = { limit = { has_variable = nesnd_khanate_usa_epoch exists = var:nesnd_khanate_usa_play }
+        trigger_if = { limit = { scope:target_country = { has_variable = nesnd_khanate_war_epoch } }
+         var:nesnd_khanate_usa_epoch = scope:target_country.var:nesnd_khanate_war_epoch var:nesnd_khanate_usa_play = scope:diplomatic_play
+        }
+        trigger_else = { always = no }
+       }
+       trigger_else = { always = no }
+      }
+     }
+     AND = {
+      root = {
+       var:nesnd_khanate_original_hus ?= scope:target_country
+       trigger_if = { limit = { has_variable = nesnd_khanate_hus_epoch exists = var:nesnd_khanate_hus_play }
+        trigger_if = { limit = { scope:target_country = { has_variable = nesnd_khanate_war_epoch } }
+         var:nesnd_khanate_hus_epoch = scope:target_country.var:nesnd_khanate_war_epoch var:nesnd_khanate_hus_play = scope:diplomatic_play
+        }
+        trigger_else = { always = no }
+       }
+       trigger_else = { always = no }
+      }
+     }
+    }
+   }
+  }
+ }
+ trigger_else = { always = no }
+}
+nesnd_khanate_goal_pair = {
+ trigger_if = { limit = { exists = scope:target_country exists = scope:diplomatic_play }
+ scope:diplomatic_play = { is_diplomatic_play_type = dp_nesnd_khanate_suppression }
+ OR = {
+  AND = {
+   OR = { c:USA ?= this nesnd_hus_original_country = yes } scope:target_country = { c:NKH ?= this has_variable = nesnd_native_khanate }
+   scope:diplomatic_play = { initiator = root target = scope:target_country }
+  }
+  AND = {
+   c:NKH ?= this has_variable = nesnd_native_khanate
+   scope:target_country = { OR = { c:USA ?= this nesnd_hus_original_country = yes } }
+   scope:diplomatic_play = { target = root initiator = scope:target_country }
+  }
+ }
+ OR = {
+  nesnd_khanate_goal_bound_pair = yes
+  nesnd_khanate_creation_receipt = yes
+  AND = { c:NKH ?= this scope:target_country = { nesnd_khanate_creation_receipt = yes } }
+ }
+ }
+ trigger_else = { always = no }
+}
+nesnd_khanate_creation_receipt = {
+ trigger_if = { limit = { nesnd_khanate_original_opponent = yes }
+  trigger_if = { limit = { has_variable = nesnd_khanate_creation_open has_variable = nesnd_khanate_creation_epoch exists = var:nesnd_khanate_creation_case }
+   var:nesnd_khanate_creation_case = c:NKH
+   OR = {
+    AND = { c:USA ?= this c:NKH = { trigger_if = { limit = { has_variable = nesnd_khanate_usa_epoch } var:nesnd_khanate_usa_epoch = prev.var:nesnd_khanate_creation_epoch } trigger_else = { always = no } } }
+    AND = { nesnd_hus_original_country = yes c:NKH = { trigger_if = { limit = { has_variable = nesnd_khanate_hus_epoch } var:nesnd_khanate_hus_epoch = prev.var:nesnd_khanate_creation_epoch } trigger_else = { always = no } } }
+   }
+  }
+  trigger_else = { always = no }
+ }
+ trigger_else = { always = no }
+}
+nesnd_khanate_original_opponent = {
+ trigger_if = { limit = { nesnd_khanate_exists = yes }
+ OR = {
+  AND = { c:USA ?= this c:NKH = { var:nesnd_khanate_original_usa ?= prev } }
+  AND = { nesnd_hus_original_country = yes c:NKH = { var:nesnd_khanate_original_hus ?= prev } }
+ }
+ }
+ trigger_else = { always = no }
+}

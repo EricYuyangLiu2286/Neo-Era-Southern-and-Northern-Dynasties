@@ -1,0 +1,114 @@
+nesnd_mexican_restoration_host = { c:MEX ?= this NOT = { has_variable = nesnd_restoration_local_closed } NOT = { has_global_variable = nesnd_mexican_restoration_resolved } NOT = { has_global_variable = nesnd_mexican_restoration_case_started } }
+nesnd_andean_restoration_host = {
+ nesnd_andean_restoration_country = yes
+ NOT = { has_global_variable = nesnd_andean_restoration_resolved }
+ NOT = { has_global_variable = nesnd_andean_restoration_case_started }
+ NOT = { exists = c:TWT }
+}
+nesnd_american_restoration_host = {
+ is_country_alive = yes
+ OR = { nesnd_mexican_restoration_host = yes nesnd_andean_restoration_host = yes }
+ any_scope_state = { state_population > 0 any_scope_pop = { culture = { nesnd_hus_native_culture = yes } } }
+}
+nesnd_restoration_pair_at_war = {
+ trigger_if = { limit = { exists = var:nesnd_restoration_opponent }
+  any_diplomatic_play = {
+   is_diplomatic_play_type = dp_nesnd_native_restoration
+   OR = {
+    AND = { initiator = prev target = prev.var:nesnd_restoration_opponent }
+    AND = { target = prev initiator = prev.var:nesnd_restoration_opponent }
+   }
+  }
+ } trigger_else = { always = no }
+}
+nesnd_restoration_native_state = {
+ state_population >= 100000 nesnd_restoration_native_share >= 0.35 nesnd_restoration_core_share >= 0.25
+ owner = { owns_entire_state_region = prev.state_region }
+ OR = { owner = { c:MEX ?= this } state_region = { is_in_geographic_region = geographic_region_peru } }
+}
+nesnd_restoration_small_country = { NOT = { c:MEX ?= this } any_scope_state = { count >= 2 state_population > 0 state_region = { is_in_geographic_region = geographic_region_peru } } NOT = { any_scope_state = { count >= 5 state_population > 0 state_region = { is_in_geographic_region = geographic_region_peru } } } }
+nesnd_restoration_small_core = {
+ nesnd_restoration_native_state = yes state_population >= 200000 nesnd_restoration_core_share >= 0.4 nesnd_restoration_single_remaining >= 150000
+}
+nesnd_restoration_can_recognize = {
+ government_legitimacy >= 50 ig:ig_rural_folk = { is_in_government = yes }
+ NOT = { nesnd_restoration_pair_at_war = yes }
+ trigger_if = { limit = { nesnd_restoration_invitation_applicant = yes }
+  is_subject = no NOT = { is_at_war = yes }
+  c:TWT = { is_subject = no NOT = { is_at_war = yes } }
+  NOT = { has_variable = nesnd_restoration_request_cooldown } NOT = { has_variable = nesnd_restoration_invitation_pending }
+ }
+ trigger_else = {
+  nesnd_american_restoration_host = yes
+  trigger_if = { limit = { c:MEX ?= this } NOT = { exists = c:NAH } }
+  trigger_else = { NOT = { exists = c:TWT } }
+ }
+}
+nesnd_restoration_can_negotiate = {
+ nesnd_american_restoration_host = yes government_legitimacy >= 50
+ OR = { ig:ig_rural_folk = { is_in_government = yes } ig:ig_intelligentsia = { is_in_government = yes } }
+ NOT = { has_modifier = nesnd_native_local_councils } NOT = { nesnd_restoration_pair_at_war = yes }
+}
+nesnd_restoration_can_suppress = {
+ nesnd_american_restoration_host = yes government_legitimacy >= 50 ig:ig_armed_forces = { is_in_government = yes }
+ any_scope_state = { any_scope_pop = { culture = { nesnd_hus_native_culture = yes } } }
+ army_size >= nesnd_restoration_suppression_army NOT = { nesnd_restoration_pair_at_war = yes }
+}
+nesnd_restoration_goal_pair = {
+ trigger_if = { limit = { exists = scope:target_country exists = scope:diplomatic_play has_variable = nesnd_restoration_epoch exists = var:nesnd_restoration_opponent }
+  scope:diplomatic_play = { is_diplomatic_play_type = dp_nesnd_native_restoration }
+  var:nesnd_restoration_opponent = scope:target_country
+  scope:target_country = {
+   trigger_if = { limit = { has_variable = nesnd_restoration_epoch exists = var:nesnd_restoration_opponent }
+    var:nesnd_restoration_epoch = root.var:nesnd_restoration_epoch
+    var:nesnd_restoration_opponent = root
+   }
+   trigger_else = { always = no }
+  }
+  OR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host }
+  scope:diplomatic_play = { OR = { AND = { initiator = root target = scope:target_country } AND = { target = root initiator = scope:target_country } } }
+ }
+ trigger_else = { always = no }
+}
+
+nesnd_restoration_invitation_live = {
+ nesnd_restoration_existing_court = yes is_subject = no NOT = { is_at_war = yes }
+ trigger_if = { limit = { exists = scope:nesnd_restoration_applicant exists = scope:nesnd_restoration_request_epoch exists = scope:nesnd_restoration_requested_court exists = scope:nesnd_restoration_court_epoch has_variable = nesnd_restoration_epoch }
+  this = scope:nesnd_restoration_requested_court
+  var:nesnd_restoration_epoch = scope:nesnd_restoration_court_epoch
+  scope:nesnd_restoration_applicant = {
+   nesnd_restoration_invitation_applicant = yes is_subject = no NOT = { is_at_war = yes }
+   government_legitimacy >= 50 ig:ig_rural_folk = { is_in_government = yes }
+   NOT = { nesnd_restoration_pair_at_war = yes }
+   trigger_if = { limit = { has_variable = nesnd_restoration_invitation_pending has_variable = nesnd_restoration_request_epoch }
+    var:nesnd_restoration_request_epoch = scope:nesnd_restoration_request_epoch
+   }
+   trigger_else = { always = no }
+  }
+ }
+ trigger_else = { always = no }
+}
+
+# Country identity and local eligibility are separate from opening a new case.
+nesnd_andean_restoration_country = {
+ is_country_alive = yes OR = { c:PEU ?= this c:NPU ?= this c:SPU ?= this }
+ NOT = { has_variable = nesnd_restoration_local_closed }
+ any_scope_state = { state_population > 0 state_region = { is_in_geographic_region = geographic_region_peru } }
+ any_scope_state = { state_population > 0 any_scope_pop = { culture = { nesnd_hus_native_culture = yes } } }
+}
+nesnd_restoration_existing_court = {
+ c:TWT ?= this is_country_alive = yes has_variable = nesnd_restoration_rebel has_variable = nesnd_a2_restoration_adopted
+ trigger_if = { limit = { has_variable = nesnd_restoration_epoch has_global_variable = nesnd_andean_restoration_case_epoch has_global_variable = nesnd_andean_restoration_case_country }
+  global_var:nesnd_andean_restoration_case_country ?= this
+  var:nesnd_restoration_epoch = global_var:nesnd_andean_restoration_case_epoch
+ }
+ trigger_else = { always = no }
+}
+nesnd_restoration_invitation_applicant = {
+ nesnd_andean_restoration_country = yes
+ trigger_if = { limit = { exists = c:TWT } c:TWT = { nesnd_restoration_existing_court = yes } }
+ trigger_else = { always = no }
+}
+nesnd_restoration_entry_visible = {
+ OR = { nesnd_american_restoration_host = yes nesnd_restoration_invitation_applicant = yes }
+}

@@ -2,6 +2,8 @@
 
 适用于事件、日志、按钮、修正、进度条、AI权重，以及设计提案中的候选公式。先核本机版本，再定数字；不能凭“+10看起来小”或“百分号看起来大”判定收益。
 
+同名AI字段按调用上下文核格式。1.13.11当前可执行脚本中，scripted_button的`ai_chance`采用script value形状（`value`、`if/limit/add`）；事件选项的`ai_chance`采用`base`及`modifier`。不能互相移植，也不能以旧按钮README的base示例覆盖当前实际按钮。事件modifier的trigger内部出现动态add不证明外层AI权重接受动态值。来源：GAME/common/scripted_buttons/00_scripted_buttons.txt、当前events语料；任务34 A2/B2验证。保持概率时读取两份真实AST，枚举相关条件组合核等价，不默改权重。
+
 1. 写明数值属于哪一层：库存、每期流量、容量、比率、百分点、概率权重、进度；记录接口和scope。按当前 GAME 定义核上下限及转换规则，不混淆同名概念。
    商品供应按产出、投入、买卖订单、价格和市场接入衡量；金库是货币余额，舰船是单位，造船能力是容量。涉及宗主、属国或共同市场的产业贡献，先读[共同市场与产业专长](economic-agency-and-crises.md#共同市场与产业专长作者2026-11-02纠正)，不另造采购库存层。
 2. 记录开局和目标阶段的典型分母/基线，成本占比、持续时间、冷却与获取频率。没有实测时明确“源码估算”，不要捏造当前经济读数。
@@ -17,6 +19,12 @@
 - 本轮商使费用由−15改−100持续6个月、首次通商直接关系+25、完成奖励由+25改+100持续24个月。这是本项目平衡选择，不是原版接口强制值；首联与完成标记防止循环刷奖励。
 
 具体源码、行号和期限追踪见 WORK/reports/ui-trade-feedback-20261102/research.md；未来版本先查原文件，不把这些实例当永恒常量。
+
+## 本机陆军军需数量与舰船维持
+
+1.13.11 的有效 `combat_unit_types` 是19种战斗营，含陆战队；舰队使用独立 `ship_types`、ship-mask修正与 `SHIP_UPKEEP_*` 定义。实际原版 `events/brazil/paraguay.txt` 的 `paraguay.6` 在国家作用域施加 `unit_supply_consumption_mult`，改变战斗营维持所需商品数量；货币费用减免是另一种效果。不能把旧版本“unit也含舰船”的记忆搬到本版。
+
+同一原版按钮里的军营片段只是tooltip预览，不证明building上的unit修正会传给军队。本轮Tiger指出此传递不成立，改用原版真实国家效果。每次迁移重查有效单位/舰船数据库和修正传递，来源见 WORK/reports/canon-route-execution-20261104/batch-b-repair-plan.md 及对应source-hashes；该证据不等于新候选已实机验收。
 
 ## 有界算术与单向生活变化（1.13.11，西秦实证）
 

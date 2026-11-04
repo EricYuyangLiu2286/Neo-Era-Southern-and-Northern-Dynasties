@@ -1,0 +1,423 @@
+--- A1-frozen/common/scripted_effects/nesnd_hus_registration.txt
++++ A2-frozen/common/scripted_effects/nesnd_hus_registration.txt
+@@ -353,25 +353,7 @@
+     }
+ }
+ nesnd_hus_manchu_exodus = {
+-    if = { limit = { nesnd_hus_original_country = yes nesnd_hus_native_route = yes has_variable = nesnd_hus_manchu_exodus_pending NOT = { has_variable = nesnd_hus_manchu_exodus_done } }
+-        clear_saved_scope = nesnd_hus_refuge_cne clear_saved_scope = nesnd_hus_refuge_usa
+-        c:CNE ?= { random_scope_state = { limit = { state_population > 0 } save_scope_as = nesnd_hus_refuge_cne } }
+-        c:USA ?= { random_scope_state = { limit = { nesnd_hus_american_west_state = yes } save_scope_as = nesnd_hus_refuge_usa } }
+-        if = { limit = { exists = scope:nesnd_hus_refuge_cne exists = scope:nesnd_hus_refuge_usa }
+-            # Destination is a 70/30 lottery for each original community, as requested.
+-            every_scope_state = { every_scope_pop = {
+-                limit = { culture = { nesnd_hus_manchu_culture = yes } }
+-                random_list = {
+-                    70 = { move_pop = scope:nesnd_hus_refuge_cne }
+-                    30 = { move_pop = scope:nesnd_hus_refuge_usa }
+-                }
+-            } }
+-            remove_variable = nesnd_hus_manchu_exodus_pending set_variable = nesnd_hus_manchu_exodus_done
+-            if = { limit = { has_variable = nesnd_hus_registration_epoch } set_global_variable = { name = nesnd_hus_registration_exodus_epoch value = var:nesnd_hus_registration_epoch } }
+-            trigger_event = { id = nesnd_hus_registration.2 popup = yes }
+-        }
+-        clear_saved_scope = nesnd_hus_refuge_cne clear_saved_scope = nesnd_hus_refuge_usa
+-    }
++    nesnd_a2_manchu_exodus = yes
+ }
+ nesnd_hus_registration_maintenance = {
+     nesnd_hus_reconcile_hierarchy = yes
+--- A1-frozen/events/nesnd_hus_registration.txt
++++ A2-frozen/events/nesnd_hus_registration.txt
+@@ -8,7 +8,14 @@
+ }
+ nesnd_hus_registration.2 = {
+     type = country_event placement = root duration = 3
+-    title = nesnd_hus_registration.2.t desc = nesnd_hus_registration.2.d
++    title = nesnd_hus_registration.2.t desc = {
++        first_valid = {
++            triggered_desc = { trigger = { has_variable = nesnd_a2_exodus_result var:nesnd_a2_exodus_result = 1 } desc = nesnd_a2_exodus_both_desc }
++            triggered_desc = { trigger = { has_variable = nesnd_a2_exodus_result var:nesnd_a2_exodus_result = 2 } desc = nesnd_a2_exodus_cne_desc }
++            triggered_desc = { trigger = { has_variable = nesnd_a2_exodus_result var:nesnd_a2_exodus_result = 3 } desc = nesnd_a2_exodus_usa_desc }
++            triggered_desc = { desc = nesnd_a2_exodus_none_desc }
++        }
++    }
+     event_image = { video = "europenorthamerica_native_american" }
+     trigger = { nesnd_hus_original_country = yes has_variable = nesnd_hus_manchu_exodus_done }
+     option = { name = nesnd_hus_registration.2.a default_option = yes }
+--- A1-frozen/common/scripted_effects/nesnd_native_khanate.txt
++++ A2-frozen/common/scripted_effects/nesnd_native_khanate.txt
+@@ -1,99 +1,163 @@
+ nesnd_khanate_clear_selection = {
+-    every_scope_state = { if = { limit = { has_variable = nesnd_khanate_selected } remove_variable = nesnd_khanate_selected } }
+-    clear_saved_scope = nesnd_khanate_seed clear_saved_scope = nesnd_khanate_capital
++ every_scope_state = {
++  if = { limit = { has_variable = nesnd_khanate_selected } remove_variable = nesnd_khanate_selected }
++  if = { limit = { has_variable = nesnd_khanate_excluded } remove_variable = nesnd_khanate_excluded }
++ }
++ clear_saved_scope = nesnd_khanate_1 clear_saved_scope = nesnd_khanate_2 clear_saved_scope = nesnd_khanate_3 clear_saved_scope = nesnd_khanate_4
++ clear_saved_scope = nesnd_khanate_capital
+ }
+ nesnd_khanate_choose_next = {
+-    random_scope_state = { limit = { nesnd_khanate_selected_neighbour = yes } set_variable = nesnd_khanate_selected }
++ random_scope_state = {
++  limit = { nesnd_khanate_selected_neighbour = yes }
++  set_variable = nesnd_khanate_selected save_scope_as = nesnd_khanate_$SLOT$
++ }
+ }
+ nesnd_khanate_create = {
+-    if = { limit = { nesnd_hus_original_country = yes has_variable = nesnd_khanate_campaign_started NOT = { has_global_variable = nesnd_khanate_created } exists = c:USA NOT = { exists = c:NKH } }
+-        c:USA = {
+-            nesnd_khanate_clear_selection = yes
+-            random_scope_state = { limit = { nesnd_khanate_eligible_state = yes } set_variable = nesnd_khanate_selected save_scope_as = nesnd_khanate_seed state_region = { save_scope_as = nesnd_khanate_capital } }
+-            nesnd_khanate_choose_next = yes nesnd_khanate_choose_next = yes nesnd_khanate_choose_next = yes
+-            if = { limit = { any_scope_state = { count = 4 has_variable = nesnd_khanate_selected } exists = scope:nesnd_khanate_seed exists = scope:nesnd_khanate_capital }
+-                create_country = { tag = NKH origin = this state = scope:nesnd_khanate_seed
+-                    on_created = { set_variable = nesnd_native_khanate set_capital = scope:nesnd_khanate_capital }
+-                }
+-                if = { limit = { nesnd_khanate_exists = yes }
+-                    every_scope_state = { limit = { has_variable = nesnd_khanate_selected }
+-                        state_region = { add_claim = c:USA if = { limit = { exists = c:HUS } add_claim = c:HUS } }
+-                        set_state_owner = c:NKH
+-                    }
+-                    c:NKH = {
+-                        every_scope_state = { state_region = { add_claim = c:USA if = { limit = { exists = c:HUS } add_claim = c:HUS } } remove_variable = nesnd_khanate_selected }
+-                    }
+-                    set_global_variable = nesnd_khanate_created
+-                }
+-            }
+-            nesnd_khanate_clear_selection = yes
+-        }
+-        if = { limit = { nesnd_khanate_exists = yes }
+-            c:HUS = { nesnd_khanate_transfer_native_half = yes }
+-            c:USA ?= { nesnd_khanate_transfer_native_half = yes }
+-            c:NKH = { nesnd_khanate_prepare = yes }
+-            trigger_event = { id = nesnd_hus_registration.1 popup = yes }
+-        }
+-    }
++ if = { limit = {
++  nesnd_hus_original_country = yes nesnd_khanate_trigger_ready = yes has_variable = nesnd_khanate_campaign_started NOT = { has_global_variable = nesnd_khanate_created }
++  exists = c:USA NOT = { exists = c:NKH } NOT = { has_variable = nesnd_khanate_selection_wait }
++ }
++  set_variable = { name = nesnd_khanate_selection_wait months = 1 }
++  save_scope_as = nesnd_khanate_original_hus
++  c:USA = {
++   nesnd_khanate_clear_selection = yes
++   if = { limit = { any_scope_state = { count >= 5 state_population > 0 } }
++    while = {
++     count = 15 limit = { NOT = { exists = scope:nesnd_khanate_4 } any_scope_state = { nesnd_khanate_eligible_state = yes NOT = { has_variable = nesnd_khanate_excluded } } }
++     random_scope_state = { limit = { nesnd_khanate_eligible_state = yes NOT = { has_variable = nesnd_khanate_excluded } } set_variable = nesnd_khanate_selected save_scope_as = nesnd_khanate_1 }
++     nesnd_khanate_choose_next = { SLOT = 2 } nesnd_khanate_choose_next = { SLOT = 3 } nesnd_khanate_choose_next = { SLOT = 4 }
++     if = { limit = { NOT = { exists = scope:nesnd_khanate_4 } }
++      every_scope_state = { limit = { has_variable = nesnd_khanate_selected } set_variable = nesnd_khanate_excluded remove_variable = nesnd_khanate_selected }
++      clear_saved_scope = nesnd_khanate_1 clear_saved_scope = nesnd_khanate_2 clear_saved_scope = nesnd_khanate_3
++     }
++    }
++   }
++   if = { limit = {
++    exists = scope:nesnd_khanate_1 exists = scope:nesnd_khanate_2 exists = scope:nesnd_khanate_3 exists = scope:nesnd_khanate_4
++    any_scope_state = { count = 4 has_variable = nesnd_khanate_selected nesnd_khanate_eligible_state = yes }
++    any_scope_state = { state_population > 0 NOT = { has_variable = nesnd_khanate_selected } }
++   }
++    ordered_scope_state = { limit = { NOT = { has_variable = nesnd_khanate_selected } state_population > 0 } order_by = state_population max = 1 state_region = { save_scope_as = nesnd_khanate_usa_capital } }
++    if = { limit = { capital = { has_variable = nesnd_khanate_selected } exists = scope:nesnd_khanate_usa_capital } set_capital = scope:nesnd_khanate_usa_capital }
++    create_country = {
++     tag = NKH origin = this
++     state = scope:nesnd_khanate_1 state = scope:nesnd_khanate_2 state = scope:nesnd_khanate_3 state = scope:nesnd_khanate_4
++     on_created = {
++      set_variable = nesnd_native_khanate set_variable = nesnd_a2_khanate_adopted make_independent = yes
++      set_variable = { name = nesnd_khanate_original_usa value = c:USA }
++      set_variable = { name = nesnd_khanate_original_hus value = scope:nesnd_khanate_original_hus }
++      ordered_scope_state = { order_by = state_population max = 1 state_region = { save_scope_as = nesnd_khanate_capital } }
++      if = { limit = { exists = scope:nesnd_khanate_capital } set_capital = scope:nesnd_khanate_capital }
++     }
++    }
++    if = { limit = { nesnd_khanate_exists = yes c:NKH = { any_scope_state = { count = 4 state_population > 0 } } }
++     set_global_variable = nesnd_khanate_created
++     c:NKH = {
++      every_scope_state = { state_region = { add_claim = c:USA add_claim = scope:nesnd_khanate_original_hus } remove_variable = nesnd_khanate_selected }
++      set_variable = { name = nesnd_khanate_usa_outcome value = 0 } set_variable = { name = nesnd_khanate_hus_outcome value = 0 }
++      trigger_event = { id = nesnd_native_khanate.1 days = 1 }
++     }
++     nesnd_khanate_transfer_native_half = yes
++     c:NKH = { save_scope_as = nesnd_a2_khanate }
++     scope:nesnd_khanate_original_hus = { nesnd_khanate_transfer_native_half = yes trigger_event = { id = nesnd_hus_registration.1 popup = yes } }
++    }
++   }
++   nesnd_khanate_clear_selection = yes clear_saved_scope = nesnd_khanate_usa_capital
++  }
++  clear_saved_scope = nesnd_khanate_original_hus
++ }
+ }
+ nesnd_khanate_transfer_native_half = {
+-    if = { limit = { nesnd_khanate_exists = yes is_country_alive = yes NOT = { has_variable = nesnd_khanate_population_sent } }
+-        clear_saved_scope = nesnd_khanate_destination
+-        c:NKH = { random_scope_state = { limit = { state_population > 0 } save_scope_as = nesnd_khanate_destination } }
+-        if = { limit = { exists = scope:nesnd_khanate_destination }
+-            set_variable = nesnd_khanate_population_sent
+-            every_scope_state = { every_scope_pop = {
+-                limit = { culture = { nesnd_hus_native_culture = yes } }
+-                move_partial_pop = { state = scope:nesnd_khanate_destination population_ratio = 0.5 }
+-            } }
+-        }
+-        clear_saved_scope = nesnd_khanate_destination
+-    }
++ if = { limit = { nesnd_khanate_exists = yes is_country_alive = yes NOT = { c:NKH ?= this } NOT = { has_variable = nesnd_khanate_population_sent } }
++  set_variable = nesnd_khanate_population_sent
++  every_scope_state = { every_scope_pop = {
++   limit = { culture = { nesnd_hus_native_culture = yes } }
++   clear_saved_scope = nesnd_khanate_destination
++   c:NKH = { random_scope_state = { limit = { state_population > 0 } save_scope_as = nesnd_khanate_destination } }
++   if = { limit = { exists = scope:nesnd_khanate_destination scope:nesnd_khanate_destination = { owner = c:NKH } }
++    move_partial_pop = { state = scope:nesnd_khanate_destination population_ratio = 0.5 }
++   }
++  } }
++  clear_saved_scope = nesnd_khanate_destination
++ }
++}
++# COUNTRY scope; each type has a national upper bound, inherited levels count.
++nesnd_khanate_facility = {
++ set_variable = { name = nesnd_a2_facility_total value = 0 }
++ save_scope_as = nesnd_a2_facility_country
++ every_scope_state = { every_scope_building = {
++  limit = { is_building_type = $BUILDING$ }
++  scope:nesnd_a2_facility_country = { change_variable = { name = nesnd_a2_facility_total add = prev.level } }
++ } }
++ while = {
++  count = 4 limit = { var:nesnd_a2_facility_total < $CAP$ }
++  random_scope_state = {
++   limit = { NOT = { any_scope_building = { is_building_type = $BUILDING$ } } }
++   create_building = { building = $BUILDING$ level = 1 reserves = 1 }
++   scope:nesnd_a2_facility_country = { change_variable = { name = nesnd_a2_facility_total add = 1 } }
++  }
++ }
++ remove_variable = nesnd_a2_facility_total clear_saved_scope = nesnd_a2_facility_country
+ }
+ nesnd_khanate_prepare = {
+-    if = { limit = { c:NKH ?= this is_country_alive = yes NOT = { has_variable = nesnd_khanate_prepared } }
+-        set_variable = nesnd_khanate_prepared
+-        nesnd_hus_clear_hierarchy = yes
+-        set_variable = nesnd_hus_native_legal_prepared
+-        set_social_hierarchy = default_social_hierarchy
+-        set_variable = nesnd_hus_hierarchy_mutating
+-        add_era_researched = era_1
+-        activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy
+-        activate_law = law_type:law_professional_army activate_law = law_type:law_slavery_banned
+-        activate_law = law_type:law_racial_segregation activate_law = law_type:law_total_separation
+-        activate_law = law_type:law_interventionism activate_law = law_type:law_mercantilism
+-        activate_law = law_type:law_private_schools
+-        remove_variable = nesnd_hus_hierarchy_mutating
+-        ordered_scope_state = { order_by = state_population max = 1 state_region = { save_scope_as = nesnd_khanate_largest_region } }
+-        if = { limit = { exists = scope:nesnd_khanate_largest_region } set_capital = scope:nesnd_khanate_largest_region }
+-        clear_saved_scope = nesnd_khanate_largest_region
+-        save_scope_as = nesnd_khanate_country
+-        capital = {
+-            create_building = { building = building_government_administration level = 5 reserves = 1 }
+-            create_building = { building = building_arms_industry level = 5 reserves = 1 }
+-            create_building = { building = building_artillery_foundry level = 3 reserves = 1 }
+-            create_building = { building = building_tooling_workshop level = 5 reserves = 1 }
+-            create_building = { building = building_food_industry level = 5 reserves = 1 }
+-        }
+-        every_scope_state = {
+-            create_building = { building = building_construction_sector level = 2 reserves = 1 }
+-            create_building = { building = building_government_administration level = 2 reserves = 1 }
+-            create_building = { building = building_textile_mill level = 3 reserves = 1 }
+-        }
+-        if = { limit = { army_size = 0 }
+-            create_military_formation = {
+-                name = nesnd_khanate_army type = army hq_region = scope:nesnd_khanate_country.capital.region
+-                combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = scope:nesnd_khanate_country.capital.state_region count = 32 }
+-                combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = scope:nesnd_khanate_country.capital.state_region count = 8 }
+-            }
+-        }
+-        capital = { create_building = { building = building_barrack level = 40 reserves = 1 } }
+-        create_character = { first_name = nesnd_khan_first last_name = nesnd_khan_last culture = siouan religion = animist is_ruler = yes is_general = yes interest_group = ig_armed_forces ideology = ideology_jingoist_leader }
+-        every_state_region = { limit = { nesnd_khanate_north_america = yes } add_claim = scope:nesnd_khanate_country }
+-        clear_saved_scope = nesnd_khanate_country
+-        nesnd_native_primary_cultures_only = yes
+-        set_variable = { name = nesnd_khanate_war_grace days = 7 }
+-    }
++ if = { limit = { c:NKH ?= this is_country_alive = yes any_scope_state = { count = 4 state_population > 0 } NOT = { has_variable = nesnd_khanate_prepared } }
++  set_variable = nesnd_khanate_prepared
++  nesnd_hus_clear_hierarchy = yes
++  set_variable = nesnd_hus_native_legal_prepared
++  set_social_hierarchy = default_social_hierarchy
++  set_variable = nesnd_hus_hierarchy_mutating
++  nesnd_restoration_minimum_technology = yes
++  activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy
++  activate_law = law_type:law_professional_army activate_law = law_type:law_slavery_banned
++  activate_law = law_type:law_racial_segregation activate_law = law_type:law_total_separation
++  activate_law = law_type:law_interventionism activate_law = law_type:law_mercantilism activate_law = law_type:law_private_schools
++  remove_variable = nesnd_hus_hierarchy_mutating
++  nesnd_khanate_facility = { BUILDING = building_arms_industry CAP = 2 }
++  nesnd_khanate_facility = { BUILDING = building_artillery_foundry CAP = 1 }
++  nesnd_khanate_facility = { BUILDING = building_tooling_workshop CAP = 2 }
++  nesnd_khanate_facility = { BUILDING = building_food_industry CAP = 2 }
++  nesnd_khanate_facility = { BUILDING = building_government_administration CAP = 4 }
++  nesnd_khanate_facility = { BUILDING = building_paper_mill CAP = 1 }
++  nesnd_khanate_facility = { BUILDING = building_construction_sector CAP = 4 }
++  nesnd_khanate_army = yes
++  every_character = { limit = { has_template = nesnd_a2_tatanka } set_global_variable = nesnd_a2_tatanka_seen }
++  every_character_in_exile_pool = { limit = { has_template = nesnd_a2_tatanka } set_global_variable = nesnd_a2_tatanka_seen }
++  every_character_in_void = { limit = { has_template = nesnd_a2_tatanka } set_global_variable = nesnd_a2_tatanka_seen }
++  if = { limit = { NOT = { has_global_variable = nesnd_a2_tatanka_seen } NOT = { has_global_variable = nesnd_a2_tatanka_dead } }
++   set_global_variable = nesnd_a2_tatanka_seen
++   create_character = { template = nesnd_a2_tatanka on_created = { set_variable = nesnd_a2_tatanka set_variable = nesnd_a2_case_character } }
++  }
++  random_military_formation = { limit = { is_army = yes } save_scope_as = nesnd_a2_army }
++  random_scope_character = { limit = { has_role = general } if = { limit = { exists = scope:nesnd_a2_army } transfer_to_formation = scope:nesnd_a2_army } }
++  clear_saved_scope = nesnd_a2_army
++  save_scope_as = nesnd_khanate_country
++  every_state_region = { limit = { nesnd_khanate_north_america = yes } add_claim = scope:nesnd_khanate_country }
++  clear_saved_scope = nesnd_khanate_country
++  nesnd_native_primary_cultures_only = yes
++ }
++}
++nesnd_khanate_army = {
++ if = { limit = { army_size < nesnd_khanate_army_target }
++  set_variable = { name = nesnd_a2_missing value = nesnd_khanate_missing_troops }
++  set_variable = { name = nesnd_a2_quarter value = { value = var:nesnd_a2_missing divide = 4 floor = yes } }
++  set_variable = { name = nesnd_a2_artillery value = { value = var:nesnd_a2_missing multiply = 0.2 floor = yes } }
++  set_variable = { name = nesnd_a2_cap_infantry value = { value = var:nesnd_a2_missing subtract = { value = var:nesnd_a2_quarter multiply = 3 } subtract = var:nesnd_a2_artillery } }
++  nesnd_a2_barrack_capacity = { TARGET = nesnd_khanate_army_target PER_STATE = nesnd_khanate_state_capacity }
++  ordered_scope_state = { order_by = state_population position = 0 max = 1 save_scope_as = nesnd_a2_army_1 }
++  ordered_scope_state = { order_by = state_population position = 1 max = 1 save_scope_as = nesnd_a2_army_2 }
++  ordered_scope_state = { order_by = state_population position = 2 max = 1 save_scope_as = nesnd_a2_army_3 }
++  ordered_scope_state = { order_by = state_population position = 3 max = 1 save_scope_as = nesnd_a2_army_4 }
++  create_military_formation = {
++   name = nesnd_khanate_army type = army hq_region = capital.region
++   combat_unit = { type = unit_type:combat_unit_type_line_infantry service_type = regular state_region = scope:nesnd_a2_army_1.state_region count = var:nesnd_a2_cap_infantry }
++   combat_unit = { type = unit_type:combat_unit_type_cannon_artillery service_type = regular state_region = scope:nesnd_a2_army_1.state_region count = var:nesnd_a2_artillery }
++   combat_unit = { type = unit_type:combat_unit_type_line_infantry service_type = regular state_region = scope:nesnd_a2_army_2.state_region count = var:nesnd_a2_quarter }
++   combat_unit = { type = unit_type:combat_unit_type_line_infantry service_type = regular state_region = scope:nesnd_a2_army_3.state_region count = var:nesnd_a2_quarter }
++   combat_unit = { type = unit_type:combat_unit_type_line_infantry service_type = regular state_region = scope:nesnd_a2_army_4.state_region count = var:nesnd_a2_quarter }
++  }
++  remove_variable = nesnd_a2_missing remove_variable = nesnd_a2_quarter remove_variable = nesnd_a2_artillery remove_variable = nesnd_a2_cap_infantry
++  clear_saved_scope = nesnd_a2_army_1 clear_saved_scope = nesnd_a2_army_2 clear_saved_scope = nesnd_a2_army_3 clear_saved_scope = nesnd_a2_army_4
++ }
+ }
+ nesnd_native_primary_cultures_only = {
+     if = { limit = { OR = { c:NKH ?= this has_variable = nesnd_hus_native_successor } }
+@@ -112,42 +176,87 @@
+     }
+ }
+ nesnd_khanate_start_war = {
+-    if = { limit = { OR = { c:USA ?= this c:HUS ?= this } is_country_alive = yes nesnd_khanate_exists = yes NOT = { nesnd_khanate_has_play = yes } }
+-        end_truce = c:NKH save_scope_as = nesnd_khanate_opponent
+-        create_diplomatic_play = {
+-            name = nesnd_khanate_war type = dp_nesnd_khanate_suppression target_country = c:NKH war = yes annex_as_civil_war = no
+-            add_war_goal = { holder = c:NKH target_country = scope:nesnd_khanate_opponent type = humiliation }
+-        }
+-        if = { limit = { nesnd_khanate_has_play = yes } set_variable = nesnd_khanate_war_dispatched }
+-        clear_saved_scope = nesnd_khanate_opponent
+-    }
++ if = { limit = {
++  nesnd_khanate_original_opponent = yes is_country_alive = yes nesnd_khanate_exists = yes c:NKH = { has_variable = nesnd_khanate_prepared NOT = { has_variable = nesnd_khanate_legacy_invalid } }
++  NOT = { has_variable = nesnd_khanate_war_outcome } NOT = { has_variable = nesnd_khanate_war_dispatched } NOT = { has_variable = nesnd_khanate_retry_wait }
++ }
++  if = { limit = { NOT = { has_variable = nesnd_khanate_war_attempts } } set_variable = { name = nesnd_khanate_war_attempts value = 0 } }
++  change_variable = { name = nesnd_khanate_war_attempts add = 1 }
++  set_variable = { name = nesnd_khanate_retry_wait months = 1 }
++  save_scope_as = nesnd_khanate_opponent
++  if = { limit = { NOT = { has_war_with = c:NKH } NOT = { nesnd_khanate_has_play = yes } }
++   end_truce = c:NKH
++   if = { limit = { has_diplomatic_pact = { who = c:NKH type = alliance } } remove_diplomatic_pact = { country = c:NKH type = alliance } }
++   if = { limit = { has_diplomatic_pact = { who = c:NKH type = defensive_pact } } remove_diplomatic_pact = { country = c:NKH type = defensive_pact } }
++   c:NKH = {
++    create_diplomatic_play = {
++     name = nesnd_khanate_war type = dp_nesnd_khanate_suppression initiator = scope:nesnd_khanate_opponent war = yes handle_annexation_as_civil_war = no
++     add_war_goal = { holder = c:NKH type = wg_nesnd_khanate_humiliation country = scope:nesnd_khanate_opponent }
++    }
++   }
++  }
++  random_diplomatic_play = {
++   limit = { is_diplomatic_play_type = dp_nesnd_khanate_suppression initiator = scope:nesnd_khanate_opponent target = c:NKH
++    initiator = { play_participant_has_war_goal_of_type_against = { type = wg_nesnd_khanate_annex target = c:NKH } }
++    target = { play_participant_has_war_goal_of_type_against = { type = wg_nesnd_khanate_humiliation target = scope:nesnd_khanate_opponent } }
++   }
++   save_scope_as = nesnd_khanate_play
++   initiator = { set_variable = nesnd_khanate_war_dispatched set_variable = { name = nesnd_khanate_play value = scope:nesnd_khanate_play } }
++  }
++  if = { limit = { NOT = { has_variable = nesnd_khanate_war_dispatched } var:nesnd_khanate_war_attempts >= 12 }
++   set_variable = { name = nesnd_khanate_war_outcome value = 4 }
++  }
++  clear_saved_scope = nesnd_khanate_play clear_saved_scope = nesnd_khanate_opponent
++ }
++}
++nesnd_khanate_war_watch = {
++ if = { limit = { has_variable = nesnd_khanate_war_dispatched NOT = { has_variable = nesnd_khanate_war_outcome } NOT = { nesnd_khanate_has_play = yes } }
++  if = { limit = { nesnd_khanate_exists = yes } set_variable = { name = nesnd_khanate_war_outcome value = 3 } }
++  else = { set_variable = { name = nesnd_khanate_war_outcome value = 5 } }
++ }
++}
++nesnd_khanate_check_survival = {
++ if = { limit = { c:NKH ?= this has_variable = nesnd_native_khanate NOT = { has_variable = nesnd_khanate_survived_wars } }
++  if = { limit = { NOT = { var:nesnd_khanate_original_usa ?= { c:USA ?= this is_country_alive = yes } } } set_variable = { name = nesnd_khanate_usa_outcome value = 5 } }
++  else_if = { limit = { var:nesnd_khanate_original_usa = { has_variable = nesnd_khanate_war_outcome } } set_variable = { name = nesnd_khanate_usa_outcome value = var:nesnd_khanate_original_usa.var:nesnd_khanate_war_outcome } }
++  if = { limit = { NOT = { var:nesnd_khanate_original_hus ?= { nesnd_hus_original_country = yes } } } set_variable = { name = nesnd_khanate_hus_outcome value = 5 } }
++  else_if = { limit = { var:nesnd_khanate_original_hus = { has_variable = nesnd_khanate_war_outcome } } set_variable = { name = nesnd_khanate_hus_outcome value = var:nesnd_khanate_original_hus.var:nesnd_khanate_war_outcome } }
++  if = { limit = { var:nesnd_khanate_usa_outcome > 0 var:nesnd_khanate_hus_outcome > 0 }
++   set_variable = nesnd_khanate_survived_wars trigger_event = { id = nesnd_native_khanate.2 popup = yes }
++  }
++ }
+ }
+ nesnd_khanate_maintenance = {
+-    if = { limit = { nesnd_hus_original_country = yes has_variable = nesnd_khanate_campaign_started NOT = { has_global_variable = nesnd_khanate_created } }
+-        nesnd_khanate_create = yes
+-    }
+-    if = { limit = { OR = { c:USA ?= this c:HUS ?= this } has_global_variable = nesnd_khanate_created NOT = { has_variable = nesnd_khanate_war_dispatched } }
+-        nesnd_khanate_start_war = yes
+-    }
++ if = { limit = { nesnd_hus_original_country = yes has_variable = nesnd_khanate_campaign_started NOT = { has_global_variable = nesnd_khanate_created } } nesnd_khanate_create = yes }
++ if = { limit = { OR = { c:USA ?= this nesnd_hus_original_country = yes } has_global_variable = nesnd_khanate_created }
++  nesnd_khanate_start_war = yes nesnd_khanate_war_watch = yes
++ }
++ if = { limit = { c:NKH ?= this has_variable = nesnd_native_khanate } nesnd_a2_khanate_legacy = yes nesnd_khanate_check_survival = yes }
+ }
+ nesnd_khanate_form_native_hus = {
+-    if = { limit = { c:NKH ?= this nesnd_native_americas_unified = yes NOT = { exists = c:HUS } }
+-        set_variable = nesnd_hus_native_successor
+-        set_variable = nesnd_hus_native_legal_prepared
+-        change_tag = HUS
+-        nesnd_hus_clear_hierarchy = yes
+-        set_social_hierarchy = default_social_hierarchy
+-        set_variable = nesnd_hus_hierarchy_mutating
+-        activate_law = law_type:law_presidential_republic activate_law = law_type:law_total_separation
+-        activate_law = law_type:law_census_voting activate_law = law_type:law_per_capita_based_taxation
+-        activate_law = law_type:law_elected_bureaucrats activate_law = law_type:law_private_schools
+-        activate_law = law_type:law_tenant_farmers activate_law = law_type:law_laissez_faire
+-        activate_law = law_type:law_mercantilism activate_law = law_type:law_racial_segregation
+-        activate_law = law_type:law_professional_army activate_law = law_type:law_no_migration_controls
+-        activate_law = law_type:law_censorship activate_law = law_type:law_debt_slavery
+-        activate_law = law_type:law_no_womens_rights activate_law = law_type:law_frontier_colonization
+-        activate_law = law_type:law_no_workers_rights activate_law = law_type:law_anti_strike_laws
+-        remove_variable = nesnd_hus_hierarchy_mutating
+-        nesnd_native_primary_cultures_only = yes
+-    }
+-}
++ if = { limit = { nesnd_khanate_can_form_hus = yes }
++  set_variable = nesnd_khanate_forming_hus set_variable = nesnd_hus_native_successor set_variable = nesnd_hus_native_legal_prepared
++  change_tag = HUS
++  if = { limit = { c:HUS ?= this }
++   nesnd_hus_clear_hierarchy = yes set_social_hierarchy = default_social_hierarchy set_variable = nesnd_hus_hierarchy_mutating
++   nesnd_khanate_successor_laws = yes
++   remove_variable = nesnd_hus_hierarchy_mutating nesnd_native_primary_cultures_only = yes
++   trigger_event = { id = nesnd_native_khanate.3 popup = yes }
++  }
++  remove_variable = nesnd_khanate_forming_hus
++ }
++}
++nesnd_khanate_successor_laws = {
++ activate_law = law_type:law_presidential_republic activate_law = law_type:law_total_separation
++ activate_law = law_type:law_census_voting activate_law = law_type:law_per_capita_based_taxation
++ activate_law = law_type:law_elected_bureaucrats activate_law = law_type:law_private_schools
++ activate_law = law_type:law_tenant_farmers activate_law = law_type:law_laissez_faire
++ activate_law = law_type:law_mercantilism activate_law = law_type:law_racial_segregation
++ activate_law = law_type:law_professional_army activate_law = law_type:law_no_migration_controls
++ activate_law = law_type:law_censorship activate_law = law_type:law_debt_slavery
++ activate_law = law_type:law_no_womens_rights activate_law = law_type:law_frontier_colonization
++ activate_law = law_type:law_no_workers_rights activate_law = law_type:law_anti_strike_laws
++ activate_law = law_type:law_merchant_navy activate_law = law_type:law_no_home_affairs
++ activate_law = law_type:law_no_police activate_law = law_type:law_no_health_system
++ activate_law = law_type:law_child_labor_allowed activate_law = law_type:law_no_social_security
++}

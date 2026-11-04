@@ -1,0 +1,36 @@
+﻿nesnd_unity_start_material = {
+    if = { limit = { nesnd_unity_material_available = yes }
+        set_variable = { name = nesnd_unity_material_quote value = nesnd_unity_material_weekly_cost }
+        set_variable = { name = nesnd_unity_material_pulses value = 0 }
+        set_variable = { name = nesnd_unity_material_term months = 12 }
+        add_modifier = { name = nesnd_unity_material_expense months = 12 multiplier = var:nesnd_unity_material_quote }
+        add_modifier = { name = nesnd_unity_material_assistance months = 12 }
+    }
+}
+nesnd_unity_start_political = {
+    if = { limit = { nesnd_unity_political_available = yes }
+        set_variable = { name = nesnd_unity_political_term months = 12 }
+        add_modifier = { name = nesnd_unity_political_assistance months = 12 }
+    }
+}
+# Country on-action owns this cost. Journal callbacks never call it.
+nesnd_unity_material_monthly_cost = {
+    if = {
+        limit = {
+            is_country_alive = yes
+            has_modifier = nesnd_unity_material_assistance
+            nesnd_unity_material_pulses < 12
+            NOT = { has_variable = nesnd_unity_material_pulse_lock }
+        }
+        set_variable = { name = nesnd_unity_material_pulse_lock days = 1 }
+        if = { limit = { NOT = { has_variable = nesnd_unity_material_pulses } } set_variable = { name = nesnd_unity_material_pulses value = 0 } }
+        save_scope_as = nesnd_unity_policy_owner
+        every_primary_culture = {
+            save_scope_as = nesnd_unity_policy_culture
+            scope:nesnd_unity_policy_owner = { add_radicals = { value = 0.001 culture = scope:nesnd_unity_policy_culture } }
+        }
+        clear_saved_scope = nesnd_unity_policy_culture
+        clear_saved_scope = nesnd_unity_policy_owner
+        change_variable = { name = nesnd_unity_material_pulses add = 1 }
+    }
+}
