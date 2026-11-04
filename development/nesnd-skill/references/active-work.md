@@ -1,4 +1,12 @@
-# 当前交接：任务32缺陷与波斯/USM实施（2026-11-04）
+# 当前交接：任务33外部回归与区域内容（2026-11-04）
+
+父b374be5，候选exports/regional-expansion-20261104-a，报告WORK/reports/regional-expansion-20261104/。三国18名虚构＋6历史人物候选及印度/南洋路线仅升级计划，入口plans/two-empires/62-regional-chains-and-survival.md。PRU/AUS/TUR/EGY/MEX/USA/PEU七国短JE＋8事件已写入，默认后置，12累计达标月、15年上限、两项5年奖励择一；原版主线和历史数据不改。实际主MOD/Git交付见main-merge/git-delivery，不根据此摘要推断已推送。
+
+新71项AST、133项结构/引用、前轮97回归、MCP7、Tiger零新增；精确最终SHA与结论看final-validation。新发现重复JE失效误清奖励票据已修；称谓按真实政体/独立/废奴条件返工。未开游戏，不以静态替代引擎验证。现有error.log00:03为旧版日志，不能说新候选运行仍报错。skill新增regional-history-and-survival.md归纳市场/角色/运动/状态边界。
+
+任务31法国古吉拉特/舰队、日本更多政治选择仍未实施；三国/小国整套新路线和新人物没有擅自全部写入游戏。旧总账保留。
+
+# 历史交接：任务32缺陷与波斯/USM实施（2026-11-04）
 
 报告WORK/reports/journal-bug-sweep-20261104/，候选exports/journal-bug-sweep-20261104-a，父提交92e4303；主MOD实际合入与远端保存以main-merge.json/git-delivery.json为准。已完成按钮scope/反馈/印度显示、西秦两端结算、原版法律variant引用、23个剧情JE钉选；波斯两种可消费资源、四类奖励、37逐州宣称；USM大陆整合与西部置省。46机制/45边界/6回归、MCP7、Tiger零新增；两轴源码审查，未开游戏。最终证据以final-validation.json为准，不用静态通过冒称引擎完成。
 

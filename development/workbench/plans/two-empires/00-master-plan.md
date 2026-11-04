@@ -1,5 +1,7 @@
 # 两朝及属国：系统设计与执行主计划
 
+2026-11-04最新分支：[区域内容、人物与小国路线升级](62-regional-chains-and-survival.md)。意大利/HUS/USM及小国为升级计划；七国建设短链为任务33实施。旧段落保留历史，实际主MOD/main和验证边界以任务33报告及active-work为准。
+
 当前入口更新于2026-11-01。主MOD已经整合既有地图/发型/日志与南朝战争修复；本轮继续实施中华帝国改革子日志。最新事实以[项目任务13](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/issues/13-cne-subjournals.md>)与SKILL/references/active-work.md为准。用户自行实测，代理不开游戏；静态验证与引擎验收分开。
 
 - [中华帝国三个子日志实施](20261101-cne-land-subjournals.md)：已实现与外部核验。

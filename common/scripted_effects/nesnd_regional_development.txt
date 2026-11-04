@@ -1,0 +1,24 @@
+﻿nesnd_rg_finish = {
+    if = { limit = { NOT = { has_variable = nesnd_rg_closed } nesnd_rg_ready = yes }
+        set_variable = nesnd_rg_closed set_variable = nesnd_rg_pending
+        trigger_event = { id = $EVENT$ popup = yes }
+    }
+}
+nesnd_rg_end_without_reward = {
+    if = { limit = { NOT = { has_variable = nesnd_rg_closed } }
+        set_variable = nesnd_rg_closed remove_variable = nesnd_rg_pending
+        trigger_event = { id = nesnd_regional.8 popup = yes }
+    }
+}
+nesnd_rg_archive = {
+    set_variable = nesnd_rg_closed
+    # A duplicate entry may invalidate after the first entry issued its reward event.
+    # Only an actual identity change cancels that ticket.
+    if = { limit = { NOT = { $IDENTITY$ = yes } } remove_variable = nesnd_rg_pending }
+}
+nesnd_rg_reward = {
+    if = { limit = { nesnd_rg_can_receive = { IDENTITY = $IDENTITY$ } }
+        set_variable = nesnd_rg_reward_taken remove_variable = nesnd_rg_pending
+        add_modifier = { name = $MODIFIER$ months = 60 }
+    }
+}
