@@ -1,3 +1,32 @@
+# 计划63交付结果（2026-11-04）
+
+任务34已完成实现、外部检查、独立审查、备份和主MOD部署。游戏代码提交`f05f0639d3cba02206fb357043a90deb32ba8c47`已快进合入本地main并推送私有远端；功能分支`feature/canon-routes-20261104T203047Z`亦保存。远端两分支SHA已核。
+
+验证为**STATIC_PASS / ENGINE_NOT_RUN**，游戏1.13.11/build24799966。本轮未开启游戏；实际UI、调度、自然AI经济、战争与存读档仍待实机。候选/主MOD/备份/提交的1015文件已核对；相对父b94582e有189变化（187游戏文件＋2任务文档），无删除/冲突。本次只补交接文档，不改已验证玩法字节。
+
+证据入口：`final-validation.json`、`final-reviews-summary.md`、`release-notes.md`、`main-merge.json`、`git-delivery.json`、`deployment-byte-verification.json`；均在[canon-route-execution-20261104](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/canon-route-execution-20261104>)。两轴和独立文案最终剩余确认问题0。Git空白检查的162条非功能诊断经显式复核保留，未冒写检查返回0。
+
+|批次|交付内容|最终外部证据|
+|---|---|---|
+|A1|HUS独立社会阶序法组＋三法、公民权锁、文化/职业接纳、12月登记及退出|batch-a-validation.json|
+|B1|西秦/日本/印度/土耳其团结政策、法组分行、TUR扩张后团结、坦志麦特分支奖励|batch-b-validation.json|
+|C1|埃及六方条约/独立性即时结算；PRU/AUS/USA实际外交与扩张|batch-c-repair4-validation.json；B2闭合共享接口|
+|A2|MEX/安第斯复国、流亡、HUS登记迁徙、原住民汗国、人口/军力/宣称/战争终局|batch-a2-repair3-validation.json|
+|B2|印度/南洋小国与远南缅甸暹罗区域发展、市场、自主、运动及外交请求|batch-b2-repair2-validation.json|
+|C2|意大利/HUS/USM十条建设分支、27选择、18虚构人物及原版意大利兼容|batch-c2-repair3-validation.json|
+|最终显示/文案|效果预览、真实双边报价、旧报价反例、无重复奖励；作者原文对读和政体称谓修正|final-button-preview-repair1-validation.json；final-writing-independent-review-r2.json|
+
+## 未完成与后续边界
+
+- 本轮自然引擎运行未做，由用户自行测试；不再重复已验证的进港/死亡/分裂截图。不用STATIC_PASS冒称游戏内零BUG。
+- 历史人口、开局法律与1825投资条约主要在新开局生效。不要再次运行人口重配脚本叠改当前数据；旧档不自动重演全部初始化。
+- 任务29的法国完整政治发展，任务31的法国古吉拉特/本地舰队与日本追加政治选择，任务08的编辑器等旧欠账继续保留在原任务。任务34中意大利/HUS/USM与小国路线已实际落库，不能再视为仅计划。
+- 物质补贴主流文化代价为每月0.1%离散激进化近似；满蒙迁徙70/30是按源pop的目的地概率。具体实现差异与自然运行限制见release-notes，不隐去设计近似。
+
+---
+
+# 以下为原始计划与逐阶段设计；状态以顶部交付结果为准
+
 # 作者纠正：国家主线必须围绕PPET冲突并实际落库
 
 2026-11-04。父b94582e，独立备份pre-change-canon-route-execution-20261104T080559Z，工作候选canon-route-execution-20261104-a。用户否定任务33七国通用建设主题，明确此前“升级计划”即要求实际加入游戏。此授权覆盖任务33旧“仅计划”边界，不能再以写报告结束。不开游戏，保留历史备份、作者并行编辑、已验证日本/明吴/地图数据。

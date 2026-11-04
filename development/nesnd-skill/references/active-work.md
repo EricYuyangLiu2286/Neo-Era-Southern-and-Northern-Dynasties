@@ -1,14 +1,21 @@
-# 当前实施：任务34作者意见1–3（2026-11-04，未交付）
+# 当前交付：任务34已合入（2026-11-04）
 
-最新模型/流程steer：两自定义SKILL已强制Luna/high探索、Sol/medium实现审查、Astra/high计划草案；当前工具只提供gpt-6-astra，已披露不能冒称6.1。root裁架构/最终计划/数值/合入。旧未知继承代理已安全停止，新调用实际配置见WORK/reports/canon-route-execution-20261104/model-delegation-register.md。A1/B1各自STATIC_PASS；C1去掉90天待收属后repair4限定STATIC_PASS；A2/B2/C2已获GO正在编码，共享外交由B2接手。埃及exists+独立资格/取消清理、远南缅甸暹罗区域发展分支均已记入最新合同。未交付，不开游戏。恢复优先read work-state与root-b2-c2-decisions，不能按下文旧骨架状态重做。
+任务34已完成实现、外部检查、独立审查、备份和主MOD部署。游戏代码提交`f05f0639d3cba02206fb357043a90deb32ba8c47`已快进合入本地main并推送私有远端；功能分支`feature/canon-routes-20261104T203047Z`亦保存。远端两分支SHA已核。
 
-用户最新要求子智能体分批计划→编辑→测试，root仅组织审稿整合；实际安排在WORK/reports/canon-route-execution-20261104/agent-execution-plan.md。团结度法律项按法组拆行；HUS改独立阶序法组三法并冻结公民权组，旧WIP公民法变体方案不再是最终设计。恢复时先读这两份最新账，不跳过计划阶段或自己抢写所有任务。
+验证为**STATIC_PASS / ENGINE_NOT_RUN**，游戏1.13.11/build24799966。本轮未开启游戏；实际UI、调度、自然AI经济、战争与存读档仍待实机。候选/主MOD/备份/提交的1015文件已核对；相对父b94582e有189变化（187游戏文件＋2任务文档），无删除/冲突。本次只补交接文档，不改已验证玩法字节。
 
-最新steer最高目标不变，详见WORK/reports/canon-route-execution-20261104/steer-implementation-ledger.md：坦志麦特失败不封TUR新内容；成功强化增长/奖励；直接领土27州开局、团结度拟36州解锁并按文化人口分组；所有文化团结/共同认同日志加两种12月不可中止补贴；HUS法条全链复核已发现施加国作用域、parent继承、真实社会阶序、退出清理和旧档入口缺口。该落实账覆盖下文较早的“哪些代码已写”摘要。主MOD仍b94582e，禁止把WIP候选当正式交付。
+证据入口：`final-validation.json`、`final-reviews-summary.md`、`release-notes.md`、`main-merge.json`、`git-delivery.json`、`deployment-byte-verification.json`；均在[canon-route-execution-20261104](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/canon-route-execution-20261104>)。两轴和独立文案最终剩余确认问题0。Git空白检查的162条非功能诊断经显式复核保留，未冒写检查返回0。
 
-用户否定任务33通用七国主题，并明确此前计划必须实际落库。意见3新增HUS等级制度、30%满蒙/20%原住民、12月登记法、ACW后原住民汗国、精确50%迁移、双战争及原住民HUS终局。全部仍在执行，不可只交研究。详见WORK/plans/two-empires/63-canon-route-execution.md和WORK/reports/canon-route-execution-20261104/work-state.md。
+恢复优先读取WORK/reports/canon-route-execution-20261104/work-state.md、release-notes.md及项目任务34。六批均已实现并外部验证，不要从旧断点重做。两SKILL的强制模型分工已落库，实际配置见同报告model-delegation-register.md。
 
-主MOD仍b94582e；候选exports/canon-route-execution-20261104-a，父备份pre-change-canon-route-execution-20261104T080559Z。已写埃及历史/赞助/独立性、HUS人口重配和登记法、NKH战争迁移等部分，尚无最终本地化/验证/合入；TUR/PRU/AUS/USA/原住民复国及旧三国小国人物路线仍需实现。新候选不能沿用任务33通过结论。不开游戏，不改存档。当前进度以work-state持久断点为准。
+## 未完成与后续边界
+
+- 本轮自然引擎运行未做，由用户自行测试；不再重复已验证的进港/死亡/分裂截图。不用STATIC_PASS冒称游戏内零BUG。
+- 历史人口、开局法律与1825投资条约主要在新开局生效。不要再次运行人口重配脚本叠改当前数据；旧档不自动重演全部初始化。
+- 任务29的法国完整政治发展，任务31的法国古吉拉特/本地舰队与日本追加政治选择，任务08的编辑器等旧欠账继续保留在原任务。任务34中意大利/HUS/USM与小国路线已实际落库，不能再视为仅计划。
+- 物质补贴主流文化代价为每月0.1%离散激进化近似；满蒙迁徙70/30是按源pop的目的地概率。具体实现差异与自然运行限制见release-notes，不隐去设计近似。
+
+修改前完整交接逐字归档于[pre-delivery-records-20261104T204404Z](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/canon-route-execution-20261104/archive/pre-delivery-records-20261104T204404Z/active-work.md>)，SHA见manifest.json。
 
 # 历史交接：任务33外部回归与区域内容（2026-11-04）
 

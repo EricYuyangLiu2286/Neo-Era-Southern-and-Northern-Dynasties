@@ -1,5 +1,8 @@
 # 恢复开发、DEBUG、版本保存与交付
 
+最新交付（2026-11-04）：[任务34](issues/34-canon-route-execution.md)已完成六批国家路线、HUS法律/人口/原住民汗国、各团结度及全部最新steer，主MOD和Git main/远端代码为`f05f063`。STATIC_PASS，未开游戏；187游戏文件＋2任务文档变化，无删除。实际模型与未完成旧任务见任务34和WORK/reports/canon-route-execution-20261104/work-state.md。本页下面的旧“当前”段均是历史，不能回退本次交付。
+
+
 正在执行：[任务34](issues/34-canon-route-execution.md)。作者意见1—3和后续修订须真正实施并合入；两项SKILL已加入明确模型分工。A1/B1已限定STATIC_PASS，C1即时结算修复已限定STATIC_PASS；A2已冻结待独立测试，B2/C2仍在实现。完整现状以WORK/reports/canon-route-execution-20261104/work-state.md为准，主MOD/main仍b94582e，尚未部署本候选。以下任务33入口为上一已交付版本。
 
 最新入口（2026-11-04）：[任务33](issues/33-regional-development.md)完成外部回归、三国人物/小国路线升级计划与七国建设短链；STATIC_PASS，未开游戏。实际主MOD/main/远端见regional-expansion-20261104报告。任务32波斯/USM已交付；任务31法国印度领土/舰队、日本新增选择仍排队，总账61与计划62保留边界。不要从历史断点恢复已完成工作。
