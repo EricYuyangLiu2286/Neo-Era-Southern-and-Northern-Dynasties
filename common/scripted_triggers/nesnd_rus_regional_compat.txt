@@ -1,0 +1,107 @@
+﻿# Country predicate evaluated on the actual state owner or subject.
+nesnd_rus_kazakh_subject = {
+    country_has_primary_culture = cu:kazak
+    is_subject_of = c:RUS
+    any_scope_state = { region = sr:region_central_asia }
+}
+nesnd_rus_steppe_participants = {
+    c:RUS ?= this
+    any_subject_or_below = { nesnd_rus_kazakh_subject = yes }
+}
+# Russia can only stage the founding sequence in the shared native source pool.
+nesnd_rus_kazakh_seed = {
+    c:RUS ?= this
+    NOT = { exists = c:KAZ }
+    OR = {
+        AND = { exists = c:UZH c:UZH ?= { nesnd_rus_kazakh_subject = yes } }
+        s:STATE_SYRDARYA = {
+            any_scope_state = { owner = { OR = { c:RUS ?= this nesnd_rus_kazakh_subject = yes } } }
+        }
+    }
+}
+# State-region claims extend to every owner's section, including in split states.
+nesnd_rus_steppe_claim_region = {
+    any_scope_state = { always = yes }
+    NOT = { any_scope_state = { owner = { NOR = {
+        c:RUS ?= this c:KAZ ?= this nesnd_rus_kazakh_subject = yes
+    } } } }
+}
+nesnd_rus_chi_border_land = {
+    c:CHI ?= this
+    any_scope_state = { OR = {
+        state_region = s:STATE_AMUR state_region = s:STATE_OUTER_MANCHURIA
+        state_region = s:STATE_JETISY state_region = s:STATE_ALTAI state_region = s:STATE_KIRGHIZIA
+    } }
+}
+nesnd_rus_chi_claim_region = {
+    any_scope_state = { owner = { c:CHI ?= this } }
+    NOT = { any_scope_state = { owner = { NOR = { c:CHI ?= this c:RUS ?= this } } } }
+}
+# For an option in a Russian country event, at least one saved parcel must still be real.
+nesnd_rus_chi_donor_live = {
+    c:RUS ?= this
+    trigger_if = { limit = { exists = scope:donor_scope exists = c:CHI }
+        scope:donor_scope = { c:CHI ?= this country_is_valid_qing_treaty_partner = yes }
+    }
+    trigger_else = { always = no }
+}
+nesnd_rus_chi_saved_parcel = {
+    trigger_if = { limit = { exists = scope:$PARCEL$ }
+        scope:$PARCEL$ = { owner = { c:CHI ?= this } is_capital = no state_region = s:$REGION$ }
+    }
+    trigger_else = { always = no }
+}
+nesnd_rus_east_beijing_offer = {
+    nesnd_rus_chi_donor_live = yes
+    exists = scope:china_scope
+    scope:china_scope ?= c:CHI
+    nesnd_rus_chi_saved_parcel = { PARCEL = outer_manchuria_scope REGION = STATE_OUTER_MANCHURIA }
+}
+nesnd_rus_east_aigun_offer = {
+    nesnd_rus_chi_donor_live = yes
+    exists = scope:china_scope
+    scope:china_scope ?= c:CHI
+    nesnd_rus_chi_saved_parcel = { PARCEL = amur_scope REGION = STATE_AMUR }
+}
+nesnd_rus_east_protocol_offer = {
+    nesnd_rus_chi_donor_live = yes
+    exists = scope:china_scope
+    scope:china_scope ?= c:CHI
+    OR = { exists = scope:tomsk_scope exists = scope:ili_scope exists = scope:kirghizia_scope }
+    trigger_if = { limit = { exists = scope:tomsk_scope } nesnd_rus_chi_saved_parcel = { PARCEL = tomsk_scope REGION = STATE_ALTAI } }
+    trigger_if = { limit = { exists = scope:ili_scope } nesnd_rus_chi_saved_parcel = { PARCEL = ili_scope REGION = STATE_JETISY } }
+    trigger_if = { limit = { exists = scope:kirghizia_scope } nesnd_rus_chi_saved_parcel = { PARCEL = kirghizia_scope REGION = STATE_KIRGHIZIA } }
+}
+
+nesnd_rus_casian_polity = {
+    NOR = { c:RUS ?= this c:QE1 ?= this c:CNE ?= this }
+    capital ?= { region = sr:region_central_asia }
+    OR = {
+        country_has_primary_culture = cu:kazak country_has_primary_culture = cu:kirgiz
+        country_has_primary_culture = cu:uzbek country_has_primary_culture = cu:turkmen
+        country_has_primary_culture = cu:tajik country_has_primary_culture = cu:uighur
+    }
+}
+nesnd_rus_casian_claim_region = {
+    any_scope_state = { owner = { nesnd_rus_casian_polity = yes } }
+    NOT = { any_scope_state = { owner = { NOR = { c:RUS ?= this nesnd_rus_casian_polity = yes } } } }
+}
+
+nesnd_rus_release_seed = {
+    c:RUS ?= this
+    NOT = { exists = c:$TAG$ }
+    trigger_if = { limit = { exists = scope:$STATE$ }
+        scope:$STATE$ = { owner = { c:RUS ?= this } state_region = s:$REGION$ }
+    }
+    trigger_else = { always = no }
+}
+# Only Russia and polities actually created in this option can contribute to province-level partition.
+nesnd_rus_caucasus_partition_region = {
+    any_scope_state = { always = yes }
+    NOT = { any_scope_state = { owner = { NOR = {
+        c:RUS ?= this
+        scope:nesnd_rus_split_GEO ?= this
+        scope:nesnd_rus_split_ARM ?= this
+        scope:nesnd_rus_split_AZB ?= this
+    } } } }
+}

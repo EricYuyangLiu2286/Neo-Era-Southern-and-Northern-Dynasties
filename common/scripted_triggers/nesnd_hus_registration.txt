@@ -64,17 +64,36 @@ nesnd_hus_revolution_snapshot_valid = {
     has_variable = nesnd_hus_revolution_continuation has_variable = nesnd_hus_hierarchy_version
     exists = var:nesnd_hus_frozen_citizenship_type NOT = { has_variable = nesnd_hus_native_successor }
 }
-# Culture scope. Manchu retains global Han heritage and is classified first here.
+# Culture scope, also used by native leaders and primary-culture checks.
 nesnd_hus_native_culture = { has_discrimination_trait_group = heritage_group_indigenous_american }
-nesnd_hus_manchu_culture = { OR = { this = cu:manchu has_discrimination_trait = heritage_mongolian } }
-nesnd_hus_manchu_class_culture = { nesnd_hus_manchu_culture = yes }
-nesnd_hus_han_class_culture = { has_discrimination_trait = heritage_han NOT = { nesnd_hus_manchu_culture = yes } }
-nesnd_hus_native_class_culture = { nesnd_hus_native_culture = yes NOR = { nesnd_hus_manchu_culture = yes nesnd_hus_han_class_culture = yes } }
-nesnd_hus_white_class_culture = {
-    has_discrimination_trait_group = heritage_group_european
-    NOR = { nesnd_hus_manchu_culture = yes nesnd_hus_han_class_culture = yes nesnd_hus_native_class_culture = yes }
+
+# Population scope: classify Manchu by its database key before testing Han heritage.
+nesnd_hus_manchu_pop = {
+    OR = {
+        has_pop_culture = manchu
+        culture = { has_discrimination_trait = heritage_mongolian }
+    }
 }
-nesnd_hus_hierarchy_culture = { OR = { nesnd_hus_han_class_culture = yes nesnd_hus_manchu_class_culture = yes nesnd_hus_native_class_culture = yes nesnd_hus_white_class_culture = yes } }
+nesnd_hus_han_class_pop = {
+    culture = { has_discrimination_trait = heritage_han }
+    NOT = { nesnd_hus_manchu_pop = yes }
+}
+nesnd_hus_native_class_pop = {
+    culture = { nesnd_hus_native_culture = yes }
+    NOR = { nesnd_hus_manchu_pop = yes nesnd_hus_han_class_pop = yes }
+}
+nesnd_hus_white_class_pop = {
+    culture = { has_discrimination_trait_group = heritage_group_european }
+    NOR = { nesnd_hus_manchu_pop = yes nesnd_hus_han_class_pop = yes nesnd_hus_native_class_pop = yes }
+}
+nesnd_hus_hierarchy_pop = {
+    OR = {
+        nesnd_hus_han_class_pop = yes
+        nesnd_hus_manchu_pop = yes
+        nesnd_hus_native_class_pop = yes
+        nesnd_hus_white_class_pop = yes
+    }
+}
 nesnd_khanate_trigger_ready = {
     nesnd_hus_original_country = yes nesnd_hus_registration_enacted_correctly = yes nesnd_hus_manchu_route = yes
     has_global_variable = american_civil_war NOT = { has_global_variable = nesnd_khanate_created }

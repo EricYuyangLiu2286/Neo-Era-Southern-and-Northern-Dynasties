@@ -131,3 +131,8 @@ JE immediate时country的has_journal_entry查询可能尚不包含新加入JE；
 
 遇到“自定义trigger is unexpected / CW262”，先查有效数据库定义、完整括号和实际调用，再以安装的语言服务器冷启动复核。仅看定义存在不能证明工具索引正常；仅看红线也不能认定游戏脚本无效。本轮CNE两个福利trigger在同文件250/253有定义，冷加载无对应诊断；独立全MOD反例删除这两定义后准确产生两个CW262。源码保持，编辑器可重载规则/窗口以刷新索引，不能删除有效判定迁就缓存。
 LSP初始空诊断不是最终通过：等待规则重建及后续文件诊断，URI比较先统一百分号编码。引用检查要有已运行的缺定义反例。证据与可复用探测工具在 WORK/reports/integrity-recheck-20261102/cwtools-*.json、WORK/tools/probe_cwtools_integrity.py；它只启动语言服务器，缓存与反例在WORK，不改用户IDE配置、不启动游戏。
+
+
+## 1.15 本机引擎导出
+
+从运行资料目录 docs/ 读取 trigger、effect、event target、on action、modifier 及 custom localization，从 logs/data_types/ 读取 GUI 数据类型及函数。使用工作台 tools/vic3_dump_lookup.py 确认符号、签名、输入和输出作用域，参数标为 Arg0 时须回查同版原生调用。先以 system.log 核版本、导出时间核会话。debug.log 与 error.log 有重合，跨轮转统计不要把两类记录直接相加。用法和来源摘要见工作台 reports/runtime-115-first/engine-dump-lookup.md。

@@ -1,0 +1,475 @@
+﻿REPLACE:je_the_eastern_border = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+
+	group = je_group_russia_expansion
+
+	activation_description = {
+		always = yes
+	}
+
+    scripted_button = je_the_eastern_border_treaty_of_aigun
+    scripted_button = je_the_eastern_border_treaty_of_beijing
+    scripted_button = je_the_eastern_border_russia_chuguchak_protocol
+
+    is_shown_when_inactive = {
+        c:CHI ?= { nesnd_rus_chi_border_land = yes }
+        exists = c:CHI
+
+        exists = c:RUS
+        c:RUS ?= THIS
+        is_independent_and_not_being_subjugated = yes
+    }
+    possible = {
+        exists = c:CHI
+        c:CHI ?= { nesnd_rus_chi_border_land = yes }
+
+        has_technology_researched = nationalism
+        NAND = {
+            owns_entire_state_region_uncontested = STATE_AMUR
+            owns_entire_state_region_uncontested = STATE_OUTER_MANCHURIA
+            owns_entire_state_region_uncontested = STATE_JETISY
+            owns_entire_state_region_uncontested = STATE_ALTAI
+            owns_entire_state_region_uncontested = STATE_KIRGHIZIA
+        }
+    }
+    immediate = {
+        c:CHI ?= {
+            save_scope_as = china_scope
+        }
+        s:STATE_AMUR = {
+            if = { limit = { nesnd_rus_chi_claim_region = yes } add_claim = c:RUS }
+        }
+        s:STATE_OUTER_MANCHURIA = {
+            if = { limit = { nesnd_rus_chi_claim_region = yes } add_claim = c:RUS }
+        }
+        s:STATE_JETISY = {
+            if = { limit = { nesnd_rus_chi_claim_region = yes } add_claim = c:RUS }
+        }
+        s:STATE_ALTAI = {
+            if = { limit = { nesnd_rus_chi_claim_region = yes } add_claim = c:RUS }
+        }
+        s:STATE_KIRGHIZIA = {
+            if = { limit = { nesnd_rus_chi_claim_region = yes } add_claim = c:RUS }
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            owns_entire_state_region_uncontested = STATE_AMUR
+            owns_entire_state_region_uncontested = STATE_OUTER_MANCHURIA
+            owns_entire_state_region_uncontested = STATE_JETISY
+            owns_entire_state_region_uncontested = STATE_ALTAI
+            country_or_subject_owns_entire_state_region_uncontested = STATE_KIRGHIZIA
+        }
+        effect = {
+            trigger_event = { id = russo_chinese.3 } # The Ruler of the East
+            set_global_variable = eastern_border_secured_var
+            set_global_variable = china_border_codified_variable
+            great_game_russia_progress_15 = yes
+            show_as_tooltip = {
+                if = {
+                    limit = {
+                        has_journal_entry = je_tsarpoints_master
+                    }
+                }
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = {
+                    desc = event_effects_russo_chinese.3_tt
+                }
+            }
+        }
+    }
+
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            NOT = {
+                scope:china_scope ?= c:CHI
+                exists = c:CHI
+                exists = scope:china_scope
+            }
+        }
+        effect = {
+            je_the_eastern_border_cleanup = yes
+        }
+    }
+
+    weight = 1000
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+REPLACE:je_pacify_the_steppes = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+
+    group = je_group_russia_expansion
+    dlc = dlc010
+    context = none
+
+    activation_description = {
+        always = yes
+    }
+
+    possible = {
+        #Enabled at start
+    }
+
+    should_be_involved = {
+        OR = {
+            c:RUS ?= this
+            AND = {
+                country_has_primary_culture = cu:kazak
+                is_subject_of = c:RUS
+            }
+        }
+    }
+
+    is_shown_in_lobby = {
+        OR = {
+            has_dlc_feature = ip5_content
+            has_dlc_feature = ep2_content
+        }
+		c:RUS ?= this
+	}
+
+    should_show_when_not_involved = {
+        OR = {
+            has_strategic_region_interest_tier = {
+                strategic_region = sr:region_central_asia
+                value >= 3
+            }
+            capital ?= {
+                is_in_geographic_region = geographic_region_central_asia
+            }
+        }
+    }
+
+    immediate = {
+        c:RUS ?= {
+            save_scope_as = russia_scope
+        }
+        random_character_in_void = {
+            limit = {
+                has_variable = kenesary_variable
+            }
+            save_scope_as = kenesary_scope
+        }
+        set_global_variable = kazakhstan_revolt_happened
+    }
+
+    outcome = {
+        header = je_pacify_the_steppes_pacified
+        effect_header = je_pacify_the_steppes_on_pacified
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            exists = scope:russia_scope
+            scope:russia_scope ?= { nesnd_rus_steppe_participants = yes }
+
+            scope:russia_scope ?= {
+                any_subject_or_below = {
+                    filter = { nesnd_rus_kazakh_subject = yes }
+                    is_subject_type = subject_type_puppet
+                    liberty_desire < define:NDiplomacy|WAR_GOAL_INFAMY_LOW_LIBERTY_DESIRE_THRESHOLD
+                    percent = 1
+                }
+            }
+        }
+        effect = {
+            scope:russia_scope ?= {
+                trigger_event = { id = kazakhstan_events.3 }
+            }
+            set_global_variable = kazakhstan_victory_var
+            great_game_russia_progress_10 = yes
+            show_as_tooltip = {
+                scope:russia_scope ?= {
+                    if = {
+                        limit = {
+                            has_journal_entry = je_tsarpoints_master
+                        }
+                        je_tsarpoints_add_low = yes
+                    }
+                }
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = {
+                    desc = event_effects_kazakhstan_events.3_tt
+                }
+            }
+        }
+    }
+
+    outcome = {
+        header = je_pacify_the_steppes_revolt
+        effect_header = je_pacify_the_steppes_on_revolt
+        color = "blue_negative"
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            exists = scope:russia_scope
+            scope:russia_scope ?= { nesnd_rus_steppe_participants = yes }
+            scope:russia_scope ?= { nesnd_rus_kazakh_seed = yes }
+
+            scope:russia_scope ?= {
+                OR = {
+                    any_civil_war = {
+                        civil_war_progress >= 0.75
+                    }
+                    country_rank < rank_value:great_power
+                    OR = {
+                        AND = { exists = c:KZH c:KZH ?= { nesnd_rus_kazakh_subject = yes liberty_desire >= 80 } }
+                        AND = { exists = c:UZH c:UZH ?= { nesnd_rus_kazakh_subject = yes liberty_desire >= 80 } }
+                        AND = { exists = c:OZH c:OZH ?= { nesnd_rus_kazakh_subject = yes liberty_desire >= 80 } }
+                    }
+                }
+            }
+        }
+        effect = {
+            scope:russia_scope ?= {
+                if = { limit = { nesnd_rus_kazakh_seed = yes } trigger_event = { id = kazakhstan_events.1 } }
+            }
+            hidden_effect = {
+                random_character_in_void = {
+                    limit = {
+                        has_variable = kenesary_variable
+                    }
+                    kill_character = {
+                        hidden = yes
+                    }
+                }
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = {
+                    desc = event_effects_kazakhstan_events.1_tt
+                }
+            }
+        }
+    }
+
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { scope:russia_scope ?= { nesnd_rus_steppe_participants = yes } exists = scope:russia_scope } }
+        effect = {
+            je_pacify_the_steppes_cleanup = yes
+        }
+    }
+
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        flags = { timeout }
+        conclusion_desc = JOURNAL_ENTRY_TIMEOUT_CONCLUSION_DESC
+        effect = {
+            scope:russia_scope ?= {
+                if = { limit = { nesnd_rus_kazakh_seed = yes } trigger_event = { id = kazakhstan_events.1 } }
+                else_if = { limit = { nesnd_rus_steppe_participants = yes NOT = { exists = c:KAZ } } set_variable = nesnd_rus_steppe_deferred }
+            }
+            hidden_effect = {
+                if = { limit = { NOT = { c:RUS ?= { has_variable = nesnd_rus_steppe_deferred } } }
+                random_character_in_void = {
+                    limit = {
+                        has_variable = kenesary_variable
+                    }
+                    kill_character = {
+                        hidden = yes
+                    }
+                }
+            }
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = {
+                    desc = event_effects_kazakhstan_events.1_tt
+                }
+            }
+        }
+    }
+
+    timeout = 3650
+
+    on_monthly_pulse = {
+        effect = {
+            scope:russia_scope ?= {
+                random_list = {
+                    200 = {
+
+                    }
+                    10 = {
+                        random_subject_or_below = {
+                            limit = {
+                                country_has_primary_culture = cu:kazak
+                            }
+                            trigger_event = { id = kazakhstan_events.6 }
+                        }
+                    }
+                    10 = {
+                        random_country = {
+                            limit = {
+                                OR = {
+                                    country_has_primary_culture = cu:kirgiz
+                                    country_has_primary_culture = cu:uzbek
+                                    country_has_primary_culture = cu:turkmen
+                                    country_has_primary_culture = cu:uighur
+                                }
+                                has_interest_marker_in_region = sr:region_central_asia
+                                scope:russia_scope.relations:this <= 0
+                                NOT = {
+                                    has_variable = kenesary_recognizer_var
+                                }
+                            }
+                            trigger_event = { id = kazakhstan_events.7 }
+                        }
+                    }
+                }
+                random_list = {
+                    200 = {
+
+                    }
+                    10 = {
+                        trigger_event = { id = kazakhstan_events.4 }
+                    }
+                    10 = {
+                        trigger_event = { id = kazakhstan_events.5 }
+                    }
+                    10 = {
+                        trigger_event = { id = kazakhstan_events.8 }
+                    }
+                }
+            }
+        }
+    }
+
+    weight = 100
+
+    should_be_pinned_by_default_uninvolved_or_context = no
+    should_be_pinned_by_default_involved = yes
+
+    can_revolution_inherit = yes
+}
+
+REPLACE:je_conquest_of_central_asia = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+
+    group = je_group_russia_expansion
+    dlc = dlc010
+
+    activation_description = {
+        always = yes
+    }
+
+    scripted_button = je_conquest_of_central_asia_turkmen_button
+
+    is_shown_when_inactive = {
+        OR = {
+            has_dlc_feature = ep1_content # Sphere of Influence
+            has_dlc_feature = ip5_content # State and Revolution
+        }
+        exists = c:RUS
+        c:RUS ?= THIS
+        is_independent_and_not_being_subjugated = yes
+        any_scope_state = {
+            state_region = s:STATE_URALSK
+        }
+        any_scope_state = {
+            state_region = s:STATE_SYRDARYA
+        }
+        owns_entire_state_region_uncontested = STATE_AKTOBE
+        owns_entire_state_region_uncontested = STATE_AKMOLINSK
+        owns_entire_state_region_uncontested = STATE_SEMIRECHE
+    }
+    possible = {
+        has_technology_researched = civilizing_mission
+        any_scope_state = {
+            state_region = s:STATE_URALSK
+        }
+        any_scope_state = {
+            state_region = s:STATE_SYRDARYA
+        }
+        owns_entire_state_region_uncontested = STATE_AKTOBE
+        owns_entire_state_region_uncontested = STATE_AKMOLINSK
+        owns_entire_state_region_uncontested = STATE_SEMIRECHE
+    }
+    immediate = {
+        trigger_event = { id = russian_central_asia.1 } # Central Asia initialisation
+        set_global_variable = central_asia_consolidation_happened
+        if = {
+            limit = {
+                exists = c:TRM
+            }
+            c:TRM ?= {
+                save_scope_as = turkmenia_scope
+            }
+        }
+        else = {
+            random_neighbouring_state = {
+                limit = {
+                    OR = {
+                        state_region = s:STATE_TURKMENIA
+                        state_region = s:STATE_SYRDARYA
+                        state_region = s:STATE_UZBEKIA
+                        state_region = s:STATE_KIRGHIZIA
+                        state_region = s:STATE_KHIVA
+                        state_region = s:STATE_TAJIKISTAN
+                    }
+                    owner = { country_has_primary_culture = cu:turkmen NOT = { this = ROOT } }
+                }
+                owner = {
+                    save_scope_as = turkmenia_scope
+                }
+            }
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            country_or_subject_owns_entire_state_region_uncontested = STATE_SYRDARYA
+            country_or_subject_owns_entire_state_region_uncontested = STATE_UZBEKIA
+            country_or_subject_owns_entire_state_region_uncontested = STATE_KIRGHIZIA
+            country_or_subject_owns_entire_state_region_uncontested = STATE_KHIVA # Chorasmia
+            country_or_subject_owns_entire_state_region_uncontested = STATE_TURKMENIA
+            country_or_subject_owns_entire_state_region_uncontested = STATE_TAJIKISTAN
+            country_or_subject_owns_entire_state_region_uncontested = STATE_FERGANA
+            country_or_subject_owns_entire_state_region_uncontested = STATE_MERZ # Merv
+        }
+        effect = {
+            trigger_event = { id = russian_central_asia.2 } # The Great Game
+            set_global_variable = khanates_russia_victory_var
+            great_game_russia_progress_15 = yes
+            show_as_tooltip = {
+                if = {
+                    limit = {
+                        has_journal_entry = je_tsarpoints_master
+                    }
+                    je_tsarpoints_add_med = yes
+                }
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = {
+                    desc = event_effects_russian_central_asia.2_tt
+                }
+            }
+        }
+    }
+
+    weight = 1000
+    	
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
