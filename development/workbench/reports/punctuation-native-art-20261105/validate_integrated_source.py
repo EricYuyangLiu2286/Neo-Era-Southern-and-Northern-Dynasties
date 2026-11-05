@@ -20,6 +20,13 @@ for manifest, before, after in [
   assert expected.get(key) == row.get(before), ('baseline mismatch',key,expected.get(key),row.get(before))
   expected[key] = row[after]
   changed[key] = manifest
+for row in load(R/'live-DP-schema-repair-20261105/repair-evidence.json')['files']:
+ key=row['file']
+ assert expected[key]==row['before_sha256']
+ old=(R/'live-DP-schema-repair-20261105/before'/key).read_bytes()
+ assert hashlib.sha256(old).hexdigest()==row['before_sha256'] and old.count(b' handle_annexation_as_civil_war = no')==1
+ assert (M/key).read_bytes()==old.replace(b' handle_annexation_as_civil_war = no',b'')
+ expected[key]=row['after_sha256']
 live = {p.relative_to(M).as_posix():sha(p) for folder in folders for p in (M/folder).rglob('*') if p.is_file()}
 assert live == expected, ('live input differs', {key for key in live.keys()|expected.keys() if live.get(key)!=expected.get(key)})
 sys.path.insert(0, 'C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/scripts')

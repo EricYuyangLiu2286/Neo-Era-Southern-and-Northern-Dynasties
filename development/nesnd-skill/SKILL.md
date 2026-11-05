@@ -5,6 +5,8 @@ description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚�
 
 # NESND 维多利亚 3 开发
 
+**实机启动边界（作者最高指示）：仅在用户当次明确要求时启动游戏。旧许可不续用，修复、合并、验证和交接一律默认游戏外进行。要求“观察者、五速、保存”时，完成后即结束控制，不持续监看、不轮询日志、不自行重开。**
+
 与 Matt Pocock 工程技能协作、恢复任务或做版本交付时，先读 [项目工程适配](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/docs/agents/engineering-skills.md>)。领域规则继续由本技能维护；当前授权、候选与进度经 [当前交接](references/active-work.md)进入项目任务索引。
 
 ## 子智能体模型分工（强制）
