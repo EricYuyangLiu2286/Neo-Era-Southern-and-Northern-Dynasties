@@ -44,78 +44,118 @@ nesnd_jp_cohesion_monthly = {
         clamp_variable = { name = nesnd_jp_cohesion min = 0 max = 100 }
         if = { limit = { var:nesnd_jp_cohesion < 25 }
             if = { limit = { NOT = { has_modifier = nesnd_jp_divided_councils } } add_modifier = { name = nesnd_jp_divided_councils } }
-            nesnd_jp_low_cohesion_drift = yes
         } else = { if = { limit = { has_modifier = nesnd_jp_divided_councils } remove_modifier = nesnd_jp_divided_councils } }
-        if = { limit = { var:nesnd_jp_cohesion > 75 } nesnd_jp_cultural_exchange = yes }
+        nesnd_jp_settle_culture_plan = yes
+        nesnd_jp_reset_culture_plan = yes
+        nesnd_jp_prepare_culture_plan = yes
         nesnd_jp_sync_cohesion = yes
-    }
+    } else = { nesnd_jp_reset_culture_plan = yes }
 }
-# Country scope. Select one eligible owned state, then one actual primary-culture Pop.
-nesnd_jp_low_cohesion_drift = {
-    save_scope_as = nesnd_jp_drift_owner
-    if = { limit = { OR = { nesnd_jp_jiangnan_policy = yes AND = { has_variable = nesnd_jp_jiangnan_policy OR = { country_has_primary_culture = cu:han country_has_primary_culture = cu:ce_wuu } } } }
-        nesnd_jp_drift_convert = { TARGET = cu:japanese }
-    } else = {
-        random_list = {
-            50 = { nesnd_jp_drift_convert = { TARGET = cu:han } }
-            50 = { nesnd_jp_drift_convert = { TARGET = cu:ce_wuu } }
+
+# Mode 0 is also a completed draw. Loading a save or refreshing the other
+# Japanese journals must not replace a quiet month with another draw.
+nesnd_jp_reset_culture_plan = {
+    if = { limit = { has_variable = nesnd_jp_next_mode } remove_variable = nesnd_jp_next_mode }
+    if = { limit = { has_variable = nesnd_jp_next_realm } remove_variable = nesnd_jp_next_realm }
+    if = { limit = { has_variable = nesnd_jp_next_state } remove_variable = nesnd_jp_next_state }
+    if = { limit = { has_variable = nesnd_jp_next_target } remove_variable = nesnd_jp_next_target }
+    if = { limit = { has_variable = nesnd_jp_next_pop } remove_variable = nesnd_jp_next_pop }
+    if = { limit = { has_variable = nesnd_jp_next_source_culture } remove_variable = nesnd_jp_next_source_culture }
+}
+
+nesnd_jp_prepare_culture_plan = {
+    if = {
+        limit = {
+            nesnd_jp_cohesion_live = yes
+            has_variable = nesnd_jp_statistics_ready
+            NOT = { has_variable = nesnd_jp_next_mode }
         }
+        set_variable = { name = nesnd_jp_next_mode value = 0 }
+        set_variable = { name = nesnd_jp_next_realm value = country_definition }
+        save_scope_as = nesnd_jp_plan_owner
+        if = { limit = { nesnd_jp_cohesion_value < 25 }
+            if = { limit = { nesnd_jp_drift_toward_japanese = yes }
+                nesnd_jp_select_drift = { TARGET = cu:japanese }
+            } else = {
+                random_list = {
+                    50 = { nesnd_jp_select_drift = { TARGET = cu:han } }
+                    50 = { nesnd_jp_select_drift = { TARGET = cu:ce_wuu } }
+                }
+            }
+        } else_if = { limit = { nesnd_jp_cohesion_value > 75 }
+            if = { limit = { nesnd_jp_jiangnan_policy = yes }
+                nesnd_jp_select_exchange = { TARGET = cu:ce_wuu }
+            } else = { nesnd_jp_select_exchange = { TARGET = cu:japanese } }
+        }
+        clear_saved_scope = nesnd_jp_plan_owner
     }
-    clear_saved_scope = nesnd_jp_drift_owner
 }
-nesnd_jp_drift_convert = {
+
+nesnd_jp_select_drift = {
     random_scope_state = {
         limit = { any_scope_pop = {
-            culture = { is_primary_culture_of = scope:nesnd_jp_drift_owner }
+            culture = { is_primary_culture_of = scope:nesnd_jp_plan_owner }
             NOT = { culture = $TARGET$ }
         } }
+        scope:nesnd_jp_plan_owner = { set_variable = { name = nesnd_jp_next_state value = prev } }
         random_scope_pop = {
             limit = {
-                culture = { is_primary_culture_of = scope:nesnd_jp_drift_owner }
+                culture = { is_primary_culture_of = scope:nesnd_jp_plan_owner }
                 NOT = { culture = $TARGET$ }
             }
-            change_pop_culture = { target = $TARGET$ value = 0.25 }
+            scope:nesnd_jp_plan_owner = {
+                set_variable = { name = nesnd_jp_next_mode value = 1 }
+                set_variable = { name = nesnd_jp_next_pop value = prev }
+                set_variable = { name = nesnd_jp_next_source_culture value = prev.culture }
+                set_variable = { name = nesnd_jp_next_target value = $TARGET$ }
+            }
         }
     }
 }
 
-nesnd_jp_cultural_exchange = {
-    if = { limit = { nesnd_jp_jiangnan_policy = yes }
-        if = { limit = { any_scope_state = { state_population > 0 any_scope_pop = { NOT = { culture = cu:ce_wuu } } } }
-            random_list = {
-                70 = { }
-                30 = { random_scope_state = {
-                        limit = { state_population > 0 any_scope_pop = { NOT = { culture = cu:ce_wuu } } }
-                        set_variable = { name = nesnd_jp_conversion_fraction value = nesnd_jp_conversion_fraction_jiangnan }
-                        every_scope_pop = { limit = { NOT = { culture = cu:ce_wuu } }
-                            change_pop_culture = { target = cu:ce_wuu value = state.var:nesnd_jp_conversion_fraction }
-                        }
-                        remove_variable = nesnd_jp_conversion_fraction
-                    }
+nesnd_jp_select_exchange = {
+    if = { limit = { any_scope_state = { state_population > 0 any_scope_pop = { NOT = { culture = $TARGET$ } } } }
+        random_list = {
+            70 = { }
+            30 = { random_scope_state = {
+                limit = { state_population > 0 any_scope_pop = { NOT = { culture = $TARGET$ } } }
+                scope:nesnd_jp_plan_owner = {
+                    set_variable = { name = nesnd_jp_next_state value = prev }
+                    set_variable = { name = nesnd_jp_next_mode value = 2 }
+                    set_variable = { name = nesnd_jp_next_target value = $TARGET$ }
                 }
+            } }
+        }
+    }
+}
+
+nesnd_jp_settle_culture_plan = {
+    if = { limit = { nesnd_jp_culture_plan_valid = yes }
+        var:nesnd_jp_next_target = { save_scope_as = nesnd_jp_settle_target }
+        if = { limit = { var:nesnd_jp_next_mode = 1 }
+            var:nesnd_jp_next_pop = { change_pop_culture = { target = scope:nesnd_jp_settle_target value = 0.25 } }
+        } else = {
+            var:nesnd_jp_next_state = {
+                if = { limit = { scope:nesnd_jp_settle_target = cu:ce_wuu }
+                    set_variable = { name = nesnd_jp_conversion_fraction value = nesnd_jp_conversion_fraction_jiangnan }
+                } else = {
+                    set_variable = { name = nesnd_jp_conversion_fraction value = nesnd_jp_conversion_fraction_japanese }
+                }
+                every_scope_pop = {
+                    limit = { NOT = { culture = scope:nesnd_jp_settle_target } }
+                    change_pop_culture = { target = scope:nesnd_jp_settle_target value = state.var:nesnd_jp_conversion_fraction }
+                }
+                remove_variable = nesnd_jp_conversion_fraction
             }
         }
-    } else = {
-        if = { limit = { any_scope_state = { state_population > 0 any_scope_pop = { NOT = { culture = cu:japanese } } } }
-            random_list = {
-                70 = { }
-                30 = { random_scope_state = {
-                        limit = { state_population > 0 any_scope_pop = { NOT = { culture = cu:japanese } } }
-                        set_variable = { name = nesnd_jp_conversion_fraction value = nesnd_jp_conversion_fraction_japanese }
-                        every_scope_pop = { limit = { NOT = { culture = cu:japanese } }
-                            change_pop_culture = { target = cu:japanese value = state.var:nesnd_jp_conversion_fraction }
-                        }
-                        remove_variable = nesnd_jp_conversion_fraction
-                    }
-                }
-            }
-        }
+        clear_saved_scope = nesnd_jp_settle_target
     }
 }
 nesnd_jp_bootstrap = {
     if = { limit = { nesnd_jp_country = yes }
         nesnd_jp_initialize = yes
         if = { limit = { NOT = { has_journal_entry = nesnd_jp_cohesion } } add_journal_entry = { type = nesnd_jp_cohesion } }
+        nesnd_jp_prepare_culture_plan = yes
         nesnd_jp_ensure_establishment = yes
 
         nesnd_jp_ensure_industry = yes

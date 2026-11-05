@@ -5,6 +5,60 @@ nesnd_jp_industry_available = {
     OR = { has_variable = nesnd_japan_partition_state is_subject = no has_variable = nesnd_jp_political_started has_variable = nesnd_jp_ports_opened }
 }
 nesnd_jp_cohesion_live = { nesnd_jp_country = yes has_journal_entry = nesnd_jp_cohesion }
+nesnd_jp_drift_toward_japanese = {
+    OR = {
+        nesnd_jp_jiangnan_policy = yes
+        AND = {
+            has_variable = nesnd_jp_jiangnan_policy
+            OR = { country_has_primary_culture = cu:han country_has_primary_culture = cu:ce_wuu }
+        }
+    }
+}
+
+nesnd_jp_culture_plan_valid = {
+    trigger_if = {
+        limit = {
+            nesnd_jp_cohesion_live = yes
+            has_variable = nesnd_jp_statistics_ready
+            has_variable = nesnd_jp_next_mode
+            exists = var:nesnd_jp_next_state
+            exists = var:nesnd_jp_next_target
+            exists = var:nesnd_jp_next_realm
+        }
+        country_definition = var:nesnd_jp_next_realm
+        var:nesnd_jp_next_state = { owner = prev state_population > 0 }
+        trigger_if = { limit = { var:nesnd_jp_next_mode = 1 }
+            nesnd_jp_cohesion_value < 25
+            trigger_if = {
+                limit = { exists = var:nesnd_jp_next_pop exists = var:nesnd_jp_next_source_culture }
+                var:nesnd_jp_next_source_culture = { is_primary_culture_of = prev }
+                var:nesnd_jp_next_pop = {
+                    state = prev.var:nesnd_jp_next_state
+                    culture = prev.var:nesnd_jp_next_source_culture
+                    NOT = { culture = prev.var:nesnd_jp_next_target }
+                }
+            }
+            trigger_else = { always = no }
+            trigger_if = { limit = { nesnd_jp_drift_toward_japanese = yes }
+                var:nesnd_jp_next_target = cu:japanese
+            }
+            trigger_else = { OR = { var:nesnd_jp_next_target = cu:han var:nesnd_jp_next_target = cu:ce_wuu } }
+        }
+        trigger_else_if = { limit = { var:nesnd_jp_next_mode = 2 }
+            nesnd_jp_cohesion_value > 75
+            trigger_if = { limit = { nesnd_jp_jiangnan_policy = yes }
+                var:nesnd_jp_next_target = cu:ce_wuu
+                var:nesnd_jp_next_state = { any_scope_pop = { NOT = { culture = cu:ce_wuu } } }
+            }
+            trigger_else = {
+                var:nesnd_jp_next_target = cu:japanese
+                var:nesnd_jp_next_state = { any_scope_pop = { NOT = { culture = cu:japanese } } }
+            }
+        }
+        trigger_else = { always = no }
+    }
+    trigger_else = { always = no }
+}
 nesnd_jp_has_foreign_islands = {
     nesnd_jp_country = yes
     OR = { NOT = { owns_entire_state_region = STATE_KYUSHU } NOT = { owns_entire_state_region = STATE_SHIKOKU } }

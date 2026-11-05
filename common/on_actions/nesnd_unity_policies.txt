@@ -1,5 +1,21 @@
-﻿on_monthly_pulse_country = { on_actions = { nesnd_unity_policy_monthly } }
+﻿on_monthly_pulse_country = { on_actions = { nesnd_unity_policy_monthly nesnd_discard_retired_unity_forecast } }
 nesnd_unity_policy_monthly = {
     trigger = { has_modifier = nesnd_unity_material_assistance }
     effect = { nesnd_unity_material_monthly_cost = yes }
+}
+
+nesnd_discard_retired_unity_forecast = {
+    trigger = {
+        OR = {
+            AND = {
+                OR = { has_variable = nesnd_qe1_next_state has_variable = nesnd_qe1_next_all }
+                NOT = { nesnd_qe1_unity_live = yes }
+            }
+            AND = { has_variable = nesnd_jp_next_mode NOT = { nesnd_jp_cohesion_live = yes } }
+        }
+    }
+    effect = {
+        if = { limit = { NOT = { nesnd_qe1_unity_live = yes } } nesnd_qe1_clear_forecast = yes }
+        if = { limit = { NOT = { nesnd_jp_cohesion_live = yes } } nesnd_jp_reset_culture_plan = yes }
+    }
 }

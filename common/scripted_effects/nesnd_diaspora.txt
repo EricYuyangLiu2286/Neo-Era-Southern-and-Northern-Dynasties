@@ -1,0 +1,173 @@
+﻿# Called by the surviving government only after the annexation goal takes effect.
+nesnd_diaspora_register = {
+    if = {
+        limit = { NOT = { has_variable = nesnd_diaspora_registered } }
+        set_variable = nesnd_diaspora_registered
+        set_variable = {
+            name = nesnd_diaspora_due
+            value = {
+                value = 0
+                every_scope_state = {
+                    every_scope_pop = { limit = { nesnd_diaspora_native_pop = yes } add = total_size }
+                }
+                multiply = 0.5
+                floor = yes
+            }
+        }
+        if = {
+            limit = { var:nesnd_diaspora_due > 0 }
+            set_variable = nesnd_diaspora_source
+            if = {
+                limit = { NOT = { has_global_variable = nesnd_diaspora_total } }
+                set_global_variable = { name = nesnd_diaspora_total value = 0 }
+                set_global_variable = { name = nesnd_diaspora_remaining value = 0 }
+            }
+            change_global_variable = { name = nesnd_diaspora_total add = var:nesnd_diaspora_due }
+            change_global_variable = { name = nesnd_diaspora_remaining add = var:nesnd_diaspora_due }
+            if = {
+                limit = { NOT = { has_global_variable = nesnd_diaspora_open } }
+                set_global_variable = nesnd_diaspora_open
+                add_contextless_journal_entry = nesnd_diaspora
+            }
+        }
+        else = { remove_variable = nesnd_diaspora_due }
+    }
+}
+
+nesnd_diaspora_clear_route = {
+    remove_global_variable = nesnd_diaspora_origin
+    remove_global_variable = nesnd_diaspora_pop
+    remove_global_variable = nesnd_diaspora_departure
+    remove_global_variable = nesnd_diaspora_host
+    remove_global_variable = nesnd_diaspora_destination
+}
+
+nesnd_diaspora_choose_route = {
+    nesnd_diaspora_clear_route = yes
+    random_country = {
+        limit = {
+            nesnd_diaspora_can_depart = yes
+            any_scope_state = { any_scope_pop = { nesnd_diaspora_native_pop = yes } }
+        }
+        set_global_variable = { name = nesnd_diaspora_origin value = this }
+        random_scope_state = {
+            limit = { any_scope_pop = { nesnd_diaspora_native_pop = yes } }
+            set_global_variable = { name = nesnd_diaspora_departure value = this }
+            random_scope_pop = {
+                limit = { nesnd_diaspora_native_pop = yes }
+                set_global_variable = { name = nesnd_diaspora_pop value = this }
+            }
+        }
+    }
+    if = {
+        limit = { exists = global_var:nesnd_diaspora_origin }
+        random_country = {
+            limit = {
+                nesnd_diaspora_receiver = yes
+                NOT = { this = global_var:nesnd_diaspora_origin }
+                NOT = { has_war_with = global_var:nesnd_diaspora_origin }
+            }
+            set_global_variable = { name = nesnd_diaspora_host value = this }
+            random_scope_state = {
+                limit = { nesnd_diaspora_american_state = yes }
+                set_global_variable = { name = nesnd_diaspora_destination value = this }
+            }
+        }
+    }
+}
+
+# Read the Pop objects themselves on either side of the transfer. State population
+# totals can be cached. A moved Pop may disappear into an existing receiving Pop.
+nesnd_diaspora_count_departure = {
+    set_local_variable = { name = $COUNT$ value = 0 }
+    global_var:nesnd_diaspora_departure = {
+        every_scope_pop = {
+            limit = { nesnd_diaspora_native_pop = yes }
+            change_local_variable = { name = $COUNT$ add = total_size }
+        }
+    }
+}
+
+nesnd_diaspora_move = {
+    set_local_variable = {
+        name = nesnd_diaspora_requested
+        value = {
+            value = global_var:nesnd_diaspora_pop.total_size
+            max = global_var:nesnd_diaspora_origin.var:nesnd_diaspora_due
+        }
+    }
+    nesnd_diaspora_count_departure = { COUNT = nesnd_diaspora_before }
+    global_var:nesnd_diaspora_pop = {
+        if = {
+            limit = { total_size <= local_var:nesnd_diaspora_requested }
+            move_pop = global_var:nesnd_diaspora_destination
+        }
+        else = {
+            move_partial_pop = { state = global_var:nesnd_diaspora_destination population = local_var:nesnd_diaspora_requested }
+        }
+    }
+    nesnd_diaspora_count_departure = { COUNT = nesnd_diaspora_after }
+    set_local_variable = {
+        name = nesnd_diaspora_moved
+        value = { value = local_var:nesnd_diaspora_before subtract = local_var:nesnd_diaspora_after min = 0 max = local_var:nesnd_diaspora_requested }
+    }
+    if = {
+        limit = { local_var:nesnd_diaspora_moved > 0 }
+        global_var:nesnd_diaspora_origin = {
+            change_variable = { name = nesnd_diaspora_due subtract = local_var:nesnd_diaspora_moved }
+        }
+        change_global_variable = { name = nesnd_diaspora_remaining subtract = local_var:nesnd_diaspora_moved }
+    }
+}
+
+# One country-independent JE pulse. Viewer count never affects pace.
+nesnd_diaspora_week = {
+    if = {
+        limit = { has_global_variable = nesnd_diaspora_open }
+        if = {
+            limit = { NOT = { nesnd_diaspora_route_valid = yes } }
+            set_bar_progress = { name = nesnd_diaspora_batch_bar value = 0 }
+            nesnd_diaspora_choose_route = yes
+        }
+        else_if = {
+            limit = { "scripted_bar_progress(nesnd_diaspora_batch_bar)" >= 100 }
+            nesnd_diaspora_move = yes
+            set_bar_progress = { name = nesnd_diaspora_batch_bar value = 0 }
+            if = { limit = { global_var:nesnd_diaspora_remaining > 0 } nesnd_diaspora_choose_route = yes }
+            else = { nesnd_diaspora_clear_route = yes }
+        }
+        set_bar_progress = {
+            name = nesnd_diaspora_total_bar
+            value = {
+                value = global_var:nesnd_diaspora_total
+                subtract = global_var:nesnd_diaspora_remaining
+                multiply = 100
+                divide = global_var:nesnd_diaspora_total
+            }
+        }
+    }
+}
+
+nesnd_diaspora_finish = {
+    if = {
+        limit = { has_global_variable = nesnd_diaspora_open }
+        every_country = {
+            limit = { OR = { has_variable = nesnd_diaspora_source nesnd_diaspora_receiver = yes } }
+            if = {
+                limit = { has_variable = nesnd_diaspora_source }
+                add_modifier = { name = nesnd_diaspora_origin_aftermath years = 10 }
+                trigger_event = { id = nesnd_diaspora.1 popup = yes }
+                remove_variable = nesnd_diaspora_source
+                remove_variable = nesnd_diaspora_due
+            }
+            else = {
+                add_modifier = { name = nesnd_diaspora_reception years = 10 }
+                trigger_event = { id = nesnd_diaspora.2 popup = yes }
+            }
+        }
+        nesnd_diaspora_clear_route = yes
+        remove_global_variable = nesnd_diaspora_total
+        remove_global_variable = nesnd_diaspora_remaining
+        remove_global_variable = nesnd_diaspora_open
+    }
+}

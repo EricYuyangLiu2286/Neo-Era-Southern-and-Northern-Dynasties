@@ -945,15 +945,25 @@ agitators_law_events.9 = {
 	cooldown = { days = normal_modifier_time }
 
 	trigger = {
-		agitator_opposes_enaction = yes
-		movement_opposes_enaction = yes
+		trigger_if = {
+			limit = { exists = currently_enacting_law }
+			agitator_opposes_enaction = yes
+			movement_opposes_enaction = yes
+			any_interest_group = {
+				ig_counts_as_marginal = no
+				is_in_government = yes
+				law_stance = { law = owner.currently_enacting_law.type value > neutral }
+			}
+		}
+		trigger_else = { always = no }
 	}
 
 	cancellation_trigger = {
 		OR = {
-			scope:opposing_agitator = {
+			scope:opposing_agitator ?= {
 				is_character_alive = no
 			}
+			NOT = { exists = scope:supporting_ig }
 			NOT = {
 				exists = scope:opposing_agitator
 			}
@@ -987,13 +997,13 @@ agitators_law_events.9 = {
 	option = {
 		name = agitators_law_events.9.a
 		default_option = yes
-		scope:supporting_ig = {
+		scope:supporting_ig ?= {
 			add_modifier = {
 				name = modifier_slandered_as_hypocrites
 				days = normal_modifier_time
 			}
 		}
-		scope:opposing_movement = {
+		scope:opposing_movement ?= {
 			add_modifier = {
 				name = modifier_hypocritical_government
 				days = normal_modifier_time
@@ -1003,13 +1013,13 @@ agitators_law_events.9 = {
 
 	option = {
 		name = agitators_law_events.9.b
-		scope:supporting_ig = {
+		scope:supporting_ig ?= {
 			add_modifier = {
 				name = modifier_supportive_government
 				days = normal_modifier_time
 			}
 		}
-		scope:opposing_movement = {
+		scope:opposing_movement ?= {
 			add_modifier = {
 				name = modifier_really_bad_arguments
 				days = normal_modifier_time

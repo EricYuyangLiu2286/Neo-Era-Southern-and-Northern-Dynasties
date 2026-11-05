@@ -1,0 +1,62 @@
+﻿nesnd_diaspora_native_pop = {
+    total_size >= 1
+    culture = { nesnd_hus_native_culture = yes }
+}
+
+nesnd_diaspora_american_state = {
+    state_population > 0
+    state_region = { is_in_geographic_region = geographic_region_americas }
+}
+
+nesnd_diaspora_receiver = {
+    is_country_alive = yes
+    NOT = { is_country_type = decentralized }
+    OR = {
+        c:HUS ?= this
+        AND = {
+            any_primary_culture = { nesnd_hus_native_culture = yes }
+            capital ?= { state_region = { is_in_geographic_region = geographic_region_americas } }
+        }
+    }
+    any_scope_state = { nesnd_diaspora_american_state = yes }
+}
+
+nesnd_diaspora_can_depart = {
+    is_country_alive = yes
+    has_variable = nesnd_diaspora_source
+    trigger_if = {
+        limit = { has_variable = nesnd_diaspora_due }
+        var:nesnd_diaspora_due > 0
+    }
+    trigger_else = { always = no }
+}
+
+# The displayed departure, Pop and receiving government must still be the
+# same objects at settlement. Pop mergers and split-state transfers can replace them.
+nesnd_diaspora_route_valid = {
+    trigger_if = {
+        limit = {
+            exists = global_var:nesnd_diaspora_origin
+            exists = global_var:nesnd_diaspora_pop
+            exists = global_var:nesnd_diaspora_departure
+            exists = global_var:nesnd_diaspora_destination
+            exists = global_var:nesnd_diaspora_host
+        }
+        global_var:nesnd_diaspora_origin = { nesnd_diaspora_can_depart = yes }
+        global_var:nesnd_diaspora_pop = {
+            nesnd_diaspora_native_pop = yes
+            owner = global_var:nesnd_diaspora_origin
+            state = global_var:nesnd_diaspora_departure
+        }
+        global_var:nesnd_diaspora_host = {
+            nesnd_diaspora_receiver = yes
+            NOT = { this = global_var:nesnd_diaspora_origin }
+            NOT = { has_war_with = global_var:nesnd_diaspora_origin }
+        }
+        global_var:nesnd_diaspora_destination = {
+            nesnd_diaspora_american_state = yes
+            owner = global_var:nesnd_diaspora_host
+        }
+    }
+    trigger_else = { always = no }
+}

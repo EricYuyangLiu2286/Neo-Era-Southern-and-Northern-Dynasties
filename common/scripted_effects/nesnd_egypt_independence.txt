@@ -137,36 +137,37 @@ nesnd_egypt_settle_dependence = {
         }
     }
 }
-nesnd_egypt_register_historical_treaty = {
+nesnd_egypt_expire_historical_treaty = {
     if = { limit = { exists = c:$TAG$ }
         every_scope_treaty = {
             limit = {
+                is_historical_treaty = yes
                 binds = c:$TAG$
                 any_scope_article = { nesnd_canon_directed_article = { TYPE = foreign_investment_rights SOURCE = c:EGY TARGET = c:$TAG$ } }
                 any_scope_article = { nesnd_canon_directed_article = { TYPE = guarantee_independence SOURCE = c:$TAG$ TARGET = c:EGY } }
             }
-            set_variable = nesnd_egypt_1825_treaty
+            withdraw = { country = c:EGY apply_break_penalties = no }
         }
+    }
+}
+nesnd_egypt_expire_historical_treaties = {
+    # Treaties do not support variables. Identify only the six historical
+    # guarantee/investment pairs; later agreements remain in force.
+    if = { limit = { c:EGY ?= this is_country_alive = yes game_date >= 1845.1.1 }
+        nesnd_egypt_expire_historical_treaty = { TAG = FRA }
+        nesnd_egypt_expire_historical_treaty = { TAG = USM }
+        nesnd_egypt_expire_historical_treaty = { TAG = SIH }
+        nesnd_egypt_expire_historical_treaty = { TAG = GBR }
+        nesnd_egypt_expire_historical_treaty = { TAG = QE1 }
+        nesnd_egypt_expire_historical_treaty = { TAG = TUR }
     }
 }
 nesnd_egypt_startup = {
-    c:EGY ?= {
-        if = { limit = { game_date < 1845.1.1 NOT = { has_variable = nesnd_egypt_treaties_registered } }
-            nesnd_egypt_register_historical_treaty = { TAG = FRA }
-            nesnd_egypt_register_historical_treaty = { TAG = USM }
-            nesnd_egypt_register_historical_treaty = { TAG = SIH }
-            nesnd_egypt_register_historical_treaty = { TAG = GBR }
-            nesnd_egypt_register_historical_treaty = { TAG = QE1 }
-            nesnd_egypt_register_historical_treaty = { TAG = TUR }
-            set_variable = nesnd_egypt_treaties_registered
-        }
-    }
+    c:EGY ?= { nesnd_egypt_expire_historical_treaties = yes }
 }
 nesnd_egypt_maintenance = {
     if = { limit = { c:EGY ?= this is_country_alive = yes }
-        if = { limit = { game_date >= 1845.1.1 }
-            every_scope_treaty = { limit = { has_variable = nesnd_egypt_1825_treaty } withdraw = { country = c:EGY apply_break_penalties = no } }
-        }
+        nesnd_egypt_expire_historical_treaties = yes
         # Capture the old branch by entering it before clearing its marker or changing its investor.
         if = { limit = { has_variable = nesnd_egypt_settlement_pending NOT = { has_variable = nesnd_egypt_finished } }
             nesnd_egypt_clear_legacy_settlement = yes

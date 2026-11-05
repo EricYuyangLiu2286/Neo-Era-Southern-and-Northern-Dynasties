@@ -1,0 +1,72 @@
+﻿nesnd_diaspora = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_global_international_situations
+    weight = 1500
+    can_revolution_inherit = no
+    should_be_pinned_by_default_involved = yes
+    should_be_pinned_by_default_uninvolved_or_context = no
+    is_shown_when_inactive = { always = no }
+    possible = { always = no }
+    should_be_involved = {
+        OR = { has_variable = nesnd_diaspora_source nesnd_diaspora_receiver = yes }
+    }
+    should_show_when_not_involved = {
+        OR = { has_variable = nesnd_diaspora_source nesnd_diaspora_receiver = yes }
+    }
+
+    scripted_progress_bar = nesnd_diaspora_total_bar
+    scripted_progress_bar = nesnd_diaspora_batch_bar
+
+    on_weekly_pulse = {
+        effect = { scope:journal_entry = { nesnd_diaspora_week = yes } }
+    }
+    on_monthly_pulse = {
+        effect = {
+            scope:journal_entry = {
+                every_scope_je_involved = {
+                    limit = { NOR = { has_variable = nesnd_diaspora_source nesnd_diaspora_receiver = yes } }
+                    scope:journal_entry = { remove_involved_country = prev }
+                }
+            }
+            every_country = {
+                limit = {
+                    NOT = { is_involved_in_journal_entry = nesnd_diaspora }
+                    OR = { has_variable = nesnd_diaspora_source nesnd_diaspora_receiver = yes }
+                }
+                scope:journal_entry = { add_involved_country = prev }
+            }
+        }
+    }
+    complete = {
+        custom_tooltip = {
+            text = nesnd_diaspora_complete_tt
+            trigger_if = {
+                limit = { has_global_variable = nesnd_diaspora_total has_global_variable = nesnd_diaspora_remaining }
+                global_var:nesnd_diaspora_total > 0
+                global_var:nesnd_diaspora_remaining <= 0
+            }
+            trigger_else = { always = no }
+        }
+    }
+    on_complete = {
+        custom_tooltip = nesnd_diaspora_finish_tt
+        hidden_effect = { nesnd_diaspora_finish = yes }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = {
+                    has_global_variable = nesnd_diaspora_total
+                    has_global_variable = nesnd_diaspora_remaining
+                    nesnd_diaspora_route_valid = yes
+                }
+                desc = nesnd_diaspora_route_status
+            }
+            triggered_desc = {
+                trigger = { has_global_variable = nesnd_diaspora_total has_global_variable = nesnd_diaspora_remaining }
+                desc = nesnd_diaspora_waiting_status
+            }
+            desc = nesnd_diaspora_no_route_status
+        }
+    }
+}
