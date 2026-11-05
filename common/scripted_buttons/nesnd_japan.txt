@@ -13,16 +13,9 @@
 		}
 	}
 	ai_chance = {
-		value = 5
-		if = {
-			limit = {
-				c:JAP ?= {
-					has_variable = usm_opposition_country
-				}
-			}
-			add = 15
-		}
-	}
+        value = 30
+        if = { limit = { c:JAP ?= { has_variable = usm_opposition_country } } add = 10 }
+    }
 	effect = {
 		if = {
 			limit = {
@@ -57,7 +50,16 @@ nesnd_japan_accept_status_quo = {
     name = nesnd_japan_accept_status_quo desc = nesnd_japan_accept_status_quo_desc
     visible = { NOT = { has_global_variable = nesnd_japan_offer_sent } }
     possible = { NOT = { has_global_variable = nesnd_japan_dossier_closed } }
-    ai_chance = { value = 2 if = { limit = { net_total_income < 0 } add = 10 } }
+    ai_chance = {
+        value = 0
+        if = { limit = { has_variable = nesnd_japan_consultation_considered NOT = { has_variable = nesnd_japan_consultation_period } }
+            if = { limit = { nesnd_japan_can_send = yes }
+                value = 2
+                if = { limit = { OR = { in_default = yes has_modifier = declared_bankruptcy } } value = 8 }
+            }
+            else_if = { limit = { nesnd_japan_structural_peace = yes } value = 5 }
+        }
+    }
     effect = {
         set_global_variable = nesnd_japan_dossier_closed
         c:JAP ?= { change_relations = { country = root value = 20 } }

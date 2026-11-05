@@ -5,12 +5,13 @@
     possible = {
         c:USM ?= this has_variable = tag_WUU_var
         has_global_variable = nesnd_south_settled
-        c:JAP ?= { is_country_alive = yes }
+        trigger_if = { limit = { exists = c:JAP exists = c:USM } c:JAP = { is_country_alive = yes } }
+        trigger_else = { always = no }
         NOT = { has_variable = nesnd_japan_dossier_entered }
         NOT = { has_global_variable = nesnd_japan_dossier_closed }
     }
     is_shown_when_inactive = { c:USM ?= this has_variable = tag_WUU_var }
-    immediate = { set_variable = nesnd_japan_dossier_entered set_variable = nesnd_eastern_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_eastern_readiness_bar value = owner.nesnd_japan_preparation_score } } }
+    immediate = { set_variable = nesnd_japan_dossier_entered nesnd_japan_consider_terms_once = yes set_variable = nesnd_eastern_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_eastern_readiness_bar value = owner.nesnd_japan_preparation_score } } }
     status_desc = {
         first_valid = {
             triggered_desc = { trigger = { has_global_variable = nesnd_japan_war_started } desc = nesnd_wu_eastern_question_status_war }
@@ -26,6 +27,8 @@
     invalid = { OR = { NOT = { has_global_variable = nesnd_south_settled } NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_eastern_absolute_v2 } } }
     on_invalid = { if = { limit = { NOT = { has_variable = tag_WUU_var } } set_global_variable = nesnd_japan_dossier_closed } else = { remove_variable = nesnd_japan_dossier_entered } }
     on_monthly_pulse = { effect = {
+            nesnd_japan_consider_terms_once = yes
+            nesnd_japan_observe_other_house = yes
             if = { limit = {
                     NOT = { has_global_variable = nesnd_japan_dossier_closed }
                     OR = {
@@ -65,6 +68,7 @@ nesnd_japan_reunification = {
         add_modifier = { name = nesnd_japan_integrated months = 120 }
         trigger_event = { id = nesnd_japan.5 popup = yes }
     }
+    on_monthly_pulse = { effect = { nesnd_japan_review_old_split = yes } }
     weight = 800
     should_be_pinned_by_default_uninvolved_or_context = yes
 }

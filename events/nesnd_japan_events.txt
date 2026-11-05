@@ -8,17 +8,17 @@ nesnd_japan.1 = {
     immediate = { set_variable = nesnd_japan_terms_seen }
     option = { name = nesnd_japan.1.a
         trigger = { nesnd_japan_partition_possible = yes }
-        ai_chance = { base = 5 modifier = { add = 20 trigger = { army_power_projection < c:USM.army_power_projection } } }
+        ai_chance = { base = 30 modifier = { add = 20 trigger = { army_power_projection < c:USM.army_power_projection } } }
         custom_tooltip = nesnd_japan_partition_tt
         nesnd_partition_japan = yes
     }
     option = { name = nesnd_japan.1.b default_option = yes
-        ai_chance = { base = 60 modifier = { add = 30 trigger = { army_power_projection >= c:USM.army_power_projection } } }
+        ai_chance = { base = 40 modifier = { add = 20 trigger = { army_power_projection >= c:USM.army_power_projection } } }
         set_global_variable = nesnd_japan_terms_rejected
         c:USM ?= { trigger_event = { id = nesnd_japan.2 popup = yes } }
     }
     option = { name = nesnd_japan.1.c
-        ai_chance = { base = 35 }
+        ai_chance = { base = 30 }
         set_global_variable = nesnd_japan_unity_offer
         c:USM ?= { trigger_event = { id = nesnd_japan.2 popup = yes } }
     }
@@ -40,39 +40,31 @@ nesnd_japan.2 = {
         }
     }
     option = {
-name = nesnd_japan.2.a
-trigger = {
-            nesnd_japan_partition_possible = yes is_at_war = no
-            NOT = { has_truce_with = c:JAP }
-            is_diplomatic_play_committed_participant = no
-            c:JAP = { is_at_war = no is_diplomatic_play_committed_participant = no }
+        name = nesnd_japan.2.a
+        trigger = {
+            hidden_trigger = { nesnd_japan_diplomatic_window = yes nesnd_japan_intervention_pact_safe = yes }
+            custom_tooltip = { text = nesnd_japan_force_ready_tt nesnd_japan_force_ready = yes }
         }
-ai_chance = { base = 50 modifier = { add = -40 trigger = { net_total_income < 0 } } }
-custom_tooltip = nesnd_japan_war_tt
-if = { limit = {
-    c:USM ?= this
-    NOT = { has_global_variable = nesnd_japan_dossier_closed }
-
-            nesnd_japan_partition_possible = yes is_at_war = no
-            NOT = { has_truce_with = c:JAP }
-            is_diplomatic_play_committed_participant = no
-            c:JAP = { is_at_war = no is_diplomatic_play_committed_participant = no }
-        
-}
-c:JAP = { if = { limit = { is_subject_of = c:USM } make_independent = yes } }
-create_diplomatic_play = { name = dp_nesnd_eastern_intervention target_country = c:JAP type = dp_nesnd_eastern_intervention
-            add_war_goal = { holder = c:JAP target_country = root type = humiliation primary_demand = yes }
+        ai_chance = { base = 65 modifier = { add = -40 trigger = { net_total_income < 0 } } }
+        custom_tooltip = nesnd_japan_war_tt
+        if = { limit = { nesnd_japan_diplomatic_window = yes nesnd_japan_force_ready = yes nesnd_japan_intervention_pact_safe = yes }
+            nesnd_japan_launch_intervention = yes
+            if = { limit = { nesnd_japan_matching_intervention = yes }
+                random_diplomatic_play = {
+                    limit = { is_diplomatic_play_type = dp_nesnd_eastern_intervention initiator = root target = c:JAP }
+                    set_variable = nesnd_eastern_intervention_play
+                }
+                set_global_variable = nesnd_japan_war_started
+                set_variable = { name = nesnd_japan_war_grace months = 6 }
+            }
+            else = { set_global_variable = nesnd_japan_dossier_closed }
         }
-random_diplomatic_play = { limit = { initiator = root target = c:JAP } set_variable = nesnd_eastern_intervention_play }
-set_global_variable = nesnd_japan_war_started
-set_variable = { name = nesnd_japan_war_grace months = 6 }
-} else_if = { limit = { c:USM ?= this NOT = { has_global_variable = nesnd_japan_dossier_closed } }
-    # Conditions changed while the event was open. Close the dossier without a war or transfer.
-    set_global_variable = nesnd_japan_dossier_closed
-}
-}
+        else_if = { limit = { c:USM ?= this NOT = { has_global_variable = nesnd_japan_dossier_closed } }
+            set_global_variable = nesnd_japan_dossier_closed
+        }
+    }
     option = { name = nesnd_japan.2.b default_option = yes
-        ai_chance = { base = 50 modifier = { add = 40 trigger = { has_global_variable = nesnd_japan_unity_offer } } }
+        ai_chance = { base = 35 modifier = { add = 30 trigger = { has_global_variable = nesnd_japan_unity_offer } } }
         set_global_variable = nesnd_japan_dossier_closed
         c:JAP ?= { change_relations = { country = root value = 20 } }
     }

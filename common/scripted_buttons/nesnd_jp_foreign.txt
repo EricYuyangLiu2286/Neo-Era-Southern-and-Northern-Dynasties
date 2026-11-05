@@ -26,7 +26,11 @@ nesnd_jp_seek_independence = {
         show_as_tooltip = { add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 } }
         hidden_effect = { if = { limit = { nesnd_jp_diplomatic_standing = yes nesnd_jp_subject_request_available = yes can_increase_autonomy = no liberty_desire >= 50 } overlord = { save_scope_as = jp_partner } nesnd_jp_send_request = { KIND = 2 } }  }
     }
-    ai_chance = { value = 10 if = { limit = { OR = { has_modifier = declared_bankruptcy bureaucracy < 0 } } value = 0 } }
+    ai_chance = {
+        value = 10
+        if = { limit = { has_variable = nesnd_japan_partition_state liberty_desire >= 65 } add = 15 }
+        if = { limit = { OR = { has_modifier = declared_bankruptcy bureaucracy < 0 } } value = 0 }
+    }
 }
 nesnd_jp_seek_reform_permission = {
     name = nesnd_jp_seek_reform_permission desc = nesnd_jp_seek_reform_permission_desc
@@ -215,7 +219,16 @@ nesnd_jp_independence_play = {
             }
         }
     }
-    ai_chance = { value = 0 if = { limit = { liberty_desire >= 90 }
+    ai_chance = {
+        value = 0
+        if = { limit = { has_variable = nesnd_japan_partition_state }
+            if = { limit = { liberty_desire >= 80 army_power_projection > 0 exists = overlord }
+                value = 3
+                if = { limit = { liberty_desire >= 90 } add = 5 }
+                if = { limit = { army_power_projection >= { value = overlord.army_power_projection multiply = 0.4 } } add = 7 }
+            }
+        }
+        else_if = { limit = { liberty_desire >= 90 }
             if = { limit = { exists = overlord } if = { limit = { army_power_projection >= overlord.army_power_projection } value = 15 } }
         }
     }

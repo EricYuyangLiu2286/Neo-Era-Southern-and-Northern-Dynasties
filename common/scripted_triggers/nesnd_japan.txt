@@ -1,43 +1,54 @@
 ﻿# Country-scope predicates. All named-country accesses have alive guards.
 nesnd_japan_partition_possible = {
-    OR = {
-        AND = {
-            NOT = {
-                has_global_variable = nesnd_japan_partitioned
-            }
-            NOT = {
-                exists = c:JTK
-            }
-            NOT = {
-                exists = c:JIM
-            }
-            c:USM ?= {
-                is_country_alive = yes
-                has_variable = tag_WUU_var
-            }
-            c:JAP ?= {
-                is_country_alive = yes
-                has_law = law_type:law_monarchy
-                ruler ?= {
-                    has_variable = house_toyotomi
+    trigger_if = {
+        limit = { exists = c:JAP exists = c:USM }
+        OR = {
+            AND = {
+                NOT = {
+                    has_global_variable = nesnd_japan_partitioned
                 }
-                OR = {
-                    is_subject = no
-                    is_subject_of = c:USM
+                NOT = {
+                    exists = c:JTK
                 }
-                owns_entire_state_region = STATE_KANTO
-                owns_entire_state_region = STATE_KYOTO
-                owns_entire_state_region = STATE_KANSAI
-                owns_entire_state_region = STATE_CHUGOKU
+                NOT = {
+                    exists = c:JIM
+                }
+                c:USM = {
+                    is_country_alive = yes
+                    has_variable = tag_WUU_var
+                }
+                c:JAP = {
+                    is_country_alive = yes
+                    has_law = law_type:law_monarchy
+                    nesnd_japan_three_houses = yes
+                    OR = {
+                        is_subject = no
+                        is_subject_of = c:USM
+                    }
+                    owns_entire_state_region = STATE_KANTO
+                    owns_entire_state_region = STATE_KYOTO
+                    owns_entire_state_region = STATE_KANSAI
+                    owns_entire_state_region = STATE_CHUGOKU
+                    NOT = { any_scope_state = {
+                        OR = {
+                            state_region = s:STATE_KANTO state_region = s:STATE_KYOTO state_region = s:STATE_KANSAI
+                            state_region = s:STATE_CHUGOKU state_region = s:STATE_TOHOKU state_region = s:STATE_TOKAI
+                            state_region = s:STATE_HOKUSHINETSU state_region = s:STATE_HOKKAIDO
+                            state_region = s:STATE_KYUSHU state_region = s:STATE_SHIKOKU
+                        }
+                        NOR = { controller = owner controller = c:USM }
+                    } }
+                }
             }
-        }
-        AND = {
-            NOT = {
-                has_global_variable = nesnd_japan_partitioned
+            AND = {
+                NOT = {
+                    has_global_variable = nesnd_japan_partitioned
+                }
+                nesnd_japan_recovery_partition_possible = yes
             }
-            nesnd_japan_recovery_partition_possible = yes
         }
     }
+    trigger_else = { always = no }
 }
 nesnd_japan_fiscal_ready = { bureaucracy >= 0 net_total_income >= 0 }
 nesnd_japan_army_ready = {
@@ -51,37 +62,207 @@ nesnd_japan_navy_ready = {
     c:JAP ?= { naval_power_projection <= prev.naval_power_projection }
 }
 nesnd_japan_can_send = {
+    nesnd_japan_diplomatic_window = yes
+    NOT = { has_global_variable = nesnd_japan_offer_sent }
+}
+nesnd_japan_is_united = { nesnd_jp_core_united = yes is_subject = no }
+
+nesnd_japan_three_houses = {
     trigger_if = {
-        limit = {
-            exists = c:JAP
-        }
-        c:JAP = { is_country_alive = yes }
-        c:USM ?= this
+        limit = { exists = ruler }
+        ruler = { OR = { has_variable = house_toyotomi has_variable = house_tokugawa has_variable = house_yamato } }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_diplomatic_window = {
+    trigger_if = {
+        limit = { exists = c:JAP exists = c:USM }
+        c:USM = this
         is_country_alive = yes
         has_variable = tag_WUU_var
         has_global_variable = nesnd_south_settled
-        NOT = {
-            has_global_variable = nesnd_japan_dossier_closed
-        }
-        NOT = {
-            has_global_variable = nesnd_japan_offer_sent
-        }
-        is_at_war = no
-        NOT = {
-            has_truce_with = c:JAP
-        }
+        NOT = { has_variable = nesnd_japan_recovery_pending }
+        NOT = { has_global_variable = nesnd_japan_dossier_closed }
         nesnd_japan_partition_possible = yes
-        nesnd_japan_fiscal_ready = yes
-        nesnd_japan_army_ready = yes
-        nesnd_japan_navy_ready = yes
-        c:JAP ?= {
+        is_at_war = no
+        is_diplomatic_play_committed_participant = no
+        c:JAP = {
+            is_country_alive = yes
             is_at_war = no
             is_diplomatic_play_committed_participant = no
+            NOT = { has_truce_with = c:USM }
         }
-        is_diplomatic_play_committed_participant = no
     }
-    trigger_else = {
-        always = no
+    trigger_else = { always = no }
+}
+nesnd_japan_force_ready = {
+    nesnd_japan_preparation_score >= 2
+    army_power_projection > 0
+    naval_power_projection > 0
+}
+# AI country scope with a target_country supplied by the native strategy database.
+nesnd_japan_rival_claim_available = {
+    trigger_if = {
+        limit = { has_variable = nesnd_japan_partition_state exists = scope:target_country }
+        has_global_variable = nesnd_japan_partitioned
+        nesnd_jp_country = yes
+        is_subject = no
+        is_at_war = no
+        is_active_in_diplomatic_play = no
+        aggressive_diplomatic_plays_permitted = yes
+        NOT = { has_variable = nesnd_jp_request_clock }
+        NOT = { has_truce_with = scope:target_country }
+        NOT = { is_in_same_power_bloc = scope:target_country }
+        NOT = { has_friendly_diplomatic_pact = { TARGET = scope:target_country } }
+        scope:target_country = {
+            NOT = { this = root }
+            nesnd_jp_country = yes
+            has_variable = nesnd_japan_partition_state
+            is_subject = no
+            is_at_war = no
+            is_active_in_diplomatic_play = no
+            NOT = { has_variable = nesnd_jp_request_clock }
+            relations:root < relations_threshold:cordial
+            any_scope_state = { nesnd_japan_claimed_rival_seat = yes }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_claimed_rival_seat = {
+    has_claim_by = root
+    OR = {
+        AND = { state_region = s:STATE_KANTO owner = { c:JTK ?= this } }
+        AND = { state_region = s:STATE_KYOTO owner = { c:JIM ?= this } }
+        AND = { state_region = s:STATE_CHUGOKU owner = { c:JAP ?= this } }
     }
 }
-nesnd_japan_is_united = { nesnd_jp_core_united = yes is_subject = no }
+
+nesnd_japan_legacy_claims_available = {
+    trigger_if = {
+        limit = { exists = c:JAP exists = c:JTK exists = c:JIM }
+        c:JAP = {
+            nesnd_japan_legacy_seat_live = yes
+            has_variable = nesnd_toyotomi_remnant
+            trigger_if = { limit = { exists = ruler } ruler = { has_variable = house_toyotomi } }
+            trigger_else = { always = no }
+            NOT = { any_scope_state = { state_region = s:STATE_CHUGOKU OR = { has_claim_by = c:JTK has_claim_by = c:JIM } } }
+        }
+        c:JTK = {
+            nesnd_japan_legacy_seat_live = yes
+            trigger_if = { limit = { exists = ruler } ruler = { has_variable = house_tokugawa } }
+            trigger_else = { always = no }
+            NOT = { any_scope_state = { state_region = s:STATE_KANTO OR = { has_claim_by = c:JAP has_claim_by = c:JIM } } }
+        }
+        c:JIM = {
+            nesnd_japan_legacy_seat_live = yes
+            OR = {
+                AND = {
+                    trigger_if = { limit = { exists = ruler } ruler = { has_variable = house_yamato } }
+                    trigger_else = { always = no }
+                }
+                AND = { has_variable = nesnd_japan_lin_regency_appointed nesnd_jp_emperor_valid = yes }
+            }
+            NOT = { any_scope_state = { state_region = s:STATE_KYOTO OR = { has_claim_by = c:JAP has_claim_by = c:JTK } } }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_legacy_seat_live = {
+    is_country_alive = yes
+    has_variable = nesnd_japan_partition_state
+    NOT = { has_variable = nesnd_japan_unified }
+    is_at_war = no
+    is_active_in_diplomatic_play = no
+}
+
+nesnd_japan_other_house_in_power = {
+    trigger_if = {
+        limit = { exists = c:JAP exists = c:USM }
+        c:USM = this
+        c:JAP = {
+            is_country_alive = yes
+            has_law = law_type:law_monarchy
+            trigger_if = {
+                limit = { exists = ruler }
+                ruler = { is_character_alive = yes owner = c:JAP is_ruler_of_own_country = yes }
+                NOT = { nesnd_japan_three_houses = yes }
+            }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_structural_peace = {
+    trigger_if = {
+        limit = { exists = c:JAP exists = c:USM }
+        c:USM = this
+        is_at_war = no
+        is_diplomatic_play_committed_participant = no
+        NOT = { has_variable = nesnd_japan_recovery_pending }
+        c:JAP = {
+            is_country_alive = yes
+            is_at_war = no
+            is_diplomatic_play_committed_participant = no
+            NOT = { has_truce_with = c:USM }
+        }
+        OR = {
+            c:JAP = { NOT = { has_law = law_type:law_monarchy } }
+            AND = {
+                nesnd_japan_other_house_in_power = yes
+                NOT = { has_variable = nesnd_japan_other_house_observation }
+                trigger_if = {
+                    limit = { exists = var:nesnd_japan_other_house_ruler }
+                    c:JAP = { ruler ?= root.var:nesnd_japan_other_house_ruler }
+                }
+                trigger_else = { always = no }
+            }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_matching_intervention = {
+    trigger_if = {
+        limit = { exists = c:USM exists = c:JAP }
+        any_diplomatic_play = { is_diplomatic_play_type = dp_nesnd_eastern_intervention initiator = root target = c:JAP }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_original_intervention_pair = {
+    trigger_if = {
+        limit = { exists = c:USM exists = c:JAP exists = scope:nesnd_eastern_original_patron exists = scope:nesnd_eastern_original_subject }
+        this = scope:nesnd_eastern_original_patron
+        c:USM = this
+        is_country_alive = yes
+        c:JAP = { this = scope:nesnd_eastern_original_subject is_country_alive = yes is_subject = no }
+    }
+    trigger_else = { always = no }
+}
+nesnd_japan_restorable_pact = {
+    has_diplomatic_pact = { who = c:JAP type = $PACT$ is_initiator = yes }
+    can_have_as_subject = { who = c:JAP type = subject_type_$PACT$ }
+}
+nesnd_japan_intervention_pact_safe = {
+    trigger_if = {
+        limit = { exists = c:USM exists = c:JAP }
+        c:USM = this
+        OR = {
+            c:JAP = { is_subject = no }
+            AND = {
+                c:JAP = { is_direct_subject_of = c:USM }
+                OR = {
+                    nesnd_japan_restorable_pact = { PACT = protectorate }
+                    nesnd_japan_restorable_pact = { PACT = puppet }
+                    nesnd_japan_restorable_pact = { PACT = tributary }
+                    nesnd_japan_restorable_pact = { PACT = vassal }
+                    nesnd_japan_restorable_pact = { PACT = dominion }
+                    nesnd_japan_restorable_pact = { PACT = colony }
+                    nesnd_japan_restorable_pact = { PACT = personal_union }
+                    nesnd_japan_restorable_pact = { PACT = crown_land }
+                    nesnd_japan_restorable_pact = { PACT = chartered_company }
+                    nesnd_japan_restorable_pact = { PACT = nesnd_egypt_protectorate }
+                }
+            }
+        }
+    }
+    trigger_else = { always = no }
+}
