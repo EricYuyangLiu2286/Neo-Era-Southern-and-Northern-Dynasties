@@ -1,0 +1,152 @@
+﻿nesnd_regional_native_actor = {
+ trigger_if = { limit = { has_variable = nesnd_restoration_family } var:nesnd_restoration_family = 3 }
+ trigger_else = { always = no }
+}
+nesnd_regional_native_bolivia_region = { OR = { state_region = s:STATE_LA_PAZ state_region = s:STATE_POTOSI state_region = s:STATE_SANTA_CRUZ state_region = s:STATE_ANTOFAGASTA state_region = s:STATE_JUJUY state_region = s:STATE_ACRE } }
+nesnd_regional_native_colombia_region = { OR = { state_region = s:STATE_ANTIOQUIA state_region = s:STATE_CUNDINAMARCA state_region = s:STATE_CAUCA state_region = s:STATE_GUAVIARE state_region = s:STATE_PANAMA state_region = s:STATE_AMAZONAS } }
+nesnd_regional_native_central_region = { OR = { state_region = s:STATE_GUATEMALA state_region = s:STATE_SAN_SALVADOR state_region = s:STATE_HONDURAS state_region = s:STATE_NICARAGUA state_region = s:STATE_COSTA_RICA state_region = s:STATE_CHIAPAS state_region = s:STATE_PANAMA } }
+nesnd_regional_native_bolivia_domain = {
+ trigger_if = { limit = { OR = { c:BOL ?= this country_has_primary_culture = cu:south_andean has_variable = nesnd_regional_native_bolivia_line } }
+  any_scope_state = { nesnd_regional_native_bolivia_region = yes state_population > 0 any_scope_pop = { culture = { nesnd_hus_native_culture = yes } } }
+ }
+ trigger_else = { always = no }
+}
+nesnd_regional_native_colombia_domain = {
+ trigger_if = { limit = { OR = { c:CLM ?= this c:GCO ?= this country_has_primary_culture = cu:north_andean has_variable = nesnd_regional_native_colombia_line } }
+  any_scope_state = { nesnd_regional_native_colombia_region = yes state_population > 0 any_scope_pop = { culture = { nesnd_hus_native_culture = yes } } }
+ }
+ trigger_else = { always = no }
+}
+nesnd_regional_native_central_domain = {
+ trigger_if = { limit = { OR = { c:UCA ?= this c:GUA ?= this c:ELS ?= this c:HON ?= this c:NIC ?= this c:COS ?= this c:PNM ?= this country_has_primary_culture = cu:central_american has_variable = nesnd_regional_native_central_line } }
+  any_scope_state = { nesnd_regional_native_central_region = yes state_population > 0 any_scope_pop = { culture = { nesnd_hus_native_culture = yes } } }
+ }
+ trigger_else = { always = no }
+}
+nesnd_regional_native_country = {
+ is_country_alive = yes NOT = { is_country_type = decentralized }
+ NOR = { c:MEX ?= this c:NAH ?= this c:PEU ?= this c:NPU ?= this c:SPU ?= this c:TWT ?= this has_variable = nesnd_regional_native_polity }
+ NOT = { any_primary_culture = { nesnd_hus_native_culture = yes } }
+ OR = { nesnd_regional_native_bolivia_domain = yes nesnd_regional_native_colombia_domain = yes nesnd_regional_native_central_domain = yes }
+}
+nesnd_regional_native_profile_done = {
+ OR = {
+  AND = { nesnd_regional_native_profile = 1 has_variable = nesnd_regional_native_bolivia_done }
+  AND = { nesnd_regional_native_profile = 2 has_variable = nesnd_regional_native_colombia_done }
+  AND = { nesnd_regional_native_profile = 3 has_variable = nesnd_regional_native_central_done }
+ }
+}
+nesnd_regional_native_profile_started = {
+ OR = {
+  AND = { nesnd_regional_native_profile = 1 has_variable = nesnd_regional_native_bolivia_started }
+  AND = { nesnd_regional_native_profile = 2 has_variable = nesnd_regional_native_colombia_started }
+  AND = { nesnd_regional_native_profile = 3 has_variable = nesnd_regional_native_central_started }
+ }
+}
+nesnd_regional_native_host = {
+ nesnd_regional_native_country = yes
+ NOT = { nesnd_regional_native_profile_done = yes }
+ NOT = { nesnd_regional_native_profile_started = yes }
+ NOT = { has_variable = nesnd_restoration_war_host }
+}
+nesnd_restoration_pressure_host = { OR = { nesnd_american_restoration_host = yes nesnd_regional_native_host = yes } }
+nesnd_restoration_has_pressure_entry = { OR = { has_journal_entry = nesnd_american_restoration has_journal_entry = nesnd_regional_native_restoration } }
+nesnd_regional_native_profile_region = {
+ OR = {
+  AND = { owner = { nesnd_regional_native_profile = 1 } nesnd_regional_native_bolivia_region = yes }
+  AND = { owner = { nesnd_regional_native_profile = 2 } nesnd_regional_native_colombia_region = yes }
+  AND = { owner = { nesnd_regional_native_profile = 3 } nesnd_regional_native_central_region = yes }
+ }
+}
+nesnd_regional_native_seed_state = {
+ nesnd_regional_native_profile_region = yes
+ state_population >= 100000 nesnd_regional_native_seed_kind > 0
+ num_provinces >= { value = state_region.num_provinces }
+ state_population <= { value = owner.total_population multiply = 0.5 }
+ nesnd_restoration_single_remaining >= 150000
+ owner = { any_scope_state = { count >= 2 state_population > 0 } }
+}
+nesnd_regional_native_peace_seed_valid = {
+ trigger_if = { limit = { exists = var:nesnd_regional_native_peace_seed exists = var:nesnd_regional_native_peace_region }
+  var:nesnd_regional_native_peace_seed = {
+   owner = prev state_region = prev.var:nesnd_regional_native_peace_region
+   nesnd_regional_native_seed_state = yes
+   nesnd_regional_native_seed_kind = prev.nesnd_regional_native_kind
+  }
+ }
+ trigger_else = { always = no }
+}
+nesnd_regional_native_can_release = {
+ hidden_trigger = { nesnd_regional_native_host = yes }
+ is_subject = no government_legitimacy >= 50 ig:ig_rural_folk = { is_in_government = yes }
+ NOT = { is_at_war = yes }
+ custom_tooltip = { text = nesnd_regional_native_request_free_tt NOT = { has_variable = nesnd_regional_native_request_open } }
+ trigger_if = { limit = { exists = var:nesnd_regional_native_peace_seed }
+  custom_tooltip = { text = nesnd_regional_native_release_state_tt nesnd_regional_native_peace_seed_valid = yes }
+ }
+ trigger_else = { custom_tooltip = { text = nesnd_regional_native_no_release_state_tt always = no } }
+}
+nesnd_regional_native_partner_valid = {
+ trigger_if = { limit = { exists = var:nesnd_regional_native_partner }
+  NOT = { var:nesnd_regional_native_partner = this }
+  var:nesnd_regional_native_partner = {
+   is_country_alive = yes is_subject = no NOT = { is_country_type = decentralized }
+   OR = {
+    AND = { c:AYM ?= this country_has_primary_culture = cu:aimara }
+    AND = { c:AMZ ?= this country_has_primary_culture = cu:amazonian }
+    AND = { c:MUI ?= this country_has_primary_culture = cu:muisca }
+    AND = { c:MAY ?= this country_has_primary_culture = cu:mayan }
+    AND = { c:MKT ?= this country_has_primary_culture = cu:miskito }
+   }
+  }
+  NOT = { has_war_with = var:nesnd_regional_native_partner }
+  OR = {
+   AND = { nesnd_regional_native_profile = 1 var:nesnd_regional_native_partner = { c:AYM ?= this } }
+   AND = { nesnd_regional_native_profile = 2 var:nesnd_regional_native_partner = { OR = { c:AMZ ?= this c:MUI ?= this } } }
+   AND = { nesnd_regional_native_profile = 3 var:nesnd_regional_native_partner = { OR = { c:MAY ?= this c:MKT ?= this } } }
+  }
+ }
+ trigger_else = { always = no }
+}
+nesnd_regional_native_can_request = {
+ hidden_trigger = { nesnd_regional_native_host = yes }
+ government_legitimacy >= 50 NOT = { is_at_war = yes }
+ custom_tooltip = { text = nesnd_regional_native_request_free_tt NOT = { has_variable = nesnd_regional_native_request_open } }
+ custom_tooltip = { text = nesnd_regional_native_request_wait_tt NOT = { has_variable = nesnd_regional_native_request_cooldown } }
+ custom_tooltip = { text = nesnd_regional_native_partner_tt nesnd_regional_native_partner_valid = yes }
+}
+nesnd_regional_native_reply_live = {
+ trigger_if = { limit = { exists = scope:regional_native_sender exists = scope:regional_native_recipient exists = scope:regional_native_request_epoch }
+  this = scope:regional_native_recipient is_country_alive = yes is_subject = no
+  scope:regional_native_sender = {
+   nesnd_regional_native_host = yes
+   trigger_if = { limit = { has_variable = nesnd_regional_native_request_open has_variable = nesnd_regional_native_request_pending has_variable = nesnd_regional_native_request_epoch exists = var:nesnd_regional_native_request_target exists = var:nesnd_regional_native_partner }
+    var:nesnd_regional_native_request_epoch = scope:regional_native_request_epoch
+    var:nesnd_regional_native_request_target = scope:regional_native_recipient
+    NOT = { is_at_war = yes } NOT = { has_war_with = scope:regional_native_recipient }
+    nesnd_regional_native_partner_valid = yes
+    var:nesnd_regional_native_partner = scope:regional_native_recipient
+   }
+   trigger_else = { always = no }
+  }
+ }
+ trigger_else = { always = no }
+}
+nesnd_regional_native_polity_valid = {
+ nesnd_regional_native_actor = yes has_variable = nesnd_regional_native_polity
+ trigger_if = { limit = { has_variable = nesnd_restoration_epoch }
+  OR = {
+   AND = { nesnd_regional_native_profile = 1 nesnd_regional_native_kind = 1 country_has_primary_culture = cu:aimara }
+   AND = { nesnd_regional_native_profile = 2 nesnd_regional_native_kind = 2 country_has_primary_culture = cu:amazonian }
+   AND = { nesnd_regional_native_profile = 2 nesnd_regional_native_kind = 3 country_has_primary_culture = cu:muisca }
+   AND = { nesnd_regional_native_profile = 3 nesnd_regional_native_kind = 4 country_has_primary_culture = cu:mayan }
+  }
+  OR = {
+   AND = { nesnd_regional_native_kind = 1 c:AYM ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_aym_country } global_var:nesnd_regional_aym_country = this } trigger_else = { always = no } }
+   AND = { nesnd_regional_native_kind = 2 c:AMZ ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_amz_country } global_var:nesnd_regional_amz_country = this } trigger_else = { always = no } }
+   AND = { nesnd_regional_native_kind = 3 c:MUI ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_mui_country } global_var:nesnd_regional_mui_country = this } trigger_else = { always = no } }
+   AND = { nesnd_regional_native_kind = 4 c:MAY ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_may_country } global_var:nesnd_regional_may_country = this } trigger_else = { always = no } }
+  }
+ }
+ trigger_else = { always = no }
+}

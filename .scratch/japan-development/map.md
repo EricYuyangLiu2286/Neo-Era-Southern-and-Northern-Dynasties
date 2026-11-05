@@ -8,11 +8,11 @@ Blocked by: none
 
 ## Destination
 
-支持统一含九州、统一无完整九州、三国并立三局面；军政、幕府改革、民主化分别有可玩过程，衔接朝鲜与吴/CNE/HUS，日志按阶段开启。
+支持统一含九州、统一无完整九州、三国并立三局面。军政、幕府改革、民主化分别有可玩过程，衔接朝鲜与吴/CNE/HUS，日志按阶段开启。
 
 ## Decisions-so-far
 
-原版、当前MOD和旧设定已分别研究，见 [japan-research-20261102](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-research-20261102/release-notes.md>)。[日本实施方案](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/20261102-japan-development-design.md>)为当前提案；原始数据和日方角色以当前游戏优先，旧图不直接改1836边界。
+原版、当前MOD和旧设定已分别研究，见 [japan-research-20261102](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-research-20261102/release-notes.md>)。[日本实施方案](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/20261102-japan-development-design.md>)为当前提案。原始数据和日方角色以当前游戏优先，旧图不直接改1836边界。
 
 ## Next work
 
@@ -24,16 +24,16 @@ Blocked by: none
 
 ## Out of scope
 
-原版/工坊/旧HOI4工程只读；不开游戏；不重画日本地图、不重配人口、不取消既有崩溃/恢复/林摄政，不提供自动玩家救援。
+原版/工坊/旧HOI4工程只读。不开游戏。不重画日本地图、不重配人口、不取消既有崩溃/恢复/林摄政，不提供自动玩家救援。
 
 ## 修订2：作者新要求
 
-天皇JIM即林摄政政权；当前JAP受任代码是待同步修正项，不能继续把其当计划。JIM需加入ce_wuu主流并保持日本兼容身份。扶国矿业军工船业、桑国轻纺消费品SOL、和国粮食城市食品链；JIM排除轻纺日志。独立后国家发展总JE及每国每月30%→一州总人口10%的文化转换列入方案。详见20261102-japan-development-design.md第九节。尚未写入玩法。
+天皇JIM即林摄政政权。当前JAP受任代码是待同步修正项，不能继续把其当计划。JIM需加入ce_wuu主流并保持日本兼容身份。扶国矿业军工船业、桑国轻纺消费品SOL、和国粮食城市食品链。JIM排除轻纺日志。独立后国家发展总JE及每国每月30%→一州总人口10%的文化转换列入方案。详见20261102-japan-development-design.md第九节。尚未写入玩法。
 
 ## 修订3：宗主与阶段交接
 
-主方案第十节把宗属、明吴立场、条约/市场、实际战争分开，联动建设、统一自主、团结和朝鲜。旧JAP林统治者迁JIM需合法接任与精确人物登记；同市场供给需核接口，不能强制不合法商品条约。共同24类异常场景和源码复核见[本轮报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-india-plan-revision-20261102/release-notes.md>)。仍为方案，既有崩溃/恢复保持。
+主方案第十节把宗属、明吴立场、条约/市场、实际战争分开，联动建设、统一自主、团结和朝鲜。旧JAP林统治者迁JIM需合法接任与精确人物登记。同市场供给需核接口，不能强制不合法商品条约。共同24类异常场景和源码复核见[本轮报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-india-plan-revision-20261102/release-notes.md>)。仍为方案，既有崩溃/恢复保持。
 
 ## 最新实施断点（2026-11-02，取代上文尚未实施状态）
 
-[任务21](../debug-release/issues/21-japan-implementation.md)已写入WORK/exports/japan-development-20261102-a，尚待最终生命周期检查、整批外部验证和合入。[任务22](../debug-release/issues/22-canon-prose.md)的作者设定及文案修订同步进入候选。上方研究历史保留；不开游戏限制已受用户最新的一次完成后观察者运行授权取代，当前尚未运行。
+[任务21](../debug-release/issues/21-japan-implementation.md)已写入WORK/exports/japan-development-20261102-a，尚待最终生命周期检查、整批外部验证和合入。[任务22](../debug-release/issues/22-canon-prose.md)的作者设定及文案修订同步进入候选。上方研究历史保留。不开游戏限制已受用户最新的一次完成后观察者运行授权取代，当前尚未运行。

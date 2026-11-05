@@ -23,9 +23,16 @@ nesnd_restoration_pressure_value = {
  value = 25
  if = { limit = { has_journal_entry = nesnd_american_restoration }
   je:nesnd_american_restoration = { value = "scripted_bar_progress(nesnd_restoration_pressure_bar)" }
+ }
+ else_if = { limit = { has_journal_entry = nesnd_regional_native_restoration }
+  je:nesnd_regional_native_restoration = { value = "scripted_bar_progress(nesnd_regional_native_pressure_bar)" }
  } min = 0 max = 100
 }
 nesnd_restoration_pressure_base = 1
+nesnd_restoration_mobilization_epoch = {
+ value = 0
+ if = { limit = { has_variable = nesnd_restoration_mobilization_epoch } value = var:nesnd_restoration_mobilization_epoch }
+}
 nesnd_restoration_pressure_radicals = { value = 0 if = { limit = { radical_population_fraction > 0.15 } add = 1 } }
 nesnd_restoration_pressure_poverty = { value = 0 if = { limit = { average_sol < 10 } add = 1 } }
 nesnd_restoration_pressure_repression = { value = 0 if = { limit = { has_modifier = nesnd_native_local_councils } add = -2 } }
@@ -47,7 +54,10 @@ nesnd_restoration_half_host = { value = scope:nesnd_restoration_host.total_popul
 nesnd_restoration_single_remaining = { value = owner.total_population subtract = state_population }
 nesnd_restoration_prospective_population = {
  value = 0
- if = { limit = { nesnd_restoration_small_country = yes }
+ if = { limit = { nesnd_regional_native_actor = yes }
+  ordered_scope_state = { limit = { nesnd_regional_native_seed_state = yes } order_by = nesnd_regional_native_core_population max = 1 add = state_population }
+ }
+ else_if = { limit = { nesnd_restoration_small_country = yes }
   ordered_scope_state = { limit = { nesnd_restoration_small_core = yes } order_by = state_population max = 1 add = state_population }
  }
  else = {

@@ -235,11 +235,11 @@ ce_usm_ruling_of_nanfu = {
 	group = je_group_historical_content
 	is_shown_when_inactive = {
 		has_journal_entry = ce_usm_conflicts_within
-		NOT = { has_global_variable = nanfu_ruling_je_ended }
+		hidden_trigger = { NOT = { has_global_variable = nanfu_ruling_je_ended } }
 	}
 	possible = {
 		has_journal_entry = ce_usm_conflicts_within
-		NOT = { has_global_variable = nanfu_ruling_je_ended }
+		hidden_trigger = { NOT = { has_global_variable = nanfu_ruling_je_ended } }
 	}
 
 	modifiers_while_active = {
@@ -265,10 +265,7 @@ ce_usm_ruling_of_nanfu = {
 	}
 
 	fail = {
-		custom_tooltip = {
-			text = ce_usm_conflict_fail_tt
-			NOT = { has_law_or_variant = law_type:law_monarchy }
-		}
+		NOT = { has_law_or_variant = law_type:law_monarchy }
 	}
 
 	on_fail = {
@@ -301,17 +298,20 @@ ce_usm_civilwar_journal = {
 	group = je_group_historical_content
 
 	possible = {
-		has_variable = ce_usm_civilwar_journal_trigger
-		NOT = { has_global_variable = usm_civilwar_occured }
+		hidden_trigger = { has_variable = ce_usm_civilwar_journal_trigger NOT = { has_global_variable = usm_civilwar_occured } }
 	}
 
 	immediate = { set_variable = { name = usm_journal_start_buffer months = 3 } }
 
-	fail = { NOT = { has_variable = usm_journal_start_buffer } var:usm_opposition_country_choice <= 0 any_country = { has_variable = usm_opposition_country } }
+	fail = {
+        custom_tooltip = { text = nesnd_ui_south_response_period_tt NOT = { has_variable = usm_journal_start_buffer } }
+        custom_tooltip = { text = nesnd_ui_south_all_replied_tt var:usm_opposition_country_choice <= 0 }
+        custom_tooltip = { text = nesnd_ui_south_opposition_exists_tt any_country = { has_variable = usm_opposition_country } }
+    }
 
 	on_fail = { trigger_event = { id = usm_civilwar.2 popup = yes } }
 
-	invalid = { NOT = { has_variable = usm_journal_start_buffer } var:usm_opposition_country_choice <= 0 NOT = { any_country = { has_variable = usm_opposition_country } } }
+	invalid = { custom_tooltip = { text = nesnd_ui_south_response_period_tt NOT = { has_variable = usm_journal_start_buffer } } custom_tooltip = { text = nesnd_ui_south_all_replied_tt var:usm_opposition_country_choice <= 0 } custom_tooltip = { text = nesnd_ui_south_no_opposition_tt NOT = { any_country = { has_variable = usm_opposition_country } } } }
 
 	on_invalid = { trigger_event = { id = usm_civilwar.3 popup = yes } }
 
@@ -483,8 +483,8 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 	}
 
 	complete = {
-		has_global_variable = nesnd_south_settled
-		OR = {
+		custom_tooltip = { text = nesnd_south_settled_tt has_global_variable = nesnd_south_settled }
+		custom_tooltip = { text = nesnd_ui_south_postwar_order_ready_tt OR = {
 			NOT = {
 				any_country = {
 					is_country_alive = yes
@@ -496,7 +496,7 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 				has_variable = usm_rebel_winner_of_the_civil_war
 				has_variable = nesnd_rebel_settlement_seen
 			}
-		}
+		} }
 	}
 
 	on_complete = {

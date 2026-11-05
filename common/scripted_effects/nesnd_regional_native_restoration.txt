@@ -1,0 +1,214 @@
+﻿nesnd_regional_native_initialize = {
+ if = { limit = { nesnd_regional_native_country = yes NOT = { has_variable = nesnd_regional_native_profile } }
+  if = { limit = { nesnd_regional_native_bolivia_domain = yes }
+   set_variable = { name = nesnd_regional_native_profile value = 1 } set_variable = nesnd_regional_native_bolivia_line
+  }
+  else_if = { limit = { nesnd_regional_native_colombia_domain = yes }
+   set_variable = { name = nesnd_regional_native_profile value = 2 } set_variable = nesnd_regional_native_colombia_line
+  }
+  else_if = { limit = { nesnd_regional_native_central_domain = yes }
+   set_variable = { name = nesnd_regional_native_profile value = 3 } set_variable = nesnd_regional_native_central_line
+  }
+  if = { limit = { has_variable = nesnd_regional_native_profile } set_variable = { name = nesnd_restoration_family value = 3 } }
+ }
+ nesnd_regional_native_refresh = yes
+}
+nesnd_regional_native_mark_started = {
+ if = { limit = { nesnd_regional_native_profile = 1 } set_variable = nesnd_regional_native_bolivia_started }
+ else_if = { limit = { nesnd_regional_native_profile = 2 } set_variable = nesnd_regional_native_colombia_started }
+ else_if = { limit = { nesnd_regional_native_profile = 3 } set_variable = nesnd_regional_native_central_started }
+}
+nesnd_regional_native_mark_done = {
+ if = { limit = { nesnd_regional_native_profile = 1 } set_variable = nesnd_regional_native_bolivia_done }
+ else_if = { limit = { nesnd_regional_native_profile = 2 } set_variable = nesnd_regional_native_colombia_done }
+ else_if = { limit = { nesnd_regional_native_profile = 3 } set_variable = nesnd_regional_native_central_done }
+ nesnd_restoration_cancel_mobilization = yes
+}
+nesnd_regional_native_select_seed = {
+ ordered_scope_state = {
+  limit = { nesnd_regional_native_seed_state = yes }
+  order_by = nesnd_regional_native_core_population max = 1 save_scope_as = nesnd_restoration_seed
+ }
+ if = { limit = { exists = scope:nesnd_restoration_seed }
+  set_variable = { name = nesnd_regional_native_kind value = scope:nesnd_restoration_seed.nesnd_regional_native_seed_kind }
+ }
+}
+nesnd_regional_native_refresh = {
+ if = { limit = { nesnd_regional_native_host = yes }
+  if = { limit = { NOT = { has_variable = nesnd_restoration_mobilization_started } }
+   nesnd_restoration_select_seed = yes
+   if = { limit = { nesnd_restoration_selected_seed_valid = yes }
+    set_variable = { name = nesnd_regional_native_peace_seed value = scope:nesnd_restoration_seed }
+    set_variable = { name = nesnd_regional_native_peace_region value = scope:nesnd_restoration_seed.state_region }
+   }
+   else = { remove_variable = nesnd_regional_native_peace_seed remove_variable = nesnd_regional_native_peace_region }
+   nesnd_restoration_clear_selected_seed = yes
+  }
+  if = { limit = { NOT = { has_variable = nesnd_regional_native_request_open } }
+   remove_variable = nesnd_regional_native_partner
+   if = { limit = { nesnd_regional_native_profile = 1 exists = c:AYM } set_variable = { name = nesnd_regional_native_partner value = c:AYM } }
+   else_if = { limit = { nesnd_regional_native_profile = 2 }
+    if = { limit = { exists = c:AMZ } set_variable = { name = nesnd_regional_native_partner value = c:AMZ } }
+    else_if = { limit = { exists = c:MUI } set_variable = { name = nesnd_regional_native_partner value = c:MUI } }
+   }
+   else_if = { limit = { nesnd_regional_native_profile = 3 }
+    if = { limit = { exists = c:MAY } set_variable = { name = nesnd_regional_native_partner value = c:MAY } }
+    else_if = { limit = { exists = c:MKT } set_variable = { name = nesnd_regional_native_partner value = c:MKT } }
+   }
+   if = { limit = { NOT = { nesnd_regional_native_partner_valid = yes } } remove_variable = nesnd_regional_native_partner }
+   if = { limit = { NOT = { exists = var:nesnd_regional_native_partner } }
+    if = { limit = { nesnd_regional_native_profile = 2 exists = c:MUI } set_variable = { name = nesnd_regional_native_partner value = c:MUI } }
+    else_if = { limit = { nesnd_regional_native_profile = 3 exists = c:MKT } set_variable = { name = nesnd_regional_native_partner value = c:MKT } }
+    if = { limit = { NOT = { nesnd_regional_native_partner_valid = yes } } remove_variable = nesnd_regional_native_partner }
+   }
+  }
+ }
+}
+# Each dispatcher contains only native identity data. All modes share the same
+# state transfer, receipt, economic-capacity and military setup implementation.
+nesnd_regional_native_create = {
+ if = { limit = { nesnd_regional_native_host = yes nesnd_restoration_selected_seed_valid = yes NOT = { has_variable = nesnd_regional_native_request_open } }
+  set_variable = { name = nesnd_regional_native_creation_mode value = $MODE$ }
+  if = { limit = { nesnd_regional_native_kind = 1 } nesnd_regional_native_create_tag = { TAG = AYM CULTURE = aimara RELIGION = catholic } }
+  else_if = { limit = { nesnd_regional_native_kind = 2 } nesnd_regional_native_create_tag = { TAG = AMZ CULTURE = amazonian RELIGION = animist } }
+  else_if = { limit = { nesnd_regional_native_kind = 3 } nesnd_regional_native_create_tag = { TAG = MUI CULTURE = muisca RELIGION = animist } }
+  else_if = { limit = { nesnd_regional_native_kind = 4 } nesnd_regional_native_create_tag = { TAG = MAY CULTURE = mayan RELIGION = catholic } }
+  remove_variable = nesnd_regional_native_creation_mode
+ }
+}
+nesnd_regional_native_create_tag = {
+ if = { limit = { exists = scope:nesnd_restoration_host exists = scope:nesnd_restoration_seed }
+  if = { limit = { nesnd_regional_native_host = yes nesnd_restoration_selected_seed_valid = yes NOT = { exists = c:$TAG$ } }
+   nesnd_restoration_relocate_host_capital = yes
+   create_country = {
+    tag = $TAG$ origin = this state = scope:nesnd_restoration_seed
+    on_created = {
+     if = { limit = { exists = scope:nesnd_restoration_host }
+      if = { limit = { scope:nesnd_restoration_host = { has_variable = nesnd_regional_native_profile has_variable = nesnd_regional_native_kind has_variable = nesnd_regional_native_creation_mode } any_scope_state = { state_population > 0 } }
+       set_variable = { name = nesnd_restoration_family value = 3 }
+       set_variable = { name = nesnd_regional_native_profile value = scope:nesnd_restoration_host.var:nesnd_regional_native_profile }
+       set_variable = { name = nesnd_regional_native_kind value = scope:nesnd_restoration_host.var:nesnd_regional_native_kind }
+       set_variable = nesnd_regional_native_polity set_variable = { name = nesnd_restoration_epoch value = 1 }
+       set_country_type = unrecognized set_state_religion = rel:$RELIGION$
+       save_scope_as = regional_native_new_country
+       add_primary_culture = cu:$CULTURE$
+       every_primary_culture = {
+        limit = { NOT = { this = cu:$CULTURE$ } }
+        if = { limit = { exists = scope:regional_native_new_country } scope:regional_native_new_country = { remove_primary_culture = prev } }
+       }
+       nesnd_regional_native_register_polity = yes
+       scope:nesnd_restoration_host = { nesnd_regional_native_mark_started = yes set_variable = { name = nesnd_regional_native_created_polity value = prev } }
+       if = { limit = { scope:nesnd_restoration_host = { var:nesnd_regional_native_creation_mode = 2 } }
+        nesnd_restoration_created = yes
+       }
+       else = {
+        ordered_scope_state = { order_by = state_population max = 1 state_region = { save_scope_as = nesnd_restoration_capital } }
+        if = { limit = { exists = scope:nesnd_restoration_capital } nesnd_a2_set_capital = { TARGET = nesnd_restoration_capital } }
+        clear_saved_scope = nesnd_restoration_capital
+        nesnd_restoration_rebel_setup = yes
+        scope:nesnd_restoration_host = {
+         nesnd_regional_native_mark_done = yes
+         nesnd_restoration_publish_notice = { MESSAGE = nesnd_restoration_settlement_notice REGIONAL_MESSAGE = nesnd_regional_native_peace_recognized_notice }
+         trigger_event = { id = nesnd_regional_native.8 popup = yes }
+        }
+       }
+       clear_saved_scope = regional_native_new_country
+      }
+     }
+    }
+   }
+  }
+ }
+}
+nesnd_regional_native_register_polity = {
+ if = { limit = { nesnd_regional_native_kind = 1 }
+  set_global_variable = nesnd_regional_aym_created set_global_variable = { name = nesnd_regional_aym_country value = this }
+ }
+ else_if = { limit = { nesnd_regional_native_kind = 2 }
+  set_global_variable = nesnd_regional_amz_created set_global_variable = { name = nesnd_regional_amz_country value = this }
+ }
+ else_if = { limit = { nesnd_regional_native_kind = 3 }
+  set_global_variable = nesnd_regional_mui_created set_global_variable = { name = nesnd_regional_mui_country value = this }
+ }
+ else_if = { limit = { nesnd_regional_native_kind = 4 }
+  set_global_variable = nesnd_regional_may_created set_global_variable = { name = nesnd_regional_may_country value = this }
+ }
+}
+nesnd_regional_native_release = {
+ if = { limit = { nesnd_regional_native_can_release = yes }
+  save_scope_as = nesnd_restoration_host clear_saved_scope = nesnd_restoration_seed clear_saved_scope = nesnd_restoration_second
+  if = { limit = { exists = var:nesnd_regional_native_peace_seed }
+   var:nesnd_regional_native_peace_seed = { save_scope_as = nesnd_restoration_seed }
+   nesnd_regional_native_create = { MODE = 1 }
+  }
+  nesnd_restoration_clear_selected_seed = yes
+ }
+}
+nesnd_regional_native_revolt = {
+ if = { limit = {
+  nesnd_regional_native_host = yes nesnd_restoration_mobilization_ready = yes nesnd_restoration_pressure_value >= 75
+  NOT = { any_civil_war = { always = yes } } NOT = { has_variable = nesnd_regional_native_request_open }
+ }
+  nesnd_restoration_restore_prepared_seed = yes
+  nesnd_regional_native_create = { MODE = 2 }
+  nesnd_restoration_clear_selected_seed = yes
+ }
+}
+nesnd_regional_native_clear_request = {
+ remove_variable = nesnd_regional_native_request_open remove_variable = nesnd_regional_native_request_pending
+ remove_variable = nesnd_regional_native_request_target
+}
+nesnd_regional_native_request = {
+ if = { limit = { nesnd_regional_native_can_request = yes }
+  set_variable = { name = nesnd_regional_native_request_epoch value = { value = nesnd_regional_native_request_epoch add = 1 } }
+  set_variable = nesnd_regional_native_request_open
+  set_variable = { name = nesnd_regional_native_request_pending days = 90 }
+  set_variable = { name = nesnd_regional_native_request_cooldown months = 12 }
+  set_variable = { name = nesnd_regional_native_request_target value = var:nesnd_regional_native_partner }
+  save_scope_as = regional_native_sender
+  var:nesnd_regional_native_partner = { save_scope_as = regional_native_recipient }
+  save_scope_value_as = { name = regional_native_request_epoch value = nesnd_regional_native_request_epoch }
+  if = { limit = { exists = scope:regional_native_recipient } scope:regional_native_recipient = { trigger_event = { id = nesnd_regional_native.7 popup = yes } } }
+ }
+}
+nesnd_regional_native_accept_request = {
+ if = { limit = { nesnd_regional_native_reply_live = yes }
+  scope:regional_native_sender = {
+   add_modifier = { name = nesnd_native_local_councils months = 36 }
+   change_relations = { country = scope:regional_native_recipient value = 25 }
+   nesnd_restoration_change_pressure = { AMOUNT = -25 }
+   nesnd_restoration_cancel_mobilization = yes
+   nesnd_regional_native_clear_request = yes
+   set_variable = { name = nesnd_regional_native_request_result value = 1 }
+   nesnd_regional_native_refresh = yes
+   trigger_event = { id = nesnd_regional_native.9 popup = yes }
+  }
+ }
+}
+nesnd_regional_native_reject_request = {
+ if = { limit = { nesnd_regional_native_reply_live = yes }
+  scope:regional_native_sender = {
+   nesnd_regional_native_clear_request = yes set_variable = { name = nesnd_regional_native_request_result value = 2 }
+   trigger_event = { id = nesnd_regional_native.9 popup = yes }
+  }
+ }
+}
+nesnd_regional_native_request_watch = {
+ if = { limit = { has_variable = nesnd_regional_native_request_open }
+  if = { limit = { NOT = { has_variable = nesnd_regional_native_request_pending } }
+   nesnd_regional_native_clear_request = yes set_variable = { name = nesnd_regional_native_request_result value = 3 }
+   trigger_event = { id = nesnd_regional_native.9 popup = yes }
+  }
+  else_if = { limit = { NOT = { nesnd_regional_native_host = yes } }
+   nesnd_regional_native_clear_request = yes
+  }
+  else_if = { limit = { NOT = { exists = var:nesnd_regional_native_request_target } }
+   nesnd_regional_native_clear_request = yes set_variable = { name = nesnd_regional_native_request_result value = 3 }
+   trigger_event = { id = nesnd_regional_native.9 popup = yes }
+  }
+  else_if = { limit = { NOT = { nesnd_regional_native_partner_valid = yes } }
+   nesnd_regional_native_clear_request = yes set_variable = { name = nesnd_regional_native_request_result value = 3 }
+   trigger_event = { id = nesnd_regional_native.9 popup = yes }
+  }
+ }
+}

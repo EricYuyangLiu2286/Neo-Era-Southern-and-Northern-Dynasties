@@ -1,5 +1,9 @@
 # 工具和真实引擎验证
 
+2026-11-05接口反例：`building_barracks`虽列为别名，实机`is_building_type`拒绝它，改用canonical `building_barrack`。`owns_entire_state_region`要固定数据库键，不能把`prev`填进去；动态整州覆盖依照当前原版state `num_provinces >= { value = state_region.num_provinces }`，保留`>=`，`=`在此会被解释成值scope跳转。当前实际`create_diplomatic_play`由发起国scope调用并明确`target_country`，反向要求同样用`target_country`。旧生成effects.log示例与当前源码/引擎冲突时，不以旧文档掩盖真实报错。
+
+文本/脚本补丁必须用同一解码字符串的坐标；parser去掉BOM而编辑器保留BOM会造成偏移，吞掉空格并拼坏name/desc。任务36批量标签补丁曾因此损坏10条声明，独立解析与Tiger在上传前拦截。优先直接apply_patch；生成补丁也须先解析输出、比对非目标AST，再接受。不能为了证明自动工具正确省略全文件语法检查。
+
 当前优先：[日志优先的增量交付](log-first-delivery.md)。2026-11-01用户已取消重复进港/读档/截图验收，要求修日志错误、外部检查优先、正式包排除QA，并授权修复后直接整合。以下历史流程仅按受改范围选用。
 
 验收先对照当前用户认可的结果。2026-11-01已接受玩家失国/GAME OVER（含日本）；实际失败画面如实留证，不再单凭它判定BUG或要求救援。世界机制可在明确记录的观察者继续过程中核验，不能改写为玩家自动续玩。当前重点是既定事件链的顺序、可达条件、完成结果及难度/行动空间证据；具体范围见[当前任务索引](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/.scratch/debug-release/map.md>)。

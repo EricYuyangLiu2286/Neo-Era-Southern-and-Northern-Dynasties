@@ -14,4 +14,4 @@ Blocked by: none
 
 两份方案已修订，共同生命周期列24类未来验收场景。三项原始源码研究与独立复核已完成，发现的设计缺口已回填。详见[交付说明](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-india-plan-revision-20261102/release-notes.md>)。
 
-resolved仅指研究/方案修改完成；没有实现新日志、人口转换或战争，没有启动游戏。
+resolved仅指研究/方案修改完成。没有实现新日志、人口转换或战争，没有启动游戏。

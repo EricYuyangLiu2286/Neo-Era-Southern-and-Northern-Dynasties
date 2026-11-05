@@ -11,7 +11,7 @@ Evidence: [文档与技能复核](<D:/Users/Eric Liu/Documents/Paradox Interacti
 
 ## Scope
 
-完成用户批准的第1阶段：项目 AGENTS 工程入口、技能适配、任务状态及索引；NESND 技能入口和当前交接整理。旧交接逐字节归档，保留已有 WORK 计划、设定与证据；插件缓存和游戏数据不改。
+完成用户批准的第1阶段：项目 AGENTS 工程入口、技能适配、任务状态及索引。NESND 技能入口和当前交接整理。旧交接逐字节归档，保留已有 WORK 计划、设定与证据。插件缓存和游戏数据不改。
 
 ## Acceptance
 
@@ -22,8 +22,8 @@ Evidence: [文档与技能复核](<D:/Users/Eric Liu/Documents/Paradox Interacti
 
 ## Result
 
-已完成工程适配、AGENTS入口、任务状态约定、5项执行任务及当前交接整理。旧交接与技能原文逐字节归档，原AGENTS和技能硬约束完整保留。文档本地链接与任务字段检查通过，NESND技能quick_validate通过；未改游戏文件、未运行游戏。具体差异及归档SHA见Evidence。
+已完成工程适配、AGENTS入口、任务状态约定、5项执行任务及当前交接整理。旧交接与技能原文逐字节归档，原AGENTS和技能硬约束完整保留。文档本地链接与任务字段检查通过，NESND技能quick_validate通过。未改游戏文件、未运行游戏。具体差异及归档SHA见Evidence。
 
 ## Comments
 
-2026-11-01：用户已明确批准四阶段工作；主控仍在处理 GitHub 登录及版本保存。
+2026-11-01：用户已明确批准四阶段工作。主控仍在处理 GitHub 登录及版本保存。

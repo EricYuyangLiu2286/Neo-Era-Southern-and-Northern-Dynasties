@@ -13,14 +13,14 @@
 
 ### Issue tracker
 
-创建、读取或更新任务时，使用本地 Markdown；先读 `docs/agents/issue-tracker.md`。
+创建、读取或更新任务时，使用本地 Markdown。先读 `docs/agents/issue-tracker.md`。
 
 ### Triage labels
 
-分诊任务时，使用五种默认状态名称；先读 `docs/agents/triage-labels.md`。
+分诊任务时，使用五种默认状态名称。先读 `docs/agents/triage-labels.md`。
 
 ### Domain docs
 
-探索项目时，按单一领域文档布局读取术语和设计决策；先读 `docs/agents/domain.md`。
+探索项目时，按单一领域文档布局读取术语和设计决策。先读 `docs/agents/domain.md`。
 
-当前验证顺序按 [日志优先交付](<C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/references/log-first-delivery.md>)：修复日志根因、外部工具/MCP优先，已验证行为不重复开局或读档；正式包排除QA工具。
+当前验证顺序按 [日志优先交付](<C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/references/log-first-delivery.md>)：修复日志根因、外部工具/MCP优先，已验证行为不重复开局或读档。正式包排除QA工具。

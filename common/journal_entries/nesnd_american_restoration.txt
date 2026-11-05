@@ -2,7 +2,7 @@ nesnd_american_restoration = {
  group = je_group_historical_content icon = "gfx/interface/icons/event_icons/waving_flag.dds"
  should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1000
  is_shown_when_inactive = { nesnd_restoration_entry_visible = yes }
- possible = { nesnd_restoration_entry_visible = yes }
+ possible = { hidden_trigger = { nesnd_restoration_entry_visible = yes } }
  immediate = { nesnd_restoration_initialize = yes }
  scripted_progress_bar = nesnd_restoration_pressure_bar
  scripted_button = nesnd_native_recognize scripted_button = nesnd_native_negotiate scripted_button = nesnd_native_suppress
@@ -12,6 +12,9 @@ nesnd_american_restoration = {
  status_desc = {
   first_valid = {
    triggered_desc = { trigger = { nesnd_restoration_invitation_applicant = yes } desc = nesnd_restoration_existing_court_status }
+   triggered_desc = { trigger = { nesnd_restoration_mobilizing = yes } desc = nesnd_restoration_mobilizing_status }
+   triggered_desc = { trigger = { nesnd_restoration_mobilization_ready = yes nesnd_restoration_pressure_value < 75 } desc = nesnd_restoration_mobilization_paused_status }
+   triggered_desc = { trigger = { nesnd_restoration_mobilization_ready = yes } desc = nesnd_restoration_mobilization_ready_status }
    triggered_desc = { trigger = { nesnd_restoration_pressure_value >= 100 } desc = nesnd_restoration_waiting_land_status }
    triggered_desc = { desc = nesnd_restoration_politics_status }
   }
@@ -20,12 +23,15 @@ nesnd_american_restoration = {
 nesnd_native_restoration_war = {
  group = je_group_historical_content icon = "gfx/interface/icons/event_icons/event_military.dds"
  should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1500
- is_shown_when_inactive = { OR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host } NOT = { has_variable = nesnd_restoration_peace_shown } }
- possible = { OR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host } NOT = { has_variable = nesnd_restoration_peace_shown } }
- complete = { has_variable = nesnd_restoration_victory }
- fail = { has_variable = nesnd_restoration_war_terminal NOT = { has_variable = nesnd_restoration_victory } }
- on_complete = { set_variable = nesnd_restoration_peace_shown }
- on_fail = { set_variable = nesnd_restoration_peace_shown }
+ is_shown_when_inactive = { NOT = { nesnd_regional_native_actor = yes } OR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host } NOT = { has_variable = nesnd_restoration_peace_shown } }
+ possible = { hidden_trigger = { NOT = { nesnd_regional_native_actor = yes } OR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host } NOT = { has_variable = nesnd_restoration_peace_shown } } }
+ complete = { custom_tooltip = { text = nesnd_restoration_war_victory_tt has_variable = nesnd_restoration_victory } }
+ fail = {
+  custom_tooltip = { text = nesnd_restoration_war_terminal_tt has_variable = nesnd_restoration_war_terminal }
+  custom_tooltip = { text = nesnd_restoration_war_not_victorious_tt NOT = { has_variable = nesnd_restoration_victory } }
+ }
+ on_complete = { hidden_effect = { set_variable = nesnd_restoration_peace_shown } }
+ on_fail = { hidden_effect = { set_variable = nesnd_restoration_peace_shown } }
  invalid = { NOR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host } }
  status_desc = { desc = nesnd_restoration_war_status }
 }

@@ -1,0 +1,30 @@
+﻿# Zero means no profile/kind/request has yet been registered; these are counters,
+# never object defaults.
+nesnd_regional_native_profile = { value = 0 if = { limit = { has_variable = nesnd_regional_native_profile } value = var:nesnd_regional_native_profile } }
+nesnd_regional_native_kind = { value = 0 if = { limit = { has_variable = nesnd_regional_native_kind } value = var:nesnd_regional_native_kind } }
+nesnd_regional_native_request_epoch = { value = 0 if = { limit = { has_variable = nesnd_regional_native_request_epoch } value = var:nesnd_regional_native_request_epoch } }
+nesnd_regional_native_request_result = { value = 0 if = { limit = { has_variable = nesnd_regional_native_request_result } value = var:nesnd_regional_native_request_result } }
+nesnd_regional_native_aimara = { value = 0 every_scope_pop = { limit = { culture = cu:aimara } add = total_size } }
+nesnd_regional_native_amazonian = { value = 0 every_scope_pop = { limit = { culture = cu:amazonian } add = total_size } }
+nesnd_regional_native_muisca = { value = 0 every_scope_pop = { limit = { culture = cu:muisca } add = total_size } }
+nesnd_regional_native_mayan = { value = 0 every_scope_pop = { limit = { culture = cu:mayan } add = total_size } }
+nesnd_regional_native_aimara_share = { value = 0 if = { limit = { state_population > 0 } value = nesnd_regional_native_aimara divide = state_population } }
+nesnd_regional_native_amazonian_share = { value = 0 if = { limit = { state_population > 0 } value = nesnd_regional_native_amazonian divide = state_population } }
+nesnd_regional_native_muisca_share = { value = 0 if = { limit = { state_population > 0 } value = nesnd_regional_native_muisca divide = state_population } }
+nesnd_regional_native_mayan_share = { value = 0 if = { limit = { state_population > 0 } value = nesnd_regional_native_mayan divide = state_population } }
+nesnd_regional_native_seed_kind = {
+ value = 0
+ if = { limit = { owner = { nesnd_regional_native_profile = 1 } nesnd_regional_native_aimara_share >= 0.35 NOT = { exists = c:AYM } NOT = { has_global_variable = nesnd_regional_aym_created } } value = 1 }
+ else_if = { limit = { owner = { nesnd_regional_native_profile = 2 } }
+  if = { limit = { nesnd_regional_native_amazonian_share >= 0.35 NOT = { exists = c:AMZ } NOT = { has_global_variable = nesnd_regional_amz_created } } value = 2 }
+  else_if = { limit = { nesnd_regional_native_muisca_share >= 0.35 NOT = { exists = c:MUI } NOT = { has_global_variable = nesnd_regional_mui_created } } value = 3 }
+ }
+ else_if = { limit = { owner = { nesnd_regional_native_profile = 3 } nesnd_regional_native_mayan_share >= 0.35 NOT = { exists = c:MAY } NOT = { has_global_variable = nesnd_regional_may_created } } value = 4 }
+}
+nesnd_regional_native_core_population = {
+ value = 0
+ if = { limit = { nesnd_regional_native_seed_kind = 1 } value = nesnd_regional_native_aimara }
+ else_if = { limit = { nesnd_regional_native_seed_kind = 2 } value = nesnd_regional_native_amazonian }
+ else_if = { limit = { nesnd_regional_native_seed_kind = 3 } value = nesnd_regional_native_muisca }
+ else_if = { limit = { nesnd_regional_native_seed_kind = 4 } value = nesnd_regional_native_mayan }
+}

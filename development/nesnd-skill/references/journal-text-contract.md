@@ -1,5 +1,14 @@
 # 日志、事件和说明的分工（本机 1.13.11）
 
+## 2026-11-05实测纠正：公开条件、条内文本与配图
+
+- 从玩家入口`possible/complete/fail`递归展开scripted trigger后审查。身份枚举、初始化和防重复记录用`hidden_trigger`；影响玩家决定的前置、等待、正在进行的选择，各用一句具名条件；法律、建筑、合法性等仍用原生条件。不要把`visible`或状态分支内的变量误计为屏幕上的裸变量。`any_*`中的国家身份比较会产生scope-dependent描述警告，对实际候选集合做简短提示，不展示“他们是本国”的枚举。
+- `second_desc`是进度条右侧标签，不是悬浮说明。只放短单行。长统计移至已绑定国家的tooltip；状态入口用`ROOT.GetCountry.GetTooltipTag`绑定后，目标tooltip才可用`Country.MakeScope`。条内读数使用`JournalEntry`/`ScriptedProgressBar`上下文。每条新增bar的desc须同时有指标名与实时值，不能只有数字或“已连续经营月数”静态文字。
+- 图标不等于事件大图。检查非隐藏弹窗是否有`event_image`，同时检查专用人物窗口、已禁用旧事件的例外；已有路径全部存在不代表缺少字段也正确。外交行动未写`texture`会按类型名推导资源，新增类型必须核这一隐式路径。
+- 常驻议程可无胜负，明确存续及关闭原因；真正成果用complete，身份/所有权失去用invalid。退出条件需要否定整个合取时，用明确OR的各项失效原因或NOT包AND，不能依赖多项NOT的含混阅读。已有国别counter完成而旧阶段JE仍在时先查真实存档，不再给一遍进度/奖励。
+
+本轮来源：GAME的scripted_progress_bars.md:3–4、gui/journal_entry.gui及任务36。错误样本包括丹那沙林/吕宋second_desc、无图外交回信、DEI中等国已达12月但小国JE残留。外部修复不等于引擎显示通过。
+
 依据 `GAME/common/journal_entries/journal_entries.md` 及实际 `GAME/gui/journal_entry.gui`：状态说明在按钮之前；scripted buttons 后是 scripted progress bars；正文 `JournalEntry.GetReason` 在其后；完成/失败/超时条件有独立位置。不要把一切塞进 `_reason`。
 
 | 层 | 内容职责 | 当前脚本/GUI依据 |

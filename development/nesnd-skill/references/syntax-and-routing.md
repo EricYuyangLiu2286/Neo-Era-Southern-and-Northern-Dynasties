@@ -145,3 +145,9 @@ IG判定用当前script_docs的 `ig_clout` / `ig_approval`；不能将scope列�
 先保存皇帝与原继承者，再转移皇帝；移动君主可能立刻触发继承。实际owner确认失败则走原生exile_character_with_role_cleanup；两者失败时阻止吞并且保留重试，不能先记录已答复把国家锁死。寄居别国的受保护人物也要避开旧随机处置链，不仅检查“行在”国名标记。不得据此自动改接收国君主、政体或玩家tag。
 
 来源：GAME/common/scripted_effects/00_scripted_effects.txt的流亡清角色；WORK/reports/journal-war-feedback-20261103/ming-war-source.md及boundary-tests.json。故障注入检验脚本分支，不是引擎迁逃验收。
+
+### 文化键与数量（2026-11-05）
+
+人口转文化先由游戏中显示的名称反查当前有效本地化，再查文化数据库和 MOD 覆盖。这里“华北”是 `han`，“江南”是 `ce_wuu`；`ce_zhonghua` 是“华夏”。以 Pop、全州或全国为分母是三种不同的效果。指定“随机一州的一群人”时要分别抽州、抽 Pop，在 Pop 作用域使用 `change_pop_culture`，不迁移、不删除人口。测试还要覆盖选无合格人群及恰好等于门槛的月份。
+
+外交博弈 `possible` 和延迟事件答复均可能在常规发起者以外求值。对手、申请对象等可空变量须在同一个 `trigger_if.limit` 里先检查存在，主体内才比较；不能依赖并列的另一条 trigger 返回 false 来保护随后读取。按钮预览与事件选项都需分开审：用原生说明显示修正、关系，内部请求编号和收据不应展开。

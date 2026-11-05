@@ -73,3 +73,74 @@ nesnd_jp_negotiation_cost = { value = net_fixed_income multiply = 2 min = 5000 m
 nesnd_jp_industrial_grant = { value = net_fixed_income multiply = 4 min = 25000 max = 150000 }
 
 nesnd_jp_cohesion_value = { value = 70 if = { limit = { has_variable = nesnd_jp_cohesion } value = var:nesnd_jp_cohesion } }
+
+# Japan-only assistance weights. Forecast uses the current monthly change, including active assistance.
+nesnd_jp_cohesion_forecast_12m = {
+    value = nesnd_jp_cohesion_value
+    add = { value = nesnd_jp_cohesion_delta multiply = 12 }
+}
+nesnd_jp_unity_ai_need = {
+    value = 0
+    if = {
+        limit = {
+            nesnd_jp_cohesion_live = yes
+            has_variable = nesnd_jp_statistics_ready
+            nesnd_jp_cohesion_value < 60
+            OR = { nesnd_jp_cohesion_value < 32 nesnd_jp_cohesion_delta < 0 }
+        }
+        value = 40
+        subtract = nesnd_jp_cohesion_forecast_12m
+        min = 0
+        multiply = 0.6
+        add = { value = 25 subtract = nesnd_jp_cohesion_value min = 0 multiply = 1.5 }
+        max = 40
+    }
+}
+nesnd_jp_unity_material_income_required = {
+    value = nesnd_unity_material_weekly_cost
+    multiply = 1.5
+}
+nesnd_jp_unity_material_radical_factor = {
+    value = radical_population_fraction
+    divide = 0.30
+    multiply = -1
+    add = 1
+    min = 0
+    max = 1
+}
+nesnd_jp_unity_political_legitimacy_factor = {
+    value = government_legitimacy
+    subtract = 50
+    divide = 25
+    min = 0
+    max = 1
+}
+nesnd_jp_unity_material_ai_weight = {
+    value = 0
+    if = {
+        limit = {
+            nesnd_jp_cohesion_live = yes
+            has_variable = nesnd_jp_statistics_ready
+            nesnd_unity_material_available = yes
+            in_default = no
+            NOT = { has_modifier = declared_bankruptcy }
+            net_total_income >= nesnd_jp_unity_material_income_required
+            radical_population_fraction < 0.30
+        }
+        value = nesnd_jp_unity_ai_need
+        multiply = nesnd_jp_unity_material_radical_factor
+    }
+}
+nesnd_jp_unity_political_ai_weight = {
+    value = 0
+    if = {
+        limit = {
+            nesnd_jp_cohesion_live = yes
+            has_variable = nesnd_jp_statistics_ready
+            nesnd_unity_political_available = yes
+            government_legitimacy >= 60
+        }
+        value = nesnd_jp_unity_ai_need
+        multiply = nesnd_jp_unity_political_legitimacy_factor
+    }
+}
