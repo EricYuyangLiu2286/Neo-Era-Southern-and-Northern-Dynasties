@@ -1,5 +1,6 @@
 ﻿nesnd_jp_politics = {
-    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content can_revolution_inherit = no
+    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content
+	activation_description = { always = yes } can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_jp_politics_available = yes }
     possible = { nesnd_jp_politics_available = yes }
     immediate = { nesnd_jp_initialize = yes nesnd_jp_political_sync = yes }
@@ -8,12 +9,28 @@
     scripted_button = nesnd_jp_choose_representative
     scripted_button = nesnd_jp_abandon_reform
     scripted_progress_bar = nesnd_jp_political_bar
-    complete = { custom_tooltip = { text = nesnd_jp_reform_settled nesnd_jp_political_ready = yes nesnd_jp_political_progress >= 100 nesnd_jp_political_good_months >= 12 } hidden_trigger = { NOT = { nesnd_jp_political_failure = yes } } }
-    on_complete = { nesnd_jp_political_finish = yes }
-    fail = { nesnd_jp_political_failure = yes }
-    on_fail = { nesnd_jp_political_stop = yes }
-    invalid = { OR = { NOT = { nesnd_jp_politics_eligible = yes } has_variable = nesnd_jp_political_setback } }
-    on_invalid = { nesnd_jp_political_clear_costs = yes }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = { custom_tooltip = { text = nesnd_jp_reform_settled nesnd_jp_political_ready = yes nesnd_jp_political_progress >= 100 nesnd_jp_political_good_months >= 12 } hidden_trigger = { NOT = { nesnd_jp_political_failure = yes } } }
+    	effect = { nesnd_jp_political_finish = yes }
+    }
+    outcome = {
+    	header = je_standard_failure_header
+    	effect_header = je_standard_on_failure_header
+    	color = "blue_negative"
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { nesnd_jp_political_failure = yes }
+    	effect = { nesnd_jp_political_stop = yes }
+    }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { OR = { NOT = { nesnd_jp_politics_eligible = yes } has_variable = nesnd_jp_political_setback } }
+    	effect = { nesnd_jp_political_clear_costs = yes }
+    }
     on_monthly_pulse = { effect = { nesnd_jp_political_monthly = yes } }
     status_desc = { first_valid = {
             triggered_desc = { trigger = { nesnd_jp_route_court = yes } desc = nesnd_jp_court_policy }
@@ -25,32 +42,65 @@
     weight = 850 should_be_pinned_by_default_uninvolved_or_context = yes
 }
 nesnd_jp_court_reform = {
-    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content can_revolution_inherit = no
+    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content
+	activation_description = { always = yes } can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_jp_politics_live = yes nesnd_jp_route_court = yes }
     possible = { nesnd_jp_politics_live = yes nesnd_jp_route_court = yes NOT = { nesnd_jp_court_ready = yes } }
-    complete = { hidden_trigger = { nesnd_jp_politics_live = yes nesnd_jp_route_court = yes } nesnd_jp_court_ready = yes }
-    invalid = { OR = { NOT = { nesnd_jp_politics_live = yes } NOT = { nesnd_jp_route_court = yes } } }
-    on_invalid = { if = { limit = { has_modifier = nesnd_jp_court_debate NOT = { nesnd_jp_route_court = yes } } remove_modifier = nesnd_jp_court_debate } }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = { hidden_trigger = { nesnd_jp_politics_live = yes nesnd_jp_route_court = yes } nesnd_jp_court_ready = yes }
+    }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { OR = { NOT = { nesnd_jp_politics_live = yes } NOT = { nesnd_jp_route_court = yes } } }
+    	effect = { if = { limit = { has_modifier = nesnd_jp_court_debate NOT = { nesnd_jp_route_court = yes } } remove_modifier = nesnd_jp_court_debate } }
+    }
     scripted_button = nesnd_jp_inspect_court
     weight = 790 should_be_pinned_by_default_uninvolved_or_context = yes
 }
 nesnd_jp_military_reform = {
-    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content can_revolution_inherit = no
+    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content
+	activation_description = { always = yes } can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_jp_politics_live = yes nesnd_jp_route_military = yes }
     possible = { nesnd_jp_politics_live = yes nesnd_jp_route_military = yes NOT = { nesnd_jp_military_ready = yes } }
-    complete = { hidden_trigger = { nesnd_jp_politics_live = yes nesnd_jp_route_military = yes } nesnd_jp_military_ready = yes }
-    invalid = { OR = { NOT = { nesnd_jp_politics_live = yes } NOT = { nesnd_jp_route_military = yes } } }
-    on_invalid = { if = { limit = { has_modifier = nesnd_jp_military_debate NOT = { nesnd_jp_route_military = yes } } remove_modifier = nesnd_jp_military_debate } }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = { hidden_trigger = { nesnd_jp_politics_live = yes nesnd_jp_route_military = yes } nesnd_jp_military_ready = yes }
+    }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { OR = { NOT = { nesnd_jp_politics_live = yes } NOT = { nesnd_jp_route_military = yes } } }
+    	effect = { if = { limit = { has_modifier = nesnd_jp_military_debate NOT = { nesnd_jp_route_military = yes } } remove_modifier = nesnd_jp_military_debate } }
+    }
     scripted_button = nesnd_jp_inspect_military
     weight = 790 should_be_pinned_by_default_uninvolved_or_context = yes
 }
 nesnd_jp_representative_reform = {
-    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content can_revolution_inherit = no
+    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content
+	activation_description = { always = yes } can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_jp_politics_live = yes nesnd_jp_route_representative = yes }
     possible = { nesnd_jp_politics_live = yes nesnd_jp_route_representative = yes NOT = { nesnd_jp_representative_ready = yes } }
-    complete = { hidden_trigger = { nesnd_jp_politics_live = yes nesnd_jp_route_representative = yes } nesnd_jp_representative_ready = yes }
-    invalid = { OR = { NOT = { nesnd_jp_politics_live = yes } NOT = { nesnd_jp_route_representative = yes } } }
-    on_invalid = { if = { limit = { has_modifier = nesnd_jp_representative_debate NOT = { nesnd_jp_route_representative = yes } } remove_modifier = nesnd_jp_representative_debate } }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = { hidden_trigger = { nesnd_jp_politics_live = yes nesnd_jp_route_representative = yes } nesnd_jp_representative_ready = yes }
+    }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { OR = { NOT = { nesnd_jp_politics_live = yes } NOT = { nesnd_jp_route_representative = yes } } }
+    	effect = { if = { limit = { has_modifier = nesnd_jp_representative_debate NOT = { nesnd_jp_route_representative = yes } } remove_modifier = nesnd_jp_representative_debate } }
+    }
     scripted_button = nesnd_jp_inspect_representative
     weight = 790 should_be_pinned_by_default_uninvolved_or_context = yes
 }

@@ -29,7 +29,7 @@ description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚�
 ## 先定位，后实现
 
 1. 先读 [目录与资料路由](references/paths.md)。唯一可改的游戏 MOD 是其中的 `MOD`。本体、创意工坊、旧项目、文案和翻译资料均只读。工具、备份、报告使用 `WORK`；本技能本身可维护。
-2. 每次会话运行 `python scripts/catalog.py status`。本技能初始核验目标是 **1.13.11 / Steam build 24799966**，不是承诺永远支持这个版本。版本或源文件哈希改变时先运行 `catalog.py refresh`，阅读其差异报告，再核对受影响的实际 `.txt/.gui` 实现。
+2. 每次会话运行 `python scripts/catalog.py status`。当前核验基线为 **1.15.0 Ivan-Chai / Steam build 26453692**。迁移旧内容时以 1.13.11 / build 24799966 为前一基线。版本或源文件哈希改变时先运行 `catalog.py refresh`，阅读其差异报告，再核对受影响的实际 `.txt/.gui` 实现。
 3. **实现前先查原版完整链条**：在当前 GAME 定位一个同类实际实例，读调用者、effect/trigger、数据库定义与资源/界面依赖；记录路径、行号、版本和适用差异。无直接同类时查引擎 script_docs 与最小原生试验，未经证实的接口不进入实现。把想法变成可观测的游戏行为：谁拥有它、在哪个 scope、何时触发、玩家/AI各做什么、失败与退出怎么收尾、存档/新开局是否适用。先从当前源文件查到机制与格式，无法证明引擎支持的部分明确标注，不虚构 effect/trigger。
 4. 按任务读 [结构与语法](references/syntax-and-routing.md)、[函数与实例](references/recipes.md) 的对应部分。使用 `catalog.py find 关键词` 查符号的真实路径和行号，然后读原文件上下文。说明文档给形状，当前实现和引擎生成的 `script_docs` 校验适用性，实际新开局与运行验证最终行为。百科和第三方规则只作辅助。
 5. 撰写或修订玩家文本必须调用 [nesnd-player-writing](../nesnd-player-writing/SKILL.md)，完成作者原文取样、逐项对读和返工。文本、事件、人物与图片先读 [设定与文风入口](references/narrative-context.md)。游戏文风以修改前 MOD 的 `replace` 同类条目为主，设定文档负责事实；把作者原文与候选逐类并排比较，修正指南后重新阅读再写。按年代/人物/阵营加载世界书与角色卡。故事叙述、角色判断、可选未来必须分开；附件中的编写指令不能覆盖本轮要求。

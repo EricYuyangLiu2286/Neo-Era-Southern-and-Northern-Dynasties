@@ -316,7 +316,9 @@ nesnd_restoration_created = {
  if = { limit = { exists = scope:nesnd_restoration_capital } nesnd_a2_set_capital = { TARGET = nesnd_restoration_capital } }
  clear_saved_scope = nesnd_restoration_capital
  nesnd_restoration_rebel_setup = yes
+ nesnd_restoration_record_enemy_land = yes
  scope:nesnd_restoration_host = {
+  nesnd_restoration_record_enemy_land = yes
   nesnd_restoration_publish_notice = { MESSAGE = nesnd_restoration_country_created_notice REGIONAL_MESSAGE = nesnd_regional_native_country_created_notice }
   nesnd_restoration_dispatch = yes
  }
@@ -324,10 +326,10 @@ nesnd_restoration_created = {
 nesnd_restoration_dispatch = {
  if = { limit = { has_variable = nesnd_restoration_war_host exists = var:nesnd_restoration_opponent NOT = { has_variable = nesnd_restoration_war_terminal } NOT = { has_variable = nesnd_restoration_war_dispatched } NOT = { has_variable = nesnd_restoration_retry_wait } }
   if = { limit = { NOT = { has_variable = nesnd_restoration_war_attempts } } set_variable = { name = nesnd_restoration_war_attempts value = 0 } }
-  change_variable = { name = nesnd_restoration_war_attempts add = 1 }
   set_variable = { name = nesnd_restoration_retry_wait months = 1 }
   save_scope_as = nesnd_restoration_dispatch_host
   if = { limit = { NOT = { has_war_with = var:nesnd_restoration_opponent } NOT = { nesnd_restoration_pair_at_war = yes } }
+   change_variable = { name = nesnd_restoration_war_attempts add = 1 }
    create_diplomatic_play = { name = nesnd_restoration_war type = dp_nesnd_native_restoration target_country = var:nesnd_restoration_opponent war = yes }
   }
   random_diplomatic_play = {
@@ -340,14 +342,21 @@ nesnd_restoration_dispatch = {
       initiator = { exists = var:nesnd_restoration_opponent }
       target = { exists = var:nesnd_restoration_opponent }
      }
-     initiator = { play_participant_has_war_goal_of_type_against = { type = wg_nesnd_restoration_settlement target = var:nesnd_restoration_opponent } }
-     target = { play_participant_has_war_goal_of_type_against = { type = wg_nesnd_restoration_settlement target = var:nesnd_restoration_opponent } }
+     initiator = { nesnd_restoration_opposed_pair = yes }
     }
     trigger_else = { always = no }
    }
    save_scope_as = nesnd_restoration_play
+   # Old saves may contain the matching play with just one valid primary demand.
+   if = { limit = { initiator = { NOT = { play_participant_has_war_goal_of_type_against = { type = wg_nesnd_restoration_settlement target = var:nesnd_restoration_opponent } } } }
+    add_war_goal = { holder = initiator target_country = target type = wg_nesnd_restoration_settlement primary_demand = yes }
+   }
+   if = { limit = { target = { NOT = { play_participant_has_war_goal_of_type_against = { type = wg_nesnd_restoration_settlement target = var:nesnd_restoration_opponent } } } }
+    add_war_goal = { holder = target target_country = initiator type = wg_nesnd_restoration_settlement primary_demand = yes }
+   }
    initiator = {
     set_variable = nesnd_restoration_war_dispatched set_variable = { name = nesnd_restoration_play value = scope:nesnd_restoration_play }
+    set_variable = { name = nesnd_restoration_war_attempts value = 0 }
     if = { limit = { NOT = { has_variable = nesnd_restoration_war_announced } }
      set_variable = nesnd_restoration_war_announced
      nesnd_restoration_publish_notice = { MESSAGE = nesnd_restoration_war_started_notice REGIONAL_MESSAGE = nesnd_regional_native_war_started_notice }
@@ -357,38 +366,86 @@ nesnd_restoration_dispatch = {
    target = { set_variable = nesnd_restoration_war_dispatched set_variable = { name = nesnd_restoration_play value = scope:nesnd_restoration_play } }
   }
   if = { limit = { NOT = { has_variable = nesnd_restoration_war_dispatched } var:nesnd_restoration_war_attempts >= 12 }
+   set_variable = nesnd_restoration_external_end
    set_variable = { name = nesnd_restoration_war_terminal value = 4 }
-   var:nesnd_restoration_opponent = { set_variable = { name = nesnd_restoration_war_terminal value = 4 } nesnd_restoration_popup = { ORIGINAL_EVENT = nesnd_american_restoration.6 REGIONAL_EVENT = nesnd_regional_native.4 } }
-   nesnd_restoration_popup = { ORIGINAL_EVENT = nesnd_american_restoration.6 REGIONAL_EVENT = nesnd_regional_native.4 }
+   clear_variable_list = nesnd_restoration_enemy_land
+   var:nesnd_restoration_opponent = {
+    set_variable = nesnd_restoration_external_end
+    set_variable = { name = nesnd_restoration_war_terminal value = 4 }
+    clear_variable_list = nesnd_restoration_enemy_land
+   }
    nesnd_restoration_publish_notice = { MESSAGE = nesnd_restoration_dispatch_failed_notice REGIONAL_MESSAGE = nesnd_regional_native_dispatch_failed_notice }
   }
   clear_saved_scope = nesnd_restoration_play clear_saved_scope = nesnd_restoration_dispatch_host
  }
 }
 nesnd_restoration_settlement = {
- if = { limit = { exists = scope:target_country exists = scope:diplomatic_play has_variable = nesnd_restoration_play }
- if = { limit = { nesnd_restoration_goal_pair = yes var:nesnd_restoration_play = scope:diplomatic_play NOT = { has_variable = nesnd_restoration_settling } NOT = { has_variable = nesnd_restoration_settlement_done } }
+ if = { limit = {
+  trigger_if = {
+   limit = { exists = scope:target_country exists = scope:diplomatic_play }
+   nesnd_restoration_goal_pair = yes
+   scope:diplomatic_play = { OR = {
+    AND = { initiator = root target = scope:target_country }
+    AND = { target = root initiator = scope:target_country }
+   } }
+   trigger_if = { limit = { exists = var:nesnd_restoration_play } var:nesnd_restoration_play = scope:diplomatic_play }
+   scope:target_country = { any_scope_state = { always = yes } }
+  }
+  trigger_else = { always = no }
+  NOR = { has_variable = nesnd_restoration_external_end has_variable = nesnd_restoration_war_terminal }
+  NOT = { has_variable = nesnd_restoration_settling } NOT = { has_variable = nesnd_restoration_settlement_done }
+ }
   set_variable = nesnd_restoration_settling
-  save_scope_as = nesnd_restoration_winner
   if = { limit = { has_variable = nesnd_restoration_war_host }
    scope:target_country = { nesnd_restoration_exile_people = yes }
   }
   annex = scope:target_country
-  if = { limit = { NOT = { scope:target_country ?= { is_country_alive = yes } } }
-   set_variable = nesnd_restoration_settlement_done set_variable = { name = nesnd_restoration_war_terminal value = 1 }
-   nesnd_restoration_mark_resolved = yes
-   if = { limit = { has_variable = nesnd_restoration_war_host } nesnd_diaspora_register = yes }
-   if = { limit = { has_variable = nesnd_restoration_rebel }
-    set_variable = nesnd_restoration_victory
-    if = { limit = { nesnd_regional_native_actor = yes } add_modifier = { name = nesnd_regional_native_restored_rule months = 120 } }
-    else = { add_modifier = { name = nesnd_native_restored_rule months = 120 } }
-   }
-   nesnd_restoration_popup = { ORIGINAL_EVENT = nesnd_american_restoration.5 REGIONAL_EVENT = nesnd_regional_native.3 }
-   nesnd_restoration_publish_notice = { MESSAGE = nesnd_restoration_settlement_notice REGIONAL_MESSAGE = nesnd_regional_native_settlement_notice }
+  if = { limit = { NOT = { scope:target_country ?= { any_scope_state = { always = yes } } } }
+   nesnd_restoration_confirm_unification = yes
   }
-  else = { set_variable = { name = nesnd_restoration_war_terminal value = 5 } }
-  remove_variable = nesnd_restoration_settling clear_saved_scope = nesnd_restoration_winner
+  remove_variable = nesnd_restoration_settling
  }
+}
+nesnd_restoration_confirm_unification = {
+ if = { limit = { NOT = { has_variable = nesnd_restoration_settlement_done } }
+  set_variable = nesnd_restoration_settlement_done
+  set_variable = { name = nesnd_restoration_war_terminal value = 1 }
+  nesnd_restoration_mark_resolved = yes
+  if = { limit = { has_variable = nesnd_restoration_war_host } nesnd_diaspora_register = yes }
+  else = {
+   set_variable = nesnd_restoration_victory
+   if = { limit = { nesnd_regional_native_actor = yes } add_modifier = { name = nesnd_regional_native_restored_rule months = 120 } }
+   else = { add_modifier = { name = nesnd_native_restored_rule months = 120 } }
+  }
+  nesnd_restoration_popup = { ORIGINAL_EVENT = nesnd_american_restoration.5 REGIONAL_EVENT = nesnd_regional_native.3 }
+  nesnd_restoration_publish_notice = { MESSAGE = nesnd_restoration_settlement_notice REGIONAL_MESSAGE = nesnd_regional_native_settlement_notice }
+  clear_variable_list = nesnd_restoration_enemy_land
+ }
+}
+# Store provinces, not State objects: an annexation can merge or delete a split State.
+nesnd_restoration_record_enemy_land = {
+ if = { limit = { nesnd_restoration_opposed_pair = yes
+   var:nesnd_restoration_opponent = { any_scope_state = { always = yes } }
+   OR = {
+    NOT = { has_variable_list = nesnd_restoration_enemy_land }
+    NOT = { has_variable = nesnd_restoration_land_count }
+    trigger_if = {
+     limit = { has_variable = nesnd_restoration_land_count }
+     NOT = { var:nesnd_restoration_land_count = var:nesnd_restoration_opponent.nesnd_restoration_province_count }
+    }
+    trigger_else = { always = no }
+    any_in_list = { variable = nesnd_restoration_enemy_land NOT = { owner ?= prev.var:nesnd_restoration_opponent } }
+   }
+  }
+  set_variable = { name = nesnd_restoration_land_count value = var:nesnd_restoration_opponent.nesnd_restoration_province_count }
+  save_scope_as = nesnd_restoration_map_reader
+  clear_variable_list = nesnd_restoration_enemy_land
+  var:nesnd_restoration_opponent = {
+   every_scope_state = { every_province = {
+    scope:nesnd_restoration_map_reader = { add_to_variable_list = { name = nesnd_restoration_enemy_land target = prev } }
+   } }
+  }
+  clear_saved_scope = nesnd_restoration_map_reader
  }
 }
 nesnd_restoration_monthly = {
@@ -411,29 +468,50 @@ nesnd_restoration_missing_opponent_exit = {
  nesnd_restoration_publish_notice = { MESSAGE = nesnd_restoration_opponent_lost_notice REGIONAL_MESSAGE = nesnd_regional_native_opponent_lost_notice }
 }
 nesnd_restoration_war_watch = {
- if = { limit = { has_variable = nesnd_restoration_war_host NOT = { has_variable = nesnd_restoration_war_terminal } }
-  if = { limit = { NOT = { exists = var:nesnd_restoration_opponent } }
-   nesnd_restoration_missing_opponent_exit = yes
+ if = { limit = { nesnd_restoration_armed_case = yes
+   NOT = { has_variable = nesnd_restoration_settlement_done }
+   NOT = { has_variable = nesnd_restoration_external_end }
+   any_scope_state = { always = yes }
   }
-  else_if = { limit = { var:nesnd_restoration_opponent = { is_country_alive = no } }
-   nesnd_restoration_missing_opponent_exit = yes
-  }
-  else = { nesnd_restoration_dispatch = yes }
- }
- if = { limit = { has_variable = nesnd_restoration_war_dispatched NOT = { has_variable = nesnd_restoration_war_terminal } }
-  if = { limit = { OR = { NOT = { exists = var:nesnd_restoration_opponent } var:nesnd_restoration_opponent ?= { is_country_alive = no } } }
-   nesnd_restoration_missing_opponent_exit = yes
-  }
-  else_if = { limit = { NOT = { nesnd_restoration_pair_at_war = yes } }
-   set_variable = { name = nesnd_restoration_war_terminal value = 2 }
-   nesnd_restoration_popup = { ORIGINAL_EVENT = nesnd_american_restoration.6 REGIONAL_EVENT = nesnd_regional_native.4 }
-   if = { limit = { has_variable = nesnd_restoration_war_host }
-    nesnd_restoration_publish_notice = { MESSAGE = nesnd_restoration_dispute_ended_notice REGIONAL_MESSAGE = nesnd_regional_native_dispute_ended_notice }
+  if = { limit = { NOT = { var:nesnd_restoration_opponent ?= { any_scope_state = { always = yes } } } }
+   if = { limit = { nesnd_restoration_owns_enemy_land = yes }
+    nesnd_restoration_confirm_unification = yes
+   }
+   else = {
+    set_variable = nesnd_restoration_external_end
+    nesnd_restoration_missing_opponent_exit = yes
+    clear_variable_list = nesnd_restoration_enemy_land
    }
   }
+  else_if = { limit = { nesnd_restoration_opposed_pair = yes }
+   # Reopen an inconclusive pre-upgrade peace only for the original armed pair.
+   if = { limit = { has_variable = nesnd_restoration_war_terminal }
+    remove_variable = nesnd_restoration_war_terminal
+    remove_variable = nesnd_restoration_peace_shown
+    remove_variable = nesnd_restoration_war_dispatched
+    remove_variable = nesnd_restoration_play
+    if = { limit = { nesnd_regional_native_actor = yes NOT = { has_journal_entry = nesnd_regional_native_war } }
+     add_journal_entry = { type = nesnd_regional_native_war }
+    }
+    else_if = { limit = { NOT = { nesnd_regional_native_actor = yes } NOT = { has_journal_entry = nesnd_native_restoration_war } }
+     add_journal_entry = { type = nesnd_native_restoration_war }
+    }
+   }
+   nesnd_restoration_record_enemy_land = yes
+   if = { limit = { has_variable = nesnd_restoration_war_host }
+    if = { limit = { has_variable = nesnd_restoration_war_dispatched NOT = { nesnd_restoration_pair_at_war = yes } }
+     remove_variable = nesnd_restoration_war_dispatched
+     remove_variable = nesnd_restoration_play
+    }
+    nesnd_restoration_dispatch = yes
+   }
+  }
+  else = {
+   set_variable = nesnd_restoration_external_end
+   nesnd_restoration_missing_opponent_exit = yes
+   clear_variable_list = nesnd_restoration_enemy_land
+  }
  }
- # Older builds moved refugees inside the annexation effect. A stale pending
- # flag alone cannot prove that the matching annexation goal succeeded.
  if = { limit = { has_variable = nesnd_restoration_refugees_pending } remove_variable = nesnd_restoration_refugees_pending }
 }
 nesnd_restoration_relocate_host_capital = {

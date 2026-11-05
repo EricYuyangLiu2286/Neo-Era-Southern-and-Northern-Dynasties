@@ -1,30 +1,47 @@
 ﻿nesnd_usm_western_provinces = {
     icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
     group = je_group_historical_content
+    activation_description = { always = yes }
     can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_usm_western_eligible = yes }
     possible = { nesnd_usm_western_eligible = yes }
     immediate = { set_variable = nesnd_usm_western_opened nesnd_usm_western_clear_observation = yes nesnd_usm_western_observe = yes }
-    complete = {
-        custom_tooltip = { text = nesnd_usm_western_before_1850 game_date < 1850.1.1 }
-        owns_entire_state_region = STATE_SICHUAN
-        owns_entire_state_region = STATE_XIANGYANG
-        owns_entire_state_region = STATE_GUILIN
-        any_scope_state = { state_region = s:STATE_SICHUAN is_incorporated = yes }
-        any_scope_state = { state_region = s:STATE_XIANGYANG is_incorporated = yes }
-        any_scope_state = { state_region = s:STATE_GUILIN is_incorporated = yes }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = {
+    	    custom_tooltip = { text = nesnd_usm_western_before_1850 game_date < 1850.1.1 }
+    	    owns_entire_state_region = STATE_SICHUAN
+    	    owns_entire_state_region = STATE_XIANGYANG
+    	    owns_entire_state_region = STATE_GUILIN
+    	    any_scope_state = { state_region = s:STATE_SICHUAN is_incorporated = yes }
+    	    any_scope_state = { state_region = s:STATE_XIANGYANG is_incorporated = yes }
+    	    any_scope_state = { state_region = s:STATE_GUILIN is_incorporated = yes }
+    	}
+    	effect = {
+    	    if = { limit = { nesnd_usm_western_country = yes NOT = { has_variable = nesnd_usm_western_finished } game_date < 1850.1.1 nesnd_usm_western_integrated = yes }
+    	        set_variable = nesnd_usm_western_finished
+    	        set_variable = nesnd_usm_western_succeeded
+    	        nesnd_usm_western_clear_observation = yes
+    	    }
+    	}
     }
-    on_complete = {
-        if = { limit = { nesnd_usm_western_country = yes NOT = { has_variable = nesnd_usm_western_finished } game_date < 1850.1.1 nesnd_usm_western_integrated = yes }
-            set_variable = nesnd_usm_western_finished
-            set_variable = nesnd_usm_western_succeeded
-            nesnd_usm_western_clear_observation = yes
-        }
+    outcome = {
+    	header = je_standard_failure_header
+    	effect_header = je_standard_on_failure_header
+    	color = "blue_negative"
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { custom_tooltip = { text = nesnd_usm_western_deadline game_date >= 1850.1.1 } }
+    	effect = { custom_tooltip = nesnd_usm_western_failure_tt hidden_effect = { nesnd_usm_western_fail = yes } }
     }
-    fail = { custom_tooltip = { text = nesnd_usm_western_deadline game_date >= 1850.1.1 } }
-    on_fail = { custom_tooltip = nesnd_usm_western_failure_tt hidden_effect = { nesnd_usm_western_fail = yes } }
-    invalid = { OR = { NOT = { nesnd_usm_western_country = yes } has_variable = nesnd_usm_western_finished } }
-    on_invalid = { set_variable = nesnd_usm_western_finished set_variable = nesnd_usm_western_archived nesnd_usm_western_clear_observation = yes }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { OR = { NOT = { nesnd_usm_western_country = yes } has_variable = nesnd_usm_western_finished } }
+    	effect = { set_variable = nesnd_usm_western_finished set_variable = nesnd_usm_western_archived nesnd_usm_western_clear_observation = yes }
+    }
     modifiers_while_active = { nesnd_usm_ming_resistance }
     on_monthly_pulse = { effect = { nesnd_usm_western_observe = yes } }
     status_desc = { desc = nesnd_usm_western_provinces_status }

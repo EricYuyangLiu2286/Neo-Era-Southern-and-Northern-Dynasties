@@ -1,13 +1,24 @@
 ﻿nesnd_hus_registration = {
-    group = je_group_historical_content icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes } icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
     should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1000
     is_shown_when_inactive = { hidden_trigger = { nesnd_hus_original_country = yes NOT = { has_variable = nesnd_hus_registration_done } } }
     possible = { hidden_trigger = { nesnd_hus_original_country = yes NOT = { has_variable = nesnd_hus_registration_done } } }
     immediate = { nesnd_hus_initialize_hierarchy = yes }
     scripted_button = nesnd_hus_register_manchu scripted_button = nesnd_hus_register_native
-    complete = { custom_tooltip = { text = nesnd_hus_registration_enacted nesnd_hus_registration_enacted_correctly = yes } }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = { custom_tooltip = { text = nesnd_hus_registration_enacted nesnd_hus_registration_enacted_correctly = yes } }
+    }
     on_monthly_pulse = { effect = { nesnd_hus_registration_settle = yes } }
-    invalid = { NOT = { nesnd_hus_original_country = yes } }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { NOT = { nesnd_hus_original_country = yes } }
+    }
     # Journal invalidation never cancels the country/global registration clock.
     status_desc = { first_valid = {
         triggered_desc = { trigger = { has_variable = nesnd_hus_migration_conflict } desc = nesnd_hus_registration_conflict }
@@ -17,4 +28,9 @@
         desc = nesnd_hus_registration_choose
     } }
 }
-REPLACE:je_indian_removal = { group = je_group_historical_content possible = { always = no } is_shown_when_inactive = { always = no } invalid = { always = yes } }
+REPLACE:je_indian_removal = { group = je_group_historical_content
+	activation_description = { always = yes } possible = { always = no } is_shown_when_inactive = { always = no } outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = { always = yes }
+	} }

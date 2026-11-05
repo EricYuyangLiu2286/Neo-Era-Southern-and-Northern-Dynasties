@@ -1,5 +1,6 @@
 ﻿nesnd_regional_native_restoration = {
- group = je_group_historical_content icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+ group = je_group_historical_content
+ activation_description = { always = yes } icon = "gfx/interface/icons/event_icons/waving_flag.dds"
  should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1000
  is_shown_when_inactive = { nesnd_regional_native_host = yes }
  possible = { hidden_trigger = { nesnd_regional_native_host = yes } }
@@ -8,12 +9,22 @@
  scripted_button = nesnd_regional_native_release_button scripted_button = nesnd_regional_native_request_button
  scripted_button = nesnd_regional_native_negotiate_button scripted_button = nesnd_regional_native_suppress_button
  on_monthly_pulse = { effect = { nesnd_regional_native_refresh = yes nesnd_restoration_monthly = yes } }
- complete = { custom_tooltip = { text = nesnd_regional_native_recognized_tt nesnd_regional_native_profile_done = yes } }
- invalid = { OR = {
-  AND = { nesnd_regional_native_profile_started = yes NOT = { nesnd_regional_native_profile_done = yes } }
-  AND = { NOT = { nesnd_regional_native_country = yes } NOT = { nesnd_regional_native_profile_done = yes } }
- } }
- on_invalid = { nesnd_restoration_cancel_mobilization = yes }
+ outcome = {
+ 	header = je_standard_completion_header
+ 	effect_header = je_standard_on_completion_header
+ 	color = "gold_positive"
+ 	conclusion_desc = je_standard_completion_conclusion_desc
+ 	trigger = { custom_tooltip = { text = nesnd_regional_native_recognized_tt nesnd_regional_native_profile_done = yes } }
+ }
+ outcome = {
+ 	flags = { hidden invalid_outcome }
+ 	conclusion_desc = je_standard_failure_conclusion_desc
+ 	trigger = { OR = {
+ 	 AND = { nesnd_regional_native_profile_started = yes NOT = { nesnd_regional_native_profile_done = yes } }
+ 	 AND = { NOT = { nesnd_regional_native_country = yes } NOT = { nesnd_regional_native_profile_done = yes } }
+ 	} }
+ 	effect = { nesnd_restoration_cancel_mobilization = yes }
+ }
  status_desc = { first_valid = {
   triggered_desc = { trigger = { has_variable = nesnd_regional_native_request_open } desc = nesnd_regional_native_request_status }
   triggered_desc = { trigger = { nesnd_restoration_mobilizing = yes } desc = nesnd_regional_native_mobilizing_status }
@@ -21,21 +32,52 @@
   triggered_desc = { trigger = { nesnd_restoration_mobilization_ready = yes } desc = nesnd_regional_native_ready_status }
   triggered_desc = { trigger = { NOT = { any_scope_state = { nesnd_regional_native_seed_state = yes } } } desc = nesnd_regional_native_political_status }
   desc = nesnd_regional_native_pressure_status
- } }
+ }
+ triggered_desc = { trigger = { nesnd_restoration_mobilizing = yes } desc = nesnd_restoration_mobilization_remaining }
+ }
 }
 # Presentation shell only. Case ownership, goals and settlement remain shared.
 nesnd_regional_native_war = {
- group = je_group_historical_content icon = "gfx/interface/icons/event_icons/event_military.dds"
+ group = je_group_historical_content
+ activation_description = { always = yes } icon = "gfx/interface/icons/event_icons/event_military.dds"
  should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1500
- is_shown_when_inactive = { nesnd_regional_native_actor = yes OR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host } NOT = { has_variable = nesnd_restoration_peace_shown } }
- possible = { hidden_trigger = { nesnd_regional_native_actor = yes OR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host } NOT = { has_variable = nesnd_restoration_peace_shown } } }
- complete = { custom_tooltip = { text = nesnd_regional_native_war_victory_tt has_variable = nesnd_restoration_settlement_done } }
- fail = {
-  custom_tooltip = { text = nesnd_regional_native_war_terminal_tt has_variable = nesnd_restoration_war_terminal }
-  custom_tooltip = { text = nesnd_regional_native_war_not_victorious_tt NOT = { has_variable = nesnd_restoration_settlement_done } }
+ is_shown_when_inactive = { nesnd_regional_native_actor = yes nesnd_restoration_armed_case = yes NOT = { has_variable = nesnd_restoration_peace_shown } }
+ possible = { hidden_trigger = { nesnd_regional_native_actor = yes nesnd_restoration_armed_case = yes NOT = { has_variable = nesnd_restoration_peace_shown } } }
+ outcome = {
+ 	header = je_standard_completion_header
+ 	effect_header = je_standard_on_completion_header
+ 	color = "gold_positive"
+ 	conclusion_desc = je_standard_completion_conclusion_desc
+ 	trigger = { custom_tooltip = { text = nesnd_regional_native_war_victory_tt has_variable = nesnd_restoration_settlement_done } }
+ 	effect = { hidden_effect = { set_variable = nesnd_restoration_peace_shown } }
  }
- on_complete = { hidden_effect = { set_variable = nesnd_restoration_peace_shown } }
- on_fail = { hidden_effect = { set_variable = nesnd_restoration_peace_shown } }
- invalid = { OR = { NOT = { nesnd_regional_native_actor = yes } NOR = { has_variable = nesnd_restoration_rebel has_variable = nesnd_restoration_war_host } } }
- status_desc = { desc = nesnd_regional_native_war_status }
+ outcome = {
+ 	header = je_standard_failure_header
+ 	effect_header = je_standard_on_failure_header
+ 	color = "blue_negative"
+ 	conclusion_desc = je_standard_failure_conclusion_desc
+ 	trigger = {
+ 	 custom_tooltip = { text = nesnd_regional_native_war_terminal_tt has_variable = nesnd_restoration_external_end }
+ 	 custom_tooltip = { text = nesnd_regional_native_war_not_victorious_tt NOT = { has_variable = nesnd_restoration_settlement_done } }
+ 	}
+ 	effect = { hidden_effect = { set_variable = nesnd_restoration_peace_shown } }
+ }
+ outcome = {
+ 	flags = { hidden invalid_outcome }
+ 	conclusion_desc = je_standard_failure_conclusion_desc
+ 	trigger = { OR = { NOT = { nesnd_regional_native_actor = yes } NOT = { nesnd_restoration_armed_case = yes } } }
+ }
+ status_desc = {
+  first_valid = {
+   triggered_desc = {
+    trigger = { nesnd_restoration_opposed_pair = yes nesnd_restoration_pair_at_war = yes }
+    desc = nesnd_restoration_war_against
+   }
+   triggered_desc = {
+    trigger = { nesnd_restoration_opposed_pair = yes var:nesnd_restoration_opponent ?= { any_scope_state = { always = yes } } }
+    desc = nesnd_restoration_war_mustering
+   }
+   desc = nesnd_regional_native_war_status
+  }
+ }
 }

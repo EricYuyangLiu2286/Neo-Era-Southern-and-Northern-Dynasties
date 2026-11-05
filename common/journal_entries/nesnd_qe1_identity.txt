@@ -1,6 +1,7 @@
 ﻿nesnd_qe1_unity_journal = {
 	icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
 	group = je_group_historical_content
+	activation_description = { always = yes }
 	can_revolution_inherit = yes
 	is_shown_when_inactive = { nesnd_qe1_unity_eligible = yes }
 	possible = { nesnd_qe1_unity_eligible = yes }
@@ -11,24 +12,53 @@
 	scripted_progress_bar = nesnd_qe1_unity_bar
 	scripted_button = nesnd_unity_material_subsidy
 	scripted_button = nesnd_unity_political_subsidy
-	invalid = { NOT = { nesnd_qe1_unity_eligible = yes } }
-	on_invalid = { nesnd_qe1_clear_forecast = yes }
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = { NOT = { nesnd_qe1_unity_eligible = yes } }
+		effect = { nesnd_qe1_clear_forecast = yes }
+	}
 	on_monthly_pulse = { effect = { nesnd_qe1_unity_monthly = yes } }
-	status_desc = { first_valid = {
-			triggered_desc = { trigger = {
-                trigger_if = { limit = { has_variable = nesnd_qe1_unity } var:nesnd_qe1_unity < 25 }
-                trigger_else = { always = no }
-            } desc = nesnd_qe1_unity_crisis }
-			triggered_desc = { trigger = {
-                trigger_if = { limit = { has_variable = nesnd_qe1_unity } var:nesnd_qe1_unity < 50 }
-                trigger_else = { always = no }
-            } desc = nesnd_qe1_unity_doubt }
-			desc = nesnd_qe1_unity_hope } }
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					trigger_if = { limit = { has_variable = nesnd_qe1_unity } var:nesnd_qe1_unity < 25 }
+					trigger_else = { always = no }
+				}
+				desc = nesnd_qe1_unity_crisis
+			}
+			triggered_desc = {
+				trigger = {
+					trigger_if = { limit = { has_variable = nesnd_qe1_unity } var:nesnd_qe1_unity < 50 }
+					trigger_else = { always = no }
+				}
+				desc = nesnd_qe1_unity_doubt
+			}
+			desc = nesnd_qe1_unity_hope
+		}
+		first_valid = {
+			triggered_desc = {
+				trigger = { nesnd_qe1_forecast_state_valid = yes }
+				desc = nesnd_qe1_forecast_state
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = nesnd_qe1_next_all
+					trigger_if = { limit = { has_variable = nesnd_qe1_unity } var:nesnd_qe1_unity > 75 }
+					trigger_else = { always = no }
+				}
+				desc = nesnd_qe1_forecast_all
+			}
+			desc = nesnd_qe1_forecast_none
+		}
+	}
 
 }
 nesnd_qe1_uprising_journal = {
 	icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
 	group = je_group_historical_content
+	activation_description = { always = yes }
 	can_revolution_inherit = yes
 	is_shown_when_inactive = { nesnd_qe1_unity_live = yes custom_tooltip = { text = nesnd_qe1_condition_uprising_awakened has_variable = nesnd_qe1_uprising_awakened } }
 	possible = { nesnd_qe1_unity_live = yes custom_tooltip = { text = nesnd_qe1_condition_uprising_awakened has_variable = nesnd_qe1_uprising_awakened } }
@@ -37,12 +67,22 @@ nesnd_qe1_uprising_journal = {
 
 	scripted_progress_bar = nesnd_qe1_uprising_bar
 	immediate = { nesnd_qe1_unity_sync = yes }
-	complete = {
-        nesnd_qe1_unity_live = yes
-        custom_tooltip = { text = nesnd_qe1_condition_uprising_100 trigger_if = { limit = { has_variable = nesnd_qe1_uprising } var:nesnd_qe1_uprising >= 100 } trigger_else = { always = no } }
-    }
-	on_complete = { nesnd_qe1_breakup = yes }
-	invalid = { NOT = { nesnd_qe1_unity_live = yes } }
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+		    nesnd_qe1_unity_live = yes
+		    custom_tooltip = { text = nesnd_qe1_condition_uprising_100 trigger_if = { limit = { has_variable = nesnd_qe1_uprising } var:nesnd_qe1_uprising >= 100 } trigger_else = { always = no } }
+		}
+		effect = { nesnd_qe1_breakup = yes }
+	}
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = { NOT = { nesnd_qe1_unity_live = yes } }
+	}
 	on_monthly_pulse = { effect = { nesnd_qe1_unity_sync = yes } }
 
 }

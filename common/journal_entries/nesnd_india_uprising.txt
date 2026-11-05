@@ -1,5 +1,6 @@
 ﻿nesnd_india_uprising = {
-    icon = "gfx/interface/icons/event_icons/event_newspaper.dds" group = je_group_historical_content can_revolution_inherit = no
+    icon = "gfx/interface/icons/event_icons/event_newspaper.dds" group = je_group_historical_content
+	activation_description = { always = yes } can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_india_uprising_available = yes } possible = { nesnd_india_uprising_available = yes }
     scripted_button = nesnd_india_circars_contact
     scripted_button = nesnd_india_circars_pause
@@ -26,7 +27,11 @@
     scripted_button = nesnd_india_gujarat_resume
     scripted_button = nesnd_india_gujarat_launch
 
-    invalid = { NOT = { nesnd_india_uprising_available = yes } }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { NOT = { nesnd_india_uprising_available = yes } }
+    }
     status_desc = { desc = nesnd_india_uprising_status } weight = 700
     scripted_progress_bar = nesnd_india_contact_bar
     on_monthly_pulse = { effect = { nesnd_india_advance_contact = yes } }
@@ -34,13 +39,30 @@
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
 nesnd_india_revolt_war = {
-    icon = "gfx/interface/icons/event_icons/event_newspaper.dds" group = je_group_historical_content can_revolution_inherit = no
+    icon = "gfx/interface/icons/event_icons/event_newspaper.dds" group = je_group_historical_content
+	activation_description = { always = yes } can_revolution_inherit = no
     is_shown_when_inactive = { has_variable = nesnd_india_revolt_actor NOT = { has_variable = nesnd_india_revolt_resolved } }
     possible = { has_variable = nesnd_india_revolt_actor NOT = { has_variable = nesnd_india_revolt_resolved } }
-    complete = { custom_tooltip = { text = nesnd_india_revolt_resolved_tt nesnd_india_revolt_won = yes } }
-    fail = { has_variable = nesnd_india_revolt_resolved NOT = { nesnd_india_revolt_won = yes } }
-    on_complete = { if = { limit = { NOT = { has_variable = nesnd_india_revolt_rewarded } } set_variable = nesnd_india_revolt_rewarded add_modifier = { name = nesnd_india_revolt_survived months = 60 } } }
-    invalid = { NOT = { has_variable = nesnd_india_revolt_actor } }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = { custom_tooltip = { text = nesnd_india_revolt_resolved_tt nesnd_india_revolt_won = yes } }
+    	effect = { if = { limit = { NOT = { has_variable = nesnd_india_revolt_rewarded } } set_variable = nesnd_india_revolt_rewarded add_modifier = { name = nesnd_india_revolt_survived months = 60 } } }
+    }
+    outcome = {
+    	header = je_standard_failure_header
+    	effect_header = je_standard_on_failure_header
+    	color = "blue_negative"
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { has_variable = nesnd_india_revolt_resolved NOT = { nesnd_india_revolt_won = yes } }
+    }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { NOT = { has_variable = nesnd_india_revolt_actor } }
+    }
     weight = 1000
     should_be_pinned_by_default_uninvolved_or_context = yes
 }

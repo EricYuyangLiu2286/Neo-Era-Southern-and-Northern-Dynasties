@@ -38,6 +38,7 @@ garibaldi_events.1 = {
 				has_global_variable = garibaldi_is_alive_global_var
 			}
 			any_character_in_exile_pool = {
+				is_in_regional_exile_pool = no
 				has_variable = garibaldi_var
 			}
 		}
@@ -173,6 +174,7 @@ NOR = { has_global_variable = nesnd_c2_garibaldi_dead has_global_variable = nesn
 			create_character = {
 				template = garibaldi_character_template
 				on_created = {
+					set_temporary_event_immortality = { DURATION = 3 }
 					set_variable = garibaldi_var
                     set_global_variable = nesnd_c2_garibaldi_seen
 					set_variable = {
@@ -186,10 +188,12 @@ NOR = { has_global_variable = nesnd_c2_garibaldi_dead has_global_variable = nesn
 		else_if = {
 			random_character_in_exile_pool = {
 				limit = {
+					is_in_regional_exile_pool = no
 					has_variable = garibaldi_var
 				}
 				transfer_character = root
 				save_scope_as = garibaldi_scope
+				set_temporary_event_immortality = { DURATION = 3 }
 				set_variable = {
 					name = garibaldi_cooldown_var
 					days = short_modifier_time
@@ -440,8 +444,9 @@ NOR = { has_global_variable = nesnd_c2_garibaldi_dead has_global_variable = nesn
 					leader = {
 						OR = {
 							has_ideology = ideology:ideology_radical
+							has_ideology = ideology:ideology_state_socialist
 							has_ideology = ideology:ideology_social_democrat
-							has_ideology = ideology:ideology_communist
+							has_ideology = ideology:ideology_communist_leader
 							has_ideology = ideology:ideology_republican_leader
 						}
 					}
@@ -460,8 +465,9 @@ NOR = { has_global_variable = nesnd_c2_garibaldi_dead has_global_variable = nesn
 					leader = {
 						OR = {
 							has_ideology = ideology:ideology_radical
+							has_ideology = ideology:ideology_state_socialist
 							has_ideology = ideology:ideology_social_democrat
-							has_ideology = ideology:ideology_communist
+							has_ideology = ideology:ideology_communist_leader
 							has_ideology = ideology:ideology_republican_leader
 						}
 					}
@@ -483,6 +489,10 @@ NOR = { has_global_variable = nesnd_c2_garibaldi_dead has_global_variable = nesn
 				clean_up_exile_character_roles = yes
 			}
 		}
+	}
+
+	after = {
+		revoke_temporary_event_immortality = { CHARACTER = scope:garibaldi_scope }
 	}
 }
 # Garibaldi Fucks Off
@@ -695,7 +705,7 @@ garibaldi_events.2 = {
 
 	immediate = {
  clear_saved_scope = garibaldi_scope clear_saved_scope = garibaldi_italian_nation_scope clear_saved_scope = garibaldi_foreign_nation_scope clear_saved_scope = nesnd_c2_garibaldi_play
- random_scope_character = { limit = { has_variable = garibaldi_var is_character_alive = yes } save_scope_as = garibaldi_scope }
+ random_scope_character = { limit = { has_variable = garibaldi_var is_character_alive = yes } save_scope_as = garibaldi_scope set_temporary_event_immortality = { DURATION = 3 } }
  save_scope_as = garibaldi_old_home
  random_diplomatic_play = { limit = {
   is_war = yes OR = {
@@ -854,6 +864,10 @@ every_country = {
 		}
  }
 }
+
+	after = {
+		revoke_temporary_event_immortality = { CHARACTER = scope:garibaldi_scope }
+	}
 }
 # Italian Legion of Volunteers
 garibaldi_events.3 = {
@@ -874,6 +888,7 @@ garibaldi_events.3 = {
 	duration = 3
 
 	dlc = dlc004
+	fire_only_once = yes
 
 	trigger = {
 		NOT = {
@@ -908,6 +923,7 @@ garibaldi_events.3 = {
 				has_variable = garibaldi_var
 			}
 			save_scope_as = garibaldi_scope
+			set_temporary_event_immortality = { DURATION = 3 }
 		}
 		random_scope_state = {
 			limit = {
@@ -1006,6 +1022,10 @@ scope:italian_legion_barracks_scope = {
 		}
  }
 }
+
+	after = {
+		revoke_temporary_event_immortality = { CHARACTER = scope:garibaldi_scope }
+	}
 }
 # Garibaldi Riles Up Peasants
 garibaldi_events.4 = {
@@ -1030,6 +1050,7 @@ garibaldi_events.4 = {
 	dlc = dlc004
 
 	trigger = {
+		# triggered by on_action - garibaldi_monthly_events
 		has_dlc_feature = voice_of_the_people_content
 		any_scope_character = {
 			has_variable = garibaldi_var
@@ -1057,6 +1078,7 @@ garibaldi_events.4 = {
 				has_variable = garibaldi_var
 			}
 			save_scope_as = garibaldi_scope
+			set_temporary_event_immortality = { DURATION = 3 }
 		}
 		random_scope_state = {
 			limit = {
@@ -1094,6 +1116,15 @@ garibaldi_events.4 = {
 	option = {
 		name = garibaldi_events.4.a
 		default_option = yes
+		ai_chance = {
+			base = 1
+			modifier = {
+				trigger = {
+					ai_wants_radicals = yes
+				}
+				add = 10
+			}
+		}
 		ig:ig_rural_folk ?= {
 			add_modifier = {
 				name = emboldened_peasantry_modifier
@@ -1110,6 +1141,15 @@ garibaldi_events.4 = {
 
 	option = {
 		name = garibaldi_events.4.b
+		ai_chance = {
+			base = 1
+			modifier = {
+				trigger = {
+					ai_avoids_radicals = yes
+				}
+				add = 10
+			}
+		}
 		highlighted_option = yes
 		random_list = {
 			80 = {
@@ -1121,5 +1161,9 @@ garibaldi_events.4 = {
 			20 = {
 			}
 		}
+	}
+
+	after = {
+		revoke_temporary_event_immortality = { CHARACTER = scope:garibaldi_scope }
 	}
 }

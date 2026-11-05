@@ -1,4 +1,86 @@
 ﻿nesnd_external_country = { OR = { c:HUS ?= this c:FRA ?= this c:QE1 ?= this c:SHA ?= this c:BUR ?= this c:MUG ?= this c:GBR ?= this c:RUS ?= this } }
+nesnd_external_crisis_settled = {
+    OR = {
+        has_global_variable = nesnd_south_settled
+        AND = {
+            exists = c:USM
+            c:USM ?= {
+                OR = {
+                    has_variable = nesnd_south_peace_committed
+                    has_variable = nesnd_south_inconclusive_settlement
+                    has_variable = usm_rebel_winner_of_the_civil_war
+                    AND = {
+                        has_variable = usm_government_winner_civilwar
+                        NOT = { nesnd_south_unresolved_holdouts = yes }
+                    }
+                    AND = {
+                        has_global_variable = usm_civilwar_status_quo
+                        nesnd_south_campaign_resolved = yes
+                    }
+                }
+            }
+        }
+    }
+}
+
+nesnd_external_partner_survives = {
+    trigger_if = { limit = { c:MUG ?= this }
+        exists = c:FRA
+        c:FRA ?= { is_country_alive = yes }
+    }
+    trigger_else_if = { limit = { c:SHA ?= this }
+        exists = c:HUS
+        c:HUS ?= { is_country_alive = yes }
+    }
+    trigger_else = {
+        OR = {
+            AND = { exists = c:USM c:USM ?= { is_country_alive = yes } }
+            AND = { c:QE1 ?= this exists = c:SIH c:SIH ?= { is_country_alive = yes } }
+            any_country = {
+                is_country_alive = yes
+                has_variable = usm_opposition_country_leader_var
+                NOT = { this = prev }
+            }
+        }
+    }
+}
+
+nesnd_external_agenda_over = {
+    OR = {
+        nesnd_external_crisis_settled = yes
+        NOT = { nesnd_external_partner_survives = yes }
+        AND = {
+            NOT = { AND = { exists = c:USM c:USM ?= { is_country_alive = yes } } }
+            NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country_leader_var } }
+        }
+    }
+}
+
+nesnd_external_open_contact = {
+    custom_tooltip = { text = nesnd_external_agenda_live_tt nesnd_external_agenda_over = no NOT = { has_variable = nesnd_external_dismissed } }
+    custom_tooltip = { text = nesnd_external_no_target_tt NOT = { has_variable = nesnd_external_target } }
+    custom_tooltip = { text = nesnd_external_no_pending_tt NOT = { has_variable = nesnd_external_pending } }
+    custom_tooltip = { text = nesnd_external_no_commitment_tt NOT = { has_variable = nesnd_external_aid_committed } }
+}
+
+nesnd_external_can_contact = {
+    nesnd_external_open_contact = yes
+    custom_tooltip = {
+        text = $PARTNER_TT$
+        trigger_if = { limit = { exists = $PARTNER$ }
+            $PARTNER$ = { is_country_alive = yes }
+            NOT = { has_war_with = $PARTNER$ }
+        }
+        trigger_else = { always = no }
+    }
+}
+
+nesnd_external_can_contact_opposition = {
+    nesnd_external_open_contact = yes
+    is_subject = no
+    custom_tooltip = { text = nesnd_external_opposition_available_tt any_country = { is_country_alive = yes has_variable = usm_opposition_country_leader_var NOT = { this = root } NOT = { has_war_with = root } } }
+}
+
 nesnd_external_target_valid = {
     trigger_if = {
         limit = {
@@ -15,8 +97,9 @@ nesnd_external_target_valid = {
             has_war_with = var:nesnd_external_target
         }
         OR = {
-            c:USM ?= var:nesnd_external_target
+            AND = { NOR = { c:SHA ?= this c:MUG ?= this } c:USM ?= var:nesnd_external_target }
             AND = {
+                NOR = { c:SHA ?= this c:MUG ?= this }
                 var:nesnd_external_target = {
                     has_variable = usm_opposition_country_leader_var
                 }
@@ -46,9 +129,6 @@ nesnd_external_request_valid = {
             exists = scope:nesnd_external_requester
         }
         is_country_alive = yes
-        NOT = {
-            has_global_variable = nesnd_south_settled
-        }
         scope:nesnd_external_requester = {
             trigger_if = {
                 limit = {
@@ -56,7 +136,13 @@ nesnd_external_request_valid = {
                     exists = var:nesnd_external_target
                 }
                 is_country_alive = yes
-                is_at_war = no
+                nesnd_external_agenda_over = no
+                trigger_if = { limit = { OR = { c:MUG ?= this c:SHA ?= this } }
+                    NOT = { has_variable = nesnd_india_request_clock }
+                    NOT = { has_variable = nesnd_india_aid_lock }
+                    root = { is_at_war = no }
+                }
+                trigger_else = { is_at_war = no }
                 has_journal_entry = nesnd_external_policy
                 NOT = {
                     has_variable = nesnd_external_dismissed
@@ -79,237 +165,117 @@ nesnd_external_request_valid = {
     }
 }
 
-nesnd_external_can_offer_money = {
-    trigger_if = {
-        limit = {
-            exists = var:nesnd_external_target
-        }
-        nesnd_external_target_valid = yes
-        is_at_war = no
-        NOT = {
-            has_variable = nesnd_external_cooldown
-        }
-        NOT = {
-            has_variable = nesnd_external_pending
-        }
-        NOT = {
-            has_variable = nesnd_external_aid_committed
-        }
-        NOT = {
-            has_global_variable = nesnd_south_settled
-        }
-        is_at_war = no
+nesnd_external_envoy_ready = {
+    custom_tooltip = { text = nesnd_external_agenda_live_tt nesnd_external_agenda_over = no NOT = { has_variable = nesnd_external_dismissed } }
+    custom_tooltip = { text = nesnd_external_target_valid_tt nesnd_external_target_valid = yes }
+    custom_tooltip = { text = nesnd_external_no_cooldown_tt NOT = { has_variable = nesnd_external_cooldown } }
+    custom_tooltip = { text = nesnd_external_no_pending_tt NOT = { has_variable = nesnd_external_pending } }
+    custom_tooltip = { text = nesnd_external_no_commitment_tt NOT = { has_variable = nesnd_external_aid_committed } }
+}
+
+nesnd_external_money_deliverable = {
+    $DONOR$ = {
+        custom_tooltip = { text = nesnd_external_donor_at_peace_tt is_at_war = no }
         in_default = no
-        NOT = {
-            has_modifier = declared_bankruptcy
-        }
+        NOT = { has_modifier = declared_bankruptcy }
         net_fixed_income >= 5000
         net_total_income >= 1000
         gold_reserves >= 26000
+    }
+    custom_tooltip = {
+        text = nesnd_external_money_terms_tt
         can_create_treaty = {
-            first_country = root
-            second_country = var:nesnd_external_target
+            first_country = $DONOR$
+            second_country = $RECEIVER$
             is_draft = no
-            binding_period = {
-                years = 1
-            }
+            binding_period = { years = 1 }
             articles_to_create = {
                 {
                     article = money_transfer
-                    source_country = root
-                    target_country = var:nesnd_external_target
-                    inputs = {
-                        {
-                            quantity = 500
-                        }
-                    }
+                    source_country = $DONOR$
+                    target_country = $RECEIVER$
+                    inputs = { { quantity = 500 } }
                 }
             }
         }
     }
-    trigger_else = {
-        always = no
-    }
 }
-nesnd_external_can_offer_arms = {
-    trigger_if = {
-        limit = {
-            exists = var:nesnd_external_target
-        }
-        nesnd_external_target_valid = yes
-        is_at_war = no
-        NOT = {
-            has_variable = nesnd_external_cooldown
-        }
-        NOT = {
-            has_variable = nesnd_external_pending
-        }
-        NOT = {
-            has_variable = nesnd_external_aid_committed
-        }
-        NOT = {
-            has_global_variable = nesnd_south_settled
-        }
-        is_at_war = no
+
+nesnd_external_arms_deliverable = {
+    $DONOR$ = {
+        custom_tooltip = { text = nesnd_external_donor_at_peace_tt is_at_war = no }
         in_default = no
-        NOT = {
-            has_modifier = declared_bankruptcy
-        }
-        capital.market = {
+        NOT = { has_modifier = declared_bankruptcy }
+        market = {
             mg:small_arms = {
                 market_goods_pricier <= 0.25
-                NOT = {
-                    country_has_local_shortage = root
+                NOT = { country_has_local_shortage = $DONOR$ }
+                custom_tooltip = { text = nesnd_external_export_room_tt
+                    market_export_cap >= { value = treaty_exports add = 10 }
                 }
             }
         }
-        can_create_treaty = {
-            first_country = root
-            second_country = var:nesnd_external_target
-            is_draft = no
-            binding_period = {
-                years = 1
+    }
+    $RECEIVER$ = {
+        market = {
+            mg:small_arms = {
+                custom_tooltip = { text = nesnd_external_import_room_tt
+                    market_import_cap >= { value = treaty_imports add = 10 }
+                }
             }
+        }
+    }
+    custom_tooltip = {
+        text = nesnd_external_arms_terms_tt
+        can_create_treaty = {
+            first_country = $DONOR$
+            second_country = $RECEIVER$
+            is_draft = no
+            binding_period = { years = 1 }
             articles_to_create = {
                 {
                     article = goods_transfer
-                    source_country = root
-                    target_country = var:nesnd_external_target
-                    inputs = {
-                        {
-                            quantity = 10
-                        }
-                        {
-                            good = g:small_arms
-                        }
-                    }
+                    source_country = $DONOR$
+                    target_country = $RECEIVER$
+                    inputs = { { quantity = 10 } { good = g:small_arms } }
                 }
             }
         }
     }
-    trigger_else = {
-        always = no
-    }
 }
+
+nesnd_external_can_offer_money = {
+    nesnd_external_envoy_ready = yes
+    trigger_if = { limit = { exists = var:nesnd_external_target }
+        nesnd_external_money_deliverable = { DONOR = root RECEIVER = root.var:nesnd_external_target }
+    }
+    trigger_else = { always = no }
+}
+
+nesnd_external_can_offer_arms = {
+    nesnd_external_envoy_ready = yes
+    trigger_if = { limit = { exists = var:nesnd_external_target }
+        nesnd_external_arms_deliverable = { DONOR = root RECEIVER = root.var:nesnd_external_target }
+    }
+    trigger_else = { always = no }
+}
+
 nesnd_external_can_request_money = {
-    NOT = { has_variable = nesnd_india_request_clock } NOT = { has_variable = nesnd_india_aid_lock }
-
-    trigger_if = {
-        limit = {
-            exists = var:nesnd_external_target
-        }
-        nesnd_external_target_valid = yes
-        is_at_war = no
-        NOT = {
-            has_variable = nesnd_external_cooldown
-        }
-        NOT = {
-            has_variable = nesnd_external_pending
-        }
-        NOT = {
-            has_variable = nesnd_external_aid_committed
-        }
-        NOT = {
-            has_global_variable = nesnd_south_settled
-        }
-        var:nesnd_external_target = {
-            is_at_war = no
-            in_default = no
-            NOT = {
-                has_modifier = declared_bankruptcy
-            }
-            net_fixed_income >= 5000
-            net_total_income >= 1000
-            gold_reserves >= 26000
-        }
-        can_create_treaty = {
-            first_country = var:nesnd_external_target
-            second_country = root
-            is_draft = no
-            binding_period = {
-                years = 1
-            }
-            articles_to_create = {
-                {
-                    article = money_transfer
-                    source_country = var:nesnd_external_target
-                    target_country = root
-                    inputs = {
-                        {
-                            quantity = 500
-                        }
-                    }
-                }
-            }
-        }
+    nesnd_external_envoy_ready = yes
+    custom_tooltip = { text = nesnd_external_india_free_tt NOR = { has_variable = nesnd_india_request_clock has_variable = nesnd_india_aid_lock } }
+    trigger_if = { limit = { exists = var:nesnd_external_target }
+        nesnd_external_money_deliverable = { DONOR = root.var:nesnd_external_target RECEIVER = root }
     }
-    trigger_else = {
-        always = no
-    }
+    trigger_else = { always = no }
 }
-nesnd_external_can_request_arms = {
-    NOT = { has_variable = nesnd_india_request_clock } NOT = { has_variable = nesnd_india_aid_lock }
 
-    trigger_if = {
-        limit = {
-            exists = var:nesnd_external_target
-        }
-        nesnd_external_target_valid = yes
-        is_at_war = no
-        NOT = {
-            has_variable = nesnd_external_cooldown
-        }
-        NOT = {
-            has_variable = nesnd_external_pending
-        }
-        NOT = {
-            has_variable = nesnd_external_aid_committed
-        }
-        NOT = {
-            has_global_variable = nesnd_south_settled
-        }
-        var:nesnd_external_target = {
-            is_at_war = no
-            in_default = no
-            NOT = {
-                has_modifier = declared_bankruptcy
-            }
-            capital.market = {
-                mg:small_arms = {
-                    market_goods_pricier <= 0.25
-                    NOT = {
-                        country_has_local_shortage = root.var:nesnd_external_target
-                    }
-                }
-            }
-        }
-        can_create_treaty = {
-            first_country = var:nesnd_external_target
-            second_country = root
-            is_draft = no
-            binding_period = {
-                years = 1
-            }
-            articles_to_create = {
-                {
-                    article = goods_transfer
-                    source_country = var:nesnd_external_target
-                    target_country = root
-                    inputs = {
-                        {
-                            quantity = 10
-                        }
-                        {
-                            good = g:small_arms
-                        }
-                    }
-                }
-            }
-        }
+nesnd_external_can_request_arms = {
+    nesnd_external_envoy_ready = yes
+    custom_tooltip = { text = nesnd_external_india_free_tt NOR = { has_variable = nesnd_india_request_clock has_variable = nesnd_india_aid_lock } }
+    trigger_if = { limit = { exists = var:nesnd_external_target }
+        nesnd_external_arms_deliverable = { DONOR = root.var:nesnd_external_target RECEIVER = root }
     }
-    trigger_else = {
-        always = no
-    }
+    trigger_else = { always = no }
 }
 
 nesnd_external_any_legal_aid = {

@@ -1,6 +1,7 @@
 ﻿nesnd_south_reconciliation = {
  icon = "gfx/interface/icons/event_icons/event_map.dds"
  group = je_group_historical_content
+ activation_description = { always = yes }
  is_shown_when_inactive = { c:USM ?= this NOT = { has_global_variable = nesnd_south_settled } nesnd_south_pressure_value >= 60 nesnd_south_no_active_confrontation = yes }
  possible = { has_variable = nesnd_south_reconciliation_active }
  immediate = {
@@ -10,10 +11,20 @@
  }
  modifiers_while_active = { nesnd_south_reconciliation_cost }
  scripted_button = nesnd_south_reconciliation_stop
- complete = { nesnd_south_pressure_value <= 40 }
- on_complete = { nesnd_south_stop_reconciliation = yes }
- invalid = { OR = { NOT = { has_variable = nesnd_south_reconciliation_active } has_global_variable = nesnd_south_settled NOT = { nesnd_south_no_active_confrontation = yes } } }
- on_invalid = { nesnd_south_stop_reconciliation = yes }
+ outcome = {
+ 	header = je_standard_completion_header
+ 	effect_header = je_standard_on_completion_header
+ 	color = "gold_positive"
+ 	conclusion_desc = je_standard_completion_conclusion_desc
+ 	trigger = { nesnd_south_pressure_value <= 40 }
+ 	effect = { nesnd_south_stop_reconciliation = yes }
+ }
+ outcome = {
+ 	flags = { hidden invalid_outcome }
+ 	conclusion_desc = je_standard_failure_conclusion_desc
+ 	trigger = { OR = { NOT = { has_variable = nesnd_south_reconciliation_active } has_global_variable = nesnd_south_settled NOT = { nesnd_south_no_active_confrontation = yes } } }
+ 	effect = { nesnd_south_stop_reconciliation = yes }
+ }
  on_weekly_pulse = { effect = { nesnd_south_measure_politics = yes if = { limit = { NOT = { nesnd_south_reconciliation_basis = yes } } nesnd_south_stop_reconciliation = yes } } }
  weight = 1000 should_be_pinned_by_default_uninvolved_or_context = yes
 }

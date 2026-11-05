@@ -1,4 +1,11 @@
-# 日志、事件和说明的分工（本机 1.13.11）
+# 日志、事件和说明的分工（1.15.0，附 1.13 记录）
+
+## 1.15.0 Ivan-Chai 的日志退出、结案页与条（Steam 26453692）
+
+本节是现行接口；下面 1.13.11 笔记中的顶层 `complete/on_complete/fail/on_fail/invalid/on_invalid/on_timeout` 仅作旧档及迁移对照。现行 GAME/common/journal_entries/journal_entries.md:135–194、00_opium_wars.txt:40–112 与 01_ryukyu_rivalry.txt 示范可重复的 `outcome`。同一结局的判定、后果及各参与国单独回调分别放入 `trigger`、`effect`、`effect_all_involved`。保留自定义表头与 `event_outcome_desc/event_outcome_effect_desc`。失效须 `flags = { hidden invalid_outcome }`；超时保留 JE 顶层 duration 字段 `timeout`，并用唯一的 `flags = { timeout }` 结局，后者不能写 trigger。所有结局都需可解析的 conclusion_desc，非隐藏结局还要 header、effect_header。原版 congo 与 prohibition 保留失败居首或失效居首的声明顺序，迁移不要给所有日志重新排序。每个结局没有必填的自定义 ID。
+
+1.15 实体库 449 个 JE 都带 `activation_description`，369 个用 `always = yes`，包括 possible 有另外实际门槛的目标。两者分别维护。面板的 active JE、无实例后的 concluded 记录与 JournalEntryType 分属不同上下文（gui/journal_entry.gui:17、38–145、423–534）。标题依赖所属国或已保存对象时，给结案页静态 `<key>_concluded`。真实条仍由活动 JE + ScriptedProgressBar 取值。在用 `default/default_green/default_bad` 的类型之外，原双边条按 00_ip4_cuba_progress_bars.txt:29–35 用 progress_texture/background_texture/marker；左、右图标须与本地内容相符且确有资源。旧档保留活动实例、期限优先级与新结案页的历史，是独立的引擎验证项目。依据及可重复反例：WORK/reports/migration-115/journals/。
+
 
 ## 2026-11-05实测纠正：公开条件、条内文本与配图
 
@@ -58,6 +65,12 @@
 
 IG吸引力、IG支持与角色忠诚各用自己的实际修正。逐州军队支持是国家修正，军官忠诚是角色修正，不能把character_loyalty_add塞进国家修正并假设传给全体军官。按州唯一key对应开始/暂停/终局清理；显示可叠加的实际代价。角色维护按受影响对象列表处理，参照原版00_sgui_effects的daimyos_list与00_victoria_ep2_scripted_effects的variable列表迭代；新任、转属、退役和终局分别处理，避免月度全世界人物扫描。
 
+
+## 国家日志状态、预报和条的反例（2026-11-05）
+
+以调用位置确认数据对象。原版 1.13.11 的 `common/journal_entries/06_economic_regeneration.txt:24–37` → `localization/english/ip4_spain_l_english.yml:21` 用 `ROOT.GetCountry.MakeScope.Var` 读取国家状态。第39轮原始日志反复报告日本 `status_desc` 的 `Country.GetCustom` 缺少 Country。对有州／无州等预报，在 JE 的 `first_valid/triggered_desc` 中核所属国、有效对象和状态后选择文字，只在有对象的文本中从根读已保存的州／文化。Realism AI 10.9 的 `common/journal_entries/dsk_je_jap.txt:15–35` 有并列状态组。另有明确 Country datacontext 的 GUI 行可以调用 Country；不能用其例证明状态正文或嵌套文字有同样的数据对象。
+
+原版 `gui/journal_entry.gui:246–288` 由类型选择器绘制进度条，并从当前 JE 取值；已挂条和翻译齐全仍可能因只写 `default_green = no` 而没有可绘制样式。逐项核一个启用样式、当前值／上限、明细和 0／中间／满值三态。限期读实际到期限变量；原版 `interest_tier_types_l_english.yml:71` 由 `GetVarTimeRemaining` 取得剩余天数。测试由状态入口跟到实际分支及中英文叶键，分别覆盖缺值/失效、所有者变更、期限内/期限后、有并行状态和无其他状态；将旧错接回同一检查须失败。未开游戏时，仅记录静态结论。
 
 ## 原生进度条与初始化恢复
 

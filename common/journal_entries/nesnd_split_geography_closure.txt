@@ -1,56 +1,107 @@
 ﻿# One current vanilla JE replacement; source SHA f8f3a3e6f2d9c405e62b85138e65e20cbb1200b856a530e94f3ae4ebf9ae7b31
 # Only change: original SOUTHERN_MANCHURIA ownership includes its new child SONGJIANG.
 REPLACE:je_chinese_concessions = {
-	should_be_pinned_by_default_uninvolved_or_context = yes
+		
+	should_be_pinned_by_default_uninvolved_or_context = no
 	icon = "gfx/interface/icons/objectives/great_game.dds"
-	group = je_group_objectives
-	complete = {
-		OR = {
+
+	group = je_group_great_game
+	dlc = dlc010
+
+	activation_description = {
+		custom_tooltip = je_chinese_concessions_activation_tt
+		custom_tooltip = je_chinese_concessions_activation_2_tt
+		custom_tooltip = je_chinese_concessions_activation_3_tt
+	}
+
+	is_shown_when_inactive = {
+		c:RUS ?= THIS
+		is_involved_in_journal_entry = je_great_game_control
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_chinese_concessions_activation_tt
+			c:RUS ?= THIS
+		}
+		custom_tooltip = {
+			text = je_chinese_concessions_activation_2_tt
+			has_technology_researched = railways
+		}
+		custom_tooltip = {
+			text = je_chinese_concessions_activation_3_tt
 			any_scope_state = {
-				region = sr:region_northeast_asia
-				is_treaty_port = yes
-			}
-			AND = {
-				country_or_subject_owns_entire_state_region = STATE_SHENGJING
-				country_or_subject_owns_entire_state_region = STATE_SOUTHERN_MANCHURIA
-				country_or_subject_owns_entire_state_region = STATE_NORTHERN_MANCHURIA
-				country_or_subject_owns_entire_state_region = STATE_SONGJIANG
+				OR = {
+					state_region = s:STATE_OUTER_MANCHURIA
+					state_region = s:STATE_AMUR
+				}
+				is_incorporated = yes
 			}
 		}
-		any_state_in_northeast_asia = {
-			filter = {
-				custom_tooltip = {
-					text = owned_by_russia_or_chinese_country
-					OR = {
-						owner = c:RUS
-						owner = {
-							OR = {
-								country_has_primary_culture = cu:manchu
-								country_has_primary_culture = cu:han
+	}
+
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			OR = {
+				any_scope_state = {
+					region = sr:region_northeast_asia
+					is_treaty_port = yes
+				}
+				AND = {
+					country_or_subject_owns_entire_state_region = STATE_SHENGJING
+					country_or_subject_owns_entire_state_region = STATE_SOUTHERN_MANCHURIA
+					country_or_subject_owns_entire_state_region = STATE_SONGJIANG
+					country_or_subject_owns_entire_state_region = STATE_NORTHERN_MANCHURIA
+				}
+			}
+	        any_state_in_manchuria_old = {
+	            filter = {
+					custom_tooltip = {
+						text = owned_by_russia_or_chinese_country
+						OR = {
+							owner = c:RUS
+							owner = {
+								OR = {
+									country_has_primary_culture = cu:manchu
+									country_has_primary_culture = cu:han
+								}
 							}
 						}
 					}
+	            }
+				any_scope_building = {
+					is_building_type = building_railway
+					levels_owned_by_country = {
+						target = c:RUS
+						value  >= 1
+					}
 				}
-			}
-			any_scope_building = {
-				is_building_type = building_railway
-				levels_owned_by_country = {
-					target = c:RUS
-					value >= 1
-				}
-			}
-			percent >= 1
+	            percent >= 1
+	        }
+		}
+		effect = {
+			set_global_variable = manchurian_railway_variable
+			great_game_russia_progress_15 = yes
+			je_chinese_concessions_cleanup = yes
 		}
 	}
-	on_complete = {
-		set_global_variable = manchurian_railway_variable
-		great_game_russia_progress_15 = yes
-	}
-	invalid = {
-		NOT = {
-			has_journal_entry = je_great_game_control
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			NOT = {
+				is_involved_in_journal_entry = je_great_game_control
+			}
+		}
+		effect = {
+			je_chinese_concessions_cleanup = yes
 		}
 	}
+
 	weight = 1000
-	transferable = yes
 }

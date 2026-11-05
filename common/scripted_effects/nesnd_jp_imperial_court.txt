@@ -1,11 +1,11 @@
 ﻿# Country scope, JIM. Save the imperial household before replacing its actual ruler.
 nesnd_jp_capture_court = {
     if = { limit = { c:JIM ?= this country_has_monarchy_law = yes }
-        if = { limit = { ruler ?= { has_variable = house_yamato is_character_alive = yes } }
+        if = { limit = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_yamato } is_character_alive = yes } }
             ruler = { save_scope_as = nesnd_jp_saved_emperor }
             set_variable = { name = nesnd_jp_emperor value = scope:nesnd_jp_saved_emperor }
             set_variable = { name = emperor_var value = scope:nesnd_jp_saved_emperor }
-            if = { limit = { heir ?= { has_variable = house_yamato is_character_alive = yes } }
+            if = { limit = { heir ?= { nesnd_character_of_dynasty = { HOUSE = house_yamato } is_character_alive = yes } }
                 heir = { save_scope_as = nesnd_jp_saved_imperial_heir }
                 set_variable = { name = nesnd_jp_imperial_heir value = scope:nesnd_jp_saved_imperial_heir }
             }
@@ -29,21 +29,21 @@ nesnd_jp_refresh_court = {
         if = { limit = { ruler ?= { has_template = USM_lin_hanhan is_character_alive = yes } has_variable = nesnd_jp_lin_v2 }
             if = { limit = { NOT = { nesnd_jp_emperor_valid = yes } }
                 if = { limit = { exists = var:nesnd_jp_imperial_heir }
-                    if = { limit = { var:nesnd_jp_imperial_heir = { is_character_alive = yes owner = c:JIM has_variable = house_yamato is_in_exile_pool = no } }
+                    if = { limit = { var:nesnd_jp_imperial_heir = { is_character_alive = yes owner = c:JIM nesnd_character_of_dynasty = { HOUSE = house_yamato } is_in_exile_pool = no } }
                         var:nesnd_jp_imperial_heir = { save_scope_as = nesnd_jp_saved_emperor }
                         set_variable = { name = nesnd_jp_emperor value = scope:nesnd_jp_saved_emperor }
                         remove_variable = nesnd_jp_imperial_heir
                     }
                 }
-                if = { limit = { NOT = { nesnd_jp_emperor_valid = yes } any_scope_character = { has_variable = house_yamato is_character_alive = yes is_in_exile_pool = no is_ruler_of_own_country = no } }
-                    random_scope_character = { limit = { has_variable = house_yamato is_character_alive = yes is_in_exile_pool = no is_ruler_of_own_country = no } save_scope_as = nesnd_jp_saved_emperor }
+                if = { limit = { NOT = { nesnd_jp_emperor_valid = yes } any_scope_character = { nesnd_character_of_dynasty = { HOUSE = house_yamato } is_character_alive = yes is_in_exile_pool = no is_ruler_of_own_country = no } }
+                    random_scope_character = { limit = { nesnd_character_of_dynasty = { HOUSE = house_yamato } is_character_alive = yes is_in_exile_pool = no is_ruler_of_own_country = no } save_scope_as = nesnd_jp_saved_emperor }
                     set_variable = { name = nesnd_jp_emperor value = scope:nesnd_jp_saved_emperor }
                 }
                 if = { limit = { NOT = { nesnd_jp_emperor_valid = yes } }
                     clear_saved_scope = nesnd_jp_saved_emperor
                     create_character = {
                         first_name = "nesnd_japan_yamato_successor_name" last_name = Yamato culture = cu:japanese age = 25 interest_group = ig_landowners ideology = ideology_moderate
-                        on_created = { set_variable = house_yamato set_variable = nesnd_jp_court_successor }
+                        on_created = { set_variable = house_yamato set_variable = { name = dynasty_var value = flag:house_yamato } set_variable = { name = dynasty_var value = flag:house_yamato } set_variable = nesnd_jp_court_successor }
                     }
                     random_scope_character = { limit = { has_variable = nesnd_jp_court_successor is_character_alive = yes } save_scope_as = nesnd_jp_saved_emperor remove_variable = nesnd_jp_court_successor }
                     if = { limit = { exists = scope:nesnd_jp_saved_emperor } set_variable = { name = nesnd_jp_emperor value = scope:nesnd_jp_saved_emperor } }
@@ -59,7 +59,7 @@ nesnd_jp_refresh_court = {
             }
         } else = {
             if = { limit = { has_variable = nesnd_japan_lin_regency_active } nesnd_japan_lin_clear_recipient = yes }
-            if = { limit = { ruler ?= { has_variable = house_yamato is_character_alive = yes } }
+            if = { limit = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_yamato } is_character_alive = yes } }
                 ruler = {
                     save_scope_as = nesnd_jp_saved_emperor
                     if = { limit = { has_role = character_role_emperor_of_japan } remove_character_role = character_role_emperor_of_japan }
@@ -67,7 +67,7 @@ nesnd_jp_refresh_court = {
                 set_variable = { name = nesnd_jp_emperor value = scope:nesnd_jp_saved_emperor }
                 set_variable = { name = emperor_var value = scope:nesnd_jp_saved_emperor }
                 if = { limit = { exists = var:nesnd_jp_imperial_heir }
-                    if = { limit = { var:nesnd_jp_imperial_heir = { is_character_alive = yes owner = c:JIM is_in_exile_pool = no is_ruler_of_own_country = no has_variable = house_yamato } }
+                    if = { limit = { var:nesnd_jp_imperial_heir = { is_character_alive = yes owner = c:JIM is_in_exile_pool = no is_ruler_of_own_country = no nesnd_character_of_dynasty = { HOUSE = house_yamato } } }
                         var:nesnd_jp_imperial_heir = { save_scope_as = jp_returned_imperial_heir }
                         set_heir = scope:jp_returned_imperial_heir
                     }
@@ -94,7 +94,7 @@ nesnd_jp_migrate_legacy_lin = {
         if = { limit = { exists = var:nesnd_jp_legacy_lin }
             if = { limit = { var:nesnd_jp_legacy_lin = { is_character_alive = yes is_in_exile_pool = no OR = { owner = c:JAP owner = c:JIM } }
                     c:JAP ?= { country_has_monarchy_law = yes }
-                    c:JIM ?= { is_country_alive = yes country_has_monarchy_law = yes OR = { ruler ?= { has_variable = house_yamato } ruler ?= { has_template = USM_lin_hanhan } } }
+                    c:JIM ?= { is_country_alive = yes country_has_monarchy_law = yes OR = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_yamato } } ruler ?= { has_template = USM_lin_hanhan } } }
                 }
                 var:nesnd_jp_legacy_lin = { save_scope_as = nesnd_jp_legacy_actor }
                 c:JIM = { nesnd_jp_capture_court = yes }
@@ -102,21 +102,21 @@ nesnd_jp_migrate_legacy_lin = {
                     clear_saved_scope = nesnd_jp_toyotomi_successor
                     c:JAP = {
                         if = { limit = { exists = var:nesnd_japan_lin_previous_ruler }
-                            if = { limit = { var:nesnd_japan_lin_previous_ruler = { is_character_alive = yes owner = c:JAP is_in_exile_pool = no has_variable = house_toyotomi } }
+                            if = { limit = { var:nesnd_japan_lin_previous_ruler = { is_character_alive = yes owner = c:JAP is_in_exile_pool = no nesnd_character_of_dynasty = { HOUSE = house_toyotomi } } }
                                 var:nesnd_japan_lin_previous_ruler = { save_scope_as = nesnd_jp_toyotomi_successor }
                             }
                         }
-                        if = { limit = { NOT = { exists = scope:nesnd_jp_toyotomi_successor } heir ?= { is_character_alive = yes has_variable = house_toyotomi } }
+                        if = { limit = { NOT = { exists = scope:nesnd_jp_toyotomi_successor } heir ?= { is_character_alive = yes nesnd_character_of_dynasty = { HOUSE = house_toyotomi } } }
                             heir = { save_scope_as = nesnd_jp_toyotomi_successor }
                         }
-                        if = { limit = { NOT = { exists = scope:nesnd_jp_toyotomi_successor } any_scope_character = { is_character_alive = yes is_in_exile_pool = no has_variable = house_toyotomi is_ruler_of_own_country = no } }
-                            random_scope_character = { limit = { is_character_alive = yes is_in_exile_pool = no has_variable = house_toyotomi is_ruler_of_own_country = no } save_scope_as = nesnd_jp_toyotomi_successor }
+                        if = { limit = { NOT = { exists = scope:nesnd_jp_toyotomi_successor } any_scope_character = { is_character_alive = yes is_in_exile_pool = no nesnd_character_of_dynasty = { HOUSE = house_toyotomi } is_ruler_of_own_country = no } }
+                            random_scope_character = { limit = { is_character_alive = yes is_in_exile_pool = no nesnd_character_of_dynasty = { HOUSE = house_toyotomi } is_ruler_of_own_country = no } save_scope_as = nesnd_jp_toyotomi_successor }
                         }
                     }
                     if = { limit = { NOT = { exists = scope:nesnd_jp_toyotomi_successor } }
                         c:JAP = {
                             create_character = { first_name = "nesnd_jp_toyotomi_court_name" last_name = Toyotomi culture = cu:japanese age = 30 interest_group = ig_landowners ideology = ideology_moderate
-                                on_created = { set_variable = house_toyotomi set_variable = nesnd_jp_toyotomi_court_fallback }
+                                on_created = { set_variable = house_toyotomi set_variable = { name = dynasty_var value = flag:house_toyotomi } set_variable = { name = dynasty_var value = flag:house_toyotomi } set_variable = nesnd_jp_toyotomi_court_fallback }
                             }
                             random_scope_character = { limit = { has_variable = nesnd_jp_toyotomi_court_fallback is_character_alive = yes }
                                 save_scope_as = nesnd_jp_toyotomi_successor remove_variable = nesnd_jp_toyotomi_court_fallback

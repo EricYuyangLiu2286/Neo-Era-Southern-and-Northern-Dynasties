@@ -1,6 +1,7 @@
 ﻿nesnd_wu_eastern_question = {
     icon = "gfx/interface/icons/politics_icons/revolution.dds"
     group = je_group_historical_content
+    activation_description = { always = yes }
     can_revolution_inherit = no
     possible = {
         c:USM ?= this has_variable = tag_WUU_var
@@ -22,10 +23,20 @@
     scripted_progress_bar = nesnd_eastern_readiness_bar
     scripted_button = nesnd_japan_send_terms
     scripted_button = nesnd_japan_accept_status_quo
-    complete = { custom_tooltip = { text = nesnd_eastern_question_resolved_tt has_global_variable = nesnd_japan_dossier_closed } }
-    on_complete = { }
-    invalid = { OR = { NOT = { has_global_variable = nesnd_south_settled } NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_eastern_absolute_v2 } } }
-    on_invalid = { if = { limit = { NOT = { has_variable = tag_WUU_var } } set_global_variable = nesnd_japan_dossier_closed } else = { remove_variable = nesnd_japan_dossier_entered } }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = { custom_tooltip = { text = nesnd_eastern_question_resolved_tt has_global_variable = nesnd_japan_dossier_closed } }
+    	effect = { }
+    }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { OR = { NOT = { has_global_variable = nesnd_south_settled } NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_eastern_absolute_v2 } } }
+    	effect = { if = { limit = { NOT = { has_variable = tag_WUU_var } } set_global_variable = nesnd_japan_dossier_closed } else = { remove_variable = nesnd_japan_dossier_entered } }
+    }
     on_monthly_pulse = { effect = {
             nesnd_japan_consider_terms_once = yes
             nesnd_japan_observe_other_house = yes
@@ -52,6 +63,7 @@
 nesnd_japan_reunification = {
     icon = "gfx/interface/icons/politics_icons/revolution.dds"
     group = je_group_historical_content
+    activation_description = { always = yes }
     can_revolution_inherit = yes
     possible = {
         OR = { c:JAP ?= this c:JTK ?= this c:JIM ?= this }
@@ -60,13 +72,23 @@ nesnd_japan_reunification = {
     }
     is_shown_when_inactive = { OR = { c:JAP ?= this c:JTK ?= this c:JIM ?= this } }
     immediate = { set_variable = nesnd_japan_unity_entered set_variable = nesnd_unification_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_japan_unification_bar value = owner.nesnd_japan_unity_score } } }
-    invalid = { OR = { NOT = { nesnd_jp_country = yes } NOT = { has_variable = nesnd_unification_absolute_v2 } } }
+    outcome = {
+    	flags = { hidden invalid_outcome }
+    	conclusion_desc = je_standard_failure_conclusion_desc
+    	trigger = { OR = { NOT = { nesnd_jp_country = yes } NOT = { has_variable = nesnd_unification_absolute_v2 } } }
+    }
     scripted_progress_bar = nesnd_japan_unification_bar
-    complete = { nesnd_japan_is_united = yes }
-    on_complete = {
-        set_variable = nesnd_japan_unified
-        add_modifier = { name = nesnd_japan_integrated months = 120 }
-        trigger_event = { id = nesnd_japan.5 popup = yes }
+    outcome = {
+    	header = je_standard_completion_header
+    	effect_header = je_standard_on_completion_header
+    	color = "gold_positive"
+    	conclusion_desc = je_standard_completion_conclusion_desc
+    	trigger = { nesnd_japan_is_united = yes }
+    	effect = {
+    	    set_variable = nesnd_japan_unified
+    	    add_modifier = { name = nesnd_japan_integrated months = 120 }
+    	    trigger_event = { id = nesnd_japan.5 popup = yes }
+    	}
     }
     on_monthly_pulse = { effect = { nesnd_japan_review_old_split = yes } }
     weight = 800

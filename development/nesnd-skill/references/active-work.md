@@ -1,4 +1,8 @@
-# 当前入口：运行错误、本地化与日本团结度（任务36–37）
+# 当前入口：任务40，Victoria 3 1.15.0 Ivan-Chai（26453692）
+
+读取主 MOD 的 .scratch/debug-release/issues/40-migration-115.md。当前包已做离线迁移和回归。后续引擎验收须按当次用户要求进行。以下为历史记录。
+
+# 历史：运行错误、本地化与日本团结度（任务36–37）
 
 恢复工作先读主 MOD 的 `docs/agents/handoff-20261105.md` 和 `.scratch/debug-release/issues/37-punctuation-native-art.md`。其中区分已经部署的脚本、离线回归、实际引擎未测项和另行排队的旧工作。当前游戏版本 1.13.11 / Steam build 24799966。下面是旧交付记录。
 
