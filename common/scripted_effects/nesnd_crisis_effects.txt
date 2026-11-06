@@ -161,10 +161,10 @@ nesnd_join_opposition_play = {
         }
         save_scope_as = nesnd_south_join_candidate
         random_diplomatic_play = { limit = { nesnd_south_named_play = yes is_war = no }
-            if = { limit = { NOT = { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } } }
+            if = { limit = { NOT = { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_south_join_candidate } } }
                 add_target_backers = { scope:nesnd_south_join_candidate }
             }
-            if = { limit = { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } }
+            if = { limit = { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_south_join_candidate } }
                 scope:nesnd_south_join_candidate = { set_variable = nesnd_joined_south_play }
             }
         }
@@ -329,16 +329,13 @@ nesnd_open_southern_war = {
                     }
                     save_scope_as = nesnd_south_join_candidate
                     scope:nesnd_south_opening_play ?= {
-                        # An involved HNA can still be undecided; check its actual side.
-                        if = { limit = { scope:nesnd_south_join_candidate = { c:HNA ?= this NOT = { AND = { is_diplomatic_play_enemy_of = c:USM is_diplomatic_play_participant_with = c:USM } } } }
-                            add_target_backers = { scope:nesnd_south_join_candidate }
-                        }
-                        else_if = { limit = { NOT = { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } } }
+                        # Every declared opposition country must actually commit to this side.
+                        if = { limit = { NOT = { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_south_join_candidate } } }
                             add_target_backers = { scope:nesnd_south_join_candidate }
                         }
                     }
-                    if = { limit = { nesnd_south_mainland_holdout = yes is_diplomatic_play_enemy_of = c:USM
-                            scope:nesnd_south_opening_play ?= { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } } }
+                    if = { limit = { nesnd_south_mainland_holdout = yes
+                            scope:nesnd_south_opening_play ?= { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_south_join_candidate } } }
                         set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
                     }
                 }
@@ -374,7 +371,7 @@ nesnd_open_southern_war = {
                             is_subject = no
                         }
                         scope:nesnd_south_opening_play ?= {
-                            if = { limit = { NOT = { any_scope_play_involved = { c:JAP ?= this } } }
+                            if = { limit = { NOT = { nesnd_play_has_committed_initiator = { COUNTRY = c:JAP } } }
                                 add_initiator_backers = { c:JAP }
                             }
                         }

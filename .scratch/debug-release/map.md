@@ -2,6 +2,8 @@
 
 **项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
 
+[任务49 · GNG 与参战判定全 MOD 审计](issues/49-play-commitment-audit.md)：审计18文件46处，修复共同入场、干预、日吴、秦边疆、波兰及成功登记；保留国家概率，STATIC_PASS，待用户实机复测。
+
 [任务48 · HNA 开场选边与参战](issues/48-hna-civilwar-alignment.md)：明确 AI 95% 拥明／5% 独立，修复“已涉及即跳过加入”的 HNA 守卫；STATIC_PASS，未开游戏，待新开局复测。
 
 [任务47 · HUS 社会阶序条件显示](issues/47-hus-class-tooltips.md)：四类文化条件改用原生具名提示，保留全部分层逻辑；STATIC_PASS，待作者复测。独立分支提交推送并同步主 MOD，不合并 main。

@@ -1,0 +1,46 @@
+﻿# Diplomatic-play scope. COUNTRY is a country scope/tag.
+# Involvement includes undecided countries; commitment and side are separate.
+# Once war starts, use the participants of this play's own war.
+nesnd_play_has_committed_target = {
+    exists = $COUNTRY$
+    trigger_if = {
+        limit = { is_war = yes }
+        exists = war
+        war ?= {
+            is_war_participant = $COUNTRY$
+            is_on_defending_side = $COUNTRY$
+        }
+    }
+    trigger_else = {
+        OR = {
+            target_is = $COUNTRY$
+            any_scope_play_involved = {
+                this = $COUNTRY$
+                is_diplomatic_play_participant_with = prev.initiator
+                is_diplomatic_play_enemy_of = prev.initiator
+            }
+        }
+    }
+}
+
+nesnd_play_has_committed_initiator = {
+    exists = $COUNTRY$
+    trigger_if = {
+        limit = { is_war = yes }
+        exists = war
+        war ?= {
+            is_war_participant = $COUNTRY$
+            NOT = { is_on_defending_side = $COUNTRY$ }
+        }
+    }
+    trigger_else = {
+        OR = {
+            initiator_is = $COUNTRY$
+            any_scope_play_involved = {
+                this = $COUNTRY$
+                is_diplomatic_play_participant_with = prev.target
+                is_diplomatic_play_enemy_of = prev.target
+            }
+        }
+    }
+}
