@@ -1,0 +1,58 @@
+# NESND 当前状态
+
+这是项目唯一的“当前”入口。只写现在的情况；历史放 `docs/agents/history/`。维护规则见文末。
+
+更新：2026-11-06（任务 47：HUS 社会阶序条件显示修复）
+
+## 基线
+
+- 游戏：Victoria 3 **1.15.0 Ivan-Chai / Steam build 26453692**。上一基线 1.13.11 / 24799966。
+- 主干玩法基线：`90fe4b4`（任务 46）。任务 47 的 HUS 条件提示修复位于分支 `codex/hus-classes-tooltip-20261106`，同步主 MOD，不合并 main；交付指纹见 `reports/2026-11-06-hus-classes/release.json`。任务 40–44、46–47 均未完成对应修复后的实机验证。
+- metadata 版本 0.2.0，声明支持 1.15.0（仅为包声明）。
+
+## 位置
+
+| 名称 | 路径 | 说明 |
+|---|---|---|
+| 主 MOD | `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties` | 游戏加载目录，唯一可写的游戏目录 |
+| Git 工作副本 | `…/Victoria 3/nesnd-workbench/projects/nesnd-repository` | 与主 MOD 是两个目录，合并时逐文件比较 |
+| 远端 | `github.com/EricYuyangLiu2286/Neo-Era-Southern-and-Northern-Dynasties` | 代理用分支，作者合并 |
+| 工作台 | `…/Victoria 3/nesnd-workbench` | 工具、备份、报告、原版基线 |
+| 技能 | `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3`、`nesnd-player-writing` | 仓库副本在 `development/` |
+| 任务账 | `.scratch/debug-release/issues/NN-*.md`，索引 `map.md` | 每项任务的细节与证据 |
+| 作者原作 | Git tag `original-20261030`（`f18b6c4`） | 风格与设计的样本 |
+
+## 进行中
+
+- Codex：任务 47（HUS 社会阶序条件显示）已完成游戏外修复，STATIC_PASS，待作者新开局复测。详见 `.scratch/debug-release/issues/47-hus-class-tooltips.md`。
+- 技能于 2026-11-06 重写（分支 `claude/skill-rewrite-20261106`）：去掉模型分工条款和事故记录，新增内容形状与两种声音的写作规则。
+
+## 已知差异
+
+- 主 MOD 的 `localization/simp_chinese/replace/nesnd_india_l_simp_chinese.yml` 是作者改稿，与 Git 不同。先查看差异，不覆盖。
+
+## 未完成
+
+1. 法国新后继路线（“宫廷与外省”、巴黎与地方配置、共和国分配与右转）。任务 29、42。
+2. 法国古吉拉特、包罗达、讷瓦讷格尔直辖与本地舰队：任务 46 已写入，未实机验证。
+3. 日本新政的差异化政治选择。任务 31。
+4. 编辑器完整交付（舍入缺陷已修）。任务 08。
+5. 新美术：人物、五张场景图、主菜单、事件图。
+6. 四份中文改稿对应的旧英文正文：任务 46 已全量审阅重写（只认证这四份）。
+7. HUS 社会阶序的文化提示、阶层悬停及相关 culture/none 错误是否消失：任务 47 待作者复测。
+
+待作者在游戏中回答的问题（任务 43–44 的界面、靖难战争、原住民复国、流散人口、团结度节奏、地区门槛）见 `history/development-summary-20261106.md` 第 4 节。
+
+## 历史
+
+- `history/development-summary-20261106.md`：开发过程、作者约束、代理自评。
+- `history/retained-versions-20261106.md`：工作台中保留的备份与 Git 引用。
+- `history/active-work-to-20261106.md`：2026-11-06 前的逐轮交接。
+- `handoff-20261105.md`：任务 36–37 的交接。
+
+## 维护规则
+
+- 本文件只写现在。改动时覆盖旧内容，不在顶部追加新的“当前”段。全文控制在两屏以内。
+- 一项任务完成：细节写进它的 issue 文件；这里只更新“基线”“进行中”“未完成”中受影响的行。
+- 被替换的旧状态如仍有价值，另存为 `history/<主题>-<日期>.md`。
+- 技能里不写项目状态。
