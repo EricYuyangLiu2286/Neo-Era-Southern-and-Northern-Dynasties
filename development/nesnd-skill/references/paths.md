@@ -9,6 +9,18 @@
 | USERDATA | `D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3` | 游戏日志/存档/加载配置；验证前保存旧日志与配置，运行后恢复用户加载组合；不得覆盖既有存档 |
 | WORKSHOP | `D:\Program Files (x86)\Steam\steamapps\workshop\content\529340` | 参考 MOD 和依赖，全部只读 |
 
+## 会话需要连接哪些目录
+
+通过文件桥（每次会话选择文件夹）工作时，连接这三个即可覆盖上表全部常用位置：
+
+1. `D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3`：包含 MOD（`mod\Neo-Era…`，可写）、WORK（`nesnd-workbench`，可写）、`logs`、`docs`（script_docs 导出）、`save games`（只读）。
+2. `C:\Users\Eric Liu\.codex\skills`：`nesnd-victoria3` 与 `nesnd-player-writing`（可写）。
+3. `D:\Program Files (x86)\Steam\steamapps\common\Victoria 3`：GAME，只读。
+
+只在做服装/UI 兼容时再连接 WORKSHOP。OneDrive 和桌面上的旧项目、设定、翻译资料很少需要，用到时再连接。
+
+若会话装有 Desktop Commander 等本机终端工具，它不受上述连接限制，可直接访问这些路径；只读规则仍按上表执行。
+
 ## 参考来源，不是可修改的第二工作区
 
 创意工坊 MOD 只用于查兼容接口（资源名、GUI 注入点、触发器名）。不学习、不仿写、不复制其他作者的内容设计与代码；设计与写法以 GAME 本体和作者原作为准。
