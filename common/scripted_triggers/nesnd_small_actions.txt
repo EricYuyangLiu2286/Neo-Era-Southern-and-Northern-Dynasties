@@ -8,8 +8,24 @@
 }
 nesnd_small_can_retarget = {
     hidden_trigger = { nesnd_small_state_country = yes OR = { has_variable = nesnd_small_regional nesnd_small_far_south = yes nesnd_small_burma = yes nesnd_small_siam = yes } } has_revolution = no
+    custom_tooltip = { text = nesnd_small_retarget_size_tt nesnd_small_populated_states > 4 }
+    custom_tooltip = { text = nesnd_small_retarget_change_tt nesnd_small_retarget_changes_groups = yes }
     custom_tooltip = { text = nesnd_small_retarget_ready_tt NOT = { has_variable = nesnd_small_retarget_cooldown } }
     OR = { AND = { has_variable = nesnd_small_regional nesnd_small_generic_targets_available = yes } nesnd_small_generic_eligible = yes }
+}
+# The proposed split is the most populous state versus all other populated states.
+# Reordering representative names alone is not a new development target.
+nesnd_small_retarget_changes_groups = {
+    trigger_if = {
+        limit = { exists = var:nesnd_small_anchor_one }
+        OR = {
+            NOT = { var:nesnd_small_anchor_one = { owner = prev nesnd_small_group_one = yes } }
+            any_scope_state = { owner = prev state_population > prev.var:nesnd_small_anchor_one.state_population }
+            any_scope_state = { owner = prev nesnd_small_group_one = yes NOT = { this = prev.var:nesnd_small_anchor_one } }
+            any_scope_state = { owner = prev state_population > 0 NOT = { this = prev.var:nesnd_small_anchor_one } NOT = { nesnd_small_group_two = yes } }
+        }
+    }
+    trigger_else = { always = yes }
 }
 nesnd_small_generic_eligible = {
     nesnd_small_population >= 2000000 nesnd_small_populated_states >= 2
