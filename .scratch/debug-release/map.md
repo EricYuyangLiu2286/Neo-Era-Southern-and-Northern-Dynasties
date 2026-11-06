@@ -1,5 +1,7 @@
 # 恢复开发、DEBUG、版本保存与交付
 
+当前工作：[任务47 · 中文代理文本去平衡腔](issues/47-chinese-prose-voice.md)。第一步统计完成：代理叙事键2,190，命中高频句式983；10条改稿样例待用户确认方向。未改游戏文件。
+
 最新交付：[任务46 · 四份英文与法国古吉拉特](issues/46-english-gujarat.md)。691英文键已全量审阅、330键重写；指定三份古吉拉特领土及法国6舰分舰队已落库。STATIC_PASS，未开游戏。发布提交见WORK/reports/english-gujarat-20261106/release.json。下方任务45“最新玩法”是当时快照。
 
 新对话接手：[任务45 · 开发总结与保留版本](issues/45-development-summary.md)。完整总结在NESND技能references。最新玩法仍为任务44／67c876e；本次只维护文档。
