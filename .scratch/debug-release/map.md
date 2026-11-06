@@ -1,6 +1,6 @@
 # 恢复开发、DEBUG、版本保存与交付
 
-最新交付：[任务47 · 中文代理文本去平衡腔](issues/47-chinese-prose-voice.md)。中文33个文件、439键逐条重写，南朝内战恢复作者原句口气。STATIC_PASS，未开游戏，英文未改。项目状态见[STATUS](../../docs/agents/STATUS.md)。
+最新交付：[任务47 · 中文代理文本去平衡腔](issues/47-chinese-prose-voice.md)。中文33个文件、439键逐条重写，南朝内战恢复作者原句；英文对应439键同步重写。STATIC_PASS，未开游戏。34个作者改稿键待作者按附表决定。项目状态见[STATUS](../../docs/agents/STATUS.md)。
 
 最新交付：[任务46 · 四份英文与法国古吉拉特](issues/46-english-gujarat.md)。691英文键已全量审阅、330键重写；指定三份古吉拉特领土及法国6舰分舰队已落库。STATIC_PASS，未开游戏。发布提交见WORK/reports/english-gujarat-20261106/release.json。下方任务45“最新玩法”是当时快照。
 

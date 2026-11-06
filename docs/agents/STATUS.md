@@ -4,17 +4,16 @@ Updated: 2026-11-06
 
 ## 当前
 
-- 最新交付：[任务47 · 中文代理文本去平衡腔](../../.scratch/debug-release/issues/47-chinese-prose-voice.md)。中文 33 个文件、439 键逐条重写；南朝内战事件恢复作者原句口气。只改中文，英文未动。
-- 验证等级：STATIC_PASS（逐键比对动态代码、数字、颜色；UTF-8 BOM、语言头、键集合、无重复键）。未启动游戏，未实机验证。
+- 最新交付：[任务47 · 中文代理文本去平衡腔](../../.scratch/debug-release/issues/47-chinese-prose-voice.md)。中文 33 个文件、439 键逐条重写，南朝内战恢复作者原句；英文对应 439 键同步重写，内战选项与波兰日志恢复作者英文原句。
+- 验证等级：STATIC_PASS（中英文逐键比对动态代码、数字、颜色；BOM、语言头、键集合、无重复键）。未启动游戏，未实机验证。
 - 分支：`claude/fervent-ramanujan-y1ajzz`，未合并 main，草稿 PR：EricYuyangLiu2286/Neo-Era-Southern-and-Northern-Dynasties#3。
 - 主 MOD：本轮在云端完成，无法写入本机主 MOD。需在本机拉取该分支后同步。
 
 ## 待办
 
-- 英文对应键按新中文改写（另开任务）。
-- 34 个“作者改稿后又被代理改动”的键，本轮未动，待作者决定。清单见任务47。
-- `nesnd_india_l_simp_chinese.yml`：本轮改了 12 键。本机主 MOD 若有未上传改稿，同步时须先比对，避免互相覆盖。
-- 实机检查改写后的事件、日志和按钮显示（行宽、换行）。
+- 34 个“作者改稿后又被代理改动”的键：对照表见 [附表](../../.scratch/debug-release/issues/47-author-then-agent-34.md)，等作者逐组决定。
+- `nesnd_india_l_simp_chinese.yml` 与对应英文：本轮各改了 12 键。本机主 MOD 若有未上传改稿，同步时须先比对。
+- 实机检查改写后的事件、日志和按钮显示（中英文行宽、换行）。
 
 ## 历史
 

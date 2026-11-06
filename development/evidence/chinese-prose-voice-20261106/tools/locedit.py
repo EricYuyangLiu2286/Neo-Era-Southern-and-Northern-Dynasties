@@ -19,7 +19,7 @@ def load_file(path):
 
 def index_repo(repo):
     out = {}
-    root = os.path.join(repo, 'localization/simp_chinese')
+    root = os.path.join(repo, 'localization', os.environ.get('LOC_LANG', 'simp_chinese'))
     for dp, _, fs in os.walk(root):
         for f in fs:
             if f.endswith('.yml'):
@@ -129,7 +129,7 @@ def apply(repo, edits_path):
 
 
 def check(repo, base):
-    names = subprocess.run(['git', '-C', repo, 'diff', '--name-only', base, '--', 'localization/simp_chinese'],
+    names = subprocess.run(['git', '-C', repo, 'diff', '--name-only', base, '--', 'localization/' + os.environ.get('LOC_LANG', 'simp_chinese')],
                            capture_output=True, text=True).stdout.split()
     bad, changed, perfile = [], 0, Counter()
     for f in names:

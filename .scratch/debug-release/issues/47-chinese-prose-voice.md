@@ -443,3 +443,18 @@ Evidence: development/evidence/chinese-prose-voice-20261106/
 
 - 英文对应键未改，需另开任务按新中文重写。
 - 主 MOD 同步须在本机完成（云端无法写入）。
+
+## Comments（2026-11-06 第二次答复）
+
+1. “作者改稿后又被代理改动的 34 键”：用户需要看到具体内容才能决定。已整理为 [附表](47-author-then-agent-34.md)：按处理方式分五组，每键列出作者稿、现稿、改动提交和当时理由，并附建议。待用户逐组答复，本轮不改这 34 键。
+2. `usm_civilwar.10.3`：原句符合设定（指 1812 年山西共和党人反抗牧仲棠的起义），恢复为“1812赢不了，今天我们再来一遍！”。英文同步恢复。该键新增数字 1812，经用户确认。
+3. 英文：直接改。
+
+## Result（英文）
+
+- 英文 33 个文件、439 键，与第二步中文改动的键一一对应，逐条按新中文重写为自然英文，不逐句直译。
+- 中文恢复了作者原句的内战选项（1.1–1.3、2.2–2.5、3.t、3.1、10.t、10.1–10.3、23.1、23.3），英文用标签 `original-20261030` 中作者当时的英文原句；1.1 补全为五个称呼，2.2 补全后半句，10.3 改写得更通顺并保留 1812。波兰两条日志正文也恢复作者英文原句。
+- 沿用现行英文译名：Assembly of Rites（礼议院）、provincial delegates（学政）、cabinet and Six Ministries（内阁六部）、Southern Administration（南府）、chief minister（首辅）、Far East Continent（极东洲）、distant England（西极英蒽兰）。
+- 校验：439 键的动态代码、数字、颜色、`\n` 与改前英文一致，唯一差异是用户确认的 `usm_civilwar.10.3` 新增 1812；33 个文件 BOM、`l_english:` 语言头、换行符、键集合不变；英文全目录 7,969 键无重复；没有混入中文字符。
+- 证据：`development/evidence/chinese-prose-voice-20261106/step3-english-changes.json`（改前改后全文）、`step3-english-edits/`、`step3-english-check.json`。
+- 未实机验证：英文较中文长，事件框和按钮提示的换行、截断都没看过。
