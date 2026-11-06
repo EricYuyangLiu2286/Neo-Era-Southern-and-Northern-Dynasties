@@ -1,5 +1,7 @@
 # 恢复开发、DEBUG、版本保存与交付
 
+新对话接手：[任务45 · 开发总结与保留版本](issues/45-development-summary.md)。完整总结在NESND技能references。最新玩法仍为任务44／67c876e；本次只维护文档。
+
 当前工作：[任务44 · 日志操作与地区指标](issues/44-hus-player-flow.md)。本轮只做游戏外验证。
 
 当前交付：[任务43 · 文案、修正图标与可见日志结局](issues/43-prose-icons-outcomes.md)。上一批：[任务42 · 靖难、地区自治与日志修复](issues/42-campaign-followup.md)。

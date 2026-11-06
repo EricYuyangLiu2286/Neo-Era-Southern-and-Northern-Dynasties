@@ -9,6 +9,8 @@ description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚�
 
 与 Matt Pocock 工程技能协作、恢复任务或做版本交付时，先读 [项目工程适配](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/docs/agents/engineering-skills.md>)。领域规则继续由本技能维护；当前授权、候选与进度经 [当前交接](references/active-work.md)进入项目任务索引。
 
+新对话接手本项目时，先读[开发总结、未完成项与主审自评](references/project-development-summary-20261106.md)。需要辨认旧源码、候选或备份时，再读其中链接的保留版本清单；不要把历史交接里的“当前”当成最新状态。
+
 ## 子智能体模型分工（强制）
 
 **玩家文案是独立的高要求工作：创作和改写中英文玩家文本，必须使用至少GPT-6 Astra / Medium；本轮可用配置为`gpt-6-astra / high`。Sol和Luna仅可定位问题、核脚本与列文本契约，不能作为最终文案作者。主智能体须逐条对照实际脚本、作者原稿与地区文化审稿；不通过时由主智能体亲自重写、再次对读，直至通过。** 具体执行[玩家写作技能](../nesnd-player-writing/SKILL.md)的发布门槛。
