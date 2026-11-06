@@ -1,4 +1,6 @@
-# 恢复开发、DEBUG、版本保存与交付
+﻿# 恢复开发、DEBUG、版本保存与交付
+
+**项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
 
 新对话接手：[任务45 · 开发总结与保留版本](issues/45-development-summary.md)。完整总结在NESND技能references。最新玩法仍为任务44／67c876e；本次只维护文档。
 

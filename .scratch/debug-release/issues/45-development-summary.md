@@ -11,7 +11,7 @@ Evidence: WORK/reports/development-summary-20261106/
 
 用户要求在技能references记录历次更新、每份保留版本、工作难点、未回答的问题及主代理弱点。
 
-- 正文：`C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/references/project-development-summary-20261106.md`。
+- 正文：`docs/agents/history/development-summary-20261106.md`（2026-11-06 从技能移出）。
 - 清单：同目录`retained-versions-20261106.md`。实际盘点22个backup目录、2个export、18份嵌套元数据源码/测试材料、2份旧MOD ZIP、20个真实远端分支和6标签；区分完整源码、局部文本、故意错误输入及已撤回候选。初稿遗漏ZIP、误写releases为空，经独立复核及主代理实际读取压缩包修正。
 - SKILL和active-work已指向新入口，旧交接标作历史。最近玩法交付为67c876e/任务44，静态通过不等于实机验收。
 - 当前主MOD有`nesnd_india_l_simp_chinese.yml`作者工作区差异。本次保留、不覆盖，不将其偷偷打入文档提交。

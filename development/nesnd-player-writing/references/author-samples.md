@@ -1,34 +1,69 @@
-# 作者样本与反例入口
+# 作者样本
 
-原始目录：`D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/backups/pre-update-20261030T233944Z/mod/localization/simp_chinese/replace/`。也可从仓库 `f18b6c4` 读同路径；使用前核验来源，不以当前同名键自动认定作者原文。
+全部取自 Git tag `original-20261030`（提交 `f18b6c4`），即 AI 参与前的作者原作。读全文：`git show original-20261030:localization/simp_chinese/replace/<文件>`。
 
-|类别|原始文件与键|对读重点|
+文件：
+- `ce_french_empire_journals_l_simp_chinese.yml`（法兰西帝国链：日志、按钮、进度条、事件）
+- `ce_cne_events_l_simp_chinese.yml`（沐帝国 / 地权革命）
+- `ce_usm_events_l_simp_chinese.yml`（明 / 吴）
+- 英文同名文件在 `localization/english/replace/`
+
+## 日志正文：历史来路 + 立场 + 一个问题
+
+> **je_ce_unstable_imperium_reason**：自1832年拿破仑三世登基以来，好大喜功又思想活跃的第三代波拿巴皇帝在法国内部同时推动多项改革，并在这个过程中激进地对各类“重大工业部门”挥洒税款。似乎只要向工业经济注入足够多的资源，就能让整个法国乃至欧洲自动变成他承诺的“和平且伟大之地”。事实真能如此吗？就算法国真的那么伟大，这个法国中又有没有拿破仑们的位置呢？
+
+> **ce_cne_land_draft_failing_reason**：掌握权力的中华帝国统治集团是以牧氏家族为核心的武勋贵族集团，以及围绕着他们成长起来的一批新派士绅。他们对摧毁了华北秦燕帝国的西秦大革命记忆犹新，因此在一定程度上愿意对社会下层让利以自保。然而，随着时间的推移与势力内部的斗争，理智和恐惧会同时衰退。
+
+“好大喜功”“挥洒税款”是叙述者的判断。作者也用“然而”，但用在真正的转折处（统治集团从让利走向反对），不是为平衡口气。
+
+## 事件正文：具体的人和利益
+
+> **flavorCNE.4.d**：地权革命是经济上的革新，同样也是一项冷酷的政治运动。它要将一整个旧社会窃夺数千年的利益，转移到诞生不过数十年的新贵手中。这一过程不仅仅是金钱赎买就能结束的，必然存在法律机关的追捕、诓骗、来回的争夺、执行者的背叛，甚至是残酷的暴力手段。
+
+> **flavorCNE.3.d**（节选）：随着旧宗族和土地不再能锁住农民，无数稚嫩、满是灰土却充满朝气的脸孔源源不断地从郊野涌入城市。他们憧憬新的生活。
+
+手段逐项列出（追捕、诓骗、背叛、暴力），利益写清从谁转给谁。
+
+## 标题、引文、选项
+
+| 键 | 原文 | 注 |
 |---|---|---|
-|改革完成正文|`ce_cne_events_l_simp_chinese.yml` / `flavorCNE.3.d`|法案、人口摆脱宗族、进入城市与皇帝理想之间的因果；不缩成发契登记。|
-|改革阻力正文|同文件 / `flavorCNE.4.d`|冷酷政治过程与阶层关系，法律、欺骗、争夺、暴力并列为具体手段。|
-|选项|同文件 / `flavorCNE.4.1`|“胡言乱语，正不必忧心。”有说话人的立场；不改成助手式后果预告。|
-|日志正文|同文件 / `ce_cne_land_reform_reason`|从西秦革命、土地所有权到牧仲棠恢复运动的历史过程。|
-|历史叙事|`ce_usm_events_l_simp_chinese.yml` / `flavorUSM.4.d`|郑昭觐见、军队与属地细节、流民和集权变法；长段不等于冗余。|
-|朝争日志|同文件 / `ce_usm_conflicts_within_reason`|由“明朝朱姓，还是吴国郑氏？”进入社会中的争论，有具体场所和传播形式。|
-|政治按钮|`ce_french_empire_journals_l_simp_chinese.yml` / `ce_french_support_dynasty_button_desc`|明确阵营立场，按钮正文不是中性的规格表。|
-|进度条|同文件 / `ce_french_empire_oreleans_progress_bar_desc`|原生百分比、当前值与总值；来源明细在进度条代码中。|
+| fra_unrest.4.t | 异梦同床 | 成语点题 |
+| flavorCNE.4.t | “万民书” | 点出文书 |
+| fra_unrest.13.f | “小小拿破仑，治国靠佞臣。岛夷非正主，依旧让民权！” | 街头口号作引文 |
+| flavorCNE.4.f | 天杀尤无奈，地卷不能逃。岁末小积蓄，官人何忍收？ | 民谣 |
+| fra_unrest.12.f | ……“传统，”他们说。另外成千上万的人发誓要焚烧尸体。“霍乱，”他们说。 | 讽刺的对照 |
+| flavorCNE.4.1 / .2 | 胡言乱语，正不必忧心。 / 风头正盛，需暂避锋芒。 | 两种态度，各一句 |
+| fra_unrest.16.1 | 有人要被畏罪自杀了。 | 黑色幽默 |
+| fra_unrest.13.2 | 他们骂小拿破仑跟我[…统治者姓名…]有什么关系？ | 统治者本人开口 |
 
-历史对读记录：`WORK/research/20261031/replace-style-review/逐类对照.md`。该文件保存了当时的失败候选，不是可直接照抄的合格文案；其中“本轮候选”可能早已被改正。作者风格研究保留在 `nesnd-victoria3/references/author-prose-profile.md`，本技能负责实际写作流程。
+## 按钮、进度条、修正
 
-## 已确认的返工模式
+| 键 | 原文 |
+|---|---|
+| ce_french_support_dynasty_button_desc | 波拿巴的道路是[ROOT.GetCountry.GetAdjective]民族团结和繁荣的唯一办法。 |
+| ce_french_freeze_republican_movement_with_institution_2_desc | 面包和马戏永远不过时。 |
+| ce_french_republican_hit_economy_desc | 正义的事业总不缺支持者。 |
+| ce_french_stability_increase_50_tt | 稳定度变化：#g +50#! |
+| ce_republican_power_20 | 共和呼声进度达到#g 20%#!进度 |
+| push_land_reform_forward_15 | #BOLD 地权革命#![concept_journal_entry]的进度#bold 增长15点#! |
+| FRA_ce_french_internal_victory | 拿破仑繁荣 |
+| ce_lose_the_monarchist_way | 君主主义下水道 |
 
-- 原文谈土地商品化与劳动力自由，候选却只谈清丈、盖印、核册：主题被缩小，须按原文重建因果，不补几个宏大词了事。
-- 原文引文为有归属的誓言，候选改成没有事件功能的廊下领契场景：改变了字段用途，不应把场景描写当默认风味段。
-- “统计范围与地方困顿判断保持一致。推进中的子项目才增加改革进度；暂停不清空已有进度”：面向开发者。统计只保留读数，进度来源用原生条，机制名称用“地方失序”。
-- “多组符合时仍只计算一次。两项可以同时生效”：若前文已说“任一”且规则可并存，这些句子重复。保留真实而不可推知的互斥限制即可。
-- “继续决定改革成果”“按原规则增加压力”：叙述版本变化，玩家无需知道旧实现。删掉更新视角，直接写本次可见的事实或效果。
+## 英文（作者原作）
 
-本表不限制作者在人物台词中使用“不是”“继续”等普通词。判断句子承担什么工作，不能靠关键词替代编辑。
+| 键 | 原文 |
+|---|---|
+| fra_unrest.4.t | Strange Bedfellows |
+| fra_unrest.16.1 | Someone is about to 'commit suicide' to escape punishment. |
+| ce_french_freeze_republican_movement_with_institution_2_desc | Bread and circuses never go out of style. |
+| flavorCNE.4.1 | Nonsense - no need to worry. |
+| FRA_ce_french_internal_victory | Napoleonic Prosperity |
 
-## 代价承担者对读
+## 对照：代理稿（2026-11 当前文件）
 
-2026-11-02西秦“责令议法”：初稿写“军府与军士”，实际effect降低军队与地主支持；改为“军府与地主”。作者地权革命正文逐一指出转出与取得利益的阶层。写按钮时据effect点名实际承担者，不能用相近政治名词替换。完整原文与逐条复核见 WORK/reports/qin-persia-20261102/writing-comparison.md。
+> **nesnd_cne_land_journal_reason**：……新法准许土地流转，也让经营农业的商人有了扩张的机会。然而，一纸买卖契约并不能使失去田地的人立即找到新的营生。田庄改作、雇工与迁居带来的争执，将伴随这场变革走进乡村。
 
-## 英文玩家文本
+> **nesnd_journal_closures_parent_cne**：此项事务随“地权革命”一同结束。
 
-英文槽中的中文回退不能记作完成英译。英文修订先核作者世界专名，再读当前原版同类JE/事件，以自然英文表达人物、制度、行动和代价；精确保留动态scope、概念、颜色和实际数值。把“elapsed-time guard”“preparation snapshot”“monthly calculations”改为玩家可理解的等待期、准备状况和改革效果。未发生剧情的日期与结局不写进无条件常驻说明；删除预测须人工记录，不能靠数值token相等判定文意完整。2026-11-02已对读20条原文、逐项审查720键，见 WORK/reports/integrity-recheck-20261102/english/editorial-comparison.md。
+前一句语法通顺，但每个好处都配一个代价，没有叙述者的判断，也没有具体的人；后一句是开发者对日志生命周期的说明，不该出现在游戏里。

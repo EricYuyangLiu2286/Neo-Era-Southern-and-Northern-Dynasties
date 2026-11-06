@@ -90,7 +90,7 @@ BUILDINGS = {
 
 ## Country 标签的嵌套动态悬停（run143454 实际失败）
 
-日志状态的外层可用 `#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],my_stats_link 统计#!#!`。`my_stats_link` 内层仅获得 Country 对象，动态国家变量应写 `[Country.MakeScope.Var('my_value').GetValue|%1]`，不得继续写 ROOT.GetCountry；不得为省事改为 GetPlayer。当前原版 `content_204_l_english.yml:787—788` 和 `agitators_4_l_english.yml:1473/1478` 有完整调用对，`companies_l_english.yml:25—26` 也展示 GetTooltipTag→Country 的绑定。只在这种对象绑定层切换根，事件和JE正文既有 ROOT 不能全局替换。详见 error-log.md 的每帧错误与轮转实证。
+日志状态的外层可用 `#tooltippable #tooltip:[ROOT.GetCountry.GetTooltipTag],my_stats_link 统计#!#!`。`my_stats_link` 内层仅获得 Country 对象，动态国家变量应写 `[Country.MakeScope.Var('my_value').GetValue|%1]`，不得继续写 ROOT.GetCountry；不得为省事改为 GetPlayer。当前原版 `content_204_l_english.yml:787—788` 和 `agitators_4_l_english.yml:1473/1478` 有完整调用对，`companies_l_english.yml:25—26` 也展示 GetTooltipTag→Country 的绑定。只在这种对象绑定层切换根，事件和JE正文既有 ROOT 不能全局替换。日志轮转与读法见 verification.md。
 
 ## 事件AI权重依据
 
