@@ -1,4 +1,5 @@
 ﻿nesnd_small_close_episode = {
+    if = { limit = { has_variable = nesnd_small_episode_active NOT = { has_variable = nesnd_small_episode_result } } set_variable = { name = nesnd_small_episode_result value = 4 } }
     if = { limit = { exists = var:nesnd_small_episode_character }
         var:nesnd_small_episode_character = { if = { limit = { is_character_alive = yes } if = { limit = { has_modifier = nesnd_small_local_spokesperson } remove_modifier = nesnd_small_local_spokesperson } } }
     }
@@ -23,6 +24,10 @@ nesnd_small_begin_episode = {
         if = { limit = { nesnd_small_labor_issue = yes nesnd_small_labor_population > nesnd_small_issue_population } set_variable = { name = nesnd_small_episode_issue value = 2 } set_variable = { name = nesnd_small_issue_population value = nesnd_small_labor_population } }
         if = { limit = { nesnd_small_representation_issue = yes nesnd_small_representation_population > nesnd_small_issue_population } set_variable = { name = nesnd_small_episode_issue value = 3 } }
         if = { limit = { has_variable = nesnd_small_episode_issue }
+            remove_variable = nesnd_small_episode_result
+            remove_variable = nesnd_small_promise
+            set_variable = { name = nesnd_small_episode_elapsed value = 0 }
+            set_variable = { name = nesnd_small_episode_term value = 1 }
             set_variable = nesnd_small_episode_active
             set_variable = { name = nesnd_small_episode_serial value = { value = nesnd_small_episode_serial add = 1 } }
             set_variable = { name = nesnd_small_episode_regime value = nesnd_canon_regime }
@@ -36,6 +41,8 @@ nesnd_small_begin_episode = {
 nesnd_small_support_episode = {
     if = { limit = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } }
         set_variable = { name = nesnd_small_episode_choice value = 1 } set_variable = { name = nesnd_small_episode_clock months = 12 }
+        set_variable = { name = nesnd_small_episode_elapsed value = 0 } set_variable = { name = nesnd_small_episode_term value = 12 }
+        nesnd_small_dispute_sync = yes
         if = { limit = { var:nesnd_small_episode_issue = 1 } add_modifier = { name = nesnd_small_organise_land months = 12 } }
         else_if = { limit = { var:nesnd_small_episode_issue = 2 } add_modifier = { name = nesnd_small_organise_labor months = 12 } }
         else = { add_modifier = { name = nesnd_small_organise_representation months = 12 } }
@@ -53,6 +60,8 @@ nesnd_small_support_episode = {
 nesnd_small_promise_episode = {
     if = { limit = { nesnd_small_episode_valid = yes NOT = { has_variable = nesnd_small_episode_choice } }
         set_variable = { name = nesnd_small_episode_choice value = 2 } set_variable = { name = nesnd_small_episode_clock months = 24 }
+        set_variable = { name = nesnd_small_episode_elapsed value = 0 } set_variable = { name = nesnd_small_episode_term value = 24 }
+        nesnd_small_dispute_sync = yes
         set_variable = { name = nesnd_small_promise value = $LAW$ }
         if = { limit = { var:nesnd_small_episode_issue = 1 } ig:ig_rural_folk = { add_modifier = { name = nesnd_small_reform_approval months = 24 } } }
         else_if = { limit = { var:nesnd_small_episode_issue = 2 } ig:ig_trade_unions = { add_modifier = { name = nesnd_small_reform_approval months = 24 } } }
@@ -62,6 +71,8 @@ nesnd_small_promise_episode = {
 nesnd_small_suppress_episode = {
     if = { limit = { nesnd_small_episode_valid = yes nesnd_small_political = yes institution_investment_level = { institution = institution_police value >= 1 } NOT = { has_variable = nesnd_small_episode_choice } }
         set_variable = { name = nesnd_small_episode_choice value = 3 } set_variable = { name = nesnd_small_episode_clock months = 12 }
+        set_variable = { name = nesnd_small_episode_elapsed value = 0 } set_variable = { name = nesnd_small_episode_term value = 12 }
+        nesnd_small_dispute_sync = yes
         if = { limit = { var:nesnd_small_episode_issue = 1 } add_modifier = { name = nesnd_small_suppress_land months = 12 } }
         else_if = { limit = { var:nesnd_small_episode_issue = 2 } add_modifier = { name = nesnd_small_suppress_labor months = 12 } }
         else = { add_modifier = { name = nesnd_small_suppress_representation months = 12 } }
@@ -70,8 +81,10 @@ nesnd_small_suppress_episode = {
 }
 nesnd_small_episode_monthly = {
     if = { limit = { has_variable = nesnd_small_episode_active }
+        if = { limit = { has_variable = nesnd_small_episode_elapsed has_variable = nesnd_small_episode_term } change_variable = { name = nesnd_small_episode_elapsed add = 1 } clamp_variable = { name = nesnd_small_episode_elapsed min = 0 max = var:nesnd_small_episode_term } }
+        nesnd_small_dispute_sync = yes
         if = { limit = { OR = { has_revolution = yes NOT = { nesnd_small_episode_regime_valid = yes } NOT = { has_variable = nesnd_small_episode_issue } } }
-            nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
+            set_variable = { name = nesnd_small_episode_result value = 4 } nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
         }
         else_if = { limit = { has_variable = nesnd_small_episode_clock nesnd_small_episode_choice_is = { VALUE = 2 } nesnd_small_promised_law = yes }
             set_variable = nesnd_small_reform_done
@@ -86,11 +99,13 @@ nesnd_small_episode_monthly = {
             else_if = { limit = { var:nesnd_small_episode_issue = 2 } add_loyalists = { pop_type = laborers value = 0.01 } add_radicals = { pop_type = capitalists value = 0.005 } }
             else = { add_loyalists = { strata = lower value = 0.01 } }
             trigger_event = { id = nesnd_small_states.11 popup = yes }
+            set_variable = { name = nesnd_small_episode_result value = 1 }
             nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
         }
         else_if = { limit = { OR = { NOT = { has_variable = nesnd_small_episode_clock } NOT = { nesnd_small_episode_issue_live = yes } } }
+            set_variable = { name = nesnd_small_episode_result value = 3 }
             if = { limit = { nesnd_small_episode_choice_is = { VALUE = 2 } NOT = { has_variable = nesnd_small_episode_clock } nesnd_small_episode_issue_live = yes }
-                nesnd_small_affected_radicals = { VALUE = 0.01 } trigger_event = { id = nesnd_small_states.12 popup = yes }
+                set_variable = { name = nesnd_small_episode_result value = 2 } nesnd_small_affected_radicals = { VALUE = 0.01 } trigger_event = { id = nesnd_small_states.12 popup = yes }
             }
             nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
         }

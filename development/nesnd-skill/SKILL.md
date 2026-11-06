@@ -60,6 +60,8 @@ description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚�
 
 ## 玩家文本发布前硬性检查
 
+修改可见修正时运行 `WORK/tools/audit_modifier_icons.py --check --no-candidate`。它检查实际add_modifier及JE常驻/缩放修正引用、精确DDS路径与文件头。MOD先命中的坏资源不能回退原版判通过；即使修正无数值效果，被挂载后也要有图标。正负图标按效果含义判断（军需消费下降是利好，纯IG认可下降用负面），混合修正参考原版同类。工具文件放工作台，不混入游戏包。
+
 交付前逐条复核本轮新增、修改及所引用的有效游戏文本，按[作者语体](references/author-prose-profile.md#发布前逐条文本检查)确认它是在向玩家讲述世界、说明行动或呈现必要条件。开发计划、更新历史和实现说明写入交接，不进入游戏。循环增减用原生进度条明细展示，机制名沿用已定名称；具体步骤见[日志与进度条](references/journal-text-contract.md#原生进度条与初始化恢复)。
 
 ## 更新技能

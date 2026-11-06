@@ -1,6 +1,6 @@
 # 恢复开发、DEBUG、版本保存与交付
 
-当前交付：[任务42 · 靖难、地区自治与日志修复](issues/42-campaign-followup.md)。
+当前交付：[任务43 · 文案、修正图标与可见日志结局](issues/43-prose-icons-outcomes.md)。上一批：[任务42 · 靖难、地区自治与日志修复](issues/42-campaign-followup.md)。
 
 当前入口：[任务41，首局实机报错与俄罗斯边疆](issues/41-runtime-115.md)。
 

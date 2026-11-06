@@ -85,6 +85,16 @@ GAME/common/scripted_progress_bars/scripted_progress_bars.md与本MOD ce_french_
 
 ## 原生条件优先与状态节制（2026-11-02）
 
+### 1.15 可见结局与自动激活（2026-11-06）
+
+用户要求独立剧情日志有可见的关闭条件。按当前 `GAME/common/journal_entries/journal_entries.md:135–194`，`outcome` 的 `hidden invalid_outcome` 不显示在结局面板。结构合法不等于玩家能知道如何结束。查每个实际启用的日志：常驻政策可直接显示原有终止条件，不另造满条胜利、奖励或一套存在性分支；真正依附父日志的条目注明父日志，并核实际存续依赖。暂时无目标而允许恢复的隐藏失效，才与长期退出分开。
+
+同文档25–49说明自动激活需要 `is_shown_when_inactive` 与 `possible`，显式 `add_journal_entry` 则绕过两者。互斥子日志优先用“父日志有效＋方案已选”控制两项自动条件，单一入口。不能一边永远隐藏潜在条目，一边用每周重复add当作激活已证明的证据。若日志报告already has而UI不见，先查实际激活条件及实例状态。
+
+触发器能判真，不代表其原生自动描述有正确数据上下文。本轮 `is_on_defending_side` 可执行，但经国家条件展开时原版 `TRIGGER_IS_ON_DEFENDING_SIDE` 读取 `War.GetName` 而没有War上下文。保留原布尔子树，以一句具名custom_tooltip包装这一判定；不改战争创建、阵营或和平规则，也不伪造全局原版翻译。
+
+工具与证据：WORK/reports/prose-icons-20261106/root/verify_delivery.py、outcomes/audit_native_outcomes.py、原始error-before.log。检查真实原缺陷和原版字段，主MOD后的检查不得要求旧缺陷仍存在。STATIC_PASS不代表游戏内显示已验证。
+
 - 先读作者原始日志/按钮的 trigger，再查当前 GAME 同类条目。能直接呈现的法律、科技、机构、建筑、国库等条件直接写在 possible/complete，独立条件各占原生勾叉。不要把多项真实门槛塞入一个 custom_tooltip；换行不能替代独立真假状态。
 - 全国等级用 country_has_building_type_levels = { target = bt:building_iron_mine value >= 25 }（GAME/common/scripted_buttons/07_japan_buttons.txt）；州分布另用 any_scope_state 的 count 与 state_has_building_type_levels。五州各有五级城镇中心不等于每州须同时达到全国工业总量。
 - custom_tooltip 只用于原生显示无法说明的自定义统计/对象选择，以及未自动呈现的必要效果；写最短的可判断条件。原生 effect 已显示关系变化，就不再加一行相同数字。内部存在性、schema、重复执行保护用 hidden_trigger，但不能隐藏真实玩家资格或费用。GAME/common/scripted_buttons/00_balkan_wars_buttons.txt 有原生隐藏示例。
