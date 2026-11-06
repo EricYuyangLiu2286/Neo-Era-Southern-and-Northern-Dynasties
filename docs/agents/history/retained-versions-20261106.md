@@ -1,5 +1,11 @@
 # 保留版本清单（2026-11-06）
 
+## 任务46追加版本
+
+- `backups/pre-change-english-gujarat-20261106T212037Z/mod`：本次英文同步与法国印度领土修改前完整主MOD，1095文件。
+- `backups/checkpoint-english-gujarat-final-20261106T214931Z/mod`：四份英文和法国古吉拉特/舰队修改后候选，1096文件，STATIC_PASS，ENGINE_NOT_RUN。包含作者工作区当时的本地改动，不代表所有文件均上传Git。
+- 最新正式源版本见`W/reports/english-gujarat-20261106/release.json`。下方任务45原盘点保持为历史记录。
+
 与[开发总结](development-summary-20261106.md)配套。逐项核查实际目录、manifest、Git引用及远端；不是依据旧交接推断文件还在。用途部分依据目录名和附近报告归类，未逐个运行旧版本。
 
 `W = D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench`。表中路径相对W。旧备份的manifest版本指制作时的游戏安装，未必是里面脚本已适配的版本；manifest verified也不是本轮重算，更不是引擎验收。完整SHA、数量、元数据和调查说明见`W/reports/development-summary-20261106/retained-versions-20261106.json`。

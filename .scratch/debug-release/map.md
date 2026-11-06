@@ -2,6 +2,8 @@
 
 **项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
 
+最新交付：[任务46 · 四份英文与法国古吉拉特](issues/46-english-gujarat.md)。691英文键已全量审阅、330键重写；指定三份古吉拉特领土及法国6舰分舰队已落库。STATIC_PASS，未开游戏。发布提交见WORK/reports/english-gujarat-20261106/release.json。下方任务45“最新玩法”是当时快照。
+
 新对话接手：[任务45 · 开发总结与保留版本](issues/45-development-summary.md)。完整总结在NESND技能references。最新玩法仍为任务44／67c876e；本次只维护文档。
 
 当前工作：[任务44 · 日志操作与地区指标](issues/44-hus-player-flow.md)。本轮只做游戏外验证。
