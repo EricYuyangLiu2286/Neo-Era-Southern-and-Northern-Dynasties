@@ -2,6 +2,8 @@
 
 **项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
 
+[任务48 · HNA 开场选边与参战](issues/48-hna-civilwar-alignment.md)：明确 AI 95% 拥明／5% 独立，修复“已涉及即跳过加入”的 HNA 守卫；STATIC_PASS，未开游戏，待新开局复测。
+
 [任务47 · HUS 社会阶序条件显示](issues/47-hus-class-tooltips.md)：四类文化条件改用原生具名提示，保留全部分层逻辑；STATIC_PASS，待作者复测。独立分支提交推送并同步主 MOD，不合并 main。
 
 最新交付：[任务46 · 四份英文与法国古吉拉特](issues/46-english-gujarat.md)。691英文键已全量审阅、330键重写；指定三份古吉拉特领土及法国6舰分舰队已落库。STATIC_PASS，未开游戏。发布提交见WORK/reports/english-gujarat-20261106/release.json。下方任务45“最新玩法”是当时快照。

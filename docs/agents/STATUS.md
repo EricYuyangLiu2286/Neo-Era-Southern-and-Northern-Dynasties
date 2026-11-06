@@ -2,12 +2,12 @@
 
 这是项目唯一的“当前”入口。只写现在的情况；历史放 `docs/agents/history/`。维护规则见文末。
 
-更新：2026-11-06（任务 47：HUS 社会阶序条件显示修复）
+更新：2026-11-06（任务 48：HNA 开场选边与参战修复）
 
 ## 基线
 
 - 游戏：Victoria 3 **1.15.0 Ivan-Chai / Steam build 26453692**。上一基线 1.13.11 / 24799966。
-- 主干玩法基线：`90fe4b4`（任务 46）。任务 47 的 HUS 条件提示修复位于分支 `codex/hus-classes-tooltip-20261106`，同步主 MOD，不合并 main；交付指纹见 `reports/2026-11-06-hus-classes/release.json`。任务 40–44、46–47 均未完成对应修复后的实机验证。
+- 主干玩法基线：`90fe4b4`（任务 46）。主 MOD 保留任务 47（`31c3cfe`），并应用任务 48 HNA 修复；分支 `codex/hna-civilwar-alignment-20261106`，不合并 main。交付指纹见 `reports/2026-11-06-hna-civilwar/release.json`。任务 40–44、46–48 均未完成对应修复后的实机验证。
 - metadata 版本 0.2.0，声明支持 1.15.0（仅为包声明）。
 
 ## 位置
@@ -24,7 +24,7 @@
 
 ## 进行中
 
-- Codex：任务 47（HUS 社会阶序条件显示）已完成游戏外修复，STATIC_PASS，待作者新开局复测。详见 `.scratch/debug-release/issues/47-hus-class-tooltips.md`。
+- Codex：任务 48（HNA 开场选边与参战）已完成游戏外修复，STATIC_PASS；待作者新开局检查明方参战名单及95/5结果。详见 `.scratch/debug-release/issues/48-hna-civilwar-alignment.md`。
 - 技能于 2026-11-06 重写（分支 `claude/skill-rewrite-20261106`）：去掉模型分工条款和事故记录，新增内容形状与两种声音的写作规则。
 
 ## 已知差异
@@ -40,6 +40,7 @@
 5. 新美术：人物、五张场景图、主菜单、事件图。
 6. 四份中文改稿对应的旧英文正文：任务 46 已全量审阅重写（只认证这四份）。
 7. HUS 社会阶序的文化提示、阶层悬停及相关 culture/none 错误是否消失：任务 47 待作者复测。
+8. HNA 开场95/5选边与实际加入明方：任务 48 待作者复测；其他国家及后续战争的同类加入守卫另列，未修。
 
 待作者在游戏中回答的问题（任务 43–44 的界面、靖难战争、原住民复国、流散人口、团结度节奏、地区门槛）见 `history/development-summary-20261106.md` 第 4 节。
 
