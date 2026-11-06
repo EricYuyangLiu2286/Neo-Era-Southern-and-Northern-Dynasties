@@ -1,15 +1,15 @@
 Record: implementation
 Category: enhancement
 Status: ready-for-human
-Execution: blocked
+Execution: completed
 Blocked by: none
 Assignee: root
-Validation: NOT_APPLICABLE（第一步只做统计，未改游戏文件）
+Validation: STATIC_PASS（逐键比对动态代码、数字、颜色；BOM、语言头、键集合、无重复键）。未启动游戏。
 Evidence: development/evidence/chinese-prose-voice-20261106/
 
-# 47 中文代理文本去平衡腔：第一步统计（2026-11-06）
+# 47 中文代理文本去平衡腔（2026-11-06）
 
-阻塞原因：按用户要求，第一步完成后停下，等用户确认改写方向和下方“待确认”各项，再开始第二步批量改写。
+第一步统计见下文；用户确认后的第二步结果见文末 `## Comments` 与 `## Result`。
 
 ## 范围与来源
 
@@ -239,3 +239,207 @@ Evidence: development/evidence/chinese-prose-voice-20261106/
 ## 工具与复现
 
 `development/evidence/chinese-prose-voice-20261106/tools/`：`corpus.py` 建三份语料，`report.py` 应用保护清单并统计，`render.py` 出表。原版语料不入库，复现时需另取原版中文本地化，传入 `corpus.py` 的第二个参数。工具只做统计和定位，不改写文本。
+
+## Comments
+
+2026-11-06 用户对“待确认”的答复：
+
+1. 印度文件：作者不清楚本机有哪些改稿，直接改。
+2. `nesnd_qin_persia_l_simp_chinese.yml`：都是变量名，不必改。本轮未动。
+3. 南朝内战事件：按作者原句的口气重写，能沿用的原句尽量沿用。
+4. 标题和按钮名：可以改。
+5. STATUS.md：在仓库合适位置新建。已建于 `docs/agents/STATUS.md`。
+
+“作者改稿后又被代理改动的 34 键”用户未作答复，按默认不改。
+
+## Result
+
+### 做法
+
+- 逐文件读完范围内全部键（2,972 个，含标题、按钮名和印度文件），只改需要改的。每条手写，不做词语替换。工具只用于导出、按键写回和校验（`tools/locedit.py`）。
+- 事实以脚本为准：改写前核对事件选项的使用方、按钮效果（如 `nesnd_open_southern_war` 发起 `dp_usm_civil_war`）、修正效果（`_politics` 为利益集团好感、`_local` 为州修正）。
+- 每个文件改完连读，又统一回看一遍新出现的高频词（撑、还得、就此、自己……），换掉了 16 处重复。
+- 上一轮审查记为“保留作者口吻”的键（PHI 驻屯日志正文、1.d、2.d 及其全部选项；原住民文件的若干选项）不改。过程中误改的 `nesnd_hus_registration.2.a`、`nesnd_american_restoration.12.a` 已恢复原样，最终无差异。
+- 南朝内战：恢复了与现行设定不冲突的作者原句（1.1、1.2、1.3、2.2–2.5、3.t、3.1、10.t、10.1、10.2、23.1、23.3）。1.d、2.d、3.d、10.d、23.d、`flavorUSM.6.d`、`ce_usm_cw_japanese_interest_reason` 以作者原段为底，删去与分支冲突的固定事实（陈东阳遇刺、朱阔彬与天演帝的具体经过、日期代码），补回现行剧情事实。
+- 波兰两条日志正文 `je_ce_polish_reconquest_reason`、`je_ce_polish_war_preparation_reason`：代理在作者原句后补了尾巴，已恢复作者原句。
+
+### 改了多少键（按文件）
+
+|文件|改动键数|
+|---|---:|
+|`replace/nesnd_civic_routes_l_simp_chinese.yml`|121|
+|`replace/nesnd_japan_l_simp_chinese.yml`|48|
+|`replace/nesnd_small_states_l_simp_chinese.yml`|34|
+|`replace/ce_usm_events_l_simp_chinese.yml`|26|
+|`replace/nesnd_south_politics_l_simp_chinese.yml`|25|
+|`replace/nesnd_native_americas_l_simp_chinese.yml`|22|
+|`replace/nesnd_journal_closures_l_simp_chinese.yml`|19|
+|`nesnd_external_l_simp_chinese.yml`|18|
+|`replace/nesnd_india_l_simp_chinese.yml`|12|
+|`replace/nesnd_civic_characters_l_simp_chinese.yml`|11|
+|`replace/nesnd_regional_development_l_simp_chinese.yml`|11|
+|`replace/nesnd_regional_native_restoration_l_simp_chinese.yml`|9|
+|`replace/nesnd_persia_l_simp_chinese.yml`|8|
+|`replace/nesnd_diplomatic_negotiations_l_simp_chinese.yml`|7|
+|`replace/nesnd_europe_america_l_simp_chinese.yml`|7|
+|`replace/nesnd_phi_finance_l_simp_chinese.yml`|7|
+|`replace/nesnd_small_display_additions_l_simp_chinese.yml`|7|
+|`nesnd_supply_l_simp_chinese.yml`|6|
+|`replace/nesnd_hus_social_hierarchy_l_simp_chinese.yml`|6|
+|`replace/nesnd_egypt_l_simp_chinese.yml`|5|
+|`replace/nesnd_qin_politics_l_simp_chinese.yml`|5|
+|`replace/nesnd_cne_land_reform_l_simp_chinese.yml`|4|
+|`replace/nesnd_crisis_l_simp_chinese.yml`|3|
+|`replace/nesnd_ottoman_l_simp_chinese.yml`|3|
+|`nesnd_tenasserim_l_simp_chinese.yml`|2|
+|`replace/ce_cne_events_l_simp_chinese.yml`|2|
+|`replace/ce_poland_l_simp_chinese.yml`|2|
+|`replace/nesnd_russian_frontiers_l_simp_chinese.yml`|2|
+|`replace/nesnd_unity_policies_l_simp_chinese.yml`|2|
+|`replace/nesnd_usa_manifest_destiny_l_simp_chinese.yml`|2|
+|`replace/nesnd_chen_security_l_simp_chinese.yml`|1|
+|`replace/nesnd_cne_ai_agenda_l_simp_chinese.yml`|1|
+|`replace/nesnd_per_usm_mechanics_l_simp_chinese.yml`|1|
+|**合计（33 个文件）**|439|
+
+前 30 项高频词与句式，在同一批叙事键上的改前／改后次数：
+
+|词或句式|改前|改后|
+|---|---:|---:|
+|经营（共同市场/旧例以外）|91|53|
+|也须／仍须／还须／须先|67|28|
+|本国（泛称自指）|137|87|
+|安排|144|69|
+|原有／现有／既有|98|61|
+|地方（泛称）|391|285|
+|往来|50|31|
+|承担|76|34|
+|争取|72|45|
+|朝廷（泛称主语）|119|100|
+|共同（共同的/共同市场以外）|117|88|
+|仍（仍在/仍然/仍须）|207|144|
+|答复|33|26|
+|由谁／听谁／归谁（设问罗列）|25|25|
+|生计|25|20|
+|两国／双方（对称叙述）|77|58|
+|须决定／须判断／须衡量／须考虑（把问题抛给玩家）|27|6|
+|若……则／便|25|14|
+|事务|50|22|
+|也有人／有人主张（各方并陈）|14|13|
+|维持|91|48|
+|有了（……有了新的……）|45|47|
+|政府（泛称主语）|250|177|
+|各自|21|14|
+|等候／等待……决定或答复|16|12|
+|却（转折）|126|115|
+|如今|74|76|
+|关系着／关系到|10|4|
+|“，……也须/也要/也将……”补述|85|69|
+|既……也／又|22|13|
+|**合计**|2585|1784|
+
+剩余次数多在状态行、机制条件，以及作者口吻文件（人物事件、PHI、内战原句），这些未强行改。
+
+### 20 条改前／改后对照
+
+**1. `nesnd_external_fra_desc`**（`nesnd_external_l_simp_chinese.yml`）
+- 改前：南朝使者请求承认易代并延续旧约，印度方面则仍有南部海岸与殖民地的争执。法国商人、债权人与军官在两地都有利益。政府须决定与谁往来，又愿意为外交主张付出多少资金与军械。
+- 改后：南朝使者请法国承认易代、延续旧约；印度那边，南部海岸与殖民地的争执还没有了结。两头都押着法国商人、债权人和军官的身家。
+
+**2. `nesnd_c2_hus_frontier_reason`**（`replace/nesnd_civic_routes_l_simp_chinese.yml`）
+- 改前：铁路和矿场向牧地伸展时，地图上的空白并非无人经过的土地。季节迁徙的牲畜要饮水，工程要用地，驻军要保障交通。牧民要求保留通道，开发者催促补偿征地，军方主张由驻军护持施工。每一种安排都将改变当地社会以后的生活基础。
+- 改后：铁路和矿场伸进了牧地。地图上的空白，其实年年有畜群经过：牲畜要饮水，工程要用地，驻军要守路。牧民要求留出通道，开发者催着补偿征地，军方则主张派兵护持施工。
+
+**3. `nesnd_c2_usm_constitution_classical_franchise_local`**（`replace/nesnd_civic_routes_l_simp_chinese.yml`）
+- 改前：维持经学资格的地方安排
+- 改后：经学士人理财
+
+**4. `nesnd_c2_italy_foundations_public_works_politics`**（`replace/nesnd_civic_routes_l_simp_chinese.yml`）
+- 改前：公共军需工程的支持与反对
+- 改后：军方先拿到订单
+
+**5. `nesnd_c2_hus_oil_oil_royalties_desc`**（`replace/nesnd_civic_routes_l_simp_chinese.yml`）
+- 改前：支持油税留用于地方的主张，协助当地财政行政。
+- 改后：油税留在当地，拿来修路办学。
+
+**6. `nesnd_jp_establish_toyotomi_reason`**（`replace/nesnd_japan_l_simp_chinese.yml`）
+- 改前：分封使丰臣旧臣失去了支配整个日本的地位，留在西部的军队与家臣却仍须供养。各地收入从哪里征收，谁来办理地方政务，都不能只靠旧日的威望维持。政府须在现有辖地建立可靠的行政机关，使城下町成为办事、征税与雇工的中心。
+- 改后：分封之后，丰臣家再也号令不了全日本。留在西国的军队和家臣却一个不少，都等着领禄米。年贡从哪里收，村町派谁去管，单凭旧日的威名已经办不成。丰臣政权须在现有领地上设起靠得住的奉行所，让城下町成为收税、办事和招工的地方。
+
+**7. `nesnd_jp_foreign.1.d2`**（`replace/nesnd_japan_l_simp_chinese.yml`）
+- 改前：[SCOPE.sCountry('jp_sender').GetNameNoFormatting]的使者要求结束藩属关系。他们希望从此自行决定外交、军队与通商事务，并以独立国家的身份同我们往来。这份答复将决定我们是否愿意交出原有的宗主权。
+- 改后：[SCOPE.sCountry('jp_sender').GetNameNoFormatting]的使者要求结束藩属关系。从今往后，外交、军队和通商都由他们自己作主，同我们以独立国家相待。
+
+**8. `nesnd_cne_land_journal_reason`**（`replace/nesnd_cne_land_reform_l_simp_chinese.yml`）
+- 改前：军功爵与地方宗族积累的田产，使许多农户世代依附于旧主。新法准许土地流转，也让经营农业的商人有了扩张的机会。然而，一纸买卖契约并不能使失去田地的人立即找到新的营生。田庄改作、雇工与迁居带来的争执，将伴随这场变革走进乡村。
+- 改后：军功爵与地方宗族积累的田产，让许多农户世代依附旧主。新法准许土地流转，经营农业的商人也有了扩张的机会。可一纸买卖契约，变不出失地农民的新营生。田庄改作、雇工与迁居引起的争执，会跟着这场变革一路走进乡村。
+
+**9. `nesnd_ming_court.3.d`**（`replace/nesnd_south_politics_l_simp_chinese.yml`）
+- 改前：随驾臣僚已经抵达行在，地方政府正在安置朝廷。原有军队仍须征饷调兵，布政司仍须治理各地，如今又要供给天子的行朝。拥明的主张由此有了可以奉事的中央，也使接驾之地首先承担了同南府决裂的代价。 / 各省与海外诸邦还在遣使往来。曾经在礼议院与内阁争执的名分，如今已须由彼此的军力担保。
+- 改后：随驾的臣僚到了行在，地方官忙着安顿朝廷。这里的营伍照旧要征饷调兵，布政司照旧要治理州县，如今又多出一座行朝要养。拥明的人总算有了可以奉事的天子；接驾的地方，也头一个同南府撕破了脸。 / 各省与海外诸邦的使者还在路上。当年在礼议院与内阁里争的名分，往后要拿兵马来定。
+
+**10. `nesnd_south_accords.1.overseas`**（`replace/nesnd_south_politics_l_simp_chinese.yml`）
+- 改前：南府使者请[ROOT.GetCountry.GetName]承认郑氏的新名位，并表示本国的政府、辖地与现有宗属安排均可延续。南朝内部如何以礼法重定君权和省权，将由其礼议院与内阁办理。我国与它的通商、港务和军费往来，仍须依各项条约行事。 / 郑氏需要海内外的支持。我们也应在作答以前想清楚，这次易代将给本国留下怎样的位置。
+- 改后：南府使者请[ROOT.GetCountry.GetName]承认郑氏的新名位，并表示本国的政府、辖地与现有宗属安排均可延续。南朝内部如何以礼法重定君权和省权，将由其礼议院与内阁办理。我国与它的通商、港务和军费往来，仍须依各项条约行事。 / 郑氏要的，是海内外的支持。
+
+**11. `nesnd_small_states.2.siam`**（`replace/nesnd_small_states_l_simp_chinese.yml`）
+- 改前：曼谷与地方的生产已有了较为稳定的市场联系。人口与财源集中的地方，需要别处的出产。地方经营者也需要销路，才能付出工钱、承担税款。 / 这样的联系给政府增加了收入，也带来了分配收入的要求。军队需要供养，地方还要办学与办理公共事务。生产者为国家创造了财源，也会期待国家能回应自己的生活。
+- 改后：曼谷和外府的买卖做稳了。都城人多钱多，要外府的出产；外府的作坊和田庄有了销路，才付得起工钱、交得起税。 / 国库进了钱，伸手要钱的人也跟着来了：军队要饷，外府要学堂和公事的经费。替国家挣下这份财源的人，也等着国家替他们的日子出点力。
+
+**12. `nesnd_small_request_autonomy_desc`**（`replace/nesnd_small_states_l_simp_chinese.yml`）
+- 改前：以地方已经具备的经济与行政能力为据，要求宗主允许本国自行处理更多事务。
+- 改后：我们自己收得上税，也有人手办理政务。宗主该把更多国事交还给我们了。
+
+**13. `usm_civilwar.1.1`**（`replace/ce_usm_events_l_simp_chinese.yml`）
+- 改前：奉明正朔，联络各省！
+- 改后：吴贼！狗贼！奸贼！恶贼！逆贼！
+
+**14. `usm_civilwar.10.3`**（`replace/ce_usm_events_l_simp_chinese.yml`）
+- 改前：由国人议政，不再另立天子。
+- 改后：当年没打赢，今天我们再来一遍！
+
+**15. `nesnd_american_restoration.3.a`**（`replace/nesnd_native_americas_l_simp_chinese.yml`）
+- 改前：军队已经出面，乡村却未必服从。
+- 改后：再有聚众的，照此办理。
+
+**16. `nesnd_american_restoration.12.d`**（`replace/nesnd_native_americas_l_simp_chinese.yml`）
+- 改前：印卡宫廷拒绝了合并的请求。王朝的共同传统可以使双方相互接近，却不足以让现有的统治者接受同一国家的安排。 / 政府须继续处理本国的土地与地方政治，不能把这些责任都寄于宫廷的答复。经过等待期，双方仍可重新商谈。
+- 改后：印卡宫廷回绝了合并。两家同奉一个王朝的传统，彼此可以论亲，却谁也不肯让出自己的君位和朝堂。 / 村社的土地和地方上的纷争，还得我们自己料理，指望不上宫廷的答复。等待期满后，可以再遣使商谈。
+
+**17. `nesnd_india_princes_reason`**（`replace/nesnd_india_l_simp_chinese.yml`）
+- 改前：德里、南京与巴黎都向印度诸邦递出了自己的条件。王公们所要保住的不只是祖传的宫殿，还有土地、税收和决定本国命运的权力。合作可以带来援助，却不一定带来自主。
+- 改后：德里、南京和巴黎都给印度诸邦开出了条件。王公们要保的不只是祖传的宫殿，还有土地、税收和自己国家的命运。谁的援助都不白给。
+
+**18. `nesnd_supply.1.b`**（`nesnd_supply_l_simp_chinese.yml`）
+- 改前：本国事务尚多，暂不接洽。
+- 改后：自家的事还没理清，顾不上替商人牵线。
+
+**19. `nesnd_journal_closures_parent_cne`**（`replace/nesnd_journal_closures_l_simp_chinese.yml`）
+- 改前：此项事务随“$ce_cne_land_reform$”一同结束。
+- 改后：这件事随“$ce_cne_land_reform$”一并了结。
+
+**20. `nesnd_egypt_independence_reason`**（`replace/nesnd_egypt_l_simp_chinese.yml`）
+- 改前：1825年的协定承认埃及摆脱奥斯曼的统辖，六国以保证独立换取在尼罗河沿岸投资的权利。政府得到了喘息的机会，工场、学校和军队却也开始依赖外国的资金与技术。 / 选择投资伙伴，可以引进机器、教师和新的产业。外资占据的份额越大，埃及自主决策的余地就越小。未来三十年，政府必须在发展与独立之间作出取舍。
+- 改后：1825年的协定承认埃及摆脱奥斯曼的统辖，六国以担保独立，换得在尼罗河沿岸投资的权利。朝廷得了喘息之机，工场、学校和军队却也开始仰仗外国的钱和技术。 / 有了投资伙伴，就有机器、教员和新产业进来。只是外资占得越多，埃及自己拿主意的余地就越少。这样的日子，要熬三十年。
+
+### 校验
+
+- 逐键比对：439 个改动键的 `[...]`、`$...$`、`#x ...#!`、`@...!`、阿拉伯数字、`\n` 全部与改前一致，问题 0（`final_check.json`）。
+- 33 个改动文件均保留 UTF-8 BOM、`l_simp_chinese:` 语言头和原有换行符；各文件键集合不变；全目录 7,345 键无重复。
+- 中文数字有变化的 6 键：`usm_civilwar.1.d`（数千年）、`usm_civilwar.10.t` 与 `12.d`（第二次靖难战争，现行战争名）、`usm_civilwar.23.d`（百年未有）都来自作者原句；`nesnd_qe1.3.a`“十年，就这么耗掉了”与事件标题“十年空议”和十年期限一致；`nesnd_rg_egy_reason` 的“四周”是方位词，不是数字。
+- 未实机验证：游戏内的事件版式、按钮提示行宽和换行都没看过。
+
+### 有疑问而未改的键
+
+- 34 个“作者改稿后又被代理改动”的键（清单见上文“待确认 3”）。
+- `usm_civilwar.10.3` 作者原句为“1812赢不了，今天我们再来一遍！”。因数字须与改前一致，本轮写作“当年没打赢，今天我们再来一遍！”。若要恢复原句（含 1812），请确认。
+- `usm_civilwar.2.1` 作者原句提到季高、直弼、林汉涵等人，与现行设定是否相符无法确认，本轮改写为“传令各营，粮饷兵马即刻调齐！”。
+- `nesnd_civic_characters_l_simp_chinese.yml`：任务43记录这份含用户改稿，但没有列出具体键。本轮只改了 11 条明显重复的收尾，选项一概未动。
+- 营产整顿 `nesnd_cne_camp_*` 二十余州的按钮与修正、`nesnd_map_refinement` 与 `nesnd_national_map` 的水运说明：同一模板按州复用，文字具体，未改。
+- `nesnd_crisis.30.local`：代理据作者改稿 `nesnd_crisis.30.d` 写的地方版，未改。
+- 印度文件改了 12 键。若本机主 MOD 有未上传改稿，同步前请先比对这 12 键。
+
+### 遗留
+
+- 英文对应键未改，需另开任务按新中文重写。
+- 主 MOD 同步须在本机完成（云端无法写入）。
