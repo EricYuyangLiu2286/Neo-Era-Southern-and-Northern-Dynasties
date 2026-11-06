@@ -121,16 +121,17 @@ nesnd_holdout_mark_answer = {
     remove_variable = nesnd_holdout_choice_pending
 }
 nesnd_holdout_choose_resistance = {
-    if = { limit = { nesnd_holdout_peace_eligible = yes }
+    if = { limit = { nesnd_holdout_peace_eligible = yes nesnd_holdout_offer_ticket_live = yes }
         nesnd_holdout_mark_answer = yes
         set_variable = nesnd_holdout_resistance_pending
+        nesnd_holdout_record_open_break = yes
         remove_variable = nesnd_holdout_north_awaited
         remove_variable = nesnd_holdout_north_clock
         remove_variable = nesnd_holdout_north_refused
     }
 }
 nesnd_holdout_surrender_to_wu = {
-    if = { limit = { nesnd_holdout_peace_eligible = yes }
+    if = { limit = { nesnd_holdout_can_submit_to_wu = yes nesnd_holdout_offer_ticket_live = yes }
         save_scope_as = nesnd_court_fallen
         nesnd_ming_escape_fallen_court = yes
         if = { limit = { NOT = { has_variable = nesnd_ming_flight_blocked } }
@@ -146,7 +147,7 @@ nesnd_holdout_surrender_to_wu = {
     }
 }
 nesnd_holdout_request_north = {
-    if = { limit = { nesnd_holdout_can_seek_north = yes }
+    if = { limit = { nesnd_holdout_can_seek_north = yes nesnd_holdout_offer_ticket_live = yes }
         save_scope_as = nesnd_holdout_sender
         save_scope_value_as = { name = nesnd_holdout_request_round value = nesnd_holdout_round_value }
         nesnd_holdout_mark_answer = yes
@@ -155,54 +156,76 @@ nesnd_holdout_request_north = {
         c:CNE = { trigger_event = { id = nesnd_south_holdouts.2 days = 3 popup = yes } }
     }
 }
-# USM opens the next play only when the previous play is gone. All willing mainland members join before countdown.
+# USM opens the next play only when the previous play is gone. Eligible resisting members join before countdown.
 nesnd_holdout_reopen_war = {
     if = { limit = {
-            c:USM ?= this nesnd_south_wu_survives = yes
-            is_at_war = no is_active_in_diplomatic_play = no
+            c:USM ?= this nesnd_south_remnant_window = yes
+            is_at_war = no is_active_in_diplomatic_play = no is_subject = no
             NOT = { has_variable = nesnd_holdout_war_retry_clock }
-            any_country = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_resistance_pending }
+            NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
+            NOT = { nesnd_south_defeat_resolution_pending = yes }
+            any_country = { nesnd_holdout_can_resume_war = yes }
         }
         set_variable = { name = nesnd_holdout_war_retry_clock days = 30 }
-        random_country = { limit = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_resistance_pending } save_scope_as = nesnd_holdout_leader }
-        scope:nesnd_holdout_leader = { end_truce = c:USM }
-        end_truce = scope:nesnd_holdout_leader
-        create_diplomatic_play = { name = usm_civilwar_play target_country = scope:nesnd_holdout_leader type = dp_usm_civil_war }
-        if = { limit = { any_diplomatic_play = { initiator = root target = scope:nesnd_holdout_leader } }
+        clear_saved_scope = nesnd_holdout_leader
+        clear_saved_scope = nesnd_holdout_new_play
+        random_country = { limit = { nesnd_holdout_can_resume_war = yes } save_scope_as = nesnd_holdout_leader }
+        if = { limit = { exists = scope:nesnd_holdout_leader }
+            create_diplomatic_play = { name = usm_civilwar_play target_country = scope:nesnd_holdout_leader type = dp_usm_civil_war }
+            random_diplomatic_play = { limit = { nesnd_south_named_play = yes target_is = scope:nesnd_holdout_leader is_war = no }
+                save_scope_as = nesnd_holdout_new_play
+            }
+        }
+        if = { limit = { exists = scope:nesnd_holdout_new_play }
             if = { limit = { NOT = { has_global_variable = nesnd_south_war_round } } set_global_variable = { name = nesnd_south_war_round value = 1 } }
             change_global_variable = { name = nesnd_south_war_round add = 1 }
             remove_global_variable = nesnd_south_settled
             set_variable = { name = nesnd_war_opening_grace months = 2 }
-            random_diplomatic_play = { limit = { initiator = root target = scope:nesnd_holdout_leader }
-                set_variable = this_is_nanming_civilwar_var
-                save_scope_as = nesnd_holdout_new_play
+            scope:nesnd_holdout_new_play = { set_variable = this_is_nanming_civilwar_var }
+            if = { limit = { scope:nesnd_holdout_new_play = { target_is = c:JAP } }
+                nesnd_japan_register_existing_play = yes
             }
             scope:nesnd_holdout_leader = {
                 set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
                 remove_variable = nesnd_holdout_resistance_pending
             }
             every_country = { limit = {
-                    nesnd_south_mainland_holdout = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no
-                    has_variable = nesnd_holdout_resistance_pending
-                    NOT = { this = scope:nesnd_holdout_leader }
+                    nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_resistance_pending
+                    NOT = { has_truce_with = c:USM } NOT = { this = scope:nesnd_holdout_leader }
                 }
-                end_truce = c:USM
-                scope:nesnd_holdout_new_play = { add_target_backers = { prev } }
-                set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
-                remove_variable = nesnd_holdout_resistance_pending
+                save_scope_as = nesnd_south_join_candidate
+                scope:nesnd_holdout_new_play = { add_target_backers = { scope:nesnd_south_join_candidate } }
+                if = { limit = { scope:nesnd_holdout_new_play = { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } }
+                        is_diplomatic_play_enemy_of = c:USM }
+                    set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
+                    remove_variable = nesnd_holdout_resistance_pending
+                }
             }
             scope:nesnd_holdout_new_play = { add_escalation = 90 }
         }
+        clear_saved_scope = nesnd_south_join_candidate
+        clear_saved_scope = nesnd_holdout_leader
+        clear_saved_scope = nesnd_holdout_new_play
     }
 }
 nesnd_south_holdout_country_tick = {
-    if = { limit = { nesnd_south_mainland_holdout = yes has_global_variable = usm_civilwar_occured nesnd_south_wu_survives = yes }
-        if = { limit = { has_war_with = c:USM }
+    if = { limit = { nesnd_south_campaign_holdout = yes nesnd_south_remnant_window = yes }
+        if = { limit = { nesnd_south_defender_in_campaign_war = yes }
             set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
         }
-        # One-time recovery for an old status-quo save: membership is inferred from its stored opposition/court flags.
-        else_if = { limit = { has_global_variable = usm_civilwar_status_quo NOT = { has_variable = nesnd_holdout_enrolled_round } is_subject = no }
+        # Historic opposition/court + Ming allegiance survives the loss of the original war leader.
+        # A country that never entered the actual war will not have an enrolled-round receipt.
+        else_if = { limit = { nesnd_holdout_can_recover_round = yes }
             set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
+        }
+        # Legacy flags without a case-specific defeat cannot turn a later foreign war into a Wu annexation.
+        if = { limit = { OR = { has_variable = nesnd_south_defeat_confirmed has_variable = nesnd_capital_surrender_pending }
+                NOT = { nesnd_south_capital_defeat = yes } }
+            remove_variable = nesnd_south_defeat_confirmed
+            remove_variable = nesnd_capital_surrender_pending
+        }
+        if = { limit = { has_variable = nesnd_holdout_resistance_pending is_subject = no NOT = { has_variable = nesnd_holdout_resolved } }
+            nesnd_holdout_record_open_break = yes
         }
         if = { limit = { is_subject_of = c:USM }
             set_variable = nesnd_holdout_resolved
@@ -211,18 +234,24 @@ nesnd_south_holdout_country_tick = {
             remove_variable = nesnd_holdout_north_awaited
             set_variable = nesnd_holdout_north_refused
         }
+        if = { limit = { nesnd_holdout_abandoned_answer = yes }
+            set_variable = { name = nesnd_holdout_recovered_answer_round value = nesnd_holdout_round_value }
+            remove_variable = nesnd_holdout_answered_round
+        }
         if = { limit = { nesnd_holdout_offer_due = yes }
-            set_variable = { name = nesnd_holdout_choice_pending months = 4 }
+            save_scope_value_as = { name = nesnd_holdout_offer_round value = nesnd_holdout_round_value }
+            set_variable = { name = nesnd_holdout_choice_pending value = nesnd_holdout_round_value months = 4 }
             trigger_event = { id = nesnd_south_holdouts.1 days = 1 popup = yes }
         }
         else_if = { limit = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_north_refused NOT = { has_variable = nesnd_holdout_choice_pending } }
-            set_variable = { name = nesnd_holdout_choice_pending months = 4 }
+            save_scope_value_as = { name = nesnd_holdout_offer_round value = nesnd_holdout_round_value }
+            set_variable = { name = nesnd_holdout_choice_pending value = nesnd_holdout_round_value months = 4 }
             trigger_event = { id = nesnd_south_holdouts.3 days = 1 popup = yes }
         }
     }
 }
 nesnd_south_holdout_wu_tick = {
-    if = { limit = { c:USM ?= this nesnd_south_wu_survives = yes has_global_variable = usm_civilwar_occured }
+    if = { limit = { c:USM ?= this nesnd_south_remnant_window = yes }
         if = { limit = { any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } } }
             remove_global_variable = nesnd_south_settled
             if = { limit = { NOT = { has_journal_entry = nesnd_south_holdout_campaign } } add_journal_entry = { type = nesnd_south_holdout_campaign } }
@@ -242,5 +271,13 @@ nesnd_south_holdout_wu_tick = {
                 set_global_variable = nesnd_south_settled
             }
         }
+    }
+}
+
+# A declared decision to resist changes relations once. It does not cancel a truce or punish a country for merely considering its choices.
+nesnd_holdout_record_open_break = {
+    if = { limit = { exists = c:USM NOT = { has_variable = nesnd_holdout_open_break } }
+        set_variable = nesnd_holdout_open_break
+        if = { limit = { "relations(c:USM)" > -25 } set_relations = { country = c:USM value = -25 } }
     }
 }

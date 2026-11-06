@@ -1,9 +1,9 @@
-﻿nesnd_regional_native_actor = {
+nesnd_regional_native_actor = {
  trigger_if = { limit = { has_variable = nesnd_restoration_family } var:nesnd_restoration_family = 3 }
  trigger_else = { always = no }
 }
 nesnd_regional_native_bolivia_region = { OR = { state_region = s:STATE_LA_PAZ state_region = s:STATE_POTOSI state_region = s:STATE_SANTA_CRUZ state_region = s:STATE_ANTOFAGASTA state_region = s:STATE_JUJUY state_region = s:STATE_ACRE } }
-nesnd_regional_native_colombia_region = { OR = { state_region = s:STATE_ANTIOQUIA state_region = s:STATE_CUNDINAMARCA state_region = s:STATE_CAUCA state_region = s:STATE_GUAVIARE state_region = s:STATE_PANAMA state_region = s:STATE_AMAZONAS } }
+nesnd_regional_native_colombia_region = { OR = { state_region = s:STATE_ANTIOQUIA state_region = s:STATE_CUNDINAMARCA state_region = s:STATE_CAUCA state_region = s:STATE_GUAVIARE state_region = s:STATE_PANAMA state_region = s:STATE_AMAZONAS state_region = s:STATE_ZULIA state_region = s:STATE_MIRANDA state_region = s:STATE_BOLIVAR } }
 nesnd_regional_native_central_region = { OR = { state_region = s:STATE_GUATEMALA state_region = s:STATE_SAN_SALVADOR state_region = s:STATE_HONDURAS state_region = s:STATE_NICARAGUA state_region = s:STATE_COSTA_RICA state_region = s:STATE_CHIAPAS state_region = s:STATE_PANAMA } }
 nesnd_regional_native_bolivia_domain = {
  trigger_if = { limit = { OR = { c:BOL ?= this country_has_primary_culture = cu:south_andean has_variable = nesnd_regional_native_bolivia_line } }
@@ -59,12 +59,10 @@ nesnd_regional_native_profile_region = {
  }
 }
 nesnd_regional_native_seed_state = {
- nesnd_regional_native_profile_region = yes
- state_population >= 100000 nesnd_regional_native_seed_kind > 0
- num_provinces >= { value = state_region.num_provinces }
- state_population <= { value = owner.total_population multiply = 0.5 }
- nesnd_restoration_single_remaining >= 150000
- owner = { any_scope_state = { count >= 2 state_population > 0 } }
+ nesnd_regional_native_profile_region = yes nesnd_regional_native_seed_kind > 0
+ nesnd_regional_native_seed_population = yes
+ nesnd_regional_native_seed_territory = yes
+ nesnd_regional_native_retained_capital = yes
 }
 nesnd_regional_native_peace_seed_valid = {
  trigger_if = { limit = { exists = var:nesnd_regional_native_peace_seed exists = var:nesnd_regional_native_peace_region }
@@ -77,14 +75,43 @@ nesnd_regional_native_peace_seed_valid = {
  trigger_else = { always = no }
 }
 nesnd_regional_native_can_release = {
+ save_temporary_scope_as = nesnd_regional_release_host
  hidden_trigger = { nesnd_regional_native_host = yes }
  is_subject = no government_legitimacy >= 50 ig:ig_rural_folk = { is_in_government = yes }
  NOT = { is_at_war = yes }
  custom_tooltip = { text = nesnd_regional_native_request_free_tt NOT = { has_variable = nesnd_regional_native_request_open } }
  trigger_if = { limit = { exists = var:nesnd_regional_native_peace_seed }
-  custom_tooltip = { text = nesnd_regional_native_release_state_tt nesnd_regional_native_peace_seed_valid = yes }
+  custom_tooltip = { text = nesnd_regional_native_release_state_tt always = yes }
+  custom_tooltip = { text = nesnd_regional_native_release_core_tt
+   var:nesnd_regional_native_peace_seed = { nesnd_regional_native_seed_kind > 0 nesnd_regional_native_seed_kind = prev.nesnd_regional_native_kind }
+  }
+  custom_tooltip = { text = nesnd_regional_native_release_territory_tt
+   trigger_if = { limit = { exists = var:nesnd_regional_native_peace_region }
+    var:nesnd_regional_native_peace_seed = { owner = prev state_region = prev.var:nesnd_regional_native_peace_region nesnd_regional_native_seed_territory = yes }
+   }
+   trigger_else = { always = no }
+  }
+  trigger_if = { limit = { nesnd_regional_native_peace_seed_identity = yes }
+  trigger_if = { limit = { OR = { AND = { nesnd_regional_native_kind >= 4 nesnd_regional_native_kind <= 9 } nesnd_regional_native_kind = 11 } }
+   custom_tooltip = { text = nesnd_regional_native_release_province_population_tt var:nesnd_regional_native_peace_seed = { nesnd_regional_native_seed_population = yes } }
+   trigger_if = { limit = { nesnd_regional_native_kind = 11 }
+    custom_tooltip = { text = nesnd_regional_native_release_soconusco_capital_tt var:nesnd_regional_native_peace_seed = { nesnd_regional_native_retained_capital = yes } }
+   }
+   trigger_else = { custom_tooltip = { text = nesnd_regional_native_release_province_capital_tt var:nesnd_regional_native_peace_seed = { nesnd_regional_native_retained_capital = yes } } }
+  }
+  trigger_else = {
+   custom_tooltip = { text = nesnd_regional_native_release_whole_population_tt var:nesnd_regional_native_peace_seed = { nesnd_regional_native_seed_population = yes } }
+   custom_tooltip = { text = nesnd_regional_native_release_whole_capital_tt var:nesnd_regional_native_peace_seed = { nesnd_regional_native_retained_capital = yes } }
+  }
+  }
  }
- trigger_else = { custom_tooltip = { text = nesnd_regional_native_no_release_state_tt always = no } }
+ trigger_else = {
+  trigger_if = { limit = { any_scope_state = { nesnd_regional_native_seed_kind = 11 } }
+   custom_tooltip = { text = nesnd_regional_native_soconusco_candidate_tt any_scope_state = { nesnd_regional_native_seed_kind = 11 nesnd_regional_native_seed_state = yes } }
+  }
+  trigger_else = { custom_tooltip = { text = nesnd_regional_native_no_release_state_tt always = no } }
+ }
+ hidden_trigger = { nesnd_regional_native_peace_seed_valid = yes }
 }
 nesnd_regional_native_partner_valid = {
  trigger_if = { limit = { exists = var:nesnd_regional_native_partner }
@@ -97,13 +124,20 @@ nesnd_regional_native_partner_valid = {
     AND = { c:MUI ?= this country_has_primary_culture = cu:muisca }
     AND = { c:MAY ?= this country_has_primary_culture = cu:mayan }
     AND = { c:MKT ?= this country_has_primary_culture = cu:miskito }
+    AND = { c:SO1 ?= this country_has_primary_culture = cu:mayan }
+    AND = { c:HM1 ?= this country_has_primary_culture = cu:miskito }
+    AND = { c:NM1 ?= this country_has_primary_culture = cu:miskito }
+    AND = { c:NP1 ?= this country_has_primary_culture = cu:nahua }
+    AND = { c:BT1 ?= this country_has_primary_culture = cu:nesnd_bribri }
+    AND = { c:GY1 ?= this country_has_primary_culture = cu:nesnd_guna }
+    AND = { c:OR1 ?= this country_has_primary_culture = cu:amazonian }
    }
   }
   NOT = { has_war_with = var:nesnd_regional_native_partner }
   OR = {
    AND = { nesnd_regional_native_profile = 1 var:nesnd_regional_native_partner = { c:AYM ?= this } }
-   AND = { nesnd_regional_native_profile = 2 var:nesnd_regional_native_partner = { OR = { c:AMZ ?= this c:MUI ?= this } } }
-   AND = { nesnd_regional_native_profile = 3 var:nesnd_regional_native_partner = { OR = { c:MAY ?= this c:MKT ?= this } } }
+   AND = { nesnd_regional_native_profile = 2 var:nesnd_regional_native_partner = { OR = { c:AMZ ?= this c:MUI ?= this c:OR1 ?= this c:GY1 ?= this } } }
+   AND = { nesnd_regional_native_profile = 3 var:nesnd_regional_native_partner = { OR = { c:MAY ?= this c:MKT ?= this c:HM1 ?= this c:NM1 ?= this c:NP1 ?= this c:BT1 ?= this c:GY1 ?= this c:SO1 ?= this } } }
   }
  }
  trigger_else = { always = no }
@@ -134,18 +168,71 @@ nesnd_regional_native_reply_live = {
 }
 nesnd_regional_native_polity_valid = {
  nesnd_regional_native_actor = yes has_variable = nesnd_regional_native_polity
- trigger_if = { limit = { has_variable = nesnd_restoration_epoch }
-  OR = {
-   AND = { nesnd_regional_native_profile = 1 nesnd_regional_native_kind = 1 country_has_primary_culture = cu:aimara }
-   AND = { nesnd_regional_native_profile = 2 nesnd_regional_native_kind = 2 country_has_primary_culture = cu:amazonian }
-   AND = { nesnd_regional_native_profile = 2 nesnd_regional_native_kind = 3 country_has_primary_culture = cu:muisca }
-   AND = { nesnd_regional_native_profile = 3 nesnd_regional_native_kind = 4 country_has_primary_culture = cu:mayan }
-  }
-  OR = {
-   AND = { nesnd_regional_native_kind = 1 c:AYM ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_aym_country } global_var:nesnd_regional_aym_country = this } trigger_else = { always = no } }
-   AND = { nesnd_regional_native_kind = 2 c:AMZ ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_amz_country } global_var:nesnd_regional_amz_country = this } trigger_else = { always = no } }
-   AND = { nesnd_regional_native_kind = 3 c:MUI ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_mui_country } global_var:nesnd_regional_mui_country = this } trigger_else = { always = no } }
-   AND = { nesnd_regional_native_kind = 4 c:MAY ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_may_country } global_var:nesnd_regional_may_country = this } trigger_else = { always = no } }
+ has_variable = nesnd_restoration_epoch
+ OR = {
+  AND = { nesnd_regional_native_profile = 1 nesnd_regional_native_kind = 1 country_has_primary_culture = cu:aimara c:AYM ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_aym_country } global_var:nesnd_regional_aym_country = this } trigger_else = { always = no } }
+  AND = { nesnd_regional_native_profile = 2 nesnd_regional_native_kind = 2 country_has_primary_culture = cu:amazonian c:AMZ ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_amz_country } global_var:nesnd_regional_amz_country = this } trigger_else = { always = no } }
+  AND = { nesnd_regional_native_profile = 2 nesnd_regional_native_kind = 3 country_has_primary_culture = cu:muisca c:MUI ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_mui_country } global_var:nesnd_regional_mui_country = this } trigger_else = { always = no } }
+  AND = { nesnd_regional_native_profile = 3 nesnd_regional_native_kind = 4 country_has_primary_culture = cu:mayan c:MAY ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_may_country } global_var:nesnd_regional_may_country = this } trigger_else = { always = no } }
+  AND = { nesnd_regional_native_profile = 3 nesnd_regional_native_kind = 5 country_has_primary_culture = cu:miskito c:HM1 ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_hm1_country } global_var:nesnd_regional_hm1_country = this } trigger_else = { always = no } }
+  AND = { nesnd_regional_native_profile = 3 nesnd_regional_native_kind = 6 country_has_primary_culture = cu:miskito c:NM1 ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_nm1_country } global_var:nesnd_regional_nm1_country = this } trigger_else = { always = no } }
+  AND = { nesnd_regional_native_profile = 3 nesnd_regional_native_kind = 7 country_has_primary_culture = cu:nahua c:NP1 ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_np1_country } global_var:nesnd_regional_np1_country = this } trigger_else = { always = no } }
+  AND = { nesnd_regional_native_profile = 3 nesnd_regional_native_kind = 8 country_has_primary_culture = cu:nesnd_bribri c:BT1 ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_bt1_country } global_var:nesnd_regional_bt1_country = this } trigger_else = { always = no } }
+  AND = { OR = { nesnd_regional_native_profile = 2 nesnd_regional_native_profile = 3 } nesnd_regional_native_kind = 9 country_has_primary_culture = cu:nesnd_guna c:GY1 ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_gy1_country } global_var:nesnd_regional_gy1_country = this } trigger_else = { always = no } }
+  AND = { nesnd_regional_native_profile = 2 nesnd_regional_native_kind = 10 country_has_primary_culture = cu:amazonian c:OR1 ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_or1_country } global_var:nesnd_regional_or1_country = this } trigger_else = { always = no } }
+   AND = { nesnd_regional_native_profile = 3 nesnd_regional_native_kind = 11 country_has_primary_culture = cu:mayan c:SO1 ?= this trigger_if = { limit = { exists = global_var:nesnd_regional_so1_country } global_var:nesnd_regional_so1_country = this } trigger_else = { always = no } }
+}
+}
+
+# Native province creation keeps host city and foreign holdings intact.
+nesnd_regional_native_province_seed = {
+ OR = {
+  AND = { nesnd_regional_native_seed_kind = 4 num_provinces > 3 p:x78C465.state = { this = prev } p:x78C465 = { controller = prev.owner } p:xD9BEFE.state = { this = prev } p:xD9BEFE = { controller = prev.owner } p:xBD8628.state = { this = prev } p:xBD8628 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 5 num_provinces > 3 p:x528F3B.state = { this = prev } p:x528F3B = { controller = prev.owner } p:x907080.state = { this = prev } p:x907080 = { controller = prev.owner } p:x600AC6.state = { this = prev } p:x600AC6 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 6 num_provinces > 2 p:x02733F.state = { this = prev } p:x02733F = { controller = prev.owner } p:x865E67.state = { this = prev } p:x865E67 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 7 num_provinces > 1 p:x3DB036.state = { this = prev } p:x3DB036 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 8 num_provinces > 1 p:x1A076A.state = { this = prev } p:x1A076A = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 9 num_provinces > 1 p:xBB820B.state = { this = prev } p:xBB820B = { controller = prev.owner } }
+   AND = { nesnd_regional_native_seed_kind = 11 num_provinces > 1 p:x1030C0.state = { this = prev } p:x1030C0 = { controller = prev.owner } }
+}
+}
+
+nesnd_regional_native_seed_population = {
+ trigger_if = { limit = { OR = { AND = { nesnd_regional_native_seed_kind >= 4 nesnd_regional_native_seed_kind <= 9 } nesnd_regional_native_seed_kind = 11 } } state_population >= 20000 owner = { total_population >= 50000 } }
+ trigger_else = { state_population >= 100000 state_population <= { value = owner.total_population multiply = 0.5 } }
+}
+nesnd_regional_native_seed_territory = {
+ owner = { NOT = { is_at_war = yes } } controller = owner
+ trigger_if = { limit = { OR = { AND = { nesnd_regional_native_seed_kind >= 4 nesnd_regional_native_seed_kind <= 9 } nesnd_regional_native_seed_kind = 11 } } nesnd_regional_native_province_seed = yes }
+ trigger_else = { num_provinces >= { value = state_region.num_provinces } }
+}
+nesnd_regional_native_retained_capital = {
+ trigger_if = { limit = { OR = { AND = { nesnd_regional_native_seed_kind >= 4 nesnd_regional_native_seed_kind <= 9 } nesnd_regional_native_seed_kind = 11 } }
+  nesnd_regional_native_province_capital = yes
+ }
+ trigger_else = {
+  nesnd_restoration_single_remaining >= 150000
+  owner = { any_scope_state = { count >= 2 state_population > 0 } }
+ }
+}
+
+nesnd_regional_native_province_capital = {
+ OR = {
+  AND = { nesnd_regional_native_seed_kind = 4 p:xDEC8D3.state = { this = prev } p:xDEC8D3 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 5 p:x964591.state = { this = prev } p:x964591 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 6 p:x9070C0.state = { this = prev } p:x9070C0 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 7 p:xB0D0C7.state = { this = prev } p:xB0D0C7 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 8 p:x32AA32.state = { this = prev } p:x32AA32 = { controller = prev.owner } }
+  AND = { nesnd_regional_native_seed_kind = 9 p:x8A8A20.state = { this = prev } p:x8A8A20 = { controller = prev.owner } }
+   AND = { nesnd_regional_native_seed_kind = 11 p:x4DBDE9.state = { this = prev } p:x4DBDE9 = { controller = prev.owner } }
+}
+}
+
+nesnd_regional_native_peace_seed_identity = {
+ trigger_if = { limit = { exists = var:nesnd_regional_native_peace_seed exists = var:nesnd_regional_native_peace_region has_variable = nesnd_regional_native_kind }
+  var:nesnd_regional_native_peace_seed = {
+   owner = prev state_region = prev.var:nesnd_regional_native_peace_region
+   nesnd_regional_native_seed_kind > 0 nesnd_regional_native_seed_kind = prev.nesnd_regional_native_kind
   }
  }
  trigger_else = { always = no }

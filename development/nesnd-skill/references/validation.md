@@ -136,3 +136,7 @@ LSP初始空诊断不是最终通过：等待规则重建及后续文件诊断�
 ## 1.15 本机引擎导出
 
 从运行资料目录 docs/ 读取 trigger、effect、event target、on action、modifier 及 custom localization，从 logs/data_types/ 读取 GUI 数据类型及函数。使用工作台 tools/vic3_dump_lookup.py 确认符号、签名、输入和输出作用域，参数标为 Arg0 时须回查同版原生调用。先以 system.log 核版本、导出时间核会话。debug.log 与 error.log 有重合，跨轮转统计不要把两类记录直接相加。用法和来源摘要见工作台 reports/runtime-115-first/engine-dump-lookup.md。
+
+### 按新版新开局验收
+
+旧档只用于找反例。为新开局建立正常流程、失败分支和一次性结算的验收用例；服从作者对史实和架空设定的裁定。历史存档修复是单独任务，须作者明确提出。

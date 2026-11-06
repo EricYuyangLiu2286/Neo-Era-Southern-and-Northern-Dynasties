@@ -1,5 +1,37 @@
 ﻿namespace = nesnd_diaspora
 
+nesnd_diaspora.3 = {
+    type = country_event
+    hidden = yes
+    trigger = {
+        has_global_variable = nesnd_diaspora_open
+        exists = global_var:nesnd_diaspora_origin
+        global_var:nesnd_diaspora_origin ?= root
+        nesnd_diaspora_can_depart = yes
+    }
+    immediate = {
+        remove_global_variable = nesnd_diaspora_destination
+        remove_global_variable = nesnd_diaspora_host
+        random_country = {
+            limit = {
+                nesnd_diaspora_receiver = yes
+                NOT = { this = root }
+                NOT = { has_war_with = root }
+                any_scope_state = { nesnd_diaspora_refuge_state = yes }
+            }
+            set_global_variable = { name = nesnd_diaspora_host value = this }
+            random_scope_state = {
+                limit = { nesnd_diaspora_refuge_state = yes }
+                set_global_variable = { name = nesnd_diaspora_destination value = this }
+            }
+        }
+        if = {
+            limit = { NOT = { exists = global_var:nesnd_diaspora_destination } }
+            nesnd_diaspora_clear_route = yes
+        }
+    }
+}
+
 nesnd_diaspora.1 = {
     type = country_event
     placement = root

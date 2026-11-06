@@ -3,16 +3,22 @@ nesnd_south_capital_defeat = {
     trigger_if = {
         limit = { exists = c:USM }
         is_country_alive = yes
-        OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court }
+        has_global_variable = usm_civilwar_occured
+        nesnd_south_wu_survives = yes
+        NOT = { has_variable = nesnd_holdout_resolved }
+        nesnd_south_campaign_holdout = yes
         NOT = { c:JAP ?= this }
         NOT = { c:USM ?= this }
-        NOT = { is_subject_of = c:USM }
+        is_subject = no
         OR = {
-            has_variable = nesnd_south_defeat_confirmed
+            nesnd_south_verified_wu_defeat = yes
             AND = {
-                has_war_with = c:USM
+                nesnd_south_defender_in_campaign_war = yes
                 OR = {
-                    enemy_occupation > 0.8
+                    AND = {
+                        enemy_occupation > 0.8
+                        NOT = { any_scope_war = { NOT = { exists = diplomatic_play diplomatic_play ?= { nesnd_south_named_play = yes } } } }
+                    }
                     AND = {
                         trigger_if = { limit = { exists = capital }
                             capital = { OR = { controller = c:USM controller = { is_subject_of = c:USM } } }
@@ -40,7 +46,10 @@ nesnd_japan_collapse_ready = {
         NOT = { has_global_variable = nesnd_japan_partitioned }
         NOT = { has_global_variable = nesnd_japan_collapse_committed }
         OR = {
-            AND = { has_war_with = c:JAP nesnd_japan_two_centres_lost = yes }
+            AND = {
+                has_war_with = c:JAP nesnd_japan_two_centres_lost = yes
+                c:JAP = { any_scope_war = { exists = diplomatic_play diplomatic_play ?= { nesnd_south_wu_japan_play = yes } } }
+            }
             has_variable = nesnd_japan_defeat_confirmed
         }
     }
@@ -66,7 +75,7 @@ nesnd_south_defeat_resolution_pending = {
                 has_variable = usm_opposition_country
                 NOT = { c:USM ?= this }
                 NOT = { is_subject_of = c:USM }
-                OR = { has_variable = nesnd_south_defeat_confirmed has_variable = nesnd_capital_surrender_pending }
+                nesnd_south_capital_defeat = yes
             }
             AND = {
                 NOT = { has_global_variable = nesnd_japan_partitioned }

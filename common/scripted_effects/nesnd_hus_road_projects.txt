@@ -1,0 +1,64 @@
+nesnd_hus_road_attach_selected = {
+    if = {
+        limit = { has_journal_entry = nesnd_c2_hus_transport nesnd_c2_hus_transport_open = yes has_variable = nesnd_c2_hus_transport_active has_variable = nesnd_c2_hus_transport_choice }
+        if = {
+            limit = { NOR = { has_journal_entry = nesnd_hus_road_charter_project has_journal_entry = nesnd_hus_road_tender_project has_journal_entry = nesnd_hus_road_local_project } }
+            if = { limit = { var:nesnd_c2_hus_transport_choice = 1 } add_journal_entry = { type = nesnd_hus_road_charter_project } }
+            else_if = { limit = { var:nesnd_c2_hus_transport_choice = 2 } add_journal_entry = { type = nesnd_hus_road_tender_project } }
+            else_if = { limit = { var:nesnd_c2_hus_transport_choice = 3 } add_journal_entry = { type = nesnd_hus_road_local_project } }
+        }
+        nesnd_c2_sync_hus_transport = yes
+    }
+}
+nesnd_hus_road_ai_construction = {
+    if = {
+        limit = {
+            is_player = no
+            nesnd_c2_hus_transport_open = yes
+            has_variable = nesnd_c2_hus_transport_active
+            has_variable = nesnd_c2_hus_transport_choice
+            has_variable = nesnd_c2_hus_transport_baseline
+            nesnd_c2_hus_transport_target_valid = yes
+            nesnd_hus_road_site_peace = yes
+            in_default = no
+            NOT = { has_modifier = declared_bankruptcy }
+            net_total_income >= 0
+            is_construction_paused = no
+            construction_queue_num_queued_government_levels = 0
+            var:nesnd_c2_hus_transport_target = {
+                NOT = { any_scope_building = { is_under_construction = yes } }
+            }
+        }
+        if = {
+            limit = {
+                var:nesnd_c2_hus_transport_choice = 2
+                nesnd_c2_hus_transport_levels < 1
+            }
+            var:nesnd_c2_hus_transport_target = {
+                if = { limit = { can_construct_building = building_railway } start_building_construction = building_railway }
+            }
+        }
+        else_if = {
+            limit = {
+                var:nesnd_c2_hus_transport_target = {
+                    NOT = { any_scope_building = { level >= 1 OR = { is_building_type = building_port is_building_type = building_railway } } }
+                }
+            }
+            var:nesnd_c2_hus_transport_target = {
+                if = { limit = { can_construct_building = building_port } start_building_construction = building_port }
+                else_if = { limit = { can_construct_building = building_railway } start_building_construction = building_railway }
+            }
+        }
+        else_if = {
+            limit = {
+                var:nesnd_c2_hus_transport_choice = 1
+                nesnd_c2_hus_transport_levels < nesnd_c2_hus_transport_goal
+            }
+            var:nesnd_c2_hus_transport_target = {
+                if = { limit = { can_construct_building = building_tooling_workshop } start_building_construction = building_tooling_workshop }
+                else_if = { limit = { can_construct_building = building_iron_mine } start_building_construction = building_iron_mine }
+                else_if = { limit = { can_construct_building = building_logging_camp } start_building_construction = building_logging_camp }
+            }
+        }
+    }
+}

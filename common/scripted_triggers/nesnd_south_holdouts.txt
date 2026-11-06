@@ -1,24 +1,49 @@
-﻿nesnd_south_mainland_holdout = {
-    is_country_alive = yes num_states > 0
-    OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this }
-    OR = { has_variable = nesnd_restoration_side has_variable = nesnd_ming_court nesnd_board_stance_value = 1 }
-    OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court }
+﻿# Compatibility name used by existing JE status declarations. The ongoing southern war also includes its actual overseas opposition.
+nesnd_south_mainland_holdout = { nesnd_south_campaign_holdout = yes }
+nesnd_south_campaign_holdout = {
+    is_country_alive = yes num_states > 0 NOT = { c:USM ?= this }
+    NOT = { has_variable = nesnd_postwar_allegiance_answered }
+    OR = {
+        AND = {
+            OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this }
+            OR = { has_variable = nesnd_restoration_side has_variable = nesnd_ming_court nesnd_board_stance_value = 1 }
+            OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court }
+        }
+        AND = {
+            has_variable = usm_opposition_country
+            OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this c:PHI ?= this c:DEI ?= this c:YN1 ?= this }
+            OR = { has_variable = nesnd_restoration_side has_variable = ce_usm_republican_revolution_tag
+                has_journal_entry = ce_usm_restoration_of_ming has_variable = usm_opposition_country_leader_var
+                has_variable = nesnd_south_answered }
+        }
+        AND = {
+            c:JAP ?= this has_variable = usm_opposition_country has_variable = nesnd_japan_answered
+            NOR = { has_variable = ce_usm_cw_ally_with_mng has_variable = nesnd_japan_neutral
+                has_variable = nesnd_japan_recovery_created has_global_variable = nesnd_japan_partitioned }
+        }
+    }
+}
+nesnd_south_remnant_window = {
+    nesnd_south_wu_survives = yes has_global_variable = usm_civilwar_occured
+    c:USM ?= { NOR = { has_variable = usm_government_winner_civilwar has_variable = nesnd_south_peace_committed
+        has_variable = nesnd_south_inconclusive_settlement has_variable = nesnd_ming_preserved } }
 }
 nesnd_south_wu_survives = {
-    trigger_if = { limit = { exists = c:USM } c:USM = { is_country_alive = yes has_variable = tag_WUU_var } }
+    trigger_if = { limit = { exists = c:USM } c:USM = { is_country_alive = yes has_variable = tag_WUU_var NOT = { has_variable = usm_rebel_winner_of_the_civil_war } } }
     trigger_else = { always = no }
 }
 nesnd_holdout_peace_eligible = {
-    nesnd_south_mainland_holdout = yes nesnd_south_wu_survives = yes
+    nesnd_south_campaign_holdout = yes nesnd_south_remnant_window = yes
     has_global_variable = usm_civilwar_occured
     has_variable = nesnd_holdout_enrolled_round
     NOT = { has_variable = nesnd_holdout_resolved }
     is_subject = no is_at_war = no is_active_in_diplomatic_play = no
     NOT = { has_variable = nesnd_capital_surrender_pending }
-    NOT = { has_variable = nesnd_south_defeat_confirmed }
+    NOT = { nesnd_south_capital_defeat = yes }
 }
 nesnd_holdout_offer_due = {
     nesnd_holdout_peace_eligible = yes
+    NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
     nesnd_holdout_answered_value < nesnd_holdout_round_value
     NOT = { has_variable = nesnd_holdout_choice_pending }
     NOT = { has_variable = nesnd_holdout_north_awaited }
@@ -30,6 +55,7 @@ nesnd_holdout_ai_unyielding = {
 }
 nesnd_holdout_can_seek_north = {
     nesnd_holdout_peace_eligible = yes
+    NOT = { c:JAP ?= this }
     trigger_if = { limit = { exists = c:CNE }
         c:CNE = { is_country_alive = yes is_subject = no }
         NOT = { has_war_with = c:CNE }
@@ -40,6 +66,7 @@ nesnd_holdout_north_request_valid = {
     trigger_if = { limit = { exists = scope:nesnd_holdout_sender exists = scope:nesnd_holdout_request_round }
         scope:nesnd_holdout_sender = {
             nesnd_holdout_peace_eligible = yes
+            NOT = { c:JAP ?= this }
             has_variable = nesnd_holdout_north_awaited has_variable = nesnd_holdout_north_clock
             nesnd_holdout_round_value = scope:nesnd_holdout_request_round
         }
@@ -53,8 +80,8 @@ nesnd_holdout_north_can_accept = {
 nesnd_south_campaign_peace = {
     nesnd_south_wu_survives = yes
     NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
-    NOT = { any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var } }
-    NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country has_war_with = c:USM } }
+    NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
+    c:USM ?= { is_at_war = no is_active_in_diplomatic_play = no }
     NOT = { nesnd_south_defeat_resolution_pending = yes }
 }
 # Candidate countries can shelter a guest emperor without changing their own government.
@@ -87,4 +114,88 @@ nesnd_south_wu_total_victory = {
     c:USM ?= this has_global_variable = usm_civilwar_occured
     nesnd_south_campaign_resolved = yes
     NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } }
+}
+
+# Diplomatic-play scope. Only the southern campaign can issue a military defeat receipt.
+nesnd_south_named_play = { is_diplomatic_play_type = dp_usm_civil_war initiator_is = c:USM }
+# Country scope. PREV inside the country's own war iterator is the candidate country.
+nesnd_south_defender_in_campaign_war = {
+    any_scope_war = {
+        is_on_defending_side = prev
+        exists = diplomatic_play
+        diplomatic_play ?= { nesnd_south_named_play = yes }
+    }
+}
+# Country scope. An old wargoal receipt without its provenance cannot justify later annexation.
+nesnd_south_verified_wu_defeat = {
+    trigger_if = { limit = { has_variable = nesnd_south_case_defeat_round }
+        var:nesnd_south_case_defeat_round = nesnd_south_round_value
+    }
+    trigger_else = { always = no }
+}
+# Being willing to fight is separate from being free to start a play right now.
+nesnd_holdout_can_resume_war = {
+    nesnd_holdout_peace_eligible = yes
+    has_variable = nesnd_holdout_resistance_pending
+    trigger_if = { limit = { exists = c:USM }
+        NOT = { has_truce_with = c:USM }
+        c:USM = { is_at_war = no is_active_in_diplomatic_play = no is_subject = no }
+    }
+    trigger_else = { always = no }
+}
+nesnd_holdout_can_submit_to_wu = {
+    nesnd_holdout_peace_eligible = yes
+    # Japan has its own defeat, occupation and partition sequence.
+    NOT = { c:JAP ?= this }
+    c:USM ?= { is_at_war = no is_active_in_diplomatic_play = no }
+}
+# An exact post-war source for the actual faction. Earlier CNE/Japan aid or generic foreign participation is not a mainland case.
+nesnd_holdout_can_recover_round = {
+    nesnd_south_campaign_holdout = yes nesnd_south_remnant_window = yes is_subject = no
+    has_global_variable = usm_civilwar_occured
+    NOR = { has_variable = nesnd_holdout_enrolled_round has_variable = nesnd_holdout_resolved }
+    c:USM ?= { NOT = { has_variable = nesnd_war_opening_grace } }
+    NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
+}
+
+nesnd_holdout_offer_ticket_live = {
+    trigger_if = { limit = { exists = scope:nesnd_holdout_offer_round has_variable = nesnd_holdout_choice_pending }
+        var:nesnd_holdout_choice_pending = scope:nesnd_holdout_offer_round
+        nesnd_holdout_round_value = scope:nesnd_holdout_offer_round
+    }
+    trigger_else = { always = no }
+}
+
+# An anonymous capitulation notice does not identify the war. Accept only a typed supplied play/war.
+nesnd_south_callback_in_campaign = {
+    OR = {
+        AND = { exists = scope:diplomatic_play scope:diplomatic_play ?= { nesnd_south_named_play = yes } }
+        AND = { exists = scope:war scope:war ?= { exists = diplomatic_play diplomatic_play ?= { nesnd_south_named_play = yes } } }
+    }
+}
+
+# A consumed answer with no live destination, war or outstanding follow-up in the same round is an abandoned old transaction.
+nesnd_holdout_abandoned_answer = {
+    nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_answered_round
+    nesnd_holdout_answered_value >= nesnd_holdout_round_value
+    NOR = { has_variable = nesnd_holdout_choice_pending has_variable = nesnd_holdout_north_awaited
+        has_variable = nesnd_holdout_north_refused has_variable = nesnd_holdout_resistance_pending }
+    NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
+    trigger_if = { limit = { has_variable = nesnd_holdout_recovered_answer_round }
+        NOT = { var:nesnd_holdout_recovered_answer_round = nesnd_holdout_round_value }
+    }
+}
+
+nesnd_south_wu_japan_play = {
+    OR = {
+        AND = { initiator_is = c:USM target_is = c:JAP }
+        AND = { initiator_is = c:JAP target_is = c:USM }
+        AND = { nesnd_south_named_play = yes any_scope_play_involved = { c:JAP ?= this } c:JAP ?= { nesnd_south_campaign_holdout = yes } }
+    }
+}
+nesnd_south_wu_japan_callback = {
+    OR = {
+        AND = { exists = scope:diplomatic_play scope:diplomatic_play ?= { nesnd_south_wu_japan_play = yes } }
+        AND = { exists = scope:war scope:war ?= { exists = diplomatic_play diplomatic_play ?= { nesnd_south_wu_japan_play = yes } } }
+    }
 }

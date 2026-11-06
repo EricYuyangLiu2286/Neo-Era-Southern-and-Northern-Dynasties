@@ -1,6 +1,8 @@
 ﻿dp_usm_civil_war = {
 	war_goal = wg_nesnd_usm_annex
 	mirror_war_goal = yes
+	allow_negotiated_peace = no
+	requires_interest_marker = no
 	add_infamy_for_starting_initiator_wargoals = no
 	enable_switch_sides = no
 	texture = "gfx/interface/icons/war_goals/annex_country.dds"
@@ -9,10 +11,12 @@
 		always = no
 	}
 	possible = {
-		scope:target_country = {
-			has_variable = usm_opposition_country
-		}
-	}
+        trigger_if = { limit = { exists = scope:initiator exists = scope:target_country }
+            scope:initiator = { c:USM ?= this }
+            scope:target_country = { OR = { has_variable = usm_opposition_country nesnd_south_campaign_holdout = yes } NOT = { c:USM ?= this } }
+        }
+        trigger_else = { always = no }
+    }
 	additional_involvement_trigger = {
 		NOT = {
 			is_country_type = decentralized
@@ -33,7 +37,7 @@
 
 	}
 	on_war_begins = {
-        every_country = { limit = { nesnd_south_mainland_holdout = yes has_war_with = c:USM }
+        every_country = { limit = { nesnd_south_mainland_holdout = yes nesnd_south_defender_in_campaign_war = yes }
             set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
         }
     }

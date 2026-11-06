@@ -422,13 +422,24 @@ nesnd_restoration_confirm_unification = {
   clear_variable_list = nesnd_restoration_enemy_land
  }
 }
-# Store provinces, not State objects: an annexation can merge or delete a split State.
+# Run this from the opposing country, only for a continent in which it actually holds land.
+nesnd_restoration_collect_provinces_in = {
+ if = { limit = { any_scope_state = { is_in_geographic_region = $AREA$ } }
+  $PROVINCES$ = {
+   limit = { owner ?= scope:nesnd_restoration_land_owner }
+   scope:nesnd_restoration_map_reader ?= {
+    add_to_variable_list = { name = nesnd_restoration_enemy_land target = prev }
+   }
+  }
+ }
+}
+# Province identities survive an annexation that merges or deletes a split State.
 nesnd_restoration_record_enemy_land = {
- if = { limit = { nesnd_restoration_opposed_pair = yes
+ if = { limit = { nesnd_restoration_opposed_pair = yes }
+  if = { limit = {
    var:nesnd_restoration_opponent = { any_scope_state = { always = yes } }
    OR = {
-    NOT = { has_variable_list = nesnd_restoration_enemy_land }
-    NOT = { has_variable = nesnd_restoration_land_count }
+    NOT = { nesnd_restoration_enemy_map_complete = yes }
     trigger_if = {
      limit = { has_variable = nesnd_restoration_land_count }
      NOT = { var:nesnd_restoration_land_count = var:nesnd_restoration_opponent.nesnd_restoration_province_count }
@@ -441,11 +452,16 @@ nesnd_restoration_record_enemy_land = {
   save_scope_as = nesnd_restoration_map_reader
   clear_variable_list = nesnd_restoration_enemy_land
   var:nesnd_restoration_opponent = {
-   every_scope_state = { every_province = {
-    scope:nesnd_restoration_map_reader = { add_to_variable_list = { name = nesnd_restoration_enemy_land target = prev } }
-   } }
+   save_scope_as = nesnd_restoration_land_owner
+   nesnd_restoration_collect_provinces_in = { AREA = geographic_region_americas PROVINCES = every_province_in_americas }
+   nesnd_restoration_collect_provinces_in = { AREA = geographic_region_europe PROVINCES = every_province_in_europe }
+   nesnd_restoration_collect_provinces_in = { AREA = geographic_region_africa PROVINCES = every_province_in_africa }
+   # The effective Asian region includes Oceania; scanning Oceania again would duplicate provinces.
+   nesnd_restoration_collect_provinces_in = { AREA = geographic_region_asia PROVINCES = every_province_in_asia }
   }
+  clear_saved_scope = nesnd_restoration_land_owner
   clear_saved_scope = nesnd_restoration_map_reader
+ }
  }
 }
 nesnd_restoration_monthly = {

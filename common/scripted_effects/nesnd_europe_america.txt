@@ -133,13 +133,26 @@ nesnd_usa_press_west = {
         clear_variable_list = nesnd_usa_claim_provinces
         var:nesnd_usa_border_state = {
             save_scope_as = nesnd_usa_disputed_state
-            every_province = { c:USA = { add_to_variable_list = { name = nesnd_usa_claim_provinces target = prev } } }
             state_region = { save_scope_as = nesnd_usa_disputed_region }
         }
-        set_variable = { name = nesnd_usa_launching days = 7 }
-        create_diplomatic_play = { name = nesnd_usa_hus_confrontation type = dp_return_state target_country = c:HUS target_state = var:nesnd_usa_border_state }
-        if = { limit = { has_variable = nesnd_usa_case_active }
-            c:HUS ?= { trigger_event = { id = nesnd_europe_america.10 popup = yes } }
+        if = { limit = { exists = scope:nesnd_usa_disputed_state }
+            every_province_in_americas = {
+                limit = { state ?= scope:nesnd_usa_disputed_state }
+                c:USA ?= { add_to_variable_list = { name = nesnd_usa_claim_provinces target = prev } }
+            }
+            if = { limit = {
+                scope:nesnd_usa_disputed_state = { num_provinces > 0 }
+                trigger_if = { limit = { has_variable_list = nesnd_usa_claim_provinces }
+                    variable_list_size = { name = nesnd_usa_claim_provinces target = scope:nesnd_usa_disputed_state.num_provinces }
+                }
+                trigger_else = { always = no }
+            }
+                set_variable = { name = nesnd_usa_launching days = 7 }
+                create_diplomatic_play = { name = nesnd_usa_hus_confrontation type = dp_return_state target_country = c:HUS target_state = var:nesnd_usa_border_state }
+                if = { limit = { has_variable = nesnd_usa_case_active }
+                    c:HUS ?= { trigger_event = { id = nesnd_europe_america.10 popup = yes } }
+                }
+            }
         }
         clear_saved_scope = nesnd_usa_disputed_region clear_saved_scope = nesnd_usa_disputed_state
     }

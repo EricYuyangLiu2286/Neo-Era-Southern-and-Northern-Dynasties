@@ -58,19 +58,55 @@ nesnd_c2_italy_common_budget_operating = { nesnd_c2_project_theatre_peace = { TA
    OR = { AND = { var:nesnd_c2_italy_common_budget_choice = 1 nesnd_c2_political_authority = { IG = ig_industrialists } } AND = { var:nesnd_c2_italy_common_budget_choice = 2 nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie } } AND = { var:nesnd_c2_italy_common_budget_choice = 3 nesnd_c2_political_authority = { IG = ig_armed_forces } } }  } trigger_else = { always = no } }
 nesnd_c2_hus_transport_open = { nesnd_hus_civic_country = yes hidden_trigger = { NOT = { has_variable = nesnd_c2_hus_transport_done } } }
 nesnd_c2_hus_transport_target_valid = { trigger_if = { limit = { exists = var:nesnd_c2_hus_transport_target } var:nesnd_c2_hus_transport_target = { owner = prev state_population > 0  } } trigger_else = { always = no } }
-nesnd_c2_hus_transport_chartered_contractors_candidate = { state_population > 0  }
+nesnd_c2_hus_transport_chartered_contractors_candidate = {
+    state_population > 0
+    OR = {
+        any_scope_building = { level >= 1 OR = { is_building_type = building_tooling_workshop is_building_type = building_iron_mine is_building_type = building_logging_camp } }
+        can_construct_building = building_tooling_workshop
+        can_construct_building = building_iron_mine
+        can_construct_building = building_logging_camp
+    }
+    OR = {
+        any_scope_building = { level >= 1 OR = { is_building_type = building_port is_building_type = building_railway } }
+        can_construct_building = building_port
+        can_construct_building = building_railway
+    }
+}
 nesnd_c2_hus_transport_chartered_contractors_available = { nesnd_c2_hus_transport_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_hus_transport_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_hus_transport_chartered_contractors_target var:nesnd_c2_hus_transport_chartered_contractors_target ?= { owner = prev nesnd_c2_hus_transport_chartered_contractors_candidate = yes } }  }
-nesnd_c2_hus_transport_open_tenders_candidate = { state_population > 0  }
+nesnd_c2_hus_transport_open_tenders_candidate = {
+    state_population > 0
+    OR = {
+        any_scope_building = { level >= 1 OR = { is_building_type = building_railway } }
+        can_construct_building = building_railway
+    }
+}
 nesnd_c2_hus_transport_open_tenders_available = { nesnd_c2_hus_transport_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_hus_transport_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_hus_transport_open_tenders_target var:nesnd_c2_hus_transport_open_tenders_target ?= { owner = prev nesnd_c2_hus_transport_open_tenders_candidate = yes } }  }
-nesnd_c2_hus_transport_local_transport_candidate = { state_population > 0  }
+nesnd_c2_hus_transport_local_transport_candidate = {
+    state_population > 0
+    OR = {
+        any_scope_building = { level >= 1 OR = { is_building_type = building_port is_building_type = building_railway } }
+        can_construct_building = building_port
+        can_construct_building = building_railway
+    }
+}
 nesnd_c2_hus_transport_local_transport_available = { nesnd_c2_hus_transport_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_hus_transport_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_hus_transport_local_transport_target var:nesnd_c2_hus_transport_local_transport_target ?= { owner = prev nesnd_c2_hus_transport_local_transport_candidate = yes } }  }
-nesnd_c2_hus_transport_operating = { nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_hus_transport_target } trigger_if = { limit = { has_variable = nesnd_c2_hus_transport_choice has_variable = nesnd_c2_hus_transport_baseline exists = var:nesnd_c2_hus_transport_target } 
- trigger_if = { limit = { exists = var:nesnd_c2_hus_transport_target } var:nesnd_c2_hus_transport_target = { any_scope_building = { OR = { is_building_type = building_railway is_building_type = building_port } level >= 1 occupancy >= 0.5 } } } trigger_else = { always = no }
-
-  nesnd_c2_hus_transport_target_valid = yes in_default = no
-  trigger_if = { limit = { exists = var:nesnd_c2_hus_transport_target } var:nesnd_c2_hus_transport_target = { market_access >= 0.8 } } trigger_else = { always = no }
-  OR = { AND = { var:nesnd_c2_hus_transport_choice = 1 var:nesnd_c2_hus_transport_target ?= { any_scope_building = { OR = { is_building_type = building_tooling_workshop is_building_type = building_iron_mine is_building_type = building_logging_camp } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_hus_transport_operating_levels >= nesnd_c2_hus_transport_goal } } } AND = { var:nesnd_c2_hus_transport_choice = 2 var:nesnd_c2_hus_transport_target ?= { any_scope_building = { OR = { is_building_type = building_railway } level >= 1 occupancy >= 0.5 } } } AND = { var:nesnd_c2_hus_transport_choice = 3 var:nesnd_c2_hus_transport_target ?= { any_scope_building = { OR = { is_building_type = building_port is_building_type = building_railway } level >= 1 occupancy >= 0.5 } } } }
-    } trigger_else = { always = no } }
+nesnd_c2_hus_transport_operating = {
+    has_variable = nesnd_c2_hus_transport_choice
+    has_variable = nesnd_c2_hus_transport_baseline
+    nesnd_c2_hus_transport_target_valid = yes
+    in_default = no
+    nesnd_hus_road_site_peace = yes
+    nesnd_hus_road_market_ready = yes
+    nesnd_hus_road_link_ready = yes
+    trigger_if = { limit = { has_variable = nesnd_c2_hus_transport_choice }
+        OR = {
+            AND = { var:nesnd_c2_hus_transport_choice = 1 nesnd_hus_road_charter_capacity = yes }
+            AND = { var:nesnd_c2_hus_transport_choice = 2 nesnd_hus_road_tender_capacity = yes }
+            AND = { var:nesnd_c2_hus_transport_choice = 3 nesnd_hus_road_local_capacity = yes }
+        }
+    }
+    trigger_else = { always = no }
+}
 nesnd_c2_hus_frontier_open = { nesnd_hus_civic_country = yes custom_tooltip = { text = nesnd_ui_c2_hus_transport_completed_tt has_variable = nesnd_c2_hus_transport_done } hidden_trigger = { NOT = { has_variable = nesnd_c2_hus_frontier_done } } }
 nesnd_c2_hus_frontier_target_valid = { trigger_if = { limit = { exists = var:nesnd_c2_hus_frontier_target } var:nesnd_c2_hus_frontier_target = { owner = prev state_population > 0 any_scope_pop = { culture = cu:mongol } } } trigger_else = { always = no } }
 nesnd_c2_hus_frontier_pasture_passage_candidate = { state_population > 0 any_scope_pop = { culture = cu:mongol } }
@@ -193,8 +229,8 @@ nesnd_c2_can_request_scholarly = {
 nesnd_c2_italian_can_accept = {
  trigger_if = { limit = { exists = scope:c2_compact_sender exists = scope:c2_compact_partner exists = scope:c2_compact_serial }
   trigger_if = { limit = { nesnd_c2_italian_reply_valid = yes }
-   nesnd_c2_can_budget = yes exists = var:nesnd_c2_compact_state
-   scope:c2_compact_sender = { nesnd_c2_can_budget = yes exists = var:nesnd_c2_compact_state }
+   nesnd_c2_can_budget = yes nesnd_c2_compact_target_valid = yes
+   scope:c2_compact_sender = { nesnd_c2_can_budget = yes nesnd_c2_compact_target_valid = yes }
   }
   trigger_else = { always = no }
  }
@@ -287,4 +323,16 @@ nesnd_c2_compact_mutual_current = {
   }
  }
  trigger_else = { always = no }
+}
+
+nesnd_it_has_eligible_partner = {
+    OR = {
+        nesnd_c2_italian_can_send = { TARGET = c:LOM }
+        nesnd_c2_italian_can_send = { TARGET = c:SAR }
+        nesnd_c2_italian_can_send = { TARGET = c:SIC }
+        nesnd_c2_italian_can_send = { TARGET = c:PAP }
+        nesnd_c2_italian_can_send = { TARGET = c:PAR }
+        nesnd_c2_italian_can_send = { TARGET = c:MOD }
+        nesnd_c2_italian_can_send = { TARGET = c:TUS }
+    }
 }

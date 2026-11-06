@@ -42,12 +42,18 @@ nesnd_diaspora_clear_route = {
     remove_global_variable = nesnd_diaspora_destination
 }
 
-nesnd_diaspora_choose_route = {
+nesnd_diaspora_choose_departure = {
     nesnd_diaspora_clear_route = yes
     random_country = {
         limit = {
             nesnd_diaspora_can_depart = yes
             any_scope_state = { any_scope_pop = { nesnd_diaspora_native_pop = yes } }
+            any_country = {
+                nesnd_diaspora_receiver = yes
+                NOT = { this = prev }
+                NOT = { has_war_with = prev }
+                any_scope_state = { nesnd_diaspora_refuge_state = yes }
+            }
         }
         set_global_variable = { name = nesnd_diaspora_origin value = this }
         random_scope_state = {
@@ -59,20 +65,15 @@ nesnd_diaspora_choose_route = {
             }
         }
     }
+}
+
+nesnd_diaspora_choose_route = {
     if = {
-        limit = { exists = global_var:nesnd_diaspora_origin }
-        random_country = {
-            limit = {
-                nesnd_diaspora_receiver = yes
-                NOT = { this = global_var:nesnd_diaspora_origin }
-                NOT = { has_war_with = global_var:nesnd_diaspora_origin }
-            }
-            set_global_variable = { name = nesnd_diaspora_host value = this }
-            random_scope_state = {
-                limit = { nesnd_diaspora_american_state = yes }
-                set_global_variable = { name = nesnd_diaspora_destination value = this }
-            }
-        }
+        limit = { nesnd_diaspora_departure_valid = no }
+        nesnd_diaspora_choose_departure = yes
+    }
+    global_var:nesnd_diaspora_origin ?= {
+        trigger_event = { id = nesnd_diaspora.3 }
     }
 }
 
@@ -94,6 +95,7 @@ nesnd_diaspora_move = {
         value = {
             value = global_var:nesnd_diaspora_pop.total_size
             max = global_var:nesnd_diaspora_origin.var:nesnd_diaspora_due
+            max = { value = global_var:nesnd_diaspora_total divide = 10 floor = yes min = 1 }
         }
     }
     nesnd_diaspora_count_departure = { COUNT = nesnd_diaspora_before }
@@ -117,6 +119,7 @@ nesnd_diaspora_move = {
             change_variable = { name = nesnd_diaspora_due subtract = local_var:nesnd_diaspora_moved }
         }
         change_global_variable = { name = nesnd_diaspora_remaining subtract = local_var:nesnd_diaspora_moved }
+        set_bar_progress = { name = nesnd_diaspora_batch_bar value = 0 }
     }
 }
 
@@ -126,15 +129,13 @@ nesnd_diaspora_week = {
         limit = { has_global_variable = nesnd_diaspora_open }
         if = {
             limit = { NOT = { nesnd_diaspora_route_valid = yes } }
-            set_bar_progress = { name = nesnd_diaspora_batch_bar value = 0 }
             nesnd_diaspora_choose_route = yes
         }
         else_if = {
             limit = { "scripted_bar_progress(nesnd_diaspora_batch_bar)" >= 100 }
             nesnd_diaspora_move = yes
-            set_bar_progress = { name = nesnd_diaspora_batch_bar value = 0 }
+            nesnd_diaspora_clear_route = yes
             if = { limit = { global_var:nesnd_diaspora_remaining > 0 } nesnd_diaspora_choose_route = yes }
-            else = { nesnd_diaspora_clear_route = yes }
         }
         set_bar_progress = {
             name = nesnd_diaspora_total_bar
@@ -145,6 +146,33 @@ nesnd_diaspora_week = {
                 divide = global_var:nesnd_diaspora_total
             }
         }
+    }
+}
+
+nesnd_diaspora_close = {
+    nesnd_diaspora_clear_route = yes
+    remove_global_variable = nesnd_diaspora_total
+    remove_global_variable = nesnd_diaspora_remaining
+    remove_global_variable = nesnd_diaspora_open
+}
+
+nesnd_diaspora_fail = {
+    if = {
+        limit = { has_global_variable = nesnd_diaspora_open }
+        every_country = {
+            limit = { has_variable = nesnd_diaspora_source }
+            save_scope_as = nesnd_diaspora_source_government
+            every_scope_culture = {
+                limit = { nesnd_hus_native_culture = yes }
+                save_scope_as = nesnd_diaspora_remaining_culture
+                scope:nesnd_diaspora_source_government = {
+                    add_radicals = { culture = scope:nesnd_diaspora_remaining_culture value = 0.2 }
+                }
+            }
+            remove_variable = nesnd_diaspora_source
+            remove_variable = nesnd_diaspora_due
+        }
+        nesnd_diaspora_close = yes
     }
 }
 
@@ -165,9 +193,6 @@ nesnd_diaspora_finish = {
                 trigger_event = { id = nesnd_diaspora.2 popup = yes }
             }
         }
-        nesnd_diaspora_clear_route = yes
-        remove_global_variable = nesnd_diaspora_total
-        remove_global_variable = nesnd_diaspora_remaining
-        remove_global_variable = nesnd_diaspora_open
+        nesnd_diaspora_close = yes
     }
 }

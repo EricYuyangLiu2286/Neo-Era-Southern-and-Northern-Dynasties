@@ -10,6 +10,7 @@ nesnd_war_collapse_after_battle = {
                 c:USM = {
                     every_country = { limit = { has_variable = nesnd_ming_court nesnd_south_capital_defeat = yes }
                         set_variable = nesnd_south_defeat_confirmed
+                    set_variable = { name = nesnd_south_case_defeat_round value = nesnd_south_round_value }
                     }
                     nesnd_queue_war_collapse_check = yes
                 }
@@ -27,14 +28,17 @@ nesnd_record_wu_defeat = {
             limit = { c:USM ?= this has_variable = tag_WUU_var exists = scope:target }
             scope:target = {
                 if = {
-                    limit = { is_country_alive = yes NOT = { c:USM ?= this } OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court } }
+                    limit = { is_country_alive = yes NOT = { c:USM ?= this } NOT = { has_variable = nesnd_holdout_resolved }
+                        nesnd_south_campaign_holdout = yes
+                        nesnd_south_callback_in_campaign = yes }
                     set_variable = nesnd_south_defeat_confirmed
+                    set_variable = { name = nesnd_south_case_defeat_round value = nesnd_south_round_value }
                 }
             }
             if = {
                 limit = { exists = c:JAP }
                 if = {
-                    limit = { scope:target = c:JAP c:JAP = { is_country_alive = yes } NOT = { has_global_variable = nesnd_japan_partitioned } }
+                    limit = { scope:target = c:JAP nesnd_south_wu_japan_callback = yes c:JAP = { is_country_alive = yes } NOT = { has_global_variable = nesnd_japan_partitioned } }
                     set_variable = nesnd_japan_defeat_confirmed
                 }
             }

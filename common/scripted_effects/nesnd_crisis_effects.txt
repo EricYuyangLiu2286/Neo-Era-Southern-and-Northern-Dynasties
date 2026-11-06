@@ -156,14 +156,19 @@ nesnd_land_collapse = {
 }
 
 nesnd_join_opposition_play = {
-    if = { limit = { NOT = { has_variable = nesnd_joined_south_play } is_subject = no exists = c:USM
-            any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var is_war = no }
+    if = { limit = { is_subject = no exists = c:USM
+            any_diplomatic_play = { nesnd_south_named_play = yes is_war = no }
         }
-        random_diplomatic_play = {
-            limit = { has_variable = this_is_nanming_civilwar_var is_war = no }
-            add_target_backers = { prev }
+        save_scope_as = nesnd_south_join_candidate
+        random_diplomatic_play = { limit = { nesnd_south_named_play = yes is_war = no }
+            if = { limit = { NOT = { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } } }
+                add_target_backers = { scope:nesnd_south_join_candidate }
+            }
+            if = { limit = { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } }
+                scope:nesnd_south_join_candidate = { set_variable = nesnd_joined_south_play }
+            }
         }
-        set_variable = nesnd_joined_south_play
+        clear_saved_scope = nesnd_south_join_candidate
     }
 }
 nesnd_notify_foreign_countries = {
@@ -185,6 +190,8 @@ nesnd_open_southern_war = {
                 has_global_variable = usm_civilwar_occured
             }
         }
+        clear_saved_scope = nesnd_opposition_leader
+        clear_saved_scope = nesnd_south_opening_play
         nesnd_ming_find_rebel_host = yes
         if = {
             limit = {
@@ -285,17 +292,20 @@ nesnd_open_southern_war = {
             }
             random_diplomatic_play = {
                 limit = {
-                    initiator = root
+                    nesnd_south_named_play = yes
                     target = scope:nesnd_opposition_leader
+                    is_war = no
                 }
                 set_variable = this_is_nanming_civilwar_var
+                save_scope_as = nesnd_south_opening_play
             }
             if = {
                 limit = {
-                    any_diplomatic_play = {
-                        has_variable = this_is_nanming_civilwar_var
-                        initiator = root
-                        target = scope:nesnd_opposition_leader
+                    exists = scope:nesnd_south_opening_play
+                }
+                scope:nesnd_opposition_leader = {
+                    if = { limit = { nesnd_south_mainland_holdout = yes }
+                        set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
                     }
                 }
                 remove_variable = nesnd_south_play_failed
@@ -317,11 +327,15 @@ nesnd_open_southern_war = {
                         }
                         is_subject = no
                     }
-                    random_diplomatic_play = {
-                        limit = {
-                            has_variable = this_is_nanming_civilwar_var
+                    save_scope_as = nesnd_south_join_candidate
+                    scope:nesnd_south_opening_play ?= {
+                        if = { limit = { NOT = { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } } }
+                            add_target_backers = { scope:nesnd_south_join_candidate }
                         }
-                        add_target_backers = { prev }
+                    }
+                    if = { limit = { nesnd_south_mainland_holdout = yes is_diplomatic_play_enemy_of = c:USM
+                            scope:nesnd_south_opening_play ?= { any_scope_play_involved = { this = scope:nesnd_south_join_candidate } } }
+                        set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
                     }
                 }
                 every_country = {
@@ -355,23 +369,16 @@ nesnd_open_southern_war = {
                             has_variable = ce_usm_cw_ally_with_mng
                             is_subject = no
                         }
-                        random_diplomatic_play = {
-                            limit = {
-                                has_variable = this_is_nanming_civilwar_var
+                        scope:nesnd_south_opening_play ?= {
+                            if = { limit = { NOT = { any_scope_play_involved = { c:JAP ?= this } } }
+                                add_initiator_backers = { c:JAP }
                             }
-                            add_initiator_backers = { c:JAP }
                         }
                     }
                 }
-                random_diplomatic_play = {
-                    limit = {
-                        has_variable = this_is_nanming_civilwar_var
-                        initiator = root
-                        target = scope:nesnd_opposition_leader
-                        is_war = no
-                    }
-                    add_escalation = 90
-                }
+                scope:nesnd_south_opening_play ?= { add_escalation = 90 }
+                clear_saved_scope = nesnd_south_join_candidate
+                clear_saved_scope = nesnd_south_opening_play
             }
             else = {
                 set_variable = nesnd_south_play_failed

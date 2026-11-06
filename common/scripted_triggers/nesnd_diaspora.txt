@@ -8,6 +8,11 @@ nesnd_diaspora_american_state = {
     state_region = { is_in_geographic_region = geographic_region_americas }
 }
 
+nesnd_diaspora_refuge_state = {
+    nesnd_diaspora_american_state = yes
+    is_split_state = no
+}
+
 nesnd_diaspora_receiver = {
     is_country_alive = yes
     NOT = { is_country_type = decentralized }
@@ -33,14 +38,12 @@ nesnd_diaspora_can_depart = {
 
 # The displayed departure, Pop and receiving government must still be the
 # same objects at settlement. Pop mergers and split-state transfers can replace them.
-nesnd_diaspora_route_valid = {
+nesnd_diaspora_departure_valid = {
     trigger_if = {
         limit = {
             exists = global_var:nesnd_diaspora_origin
             exists = global_var:nesnd_diaspora_pop
             exists = global_var:nesnd_diaspora_departure
-            exists = global_var:nesnd_diaspora_destination
-            exists = global_var:nesnd_diaspora_host
         }
         global_var:nesnd_diaspora_origin = { nesnd_diaspora_can_depart = yes }
         global_var:nesnd_diaspora_pop = {
@@ -48,15 +51,46 @@ nesnd_diaspora_route_valid = {
             owner = global_var:nesnd_diaspora_origin
             state = global_var:nesnd_diaspora_departure
         }
+    }
+    trigger_else = { always = no }
+}
+
+nesnd_diaspora_route_valid = {
+    nesnd_diaspora_departure_valid = yes
+    trigger_if = {
+        limit = {
+            exists = global_var:nesnd_diaspora_origin
+            exists = global_var:nesnd_diaspora_destination
+            exists = global_var:nesnd_diaspora_host
+        }
         global_var:nesnd_diaspora_host = {
             nesnd_diaspora_receiver = yes
             NOT = { this = global_var:nesnd_diaspora_origin }
             NOT = { has_war_with = global_var:nesnd_diaspora_origin }
         }
         global_var:nesnd_diaspora_destination = {
-            nesnd_diaspora_american_state = yes
+            nesnd_diaspora_refuge_state = yes
             owner = global_var:nesnd_diaspora_host
         }
     }
     trigger_else = { always = no }
+}
+
+nesnd_diaspora_no_refuge = {
+    has_global_variable = nesnd_diaspora_open
+    trigger_if = {
+        limit = { has_global_variable = nesnd_diaspora_remaining }
+        global_var:nesnd_diaspora_remaining > 0
+    }
+    trigger_else = { always = no }
+    NOT = {
+        any_country = {
+            nesnd_diaspora_receiver = yes
+            any_scope_state = { nesnd_diaspora_refuge_state = yes }
+            trigger_if = {
+                limit = { has_variable = nesnd_diaspora_source }
+                any_country = { nesnd_diaspora_can_depart = yes NOT = { this = prev } }
+            }
+        }
+    }
 }

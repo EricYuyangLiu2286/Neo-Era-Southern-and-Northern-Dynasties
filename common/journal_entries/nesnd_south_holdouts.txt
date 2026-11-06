@@ -2,22 +2,60 @@
     icon = "gfx/interface/icons/politics_icons/revolution.dds"
     group = je_group_historical_content
     activation_description = { always = yes } can_revolution_inherit = no
-    possible = { c:USM ?= this nesnd_south_wu_survives = yes has_global_variable = usm_civilwar_occured
-        any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } }
+    is_shown_when_inactive = {
+        c:USM ?= this
+        has_global_variable = usm_civilwar_occured
+        NOR = { has_global_variable = nesnd_south_settled has_variable = usm_rebel_winner_of_the_civil_war }
+        OR = {
+            AND = { has_variable = nesnd_ming_waiting_flight nesnd_ming_can_retry_flight = yes }
+            AND = { has_variable = nesnd_south_deadlock_started nesnd_south_deadlock_context = yes }
+        }
     }
+    possible = {
+        c:USM ?= this
+        has_global_variable = usm_civilwar_occured
+        NOR = { has_global_variable = nesnd_south_settled has_variable = usm_rebel_winner_of_the_civil_war }
+        OR = {
+            AND = { nesnd_south_wu_survives = yes nesnd_south_unresolved_holdouts = yes }
+            AND = { has_variable = nesnd_ming_waiting_flight nesnd_ming_can_retry_flight = yes }
+            AND = { has_variable = nesnd_south_deadlock_started nesnd_south_deadlock_context = yes }
+        }
+    }
+    scripted_button = nesnd_ming_seek_refuge
+    scripted_button = nesnd_south_inconclusive_order
     outcome = {
     	header = je_standard_completion_header
     	effect_header = je_standard_on_completion_header
     	color = "gold_positive"
     	conclusion_desc = je_standard_completion_conclusion_desc
-    	trigger = { custom_tooltip = { text = nesnd_south_holdouts_settled_tt has_global_variable = nesnd_south_settled } }
+    	trigger = { custom_tooltip = { text = nesnd_south_holdouts_settled_tt has_global_variable = nesnd_south_settled nesnd_south_wu_survives = yes } }
     }
     outcome = {
     	flags = { hidden invalid_outcome }
     	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { NOT = { nesnd_south_wu_survives = yes } }
+    	trigger = {
+            OR = {
+                has_variable = usm_rebel_winner_of_the_civil_war
+                NOR = {
+                    nesnd_south_wu_survives = yes
+                    AND = { has_variable = nesnd_ming_waiting_flight nesnd_ming_can_retry_flight = yes }
+                    AND = { has_variable = nesnd_south_deadlock_started nesnd_south_deadlock_context = yes }
+                }
+            }
+        }
     }
     on_weekly_pulse = { effect = { nesnd_check_war_collapses = yes } }
-    status_desc = { desc = nesnd_south_holdout_campaign_status }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_ming_waiting_flight nesnd_ming_can_retry_flight = yes } desc = nesnd_south_holdout_refuge_status }
+            triggered_desc = { trigger = { OR = { any_diplomatic_play = { nesnd_south_named_play = yes } any_country = { nesnd_south_mainland_holdout = yes nesnd_south_defender_in_campaign_war = yes } } } desc = nesnd_south_holdout_front_status }
+            triggered_desc = { trigger = { any_country = { nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_north_awaited has_variable = nesnd_holdout_north_clock } } desc = nesnd_south_holdout_petition_status }
+            triggered_desc = { trigger = { any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } has_truce_with = c:USM } } desc = nesnd_south_holdout_truce_status }
+            triggered_desc = { trigger = { OR = { is_at_war = yes is_active_in_diplomatic_play = yes } } desc = nesnd_south_holdout_wu_busy_status }
+            triggered_desc = { trigger = { any_country = { nesnd_south_mainland_holdout = yes is_subject = no NOT = { has_variable = nesnd_holdout_resolved } has_variable = nesnd_holdout_resistance_pending } } desc = nesnd_south_holdout_resistance_status }
+            triggered_desc = { trigger = { nesnd_south_unresolved_holdouts = yes } desc = nesnd_south_holdout_decision_status }
+            desc = nesnd_south_holdout_campaign_status
+        }
+    }
     should_be_pinned_by_default_uninvolved_or_context = yes weight = 950
 }
