@@ -14,7 +14,6 @@ Evidence: WORK/reports/development-summary-20261106/
 - 正文：`C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/references/project-development-summary-20261106.md`。
 - 清单：同目录`retained-versions-20261106.md`。实际盘点22个backup目录、2个export、18份嵌套元数据源码/测试材料、2份旧MOD ZIP、20个真实远端分支和6标签；区分完整源码、局部文本、故意错误输入及已撤回候选。初稿遗漏ZIP、误写releases为空，经独立复核及主代理实际读取压缩包修正。
 - SKILL和active-work已指向新入口，旧交接标作历史。最近玩法交付为67c876e/任务44，静态通过不等于实机验收。
-- 当前主MOD有`nesnd_india_l_simp_chinese.yml`作者工作区差异。本次保留、不覆盖，不将其偷偷打入文档提交。
 - 记录法国新增后继、法属古吉拉特/舰队、日本新政选择、编辑器全量、美术、英文旧稿等未完成项；已落库的意大利/HUS/USM路线不再记作纯计划。
 - 自评包含玩家视角缺失、测试自证、过度嵌套/旧档处理、文风与设定、代理报告版本漂移、稿本未入main、计划与实现混淆、交接和备份再堆积等具体问题。
 

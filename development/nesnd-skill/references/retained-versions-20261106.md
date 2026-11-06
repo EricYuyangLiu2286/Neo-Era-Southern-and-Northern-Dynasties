@@ -14,7 +14,6 @@
 
 - **主MOD M**：`D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties`。盘点1093文件。当前应从这里继续，不能改旧备份后误以为已交付。
 - **源码Git G**：`W/projects/nesnd-repository`。仅一个本地分支main、一个worktree；最新玩法提交`67c876e`。Git中额外有README和development证据。
-- **作者待同步改稿**：M的`localization/simp_chinese/replace/nesnd_india_l_simp_chinese.yml`与G不同。本次只记录，未覆盖或上传。
 - **其他MOD**：同级`Neo-Era Hanfu`是独立项目，不是NESND旧版，当前任务只读。
 
 ## 2. backups内每一份保留材料

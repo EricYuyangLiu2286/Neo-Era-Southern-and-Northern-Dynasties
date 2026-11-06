@@ -30,7 +30,6 @@ Evidence: development/evidence/chinese-prose-voice-20261106/
 |与原作仅差标点|7|标签比对；属作者文本|
 |作者改稿，当前仍是作者版|49|`development/workbench/reports/canon-prose-20261102/author-revision-original.txt`（作者 11-02 改稿）、提交 `be56496`（作者本机改稿）、PHI 审查“作者改稿整段保留”的 `nesnd_american_restoration.2.d`、含作者指定措辞的 `nesnd_khanate_suppression_failed_tt` 与 `nesnd_ui_khanate_campaign_ended_tt`|
 |作者改稿后又被代理改动|34|同上来源；当前值与作者改稿不同。默认不改，见待确认 3|
-|印度文件|216|任务45记录作者本机主 MOD 有未上传的改稿，本仓库看不到差异。默认整份不改，见待确认 1|
 |`nesnd_qin_persia_l_simp_chinese.yml`|18|`journal-war-feedback-20261103/main-merge.json` 记为 `preserved_preexisting_author_files`，归属不明。见待确认 2|
 |名称类（国名、州名、人名、地名、外交博弈名）|—|不改名词与既定译名|
 |机制提示、进度条读数|—|只有带开发口吻的 23 条列入|
@@ -229,7 +228,6 @@ Evidence: development/evidence/chinese-prose-voice-20261106/
 
 ## 待确认（第二步开始前）
 
-1. **印度文件**：作者本机主 MOD 的 `nesnd_india_l_simp_chinese.yml` 有未上传改稿，本仓库看不到差异。请上传该文件，或说明哪些键可以改。没有回复则整份不改。
 2. **`nesnd_qin_persia_l_simp_chinese.yml`**（8 条文本键）：记录写它是“合并前已存在的作者文件”，但内容与原作标签不同。它算作者文本还是代理文本？
 3. **作者改稿后又被代理改动的 34 键**：默认不改。如需处理，建议按作者改稿还原后只修与脚本矛盾的句子。键名：`ce_cne_land_reform_reason`、`nesnd_federal_compact`、`nesnd_federal_compact_button`、`nesnd_federal_compact_button_desc`、`nesnd_egypt_investment_accounts_reason`、`nesnd_egypt_choose_cost`、`nesnd_egypt_none_effect`、`nesnd_crisis.30.b`、`nesnd_crisis.30.c`、`nesnd_crisis.30.d`、`nesnd_crisis.33.d`、`nesnd_crisis.31.d`、`nesnd_crisis.32.a`、`nesnd_crisis.32.d`、`nesnd_hna_veterans`、`nesnd_huguang_preparations_reason`、`nesnd_hna_academy_button_desc`、`nesnd_hna_supply_button_desc`、`nesnd_hna_veterans_button_desc`、`nesnd_crisis.10.d`、`nesnd_crisis.11.a`、`nesnd_crisis.11.d`、`nesnd_crisis.20.c`、`nesnd_crisis.20.d`、`nesnd_protect_chen_button`、`nesnd_protect_chen_button_desc`、`nesnd_land_survey`、`nesnd_land_survey_desc`、`nesnd_land_review`、`nesnd_land_review_desc`、`nesnd_land_military`、`nesnd_land_military_desc`、`nesnd_land_suspend`、`nesnd_land_suspend_desc`。其中 `ce_cne_land_reform_reason` 是作者原文后被追加了一句“要巩固地权革命的成果，政府可以推行……”，只可能改追加句。
 4. **南朝内战事件 `usm_civilwar.*`（约 30 键）**：作者原作的选项有鲜明立场（“吴贼！狗贼！奸贼！恶贼！逆贼！”“新朝的乌纱帽好看吗？”“或许我们的时代还未到来……”）。11-02 的设定修订（提交 `1cb7b0c`）把它们改成了“维持中立，不作军事承诺。”这类平稳句；`canon-prose-20261102/usm-audit.md` 中对应条目的理由多为“统一本轮设定与名称”或“修复英文槽中的中文回退”，没有说明为什么要去掉原句的口气。按判定规则它们属于代理文本。建议：保留设定修订带来的事实变动（例如不再称“第二次靖难战争”），按作者原句的口气重写；能直接沿用的原句尽量沿用。
@@ -244,7 +242,6 @@ Evidence: development/evidence/chinese-prose-voice-20261106/
 
 2026-11-06 用户对“待确认”的答复：
 
-1. 印度文件：作者不清楚本机有哪些改稿，直接改。
 2. `nesnd_qin_persia_l_simp_chinese.yml`：都是变量名，不必改。本轮未动。
 3. 南朝内战事件：按作者原句的口气重写，能沿用的原句尽量沿用。
 4. 标题和按钮名：可以改。
@@ -256,7 +253,7 @@ Evidence: development/evidence/chinese-prose-voice-20261106/
 
 ### 做法
 
-- 逐文件读完范围内全部键（2,972 个，含标题、按钮名和印度文件），只改需要改的。每条手写，不做词语替换。工具只用于导出、按键写回和校验（`tools/locedit.py`）。
+- 逐文件读完范围内全部键（2,972 个，含标题和按钮名），只改需要改的。每条手写，不做词语替换。工具只用于导出、按键写回和校验（`tools/locedit.py`）。
 - 事实以脚本为准：改写前核对事件选项的使用方、按钮效果（如 `nesnd_open_southern_war` 发起 `dp_usm_civil_war`）、修正效果（`_politics` 为利益集团好感、`_local` 为州修正）。
 - 每个文件改完连读，又统一回看一遍新出现的高频词（撑、还得、就此、自己……），换掉了 16 处重复。
 - 上一轮审查记为“保留作者口吻”的键（PHI 驻屯日志正文、1.d、2.d 及其全部选项；原住民文件的若干选项）不改。过程中误改的 `nesnd_hus_registration.2.a`、`nesnd_american_restoration.12.a` 已恢复原样，最终无差异。
@@ -437,7 +434,6 @@ Evidence: development/evidence/chinese-prose-voice-20261106/
 - `nesnd_civic_characters_l_simp_chinese.yml`：任务43记录这份含用户改稿，但没有列出具体键。本轮只改了 11 条明显重复的收尾，选项一概未动。
 - 营产整顿 `nesnd_cne_camp_*` 二十余州的按钮与修正、`nesnd_map_refinement` 与 `nesnd_national_map` 的水运说明：同一模板按州复用，文字具体，未改。
 - `nesnd_crisis.30.local`：代理据作者改稿 `nesnd_crisis.30.d` 写的地方版，未改。
-- 印度文件改了 12 键。若本机主 MOD 有未上传改稿，同步前请先比对这 12 键。
 
 ### 遗留
 
@@ -458,3 +454,23 @@ Evidence: development/evidence/chinese-prose-voice-20261106/
 - 校验：439 键的动态代码、数字、颜色、`\n` 与改前英文一致，唯一差异是用户确认的 `usm_civilwar.10.3` 新增 1812；33 个文件 BOM、`l_english:` 语言头、换行符、键集合不变；英文全目录 7,969 键无重复；没有混入中文字符。
 - 证据：`development/evidence/chinese-prose-voice-20261106/step3-english-changes.json`（改前改后全文）、`step3-english-edits/`、`step3-english-check.json`。
 - 未实机验证：英文较中文长，事件框和按钮提示的换行、截断都没看过。
+
+## Comments（2026-11-06 第三次答复）
+
+1. 34 键：同意附表中的建议。
+2. 不必在意印度文件；删去相关记录。已从任务45、46、47、STATUS 及技能参考（开发总结、保留版本清单）中删除“作者本机有印度改稿”的记录。
+
+## Result（34 键）
+
+- 保留现稿 13 键：第一组 8 键（地权革命四按钮）、第四组 `nesnd_crisis.30.c`、`32.a`、`20.c`、第五组 `nesnd_egypt_choose_cost`、`nesnd_egypt_none_effect`。
+- 恢复作者原文 21 键（中英文同步，英文按作者原文重译）：
+  - 原样恢复 13 键：`nesnd_crisis.11.a`、`11.d`、`nesnd_federal_compact_button`、`nesnd_crisis.30.d`、`ce_cne_land_reform_reason`（删去代理补的一句）、`nesnd_federal_compact`、`nesnd_federal_compact_button_desc`、`nesnd_crisis.33.d`、`nesnd_hna_supply_button_desc`、`nesnd_hna_veterans_button_desc`、`nesnd_crisis.30.b`、`nesnd_hna_veterans`、`nesnd_protect_chen_button`、`nesnd_egypt_investment_accounts_reason`。其中 `nesnd_federal_compact_button` 及其说明现为兼容键，实际按钮调用 `nesnd_south_offer_accord`，不显示。
+  - 恢复后只改与现行脚本或设定冲突的句子 7 键：
+    - `nesnd_crisis.10.d`：“以绝对多数”→“以多数”（脚本无绝对多数判定）；“终于结束了自西历15世纪初塞王之乱以来的地方割据的状态”→“终于为自西历15世纪初塞王之乱以来的地方割据，划定了中央与各省的权力边界”（礼法定制后各省仍保有政府与辖地）。其余原句保留，包括“刻入石头，万世难改”。
+    - `nesnd_crisis.31.d`：“各营与地方议局的既得权力”→“各营与省督的既得权力”（咨议局只能陈情，不掌行政）。
+    - `nesnd_crisis.32.d`：“暂缓地权改革”→“停止地权改革”；删去“徐图后进”；“根据妥协后的政策”→“根据拟议的妥协政策”；“利用这样一份诏书……暂时脱身”→“若颁下这样一份诏书……便可……脱身”。原因：事件在选择之前出现，且接受后地权革命永久结束。
+    - `nesnd_crisis.20.d`：“国内正在推进的地权改革仍在继续。如果在改革期间卷入南朝的混战”→“国内若仍在推进地权改革，此时卷入南朝的混战”（事件可在地权改革完成后触发）。
+    - `nesnd_huguang_preparations_reason`：“军队、田赋、学政渐成一体”→“军队、田赋、书院渐成一体”（学政现指礼议院中的各省代表）；“朱斑博”→“朱班博”。
+    - `nesnd_hna_academy_button_desc`：“仪政士子”→“议政士子”（错字）。
+    - `nesnd_protect_chen_button_desc`：“专属部队”→“专任卫队”，并保留现行的任期与概率一行（警卫只有六个月，旧稿写的是常设部队）。
+- 校验差异均来自作者原文本身：`nesnd_crisis.30.d`、`31.d`、`32.d` 使用作者原用的 `[ROOT.GetCountry.GetName]`（国家事件，ROOT 为国家，有效），替换了代理改用的统治者称号代码；`nesnd_crisis.10.d` 含原文数字 15（15世纪）。中英文一致。
