@@ -27,7 +27,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 3. **逻辑写在用它的地方。** 只用一次的条件和效果写在日志、按钮或事件里，让人在一个文件看懂。scripted trigger/effect/value 只在两处以上复用、或需要参数（如原版 `je_tsarpoints_add_partial = { PROGRESS_BAR = … }`）时提取。
 4. **先选内容形状，再写代码。** 见 [content-design.md](references/content-design.md)。日志、按钮、进度条、事件要排成一棵树，每个节点有主人、有可见反馈、有结局。
 5. **引擎行为不确定时**，查 GAME 同类实例和用户文档目录 `docs/*.log`（当前版本的 script_docs 导出）。仍无法确定，就写最简单的实现并在交付说明里标出，不为每种可能各搭一层保护。
-6. **失败是玩法。** 作者接受战败、失国、短缺和破产；判断的是事件顺序和胜负条件是否按设计发生，不替玩家保证成功。
+6. **失败是玩法。** 作者接受战败、失国、短缺和破产；判断的是事件顺序和胜负条件是否按设计发生，不替玩家保证成功。修复以修正版的新开局为验收基准，旧存档只用来定位问题，不写救档。
 7. **停止条件：** 要求的行为写完、本地化齐全、外部检查跑过、交付说明写清哪些未实机验证。然后停。
 
 ## 4. 按任务找资料
@@ -42,7 +42,8 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 数值、成本、奖励节奏 | [numeric-scale-contract.md](references/numeric-scale-contract.md) |
 | 经济压力、市场、自给经济 | [economic-agency-and-crises.md](references/economic-agency-and-crises.md)、[subsistence-transition.md](references/subsistence-transition.md)、[native-treaty-aid.md](references/native-treaty-aid.md) |
 | 地图、拆州、人口分配 | [map-economy-design.md](references/map-economy-design.md) |
-| 版本迁移 | [migration.md](references/migration.md) |
+| 修 bug（作者报告、error.log、存档） | [debugging-and-updates.md](references/debugging-and-updates.md) |
+| 游戏更新后 | [debugging-and-updates.md](references/debugging-and-updates.md)，再按 [migration.md](references/migration.md) 迁移 |
 | 世界观、南北朝制度、人物 | [narrative-context.md](references/narrative-context.md)、[north-south-institutions.md](references/north-south-institutions.md)、`worldbook.json`、`character-book.json` |
 | 多国路线、历史人物挪用、小国 | [regional-history-and-survival.md](references/regional-history-and-survival.md)、[faction-model.md](references/faction-model.md) |
 | 服装与 UI 兼容 | [compatibility.md](references/compatibility.md) |
