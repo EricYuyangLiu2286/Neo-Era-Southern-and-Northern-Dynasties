@@ -4,7 +4,7 @@
 
 作者刚在游戏里看到问题时，日志还在：先把 `logs/` 整组复制到工作台 `reports/<日期>-<主题>/logs/`，下次启动游戏会轮转覆盖它们。
 
-1. **拿到证据**：作者的描述、截图、`logs/error.log`（注意轮转，见 verification.md）或存档。记下出错时的游戏版本和 MOD 提交。
+1. **拿到证据**：作者的描述、截图、`logs/error.log`（注意轮转，见 verification.md）或存档。记下出错时的游戏版本和 MOD 提交。若已崩溃，同时保存时段相符的 `crashes/<本次运行>/`；从其中 `logs/error.log` 的加载阶段找第一条相关错误，再与操作时段及 `exception.txt` 对时。人物头像的 `Invalid promote`、`wrong constness` 和 `No context supplied` 见[人物提示的上下文](compatibility.md#日志人物像与悬停)。
 2. **定位**：在日志里找最早指向本 MOD 的文件和行；用 `scripts/catalog.py find <名称>` 或 Toolkit 的跳转找到定义。沿调用链读一遍：入口 → 条件 → 效果 → 本地化。
 3. **对照**：
    - 原版同类写法是否不同；

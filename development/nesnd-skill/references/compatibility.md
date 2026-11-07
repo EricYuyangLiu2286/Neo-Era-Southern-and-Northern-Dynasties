@@ -21,3 +21,11 @@
 先读 GAME 对应页面，CMF 是共享集成模式参考，Expanded Building Grid 是 `states_panel_buildings.gui` 的实际改法。把需要改变的 widget、datacontext、位置、尺寸、tooltip、点击效果列清楚；同名 GUI 文件整替换容易遮蔽新版本字段。优先原版 JE widget anchor / scripted widget 或框架扩展点。
 
 验证至少含简中/英文、不同 UI scale、窄窗口、满建筑列表、tooltip、按钮操作；没有实际安装依赖时不能宣称与其兼容。只参考其布局不应强加完整框架依赖。
+
+### 日志人物像与悬停
+
+原版 1.15.0 的 `gui/journal_entry_widgets/ep2_japan_widgets.gui` 给出了交互式人物像的完整上下文。大名列表用 `GetList('daimyos_list')` 作 `fixedgridbox` 的数据源（506、520–521 行），子控件在列表项内检查 `Scope.GetCharacter.IsValid`，并以 `[Scope.AccessCharacter]` 绑定头像（13–35 行）。从变量取人物时，沿数据源、列表项或父控件、头像、继承的 `FancyTooltip_Character` 查到实际使用人物的方法。人物列表只写入有效对象；列表为空时不会创建头像项。
+
+`[GetGlobalVariable('…').AccessCharacter]` 会在 GUI 加载时被拒绝，原生日志报 `Invalid promote … requires non const promote`。直接换成 `GetCharacter` 可以读人物，悬停里的 `Character.GetMilitaryFormation.GetName` 仍可能因收到只读人物报 `wrong constness`。复制原版控件时一并核对上游如何提供可变人物。绑定已被拒绝时，子控件的 `Character.IsValid` 也会因缺失上下文而失败。
+
+游戏外解析可以检查结构和方法名；可变性要核对当前版本的原版调用链和引擎日志。实机复测依次打开日志、悬停头像、点击进入人物面板，分别观察实例化、提示求值和交互。无符号的空地址异常只能给出异常类型与时刻，具体故障链要靠此前的绑定报错定位。

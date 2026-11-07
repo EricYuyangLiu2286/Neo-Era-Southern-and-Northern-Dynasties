@@ -46,7 +46,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 游戏更新后 | [debugging-and-updates.md](references/debugging-and-updates.md)，再按 [migration.md](references/migration.md) 迁移 |
 | 世界观、南北朝制度、人物 | [narrative-context.md](references/narrative-context.md)、[north-south-institutions.md](references/north-south-institutions.md)、`worldbook.json`、`character-book.json` |
 | 多国路线、历史人物挪用、小国 | [regional-history-and-survival.md](references/regional-history-and-survival.md)、[faction-model.md](references/faction-model.md) |
-| 服装与 UI 兼容 | [compatibility.md](references/compatibility.md) |
+| 服装与 UI 兼容、日志人物像的绑定与崩溃排查 | [compatibility.md](references/compatibility.md) |
 | 检查、日志、备份、交付 | [verification.md](references/verification.md) |
 
 参考文件中标为 1.13.11 的条目是旧版本证据，使用前对照当前 GAME。
