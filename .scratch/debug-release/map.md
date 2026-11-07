@@ -2,6 +2,10 @@
 
 **项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
 
+[任务51 · USM月度事件与事件恢复审查](issues/51-usm-monthly-events.md)：补 .8–.10 入口及必要条件，保留 .6/.7 原调度；STATIC_PASS。已列82条待确认事件，第二步未实施，待作者复测与确认。
+
+[任务50 · 日志国名、条件与地区文字](issues/50-journal-labels-and-conditions.md)：先修埃及与国计在民生，扩展至83按钮、13日志；现用国名、条件去重/汇总、印度案件显示范围与通用文字已修。STATIC_PASS，未开游戏，待新开局复测。
+
 [任务49 · GNG 与参战判定全 MOD 审计](issues/49-play-commitment-audit.md)：审计18文件46处，修复共同入场、干预、日吴、秦边疆、波兰及成功登记；保留国家概率，STATIC_PASS，待用户实机复测。
 
 [任务48 · HNA 开场选边与参战](issues/48-hna-civilwar-alignment.md)：明确 AI 95% 拥明／5% 独立，修复“已涉及即跳过加入”的 HNA 守卫；STATIC_PASS，未开游戏，待新开局复测。

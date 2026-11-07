@@ -2,13 +2,14 @@
 
 这是项目唯一的“当前”入口。只写现在的情况；历史放 `docs/agents/history/`。维护规则见文末。
 
-更新：2026-11-06（任务 49：GNG 与外交博弈参战判定全 MOD 审计）
+更新：2026-11-07（任务51：USM月度事件与事件恢复审查）
 
 ## 基线
 
 - 游戏：Victoria 3 **1.15.0 Ivan-Chai / Steam build 26453692**。上一基线 1.13.11 / 24799966。
-- 主干玩法基线：`90fe4b4`（任务 46）。主 MOD 保留任务47–48（至 `8516522`），并应用任务49共同参战修复；分支 `codex/play-commitment-audit-20261106`，不合并 main。交付指纹见 `reports/2026-11-06-play-commitment-audit/release.json`。本批仅 STATIC_PASS。
+- 主干玩法基线：`90fe4b4`（任务46）。主 MOD 保留任务47–49（至 `d478e8f`），本次应用任务51月度事件修复；分支 `codex/usm-monthly-event-audit-20261106`，不合并 main。指纹见 `reports/2026-11-06-usm-monthly-events/release.json`。STATIC_PASS。
 - metadata 版本 0.2.0，声明支持 1.15.0（仅为包声明）。
+- 主 MOD 另应用任务50日志修复（42文件、83按钮、13日志），未同步Git分支；本任务指纹与交付见`reports/2026-11-06-journal-labels/`。STATIC_PASS，待新开局复测。
 
 ## 位置
 
@@ -24,7 +25,9 @@
 
 ## 进行中
 
+- Codex：任务51已补 flavorUSM.8–.10 月度入口，保留 .6 月检及 .7 延迟链；82条事件审查清单待作者确认，尚未恢复其他事件。见 `.scratch/debug-release/issues/51-usm-monthly-events.md`。
 - Codex：任务49已审计18文件46处参战／涉及判定，修复共同入场、干预、秦边疆、波兰及相关成功标记；STATIC_PASS，待作者复测。详见 `.scratch/debug-release/issues/49-play-commitment-audit.md`。
+- Codex：任务50已修动态按钮名、小国条件重复与印度文字适用范围，待作者新开局检查标签、摘要红绿及外交答复。详见`.scratch/debug-release/issues/50-journal-labels-and-conditions.md`。
 - 技能于 2026-11-06 重写（分支 `claude/skill-rewrite-20261106`）：去掉模型分工条款和事故记录，新增内容形状与两种声音的写作规则。
 
 ## 已知差异
@@ -41,6 +44,8 @@
 6. 四份中文改稿对应的旧英文正文：任务 46 已全量审阅重写（只认证这四份）。
 7. HUS 社会阶序的文化提示、阶层悬停及相关 culture/none 错误是否消失：任务 47 待作者复测。
 8. GNG／其他反吴国、北方干预、日本、秦边疆与波兰的真实参战：任务49已共同修复，待作者复测；HNA 95/5及其他国家原有选择不变。
+9. 任务50命名scope月度刷新、旧档及条件摘要的实际UI表现尚未验证。
+10. 任务51月度事件自然触发、只读通知及旧档兼容待作者复测；其他事件须按82条审查清单确认后再恢复。
 
 待作者在游戏中回答的问题（任务 43–44 的界面、靖难战争、原住民复国、流散人口、团结度节奏、地区门槛）见 `history/development-summary-20261106.md` 第 4 节。
 
