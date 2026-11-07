@@ -1,6 +1,8 @@
-# 恢复开发、DEBUG、版本保存与交付
+﻿# 恢复开发、DEBUG、版本保存与交付
 
 **项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
+
+[任务55 · 事件恢复、退役清理与文本归档](issues/55-event-recovery-and-text-archive.md)：已落实82条批准意见，另清理被替代的旧AI结局；62个事件定义删除，19项适配，2个有效入口保留。842条文字入技能；STATIC_PASS，待新开局复测。
 
 [任务51 · USM月度事件与事件恢复审查](issues/51-usm-monthly-events.md)：补 .8–.10 入口及必要条件，保留 .6/.7 原调度；STATIC_PASS。已列82条待确认事件，第二步未实施，待作者复测与确认。
 
@@ -205,3 +207,8 @@ Updated: 2026-11-01
 ## 2026-11-04四项日志与停战反馈
 
 [任务30](issues/30-journal-war-feedback.md)：东洋绝对计数、德里双条显示、HUS废君入口、行在迁逃/吞并及逐轮停战处理。STATIC_PASS。未开游戏，交付指纹与剩余引擎场景见WORK/reports/journal-war-feedback-20261103/。
+
+- [52 日本国政显示修复及朝鲜子方案](issues/52-jp-politics-ui.md)：STATIC_PASS，待作者复测；朝鲜方案待确认。
+- [54 天竺的土地改为成立天竺宣慰司](issues/54-tianzhu-commission.md)：已改为8地区里程碑＋自治领建司＋划归决议。STATIC_PASS，待作者复测。
+
+- [53 朝鲜重建运动研究](issues/53-korea-restoration-plan.md)：研究已交付，global方案待作者审阅，未实施。

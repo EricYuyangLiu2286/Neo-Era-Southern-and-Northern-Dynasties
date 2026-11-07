@@ -864,12 +864,144 @@ movement_events.5 = { # Political meeting in the capital for X interest.
 	}
 }
 
-movement_events.6 = {
-    type = country_event
-    hidden = yes
-    trigger = { always = no }
-    cancellation_trigger = { always = yes }
-    immediate = { }
+movement_events.6 = { # Mass rally in X city for Y interest.
+	type = country_event
+	placement = ROOT
+
+	title = movement_events.6.t
+	desc = movement_events.6.d
+	flavor = movement_events.6.f
+
+	event_image = {
+		video = "votp_agitator_speaking"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+
+	duration = 3
+
+	cooldown = { days = short_modifier_time }
+
+	trigger = {
+		# triggered by on_action - movement_half_yearly_events
+		any_political_movement = {
+            exists = most_desired_law
+			NOT = {
+				ROOT.currently_enacting_law.type ?= this.most_desired_law
+			}
+			is_revolutionary = no
+            political_movement_radicalism >= 0.25
+			NOT = {
+				is_political_movement_type = movement_slave_revolt
+			}
+		}
+		researched_mass_politics = yes
+		NOT = {
+			has_law_or_variant = law_type:law_outlawed_dissent
+		}
+
+        any_scope_state = { is_incorporated = yes NOT = { has_decree = decree_violent_suppression } }
+
+}
+
+	cancellation_trigger = { OR = {
+        NOT = { exists = scope:relevant_movement }
+        NOT = { exists = scope:relevant_law }
+        NOT = { exists = scope:relevant_state }
+        scope:relevant_state ?= { NOT = { owner = root } }
+    } }
+
+	immediate = {
+		random_political_movement = {
+			limit = {
+                exists = most_desired_law
+				NOT = {
+					ROOT.currently_enacting_law.type ?= this.most_desired_law
+				}
+				is_revolutionary = no
+                political_movement_radicalism >= 0.25
+				NOT = {
+					is_political_movement_type = movement_slave_revolt
+				}
+			}
+			save_scope_as = relevant_movement
+			most_desired_law ?= {
+				save_scope_as = relevant_law
+			}
+		}
+		random_scope_state = {
+			limit = {
+				is_incorporated = yes
+				NOT = {
+					has_decree = decree_violent_suppression
+				}
+			}
+			save_scope_as = relevant_state
+		}
+	}
+	option = {
+		name = movement_events.6.a
+		default_option = yes
+		ai_chance = {
+			factor = 1
+			modifier = {
+				trigger = {
+					has_journal_entry = je_tp_tsar_heir_of_alexander
+					NOT = { has_variable = je_tp_tsar_heir_of_alexander_button_4_complete }
+				}
+				add = 100
+			}
+			modifier = {
+				trigger = {
+					ai_avoids_radicals = yes
+				}
+				add = 10
+			}
+		}
+		scope:relevant_movement ?= {
+			add_modifier = {
+				name = modifier_movement_rally_in_city_movement
+				days = short_modifier_time
+			}
+		}
+		scope:relevant_state = {
+			if = {
+				limit = {
+					scope:relevant_movement.political_movement_radicalism <= 0.25
+				}
+				add_loyalists_in_state = {
+					value = small_radicals
+				}
+			}
+			add_modifier = {
+				name = modifier_movement_rally_in_city
+				days = short_modifier_time
+			}
+		}
+	}
+	option = {
+		name = movement_events.6.b
+		ai_chance = {
+			factor = 1
+			modifier = {
+				trigger = {
+					ai_wants_radicals = yes
+				}
+				add = 10
+			}
+		}
+		scope:relevant_state = {
+			add_radicals_in_state = {
+				value = small_radicals
+			}
+			add_modifier = {
+				name = modifier_movement_rally_in_city_suppressed
+				days = short_modifier_time
+			}
+		}
+	}
 }
 
 movement_events.7 = { # National campaign of postering for a given issue.

@@ -477,7 +477,10 @@ fra_unrest.5 = {
 				is_interest_group_type = ig_industrialists
 			}
 		}
-	}
+
+        c:FRA ?= this
+        country_has_monarchy_law = yes
+}
 
 	immediate = {
 		random_interest_group = {
@@ -591,13 +594,16 @@ fra_unrest.5 = {
 		}
 
 
-		custom_tooltip = {
-			text = french_pretenders_pulse_advance_by_twenty_five_percent_tt
-			change_variable = {
-				name = french_dynastic_primary_progress_var
-				add = 30
-			}
-		}
+		if = {
+            limit = { has_journal_entry = je_ce_unstable_imperium }
+            je:je_ce_unstable_imperium = {
+                add_progress = { name = ce_monarchists_bonapartist_stability_progress_bar value = 250 }
+            }
+        }
+        else_if = {
+            limit = { has_variable = french_dynastic_primary_progress_var }
+            change_variable = { name = french_dynastic_primary_progress_var add = 30 }
+        }
 	}
 
 	option = {
@@ -631,6 +637,18 @@ fra_unrest.5 = {
 		# 	}
 		# }
 	}
+
+    cancellation_trigger = { OR = {
+        NOT = { exists = scope:monarchist_french_ig_leader }
+        NOT = { exists = scope:republican_french_ig_leader }
+        scope:monarchist_french_ig_leader ?= { is_character_alive = no }
+        scope:republican_french_ig_leader ?= { is_character_alive = no }
+    } }
+    after = {
+        scope:monarchist_french_ig_leader ?= { remove_variable = monarchist_working_with_republicans }
+        scope:republican_french_ig_leader ?= { remove_variable = republican_working_with_monarchists }
+    }
+
 }
 
 fra_unrest.6 = {

@@ -932,11 +932,149 @@ coup_pulse_events.10 = {
 namespace = coup_aftermath_events
 
 coup_aftermath_events.1 = {
-    type = country_event
-    hidden = yes
-    trigger = { always = no }
-    cancellation_trigger = { always = yes }
-    immediate = { }
+	type = country_event
+	placement = scope:legacy_of_democracy_state
+
+	title = coup_aftermath_events.1.t
+	desc = coup_aftermath_events.1.d
+	flavor = coup_aftermath_events.1.f
+
+	event_image = {
+		video = "europenorthamerica_political_extremism"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+
+	duration = 3
+
+	cooldown = { days = normal_modifier_time }
+
+	trigger = {
+		# triggered by on_action - coup_aftermath_half_yearly_events
+		has_variable = coup_aftermath_var
+		has_variable = coup_ended_democracy_var
+		country_has_voting_franchise = no
+		any_interest_group = {
+			law_enactment_stance = {
+				law = law_type:law_census_voting # At the least
+				value > neutral
+			}
+			is_in_government = no
+			ig_counts_as_marginal = no
+		}
+		capital = { any_neighbouring_state = { owner = root } }
+
+        exists = ruler
+}
+
+	immediate = {
+		random_interest_group = {
+			limit = {
+				law_enactment_stance = {
+					law = law_type:law_census_voting # At the least
+					value > neutral
+				}
+				is_in_government = no
+				ig_counts_as_marginal = no
+			}
+			save_scope_as = legacy_of_democracy_ig
+		}
+		capital = {
+			random_neighbouring_state = {
+				limit = {
+					owner = ROOT
+				}
+				save_scope_as = legacy_of_democracy_state
+			}
+		}
+		random_scope_character = {
+			limit = {
+				is_ruler_of_own_country = yes
+			}
+			save_scope_as = coup_leader
+			set_temporary_event_immortality = { DURATION = 3 }
+		}
+		remove_variable = coup_aftermath_var
+	}
+
+	after = {
+		revoke_temporary_event_immortality = { CHARACTER = scope:coup_leader }
+	}
+
+	option = {
+		name = coup_aftermath_events.1.a
+		default_option = yes
+		ai_chance = {
+			base = 1
+			modifier = {
+				trigger = {
+					ai_avoids_radicals = yes
+				}
+				add = 10
+			}
+		}
+		scope:legacy_of_democracy_ig = {
+			add_modifier = {
+				name = modifier_legacy_of_democratic_rule_ig
+				days = normal_modifier_time
+			}
+		}
+		scope:legacy_of_democracy_state = {
+			add_radicals_in_state = {
+				value = large_radicals
+			}
+			add_modifier = {
+				name = modifier_legacy_of_democratic_rule_state
+				days = normal_modifier_time
+			}
+		}
+	}
+	option = {
+		name = coup_aftermath_events.1.b
+		ai_chance = {
+			base = 1
+			modifier = {
+				trigger = {
+					ai_wants_radicals = yes
+				}
+				add = 15
+			}
+		}
+		add_modifier = {
+			name = modifier_legacy_of_democratic_rule_country
+			days = normal_modifier_time
+		}
+		scope:legacy_of_democracy_state = {
+			add_radicals_in_state = {
+				value = medium_radicals
+			}
+		}
+		capital = {
+			add_radicals_in_state = {
+				value = medium_radicals
+			}
+		}
+		capital = {
+			random_neighbouring_state = {
+				limit = {
+					owner = ROOT
+				}
+				add_radicals_in_state = {
+					value = small_radicals
+				}
+			}
+		}
+	}
+
+    cancellation_trigger = { OR = {
+        NOT = { exists = scope:legacy_of_democracy_state }
+        NOT = { exists = scope:legacy_of_democracy_ig }
+        NOT = { exists = scope:coup_leader }
+        scope:legacy_of_democracy_state ?= { NOT = { owner = root } }
+    } }
+
 }
 
 coup_aftermath_events.2 = {

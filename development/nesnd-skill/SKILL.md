@@ -1,75 +1,68 @@
 ---
 name: nesnd-victoria3
-description: 维护 Neo-Era Southern and Northern Dynasties 的 Victoria 3 脚本、历史地图、人物服装和界面；依据本机版本核验语法、保留架空设计进行版本迁移，并进行真实游戏验证。其他项目仅作只读资料，不将 EU4、HOI4 或 CK3 语法搬入本项目。
+description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3 MOD 设计、编写、修复和迁移脚本与内容：日志/事件/按钮/进度条体系、地图与人口、版本迁移、游戏外验证。玩家看到的文字另用 nesnd-player-writing。
 ---
 
-# NESND 维多利亚 3 开发
+# NESND 维多利亚3开发
 
-**实机启动边界（作者最高指示）：仅在用户当次明确要求时启动游戏。旧许可不续用，修复、合并、验证和交接一律默认游戏外进行。要求“观察者、五速、保存”时，完成后即结束控制，不持续监看、不轮询日志、不自行重开。**
+本技能给任何接手的代理（Codex、Claude 或其他）使用。它只放可复用的做法；项目进度不写在这里。
 
-与 Matt Pocock 工程技能协作、恢复任务或做版本交付时，先读 [项目工程适配](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties/docs/agents/engineering-skills.md>)。领域规则继续由本技能维护；当前授权、候选与进度经 [当前交接](references/active-work.md)进入项目任务索引。
+## 1. 开工前
 
-新对话接手本项目时，先读[开发总结、未完成项与主审自评](references/project-development-summary-20261106.md)。需要辨认旧源码、候选或备份时，再读其中链接的保留版本清单；不要把历史交接里的“当前”当成最新状态。
+- **项目现状**：主 MOD 的 `docs/agents/STATUS.md`。这是唯一的“当前”入口；任务细节在 `.scratch/debug-release/issues/`，旧交接在 `docs/agents/history/`。
+- **路径**：见 [paths.md](references/paths.md)。只有主 MOD、本技能、`nesnd-player-writing` 和工作台可写。
 
-## 子智能体模型分工（强制）
+## 2. 硬边界（作者明确要求，不可变通）
 
-**玩家文案是独立的高要求工作：创作和改写中英文玩家文本，必须使用至少GPT-6 Astra / Medium；本轮可用配置为`gpt-6-astra / high`。Sol和Luna仅可定位问题、核脚本与列文本契约，不能作为最终文案作者。主智能体须逐条对照实际脚本、作者原稿与地区文化审稿；不通过时由主智能体亲自重写、再次对读，直至通过。** 具体执行[玩家写作技能](../nesnd-player-writing/SKILL.md)的发布门槛。
+- 游戏本体和所有创意工坊目录只读。工坊 MOD 只用于查兼容接口（例如 EACR 服装资源的引用名）；**不学习、不仿写、不复制其他作者的内容设计和代码**。不复制 EACR 的任何素材。
+- **启动游戏须有用户在当次任务中的明确要求。**“修复”“测试”“继续”或过去的许可都不算。要求“观察者五速并保存”时，做完这三步就停止，不监看、不轮询日志、不重开。
+- 静态检查通过不等于游戏内验证；交付时分开写。
+- 版本迁移保留架空领土、人口、文化与制度意图，不照搬原版新国界，不删掉不再受支持的设计（改写为新接口）。
+- 不改既有译名和名词；作者的改稿优先于任何代理稿。
 
-**子代理声称的PASS、完成数量或总结不能直接采信。最终主审要求GPT-6 Astra / High或以上：主智能体亲读实际差异、原始错误日志及测试程序，亲自运行能抓住原错误的反例与回归，再给结论。** 测试器把missing变量当0、用声明列表代替真实调用路径、只检索字符串均可能造成假通过。模型元数据无法核实时不能冒称已满足型号/强度；应另委派显式Astra/high复核并保留主智能体自己的实证检查。实际引擎未运行仍只能STATIC_PASS。
+## 3. 默认工作方式
 
-本项目必须委派下列工作，不得由主智能体默默包办：
-- **仓库探索与相关函数定位：GPT-6 Luna，High。**
-- **脚本实现审查与潜在BUG识别：GPT-6.1 Sol，Medium。**
-- **计划草案组织、资料整合与内容结构理解：GPT-6.1 Astra，High。** 子智能体提交结构化建议；最终计划结构由主智能体裁定。
+1. **只做被要求的事。** 发现相关问题就列出来问，不顺手扩展成新系统、新事件、新修正或救档分支。
+2. **兜底用最小原生守卫：** `?=`、`exists`、`limit`、一个 `hidden invalid_outcome`、`can_revolution_inherit`、`transferable`。只有作者要求、或真实对局出过错的情形，才新增事件、修正或状态变量。
+3. **逻辑写在用它的地方。** 只用一次的条件和效果写在日志、按钮或事件里，让人在一个文件看懂。scripted trigger/effect/value 只在两处以上复用、或需要参数（如原版 `je_tsarpoints_add_partial = { PROGRESS_BAR = … }`）时提取。
+4. **先选内容形状，再写代码。** 见 [content-design.md](references/content-design.md)。日志、按钮、进度条、事件要排成一棵树，每个节点有主人、有可见反馈、有结局。
+5. **引擎行为不确定时**，查 GAME 同类实例和用户文档目录 `docs/*.log`（当前版本的 script_docs 导出）。仍无法确定，就写最简单的实现并在交付说明里标出，不为每种可能各搭一层保护。
+6. **失败是玩法。** 作者接受战败、失国、短缺和破产；判断的是事件顺序和胜负条件是否按设计发生，不替玩家保证成功。修复以修正版的新开局为验收基准，旧存档只用来定位问题，不写救档。
+7. **停止条件：** 要求的行为写完、本地化齐全、外部检查跑过、交付说明写清哪些未实机验证。然后停。
 
-**架构决策、最终计划结构、数值正确性判断和最终合入主MOD由主Astra智能体负责，不得下放。** 实现可按已批准文件边界委派；同一任务按计划→编辑→冻结→测试顺序进行，不同时计划、改写和测试同一系统。
+## 4. 按任务找资料
 
-**子智能体禁止使用Astra Extra High（xhigh）及以上，除非委派前明确记录具体理由。** 不因任务大、时间长或继承默认配置而自动升级。创建代理时必须显式指定模型和推理强度；模型不可用时先披露实际可用替代，不把不同版本冒称为用户指定版本。当前工具有 `gpt-6-astra`，没有 `gpt-6.1-astra`：仅以披露后的 `gpt-6-astra / high`承担Astra草案工作。Luna用 `gpt-6-luna / high`，Sol用 `gpt-6.1-sol / medium`。
+| 任务 | 读 |
+|---|---|
+| 新内容，或改造日志链、事件、按钮、进度条 | [content-design.md](references/content-design.md)（必读），再查 GAME 同类 |
+| 玩家文字（事件、日志、按钮、提示、修正名） | `nesnd-player-writing` 技能 |
+| 语法、作用域、按钮预览与延迟回复的引用安全 | [syntax-and-routing.md](references/syntax-and-routing.md)、[recipes.md](references/recipes.md) |
+| 1.15 日志 outcome 接口、各界面字段放什么 | [journal-text-contract.md](references/journal-text-contract.md)（查阅用） |
+| 政治目标、IG 执政、合法性、党派 | [political-design-and-difficulty.md](references/political-design-and-difficulty.md) |
+| 数值、成本、奖励节奏 | [numeric-scale-contract.md](references/numeric-scale-contract.md) |
+| 经济压力、市场、自给经济 | [economic-agency-and-crises.md](references/economic-agency-and-crises.md)、[subsistence-transition.md](references/subsistence-transition.md)、[native-treaty-aid.md](references/native-treaty-aid.md) |
+| 地图、拆州、人口分配 | [map-economy-design.md](references/map-economy-design.md) |
+| 修 bug（作者报告、error.log、存档） | [debugging-and-updates.md](references/debugging-and-updates.md) |
+| 游戏更新后 | [debugging-and-updates.md](references/debugging-and-updates.md)，再按 [migration.md](references/migration.md) 迁移 |
+| 世界观、南北朝制度、人物 | [narrative-context.md](references/narrative-context.md)、[north-south-institutions.md](references/north-south-institutions.md)、`worldbook.json`、`character-book.json` |
+| 多国路线、历史人物挪用、小国 | [regional-history-and-survival.md](references/regional-history-and-survival.md)、[faction-model.md](references/faction-model.md) |
+| 服装与 UI 兼容 | [compatibility.md](references/compatibility.md) |
+| 检查、日志、备份、交付 | [verification.md](references/verification.md) |
 
-每个代理在执行账及交付中报告任务、实际配置的模型ID、推理强度及委派证据。旧代理只知继承配置时，明确标记“模型/推理强度未公开”，不得从代理名、任务难度或自述猜测。主智能体运行时模型同样不能伪造；无法验证时如实说明。
+参考文件中标为 1.13.11 的条目是旧版本证据，使用前对照当前 GAME。
 
-## 故障诊断和验收优先级
+## 5. 向谁学
 
-**玩法修复的验收基准是修正后版本的新开局。** 旧档用于定位首次出现异常的阶段，可与代码、日志和前后时间点交叉核对。旧脚本写出的错误阵营、胜负、人口或归属不能充当正确结果。除非作者专门要求救档，不设计追授奖励、复活国家、改写旧档或仅为坏档存在的运行时分支。先验证新开局能进入、推进和退出，再交代哪些结果须用新局实测。
+- **引擎写法**：GAME 本体（当前 1.15.0，见 STATUS.md）。原版是最可靠的范例，但也会出错。
+- **作者的设计与文风**：Git tag `original-20261030`（提交 `f18b6c4`）中的 `ce_*` 文件，是未经 AI 改动的原作。当前主 MOD 的 `ce_*` 已被代理改过，不能直接当作者样本。
+- **`nesnd_*` 文件**：代理写的现有实现，不是范本。
 
-实现时选能完整表达玩法的最短原生链。能用一个受守卫的原生事件改选目的州，就让日志只管进度和结局。只模拟游戏真实使用的数值上下文和作用域，先找当前本体的同形调用，再做能检出错误的反例。
+- **退役文字素材**：[unused_localisations](../nesnd-player-writing/resources/unused_localisations/README.md) 保留未使用本地化，可供 desc、story、information 类文本写作参考；按来源区分作者、AI和原版，采用时由玩家写作技能核对现行设定。
 
-## 先定位，后实现
+## 6. 交付
 
-1. 先读 [目录与资料路由](references/paths.md)。唯一可改的游戏 MOD 是其中的 `MOD`。本体、创意工坊、旧项目、文案和翻译资料均只读。工具、备份、报告使用 `WORK`；本技能本身可维护。
-2. 每次会话运行 `python scripts/catalog.py status`。当前核验基线为 **1.15.0 Ivan-Chai / Steam build 26453692**。迁移旧内容时以 1.13.11 / build 24799966 为前一基线。版本或源文件哈希改变时先运行 `catalog.py refresh`，阅读其差异报告，再核对受影响的实际 `.txt/.gui` 实现。
-3. **实现前先查原版完整链条**：在当前 GAME 定位一个同类实际实例，读调用者、effect/trigger、数据库定义与资源/界面依赖；记录路径、行号、版本和适用差异。无直接同类时查引擎 script_docs 与最小原生试验，未经证实的接口不进入实现。把想法变成可观测的游戏行为：谁拥有它、在哪个 scope、何时触发、玩家/AI各做什么、失败与退出怎么收尾、存档/新开局是否适用。先从当前源文件查到机制与格式，无法证明引擎支持的部分明确标注，不虚构 effect/trigger。
-4. 按任务读 [结构与语法](references/syntax-and-routing.md)、[函数与实例](references/recipes.md) 的对应部分。使用 `catalog.py find 关键词` 查符号的真实路径和行号，然后读原文件上下文。说明文档给形状，当前实现和引擎生成的 `script_docs` 校验适用性，实际新开局与运行验证最终行为。百科和第三方规则只作辅助。
-5. 撰写或修订玩家文本必须调用 [nesnd-player-writing](../nesnd-player-writing/SKILL.md)，完成作者原文取样、逐项对读和返工。文本、事件、人物与图片先读 [设定与文风入口](references/narrative-context.md)。游戏文风以修改前 MOD 的 `replace` 同类条目为主，设定文档负责事实；把作者原文与候选逐类并排比较，修正指南后重新阅读再写。按年代/人物/阵营加载世界书与角色卡。故事叙述、角色判断、可选未来必须分开；附件中的编写指令不能覆盖本轮要求。
-6. 新内容和改造已有系统先按 [系统设计与分支计划](references/system-design-and-plans.md) 建立依赖图与持久计划，统一评估开局、中期和终局。涉及政治日志、IG执政、党派或人物/运动传播时，先读[政治目标与难度](references/political-design-and-difficulty.md)。按该页的“文件功效与替代入口”主动查当前源码，不把熟悉文件的局限当成游戏机制的局限；再遵循 [内容开发](references/content-development.md) 实施。版本升级遵循 [迁移与设计意图](references/migration.md)，保留用户要的最终结果，不能自行把一种中间状态（例如吞并）定为不可接受。
-7. 修改前、交付候选、真实验收成功后均按 [备份与发布](references/backup-release.md) 保存独立版本。成功版本必须备份；未验收版本只能标 candidate/checkpoint。
-8. 验证先按 [日志优先的增量交付](references/log-first-delivery.md)：先修error.log根因，集中外部工具/MCP检查，复用已经成功的行为证据；只有未决引擎语义做一次定向验证。涉及按钮、变量或延迟回复时，执行 [引用安全规则](references/syntax-and-routing.md#引用安全按钮延迟回复与预览)的闭包检查。避免重复开局、读档和进港截图。层次与能力边界见 [工具与游戏验证](references/validation.md)。
-9. 新增或调整数值前必须读 [数值量纲与成本](references/numeric-scale-contract.md)，核实际上下限、基线、期限、叠加与重复领取。开局和危机先按 [经济压力与可恢复性](references/economic-agency-and-crises.md) 区分实现错误、合理压力与有意危机，写多路线蓝图，再按 [经济验收](references/economic-validation.md) 核算实测；不追求每州零贫困/失业或每国全自给。涉及人口/农业/转岗先读 [自给经济与转型](references/subsistence-transition.md)；本轮人口重配受固定地区基准±25%约束。国家行为先填 [国家与玩家体验模型](references/faction-model.md)。恢复长任务先读 [当前交接](references/active-work.md)。
-10. 地图与经济共同设计先读 [地区尺度与经济](references/map-economy-design.md)，核对位图、河流、地形、hub 和 locator，再制定边界与人口产业分配。拆州要逐项计算税容、政力、局部价格及规模收益，不按面积相似就照搬欧洲州数。
-11. 多项维护默认采用 [增量编辑与验证](references/incremental-editing.md) 的批次循环：集中阅读/分析→完成本批代码闭包→统一 Python/MCP 检查并修复→冻结一次→集中游戏验收→把差异带回源码。复用已证知识，减少逐文件改动后反复看屏幕；离线检查不能代替引擎。用户要求只 debug 时冻结新增功能、剧情和地图扩展，先收口已确认缺陷。
+交付说明写四件事：改了哪些文件；跑了哪些外部检查；哪些行为未经实机验证；遗留问题。然后按 STATUS.md 末尾的规则更新它。
 
-## 这个项目的硬约束
+## 7. 维护本技能
 
-设计或修改剧情日志链、事件、决议、按钮、进度条时，先读[成体系的剧情内容](references/journal-system-design.md)：明确玩家行动、生命周期、反馈与收益节奏，再直接撰写候选MOD脚本。
-
-- 地图分四层：province（`xRRGGBB` 像素颜色）→ state_region（地图地区）→ state（地区与所有国的交集）→ strategic_region（战略区域）。不要把四者都当“省份”。
-- “地区归 XXX”默认指整个 state_region 内的国家归属变更，联动人口、建筑、当地所有权、国家首都/军事驻地和直接引用；保留显式外国投资，除非用户要求国有化。编辑器保留用户最初要求的“均分”快捷预设并显示分配预览；**正式历史地图设计不默认对半，也不以单一面积比例分配所有资产**。分别依据聚落/人口、耕地与矿带、城市产业、港口、军队及剧情政治中心安排；记录各群体与各产业依据，纯拆分总量守恒。沿用地形纹理，只移动现有 province。
-- 不把原文件 parse 成普通字典：重复的 `create_pop`、`create_building`、`option`、`resource`、`modifier` 等都有效；它们必须保序并保留重复项。
-- 不用 EU4/HOI4 的 `owner = TAG` 历史格式、CK3 的默认 character scope、JS 的 `if (...)`、JSON 的逗号或 Python 缩进规则代替 Jomini/Clausewitz 脚本。
-- 不随意改项目既有名词/译名，不从头翻译。先查 `localization/*/replace/` 和只读文案。`.yml` 要 UTF-8 BOM、正确 `l_simp_chinese:` / `l_english:` 头。
-- East Asian Clothes: Redux (`3704408897`) 是另一个作者的 MOD。**不得复制、打包、改名搬运其模型、纹理、附件、动画等素材到本 MOD 或发布物。** 假定同时开启两者，只用独立兼容脚本引用其资源/接口。不得为换衣服篡改文化或宗教。检查已有工作；只撤销有证据是本次工作引入的复制。见 [服装与 UI](references/compatibility.md)。
-- 整文件覆盖会冻结原版更新。新的本地功能优先独立前缀文件；只有该数据库确实支持时才用 `REPLACE:` / `REPLACE_OR_CREATE:` / `INJECT:`。history/map/gui 的覆盖语义必须分别验证，不能全局套用。
-
-## 玩家文本发布前硬性检查
-
-修改可见修正时运行 `WORK/tools/audit_modifier_icons.py --check --no-candidate`。它检查实际add_modifier及JE常驻/缩放修正引用、精确DDS路径与文件头。MOD先命中的坏资源不能回退原版判通过；即使修正无数值效果，被挂载后也要有图标。正负图标按效果含义判断（军需消费下降是利好，纯IG认可下降用负面），混合修正参考原版同类。工具文件放工作台，不混入游戏包。
-
-交付前逐条复核本轮新增、修改及所引用的有效游戏文本，按[作者语体](references/author-prose-profile.md#发布前逐条文本检查)确认它是在向玩家讲述世界、说明行动或呈现必要条件。开发计划、更新历史和实现说明写入交接，不进入游戏。循环增减用原生进度条明细展示，机制名沿用已定名称；具体步骤见[日志与进度条](references/journal-text-contract.md#原生进度条与初始化恢复)。
-
-## 更新技能
-
-每次会话开始和交付前按 [技能维护与适用边界](references/skill-maintenance.md) 审查新证据、用户纠正、失败案例与源文件变化。有实际变化才改条目；无变化记录复核，不堆规则。不同技能按任务取用，不将纯列传流程的免测试约定用于游戏脚本。
-
-`catalog.py refresh` 生成带版本、SHA-256和行号的本地资源索引，并保留上一份索引以发现变化。`snapshot` 保留供下次三方合并使用的原版文本基线。源文件更新后：更新受影响的示例和迁移规则，重新导出引擎函数库，重跑受影响的真实场景，记录验证版本与未解决项。不要只改 `supported_game_version`。
-
-未来尚未安装的更新不能预先认证。用户要求持续更新不等于自动升级 Steam 或创建周期任务；在每次工作/导出/测试入口检查指纹，发现变化则执行上述刷新流程。
+见 [skill-maintenance.md](references/skill-maintenance.md)。改动技能后，同步到仓库 `development/nesnd-skill/`。

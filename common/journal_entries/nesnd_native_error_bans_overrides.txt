@@ -1,28 +1,78 @@
-﻿# No split, territory transfer, or new ZAN creation; existing countries are untouched.
+﻿# Victoria 3 1.15: restore the Oman split only for an owned Zanzibar and a valid ruler.
 REPLACE:je_splitting_oman = {
-    icon = "gfx/interface/icons/event_icons/event_portrait.dds"
-    group = je_group_historical_content
-    activation_description = { always = yes }
-    is_shown_in_lobby = { always = no }
-    is_shown_when_inactive = { always = no }
-    possible = { always = no }
-    outcome = {
-    	header = je_standard_completion_header
-    	effect_header = je_standard_on_completion_header
-    	color = "gold_positive"
-    	conclusion_desc = je_standard_completion_conclusion_desc
-    	trigger = { always = no }
-    }
-    outcome = {
-    	header = je_standard_failure_header
-    	effect_header = je_standard_on_failure_header
-    	color = "blue_negative"
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { always = no }
-    }
-    outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { always = yes }
-    }
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+
+	group = je_group_historical_content
+
+	activation_description = {
+		always = yes
+	}
+
+	is_shown_in_lobby = {
+		c:OMA = THIS
+	}
+
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = said_bin_sultan_al_said_dies
+				ruler = {
+					exists = yes
+					NOT = { has_template = oma_said_bin_sultan }
+				}
+				country_has_monarchy_law = yes
+			}
+
+            c:OMA ?= this
+            exists = ruler
+            num_states > 1
+            exists = s:STATE_ZANZIBAR.region_state:OMA
+            s:STATE_ZANZIBAR.region_state:OMA = { controller = root }
+            NOT = { exists = c:ZAN }
+
+}
+		effect = {
+			custom_tooltip = omani_realm_splits
+			if = {
+				limit = {
+					exists = c:OMA
+					c:OMA = ROOT
+				}
+				trigger_event = { id = zanzibar.1 }
+			}
+			je_splitting_oman_cleanup = yes
+		}
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				NOT = { exists = c:OMA }
+				NOT = { country_has_monarchy_law = yes }
+				exists = c:ZAN
+				c:OMA ?= {
+					has_variable = ruler_selector_var
+				}
+
+                NOT = { exists = s:STATE_ZANZIBAR.region_state:OMA }
+                num_states < 2
+}
+		}
+		effect = {
+			je_splitting_oman_cleanup = yes
+		}
+	}
+
+	# no monthly pulse to kill the sultan.
+
+	weight = 10
+
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
 }

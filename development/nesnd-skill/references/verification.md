@@ -1,0 +1,30 @@
+# 检查、日志、备份与交付
+
+## 1. 检查顺序
+
+1. **写之前**：在 GAME 找到同类实例，读它的调用者、effect/trigger 和本地化。接口名以用户文档目录 `docs/effects.log`、`triggers.log`、`modifiers.log`、`on_actions.log`、`event_targets.log`、`custom_localization.log` 为准（当前版本的 script_docs 导出；游戏更新后请作者重新导出）。
+2. **写之后，游戏外**：
+   - Paradox Modding Toolkit（VS Code 扩展 `JDeffner.px-toolkit`，或命令行 `px-lsp`）：解析、作用域补全、括号/BOM/本地化头/缺失事件诊断，集成 vic3-tiger，有按触发顺序排列的事件图和本地化覆盖视图。它的规则可能落后于最新游戏版本，报错先对照 GAME 再判断。
+   - 本技能 `scripts/pdx.py`（保序解析，保留重复键）、`scripts/audit.py`（GAME+MOD 数据图）、`scripts/catalog.py find <名称>`（定位符号的真实路径与行号）。
+   - 查一个具体问题就写一个小检查，不建通用模拟器；检查条数不代表质量。
+3. **游戏内**：只在用户当次明确要求时启动（见 SKILL.md）。通常由作者自己测试，代理读作者留下的日志。
+
+## 2. 读日志
+
+- 位置：用户文档目录 `logs/`。`error.log`、`debug.log`、`game.log` 会轮转为 `.1` 到 `.5`；先按修改时间确认哪一份对应哪次运行，再复制整组到工作台 `reports/<日期>/logs/` 后分析，不在原处清空。
+- `scripts/log_report.py <日志目录> --out <报告.json>` 按内容归组，并保留原文位置。
+- 先修本 MOD 脚本引起的错误和每帧刷屏的根因。总错误数包含原版和其他 MOD 的错误，不等于本 MOD 的错误数。
+- 同一行为已经在游戏中验证过（例如进港、死亡、分裂），除非相关代码或存档格式变了，不重复验证。
+
+## 3. 交付时怎么写
+
+- `STATIC_PASS`：只有游戏外检查。`ENGINE_VERIFIED`：在指定版本的游戏中看到了该行为，写明场景。
+- 写清楚：改了哪些文件；跑了哪些检查；哪些行为未经实机验证；遗留问题。
+- 正式包只含玩法与必要资源。QA 浮层、测试事件、测试存档和验证脚本留在工作台。
+
+## 4. 备份与版本
+
+- 作者规则：本地只保留约三份完整源码，即原始版、本轮修改前、当前版；历史由 Git 保存。
+- 实质修改前用 `scripts/backup.py --status pre-change` 备份到工作台 `backups/`；交付后清理多余的中间副本，清理前确认作者的改稿已进 Git。
+- 主 MOD（游戏加载目录）和 Git 工作副本（工作台 `projects/nesnd-repository`）是两个目录。合并时按文件比较，保留作者在主 MOD 里直接做的修改。
+- 远端：`EricYuyangLiu2286/Neo-Era-Southern-and-Northern-Dynasties`。不直接推送 main；用分支，交由作者合并。

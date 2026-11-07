@@ -9,12 +9,25 @@
 | USERDATA | `D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3` | 游戏日志/存档/加载配置；验证前保存旧日志与配置，运行后恢复用户加载组合；不得覆盖既有存档 |
 | WORKSHOP | `D:\Program Files (x86)\Steam\steamapps\workshop\content\529340` | 参考 MOD 和依赖，全部只读 |
 
+## 会话需要连接哪些目录
+
+通过文件桥（每次会话选择文件夹）工作时，连接这三个即可覆盖上表全部常用位置：
+
+1. `D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3`：包含 MOD（`mod\Neo-Era…`，可写）、WORK（`nesnd-workbench`，可写）、`logs`、`docs`（script_docs 导出）、`save games`（只读）。
+2. `C:\Users\Eric Liu\.codex\skills`：`nesnd-victoria3` 与 `nesnd-player-writing`（可写）。
+3. `D:\Program Files (x86)\Steam\steamapps\common\Victoria 3`：GAME，只读。
+
+只在做服装/UI 兼容时再连接 WORKSHOP。OneDrive 和桌面上的旧项目、设定、翻译资料很少需要，用到时再连接。
+
+若会话装有 Desktop Commander 等本机终端工具，它不受上述连接限制，可直接访问这些路径；只读规则仍按上表执行。
+
 ## 参考来源，不是可修改的第二工作区
+
+创意工坊 MOD 只用于查兼容接口（资源名、GUI 注入点、触发器名）。不学习、不仿写、不复制其他作者的内容设计与代码；设计与写法以 GAME 本体和作者原作为准。
 
 - `WORKSHOP/3704408897`：East Asian Clothes: Redux 1.0.4。查 `common/scripted_triggers/EACR_scripted_triggers.txt`、`00_EACR_mod_compat_trigger.txt`、`zz_EACR_mod_compat_trigger.txt`；再查 `gfx/portraits/portrait_modifiers/EACR_clothes.txt`、`EACR_headgear.txt` 和 `common/genes`。服装规则→gene template→accessory→asset/mesh/texture 是完整链条。
 - `WORKSHOP/3385002128`：Community Mod Framework 1.65.0，目标 1.13。UI 注入、共享组件、`data_binding`、`gui`、`input_profile`。先与 GAME 同路径文件比对，不把整套 GUI 移植进本 MOD。
 - `WORKSHOP/3278156786`：Expanded Building Grid，目标 1.13。重点 `gui/states_panel_buildings.gui` 与 `gui/expanded_building_grid.gui`，对照 GAME 的州建筑页面。它解决布局，不是历史建筑初始化。
-- `WORKSHOP/3464386853`：大洋国—汉洲联省共和国，目标 1.13。地图、日志、事件链实例；`docs/skills/vic3-modding/scripts` 的检查器只作代码参考，其结论不等同引擎验收，不执行会写回该 MOD 的脚本。
 - `D:\Users\Eric Liu\OneDrive\Documents\Modings\CelestialDynastyOfMan(Old Abandoned Project)`：旧废弃项目。含 `history/`、`interface/`、`map/` 和 `descriptor.mod`；仅查设计、名字与旧关系，**不可将这里的语法视为 Victoria 3 API**。
 - `D:\Users\Eric Liu\OneDrive\文档\文案-EMP2286\Modings\北明战国世`：世界观和人物资料；`北明人物列传.docx`、`时间线 - 副本.docx`、人物与时间线文档。只读，写人物另用专门列传技能。
 - `D:\Users\Eric Liu\Desktop\paratranz`：已有翻译/名称、不同游戏工程混杂；优先按对象名检索，不批量导入，不重译已定术语。

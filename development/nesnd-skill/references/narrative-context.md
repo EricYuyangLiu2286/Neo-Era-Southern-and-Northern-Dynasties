@@ -10,8 +10,8 @@
    涉及南北朝制度、称谓、议会权限或改革终局，先读[南北朝制度与叙事主体](north-south-institutions.md)，其中记录作者2026-11-02的明确纠正；旧资料不能覆盖这些纠正。
 2. `worldbook.json` 中匹配关键词、年代与阵营的条目。沿 sources 回读来源段落/幻灯片；条目不是原文替代品。
 3. `character-book.json` 中人物的目标、筹码、限制、关系及生死/身份条件。别名和模板需核查，不靠现实同名人物补齐生平。
-4. **游戏文案首先读作者原有 `localization/simp_chinese/replace/`，按事件正文、引文、选项、标题、日志正文、按钮、进度条、modifier 分别对读。** 用户明确：设定资料多为简化文案。用修改前备份 `WORK/backups/pre-update-20261030T233944Z/mod` 区分作者原文与代理新增，后者不能冒充风格依据。
-5. 读对应 events/JE/buttons/progress bars，确认触发条件、说话者及有效 scope。阅读 `WORK/research/20261031/replace-style-review/逐类对照.md` 与 [作者语体实测](author-prose-profile.md)，更新指南后重读指南再改写。
+4. **游戏文案首先读作者原有 `localization/simp_chinese/replace/`，按事件正文、引文、选项、标题、日志正文、按钮、进度条、modifier 分别对读。** 用户明确：设定资料多为简化文案。作者原文以 Git tag `original-20261030`（或备份 `WORK/backups/pre-update-20261030T233944Z/mod`）为准；当前文件中的代理新增不能冒充风格依据。
+5. 读对应 events/JE/buttons/progress bars，确认触发条件、说话者及有效 scope。写作流程与作者样本见 `nesnd-player-writing` 技能。
 6. 用 [文本呈现层](journal-text-contract.md) 决定 UI 字段。任务是人物列传或需要补充场景时再使用 `beiming-biography` 的文体；世界书、人物卡负责事实和立场，不自动规定事件句法。
 
 原资料只读目录：`D:/Users/Eric Liu/OneDrive/文档/文案-EMP2286/Modings/北明战国世`。重点：`北明ppet.pptx`、`朱班博传（上）.docx`、`朱班博传（中）.docx`、`北明人物列传.docx`；补充《骆军始末》《海军人物》及时间线。缓存 `WORK/research/20261031` 的 JSON 保留原文定位与 SHA；使用前核验 SHA，变更后重新提取。提取脚本：`beiming-biography/scripts/extract_ooxml.py`。

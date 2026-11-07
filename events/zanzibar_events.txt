@@ -2,11 +2,325 @@
 
 # For OMA
 zanzibar.1 = {
-    type = country_event
-    hidden = yes
-    trigger = { always = no }
-    cancellation_trigger = { always = yes }
-    immediate = { }
+	type = country_event
+	placement = scope:sultanate_of_zanzibar_capital
+
+	title = zanzibar.1.t
+	desc = zanzibar.1.d
+	flavor = zanzibar.1.f
+
+	gui_window = event_window_1char_tabloid
+
+	left_icon = scope:sultan_of_zanzibar
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/misc/1Character_Banner"
+
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+
+	duration = 3
+
+	trigger = {
+        c:OMA ?= this
+        is_country_alive = yes
+        country_has_monarchy_law = yes
+        exists = ruler
+        num_states > 1
+        exists = s:STATE_ZANZIBAR.region_state:OMA
+        s:STATE_ZANZIBAR.region_state:OMA = { controller = root }
+        NOT = { exists = c:ZAN }
+    }
+
+	immediate = {
+		save_scope_as = muscat_and_oman
+		ruler = {
+			save_scope_as = sultan_of_muscat_and_oman
+			set_temporary_event_immortality = { DURATION = 3 }
+		}
+		create_country = {
+			tag = ZAN
+			origin = ROOT
+			state = s:STATE_ZANZIBAR.region_state:OMA
+			on_created = {
+                # We are creating the Busaidi Sultanate of Zanzibar — it was very much an Arab state up until the Zanzibar Revolution
+                add_primary_culture = cu:bedouin
+                remove_primary_culture = cu:swahili
+				set_state_religion = rel:ibadi
+
+				create_character = {
+					template = zan_majid_bin_said # Sultan Majid of Zanzibar
+				}
+				if = {
+					limit = {
+						game_date > 1837.1.1
+					}
+					create_character = {
+						template = zan_barghash_bin_said # Barghash bin Said, younger brother of Majid
+					}
+				}
+			}
+		}
+		c:ZAN ?= {
+			save_scope_as = sultanate_of_zanzibar
+			ruler = {
+				save_scope_as = sultan_of_zanzibar
+				set_temporary_event_immortality = { DURATION = 3 }
+			}
+            capital = {
+                save_scope_as = sultanate_of_zanzibar_capital
+            }
+		}
+	}
+
+	option = {
+		name = zanzibar.1.a
+		custom_tooltip = zanzibar.1.a.tt
+		default_option = yes
+
+		# Cede East African holdings to Zanzibar
+		if = {
+			limit = {
+				exists = s:STATE_TANGANYIKA.region_state:OMA
+			}
+			s:STATE_TANGANYIKA.region_state:OMA = { set_state_owner = c:ZAN }
+		}
+		if = {
+			limit = {
+				exists = s:STATE_LINDI.region_state:OMA
+			}
+			s:STATE_LINDI.region_state:OMA = { set_state_owner = c:ZAN }
+		}
+		if = {
+			limit = {
+				exists = s:STATE_KENYA.region_state:OMA
+			}
+			s:STATE_KENYA.region_state:OMA = { set_state_owner = c:ZAN }
+		}
+		if = {
+			limit = {
+				exists = s:STATE_RIFT_VALLEY.region_state:OMA
+			}
+			s:STATE_RIFT_VALLEY.region_state:OMA = { set_state_owner = c:ZAN }
+		}
+		if = {
+			limit = {
+				num_subjects >= 1
+			}
+			every_direct_subject = {
+				limit = {
+					is_in_geographic_region = geographic_region_africa
+				}
+				c:ZAN ?= { transfer_subject = prev }
+			}
+		}
+
+		c:ZAN ?= {
+			# if Zanzibar would not immediately trigger the fail conditions of Lion of the Zanj, give it the Lion of the Zanj JE
+			if = {
+				limit = {
+                    NOR = {
+                        is_subject = yes
+				        any_neighbouring_state = {
+                            state_region = {
+								OR = {
+									this = s:STATE_KENYA
+									this = s:STATE_RIFT_VALLEY
+									this = s:STATE_ZANZIBAR
+									this = s:STATE_TANGANYIKA
+								}
+							}
+                            OR = {
+                                owner = {
+                                    is_not_in_geographic_region = geographic_region_africa
+                                }
+                                owner = {
+                                    is_subject = yes
+                                    top_overlord = {
+                                        is_not_in_geographic_region = geographic_region_africa
+                                    }
+                                }
+                            }
+				        }
+			        }
+				}
+
+				add_journal_entry = { type = je_lion_of_the_zanj }
+			}
+		}
+	}
+
+	option = {
+		name = zanzibar.1.b
+
+		trigger = {
+			is_player = yes # no point in this option for the AI
+		}
+
+		play_as = c:ZAN
+
+		# Cede East African holdings to Zanzibar
+		if = {
+			limit = {
+				exists = s:STATE_TANGANYIKA.region_state:OMA
+			}
+			s:STATE_TANGANYIKA.region_state:OMA = { set_state_owner = c:ZAN }
+		}
+		if = {
+			limit = {
+				exists = s:STATE_LINDI.region_state:OMA
+			}
+			s:STATE_LINDI.region_state:OMA = { set_state_owner = c:ZAN }
+		}
+		if = {
+			limit = {
+				exists = s:STATE_KENYA.region_state:OMA
+			}
+			s:STATE_KENYA.region_state:OMA = { set_state_owner = c:ZAN }
+		}
+		if = {
+			limit = {
+				exists = s:STATE_RIFT_VALLEY.region_state:OMA
+			}
+			s:STATE_RIFT_VALLEY.region_state:OMA = { set_state_owner = c:ZAN }
+		}
+
+		if = {
+			limit = {
+				num_subjects >= 1
+			}
+			every_direct_subject = {
+				limit = {
+					is_in_geographic_region = geographic_region_africa
+				}
+				c:ZAN ?= { transfer_subject = prev }
+			}
+		}
+
+		c:ZAN ?= {
+			# if Zanzibar would not immediately trigger the fail conditions of Lion of the Zanj, give it the Lion of the Zanj JE
+			if = {
+				limit = {
+                    NOR = {
+                        is_subject = yes
+				        any_neighbouring_state = {
+                            state_region = {
+								OR = {
+									this = s:STATE_KENYA
+									this = s:STATE_RIFT_VALLEY
+									this = s:STATE_ZANZIBAR
+									this = s:STATE_TANGANYIKA
+								}
+							}
+                            OR = {
+                                owner = {
+                                    is_not_in_geographic_region = geographic_region_africa
+                                }
+                                owner = {
+                                    is_subject = yes
+                                    top_overlord = {
+                                        is_not_in_geographic_region = geographic_region_africa
+                                    }
+                                }
+                            }
+				        }
+			        }
+				}
+
+				add_journal_entry = { type = je_lion_of_the_zanj }
+			}
+		}
+	}
+
+	option = {
+		name = zanzibar.1.c
+
+		custom_tooltip = zanzibar.1.a.tt
+
+		# Don't cede East African holdings to Zanzibar, and start a fight
+
+		s:STATE_ZANZIBAR = {
+			add_claim = c:OMA
+		}
+
+		if = {
+			limit = {
+				exists = s:STATE_TANGANYIKA.region_state:OMA
+			}
+			s:STATE_TANGANYIKA = {
+				add_claim = c:ZAN
+			}
+		}
+		if = {
+			limit = {
+				exists = s:STATE_LINDI.region_state:OMA
+			}
+			s:STATE_LINDI = {
+				add_claim = c:ZAN
+			}
+		}
+		if = {
+			limit = {
+				exists = s:STATE_KENYA.region_state:OMA
+			}
+			s:STATE_KENYA = {
+				add_claim = c:ZAN
+			}
+		}
+		if = {
+			limit = {
+				exists = s:STATE_RIFT_VALLEY.region_state:OMA
+			}
+			s:STATE_RIFT_VALLEY = {
+				add_claim = c:ZAN
+			}
+		}
+
+		c:ZAN ?= {
+			# if Zanzibar would not immediately trigger the fail conditions of Lion of the Zanj, give it the Lion of the Zanj JE
+			if = {
+				limit = {
+                    NOR = {
+                        is_subject = yes
+				        any_neighbouring_state = {
+                            state_region = {
+								OR = {
+									this = s:STATE_KENYA
+									this = s:STATE_RIFT_VALLEY
+									this = s:STATE_ZANZIBAR
+									this = s:STATE_TANGANYIKA
+								}
+							}
+                            OR = {
+                                owner = {
+                                    is_not_in_geographic_region = geographic_region_africa
+                                }
+                                owner = {
+                                    is_subject = yes
+                                    top_overlord = {
+                                        is_not_in_geographic_region = geographic_region_africa
+                                    }
+                                }
+                            }
+				        }
+			        }
+				}
+
+				add_journal_entry = { type = je_lion_of_the_zanj }
+			}
+		}
+	}
+
+	after = {
+		revoke_temporary_event_immortality = { CHARACTER = scope:sultan_of_muscat_and_oman }
+		revoke_temporary_event_immortality = { CHARACTER = scope:sultan_of_zanzibar }
+	}
+
+    cancellation_trigger = { OR = {
+        NOT = { exists = scope:sultanate_of_zanzibar }
+        NOT = { exists = scope:sultanate_of_zanzibar_capital }
+        NOT = { exists = scope:sultan_of_zanzibar }
+    } }
+
 }
 
 zanzibar.2 = { # The [Nation] East African Company
