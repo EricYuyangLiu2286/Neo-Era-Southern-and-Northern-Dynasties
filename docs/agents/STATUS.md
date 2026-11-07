@@ -39,7 +39,7 @@
 
 ## 未完成
 
-- [本地化审核](../../.scratch/text-audit-20261107/issues/01-localization.md)已修法国、印度、日本与共用结案文字，8 文件 121 处，STATIC_PASS。波斯另行外审。
+- [本地化审核](../../.scratch/text-audit-20261107/issues/01-localization.md)的 121 条已完成[语体返工](../../.scratch/text-audit-20261107/issues/02-prose-rework.md)，修改 90 条、保留 31 条。STATIC_PASS，待作者复测。波斯另行外审。
 
 1. 法国新后继路线（“宫廷与外省”、巴黎与地方配置、共和国分配与右转）。任务 29、42。
 2. 法国古吉拉特、包罗达、讷瓦讷格尔直辖与本地舰队：任务 46 已写入，未实机验证。
