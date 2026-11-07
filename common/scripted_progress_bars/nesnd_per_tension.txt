@@ -1,0 +1,244 @@
+﻿# 唐衣大食「波斯之忧」。进度条是矛盾值的唯一写入者；日志月脉冲之后把它抄入 var:nesnd_per_tension。
+# 每项来源都是带 desc 的 progress_condition：条件不满足时也会在日志里列出（空框）。
+# 系数见 nesnd-workbench/reports/2026-11-07-per-ethnic-plan（per_sim.py FINAL）。
+# 国土少于 3 州时各项来源停止（冻结）。
+nesnd_per_tension_bar = {
+    name = nesnd_per_tension_bar_name
+    desc = nesnd_per_tension_bar_desc
+    min_value = 0 max_value = 100 start_value = 20
+    default_bad = yes
+    monthly_progress = {
+        progress_condition = {
+            limit = { nesnd_per_tension_frozen = yes }
+            add = { desc = nesnd_per_tension_src_frozen value = 0 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes }
+            add = { desc = nesnd_per_tension_src_base value = 0.03 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_law = law_type:law_nesnd_per_tang_strict }
+            add = { desc = nesnd_per_tension_src_law value = 0.06 }
+            else = {
+                limit = { nesnd_per_tension_live = yes has_law = law_type:law_nesnd_per_tang_codified }
+                add = { desc = nesnd_per_tension_src_law value = 0.03 }
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_technology_researched = nationalism }
+            add = { desc = nesnd_per_tension_src_nationalism value = 0.05 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_technology_researched = pan-nationalism }
+            add = { desc = nesnd_per_tension_src_pan_nationalism value = 0.05 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes any_scope_state = { nesnd_per_iranian_state = yes turmoil >= 0.1 } }
+            add = {
+                desc = nesnd_per_tension_src_turmoil
+                value = 0
+                every_scope_state = { limit = { nesnd_per_iranian_state = yes turmoil >= 0.1 } add = this.turmoil }
+                divide = {
+                    value = 0
+                    every_scope_state = { limit = { nesnd_per_iranian_state = yes } add = 1 }
+                    min = 1
+                }
+                multiply = 0.8
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes any_scope_state = { nesnd_per_iranian_state = yes loyalists >= 0.1 } }
+            add = {
+                desc = nesnd_per_tension_src_loyalists
+                value = 0
+                every_scope_state = { limit = { nesnd_per_iranian_state = yes loyalists >= 0.1 } add = this.loyalists }
+                divide = {
+                    value = 0
+                    every_scope_state = { limit = { nesnd_per_iranian_state = yes } add = 1 }
+                    min = 1
+                }
+                multiply = -0.5
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes ig:ig_devout ?= { ig_approval <= angry } }
+            add = { desc = nesnd_per_tension_src_ulama value = 0.12 }
+            else = {
+                limit = { nesnd_per_tension_live = yes ig:ig_devout ?= { ig_approval <= unhappy } }
+                add = { desc = nesnd_per_tension_src_ulama value = 0.06 }
+                else = {
+                    limit = { nesnd_per_tension_live = yes ig:ig_devout ?= { ig_approval >= loyal } }
+                    add = { desc = nesnd_per_tension_src_ulama value = -0.08 }
+                    else = {
+                        limit = { nesnd_per_tension_live = yes ig:ig_devout ?= { ig_approval >= happy } }
+                        add = { desc = nesnd_per_tension_src_ulama value = -0.04 }
+                    }
+                }
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes ig:ig_landowners ?= { ig_approval <= angry } }
+            add = { desc = nesnd_per_tension_src_gentry value = 0.1 }
+            else = {
+                limit = { nesnd_per_tension_live = yes ig:ig_landowners ?= { ig_approval <= unhappy } }
+                add = { desc = nesnd_per_tension_src_gentry value = 0.05 }
+                else = {
+                    limit = { nesnd_per_tension_live = yes ig:ig_landowners ?= { ig_approval >= loyal } }
+                    add = { desc = nesnd_per_tension_src_gentry value = -0.08 }
+                    else = {
+                        limit = { nesnd_per_tension_live = yes ig:ig_landowners ?= { ig_approval >= happy } }
+                        add = { desc = nesnd_per_tension_src_gentry value = -0.04 }
+                    }
+                }
+            }
+        }
+        # 国教为什叶时，对伊斯兰国家的战争可说成教派之争，波斯人的不满减半。
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes nesnd_per_at_war_with_muslims = yes country_has_state_religion = rel:shiite }
+            add = { desc = nesnd_per_tension_src_war_muslim value = 0.10 }
+            else = {
+                limit = { nesnd_per_tension_live = yes nesnd_per_at_war_with_muslims = yes }
+                add = { desc = nesnd_per_tension_src_war_muslim value = 0.20 }
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes country_has_state_religion = rel:shiite }
+            add = { desc = nesnd_per_tension_src_state_faith value = -0.06 }
+            else = {
+                limit = { nesnd_per_tension_live = yes country_has_state_religion = rel:sunni }
+                add = { desc = nesnd_per_tension_src_state_faith value = 0.02 }
+                else = {
+                    limit = { nesnd_per_tension_live = yes country_has_state_religion = rel:mahayana }
+                    add = { desc = nesnd_per_tension_src_state_faith value = 0.06 }
+                    # 天命说是西秦国教，波斯人视之为秦人之教，比佛门更招怨。
+                    else = {
+                        limit = { nesnd_per_tension_live = yes country_has_state_religion = rel:kaimeng_confucianism }
+                        add = { desc = nesnd_per_tension_src_state_faith value = 0.10 }
+                    }
+                }
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_unity var:nesnd_per_unity < 60 }
+            add = {
+                desc = nesnd_per_tension_src_unity
+                value = 60
+                subtract = var:nesnd_per_unity
+                multiply = 0.003
+                max = 0.12
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes c:QE1 ?= { has_war_with = root } }
+            add = { desc = nesnd_per_tension_src_war_qin value = -0.15 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_future_done has_variable = nesnd_per_route_aid }
+            add = { desc = nesnd_per_tension_src_route_west value = 0.04 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_future_done has_variable = nesnd_per_route_covert NOT = { has_variable = nesnd_per_route_aid } }
+            add = { desc = nesnd_per_tension_src_route_east value = -0.04 }
+        }
+        # 时代潮流：基线 1836 年 20，至 1866 年（第 360 个月）100；向上最多 +0.15，向下最多 −0.06。
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_months has_variable = nesnd_per_tension }
+            add = {
+                desc = nesnd_per_tension_src_drift
+                value = var:nesnd_per_tension_months
+                multiply = 0.2222
+                add = 20
+                max = 100
+                subtract = var:nesnd_per_tension
+                multiply = 0.025
+                min = -0.06
+                max = 0.15
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_once_claim }
+            add = { desc = nesnd_per_tension_src_once_claim value = var:nesnd_per_tension_once_claim }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_once_office }
+            add = { desc = nesnd_per_tension_src_once_office value = var:nesnd_per_tension_once_office }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_once_shrine }
+            add = { desc = nesnd_per_tension_src_once_shrine value = var:nesnd_per_tension_once_shrine }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_once_settle }
+            add = { desc = nesnd_per_tension_src_once_settle value = var:nesnd_per_tension_once_settle }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_once_purge }
+            add = { desc = nesnd_per_tension_src_once_purge value = var:nesnd_per_tension_once_purge }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_after_office }
+            add = { desc = nesnd_per_tension_src_after_office value = var:nesnd_per_tension_after_office }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_after_shrine }
+            add = { desc = nesnd_per_tension_src_after_shrine value = var:nesnd_per_tension_after_shrine }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_after_settle }
+            add = { desc = nesnd_per_tension_src_after_settle value = var:nesnd_per_tension_after_settle }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_after_purge }
+            add = { desc = nesnd_per_tension_src_after_purge value = var:nesnd_per_tension_after_purge }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_ev1 }
+            add = { desc = nesnd_per_tension_src_ev1 value = var:nesnd_per_tension_ev1 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_ev2 }
+            add = { desc = nesnd_per_tension_src_ev2 value = var:nesnd_per_tension_ev2 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_ev3 }
+            add = { desc = nesnd_per_tension_src_ev3 value = var:nesnd_per_tension_ev3 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_ev4 }
+            add = { desc = nesnd_per_tension_src_ev4 value = var:nesnd_per_tension_ev4 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_ev5 }
+            add = { desc = nesnd_per_tension_src_ev5 value = var:nesnd_per_tension_ev5 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_ev6 }
+            add = { desc = nesnd_per_tension_src_ev6 value = var:nesnd_per_tension_ev6 }
+        }
+        # 第④批经济线：罢工、破坏的余波，本阶段利权，油田特许权。
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_ev7 }
+            add = { desc = nesnd_per_tension_src_ev7 value = var:nesnd_per_tension_ev7 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_tension_ev8 }
+            add = { desc = nesnd_per_tension_src_ev8 value = var:nesnd_per_tension_ev8 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_concession var:nesnd_per_concession = flag:tang }
+            add = { desc = nesnd_per_tension_src_concession value = 0.05 }
+            else = {
+                limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_concession var:nesnd_per_concession = flag:persian }
+                add = { desc = nesnd_per_tension_src_concession value = -0.05 }
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_oil var:nesnd_per_oil = flag:foreign }
+            add = { desc = nesnd_per_tension_src_oil value = 0.05 }
+            else = {
+                limit = { nesnd_per_tension_live = yes has_variable = nesnd_per_oil var:nesnd_per_oil = flag:self }
+                add = { desc = nesnd_per_tension_src_oil value = -0.03 }
+            }
+        }
+    }
+}

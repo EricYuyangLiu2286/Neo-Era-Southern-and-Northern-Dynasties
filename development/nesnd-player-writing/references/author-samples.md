@@ -8,7 +8,7 @@
 - `ce_usm_events_l_simp_chinese.yml`（明 / 吴）
 - 英文同名文件在 `localization/english/replace/`
 
-## 日志正文：历史来路 + 立场 + 一个问题
+## 日志正文中的历史来路与政治判断
 
 > **je_ce_unstable_imperium_reason**：自1832年拿破仑三世登基以来，好大喜功又思想活跃的第三代波拿巴皇帝在法国内部同时推动多项改革，并在这个过程中激进地对各类“重大工业部门”挥洒税款。似乎只要向工业经济注入足够多的资源，就能让整个法国乃至欧洲自动变成他承诺的“和平且伟大之地”。事实真能如此吗？就算法国真的那么伟大，这个法国中又有没有拿破仑们的位置呢？
 
@@ -60,7 +60,7 @@
 | flavorCNE.4.1 | Nonsense - no need to worry. |
 | FRA_ce_french_internal_victory | Napoleonic Prosperity |
 
-## 对照：代理稿（2026-11 当前文件）
+## 对照用的旧代理稿
 
 > **nesnd_cne_land_journal_reason**：……新法准许土地流转，也让经营农业的商人有了扩张的机会。然而，一纸买卖契约并不能使失去田地的人立即找到新的营生。田庄改作、雇工与迁居带来的争执，将伴随这场变革走进乡村。
 

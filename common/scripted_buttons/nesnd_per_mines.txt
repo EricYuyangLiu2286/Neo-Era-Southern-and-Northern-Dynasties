@@ -1,0 +1,87 @@
+﻿# 唐衣大食第④批：经济线的利权与油田特许权（任务65）。
+
+# 本国有经济线任一阶段日志在册。
+nesnd_per_concession_tang_button = {
+    name = nesnd_per_concession_tang_button
+    desc = nesnd_per_concession_tang_button_desc
+    visible = { nesnd_per_tang_regime = yes NOT = { has_variable = nesnd_per_concession } }
+    possible = {
+        custom_tooltip = { text = nesnd_per_tension_not_frozen_tt NOT = { nesnd_per_tension_frozen = yes } }
+        custom_tooltip = { text = nesnd_per_concession_open_tt nesnd_per_concession_open = yes }
+    }
+    ai_chance = { value = 0 if = { limit = { has_variable = nesnd_per_tension var:nesnd_per_tension < 40 } value = 10 } }
+    effect = {
+        custom_tooltip = nesnd_per_concession_tang_tt
+        show_as_tooltip = { add_modifier = { name = nesnd_per_concession_tang } }
+        hidden_effect = {
+            if = { limit = { nesnd_per_concession_open = yes }
+                set_variable = { name = nesnd_per_concession value = flag:tang }
+                add_modifier = { name = nesnd_per_concession_tang }
+            }
+        }
+    }
+}
+
+nesnd_per_concession_persian_button = {
+    name = nesnd_per_concession_persian_button
+    desc = nesnd_per_concession_persian_button_desc
+    visible = { nesnd_per_tang_regime = yes NOT = { has_variable = nesnd_per_concession } }
+    possible = {
+        custom_tooltip = { text = nesnd_per_tension_not_frozen_tt NOT = { nesnd_per_tension_frozen = yes } }
+        custom_tooltip = { text = nesnd_per_concession_open_tt nesnd_per_concession_open = yes }
+    }
+    ai_chance = { value = 0 if = { limit = { has_variable = nesnd_per_tension var:nesnd_per_tension >= 40 } value = 10 } }
+    effect = {
+        custom_tooltip = nesnd_per_concession_persian_tt
+        show_as_tooltip = { ig:ig_armed_forces ?= { add_modifier = { name = nesnd_per_tang_slighted months = 36 } } }
+        hidden_effect = {
+            if = { limit = { nesnd_per_concession_open = yes }
+                set_variable = { name = nesnd_per_concession value = flag:persian }
+                ig:ig_armed_forces ?= { add_modifier = { name = nesnd_per_tang_slighted months = 36 } }
+            }
+        }
+    }
+}
+
+# 第三阶段：油田特许权，二选一，10 年。
+nesnd_per_oil_foreign_button = {
+    name = nesnd_per_oil_foreign_button
+    desc = nesnd_per_oil_foreign_button_desc
+    visible = { has_journal_entry = nesnd_per_mines_3_journal NOT = { has_variable = nesnd_per_oil_chosen } }
+    possible = { always = yes }
+    ai_chance = { value = 5 }
+    effect = {
+        custom_tooltip = nesnd_per_oil_foreign_tt
+        show_as_tooltip = {
+            add_treasury = { value = gdp multiply = 0.1 }
+            add_modifier = { name = nesnd_per_oil_foreign months = 120 }
+        }
+        hidden_effect = {
+            if = { limit = { NOT = { has_variable = nesnd_per_oil_chosen } }
+                set_variable = nesnd_per_oil_chosen
+                set_variable = { name = nesnd_per_oil value = flag:foreign years = 10 }
+                add_treasury = { value = gdp multiply = 0.1 }
+                add_modifier = { name = nesnd_per_oil_foreign months = 120 }
+            }
+        }
+    }
+}
+
+nesnd_per_oil_self_button = {
+    name = nesnd_per_oil_self_button
+    desc = nesnd_per_oil_self_button_desc
+    visible = { has_journal_entry = nesnd_per_mines_3_journal NOT = { has_variable = nesnd_per_oil_chosen } }
+    possible = { always = yes }
+    ai_chance = { value = 5 }
+    effect = {
+        custom_tooltip = nesnd_per_oil_self_tt
+        show_as_tooltip = { add_modifier = { name = nesnd_per_oil_self months = 120 } }
+        hidden_effect = {
+            if = { limit = { NOT = { has_variable = nesnd_per_oil_chosen } }
+                set_variable = nesnd_per_oil_chosen
+                set_variable = { name = nesnd_per_oil value = flag:self years = 10 }
+                add_modifier = { name = nesnd_per_oil_self months = 120 }
+            }
+        }
+    }
+}

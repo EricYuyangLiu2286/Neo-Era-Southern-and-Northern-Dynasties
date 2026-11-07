@@ -156,19 +156,18 @@ nesnd_land_collapse = {
 }
 
 nesnd_join_opposition_play = {
-    if = { limit = { is_subject = no exists = c:USM
-            any_diplomatic_play = { nesnd_south_named_play = yes is_war = no }
-        }
-        save_scope_as = nesnd_south_join_candidate
-        random_diplomatic_play = { limit = { nesnd_south_named_play = yes is_war = no }
-            if = { limit = { NOT = { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_south_join_candidate } } }
-                add_target_backers = { scope:nesnd_south_join_candidate }
+    if = { limit = { is_subject = no exists = c:USM }
+        save_scope_as = nesnd_northern_intervener
+        random_diplomatic_play = {
+            limit = { nesnd_south_named_play = yes has_variable = this_is_nanming_civilwar_var
+                NOT = { this ?= scope:nesnd_northern_intervener.var:nesnd_joined_south_play }
             }
-            if = { limit = { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_south_join_candidate } }
-                scope:nesnd_south_join_candidate = { set_variable = nesnd_joined_south_play }
+            save_scope_as = nesnd_intervention_play
+            scope:nesnd_northern_intervener = {
+                nesnd_call_jingnan_participant = { PLAY = scope:nesnd_intervention_play }
+                nesnd_fulfil_jingnan_call = yes
             }
         }
-        clear_saved_scope = nesnd_south_join_candidate
     }
 }
 nesnd_notify_foreign_countries = {
@@ -303,11 +302,6 @@ nesnd_open_southern_war = {
                 limit = {
                     exists = scope:nesnd_south_opening_play
                 }
-                scope:nesnd_opposition_leader = {
-                    if = { limit = { nesnd_south_mainland_holdout = yes }
-                        set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
-                    }
-                }
                 remove_variable = nesnd_south_play_failed
                 nesnd_south_war_readiness_outcome = yes
                 set_global_variable = usm_civilwar_occured
@@ -320,41 +314,18 @@ nesnd_open_southern_war = {
                     months = 6
                 }
                 every_country = {
-                    limit = {
-                        has_variable = usm_opposition_country
-                        NOT = {
-                            this = scope:nesnd_opposition_leader
-                        }
-                        is_subject = no
+                    limit = { has_variable = usm_opposition_country }
+                    if = { limit = { exists = overlord NOT = { is_subject_of = c:USM } }
+                        overlord = { nesnd_call_jingnan_participant = { PLAY = scope:nesnd_south_opening_play } }
                     }
-                    save_scope_as = nesnd_south_join_candidate
-                    scope:nesnd_south_opening_play ?= {
-                        # Every declared opposition country must actually commit to this side.
-                        if = { limit = { NOT = { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_south_join_candidate } } }
-                            add_target_backers = { scope:nesnd_south_join_candidate }
-                        }
-                    }
-                    if = { limit = { nesnd_south_mainland_holdout = yes
-                            scope:nesnd_south_opening_play ?= { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_south_join_candidate } } }
-                        set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
-                    }
+                    nesnd_call_jingnan_participant = { PLAY = scope:nesnd_south_opening_play }
                 }
                 every_country = {
                     limit = {
-                        OR = {
-                            has_variable = usm_opposition_country
-                            is_subject_of = root
-                            c:JAP ?= this
-                        }
-                        NOT = {
-                            c:USM ?= this
-                        }
+                        NOT = { has_variable = usm_opposition_country }
+                        OR = { is_subject_of = root c:JAP ?= this }
                     }
-                    trigger_event = {
-                        id = usm_civilwar.2
-                        days = 1
-                        popup = yes
-                    }
+                    trigger_event = { id = usm_civilwar.2 days = 1 popup = yes }
                 }
                 c:CNE ?= {
                     if = {
@@ -364,21 +335,7 @@ nesnd_open_southern_war = {
                         nesnd_join_opposition_play = yes
                     }
                 }
-                c:JAP ?= {
-                    if = {
-                        limit = {
-                            has_variable = ce_usm_cw_ally_with_mng
-                            is_subject = no
-                        }
-                        scope:nesnd_south_opening_play ?= {
-                            if = { limit = { NOT = { nesnd_play_has_committed_initiator = { COUNTRY = c:JAP } } }
-                                add_initiator_backers = { c:JAP }
-                            }
-                        }
-                    }
-                }
-                scope:nesnd_south_opening_play ?= { add_escalation = 90 }
-                clear_saved_scope = nesnd_south_join_candidate
+                scope:nesnd_south_opening_play = { nesnd_start_jingnan_war = yes }
                 clear_saved_scope = nesnd_south_opening_play
             }
             else = {
@@ -392,4 +349,201 @@ nesnd_open_southern_war = {
             }
         }
     }
+}
+
+# The 1839 opening can precede the original 1840 recruitment window.
+# Both rebel journals call this on activation and while waiting for 1840.
+nesnd_raise_jingnan_officers = {
+    if = {
+        limit = { NOT = { has_variable = nesnd_jingnan_officers_raised } }
+        if = {
+            limit = { c:GNG ?= this year >= 1840 year <= 1881 }
+            nesnd_recruit_jingnan_officer = { TEMPLATE = nesnd_yang_xiuqing }
+            nesnd_recruit_jingnan_officer = { TEMPLATE = nesnd_xiao_chaogui }
+            set_variable = nesnd_jingnan_officers_raised
+        }
+        else_if = {
+            limit = { c:HNA ?= this year >= 1840 year <= 1881 }
+            nesnd_recruit_jingnan_officer = { TEMPLATE = nesnd_feng_yunshan }
+            set_variable = nesnd_jingnan_officers_raised
+        }
+        else_if = {
+            limit = { c:SIH ?= this year < 1860 }
+            if = { limit = { NOT = { has_global_variable = nesnd_born_usm_wei_jian } }
+                nesnd_recruit_jingnan_officer = { TEMPLATE = USM_wei_jian }
+            }
+            if = { limit = { has_variable = ce_usm_republican_revolution_tag year > 1845
+                    NOT = { has_global_variable = nesnd_born_usm_li_xiucheng } }
+                nesnd_recruit_jingnan_officer = { TEMPLATE = USM_li_xiucheng }
+            }
+            if = { limit = { has_variable = ce_usm_republican_revolution_tag year > 1850
+                    NOT = { has_global_variable = nesnd_born_usm_shi_dakai } }
+                nesnd_recruit_jingnan_officer = { TEMPLATE = USM_shi_dakai }
+            }
+            set_variable = nesnd_jingnan_officers_raised
+        }
+    }
+}
+
+nesnd_recruit_jingnan_officer = {
+    clear_saved_scope = nesnd_story_new_officer
+    create_character = { template = $TEMPLATE$ save_scope_as = nesnd_story_new_officer }
+    scope:nesnd_story_new_officer ?= { set_variable = { name = nesnd_story_recruited value = owner } }
+}
+
+# Store the exact call until this country is present on the war's defending side.
+nesnd_call_jingnan_participant = {
+    set_variable = { name = nesnd_jingnan_call value = $PLAY$ }
+    save_scope_as = nesnd_jingnan_recruit
+    $PLAY$ = {
+        if = { limit = { is_war = no NOT = { target_is = scope:nesnd_jingnan_recruit } }
+            if = { limit = { scope:nesnd_jingnan_recruit = { OR = { nesnd_jingnan_rebel_signatory = yes nesnd_jingnan_wu_ally = yes } } }
+                # The target of a sovereignty violation enters at war start. An ordinary backer can capitulate.
+                if = { limit = { nesnd_play_has_committed_target = { COUNTRY = scope:nesnd_jingnan_recruit } }
+                    remove_target_backers = { scope:nesnd_jingnan_recruit }
+                }
+                else_if = { limit = { nesnd_play_has_committed_initiator = { COUNTRY = scope:nesnd_jingnan_recruit } }
+                    remove_initiator_backers = { scope:nesnd_jingnan_recruit }
+                }
+            }
+            else = { add_target_backers = { scope:nesnd_jingnan_recruit } }
+        }
+    }
+}
+
+nesnd_fulfil_jingnan_call = {
+    save_scope_as = nesnd_jingnan_recruit
+    var:nesnd_jingnan_call ?= {
+        if = { limit = { is_war = yes exists = war }
+            save_scope_as = nesnd_jingnan_war_play
+            war = {
+                if = { limit = { scope:nesnd_jingnan_recruit = { nesnd_jingnan_wu_ally = yes } }
+                    if = { limit = {
+                            is_war_participant = scope:nesnd_jingnan_recruit
+                            NOT = { is_on_defending_side = scope:nesnd_jingnan_recruit }
+                            exists = scope:nesnd_jingnan_recruit.overlord
+                            is_war_participant = scope:nesnd_jingnan_recruit.overlord
+                            NOT = { is_on_defending_side = scope:nesnd_jingnan_recruit.overlord }
+                        }
+                        scope:nesnd_jingnan_recruit = { set_variable = { name = nesnd_jingnan_locked_play value = scope:nesnd_jingnan_war_play } }
+                    }
+                    else = { nesnd_jingnan_bind_rebel = { ENEMY = scope:nesnd_jingnan_war_play.target } }
+                    scope:nesnd_jingnan_recruit = {
+                        if = { limit = { var:nesnd_jingnan_locked_play ?= scope:nesnd_jingnan_war_play }
+                            set_variable = nesnd_japan_fought_for_wu
+                            remove_variable = nesnd_jingnan_call
+                        }
+                    }
+                }
+                else_if = {
+                    limit = { scope:nesnd_jingnan_recruit = { nesnd_jingnan_rebel_signatory = yes } }
+                    if = { limit = {
+                            is_on_defending_side = scope:nesnd_jingnan_recruit
+                            OR = {
+                                is_warleader = scope:nesnd_jingnan_recruit
+                                AND = { exists = scope:nesnd_jingnan_recruit.overlord is_on_defending_side = scope:nesnd_jingnan_recruit.overlord }
+                            }
+                        }
+                        scope:nesnd_jingnan_recruit = { set_variable = { name = nesnd_jingnan_locked_play value = scope:nesnd_jingnan_war_play } }
+                    }
+                    else = { nesnd_jingnan_bind_rebel = { ENEMY = c:USM } }
+                }
+                else_if = { limit = { NOT = { is_war_participant = scope:nesnd_jingnan_recruit } }
+                    join_war = { target = scope:nesnd_jingnan_recruit side = scope:nesnd_jingnan_war_play.target }
+                }
+                if = { limit = {
+                        is_war_participant = scope:nesnd_jingnan_recruit is_on_defending_side = scope:nesnd_jingnan_recruit
+                        scope:nesnd_jingnan_recruit = {
+                            NOT = { nesnd_jingnan_wu_ally = yes }
+                            trigger_if = { limit = { nesnd_jingnan_rebel_signatory = yes }
+                                var:nesnd_jingnan_locked_play ?= scope:nesnd_jingnan_war_play
+                            }
+                        }
+                    }
+                    scope:nesnd_jingnan_recruit = {
+                        remove_variable = nesnd_jingnan_call
+                        if = { limit = { has_variable = nesnd_north_intervention } set_variable = { name = nesnd_joined_south_play value = scope:nesnd_jingnan_war_play } }
+                        if = { limit = { has_variable = usm_opposition_country }
+                            if = { limit = { c:JAP ?= this }
+                                set_variable = nesnd_japan_fought_against_wu
+                                c:USM = {
+                                    set_variable = { name = nesnd_japan_jingnan_play value = scope:nesnd_jingnan_war_play }
+                                    nesnd_japan_register_annex_target = yes
+                                }
+                                if = { limit = { NOT = { has_global_variable = nesnd_japan_collapse_journal_started } }
+                                    add_contextless_journal_entry = nesnd_japan_war_collapse
+                                }
+                            }
+                            set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
+                            remove_variable = nesnd_holdout_resistance_pending
+                            if = { limit = { NOT = { has_variable = have_seen_dierci_jingnan } }
+                                trigger_event = { id = usm_civilwar.2 days = 1 popup = yes }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+# The callback and the return from set_war can see the war object at different times.
+nesnd_muster_jingnan_war = {
+    if = { limit = { exists = war }
+        save_scope_as = nesnd_jingnan_starting_play
+        every_country = {
+            limit = { var:nesnd_jingnan_call ?= scope:nesnd_jingnan_starting_play }
+            nesnd_fulfil_jingnan_call = yes
+        }
+    }
+}
+
+# War scope. Convert an automatically enrolled ordinary supporter only if leaving support
+# cannot affect another play. A secondary belligerent may have been called by its patron.
+nesnd_jingnan_bind_rebel = {
+    if = { limit = { is_war_participant = scope:nesnd_jingnan_recruit }
+        if = { limit = { is_on_defending_side = scope:nesnd_jingnan_recruit }
+            scope:nesnd_jingnan_war_play.target = { save_scope_as = nesnd_previous_leader }
+        }
+        else = { c:USM = { save_scope_as = nesnd_previous_leader } }
+        if = { limit = { NOT = { any_diplomatic_play = {
+                    NOT = { this = scope:nesnd_jingnan_war_play }
+                    OR = { initiator_is = scope:nesnd_previous_leader target_is = scope:nesnd_previous_leader }
+                    any_scope_play_involved = { this = scope:nesnd_jingnan_recruit }
+                } } }
+            scope:nesnd_jingnan_recruit = { leave_plays_supporting = scope:nesnd_previous_leader }
+        }
+    }
+    if = { limit = { NOT = { is_war_participant = scope:nesnd_jingnan_recruit } }
+        scope:nesnd_jingnan_recruit = {
+            set_variable = nesnd_jingnan_sovereignty_call
+            violate_sovereignty_join = { violator = $ENEMY$ target = scope:nesnd_jingnan_recruit join_violator = no }
+            remove_variable = nesnd_jingnan_sovereignty_call
+        }
+        if = { limit = { is_war_participant = scope:nesnd_jingnan_recruit
+                trigger_if = { limit = { scope:nesnd_jingnan_recruit = { nesnd_jingnan_wu_ally = yes } }
+                    NOT = { is_on_defending_side = scope:nesnd_jingnan_recruit }
+                }
+                trigger_else = { is_on_defending_side = scope:nesnd_jingnan_recruit } }
+            scope:nesnd_jingnan_recruit = { set_variable = { name = nesnd_jingnan_locked_play value = scope:nesnd_jingnan_war_play } }
+        }
+    }
+}
+
+# Both rounds honour the Japanese answer before the play becomes a war.
+nesnd_start_jingnan_war = {
+    save_scope_as = nesnd_jingnan_declaration
+    if = { limit = { c:JAP ?= { nesnd_jingnan_wu_ally = yes } }
+        c:JAP = { nesnd_call_jingnan_participant = { PLAY = scope:nesnd_jingnan_declaration } }
+    }
+    else_if = { limit = { c:JAP ?= { has_variable = nesnd_japan_neutral } }
+        if = { limit = { nesnd_play_has_committed_initiator = { COUNTRY = c:JAP } }
+            remove_initiator_backers = { c:JAP }
+        }
+        else_if = { limit = { nesnd_play_has_committed_target = { COUNTRY = c:JAP } }
+            remove_target_backers = { c:JAP }
+        }
+    }
+    set_war = yes
+    nesnd_muster_jingnan_war = yes
 }

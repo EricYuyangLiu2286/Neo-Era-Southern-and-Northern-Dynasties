@@ -1,32 +1,73 @@
 ﻿nesnd_jp_korea = {
-    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds" group = je_group_historical_content
-	activation_description = { always = yes } can_revolution_inherit = no
+    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
+    group = je_group_historical_content
+    activation_description = { nesnd_jp_korea_available = yes }
+    can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_jp_korea_available = yes }
     possible = { nesnd_jp_korea_available = yes }
     scripted_button = nesnd_jp_korean_governor
     scripted_button = nesnd_jp_korean_councils
-    scripted_button = nesnd_jp_korean_envoy
-    outcome = {
-    	header = je_standard_completion_header
-    	effect_header = je_standard_on_completion_header
-    	color = "gold_positive"
-    	conclusion_desc = je_standard_completion_conclusion_desc
-    	trigger = { nesnd_jp_country = yes has_variable = nesnd_jp_korea_settled NOT = { nesnd_jp_owned_korea = yes } }
-    	effect = { nesnd_jp_close_korean_governance = yes }
-    }
-    outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { OR = { NOT = { nesnd_jp_country = yes } AND = { NOT = { nesnd_jp_korea_available = yes } NOT = { has_variable = nesnd_jp_korea_settled } } } }
-    	effect = { nesnd_jp_close_korean_governance = yes }
-    }
-    status_desc = { first_valid = {
-            triggered_desc = { trigger = { NOT = { nesnd_jp_owned_korea = yes } } desc = nesnd_jp_korea_across_the_strait }
-            triggered_desc = { trigger = { nesnd_jp_korea_policy_value = 1 } desc = nesnd_jp_korea_governors_status }
-            triggered_desc = { trigger = { nesnd_jp_korea_policy_value = 2 } desc = nesnd_jp_korea_councils_status }
-            desc = nesnd_jp_korea_undecided
+    scripted_button = nesnd_jp_register_korea
+    scripted_button = nesnd_jp_endow_korea
+
+    on_monthly_pulse = {
+        effect = {
+            if = { limit = { nesnd_jp_korea_available = yes nesnd_jp_korea_route_ready = yes }
+                set_variable = { name = nesnd_jp_korea_months value = { value = nesnd_jp_korea_months add = 1 max = 12 } }
+            }
+            else = { remove_variable = nesnd_jp_korea_months }
         }
     }
+    outcome = {
+        header = nesnd_jp_korea_charter_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_jp_korea_charter_conclusion
+        trigger = { custom_tooltip = { text = nesnd_jp_korea_charter_tt has_variable = nesnd_jp_korea_charter } }
+        effect = { custom_tooltip = nesnd_jp_korea_charter_conclusion }
+    }
+    outcome = {
+        header = nesnd_jp_korea_treaty_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_jp_korea_treaty_conclusion
+        trigger = {
+            custom_tooltip = { text = nesnd_jp_korea_treaty_tt has_variable = nesnd_jp_korea_settled }
+            custom_tooltip = { text = nesnd_jp_korea_no_land_tt NOT = { nesnd_jp_owned_korea = yes } }
+        }
+        effect = { custom_tooltip = nesnd_jp_korea_treaty_conclusion hidden_effect = { remove_variable = nesnd_jp_korea_months } }
+    }
+    outcome = {
+        header = nesnd_jp_korea_exit_header
+        effect_header = nesnd_jp_korea_exit_effect_header
+        conclusion_desc = nesnd_jp_korea_exit_conclusion
+        trigger = {
+            custom_tooltip = { text = nesnd_jp_korea_exit_tt
+                OR = { NOT = { nesnd_jp_owned_korea = yes } NOT = { nesnd_jp_korea_counterpart = yes } }
+            }
+            hidden_trigger = { NOR = { has_variable = nesnd_jp_korea_settled has_variable = nesnd_jp_korea_charter } }
+        }
+        effect = {
+            custom_tooltip = nesnd_jp_korea_exit_conclusion
+            hidden_effect = {
+                remove_variable = nesnd_jp_korea_months
+                if = { limit = { NOT = { nesnd_jp_owned_korea = yes } } nesnd_jp_close_korean_governance = yes }
+            }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_jp_country = yes } }
+        effect = { remove_variable = nesnd_jp_korea_months nesnd_jp_close_korean_governance = yes }
+    }
+    status_desc = { first_valid = {
+        triggered_desc = { trigger = { NOT = { nesnd_jp_korea_counterpart = yes } } desc = nesnd_jp_korea_handover }
+        triggered_desc = { trigger = { NOT = { nesnd_jp_owned_korea = yes } } desc = nesnd_jp_korea_across_the_strait }
+        triggered_desc = { trigger = { nesnd_jp_korea_policy_value = 1 } desc = nesnd_jp_korea_governors_status }
+        triggered_desc = { trigger = { nesnd_jp_korea_policy_value = 2 } desc = nesnd_jp_korea_councils_status }
+        desc = nesnd_jp_korea_undecided
+    } }
     weight = 600
     should_be_pinned_by_default_uninvolved_or_context = yes
 }

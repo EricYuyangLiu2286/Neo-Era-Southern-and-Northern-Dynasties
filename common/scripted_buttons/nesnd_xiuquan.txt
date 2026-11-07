@@ -1,0 +1,58 @@
+﻿# 驱赶教士秀全。仅所在州的所有者可见；冷却1个月。
+nesnd_xq_expel = {
+	name = nesnd_xq_expel
+	desc = nesnd_xq_expel_desc
+
+	visible = {
+		trigger_if = {
+			limit = { exists = this }
+			nesnd_xq_is_host = yes
+		}
+		trigger_else = { always = no }
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = nesnd_xq_expel_border_tt
+			any_state = { nesnd_xq_expel_destination = yes }
+		}
+	}
+
+	cooldown = { months = 1 }
+
+	effect = {
+		random_list = {
+			50 = {
+				custom_tooltip = nesnd_xq_expel_success_tt
+				hidden_effect = {
+					random_state = {
+						limit = { nesnd_xq_expel_destination = yes }
+						nesnd_xq_arrive = yes
+						set_global_variable = { name = nesnd_xq_expel_result value = 1 }
+						scope:journal_entry ?= { nesnd_xq_sync_participants = yes }
+					}
+				}
+			}
+			50 = {
+				custom_tooltip = nesnd_xq_expel_failure_tt
+				global_var:nesnd_xq_state ?= {
+					add_radicals_in_state = { value = 0.01 }
+				}
+				hidden_effect = {
+					set_global_variable = { name = nesnd_xq_expel_result value = 2 }
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				has_law_or_variant = law_type:law_state_religion
+				religion = { NOT = { has_discrimination_trait = heritage_christian } }
+			}
+			value = 50
+		}
+	}
+}

@@ -1,0 +1,57 @@
+﻿nesnd_settle_aixue_purchase = {
+	add_modifier = {
+		name = alaska_usa_big_money
+		months = 12
+	}
+	scope:alaska_seller = {
+		set_variable = successful_sale_of_alaska
+		add_modifier = {
+			name = alaska_rus_big_money
+			months = 12
+			is_decaying = no
+		}
+	}
+	if = {
+		limit = {
+			exists = c:ALK
+			c:ALK = { is_subject_of = scope:alaska_seller }
+		}
+		c:ALK = {
+			save_scope_as = aixue_company_country
+			owning_company ?= {
+				if = {
+					limit = { is_company_type = company_type:company_russian_american_company }
+					save_scope_as = aixue_company
+				}
+			}
+		}
+	}
+	sr:region_pacific_coast = {
+	    every_scope_state = {
+	        limit = { nesnd_is_aixue_state = yes nesnd_aixue_sellers_land = yes }
+	        state_region = {
+	            if = {
+	                limit = { scope:alaska_seller = { has_claim = prev } }
+	                remove_claim = scope:alaska_seller
+	            }
+	            add_claim = scope:alaska_buyer
+	        }
+	        set_state_owner = scope:alaska_buyer
+	    }
+	}
+	scope:aixue_company ?= {
+		if = {
+			limit = { exists = c:ALK }
+			remove_owned_country = c:ALK
+		}
+		owner ?= { remove_company = prev.type }
+	}
+	if = {
+		limit = { exists = c:ALK exists = scope:aixue_company_country }
+		scope:alaska_seller = { annex = c:ALK }
+	}
+	change_relations = {
+		country = scope:alaska_seller
+		value = 10
+	}
+}

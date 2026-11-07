@@ -1,0 +1,357 @@
+﻿# 唐衣大食第②批效果。
+nesnd_per_faith_init = {
+    if = { limit = { NOT = { has_variable = nesnd_per_faith_started } }
+        set_variable = nesnd_per_faith_started
+        # 开局国教定为逊尼（作者设定，开局为逊尼）。
+        if = { limit = { NOT = { country_has_state_religion = rel:sunni } } set_state_religion = rel:sunni }
+        set_variable = { name = nesnd_per_rep_shia_idx value = 0 }
+        set_variable = { name = nesnd_per_rep_sunni_idx value = 0 }
+        set_variable = { name = nesnd_per_rep_buddhist_idx value = 0 }
+        set_variable = { name = nesnd_per_rep_mandate_idx value = 0 }
+    }
+}
+# 月度：三教影响力写入变量，份额写入三条进度条，算出转化速度与国教代价。须在日志 scope 内调用。
+# 第三教为佛门或天命说（nesnd_per_third_is_mandate），其影响力另存一份到 nesnd_per_inf_third_v 供比较。
+nesnd_per_faith_measure = {
+    # 三教并立：教士集团不用原版按国教起的名字（什叶派乌理玛等），改称「三教宗师」。
+    ig:ig_devout ?= { set_interest_group_name = ig_nesnd_per_clergy }
+    set_variable = { name = nesnd_per_inf_shia_v value = nesnd_per_inf_shia }
+    set_variable = { name = nesnd_per_inf_sunni_v value = nesnd_per_inf_sunni }
+    if = { limit = { nesnd_per_third_is_mandate = yes }
+        set_variable = { name = nesnd_per_inf_mandate_v value = nesnd_per_inf_mandate }
+        set_variable = { name = nesnd_per_inf_third_v value = var:nesnd_per_inf_mandate_v }
+        if = { limit = { has_variable = nesnd_per_inf_buddhist_v } remove_variable = nesnd_per_inf_buddhist_v }
+    }
+    else = {
+        set_variable = { name = nesnd_per_inf_buddhist_v value = nesnd_per_inf_buddhist }
+        set_variable = { name = nesnd_per_inf_third_v value = var:nesnd_per_inf_buddhist_v }
+        if = { limit = { has_variable = nesnd_per_inf_mandate_v } remove_variable = nesnd_per_inf_mandate_v }
+    }
+    set_variable = {
+        name = nesnd_per_inf_total_v
+        value = { value = var:nesnd_per_inf_shia_v add = var:nesnd_per_inf_sunni_v add = var:nesnd_per_inf_third_v min = 0.01 }
+    }
+    scope:journal_entry ?= { set_bar_progress = { name = nesnd_per_faith_shia_bar value = { value = root.var:nesnd_per_inf_shia_v divide = root.var:nesnd_per_inf_total_v multiply = 100 } } }
+    scope:journal_entry ?= { set_bar_progress = { name = nesnd_per_faith_sunni_bar value = { value = root.var:nesnd_per_inf_sunni_v divide = root.var:nesnd_per_inf_total_v multiply = 100 } } }
+    if = { limit = { nesnd_per_third_is_mandate = yes }
+        scope:journal_entry ?= { set_bar_progress = { name = nesnd_per_faith_mandate_bar value = { value = root.var:nesnd_per_inf_third_v divide = root.var:nesnd_per_inf_total_v multiply = 100 } } }
+    }
+    else = {
+        scope:journal_entry ?= { set_bar_progress = { name = nesnd_per_faith_buddhist_bar value = { value = root.var:nesnd_per_inf_third_v divide = root.var:nesnd_per_inf_total_v multiply = 100 } } }
+    }
+    # 最高与次高（script value 中 min 是下限，故 “value = a min = b” 得 a、b 中较大者）。
+    set_variable = { name = nesnd_per_inf_top_v value = { value = var:nesnd_per_inf_shia_v min = var:nesnd_per_inf_sunni_v min = var:nesnd_per_inf_third_v } }
+    if = { limit = { nesnd_per_faith_is_top = { FAITH = shia } }
+        set_variable = { name = nesnd_per_inf_second_v value = { value = var:nesnd_per_inf_sunni_v min = var:nesnd_per_inf_third_v } }
+    }
+    else_if = { limit = { nesnd_per_faith_is_top = { FAITH = sunni } }
+        set_variable = { name = nesnd_per_inf_second_v value = { value = var:nesnd_per_inf_shia_v min = var:nesnd_per_inf_third_v } }
+    }
+    else = {
+        set_variable = { name = nesnd_per_inf_second_v value = { value = var:nesnd_per_inf_shia_v min = var:nesnd_per_inf_sunni_v } }
+    }
+    set_variable = { name = nesnd_per_faith_conv_speed_v value = nesnd_per_faith_conv_speed }
+    # 国教排名代价：最高 0，第二 1，第三 2；国教不在三教之列也按 2。
+    set_variable = { name = nesnd_per_faith_penalty_v value = 2 }
+    if = { limit = { country_has_state_religion = rel:shiite }
+        nesnd_per_faith_rank_penalty = { FAITH = shia }
+    }
+    else_if = { limit = { country_has_state_religion = rel:sunni }
+        nesnd_per_faith_rank_penalty = { FAITH = sunni }
+    }
+    else_if = { limit = { country_has_state_religion = rel:mahayana nesnd_per_third_is_mandate = no }
+        nesnd_per_faith_rank_penalty = { FAITH = buddhist }
+    }
+    else_if = { limit = { country_has_state_religion = rel:kaimeng_confucianism nesnd_per_third_is_mandate = yes }
+        nesnd_per_faith_rank_penalty = { FAITH = mandate }
+    }
+}
+nesnd_per_faith_rank_penalty = {
+    if = { limit = { nesnd_per_faith_is_top = { FAITH = $FAITH$ } } set_variable = { name = nesnd_per_faith_penalty_v value = 0 } }
+    else_if = { limit = { nesnd_per_faith_is_bottom = { FAITH = $FAITH$ } } set_variable = { name = nesnd_per_faith_penalty_v value = 2 } }
+    else = { set_variable = { name = nesnd_per_faith_penalty_v value = 1 } }
+}
+# 转化：影响力最高的宗教，在另几教信众最多的州里改宗其 5%（佛门、天命说两教的信众都算在内）。
+nesnd_per_faith_convert = {
+    if = { limit = { nesnd_per_faith_is_top = { FAITH = shia } } nesnd_per_faith_convert_to = { FAITH = shia REL = shiite } }
+    else_if = { limit = { nesnd_per_faith_is_top = { FAITH = sunni } } nesnd_per_faith_convert_to = { FAITH = sunni REL = sunni } }
+    else_if = { limit = { nesnd_per_faith_is_top = { FAITH = buddhist } } nesnd_per_faith_convert_to = { FAITH = buddhist REL = mahayana } }
+    else_if = { limit = { nesnd_per_faith_is_top = { FAITH = mandate } } nesnd_per_faith_convert_to = { FAITH = mandate REL = kaimeng_confucianism } }
+    if = { limit = { exists = scope:nesnd_per_faith_conv_state } trigger_event = { id = nesnd_per_faith.1 } }
+}
+nesnd_per_faith_convert_to = {
+    if = { limit = { any_scope_state = { any_scope_pop = { nesnd_per_faith_pop = yes NOT = { has_pop_religion = $REL$ } } } }
+        ordered_scope_state = {
+            limit = { any_scope_pop = { nesnd_per_faith_pop = yes NOT = { has_pop_religion = $REL$ } } }
+            order_by = state_population
+            max = 1
+            every_scope_pop = {
+                limit = { nesnd_per_faith_pop = yes NOT = { has_pop_religion = $REL$ } }
+                change_pop_religion = { target = rel:$REL$ value = 0.05 }
+            }
+            save_scope_as = nesnd_per_faith_conv_state
+        }
+        set_variable = { name = nesnd_per_faith_last_faith value = flag:$FAITH$ }
+    }
+}
+# 天命说传道：传道条满时，在传道对象最多的州改信。唐人佛门、什叶、逊尼改 25%；天命说为国教时同州非唐人什叶、逊尼另改 30%。
+nesnd_per_mandate_preach = {
+    if = { limit = { any_scope_state = { any_scope_pop = { nesnd_per_preach_tang_pop = yes total_size >= 5000 } } }
+        ordered_scope_state = {
+            limit = { any_scope_pop = { nesnd_per_preach_tang_pop = yes total_size >= 5000 } }
+            order_by = nesnd_per_preach_score
+            max = 1
+            every_scope_pop = {
+                limit = { nesnd_per_preach_tang_pop = yes }
+                change_pop_religion = { target = rel:kaimeng_confucianism value = 0.25 }
+            }
+            if = { limit = { owner = { country_has_state_religion = rel:kaimeng_confucianism } }
+                every_scope_pop = {
+                    limit = { nesnd_per_preach_other_pop = yes }
+                    change_pop_religion = { target = rel:kaimeng_confucianism value = 0.3 }
+                }
+            }
+            save_scope_as = nesnd_per_faith_conv_state
+        }
+        set_variable = { name = nesnd_per_faith_last_faith value = flag:preach }
+        trigger_event = { id = nesnd_per_faith.1 }
+    }
+}
+# 讲堂：向东断交或与西秦交战时，每年荒废一座。
+nesnd_per_mandate_halls_decay = {
+    if = { limit = { has_variable = nesnd_per_mandate_halls NOT = { nesnd_per_qin_ties = yes } }
+        change_variable = { name = nesnd_per_mandate_halls add = -0.0834 }
+        if = { limit = { var:nesnd_per_mandate_halls <= 0 } remove_variable = nesnd_per_mandate_halls }
+    }
+}
+# 代表人物：在任者去世或离国时，按链条接续；链条用尽或下一位尚未出道时，生成同宗教的继任者。
+nesnd_per_rep_fill_shia = {
+    if = { limit = { NOT = { nesnd_per_rep_valid = { SLOT = shia } } }
+        remove_variable = nesnd_per_rep_shia
+        clear_saved_scope = nesnd_per_new_rep
+        if = { limit = { nesnd_per_rep_index_at_most = { SLOT = shia MAX_INDEX = 0 } game_date >= 1836.1.1 }
+            create_character = { template = nesnd_per_rep_shafti save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_shia_idx value = 1 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = shia MAX_INDEX = 1 } game_date >= 1836.1.1 }
+            create_character = { template = nesnd_per_rep_ansari save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_shia_idx value = 2 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = shia MAX_INDEX = 2 } game_date >= 1845.1.1 }
+            create_character = { template = nesnd_per_rep_shirazi save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_shia_idx value = 3 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = shia MAX_INDEX = 3 } game_date >= 1870.1.1 }
+            create_character = { template = nesnd_per_rep_khorasani save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_shia_idx value = 4 }
+        }
+        else = {
+            create_character = {
+                culture = cu:persian
+                religion = rel:shiite
+                interest_group = ig_intelligentsia
+                ideology = ideology_traditionalist
+                age = 50
+                save_scope_as = nesnd_per_new_rep
+            }
+        }
+        if = { limit = { exists = scope:nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_shia value = scope:nesnd_per_new_rep }
+            # 标记代表人物：服装规则据此给教士服（gfx/portraits/portrait_modifiers/nesnd_per_faith_clothes.txt）。
+            scope:nesnd_per_new_rep = { set_variable = nesnd_per_faith_rep change_character_religion = rel:shiite }
+        }
+    }
+}
+# 代表人物：在任者去世或离国时，按链条接续；链条用尽或下一位尚未出道时，生成同宗教的继任者。
+nesnd_per_rep_fill_sunni = {
+    if = { limit = { NOT = { nesnd_per_rep_valid = { SLOT = sunni } } }
+        remove_variable = nesnd_per_rep_sunni
+        clear_saved_scope = nesnd_per_new_rep
+        if = { limit = { nesnd_per_rep_index_at_most = { SLOT = sunni MAX_INDEX = 0 } game_date >= 1836.1.1 }
+            create_character = { template = nesnd_per_rep_mahmud_alusi save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_sunni_idx value = 1 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = sunni MAX_INDEX = 1 } game_date >= 1850.1.1 }
+            create_character = { template = nesnd_per_rep_ubeydullah save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_sunni_idx value = 2 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = sunni MAX_INDEX = 2 } game_date >= 1860.1.1 }
+            create_character = { template = nesnd_per_rep_numan_alusi save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_sunni_idx value = 3 }
+        }
+        else = {
+            create_character = {
+                culture = cu:kurdish
+                religion = rel:sunni
+                interest_group = ig_intelligentsia
+                ideology = ideology_traditionalist
+                age = 50
+                save_scope_as = nesnd_per_new_rep
+            }
+        }
+        if = { limit = { exists = scope:nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_sunni value = scope:nesnd_per_new_rep }
+            # 标记代表人物：服装规则据此给教士服（gfx/portraits/portrait_modifiers/nesnd_per_faith_clothes.txt）。
+            scope:nesnd_per_new_rep = { set_variable = nesnd_per_faith_rep change_character_religion = rel:sunni }
+        }
+    }
+}
+# 代表人物：在任者去世或离国时，按链条接续；链条用尽或下一位尚未出道时，生成同宗教的继任者。
+nesnd_per_rep_fill_buddhist = {
+    if = { limit = { NOT = { nesnd_per_rep_valid = { SLOT = buddhist } } }
+        remove_variable = nesnd_per_rep_buddhist
+        clear_saved_scope = nesnd_per_new_rep
+        if = { limit = { nesnd_per_rep_index_at_most = { SLOT = buddhist MAX_INDEX = 0 } game_date >= 1836.1.1 }
+            create_character = { template = nesnd_per_rep_fazhao save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_buddhist_idx value = 1 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = buddhist MAX_INDEX = 1 } game_date >= 1840.1.1 }
+            create_character = { template = nesnd_per_rep_yuantong save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_buddhist_idx value = 2 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = buddhist MAX_INDEX = 2 } game_date >= 1865.1.1 }
+            create_character = { template = nesnd_per_rep_zhicheng save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_buddhist_idx value = 3 }
+        }
+        else = {
+            create_character = {
+                culture = cu:ce_xiyu
+                religion = rel:mahayana
+                interest_group = ig_intelligentsia
+                ideology = ideology_traditionalist
+                age = 50
+                save_scope_as = nesnd_per_new_rep
+            }
+        }
+        if = { limit = { exists = scope:nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_buddhist value = scope:nesnd_per_new_rep }
+            # 标记代表人物：服装规则据此给教士服（gfx/portraits/portrait_modifiers/nesnd_per_faith_clothes.txt）。
+            scope:nesnd_per_new_rep = { set_variable = nesnd_per_faith_rep change_character_religion = rel:mahayana }
+        }
+    }
+}
+# 天命说代表人物：三位自创西秦经师（待作者定名），链尽生成老秦文化继任者。
+# 服装不另设：本 MOD 的 EACR 给本国政治人物明式朝服，正合儒士。
+nesnd_per_rep_fill_mandate = {
+    if = { limit = { NOT = { nesnd_per_rep_valid = { SLOT = mandate } } }
+        remove_variable = nesnd_per_rep_mandate
+        clear_saved_scope = nesnd_per_new_rep
+        if = { limit = { nesnd_per_rep_index_at_most = { SLOT = mandate MAX_INDEX = 0 } game_date >= 1836.1.1 }
+            create_character = { template = nesnd_per_rep_han_shouzheng save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_mandate_idx value = 1 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = mandate MAX_INDEX = 1 } game_date >= 1845.1.1 }
+            create_character = { template = nesnd_per_rep_zhao_jingzhi save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_mandate_idx value = 2 }
+        }
+        else_if = { limit = { nesnd_per_rep_index_at_most = { SLOT = mandate MAX_INDEX = 2 } game_date >= 1865.1.1 }
+            create_character = { template = nesnd_per_rep_wang_mingde save_scope_as = nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_mandate_idx value = 3 }
+        }
+        else = {
+            create_character = {
+                culture = cu:ce_laoqin
+                religion = rel:kaimeng_confucianism
+                interest_group = ig_intelligentsia
+                ideology = ideology_traditionalist
+                age = 50
+                save_scope_as = nesnd_per_new_rep
+            }
+        }
+        if = { limit = { exists = scope:nesnd_per_new_rep }
+            set_variable = { name = nesnd_per_rep_mandate value = scope:nesnd_per_new_rep }
+            scope:nesnd_per_new_rep = { set_variable = nesnd_per_faith_rep change_character_religion = rel:kaimeng_confucianism }
+        }
+    }
+}
+# 年度复核只处理仍在本国的现任代表。旧档人物先转入知识分子，再核对本派信仰。
+nesnd_per_rep_keep_faith = {
+    if = { limit = { nesnd_per_rep_valid = { SLOT = $SLOT$ } }
+        var:nesnd_per_rep_$SLOT$ = {
+            if = { limit = { NOT = { interest_group = owner.ig:ig_intelligentsia } }
+                set_interest_group = owner.ig:ig_intelligentsia
+            }
+            if = { limit = { NOT = { religion = rel:$REL$ } } change_character_religion = rel:$REL$ }
+        }
+    }
+}
+nesnd_per_rep_fill_all = {
+    nesnd_per_rep_fill_shia = yes
+    nesnd_per_rep_fill_sunni = yes
+    # 天命说代表人物只在唐人执政时有；伊朗人上台后作废，界面该栏留空。
+    if = { limit = { nesnd_per_third_is_mandate = yes }
+        if = { limit = { nesnd_per_tang_regime = yes } nesnd_per_rep_fill_mandate = yes }
+    }
+    else = { nesnd_per_rep_fill_buddhist = yes }
+}
+
+# 唐人团结度：月度文化转换（中华统治者为正向，伊朗系统治者为反向）。
+nesnd_per_unity_effects = {
+    if = { limit = { has_variable = nesnd_per_unity }
+        if = { limit = { nesnd_per_ruler_counts_as_chinese = yes }
+            if = { limit = { var:nesnd_per_unity > 75 }
+                every_scope_state = {
+                    limit = { any_scope_pop = { has_pop_culture = ce_xiyu } }
+                    every_scope_pop = {
+                        limit = { nesnd_per_unity_convertible_pop = yes }
+                        change_pop_culture = { target = cu:ce_xiyu value = 0.001 }
+                    }
+                }
+                every_scope_state = {
+                    every_scope_pop = {
+                        limit = { has_pop_culture = ce_xiyu }
+                        change_pop_culture = { target = cu:ce_laoqin value = 0.0005 }
+                    }
+                }
+                # 选了天命说：入老秦者随老秦奉天命说。
+                if = { limit = { nesnd_per_third_is_mandate = yes }
+                    every_scope_state = {
+                        every_scope_pop = {
+                            limit = { has_pop_culture = ce_laoqin NOT = { has_pop_religion = kaimeng_confucianism } }
+                            change_pop_religion = { target = rel:kaimeng_confucianism value = 0.01 }
+                        }
+                    }
+                }
+            }
+            else_if = { limit = { var:nesnd_per_unity < 40 any_scope_state = { nesnd_per_unity_decay_state = yes } }
+                random_list = {
+                    85 = { }
+                    15 = {
+                        random_scope_state = {
+                            limit = { nesnd_per_unity_decay_state = yes }
+                            save_scope_as = nesnd_per_unity_state
+                        }
+                        trigger_event = { id = nesnd_per_unity.1 popup = yes }
+                    }
+                }
+            }
+        }
+        else = {
+            if = { limit = { var:nesnd_per_unity > 75 }
+                every_scope_state = {
+                    limit = { any_scope_pop = { nesnd_per_unity_iranian_target_pop = yes } }
+                    random_scope_pop = {
+                        limit = { nesnd_per_unity_iranian_target_pop = yes }
+                        culture = { save_temporary_scope_as = nesnd_per_unity_target_culture }
+                    }
+                    every_scope_pop = {
+                        limit = { has_pop_culture = ce_xiyu }
+                        change_pop_culture = { target = scope:nesnd_per_unity_target_culture value = 0.001 }
+                    }
+                }
+            }
+            else_if = { limit = { var:nesnd_per_unity < 40 any_scope_state = { nesnd_per_unity_revival_state = yes } }
+                random_list = {
+                    85 = { }
+                    15 = {
+                        random_scope_state = {
+                            limit = { nesnd_per_unity_revival_state = yes }
+                            save_scope_as = nesnd_per_unity_state
+                        }
+                        trigger_event = { id = nesnd_per_unity.2 popup = yes }
+                    }
+                }
+            }
+        }
+    }
+}

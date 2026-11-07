@@ -1,0 +1,29 @@
+﻿on_state_owner_change = { on_actions = { nesnd_court_territory_changed } }
+on_state_created = { on_actions = { nesnd_court_territory_changed } }
+
+nesnd_court_territory_changed = {
+    trigger = {
+        nesnd_court_metropolitan = yes
+        OR = {
+            has_variable = nesnd_court_start_levels
+            has_modifier = nesnd_court_paris_works
+            has_modifier = nesnd_court_paris_outflow
+            has_modifier = nesnd_court_provincial_works
+            c:FRA ?= { has_variable = nesnd_court_in_session }
+        }
+    }
+    effect = {
+        nesnd_court_clear_works = yes
+        # A split or merge can notify the other state in this region. Retire
+        # the entire region's comparison, including equal-size exchanges.
+        state_region = {
+            every_scope_state = {
+                limit = { has_variable = nesnd_court_start_levels }
+                nesnd_court_drop_sample = yes
+            }
+        }
+        c:FRA ?= {
+            if = { limit = { has_variable = nesnd_court_in_session } nesnd_court_refresh_states = yes }
+        }
+    }
+}

@@ -1,0 +1,62 @@
+﻿nesnd_is_aixue_state = {
+    OR = {
+        state_region = s:STATE_ALASKA
+        state_region = s:STATE_SHUOHAI
+        state_region = s:STATE_LINMANG_AIXUE
+    }
+}
+
+nesnd_aixue_buyer_controls_state = {
+    OR = {
+        owner = root
+        owner = {
+            is_subject_of = root
+            capital = { nesnd_is_aixue_state = yes }
+        }
+    }
+}
+
+nesnd_aixue_sellers_land = {
+    OR = {
+        owner = scope:alaska_seller
+        owner = { is_subject_of = scope:alaska_seller }
+    }
+}
+
+nesnd_aixue_offer_candidate = {
+    nesnd_is_aixue_state = yes
+    owner = {
+        NOT = { this = root }
+        NOT = { is_country_type = decentralized }
+        NAND = { is_subject_of = root capital = { nesnd_is_aixue_state = yes } }
+        relations:root >= 0
+        OR = {
+            custom_tooltip = {
+                text = unfriendly_nation_with_interest_in_alaska_tt
+                any_country = {
+                    country_rank >= prev.country_rank
+                    NOT = { this = prev }
+                    has_interest_marker_in_region = sr:region_pacific_coast
+                    relations:prev < relations_threshold:cordial
+                }
+            }
+            scaled_debt > 0
+        }
+    }
+}
+
+nesnd_controls_aixue = {
+    sr:region_pacific_coast = {
+        any_scope_state = {
+            nesnd_is_aixue_state = yes
+            nesnd_aixue_buyer_controls_state = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_is_aixue_state = yes
+                NOT = { nesnd_aixue_buyer_controls_state = yes }
+                owner = { NOT = { is_country_type = decentralized } }
+            }
+        }
+    }
+}

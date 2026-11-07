@@ -39,6 +39,27 @@ nesnd_supply_livelihood_ready = {
     }
     capital.market = { mg:grain = { market_goods_pricier <= 0.25 NOT = { country_has_local_shortage = root } } }
 }
+nesnd_supply_can_dispatch_envoy = {
+    custom_tooltip = {
+        text = nesnd_supply_no_pending_envoy_tt
+        NOT = { has_variable = nesnd_supply_pending }
+    }
+    custom_tooltip = {
+        text = nesnd_supply_no_partner_tt
+        NOT = { has_variable = nesnd_supply_partner }
+    }
+    custom_tooltip = {
+        text = nesnd_supply_envoy_interval_tt
+        NOT = { has_variable = nesnd_supply_cooldown }
+    }
+    hidden_trigger = {
+        OR = {
+            is_ai = no
+            NOT = { has_variable = nesnd_supply_self_reliance }
+        }
+    }
+}
+
 nesnd_supply_partner_valid = {
     trigger_if = {
         limit = {
@@ -81,14 +102,17 @@ nesnd_supply_partner_valid = {
     }
 }
 nesnd_supply_diplomacy_ready = {
-    OR = {
-        trigger_if = { limit = { exists = capital.market } capital.market = { participants >= 2 } } trigger_else = { always = no }
-        has_variable = nesnd_supply_self_reliance
-        nesnd_supply_partner_valid = yes
+    custom_tooltip = {
+        text = nesnd_supply_commercial_arrangement_tt
+        OR = {
+            trigger_if = { limit = { exists = capital.market } capital.market = { participants >= 2 } } trigger_else = { always = no }
+            has_variable = nesnd_supply_self_reliance
+            nesnd_supply_partner_valid = yes
+        }
     }
 }
 nesnd_supply_all_ready = {
-    has_variable = nesnd_supply_workforce_metrics_v1
+    hidden_trigger = { has_variable = nesnd_supply_workforce_metrics_v1 }
     is_at_war = no
     NOT = { has_modifier = declared_bankruptcy }
     nesnd_supply_inputs_ready = yes

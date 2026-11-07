@@ -1,4 +1,4 @@
-# Issue tracker: Local Markdown
+﻿# Issue tracker: Local Markdown
 
 本项目继续使用本地 Markdown 管理任务。GitHub 用于源码与版本保存。目前不自动创建 GitHub Issues、PR 请求队列或外部评论。
 
@@ -26,6 +26,18 @@
 讨论追加到 `## Comments`，最终交付记入 `## Result`。仅由规划分析产生的 bug 线索，先记未核验，不伪称已复现。
 
 技能要求“发布到任务跟踪器”时按上述位置建文件。要求“获取任务”时按路径或当前 effort 编号读取。使用 triage 技能时保留其 AI 分诊标注及类别/状态要求。
+
+## 篇幅
+
+任务文件是给作者读的，控制在一页以内（约 60 行），顶部字段之后固定五段：
+
+1. 现象与期望（作者原话）
+2. 原因（几句话，指到 文件:行）
+3. 改了什么（每个文件一句）
+4. 怎么复测
+5. 遗留问题
+
+日志副本、SHA、解析与检查细节放 WORK/reports/<任务>/，任务文件里只给链接。
 
 ## Wayfinding operations
 

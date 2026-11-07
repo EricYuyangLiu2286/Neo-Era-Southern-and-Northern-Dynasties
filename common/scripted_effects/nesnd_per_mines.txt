@@ -1,0 +1,35 @@
+﻿# 唐衣大食第④批：经济线「大食的矿冶」（任务65）。
+
+# 阶段结束：本阶段的利权选择作废（下一阶段重新选）。
+nesnd_per_mines_stage_end = {
+    if = { limit = { has_variable = nesnd_per_concession } remove_variable = nesnd_per_concession }
+    if = { limit = { has_modifier = nesnd_per_concession_tang } remove_modifier = nesnd_per_concession_tang }
+}
+
+# 阶段奖励 10 年；「波斯之忧」≥ 70 时减半。MOD = nesnd_per_mines_boom / nesnd_per_steel_belt / nesnd_per_gulf_oil。
+nesnd_per_mines_reward = {
+    if = { limit = { nesnd_per_mines_reward_halved = yes } add_modifier = { name = $MOD$_half months = 120 } }
+    else = { add_modifier = { name = $MOD$ months = 120 } }
+}
+
+# 罢工事件的目标州：伊朗诸州中有矿场者，取人口最多。
+nesnd_per_mines_pick_mine_state = {
+    ordered_scope_state = {
+        limit = { nesnd_per_iranian_state = yes any_scope_building = { is_building_group = bg_mining } }
+        order_by = state_population
+        max = 1
+        save_scope_as = nesnd_per_mines_state
+    }
+}
+# 破坏事件的目标州：伊朗诸州中有铁路或油井者，取人口最多。
+nesnd_per_mines_pick_rail_state = {
+    ordered_scope_state = {
+        limit = {
+            nesnd_per_iranian_state = yes
+            any_scope_building = { OR = { is_building_type = building_railway is_building_type = building_oil_rig } }
+        }
+        order_by = state_population
+        max = 1
+        save_scope_as = nesnd_per_mines_state
+    }
+}

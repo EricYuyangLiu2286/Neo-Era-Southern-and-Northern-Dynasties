@@ -1,5 +1,5 @@
 ﻿nesnd_per_future_journal = {
-    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
+    icon = "gfx/interface/icons/ideology_icons/frontier_expansionist.dds"
     group = je_group_historical_content
     activation_description = { always = yes }
     can_revolution_inherit = yes
@@ -43,46 +43,6 @@
     }
 
 }
-nesnd_per_civil_journal = {
-    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
-    group = je_group_historical_content
-    activation_description = { always = yes }
-    can_revolution_inherit = yes
-    is_shown_when_inactive = { always = no }
-    possible = { always = no }
-    should_be_pinned_by_default_uninvolved_or_context = yes
-    weight = 1000
-
-    scripted_button = nesnd_per_civil_commit_button
-    outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { always = yes }
-    	effect = { if = { limit = { has_modifier = nesnd_per_civil_order } remove_modifier = nesnd_per_civil_order } }
-    }
-    on_monthly_pulse = { effect = { } }
-
-}
-nesnd_per_economy_journal = {
-    icon = "gfx/interface/icons/invention_icons/egalitarianism.dds"
-    group = je_group_historical_content
-    activation_description = { always = yes }
-    can_revolution_inherit = yes
-    is_shown_when_inactive = { always = no }
-    possible = { always = no }
-    should_be_pinned_by_default_uninvolved_or_context = yes
-    weight = 1000
-
-    scripted_button = nesnd_per_economy_commit_button
-    outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { always = yes }
-    	effect = { if = { limit = { has_modifier = nesnd_per_industry_order } remove_modifier = nesnd_per_industry_order } }
-    }
-    on_monthly_pulse = { effect = { } }
-
-}
 nesnd_per_west_journal = {
     immediate = { nesnd_per_resources_initialize = yes scope:journal_entry ?= { set_bar_progress = { name = nesnd_per_claim_resource_bar value = owner.nesnd_per_claim_points } } }
     scripted_progress_bar = nesnd_per_claim_resource_bar
@@ -91,8 +51,9 @@ nesnd_per_west_journal = {
     group = je_group_historical_content
     activation_description = { always = yes }
     can_revolution_inherit = yes
-    is_shown_when_inactive = { nesnd_per_west_eligible = yes }
-    possible = { nesnd_per_west_eligible = yes }
+    # nesnd_per_ensure_frontier adds this journal when the western route opens.
+    is_shown_when_inactive = { always = no }
+    possible = { always = no }
     should_be_pinned_by_default_uninvolved_or_context = yes
     weight = 1000
     scripted_button = nesnd_per_claim_adana_button
@@ -113,6 +74,38 @@ nesnd_per_west_journal = {
     scripted_button = nesnd_per_claim_hedjaz_button
     scripted_button = nesnd_per_claim_hail_button
     scripted_button = nesnd_per_claim_nejd_button
+    # 完成：取得全部可宣称的远西土地（各按钮对应的 18 个地区全部归本国）。任务65。
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_per_west_complete_conclusion
+        trigger = {
+            nesnd_per_west_eligible = yes
+            owns_entire_state_region = STATE_ADANA
+            owns_entire_state_region = STATE_DIYARBAKIR
+            owns_entire_state_region = STATE_DEIR_EZ_ZOR
+            owns_entire_state_region = STATE_TRANSJORDAN
+            owns_entire_state_region = STATE_PALESTINE
+            owns_entire_state_region = STATE_LEBANON
+            owns_entire_state_region = STATE_SYRIA
+            owns_entire_state_region = STATE_ALEPPO
+            owns_entire_state_region = STATE_SINAI
+            owns_entire_state_region = STATE_LOWER_EGYPT
+            owns_entire_state_region = STATE_MIDDLE_EGYPT
+            owns_entire_state_region = STATE_UPPER_EGYPT
+            owns_entire_state_region = STATE_OMAN
+            owns_entire_state_region = STATE_ABU_DHABI
+            owns_entire_state_region = STATE_YEMEN
+            owns_entire_state_region = STATE_HEDJAZ
+            owns_entire_state_region = STATE_HAIL
+            owns_entire_state_region = STATE_NEJD
+        }
+        effect = {
+            set_variable = nesnd_per_west_realized
+            trigger_event = { id = nesnd_per.8 popup = yes }
+        }
+    }
     outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header

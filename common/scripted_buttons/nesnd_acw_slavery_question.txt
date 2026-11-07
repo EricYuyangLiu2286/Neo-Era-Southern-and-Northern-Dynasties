@@ -1,0 +1,284 @@
+﻿# Task 58. USA buttons on je_acw_countdown; 东洲 buttons on nesnd_hus_west_lever.
+
+# ---- USA ----
+
+# Up to twice, 60 months apart, before 1866 (month 360).
+nesnd_acw_compromise = {
+    name = nesnd_acw_compromise
+    desc = nesnd_acw_compromise_desc
+    visible = { nesnd_acw_pre_abolition = yes }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_acw_compromise_uses_tt
+            trigger_if = { limit = { has_variable = nesnd_acw_compromise_uses } var:nesnd_acw_compromise_uses < 2 }
+        }
+        custom_tooltip = { text = nesnd_acw_compromise_cooldown_tt NOT = { has_variable = nesnd_acw_compromise_cooldown } }
+        custom_tooltip = {
+            text = nesnd_acw_compromise_deadline_tt
+            trigger_if = { limit = { has_variable = nesnd_acw_months } var:nesnd_acw_months < 360 }
+        }
+        NOT = { is_enacting_law = law_type:law_slavery_banned }
+        OR = {
+            custom_tooltip = {
+                text = nesnd_acw_coalition_tt
+                any_interest_group = { is_in_government = yes nesnd_acw_proslavery_ig = yes }
+                any_interest_group = { is_in_government = yes nesnd_acw_abolitionist_ig = yes }
+            }
+            legitimacy >= 50
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_acw_compromise_effect_tt
+        add_modifier = { name = nesnd_acw_compromise_cost months = 12 }
+        hidden_effect = {
+            if = {
+                limit = { has_variable = nesnd_acw_compromise_uses }
+                change_variable = { name = nesnd_acw_compromise_uses add = 1 }
+            }
+            else = { set_variable = { name = nesnd_acw_compromise_uses value = 1 } }
+            set_variable = { name = nesnd_acw_compromise_cooldown months = 60 }
+            set_variable = { name = nesnd_acw_compromise_active months = 24 }
+            set_variable = { name = nesnd_acw_once_compromise value = -8 }
+            every_interest_group = {
+                limit = { OR = { nesnd_acw_proslavery_ig = yes nesnd_acw_abolitionist_ig = yes } }
+                save_temporary_scope_as = nesnd_acw_compromise_ig
+                root = { add_radicals = { value = 0.03 interest_group = scope:nesnd_acw_compromise_ig } }
+            }
+        }
+    }
+    ai_chance = {
+        value = 0
+        if = { limit = { has_variable = nesnd_acw_bar var:nesnd_acw_bar >= 70 } value = 20 }
+    }
+}
+
+# Only while 东洲 shelters escapees.
+nesnd_acw_hunt = {
+    name = nesnd_acw_hunt
+    desc = nesnd_acw_hunt_desc
+    visible = {
+        nesnd_acw_pre_abolition = yes
+        c:HUS ?= { has_variable = nesnd_hus_west_open }
+    }
+    possible = {
+        custom_tooltip = { text = nesnd_acw_hunt_active_tt NOT = { has_variable = nesnd_acw_hunt_active } }
+    }
+    effect = {
+        custom_tooltip = nesnd_acw_hunt_effect_tt
+        hidden_effect = { set_variable = { name = nesnd_acw_hunt_active months = 60 } }
+    }
+    ai_chance = {
+        value = 0
+        if = { limit = { has_variable = nesnd_acw_bar var:nesnd_acw_bar < 80 } value = 30 }
+    }
+}
+
+# Once per game, while abolition is being enacted or within five years after it.
+# Costs one year of income. The AI only pays from reserves of at least 1.5 years' income.
+nesnd_acw_buyout = {
+    name = nesnd_acw_buyout
+    desc = nesnd_acw_buyout_desc
+    visible = {
+        NOT = { has_global_variable = nesnd_acw_buyout_used }
+        OR = {
+            is_enacting_law = law_type:law_slavery_banned
+            AND = {
+                has_law_or_variant = law_type:law_slavery_banned
+                has_variable = nesnd_acw_abolished_months
+                var:nesnd_acw_abolished_months < 60
+            }
+        }
+    }
+    possible = {
+        NOT = { has_variable = nesnd_acw_crisis }
+        in_default = no
+    }
+    effect = {
+        custom_tooltip = nesnd_acw_buyout_cost_tt
+        add_treasury = { value = nesnd_acw_buyout_cost multiply = -1 }
+        ig:ig_landowners ?= { add_modifier = { name = nesnd_acw_buyout_landowners years = 10 } }
+        hidden_effect = {
+            set_global_variable = nesnd_acw_buyout_used
+            every_scope_state = {
+                limit = { nesnd_acw_southern_state = yes }
+                add_loyalists_in_state = { value = 0.15 pop_type = aristocrats }
+            }
+        }
+    }
+    ai_chance = {
+        value = 0
+        if = {
+            limit = {
+                in_default = no
+                gold_reserves >= nesnd_acw_buyout_ai_reserve
+            }
+            value = 50
+        }
+    }
+}
+
+# ---- 东洲 ----
+
+nesnd_hus_west_open = {
+    name = nesnd_hus_west_open
+    desc = nesnd_hus_west_open_desc
+    visible = { NOT = { has_variable = nesnd_hus_west_open } }
+    possible = {
+        custom_tooltip = { text = nesnd_hus_west_border_policy_tt NOT = { has_variable = nesnd_hus_west_policy_cooldown } }
+    }
+    effect = {
+        custom_tooltip = nesnd_hus_west_open_tt
+        hidden_effect = {
+            set_variable = nesnd_hus_west_open
+            set_variable = { name = nesnd_hus_west_policy_cooldown months = 24 }
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = { limit = { has_law_or_variant = law_type:law_slavery_banned } value = 60 }
+    }
+}
+
+nesnd_hus_west_close = {
+    name = nesnd_hus_west_close
+    desc = nesnd_hus_west_close_desc
+    visible = { has_variable = nesnd_hus_west_open }
+    possible = {
+        custom_tooltip = { text = nesnd_hus_west_border_policy_tt NOT = { has_variable = nesnd_hus_west_policy_cooldown } }
+    }
+    effect = {
+        custom_tooltip = nesnd_hus_west_close_tt
+        hidden_effect = {
+            remove_variable = nesnd_hus_west_open
+            set_variable = { name = nesnd_hus_west_policy_cooldown months = 24 }
+        }
+    }
+    ai_chance = { value = 0 }
+}
+
+# A quarter of income; 12 months.
+nesnd_hus_west_fund = {
+    name = nesnd_hus_west_fund
+    desc = nesnd_hus_west_fund_desc
+    visible = { always = yes }
+    possible = {
+        custom_tooltip = { text = nesnd_hus_west_fund_active_tt NOT = { has_variable = nesnd_hus_west_funding } }
+        c:USA ?= { nesnd_acw_pre_abolition = yes }
+        in_default = no
+    }
+    effect = {
+        custom_tooltip = nesnd_hus_west_fund_tt
+        add_treasury = { value = nesnd_hus_west_funding_cost multiply = -1 }
+        hidden_effect = { set_variable = { name = nesnd_hus_west_funding months = 12 } }
+    }
+    ai_chance = {
+        value = 0
+        if = {
+            limit = {
+                in_default = no
+                gold_reserves >= nesnd_hus_west_funding_cost
+                has_variable = nesnd_hus_west_open
+            }
+            value = 15
+        }
+    }
+}
+
+# Spends 50 claim pressure; six months between claims.
+nesnd_hus_west_claim = {
+    name = nesnd_hus_west_claim
+    desc = nesnd_hus_west_claim_desc
+    visible = { always = yes }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_hus_west_claim_bar_tt
+            trigger_if = { limit = { has_variable = nesnd_hus_west_bar } var:nesnd_hus_west_bar >= 50 }
+            trigger_else = { always = no }
+        }
+        custom_tooltip = { text = nesnd_hus_west_claim_cooldown_tt NOT = { has_variable = nesnd_hus_west_claim_cooldown } }
+        custom_tooltip = {
+            text = nesnd_hus_west_claim_candidate_tt
+            c:USA ?= { any_scope_state = { nesnd_hus_west_claim_candidate = yes } }
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_hus_west_claim_tt
+        hidden_effect = {
+            c:USA = {
+                ordered_scope_state = {
+                    limit = { nesnd_hus_west_claim_candidate = yes }
+                    order_by = state_population
+                    max = 1
+                    state_region = {
+                        add_claim = c:HUS
+                        c:HUS = { add_to_variable_list = { name = nesnd_hus_west_claims target = prev } }
+                    }
+                }
+            }
+            set_variable = { name = nesnd_hus_west_claim_cooldown months = 6 }
+            set_variable = { name = nesnd_hus_west_once_spent value = -50 }
+            change_relations = { country = c:USA value = -10 }
+        }
+    }
+    ai_chance = { value = 20 }
+}
+
+# Needs full pressure and a divided Union (civil war, or crisis bar at 80 or more).
+nesnd_hus_west_press = {
+    name = nesnd_hus_west_press
+    desc = nesnd_hus_west_press_desc
+    visible = { always = yes }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_hus_west_press_bar_tt
+            trigger_if = { limit = { has_variable = nesnd_hus_west_bar } var:nesnd_hus_west_bar >= 100 }
+            trigger_else = { always = no }
+        }
+        custom_tooltip = {
+            text = nesnd_hus_west_press_divided_tt
+            c:USA ?= {
+                OR = {
+                    has_journal_entry = je_acw_war
+                    AND = { has_variable = nesnd_acw_bar var:nesnd_acw_bar >= 80 }
+                }
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_hus_west_press_target_tt
+            c:USA ?= { any_scope_state = { nesnd_hus_west_press_candidate = yes } }
+        }
+        custom_tooltip = { text = nesnd_hus_west_press_cooldown_tt NOT = { has_variable = nesnd_hus_west_border_cooldown } }
+        is_at_war = no
+        is_diplomatic_play_committed_participant = no
+        hidden_trigger = { NOT = { has_variable = nesnd_hus_west_launching } }
+    }
+    effect = {
+        custom_tooltip = nesnd_hus_west_press_tt
+        hidden_effect = {
+            c:USA = {
+                ordered_scope_state = {
+                    limit = { nesnd_hus_west_press_candidate = yes }
+                    order_by = state_population
+                    max = 1
+                    save_scope_as = nesnd_hus_west_target
+                }
+            }
+            if = {
+                limit = { exists = scope:nesnd_hus_west_target }
+                set_variable = { name = nesnd_hus_west_launching days = 7 }
+                set_variable = { name = nesnd_hus_west_border_cooldown months = 24 }
+                set_variable = { name = nesnd_hus_west_once_spent value = -100 }
+                create_diplomatic_play = {
+                    name = nesnd_hus_west_confrontation
+                    type = dp_return_state
+                    target_country = c:USA
+                    target_state = scope:nesnd_hus_west_target
+                }
+            }
+        }
+    }
+    ai_chance = {
+        value = 0
+        if = { limit = { c:USA ?= { has_journal_entry = je_acw_war } } value = 30 }
+    }
+}

@@ -1,0 +1,71 @@
+﻿# Slavery question (je_acw_countdown replacement) and the 东洲 lever. Task 58.
+
+# COUNTRY scope (USA). Slavery still legal and no secession crisis under way.
+nesnd_acw_pre_abolition = {
+    NOT = { has_law_or_variant = law_type:law_slavery_banned }
+    NOT = { has_variable = nesnd_acw_crisis }
+}
+
+# STATE scope. Before abolition: slave states. After: the old South (Dixie homeland).
+nesnd_acw_southern_state = {
+    trigger_if = {
+        limit = { owner = { has_law_or_variant = law_type:law_slavery_banned } }
+        state_region = { is_homeland = cu:dixie }
+    }
+    trigger_else = { is_slave_state = yes }
+}
+
+# INTEREST GROUP scope.
+nesnd_acw_proslavery_ig = {
+    ig_counts_as_marginal = no
+    OR = {
+        has_ideology = ideology:ideology_pro_slavery
+        has_ideology = ideology:ideology_pro_slavery_colonial
+    }
+}
+nesnd_acw_abolitionist_ig = {
+    ig_counts_as_marginal = no
+    has_ideology = ideology:ideology_anti_slavery
+}
+
+# COUNTRY scope (HUS). The lever journal exists while the USA question or war is open.
+nesnd_hus_west_eligible = {
+    c:HUS ?= this
+    NOT = { has_variable = nesnd_hus_native_successor }
+    NOT = { has_variable = nesnd_hus_west_closed }
+    exists = c:USA
+    c:USA = { OR = { has_journal_entry = je_acw_countdown has_journal_entry = je_acw_war } }
+    any_scope_state = { any_neighbouring_state = { owner = c:USA } }
+}
+
+# POP scope. People who can flee west: slaves, and Native American pops.
+nesnd_hus_west_escapee = {
+    total_size >= 100
+    OR = {
+        is_pop_type = slaves
+        culture = { nesnd_hus_native_culture = yes }
+    }
+}
+
+# STATE scope (USA-owned). A USA state on the 东洲 border holding escapees.
+nesnd_hus_west_departure = {
+    owner = c:USA
+    any_neighbouring_state = { owner = c:HUS is_split_state = no }
+    any_scope_pop = { nesnd_hus_west_escapee = yes }
+}
+
+# STATE scope (USA-owned). A USA border state 东洲 may claim.
+nesnd_hus_west_claim_candidate = {
+    owner = c:USA
+    state_population > 0
+    any_neighbouring_state = { owner = c:HUS }
+    NOT = { has_claim_by = c:HUS }
+}
+
+# STATE scope (USA-owned). A claimed USA border state 东洲 may press for.
+nesnd_hus_west_press_candidate = {
+    owner = c:USA
+    num_provinces > 0
+    any_neighbouring_state = { owner = c:HUS }
+    c:HUS = { is_target_in_variable_list = { name = nesnd_hus_west_claims target = prev.state_region } }
+}

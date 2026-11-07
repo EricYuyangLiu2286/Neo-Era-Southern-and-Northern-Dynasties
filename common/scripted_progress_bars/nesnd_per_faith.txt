@@ -1,0 +1,155 @@
+﻿# 三教影响力条只显示份额（由日志月脉冲 set_bar_progress 写入）；转化条按影响力差距每月推进。
+nesnd_per_faith_shia_bar = {
+    name = nesnd_per_faith_shia_bar_name
+    desc = nesnd_per_faith_shia_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default = yes
+}
+nesnd_per_faith_sunni_bar = {
+    name = nesnd_per_faith_sunni_bar_name
+    desc = nesnd_per_faith_sunni_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default = yes
+}
+nesnd_per_faith_buddhist_bar = {
+    name = nesnd_per_faith_buddhist_bar_name
+    desc = nesnd_per_faith_buddhist_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default = yes
+}
+nesnd_per_faith_mandate_bar = {
+    name = nesnd_per_faith_mandate_bar_name
+    desc = nesnd_per_faith_mandate_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default = yes
+}
+nesnd_per_faith_conversion_bar = {
+    name = nesnd_per_faith_conversion_bar_name
+    desc = nesnd_per_faith_conversion_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default_green = yes
+    monthly_progress = {
+        progress_condition = {
+            limit = { nesnd_per_tension_frozen = yes }
+            add = { desc = nesnd_per_tension_src_frozen value = 0 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_faith_live = yes has_variable = nesnd_per_faith_conv_speed_v }
+            add = { desc = nesnd_per_faith_src_conv value = var:nesnd_per_faith_conv_speed_v }
+        }
+    }
+}
+# 天命说传道：满 100 时在唐人信众最多的州引人改信（nesnd_per_mandate_preach）。
+# 唐人团结度不低于 60、与西秦有往来时推进；讲堂与立为国教加快。
+nesnd_per_faith_preach_bar = {
+    name = nesnd_per_faith_preach_bar_name
+    desc = nesnd_per_faith_preach_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default_green = yes
+    monthly_progress = {
+        progress_condition = {
+            limit = { nesnd_per_tension_frozen = yes }
+            add = { desc = nesnd_per_tension_src_frozen value = 0 }
+        }
+        # 受阻的缘由：值为 0，只为在明细里写明为何停顿。
+        progress_condition = {
+            limit = { nesnd_per_faith_live = yes has_variable = nesnd_per_route_covert NOT = { has_variable = nesnd_per_route_aid } }
+            add = { desc = nesnd_per_faith_src_preach_cut value = 0 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_faith_live = yes c:QE1 ?= { has_war_with = root } }
+            add = { desc = nesnd_per_faith_src_preach_war value = 0 }
+        }
+        progress_condition = {
+            limit = {
+                nesnd_per_faith_live = yes
+                trigger_if = { limit = { has_variable = nesnd_per_unity } var:nesnd_per_unity < 60 }
+                trigger_else = { always = yes }
+            }
+            add = { desc = nesnd_per_faith_src_preach_unity value = 0 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_preach_open = yes }
+            add = { desc = nesnd_per_faith_src_preach_base value = 0.25 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_preach_open = yes has_variable = nesnd_per_route_aid }
+            add = { desc = nesnd_per_faith_src_preach_aid value = 0.15 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_preach_open = yes has_variable = nesnd_per_mandate_halls }
+            add = { desc = nesnd_per_faith_src_preach_halls value = { value = var:nesnd_per_mandate_halls multiply = 0.1 } }
+        }
+        progress_condition = {
+            limit = { nesnd_per_preach_open = yes country_has_state_religion = rel:kaimeng_confucianism }
+            add = { desc = nesnd_per_faith_src_preach_state value = 3 }
+        }
+    }
+}
+# 唐人团结度：开局 60。高于 75 时诸族渐化为西域汉羌，低于 40 时西域汉羌离散。
+nesnd_per_unity_bar = {
+    name = nesnd_per_unity_bar_name
+    desc = nesnd_per_unity_bar_desc
+    min_value = 0 max_value = 100 start_value = 60
+    default_green = yes
+    monthly_progress = {
+        progress_condition = {
+            limit = { nesnd_per_tension_frozen = yes }
+            add = { desc = nesnd_per_tension_src_frozen value = 0 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_unity_live = yes }
+            add = { desc = nesnd_per_unity_src_base value = 0.05 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_unity_live = yes has_law = law_type:law_nesnd_per_tang_strict }
+            add = { desc = nesnd_per_unity_src_law value = 0.05 }
+            else = {
+                limit = { nesnd_per_unity_live = yes has_law = law_type:law_nesnd_per_tang_codified }
+                add = { desc = nesnd_per_unity_src_law value = 0.02 }
+                else = {
+                    limit = { nesnd_per_unity_live = yes has_law = law_type:law_nesnd_per_tang_lenient }
+                    add = { desc = nesnd_per_unity_src_law value = -0.05 }
+                }
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_unity_live = yes country_has_state_religion = rel:mahayana }
+            add = { desc = nesnd_per_unity_src_faith value = 0.05 }
+            else = {
+                limit = { nesnd_per_unity_live = yes country_has_state_religion = rel:shiite }
+                add = { desc = nesnd_per_unity_src_faith value = -0.03 }
+                else = {
+                    limit = { nesnd_per_unity_live = yes country_has_state_religion = rel:kaimeng_confucianism }
+                    add = { desc = nesnd_per_unity_src_faith value = 0.06 }
+                }
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_unity_live = yes has_variable = nesnd_per_future_done has_variable = nesnd_per_route_aid }
+            add = { desc = nesnd_per_unity_src_route_west value = 0.03 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_unity_live = yes has_variable = nesnd_per_future_done has_variable = nesnd_per_route_covert NOT = { has_variable = nesnd_per_route_aid } }
+            add = { desc = nesnd_per_unity_src_route_east value = -0.03 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_unity_live = yes c:QE1 ?= { has_war_with = root } }
+            add = { desc = nesnd_per_unity_src_war_qin value = -0.05 }
+        }
+        progress_condition = {
+            limit = { nesnd_per_unity_live = yes has_variable = nesnd_per_tension var:nesnd_per_tension > 60 }
+            add = {
+                desc = nesnd_per_unity_src_tension
+                value = var:nesnd_per_tension
+                subtract = 60
+                multiply = -0.005
+                min = -0.2
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_per_unity_live = yes has_variable = nesnd_per_tang_share_v var:nesnd_per_tang_share_v < 0.08 }
+            add = { desc = nesnd_per_unity_src_few value = -0.10 }
+        }
+    }
+}

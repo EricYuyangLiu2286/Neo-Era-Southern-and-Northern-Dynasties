@@ -2,33 +2,35 @@
     icon = "gfx/interface/icons/politics_icons/revolution.dds"
     group = je_group_global_international_situations
     activation_description = { always = yes }
-    is_shown_when_inactive = {
-        NOT = { has_global_variable = nesnd_japan_collapse_journal_started }
-        NOT = { has_global_variable = nesnd_japan_partitioned }
-        c:USM ?= { has_variable = tag_WUU_var }
-    }
-    possible = {
-        NOT = { has_global_variable = nesnd_japan_collapse_journal_started }
-        NOT = { has_global_variable = nesnd_japan_partitioned }
-        nesnd_japan_at_war_with_wu = yes
-    }
+    # Added by the verified Japanese war admission. Each round has its own active interval.
+    is_shown_when_inactive = { always = no }
+    possible = { always = no }
     should_be_involved = { nesnd_japan_collapse_viewer = yes }
     should_show_when_not_involved = { nesnd_japan_collapse_viewer = yes }
-    immediate = { set_global_variable = nesnd_japan_collapse_journal_started }
-    status_desc = {
-        first_valid = {
-            triggered_desc = { trigger = { has_global_variable = nesnd_japan_collapse_committed } desc = nesnd_japan_war_collapse_fallen }
-            desc = nesnd_japan_war_collapse_status
+    immediate = { set_global_variable = nesnd_japan_collapse_journal_started nesnd_japan_collapse_refresh = yes }
+    status_desc = { desc = nesnd_japan_war_collapse_status }
+    on_weekly_pulse = { effect = {
+        if = { limit = { nesnd_japan_fighting_jingnan = yes }
+            nesnd_japan_collapse_refresh = yes
+            c:USM = { nesnd_check_war_collapses = yes }
         }
-    }
-    on_weekly_pulse = { effect = { nesnd_japan_collapse_refresh = yes c:USM ?= { nesnd_check_war_collapses = yes } } }
+    } }
     outcome = {
     	header = je_standard_completion_header
     	effect_header = je_standard_on_completion_header
     	color = "gold_positive"
     	conclusion_desc = je_standard_completion_conclusion_desc
     	trigger = { has_global_variable = nesnd_japan_partitioned }
-    	effect = { }
+    	effect = { remove_global_variable = nesnd_japan_collapse_journal_started }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            NOT = { nesnd_japan_fighting_jingnan = yes }
+            NOT = { has_global_variable = nesnd_japan_partitioned }
+        }
+        effect = { remove_global_variable = nesnd_japan_collapse_journal_started }
     }
     weight = 1200
     should_be_pinned_by_default_involved = yes

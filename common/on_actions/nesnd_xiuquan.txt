@@ -1,0 +1,22 @@
+﻿on_character_death = { on_actions = { nesnd_xq_on_death } }
+
+# 根作用域：去世的人物。向每个玩家国家发「追认圣徒」，日志在下次更新时隐藏失效。
+nesnd_xq_on_death = {
+	trigger = {
+		has_template = nesnd_xiuquan_template
+		NOT = { has_global_variable = nesnd_xq_dead }
+	}
+	effect = {
+		set_global_variable = nesnd_xq_dead
+		global_var:nesnd_xq_state ?= {
+			if = {
+				limit = { has_modifier = nesnd_xq_ministry }
+				remove_modifier = nesnd_xq_ministry
+			}
+		}
+		every_country = {
+			limit = { is_player = yes }
+			trigger_event = { id = nesnd_xiuquan.1 popup = yes }
+		}
+	}
+}

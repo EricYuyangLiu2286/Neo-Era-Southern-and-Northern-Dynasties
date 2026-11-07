@@ -1,0 +1,129 @@
+﻿# 唐衣大食：「波斯之忧」（矛盾激化程度）。任务65 第①批。
+# 满 100 时伊朗人起义（events/nesnd_per_rising.txt）。平叛后十年内不重开。
+nesnd_per_tension_journal = {
+    icon = "gfx/interface/icons/achievements/achievement_iranzamin.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_per_tang_regime = yes }
+    possible = { nesnd_per_tang_regime = yes NOT = { has_variable = nesnd_per_rising_cooldown } }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 1100
+
+    immediate = { nesnd_per_tension_init = yes nesnd_per_tang_setup = yes }
+
+    scripted_progress_bar = nesnd_per_tension_bar
+    scripted_button = nesnd_per_tension_office
+    scripted_button = nesnd_per_tension_shrine
+    scripted_button = nesnd_per_tension_settle
+    scripted_button = nesnd_per_tension_purge
+
+    # 原版沙皇权威写法：增益随矛盾值缩放。60 时两者皆为 0。
+    scaling_modifiers_while_active = {
+        modifier = nesnd_per_tang_order
+        value = {
+            value = 0
+            if = {
+                limit = { has_variable = nesnd_per_tension NOT = { nesnd_per_tension_frozen = yes } }
+                value = 60
+                subtract = var:nesnd_per_tension
+                divide = 60
+                min = 0
+            }
+        }
+    }
+    scaling_modifiers_while_active = {
+        modifier = nesnd_per_persian_unrest
+        value = {
+            value = 0
+            if = {
+                limit = { has_variable = nesnd_per_tension NOT = { nesnd_per_tension_frozen = yes } }
+                value = var:nesnd_per_tension
+                subtract = 60
+                divide = 40
+                min = 0
+            }
+        }
+    }
+
+    on_monthly_pulse = {
+        effect = {
+            # 进度条已先结算本月；抄入变量并清除一次性涨落。
+            set_variable = { name = nesnd_per_tension value = "scope:journal_entry.scripted_bar_progress(nesnd_per_tension_bar)" }
+            change_variable = { name = nesnd_per_tension_months add = 1 }
+            remove_variable = nesnd_per_tension_once_office
+            remove_variable = nesnd_per_tension_once_shrine
+            remove_variable = nesnd_per_tension_once_settle
+            remove_variable = nesnd_per_tension_once_purge
+            remove_variable = nesnd_per_tension_once_claim
+            set_variable = { name = nesnd_per_iran_share_var value = nesnd_per_iran_share }
+        }
+        random_events = {
+            1900 = 0
+            10 = nesnd_per_tension.1
+            10 = nesnd_per_tension.2
+            10 = nesnd_per_tension.3
+            10 = nesnd_per_tension.4
+            10 = nesnd_per_tension.5
+            10 = nesnd_per_tension.6
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_per_tension_frozen = yes } desc = nesnd_per_tension_status_frozen }
+            triggered_desc = {
+                trigger = { trigger_if = { limit = { has_variable = nesnd_per_tension } var:nesnd_per_tension >= 100 } trigger_else = { always = no } }
+                desc = nesnd_per_tension_status_uprising
+            }
+            triggered_desc = {
+                trigger = { trigger_if = { limit = { has_variable = nesnd_per_tension } var:nesnd_per_tension >= 60 } trigger_else = { always = no } }
+                desc = nesnd_per_tension_status_restless
+            }
+            triggered_desc = {
+                trigger = { trigger_if = { limit = { has_variable = nesnd_per_tension } var:nesnd_per_tension >= 30 } trigger_else = { always = no } }
+                desc = nesnd_per_tension_status_uneasy
+            }
+            desc = nesnd_per_tension_status_calm
+        }
+    }
+
+    # 起义：矛盾满 100（冻结时不判定）。
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        conclusion_desc = nesnd_per_tension_rising_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_per_tension_rising_tt
+                NOT = { nesnd_per_tension_frozen = yes }
+                has_variable = nesnd_per_tension
+                var:nesnd_per_tension >= 100
+            }
+        }
+        effect = {
+            custom_tooltip = nesnd_per_tension_rising_effect_tt
+            hidden_effect = { trigger_event = { id = nesnd_per_rising.1 popup = yes } }
+        }
+    }
+    # 失效：唐人不再执政，或伊朗高原已失（广义伊朗人不足全国四分之一）。冻结时不判定比例。
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        conclusion_desc = nesnd_per_tension_invalid_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_per_tension_invalid_tt
+                OR = {
+                    NOT = { nesnd_per_tang_regime = yes }
+                    AND = {
+                        NOT = { nesnd_per_tension_frozen = yes }
+                        has_variable = nesnd_per_iran_share_var
+                        var:nesnd_per_iran_share_var < 0.25
+                    }
+                }
+            }
+        }
+        effect = { nesnd_per_tension_clear = yes }
+    }
+}

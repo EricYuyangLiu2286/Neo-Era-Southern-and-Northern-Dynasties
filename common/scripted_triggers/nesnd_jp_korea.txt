@@ -1,13 +1,60 @@
 ﻿nesnd_jp_korea_available = {
-    nesnd_jp_country = yes
-    OR = { nesnd_jp_owned_korea = yes AND = { nesnd_jp_core_united = yes is_subject = no NOT = { has_variable = nesnd_jp_korea_settled } c:KOR ?= { is_country_alive = yes NOT = { is_direct_subject_of = prev } } } }
+    custom_tooltip = { text = nesnd_jp_policy_country nesnd_jp_country = yes }
+    custom_tooltip = { text = nesnd_jp_korea_land_tt nesnd_jp_owned_korea = yes }
+    custom_tooltip = { text = nesnd_jp_korea_counterpart_tt nesnd_jp_korea_counterpart = yes }
+    custom_tooltip = { text = nesnd_jp_korea_open_tt
+        NOR = { has_variable = nesnd_jp_korea_charter has_variable = nesnd_jp_korea_settled }
+    }
+}
+nesnd_jp_korea_counterpart = {
+    exists = c:KOR
+    c:KOR ?= { is_country_alive = yes }
+    NOT = { has_global_variable = nesnd_kr_open }
+}
+nesnd_jp_korea_southern_state = {
+    OR = { state_region = s:STATE_BUSAN state_region = s:STATE_YANGHO }
+}
+nesnd_jp_korea_local_order = {
+    bureaucracy >= 0
+    custom_tooltip = { text = nesnd_jp_korea_control_tt
+        NOT = { any_scope_state = { nesnd_jp_korea_southern_state = yes NOT = { controller = owner } } }
+    }
+    custom_tooltip = { text = nesnd_jp_korea_order_tt
+        NOT = { any_scope_state = { nesnd_jp_korea_southern_state = yes turmoil >= 0.25 } }
+    }
+}
+nesnd_jp_korea_offices_ready = {
+    custom_tooltip = { text = nesnd_jp_korea_offices_tt
+        NOT = { any_scope_state = {
+            nesnd_jp_korea_southern_state = yes
+            NOT = { any_scope_building = { is_building_type = building_government_administration level >= 2 occupancy >= 0.5 } }
+        } }
+    }
+}
+nesnd_jp_korea_schools_ready = {
+    institution_investment_level = { institution = institution_schools value >= 2 }
+    custom_tooltip = { text = nesnd_jp_korea_college_tt
+        any_scope_state = {
+            nesnd_jp_korea_southern_state = yes
+            any_scope_building = { is_building_type = building_university occupancy >= 0.5 }
+        }
+    }
+}
+nesnd_jp_korea_route_ready = {
+    nesnd_jp_korea_local_order = yes
+    OR = {
+        AND = { nesnd_jp_korea_policy_value = 1 nesnd_jp_korea_offices_ready = yes }
+        AND = { nesnd_jp_korea_policy_value = 2 nesnd_jp_korea_schools_ready = yes }
+    }
 }
 nesnd_jp_can_change_korea = {
-    nesnd_jp_owned_korea = yes
+    nesnd_jp_korea_available = yes
     NOT = { has_variable = nesnd_jp_korea_policy_cooldown }
     gold_reserves >= nesnd_jp_negotiation_cost
 }
 nesnd_jp_korean_envoy_available = {
+    nesnd_jp_owned_korea = yes
+    NOT = { has_global_variable = nesnd_kr_open }
     trigger_if = { limit = { exists = c:KOR }
         nesnd_jp_can_send_request = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no
         NOT = { any_scope_state = { OR = { state_region = s:STATE_BUSAN state_region = s:STATE_YANGHO } NOT = { controller = owner } } }

@@ -1,0 +1,72 @@
+﻿nesnd_court_royal_house = {
+    OR = {
+        nesnd_character_of_dynasty = { HOUSE = house_orleans }
+        nesnd_character_of_dynasty = { HOUSE = house_bourbon }
+        AND = {
+            NOT = { has_variable = dynasty_var }
+            OR = {
+                has_variable = house_orleans_leader
+                has_variable = house_bourbon_leader
+                has_variable = legitimist_leader
+            }
+        }
+    }
+}
+
+nesnd_court_monarchy = {
+    country_has_monarchy_law = yes
+    trigger_if = {
+        limit = { has_gov_regency = yes }
+        any_scope_character = { is_heir_of_own_country = yes nesnd_court_royal_house = yes }
+    }
+    trigger_else = { ruler ?= { nesnd_court_royal_house = yes } exists = ruler }
+}
+
+nesnd_court_republic = {
+    OR = {
+        has_law_or_variant = law_type:law_parliamentary_republic
+        has_law_or_variant = law_type:law_presidential_republic
+    }
+}
+
+nesnd_court_eligible = {
+    c:FRA ?= this
+    exists = c:FRA
+    has_global_variable = ce_french_empire_je_end
+    NOT = { has_journal_entry = je_ce_unstable_imperium }
+    NOT = { has_variable = nesnd_court_accession_pending }
+    NOT = { has_variable = nesnd_court_term_closed }
+    nesnd_court_monarchy = yes
+}
+
+# State scope. every_scope_state from France already filters ownership.
+nesnd_court_metropolitan = {
+    OR = {
+        is_in_geographic_region = geographic_region_france
+        state_region = s:STATE_CORSICA
+    }
+}
+
+nesnd_court_policy_available = {
+    hidden_trigger = {
+        has_journal_entry = je_nesnd_france_court
+        OR = { nesnd_court_monarchy = yes nesnd_court_republic = yes }
+    }
+    custom_tooltip = { text = nesnd_court_requires_paris exists = s:STATE_ILE_DE_FRANCE.region_state:FRA }
+    custom_tooltip = { text = nesnd_court_requires_towns nesnd_court_total_levels > 0 }
+    custom_tooltip = { text = nesnd_court_wait NOT = { has_variable = nesnd_court_cooldown } }
+}
+
+nesnd_court_can_choose_paris = {
+    nesnd_court_policy_available = yes
+    custom_tooltip = { text = nesnd_court_paris_available NOT = { has_variable = nesnd_court_fund_paris } }
+}
+
+nesnd_court_can_choose_provinces = {
+    nesnd_court_policy_available = yes
+    custom_tooltip = { text = nesnd_court_provinces_available NOT = { has_variable = nesnd_court_fund_provinces } }
+    custom_tooltip = {
+        text = nesnd_court_requires_provinces
+        any_scope_state = { nesnd_court_metropolitan = yes NOT = { state_region = s:STATE_ILE_DE_FRANCE } }
+    }
+}

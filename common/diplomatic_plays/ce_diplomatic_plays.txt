@@ -2,6 +2,7 @@
 	war_goal = wg_nesnd_usm_annex
 	mirror_war_goal = yes
 	allow_negotiated_peace = no
+	blocked_by_diplomatic_status = no
 	requires_interest_marker = no
 	add_infamy_for_starting_initiator_wargoals = no
 	enable_switch_sides = no
@@ -18,6 +19,7 @@
         trigger_else = { always = no }
     }
 	additional_involvement_trigger = {
+        NOT = { c:JAP ?= this has_variable = nesnd_japan_neutral }
         # Respect AI HNA's independent answer to the opening summons.
         NOT = {
             AND = {
@@ -47,9 +49,7 @@
 
 	}
 	on_war_begins = {
-        every_country = { limit = { nesnd_south_mainland_holdout = yes nesnd_south_defender_in_campaign_war = yes }
-            set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
-        }
+        nesnd_muster_jingnan_war = yes
     }
 	on_war_end = {
 
@@ -133,4 +133,17 @@ dp_ce_force_opium_ban = {
 	on_war_begins = {}
 
 	on_war_end = {}
+}
+
+# An invited Wu subject declares its own war without the ordinary autonomy-demand cooldown.
+dp_nesnd_southern_independence = {
+    war_goal = independence
+    requires_interest_marker = no
+    blocked_by_diplomatic_status = no
+    texture = "gfx/interface/icons/war_goals/independence.dds"
+    selectable_in_lens = { always = no }
+    possible = {
+        scope:initiator ?= { is_direct_subject_of = c:USM }
+        scope:target_country ?= c:USM
+    }
 }

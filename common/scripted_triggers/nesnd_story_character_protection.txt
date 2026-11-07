@@ -1,0 +1,208 @@
+﻿# Country scope. Follow the original mustering country even if its officer moves.
+nesnd_story_rebel_journal_active = {
+    is_country_alive = yes
+    OR = {
+        has_journal_entry = ce_usm_restoration_of_ming
+        has_journal_entry = ce_usm_acheive_revolution
+    }
+}
+
+# Country scope. A rebel's first summons can precede the choice of its journal.
+nesnd_story_rebel_summoned = {
+    is_country_alive = yes
+    OR = {
+        nesnd_story_rebel_journal_active = yes
+        AND = {
+            has_variable = nesnd_invited_south
+            NOR = {
+                has_variable = have_seen_dierci_jingnan
+                has_global_variable = nesnd_south_settled
+                has_global_variable = usm_civilwar_status_quo
+            }
+            OR = {
+                NOT = { has_variable = nesnd_south_answered }
+                has_variable = usm_opposition_country
+            }
+        }
+    }
+}
+
+# Character scope. Consult only for unrelated political removal or assassination.
+nesnd_story_character_protected = {
+    is_character_alive = yes
+    OR = {
+        # Only the actual actor selected for a pending story option is marked.
+        has_variable = nesnd_story_civic_event
+        AND = {
+            has_variable = nesnd_story_event_pending
+            trigger_if = {
+                limit = { has_template = nesnd_usm_duan }
+                has_variable = nesnd_c2_delegate_qualified
+                has_role_of_type = politician
+                owner ?= { nesnd_usm_civic_country = yes }
+            }
+        }
+        AND = {
+            exists = var:nesnd_story_recruited
+            var:nesnd_story_recruited ?= { nesnd_story_rebel_journal_active = yes }
+            OR = {
+                has_template = nesnd_yang_xiuqing
+                has_template = nesnd_xiao_chaogui
+                has_template = nesnd_feng_yunshan
+                has_template = USM_wei_jian
+                has_template = USM_li_xiucheng
+                has_template = USM_shi_dakai
+            }
+        }
+        AND = { has_template = USM_xiao_huli c:SIH ?= { nesnd_story_rebel_summoned = yes } }
+        AND = { has_template = USM_zhu_jingyin c:GNG ?= { nesnd_story_rebel_summoned = yes } }
+        AND = { has_template = USM_zhu_jiangchen c:HNA ?= { nesnd_story_rebel_summoned = yes } }
+
+        # A lineage alone does not appoint a court monarch or claimant.
+        AND = {
+            nesnd_ming_authorized_dynast = yes
+            OR = {
+                has_template = USM_zhu_kuobing
+                has_template = USM_zhu_zuoyu
+                has_variable = nesnd_ming_claimant
+                has_variable = nesnd_ming_legal_heir
+                has_role = character_role_nesnd_ming_refuge
+            }
+            OR = {
+                AND = {
+                    NOR = {
+                        has_global_variable = nesnd_south_settled
+                        has_global_variable = usm_civilwar_status_quo
+                    }
+                    c:USM ?= {
+                        is_country_alive = yes
+                        NOT = { has_variable = nesnd_ming_internal_agreement }
+                        OR = {
+                            has_journal_entry = ce_usm_conflicts_within
+                            has_variable = ce_usm_civilwar_journal_trigger
+                            has_global_variable = usm_civilwar_occured
+                            has_variable = nesnd_accession_pending
+                        }
+                    }
+                }
+                AND = {
+                    has_global_variable = usm_civilwar_status_quo
+                    any_country = {
+                        has_variable = nesnd_ming_court
+                        NOT = { has_variable = nesnd_rebel_settlement_seen }
+                        is_country_alive = yes
+                        OR = {
+                            var:nesnd_ming_court_monarch ?= prev
+                            var:nesnd_ming_refuge_heir ?= prev
+                            var:nesnd_ming_refuge_claimant ?= prev
+                            AND = { heir ?= prev prev = { has_variable = nesnd_ming_legal_heir } }
+                        }
+                    }
+                }
+            }
+        }
+        AND = {
+            has_template = USM_chen_dongyang
+            c:USM ?= {
+                OR = { nesnd_chen_security_active = yes has_variable = nesnd_chen_case_pending_death }
+            }
+        }
+        AND = { has_template = USM_hao_tingjiang c:USM ?= { has_variable = nesnd_chen_case_pending_death } }
+        AND = {
+            has_template = USM_zheng_qin
+            game_date < 1839.1.1
+            c:USM ?= { is_country_alive = yes has_journal_entry = ce_usm_conflicts_within }
+        }
+        AND = {
+            has_template = USM_zheng_Ju
+            c:USM ?= {
+                is_country_alive = yes
+                NOR = { has_variable = tag_WUU_var has_variable = nesnd_ming_internal_agreement has_global_variable = nesnd_south_settled }
+                OR = { has_journal_entry = ce_usm_conflicts_within has_variable = nesnd_accession_pending }
+            }
+        }
+        AND = {
+            has_template = USM_zheng_diaojin
+            is_ruler_of_own_country = no
+            NOT = { has_global_variable = nesnd_diaojin_arrived }
+            c:SIH ?= { is_country_alive = yes has_variable = nesnd_diaojin_pending }
+        }
+        AND = {
+            has_template = USM_lin_hanhan
+            OR = {
+                AND = {
+                    nesnd_japan_lin_candidate_eligible = yes
+                    c:YN1 ?= {
+                        nesnd_story_rebel_summoned = yes
+                        NOR = { has_variable = have_seen_dierci_jingnan has_variable = nesnd_lin_defection_completed }
+                    }
+                }
+                c:USM ?= {
+                    nesnd_japan_lin_realm_ready = yes
+                    nesnd_japan_lin_pending_identity_valid = yes
+                    var:nesnd_japan_lin_pending_officer ?= prev
+                }
+                c:JIM ?= {
+                    nesnd_japan_lin_regency_is_active = yes
+                    var:nesnd_japan_lin_regent ?= prev
+                }
+            }
+        }
+        AND = {
+            OR = { has_template = USM_zeng_guofan has_template = USM_li_hongzhang has_template = USM_wu_naosuke has_template = PHI_lin_zexu }
+            OR = { has_role_of_type = general has_role_of_type = admiral }
+            owner ?= {
+                any_scope_war = {
+                    is_war_participant = prev
+                    NOT = { is_on_defending_side = prev }
+                    diplomatic_play ?= { has_variable = this_is_nanming_civilwar_var }
+                }
+            }
+        }
+        AND = {
+            OR = { has_template = CNE_mu_zhongtang has_template = CNE_mu_chimin }
+            owner ?= { c:CNE ?= this country_has_monarchy_law = yes has_variable = the_dynasty_of_mu_variable }
+            OR = { is_ruler_of_own_country = yes is_heir_of_own_country = yes }
+            NOT = { has_global_variable = ce_cne_events_12_happened_flag }
+        }
+        AND = {
+            OR = { has_template = CNE_mu_muzi has_template = CNE_fei_xiyi }
+            owner ?= { c:CNE ?= this has_variable = nesnd_story_mu_journey_pending }
+        }
+        AND = {
+            has_template = CNE_mu_muzi
+            has_variable = nesnd_story_mu_author
+            owner ?= { is_country_alive = yes }
+            NOT = { has_global_variable = bm_the_book_has_written }
+        }
+        AND = {
+            has_template = fra_napoleon_iii_character_template
+            owner ?= {
+                nesnd_french_empire_politics_live = yes
+                OR = { nesnd_french_empire_opening = yes has_journal_entry = je_ce_unstable_imperium }
+                NOR = { has_global_variable = ce_french_empire_je_end has_global_variable = ce_france_no_more_napoleon }
+            }
+        }
+        AND = {
+            has_template = garibaldi_character_template
+            has_variable = garibaldi_var
+            NOR = { has_global_variable = nesnd_c2_garibaldi_dead has_global_variable = nesnd_c2_garibaldi_retired }
+            owner ?= { has_journal_entry = je_risorgimento }
+        }
+        # The other three restoration figures are installed as rulers on creation.
+        AND = {
+            has_template = nesnd_a2_rumi
+            has_variable = nesnd_a2_rumi
+            c:TWT ?= {
+                is_country_alive = yes
+                nesnd_restoration_armed_case = yes
+                NOR = { has_variable = nesnd_restoration_settlement_done has_variable = nesnd_restoration_external_end has_variable = nesnd_restoration_peace_shown }
+            }
+        }
+        # Brother Xiuquan: for as long as his journey journal runs. Natural death stays possible.
+        AND = {
+            has_template = nesnd_xiuquan_template
+            NOT = { has_global_variable = nesnd_xq_dead }
+        }
+    }
+}

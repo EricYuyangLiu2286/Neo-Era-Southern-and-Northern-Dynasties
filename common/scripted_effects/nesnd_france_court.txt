@@ -1,0 +1,151 @@
+﻿nesnd_court_sync_bar = {
+    scope:journal_entry ?= {
+        set_bar_progress = { name = nesnd_court_share_bar value = owner.nesnd_court_paris_share }
+    }
+}
+
+# State scope, also called when a state passes to a foreign owner.
+nesnd_court_clear_works = {
+    if = { limit = { has_modifier = nesnd_court_paris_works } remove_modifier = nesnd_court_paris_works }
+    if = { limit = { has_modifier = nesnd_court_paris_outflow } remove_modifier = nesnd_court_paris_outflow }
+    if = { limit = { has_modifier = nesnd_court_provincial_works } remove_modifier = nesnd_court_provincial_works }
+}
+
+nesnd_court_drop_sample = {
+    remove_variable = nesnd_court_start_levels
+    remove_variable = nesnd_court_start_provinces
+}
+
+nesnd_court_refresh_states = {
+    every_scope_state = {
+        limit = { nesnd_court_metropolitan = yes }
+        if = {
+            limit = { has_variable = nesnd_court_start_provinces }
+            if = { limit = { num_provinces != var:nesnd_court_start_provinces } nesnd_court_drop_sample = yes }
+        }
+        if = {
+            limit = { NOT = { exists = s:STATE_ILE_DE_FRANCE.region_state:FRA } }
+            nesnd_court_clear_works = yes
+        }
+        else_if = {
+            limit = { owner = { has_variable = nesnd_court_fund_provinces } }
+            if = {
+                limit = { state_region = s:STATE_ILE_DE_FRANCE }
+                if = { limit = { NOT = { has_modifier = nesnd_court_paris_outflow } } add_modifier = { name = nesnd_court_paris_outflow } }
+            }
+            else_if = {
+                limit = { NOT = { has_modifier = nesnd_court_provincial_works } }
+                add_modifier = { name = nesnd_court_provincial_works }
+            }
+        }
+        else_if = {
+            limit = {
+                state_region = s:STATE_ILE_DE_FRANCE
+                owner = { has_variable = nesnd_court_fund_paris }
+                NOT = { has_modifier = nesnd_court_paris_works }
+            }
+            add_modifier = { name = nesnd_court_paris_works }
+        }
+    }
+}
+
+nesnd_court_select_policy = {
+    if = {
+        limit = { nesnd_court_can_choose_$FOCUS$ = yes }
+        remove_variable = nesnd_court_fund_paris
+        remove_variable = nesnd_court_fund_provinces
+        set_variable = nesnd_court_fund_$FOCUS$
+        set_variable = { name = nesnd_court_opening_share value = nesnd_court_paris_share }
+        set_variable = { name = nesnd_court_cooldown months = 12 }
+        every_scope_state = {
+            limit = { nesnd_court_metropolitan = yes }
+            nesnd_court_clear_works = yes
+            set_variable = { name = nesnd_court_start_levels value = nesnd_court_urban_levels }
+            set_variable = { name = nesnd_court_start_provinces value = num_provinces }
+        }
+        nesnd_court_refresh_states = yes
+    }
+}
+
+# The five-year accounts use the same states at both ends. Lost and newly
+# acquired states have no surviving opening balance. A split also drops its sample.
+nesnd_court_review = {
+    if = {
+        limit = {
+            OR = { has_variable = nesnd_court_fund_paris has_variable = nesnd_court_fund_provinces }
+            exists = s:STATE_ILE_DE_FRANCE.region_state:FRA
+        }
+        nesnd_court_refresh_states = yes
+        if = { limit = { has_variable = nesnd_court_fund_paris } save_scope_as = nesnd_court_paris_account }
+        set_local_variable = { name = court_total_before value = 0 }
+        set_local_variable = { name = court_total_after value = 0 }
+        set_local_variable = { name = court_focus_before value = 0 }
+        set_local_variable = { name = court_focus_after value = 0 }
+        set_local_variable = { name = court_sampled_focus value = 0 }
+        every_scope_state = {
+            limit = { nesnd_court_metropolitan = yes has_variable = nesnd_court_start_levels }
+            change_local_variable = { name = court_total_before add = var:nesnd_court_start_levels }
+            change_local_variable = { name = court_total_after add = nesnd_court_urban_levels }
+            if = {
+                limit = {
+                    OR = {
+                        AND = { state_region = s:STATE_ILE_DE_FRANCE owner = { has_variable = nesnd_court_fund_paris } }
+                        AND = { NOT = { state_region = s:STATE_ILE_DE_FRANCE } owner = { has_variable = nesnd_court_fund_provinces } }
+                    }
+                }
+                set_local_variable = { name = court_sampled_focus value = 1 }
+                change_local_variable = { name = court_focus_before add = var:nesnd_court_start_levels }
+                change_local_variable = { name = court_focus_after add = nesnd_court_urban_levels }
+            }
+        }
+        if = {
+            limit = {
+                local_var:court_sampled_focus = 1
+                local_var:court_total_before > 0
+                local_var:court_total_after > 0
+            }
+            save_scope_as = nesnd_court_has_accounts
+            save_scope_value_as = { name = nesnd_court_before value = local_var:court_focus_before }
+            save_scope_value_as = { name = nesnd_court_after value = local_var:court_focus_after }
+            save_scope_value_as = { name = nesnd_court_share_before value = { value = local_var:court_focus_before multiply = 100 divide = local_var:court_total_before } }
+            save_scope_value_as = { name = nesnd_court_share_after value = { value = local_var:court_focus_after multiply = 100 divide = local_var:court_total_after } }
+            if = {
+                limit = { local_var:court_focus_after > local_var:court_focus_before }
+                # Compare unrounded shares: 100*(A/T - B/S) >= 1.
+                set_local_variable = {
+                    name = court_share_gain_numerator
+                    value = {
+                        value = local_var:court_focus_after
+                        multiply = local_var:court_total_before
+                        subtract = { value = local_var:court_focus_before multiply = local_var:court_total_after }
+                        multiply = 100
+                    }
+                }
+                if = {
+                    limit = { local_var:court_share_gain_numerator >= { value = local_var:court_total_before multiply = local_var:court_total_after } }
+                    add_modifier = { name = nesnd_court_marked_growth months = 24 }
+                    save_scope_as = nesnd_court_distinction
+                }
+                else = {
+                    add_modifier = { name = nesnd_court_reported_growth months = 24 }
+                    save_scope_as = nesnd_court_growth
+                }
+            }
+        }
+    }
+    trigger_event = { id = nesnd_france_court.1 popup = yes }
+}
+
+nesnd_court_close = {
+    set_variable = nesnd_court_term_closed
+    every_scope_state = {
+        limit = { nesnd_court_metropolitan = yes }
+        nesnd_court_clear_works = yes
+        nesnd_court_drop_sample = yes
+    }
+    remove_variable = nesnd_court_fund_paris
+    remove_variable = nesnd_court_fund_provinces
+    remove_variable = nesnd_court_cooldown
+    remove_variable = nesnd_court_opening_share
+    remove_variable = nesnd_court_in_session
+}

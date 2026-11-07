@@ -1,0 +1,57 @@
+﻿je_nesnd_france_court = {
+    icon = "gfx/interface/icons/event_icons/event_industry.dds"
+    group = je_group_france_divided_monarchists
+    activation_description = { custom_tooltip = { text = nesnd_court_activation nesnd_court_eligible = yes } }
+    is_shown_when_inactive = { nesnd_court_eligible = yes }
+    possible = { nesnd_court_eligible = yes }
+    transferable = no
+    can_revolution_inherit = yes
+    timeout = 1825
+
+    immediate = {
+        set_variable = nesnd_court_in_session
+        nesnd_court_sync_bar = yes
+    }
+    scripted_button = nesnd_court_choose_paris
+    scripted_button = nesnd_court_choose_provinces
+    scripted_progress_bar = nesnd_court_share_bar
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { NOT = { exists = s:STATE_ILE_DE_FRANCE.region_state:FRA } } desc = nesnd_court_no_paris }
+            triggered_desc = { trigger = { nesnd_court_total_levels = 0 } desc = nesnd_court_no_towns }
+            triggered_desc = { trigger = { has_variable = nesnd_court_fund_paris } desc = nesnd_court_status_paris }
+            triggered_desc = { trigger = { has_variable = nesnd_court_fund_provinces } desc = nesnd_court_status_provinces }
+            desc = nesnd_court_status_choose
+        }
+    }
+    on_monthly_pulse = {
+        effect = {
+            nesnd_court_refresh_states = yes
+            nesnd_court_sync_bar = yes
+        }
+    }
+
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_court_closed
+        trigger = { NOR = { nesnd_court_monarchy = yes nesnd_court_republic = yes } }
+        effect = { nesnd_court_close = yes }
+    }
+    outcome = {
+        flags = { timeout }
+        header = nesnd_court_review_header
+        effect_header = nesnd_court_review_effect
+        conclusion_desc = nesnd_court_review_header
+        effect = {
+            custom_tooltip = nesnd_court_review_rules
+            hidden_effect = {
+                if = {
+                    limit = { OR = { nesnd_court_monarchy = yes nesnd_court_republic = yes } }
+                    nesnd_court_review = yes
+                }
+                nesnd_court_close = yes
+            }
+        }
+    }
+}

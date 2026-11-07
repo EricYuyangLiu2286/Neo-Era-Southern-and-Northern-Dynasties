@@ -1,0 +1,18 @@
+﻿nesnd_kr_state_pop = { value = 0 every_scope_pop = { limit = { nesnd_kr_people = yes } add = total_size } }
+nesnd_kr_pop = { value = 0 every_scope_state = { limit = { nesnd_kr_land = yes } add = nesnd_kr_state_pop } }
+# Mean actual acceptance penalty in the homeland, including heritage variants.
+nesnd_kr_citizenship = { value = 0 every_scope_state = { limit = { nesnd_kr_land = yes }
+ every_scope_pop = { limit = { nesnd_kr_people = yes }
+ if = { limit = { pop_acceptance < 20 } add = { value = total_size multiply = 1.5 } }
+ else_if = { limit = { pop_acceptance < 50 } add = total_size }
+ else_if = { limit = { pop_acceptance < 80 } add = { value = total_size multiply = 0.5 } }
+ } } divide = { value = nesnd_kr_pop min = 1 } }
+nesnd_kr_speech = { value = 0
+ if = { limit = { OR = { has_law_or_variant = law_type:law_censorship has_law_or_variant = law_type:law_outlawed_dissent } } value = 0.25 }
+ else_if = { limit = { has_law_or_variant = law_type:law_protected_speech OR = { has_modifier = nesnd_kr_councils any_scope_state = { has_modifier = nesnd_jp_korea_councils } } } value = -0.5 } }
+nesnd_kr_turmoil = { value = 0 every_scope_state = { limit = { nesnd_kr_land = yes turmoil >= 0.25 }
+ add = { value = nesnd_kr_state_pop multiply = 0.5 } } divide = { value = nesnd_kr_pop min = 1 } }
+nesnd_kr_action = { value = 0 if = { limit = { has_modifier = nesnd_kr_councils } value = -0.5 }
+ else_if = { limit = { has_modifier = nesnd_kr_police } value = -1 } }
+nesnd_kr_weight = { value = 0 if = { limit = { has_global_variable = nesnd_kr_total global_var:nesnd_kr_total > 0 NOT = { nesnd_kr_center = yes } }
+ value = nesnd_kr_pop divide = global_var:nesnd_kr_total } }

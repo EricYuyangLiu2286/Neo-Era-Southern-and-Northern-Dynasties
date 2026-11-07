@@ -1,0 +1,119 @@
+﻿# 三教影响力（第三教为佛门或天命说，开局二选一）：每十万信众计 1 点 ×（宗教乘数 + 唐人文化加成）；国教 +6；代表人物在任 ×1.1。
+# 宗教乘数：什叶 0.8、逊尼 0.7、佛门 0.6；唐人文化（西域汉羌等，nesnd_per_tang_pop）每人另加 4。
+# 开局约 70/14/16（什叶/逊尼/佛门），至 1900 年约 75/11/15（faith_culture.py）。同一次人口遍历内计算，不增加遍历。
+nesnd_per_inf_shia = {
+    value = 0
+    every_scope_state = {
+        every_scope_pop = {
+            limit = { has_pop_religion = shiite }
+            add = {
+                value = total_size
+                if = { limit = { nesnd_per_tang_pop = yes } multiply = 4.8 }
+                else = { multiply = 0.8 }
+            }
+        }
+    }
+    divide = 100000
+    if = { limit = { country_has_state_religion = rel:shiite } add = 6 }
+    if = {
+        limit = { has_variable = nesnd_per_shrine_gifts }
+        add = { value = var:nesnd_per_shrine_gifts multiply = 2 max = 10 }
+    }
+    if = { limit = { nesnd_per_rep_valid = { SLOT = shia } } multiply = 1.1 }
+}
+nesnd_per_inf_sunni = {
+    value = 0
+    every_scope_state = {
+        every_scope_pop = {
+            limit = { has_pop_religion = sunni }
+            add = {
+                value = total_size
+                if = { limit = { nesnd_per_tang_pop = yes } multiply = 4.7 }
+                else = { multiply = 0.7 }
+            }
+        }
+    }
+    divide = 100000
+    if = { limit = { country_has_state_religion = rel:sunni } add = 6 }
+    if = { limit = { nesnd_per_rep_valid = { SLOT = sunni } } multiply = 1.1 }
+}
+nesnd_per_inf_buddhist = {
+    value = 0
+    every_scope_state = {
+        every_scope_pop = {
+            limit = { has_pop_religion = mahayana }
+            add = {
+                value = total_size
+                if = { limit = { nesnd_per_tang_pop = yes } multiply = 4.6 }
+                else = { multiply = 0.6 }
+            }
+        }
+    }
+    divide = 100000
+    if = { limit = { country_has_state_religion = rel:mahayana } add = 6 }
+    if = { limit = { nesnd_per_rep_valid = { SLOT = buddhist } } multiply = 1.1 }
+}
+# 天命说（开局选择替换佛门时启用）。开局无信众，靠与西秦的往来与讲堂起步，再靠传道得信众。
+# 西秦往来：未定路线 3、向西（朝贡伊犁）4、向东断交或与西秦交战 0；讲堂每座 0.6（向东时逐年荒废）。
+# 份额：放任约 3%→8%；积极建讲堂约 1865 年超过逊尼；1860 年立为国教约 1895 年前后居首（mandate_sim.py）。
+nesnd_per_inf_mandate = {
+    value = 0
+    every_scope_state = {
+        every_scope_pop = {
+            limit = { has_pop_religion = kaimeng_confucianism }
+            add = {
+                value = total_size
+                if = { limit = { nesnd_per_tang_pop = yes } multiply = 4.6 }
+                else = { multiply = 0.6 }
+            }
+        }
+    }
+    divide = 100000
+    if = { limit = { country_has_state_religion = rel:kaimeng_confucianism } add = 6 }
+    if = {
+        limit = { nesnd_per_qin_ties = yes }
+        if = { limit = { has_variable = nesnd_per_route_aid } add = 4 }
+        else = { add = 3 }
+    }
+    if = {
+        limit = { has_variable = nesnd_per_mandate_halls }
+        add = { value = var:nesnd_per_mandate_halls multiply = 0.6 }
+    }
+    if = { limit = { nesnd_per_rep_valid = { SLOT = mandate } nesnd_per_qin_ties = yes } multiply = 1.1 }
+}
+# 设讲堂的花费：国内生产总值的 1.5%。
+nesnd_per_hall_cost = {
+    value = gdp
+    multiply = 0.015
+}
+# State scope. 传道选州：唐人佛门 ×2 + 唐人什叶、逊尼；天命说为国教时另计非唐人什叶、逊尼 ×0.5。
+nesnd_per_preach_score = {
+    value = 0
+    every_scope_pop = {
+        limit = { nesnd_per_preach_tang_pop = yes }
+        add = {
+            value = total_size
+            if = { limit = { has_pop_religion = mahayana } multiply = 2 }
+        }
+    }
+    if = {
+        limit = { owner ?= { country_has_state_religion = rel:kaimeng_confucianism } }
+        every_scope_pop = {
+            limit = { nesnd_per_preach_other_pop = yes }
+            add = { value = total_size multiply = 0.5 }
+        }
+    }
+}
+# 转化条每月进度：0.5 + 1.5 ×（最高 − 次高）/ 最高。
+nesnd_per_faith_conv_speed = {
+    value = 0.5
+    if = {
+        limit = { has_variable = nesnd_per_inf_top_v has_variable = nesnd_per_inf_second_v var:nesnd_per_inf_top_v > 0 }
+        add = {
+            value = var:nesnd_per_inf_top_v
+            subtract = var:nesnd_per_inf_second_v
+            divide = var:nesnd_per_inf_top_v
+            multiply = 1.5
+        }
+    }
+}

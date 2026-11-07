@@ -1,0 +1,183 @@
+﻿# 唐衣大食第③批：波斯人统治阶段的按钮（任务65）。
+
+# 「沙阿的新朝」：四种处置。驱逐、流放、归化每次三人，共用 3 个月冷却；优容旧贵一次了结。
+nesnd_per_court_expel_button = {
+    name = nesnd_per_court_expel_button
+    desc = nesnd_per_court_expel_button_desc
+    visible = { has_journal_entry = nesnd_per_shah_court_journal }
+    possible = {
+        custom_tooltip = { text = nesnd_per_court_qin_tt exists = c:QE1 }
+        custom_tooltip = { text = nesnd_per_court_cooldown_tt NOT = { has_variable = nesnd_per_court_cd } }
+        custom_tooltip = { text = nesnd_per_court_tang_tt nesnd_per_court_has_tang = yes }
+    }
+    ai_chance = { value = 10 }
+    effect = {
+        custom_tooltip = nesnd_per_court_expel_tt
+        show_as_tooltip = {
+            add_modifier = { name = nesnd_per_court_cleansed months = 60 }
+            ig:ig_devout ?= { add_modifier = { name = nesnd_per_ulama_pleased months = 36 } }
+        }
+        hidden_effect = {
+            if = { limit = { NOT = { has_variable = nesnd_per_court_cd } exists = c:QE1 }
+                set_variable = { name = nesnd_per_court_cd months = 3 }
+                nesnd_per_court_expel = yes
+                add_modifier = { name = nesnd_per_court_cleansed months = 60 }
+                ig:ig_devout ?= { add_modifier = { name = nesnd_per_ulama_pleased months = 36 } }
+            }
+        }
+    }
+}
+
+nesnd_per_court_exile_button = {
+    name = nesnd_per_court_exile_button
+    desc = nesnd_per_court_exile_button_desc
+    visible = { has_journal_entry = nesnd_per_shah_court_journal }
+    possible = {
+        custom_tooltip = { text = nesnd_per_court_cooldown_tt NOT = { has_variable = nesnd_per_court_cd } }
+        custom_tooltip = { text = nesnd_per_court_tang_tt nesnd_per_court_has_tang = yes }
+    }
+    ai_chance = { value = 5 }
+    effect = {
+        custom_tooltip = nesnd_per_court_exile_tt
+        show_as_tooltip = {
+            add_modifier = { name = nesnd_per_court_cleansed months = 60 }
+            ig:ig_devout ?= { add_modifier = { name = nesnd_per_ulama_pleased months = 36 } }
+        }
+        hidden_effect = {
+            if = { limit = { NOT = { has_variable = nesnd_per_court_cd } }
+                set_variable = { name = nesnd_per_court_cd months = 3 }
+                nesnd_per_court_exile = yes
+                add_modifier = { name = nesnd_per_court_cleansed months = 60 }
+                ig:ig_devout ?= { add_modifier = { name = nesnd_per_ulama_pleased months = 36 } }
+            }
+        }
+    }
+}
+
+nesnd_per_court_naturalize_button = {
+    name = nesnd_per_court_naturalize_button
+    desc = nesnd_per_court_naturalize_button_desc
+    visible = { has_journal_entry = nesnd_per_shah_court_journal }
+    possible = {
+        custom_tooltip = { text = nesnd_per_court_cooldown_tt NOT = { has_variable = nesnd_per_court_cd } }
+        custom_tooltip = { text = nesnd_per_court_tang_tt nesnd_per_court_has_tang = yes }
+    }
+    ai_chance = { value = 5 }
+    effect = {
+        custom_tooltip = nesnd_per_court_naturalize_tt
+        show_as_tooltip = {
+            ig:ig_devout ?= { add_modifier = { name = nesnd_per_ulama_angered months = 36 } }
+            ig:ig_armed_forces ?= { add_modifier = { name = nesnd_per_ig_resentful months = 24 } }
+        }
+        hidden_effect = {
+            if = { limit = { NOT = { has_variable = nesnd_per_court_cd } }
+                set_variable = { name = nesnd_per_court_cd months = 3 }
+                nesnd_per_court_naturalize = yes
+                ig:ig_devout ?= { add_modifier = { name = nesnd_per_ulama_angered months = 36 } }
+                ig:ig_armed_forces ?= { add_modifier = { name = nesnd_per_ig_resentful months = 24 } }
+            }
+        }
+    }
+}
+
+nesnd_per_court_tolerate_button = {
+    name = nesnd_per_court_tolerate_button
+    desc = nesnd_per_court_tolerate_button_desc
+    visible = { has_journal_entry = nesnd_per_shah_court_journal }
+    possible = {
+        custom_tooltip = { text = nesnd_per_court_tang_tt nesnd_per_court_has_tang = yes }
+    }
+    ai_chance = { value = 3 }
+    effect = {
+        custom_tooltip = nesnd_per_court_tolerate_tt
+        show_as_tooltip = { ig:ig_armed_forces ?= { add_modifier = { name = nesnd_per_tang_pleased months = 36 } } }
+        hidden_effect = {
+            if = { limit = { NOT = { has_variable = nesnd_per_old_tang_tolerated } }
+                set_variable = nesnd_per_old_tang_tolerated
+                ig:ig_armed_forces ?= { add_modifier = { name = nesnd_per_tang_pleased months = 36 } }
+            }
+        }
+    }
+}
+
+# 「旧唐人心」：抚慰旧贵。
+nesnd_per_old_tang_soothe_button = {
+    name = nesnd_per_old_tang_soothe_button
+    desc = nesnd_per_old_tang_soothe_button_desc
+    visible = { has_journal_entry = nesnd_per_old_tang_journal }
+    possible = {
+        custom_tooltip = { text = nesnd_per_old_tang_cooldown_tt NOT = { has_variable = nesnd_per_old_tang_cd } }
+        custom_tooltip = { text = nesnd_per_old_tang_money_tt gold_reserves >= nesnd_per_old_tang_cost }
+    }
+    ai_chance = { value = 0 if = { limit = { has_variable = nesnd_per_old_tang_v var:nesnd_per_old_tang_v >= 70 } value = 10 } }
+    effect = {
+        custom_tooltip = nesnd_per_old_tang_soothe_tt
+        show_as_tooltip = { add_treasury = { value = nesnd_per_old_tang_cost multiply = -1 } }
+        hidden_effect = {
+            if = { limit = { NOT = { has_variable = nesnd_per_old_tang_cd } has_variable = nesnd_per_old_tang_v }
+                set_variable = { name = nesnd_per_old_tang_cd months = 24 }
+                add_treasury = { value = nesnd_per_old_tang_cost multiply = -1 }
+                set_variable = { name = nesnd_per_old_tang_reset value = { value = var:nesnd_per_old_tang_v subtract = 15 min = 0 } days = 40 }
+            }
+        }
+    }
+}
+
+# 「沙阿的道路」：择一而行。北伐取西秦与本国接壤的一州；西进宣称两河与海湾的石油地区。
+nesnd_per_road_north_button = {
+    name = nesnd_per_road_north_button
+    desc = nesnd_per_road_north_button_desc
+    visible = {
+        has_journal_entry = nesnd_per_shah_road_journal
+        trigger_if = { limit = { has_variable = nesnd_per_road } var:nesnd_per_road = flag:north }
+    }
+    possible = {
+        custom_tooltip = { text = nesnd_per_road_north_target_tt nesnd_per_north_has_target = yes }
+        custom_tooltip = { text = nesnd_per_road_cooldown_tt NOT = { has_variable = nesnd_per_road_cd } }
+        is_at_war = no
+        is_diplomatic_play_committed_participant = no
+    }
+    ai_chance = { value = 0 if = { limit = { nesnd_per_north_has_target = yes NOT = { has_variable = nesnd_per_road } } value = 5 } }
+    effect = {
+        custom_tooltip = nesnd_per_road_north_tt
+        hidden_effect = {
+            if = { limit = { NOT = { has_variable = nesnd_per_road_cd } nesnd_per_north_has_target = yes is_at_war = no }
+                set_variable = { name = nesnd_per_road_cd months = 60 }
+                nesnd_per_north_launch = yes
+            }
+        }
+    }
+}
+
+nesnd_per_road_west_button = {
+    name = nesnd_per_road_west_button
+    desc = nesnd_per_road_west_button_desc
+    visible = {
+        has_journal_entry = nesnd_per_shah_road_journal
+        NOT = { has_variable = nesnd_per_road }
+    }
+    possible = {
+        custom_tooltip = { text = nesnd_per_road_west_target_tt any_country = { NOT = { this = root } any_scope_state = { nesnd_per_west_oil_state = yes } } }
+    }
+    ai_chance = { value = 0 if = { limit = { NOT = { has_variable = nesnd_per_road } } value = 5 } }
+    effect = {
+        custom_tooltip = nesnd_per_road_west_tt
+        # 乌理玛不满，除非国教为什叶且对手里有逊尼国家。
+        if = {
+            limit = {
+                NOT = {
+                    AND = {
+                        country_has_state_religion = rel:shiite
+                        any_country = {
+                            NOT = { this = root }
+                            country_has_state_religion = rel:sunni
+                            any_scope_state = { nesnd_per_west_oil_state = yes }
+                        }
+                    }
+                }
+            }
+            ig:ig_devout ?= { add_modifier = { name = nesnd_per_ulama_angered months = 36 } }
+        }
+        hidden_effect = { nesnd_per_west_launch = yes }
+    }
+}

@@ -1,80 +1,304 @@
 ﻿nesnd_jp_choose_court = {
     name = nesnd_jp_choose_court desc = nesnd_jp_choose_court_desc
-    visible = { nesnd_jp_politics_live = yes NOT = { nesnd_jp_route_court = yes } }
-    possible = { nesnd_jp_can_change_policy = yes country_has_monarchy_law = yes }
-    effect = { if = { limit = { nesnd_jp_can_change_policy = yes country_has_monarchy_law = yes NOT = { nesnd_jp_route_court = yes } } nesnd_jp_choose_court = yes } }
+    visible = { nesnd_jp_politics_live = yes }
+    possible = {
+        hidden_trigger = { nesnd_jp_politics_live = yes }
+        custom_tooltip = { text = nesnd_jp_policy_other NOT = { nesnd_jp_route_court = yes } }
+        custom_tooltip = { text = nesnd_jp_policy_wait NOT = { has_variable = nesnd_jp_policy_cooldown } }
+        custom_tooltip = { text = nesnd_jp_policy_date OR = { game_date >= 1840.1.1 has_variable = nesnd_japan_partition_state } }
+        gold_reserves >= nesnd_jp_negotiation_cost
+        country_has_monarchy_law = yes
+    }
+    effect = {
+        if = { limit = { nesnd_jp_route_court = yes } custom_tooltip = nesnd_jp_policy_court_current }
+        else = { custom_tooltip = nesnd_jp_policy_court_choose custom_tooltip = nesnd_jp_policy_cost }
+        custom_tooltip = nesnd_jp_policy_court_next
+        if = { limit = { has_variable = nesnd_jp_policy_cooldown } custom_tooltip = nesnd_jp_policy_wait }
+        else = { custom_tooltip = nesnd_jp_policy_unlocked }
+        hidden_effect = { if = { limit = { nesnd_jp_can_change_policy = yes country_has_monarchy_law = yes NOT = { nesnd_jp_route_court = yes } } nesnd_jp_choose_court = yes } }
+    }
     ai_chance = { value = 20 if = { limit = { c:JAP ?= this } add = 20 } if = { limit = { OR = { has_modifier = declared_bankruptcy bureaucracy < 0 } } value = 0 } }
 }
 nesnd_jp_inspect_court = {
-    name = nesnd_jp_advance_reform desc = nesnd_jp_advance_reform_desc
-    visible = { nesnd_jp_politics_live = yes nesnd_jp_route_court = yes }
+    name = nesnd_jp_fund_court_schools
+    desc = nesnd_jp_fund_court_schools_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_court = yes }
     possible = {
         gold_reserves >= nesnd_jp_negotiation_cost
-        custom_tooltip = { text = nesnd_sweep_reform_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
     }
     effect = {
-        custom_tooltip = nesnd_sweep_reform_funding
-        show_as_tooltip = { add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 } add_modifier = { name = nesnd_jp_reform_effort months = 6 } }
-        hidden_effect = { if = { limit = { nesnd_jp_politics_live = yes nesnd_jp_route_court = yes gold_reserves >= nesnd_jp_negotiation_cost NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
-            add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
-            add_modifier = { name = nesnd_jp_reform_effort months = 6 }
-            set_variable = { name = nesnd_jp_reform_effort_cooldown months = 6 }
+        custom_tooltip = nesnd_jp_intervention_funded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_fund_intervention = { MODIFIER = nesnd_jp_fund_court_schools_modifier }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_court = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                    gold_reserves >= nesnd_jp_negotiation_cost
+                }
+                nesnd_jp_fund_intervention = { MODIFIER = nesnd_jp_fund_court_schools_modifier }
+            }
         }
     }
+    ai_chance = { value = 5 if = { limit = { has_modifier = declared_bankruptcy } value = 0 } }
+}
+
+nesnd_jp_consult_retainers = {
+    name = nesnd_jp_consult_retainers
+    desc = nesnd_jp_consult_retainers_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_court = yes }
+    possible = {
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
     }
-    ai_chance = { value = 15 if = { limit = { has_modifier = declared_bankruptcy } value = 0 } }
+    effect = {
+        custom_tooltip = nesnd_jp_intervention_unfunded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_consult_retainers_modifier }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_court = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                }
+                nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_consult_retainers_modifier }
+            }
+        }
+    }
+    ai_chance = { value = 5 }
+}
+
+nesnd_jp_issue_royal_edict = {
+    name = nesnd_jp_issue_royal_edict
+    desc = nesnd_jp_issue_royal_edict_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_court = yes }
+    possible = {
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
+    }
+    effect = {
+        custom_tooltip = nesnd_jp_intervention_unfunded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_issue_royal_edict_modifier }
+            add_radicals = { strata = middle value = 0.02 }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_court = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                }
+                nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_issue_royal_edict_modifier }
+                add_radicals = { strata = middle value = 0.02 }
+            }
+        }
+    }
+    ai_chance = { value = 5 if = { limit = { radical_population_fraction >= 0.25 } value = 0 } }
 }
 nesnd_jp_choose_military = {
     name = nesnd_jp_choose_military desc = nesnd_jp_choose_military_desc
-    visible = { nesnd_jp_politics_live = yes NOT = { nesnd_jp_route_military = yes } }
-    possible = { nesnd_jp_can_change_policy = yes ig:ig_armed_forces = { ig_clout >= 0.1 } }
-    effect = { if = { limit = { nesnd_jp_can_change_policy = yes ig:ig_armed_forces = { ig_clout >= 0.1 } NOT = { nesnd_jp_route_military = yes } } nesnd_jp_choose_military = yes } }
+    visible = { nesnd_jp_politics_live = yes }
+    possible = {
+        hidden_trigger = { nesnd_jp_politics_live = yes }
+        custom_tooltip = { text = nesnd_jp_policy_other NOT = { nesnd_jp_route_military = yes } }
+        custom_tooltip = { text = nesnd_jp_policy_wait NOT = { has_variable = nesnd_jp_policy_cooldown } }
+        custom_tooltip = { text = nesnd_jp_policy_date OR = { game_date >= 1840.1.1 has_variable = nesnd_japan_partition_state } }
+        gold_reserves >= nesnd_jp_negotiation_cost
+        ig:ig_armed_forces = { ig_clout >= 0.1 }
+    }
+    effect = {
+        if = { limit = { nesnd_jp_route_military = yes } custom_tooltip = nesnd_jp_policy_military_current }
+        else = { custom_tooltip = nesnd_jp_policy_military_choose custom_tooltip = nesnd_jp_policy_cost }
+        custom_tooltip = nesnd_jp_policy_military_next
+        if = { limit = { has_variable = nesnd_jp_policy_cooldown } custom_tooltip = nesnd_jp_policy_wait }
+        else = { custom_tooltip = nesnd_jp_policy_unlocked }
+        hidden_effect = { if = { limit = { nesnd_jp_can_change_policy = yes ig:ig_armed_forces = { ig_clout >= 0.1 } NOT = { nesnd_jp_route_military = yes } } nesnd_jp_choose_military = yes } }
+    }
     ai_chance = { value = 10 if = { limit = { c:JTK ?= this } add = 20 } if = { limit = { OR = { has_modifier = declared_bankruptcy bureaucracy < 0 } } value = 0 } }
 }
 nesnd_jp_inspect_military = {
-    name = nesnd_jp_advance_reform desc = nesnd_jp_advance_reform_desc
-    visible = { nesnd_jp_politics_live = yes nesnd_jp_route_military = yes }
+    name = nesnd_jp_order_domestic_arms
+    desc = nesnd_jp_order_domestic_arms_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_military = yes }
     possible = {
         gold_reserves >= nesnd_jp_negotiation_cost
-        custom_tooltip = { text = nesnd_sweep_reform_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
     }
     effect = {
-        custom_tooltip = nesnd_sweep_reform_funding
-        show_as_tooltip = { add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 } add_modifier = { name = nesnd_jp_reform_effort months = 6 } }
-        hidden_effect = { if = { limit = { nesnd_jp_politics_live = yes nesnd_jp_route_military = yes gold_reserves >= nesnd_jp_negotiation_cost NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
-            add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
-            add_modifier = { name = nesnd_jp_reform_effort months = 6 }
-            set_variable = { name = nesnd_jp_reform_effort_cooldown months = 6 }
+        custom_tooltip = nesnd_jp_intervention_funded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_fund_intervention = { MODIFIER = nesnd_jp_order_domestic_arms_modifier }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_military = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                    gold_reserves >= nesnd_jp_negotiation_cost
+                }
+                nesnd_jp_fund_intervention = { MODIFIER = nesnd_jp_order_domestic_arms_modifier }
+            }
         }
     }
+    ai_chance = { value = 5 if = { limit = { has_modifier = declared_bankruptcy } value = 0 } }
+}
+
+nesnd_jp_retain_domain_instructors = {
+    name = nesnd_jp_retain_domain_instructors
+    desc = nesnd_jp_retain_domain_instructors_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_military = yes }
+    possible = {
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
     }
-    ai_chance = { value = 15 if = { limit = { has_modifier = declared_bankruptcy } value = 0 } }
+    effect = {
+        custom_tooltip = nesnd_jp_intervention_unfunded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_retain_domain_instructors_modifier }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_military = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                }
+                nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_retain_domain_instructors_modifier }
+            }
+        }
+    }
+    ai_chance = { value = 5 }
+}
+
+nesnd_jp_centralise_drill = {
+    name = nesnd_jp_centralise_drill
+    desc = nesnd_jp_centralise_drill_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_military = yes }
+    possible = {
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
+    }
+    effect = {
+        custom_tooltip = nesnd_jp_intervention_unfunded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_centralise_drill_modifier }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_military = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                }
+                nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_centralise_drill_modifier }
+            }
+        }
+    }
+    ai_chance = { value = 5 }
 }
 nesnd_jp_choose_representative = {
     name = nesnd_jp_choose_representative desc = nesnd_jp_choose_representative_desc
-    visible = { nesnd_jp_politics_live = yes NOT = { nesnd_jp_route_representative = yes } }
-    possible = { nesnd_jp_can_change_policy = yes literacy_rate >= 0.25 }
-    effect = { if = { limit = { nesnd_jp_can_change_policy = yes literacy_rate >= 0.25 NOT = { nesnd_jp_route_representative = yes } } nesnd_jp_choose_representative = yes } }
+    visible = { nesnd_jp_politics_live = yes }
+    possible = {
+        hidden_trigger = { nesnd_jp_politics_live = yes }
+        custom_tooltip = { text = nesnd_jp_policy_other NOT = { nesnd_jp_route_representative = yes } }
+        custom_tooltip = { text = nesnd_jp_policy_wait NOT = { has_variable = nesnd_jp_policy_cooldown } }
+        custom_tooltip = { text = nesnd_jp_policy_date OR = { game_date >= 1840.1.1 has_variable = nesnd_japan_partition_state } }
+        gold_reserves >= nesnd_jp_negotiation_cost
+        literacy_rate >= 0.25
+    }
+    effect = {
+        if = { limit = { nesnd_jp_route_representative = yes } custom_tooltip = nesnd_jp_policy_representative_current }
+        else = { custom_tooltip = nesnd_jp_policy_representative_choose custom_tooltip = nesnd_jp_policy_cost }
+        custom_tooltip = nesnd_jp_policy_representative_next
+        if = { limit = { has_variable = nesnd_jp_policy_cooldown } custom_tooltip = nesnd_jp_policy_wait }
+        else = { custom_tooltip = nesnd_jp_policy_unlocked }
+        hidden_effect = { if = { limit = { nesnd_jp_can_change_policy = yes literacy_rate >= 0.25 NOT = { nesnd_jp_route_representative = yes } } nesnd_jp_choose_representative = yes } }
+    }
     ai_chance = { value = 10 if = { limit = { ruler ?= { has_ideology = ideology:ideology_liberal } } add = 20 } if = { limit = { OR = { has_modifier = declared_bankruptcy bureaucracy < 0 } } value = 0 } }
 }
 nesnd_jp_inspect_representative = {
-    name = nesnd_jp_advance_reform desc = nesnd_jp_advance_reform_desc
-    visible = { nesnd_jp_politics_live = yes nesnd_jp_route_representative = yes }
+    name = nesnd_jp_fund_local_schools
+    desc = nesnd_jp_fund_local_schools_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_representative = yes }
     possible = {
         gold_reserves >= nesnd_jp_negotiation_cost
-        custom_tooltip = { text = nesnd_sweep_reform_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
     }
     effect = {
-        custom_tooltip = nesnd_sweep_reform_funding
-        show_as_tooltip = { add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 } add_modifier = { name = nesnd_jp_reform_effort months = 6 } }
-        hidden_effect = { if = { limit = { nesnd_jp_politics_live = yes nesnd_jp_route_representative = yes gold_reserves >= nesnd_jp_negotiation_cost NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
-            add_treasury = { value = nesnd_jp_negotiation_cost multiply = -1 }
-            add_modifier = { name = nesnd_jp_reform_effort months = 6 }
-            set_variable = { name = nesnd_jp_reform_effort_cooldown months = 6 }
+        custom_tooltip = nesnd_jp_intervention_funded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_fund_intervention = { MODIFIER = nesnd_jp_fund_local_schools_modifier }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_representative = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                    gold_reserves >= nesnd_jp_negotiation_cost
+                }
+                nesnd_jp_fund_intervention = { MODIFIER = nesnd_jp_fund_local_schools_modifier }
+            }
         }
     }
+    ai_chance = { value = 5 if = { limit = { has_modifier = declared_bankruptcy } value = 0 } }
+}
+
+nesnd_jp_seat_local_notables = {
+    name = nesnd_jp_seat_local_notables
+    desc = nesnd_jp_seat_local_notables_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_representative = yes }
+    possible = {
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
     }
-    ai_chance = { value = 15 if = { limit = { has_modifier = declared_bankruptcy } value = 0 } }
+    effect = {
+        custom_tooltip = nesnd_jp_intervention_unfunded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_seat_local_notables_modifier }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_representative = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                }
+                nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_seat_local_notables_modifier }
+            }
+        }
+    }
+    ai_chance = { value = 5 }
+}
+
+nesnd_jp_debate_bills_publicly = {
+    name = nesnd_jp_debate_bills_publicly
+    desc = nesnd_jp_debate_bills_publicly_desc
+    visible = { nesnd_jp_intervention_open = yes nesnd_jp_route_representative = yes }
+    possible = {
+        custom_tooltip = { text = nesnd_jp_intervention_ready NOT = { has_variable = nesnd_jp_reform_effort_cooldown } }
+    }
+    effect = {
+        custom_tooltip = nesnd_jp_intervention_unfunded_terms
+        if = { limit = { has_variable = nesnd_jp_reform_effort_cooldown } custom_tooltip = nesnd_jp_intervention_wait }
+        show_as_tooltip = {
+            nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_debate_bills_publicly_modifier }
+        }
+        hidden_effect = {
+            if = {
+                limit = {
+                    nesnd_jp_intervention_open = yes nesnd_jp_route_representative = yes
+                    NOT = { has_variable = nesnd_jp_reform_effort_cooldown }
+                }
+                nesnd_jp_apply_intervention = { MODIFIER = nesnd_jp_debate_bills_publicly_modifier }
+            }
+        }
+    }
+    ai_chance = { value = 5 }
 }
 nesnd_jp_abandon_reform = {
     name = nesnd_jp_abandon_reform desc = nesnd_jp_abandon_reform_desc

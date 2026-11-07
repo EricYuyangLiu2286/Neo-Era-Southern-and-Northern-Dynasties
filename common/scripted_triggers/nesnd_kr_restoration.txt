@@ -1,0 +1,43 @@
+﻿nesnd_kr_land = { state_region = { is_in_geographic_region = geographic_region_korea } }
+nesnd_kr_people = { total_size > 0 OR = { culture = cu:korean culture = { has_discrimination_trait = heritage_korean } } }
+nesnd_kr_inhabited = { nesnd_kr_land = yes any_scope_pop = { nesnd_kr_people = yes } }
+nesnd_kr_holder = { is_country_alive = yes any_scope_state = { nesnd_kr_land = yes } }
+nesnd_kr_successor = { nesnd_kr_holder = yes any_primary_culture = { has_discrimination_trait = heritage_korean } capital ?= { nesnd_kr_land = yes } }
+nesnd_kr_center = { exists = global_var:nesnd_kr_center global_var:nesnd_kr_center ?= this }
+nesnd_kr_people_remain = { any_country = { any_scope_state = { nesnd_kr_inhabited = yes } } }
+nesnd_kr_can_deal = {
+ has_global_variable = nesnd_kr_open nesnd_kr_holder = yes NOT = { nesnd_kr_center = yes }
+ is_at_war = no is_active_in_diplomatic_play = no
+ any_scope_state = { nesnd_kr_inhabited = yes controller = owner }
+ NOT = { any_scope_state = { nesnd_kr_land = yes NOT = { controller = owner } } }
+ NOT = { global_var:nesnd_kr_center ?= { OR = { is_at_war = yes is_active_in_diplomatic_play = yes } } }
+}
+nesnd_kr_seed_live = {
+ exists = global_var:nesnd_kr_target exists = global_var:nesnd_kr_seed
+ global_var:nesnd_kr_seed ?= { owner = global_var:nesnd_kr_target controller = owner nesnd_kr_inhabited = yes }
+ global_var:nesnd_kr_target ?= { nesnd_kr_can_deal = yes }
+}
+nesnd_kr_offer_live = { nesnd_kr_seed_live = yes global_var:nesnd_kr_signer ?= this nesnd_kr_signature_valid = yes
+ has_global_variable = nesnd_kr_pending global_var:nesnd_kr_phase = 1
+ exists = scope:kr_offer_seed scope:kr_offer_seed = global_var:nesnd_kr_seed
+ scope:kr_offer_id = global_var:nesnd_kr_serial
+}
+nesnd_kr_complete = {
+ nesnd_kr_people_remain = yes
+ global_var:nesnd_kr_center ?= { is_country_alive = yes is_subject = no nesnd_kr_holder = yes }
+ trigger_if = { limit = { has_global_variable = nesnd_kr_phase } NOT = { global_var:nesnd_kr_phase = 3 } }
+ NOT = { any_country = { NOT = { nesnd_kr_center = yes } any_scope_state = { nesnd_kr_inhabited = yes } } }
+}
+nesnd_kr_local_action = {
+ has_global_variable = nesnd_kr_open nesnd_kr_holder = yes NOT = { nesnd_kr_center = yes }
+ any_scope_state = { nesnd_kr_inhabited = yes controller = owner }
+ NOR = { has_modifier = nesnd_kr_councils has_modifier = nesnd_kr_police }
+ gold_reserves >= nesnd_jp_negotiation_cost
+}
+
+nesnd_kr_signature_valid = {
+ trigger_if = { limit = { has_global_variable = nesnd_kr_offer_had_center } trigger_if = { limit = { c:KOR ?= { is_country_alive = yes } } global_var:nesnd_kr_offer_center ?= c:KOR } global_var:nesnd_kr_offer_center ?= { is_country_alive = yes nesnd_kr_center = yes } }
+ trigger_else = { NOT = { exists = global_var:nesnd_kr_center } NOT = { c:KOR ?= { is_country_alive = yes } } NOT = { any_country = { nesnd_kr_successor = yes } } }
+ global_var:nesnd_kr_target ?= {
+ OR = { AND = { is_subject = no this = global_var:nesnd_kr_signer }
+ AND = { is_subject = yes overlord ?= global_var:nesnd_kr_signer } } } }

@@ -1,28 +1,18 @@
 # 本项目开发入口
 
-开始工作前读取 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`，按其中的目录路由查证当前游戏源码与实际实例。写功能或修复前，完成该技能“实现前先查原版完整链条”步骤并记录来源。
+1. 读技能 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`（仓库副本：`development/nesnd-skill/SKILL.md`）。写玩家文字时另读 `nesnd-player-writing`。
+2. 读 `docs/agents/STATUS.md`：当前基线、未完成事项、各目录位置。
+3. 在 Codex 中开子代理前，读 `docs/agents/gpt_subagent_usage.md`：何时用、各类任务的模型与强度（上限 `gpt-6-astra` / high，不用 Luna）。
 
-只有本目录是主 MOD。维多利亚3本体、所有创意工坊 MOD、旧项目与文案/翻译资料均只读。
+只有本目录是主 MOD。维多利亚3本体、所有创意工坊 MOD、旧项目与文案/翻译资料均只读。工坊 MOD 只用于查兼容接口，不学习、不复制其他作者的设计与代码。
 
-**启动游戏须有用户在当次任务中的明确要求。** “修复”“测试”“继续”或过去的实机许可均不构成启动许可。默认在游戏外验证。用户指定观察者五速并保存时，完成这三步就停止控制，不持续监看、不轮询日志、不自行重开。
-工具、独立备份、原版基线、地图编辑工程与测试证据放在 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench`。
+**启动游戏须有用户在当次任务中的明确要求。**“修复”“测试”“继续”或过去的许可都不算。默认在游戏外验证。用户指定观察者五速并保存时，完成这三步就停止，不监看、不轮询日志、不自行重开。
 
-不得以“通过静态检查”宣称“游戏内已验证”。版本迁移应保持架空领土、人口、文化与制度意图，不能直接复制原版的新国界或删除不再受支持的设计。
+工具、备份、原版基线、地图编辑工程与测试证据放在 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench`。
 
-## Agent skills
+静态检查通过不等于游戏内验证。版本迁移保持架空领土、人口、文化与制度意图。
 
-使用工程技能进行诊断、规划、实现、审查或版本交付前，先读 `docs/agents/engineering-skills.md`。恢复本轮工作时读 `.scratch/debug-release/map.md`。
+## 任务记录
 
-### Issue tracker
-
-创建、读取或更新任务时，使用本地 Markdown。先读 `docs/agents/issue-tracker.md`。
-
-### Triage labels
-
-分诊任务时，使用五种默认状态名称。先读 `docs/agents/triage-labels.md`。
-
-### Domain docs
-
-探索项目时，按单一领域文档布局读取术语和设计决策。先读 `docs/agents/domain.md`。
-
-当前验证顺序按 [日志优先交付](<C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/references/log-first-delivery.md>)：修复日志根因、外部工具/MCP优先，已验证行为不重复开局或读档。正式包排除QA工具。
+- 任务用本地 Markdown：`.scratch/<工作>/issues/NN-*.md`，格式见 `docs/agents/issue-tracker.md`，状态名见 `docs/agents/triage-labels.md`。
+- 使用 Matt Pocock 工程技能（诊断、规划、审查等）时，先读 `docs/agents/engineering-skills.md`；术语与设计决策布局见 `docs/agents/domain.md`。

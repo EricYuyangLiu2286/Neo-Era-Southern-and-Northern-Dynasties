@@ -1,0 +1,403 @@
+﻿# Task 58. Replaces the vanilla slavery question under the same key, so every vanilla
+# hook on has_journal_entry = je_acw_countdown (movement support, radicalism, CSA/FSA
+# tags and capitals, parties, character ideologies) keeps working. The war, reconstruction
+# and later journals in 00_acw_entries.txt stay vanilla.
+REPLACE:je_acw_countdown = {
+    icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+    group = je_group_usa_american_civil_war
+    activation_description = { always = yes }
+
+    immediate = {
+        set_variable = { name = acw_progress_var value = 0 }
+        set_variable = { name = nesnd_acw_months value = 0 }
+        set_variable = { name = nesnd_acw_bar value = 0 }
+        every_scope_state = {
+            root = { add_to_variable_list = { name = nesnd_acw_start_regions target = prev.state_region } }
+        }
+    }
+
+    scripted_progress_bar = nesnd_acw_crisis_bar
+    scripted_button = nesnd_acw_compromise
+    scripted_button = nesnd_acw_hunt
+    scripted_button = nesnd_acw_buyout
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { has_variable = nesnd_acw_crisis has_variable = nesnd_acw_crisis_side var:nesnd_acw_crisis_side = 2 }
+                desc = nesnd_acw_status_crisis_fsa
+            }
+            triggered_desc = { trigger = { has_variable = nesnd_acw_crisis } desc = nesnd_acw_status_crisis_csa }
+            triggered_desc = {
+                trigger = { has_law_or_variant = law_type:law_slavery_banned has_variable = nesnd_acw_abolished_months }
+                desc = nesnd_acw_status_abolished
+            }
+            triggered_desc = { trigger = { is_enacting_law = law_type:law_slavery_banned } desc = nesnd_acw_status_enacting }
+            desc = nesnd_acw_status_normal
+        }
+    }
+
+    # Reconciliation: ten years under abolition with the slaveholders' cause spent.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            has_law_or_variant = law_type:law_slavery_banned
+            hidden_trigger = { NOT = { has_variable = nesnd_acw_crisis } }
+            custom_tooltip = {
+                text = nesnd_acw_reconcile_time_tt
+                trigger_if = { limit = { has_variable = nesnd_acw_abolished_months } var:nesnd_acw_abolished_months >= 120 }
+                trigger_else = { always = no }
+            }
+            custom_tooltip = {
+                text = nesnd_acw_reconcile_movement_tt
+                NOT = {
+                    any_political_movement = {
+                        is_political_movement_type = movement_pro_slavery
+                        political_movement_support >= 0.05
+                    }
+                }
+            }
+        }
+        effect = {
+            set_variable = je_acw_countdown_complete
+            remove_modifier = missouri_compromise
+            trigger_event = { id = slavery_law_events.7 days = 0 popup = yes }
+            hidden_effect = { nesnd_acw_cleanup = yes }
+        }
+    }
+
+    # Civil war: vanilla ending, unchanged.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            OR = {
+                has_civil_war_from_movement_type = movement_type:movement_pro_slavery
+                has_civil_war_from_movement_type = movement_type:movement_anti_slavery
+            }
+        }
+        effect = {
+            if = {
+                limit = { has_civil_war_from_movement_type = movement_type:movement_pro_slavery }
+                set_variable = csa_will_spawn_var
+            }
+            custom_tooltip = {
+                text = acw_will_happen_tt
+                trigger_event = { id = acw_je_events.1 }
+            }
+            hidden_effect = { nesnd_acw_cleanup = yes }
+        }
+    }
+
+    # The question has lost its object: no longer both slave and free states.
+    outcome = {
+        header = nesnd_acw_obsolete_header
+        effect_header = nesnd_acw_obsolete_effect_header
+        conclusion_desc = nesnd_acw_obsolete_conclusion
+        trigger = {
+            NOT = { has_law_or_variant = law_type:law_slavery_banned }
+            hidden_trigger = { NOT = { has_variable = nesnd_acw_crisis } }
+            custom_tooltip = {
+                text = nesnd_acw_obsolete_tt
+                NAND = {
+                    any_scope_state = { is_slave_state = yes }
+                    any_scope_state = { is_slave_state = no }
+                }
+            }
+        }
+        effect = { hidden_effect = { nesnd_acw_cleanup = yes } }
+    }
+
+    # During the secession crisis, keep the brewing secession moving every week.
+    on_weekly_pulse = {
+        effect = {
+            if = {
+                limit = { has_variable = nesnd_acw_crisis }
+                every_civil_war = {
+                    limit = { is_civil_war_type = secession }
+                    add_civil_war_progress = 0.1
+                }
+            }
+        }
+    }
+
+    on_monthly_pulse = {
+        effect = {
+            # The bar has already counted this month; mirror it and clear the one-time jumps.
+            set_variable = { name = nesnd_acw_bar value = "scope:journal_entry.scripted_bar_progress(nesnd_acw_crisis_bar)" }
+            change_variable = { name = nesnd_acw_months add = 1 }
+            remove_variable = nesnd_acw_once_ruler
+            remove_variable = nesnd_acw_once_kansas
+            remove_variable = nesnd_acw_once_compromise
+            if = {
+                limit = { has_variable = nesnd_acw_escape_heat }
+                change_variable = { name = nesnd_acw_escape_heat multiply = 0.96 }
+                if = { limit = { var:nesnd_acw_escape_heat < 0.001 } remove_variable = nesnd_acw_escape_heat }
+            }
+
+            # Historical nodes.
+            if = {
+                limit = {
+                    nesnd_acw_pre_abolition = yes
+                    NOT = { has_variable = nesnd_acw_abolitionist_ruled }
+                    ruler ?= { has_ideology = ideology:ideology_abolitionist }
+                }
+                set_variable = nesnd_acw_abolitionist_ruled
+                set_variable = { name = nesnd_acw_once_ruler value = 8 }
+                trigger_event = { id = nesnd_acw.1 popup = yes }
+            }
+            if = {
+                limit = { has_variable = abolitionist_martydom NOT = { has_variable = nesnd_acw_seen_martyr } }
+                set_variable = nesnd_acw_seen_martyr
+                set_variable = { name = nesnd_acw_after_martyr value = 0.05 months = 60 }
+            }
+            if = {
+                limit = { has_variable = bleeding_kansas_happened NOT = { has_variable = nesnd_acw_seen_kansas } }
+                set_variable = nesnd_acw_seen_kansas
+                set_variable = { name = nesnd_acw_once_kansas value = 5 }
+            }
+
+            # Months under abolition.
+            if = {
+                limit = { has_law_or_variant = law_type:law_slavery_banned }
+                if = {
+                    limit = { has_variable = nesnd_acw_abolished_months }
+                    change_variable = { name = nesnd_acw_abolished_months add = 1 }
+                }
+                else = { set_variable = { name = nesnd_acw_abolished_months value = 0 } }
+            }
+
+            # Secession crisis: full bar, or 1872.1.1 (month 432) without abolition under way.
+            if = {
+                limit = {
+                    NOT = { has_variable = nesnd_acw_crisis }
+                    OR = {
+                        "scope:journal_entry.scripted_bar_progress(nesnd_acw_crisis_bar)" >= 100
+                        AND = {
+                            NOT = { has_law_or_variant = law_type:law_slavery_banned }
+                            NOT = { is_enacting_law = law_type:law_slavery_banned }
+                            var:nesnd_acw_months >= 432
+                        }
+                    }
+                }
+                set_variable = nesnd_acw_crisis
+                if = {
+                    limit = {
+                        NOT = { has_law_or_variant = law_type:law_slavery_banned }
+                        ruler ?= { OR = { has_ideology = ideology:ideology_slaver has_ideology = ideology:ideology_jacksonian_democrat } }
+                        nesnd_acw_rad_anti > nesnd_acw_rad_pro
+                    }
+                    set_variable = { name = nesnd_acw_crisis_side value = 2 }
+                }
+                else = { set_variable = { name = nesnd_acw_crisis_side value = 1 } }
+                trigger_event = { id = nesnd_acw.10 popup = yes }
+            }
+            # If the engine has not started the war, push again every six months.
+            else_if = {
+                limit = {
+                    has_variable = nesnd_acw_crisis
+                    NOT = { has_variable = nesnd_acw_push_wait }
+                    NOT = { any_civil_war = { is_civil_war_type = secession } }
+                }
+                nesnd_acw_push_secession = yes
+            }
+        }
+        random_events = {
+            200 = 0
+            10 = acw_events.1 # The Abolitionist's Martyrdom
+            10 = nesnd_acw.3 # The Wilmot Proviso, for the MOD's west
+        }
+    }
+    on_yearly_pulse = {
+        random_events = {
+            40 = 0
+            20 = nesnd_acw.92 # The Fugitive Slave
+            20 = acw_events.5 # Bleeding Kansas
+            20 = nesnd_acw.96 # The Caning of Charles Sumner
+        }
+    }
+
+    weight = 100
+    should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+# 东洲. Mirrors the USA's "continental protector" journal: shelter escapees, press claims,
+# and strike east while the Union is divided.
+nesnd_hus_west_lever = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    can_revolution_inherit = no
+    weight = 900
+    is_shown_when_inactive = { nesnd_hus_west_eligible = yes }
+    possible = { nesnd_hus_west_eligible = yes }
+
+    immediate = { set_variable = { name = nesnd_hus_west_arrivals value = 0 } }
+
+    scripted_progress_bar = nesnd_hus_west_claim_bar
+    scripted_progress_bar = nesnd_hus_west_batch_bar
+    scripted_button = nesnd_hus_west_open
+    scripted_button = nesnd_hus_west_close
+    scripted_button = nesnd_hus_west_fund
+    scripted_button = nesnd_hus_west_claim
+    scripted_button = nesnd_hus_west_press
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { c:USA ?= { has_journal_entry = je_acw_war } } desc = nesnd_hus_west_status_war }
+            triggered_desc = { trigger = { has_variable = nesnd_hus_west_open } desc = nesnd_hus_west_status_open }
+            desc = nesnd_hus_west_status_closed
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_hus_west_success_tt
+                any_scope_state = {
+                    root = { is_target_in_variable_list = { name = nesnd_hus_west_claims target = prev.state_region } }
+                }
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_hus_west_triumph years = 10 }
+            hidden_effect = { nesnd_hus_west_cleanup = yes }
+        }
+    }
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_hus_west_failure_tt
+                exists = c:USA
+                c:USA = {
+                    NOR = { has_journal_entry = je_acw_countdown has_journal_entry = je_acw_war }
+                }
+            }
+        }
+        effect = {
+            change_relations = { country = c:USA value = -30 }
+            hidden_effect = { nesnd_hus_west_cleanup = yes }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            OR = {
+                NOT = { c:HUS ?= this }
+                has_variable = nesnd_hus_native_successor
+                NOT = { exists = c:USA }
+                NOT = { any_scope_state = { any_neighbouring_state = { owner = c:USA } } }
+            }
+        }
+        effect = { nesnd_hus_west_cleanup = yes }
+    }
+
+    on_monthly_pulse = {
+        effect = {
+            set_variable = { name = nesnd_hus_west_bar value = "scope:journal_entry.scripted_bar_progress(nesnd_hus_west_claim_bar)" }
+            remove_variable = nesnd_hus_west_once_batches
+            remove_variable = nesnd_hus_west_once_spent
+
+            # One batch of escapees every six months while the border is open.
+            if = {
+                limit = {
+                    has_variable = nesnd_hus_west_open
+                    "scope:journal_entry.scripted_bar_progress(nesnd_hus_west_batch_bar)" >= 100
+                }
+                scope:journal_entry = { set_bar_progress = { name = nesnd_hus_west_batch_bar value = 0 } }
+                c:USA ?= {
+                    if = {
+                        limit = { NOT = { has_war_with = c:HUS } any_scope_state = { nesnd_hus_west_departure = yes } }
+                        set_local_variable = { name = nesnd_hus_west_size value = nesnd_hus_west_batch_size }
+                        # Pursuit of fugitives halves each batch.
+                        if = {
+                            limit = { has_variable = nesnd_acw_hunt_active }
+                            change_local_variable = { name = nesnd_hus_west_size multiply = 0.5 }
+                        }
+                        ordered_scope_state = {
+                            limit = { nesnd_hus_west_departure = yes }
+                            order_by = nesnd_hus_west_state_escapees
+                            max = 1
+                            save_scope_as = nesnd_hus_west_from
+                        }
+                    }
+                }
+                if = {
+                    limit = { exists = scope:nesnd_hus_west_from }
+                    ordered_scope_state = {
+                        limit = {
+                            is_split_state = no
+                            any_neighbouring_state = { this = scope:nesnd_hus_west_from }
+                        }
+                        order_by = { value = state_population multiply = -1 }
+                        max = 1
+                        save_scope_as = nesnd_hus_west_to
+                    }
+                }
+                if = {
+                    limit = { exists = scope:nesnd_hus_west_from exists = scope:nesnd_hus_west_to }
+                    scope:nesnd_hus_west_from = {
+                        ordered_scope_pop = {
+                            limit = { nesnd_hus_west_escapee = yes }
+                            order_by = total_size
+                            max = 1
+                            save_scope_as = nesnd_hus_west_pop
+                        }
+                    }
+                    scope:nesnd_hus_west_pop = {
+                        culture = { save_scope_as = nesnd_hus_west_culture }
+                        if = {
+                            limit = { total_size <= local_var:nesnd_hus_west_size }
+                            root = { change_variable = { name = nesnd_hus_west_arrivals add = prev.total_size } }
+                            move_pop = scope:nesnd_hus_west_to
+                        }
+                        else = {
+                            root = { change_variable = { name = nesnd_hus_west_arrivals add = local_var:nesnd_hus_west_size } }
+                            move_partial_pop = { state = scope:nesnd_hus_west_to population = local_var:nesnd_hus_west_size }
+                        }
+                    }
+                    # 东洲 allows debt slavery: free the arrivals and give them enough wealth
+                    # (10) that debt slavery does not take them on arrival.
+                    scope:nesnd_hus_west_to = {
+                        every_scope_pop = {
+                            limit = { is_pop_type = slaves culture = scope:nesnd_hus_west_culture }
+                            change_poptype = pop_type:laborers
+                            set_pop_wealth = { wealth_distribution = { value = 10 } }
+                        }
+                    }
+                    set_variable = { name = nesnd_hus_west_once_batches value = 2 }
+                    change_relations = { country = c:USA value = -5 }
+                    c:USA = {
+                        if = {
+                            limit = { has_journal_entry = je_acw_countdown }
+                            if = {
+                                limit = { NOT = { has_variable = nesnd_acw_escape_heat } }
+                                set_variable = { name = nesnd_acw_escape_heat value = 0 }
+                            }
+                            if = {
+                                limit = { has_variable = nesnd_acw_hunt_active }
+                                change_variable = { name = nesnd_acw_escape_heat add = 0.006 }
+                            }
+                            else = { change_variable = { name = nesnd_acw_escape_heat add = 0.012 } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

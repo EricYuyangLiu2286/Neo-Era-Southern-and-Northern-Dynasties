@@ -182,23 +182,34 @@ nesnd_holdout_abandoned_answer = {
     nesnd_holdout_peace_eligible = yes has_variable = nesnd_holdout_answered_round
     nesnd_holdout_answered_value >= nesnd_holdout_round_value
     NOR = { has_variable = nesnd_holdout_choice_pending has_variable = nesnd_holdout_north_awaited
-        has_variable = nesnd_holdout_north_refused has_variable = nesnd_holdout_resistance_pending }
+        has_variable = nesnd_holdout_resistance_pending }
     NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
     trigger_if = { limit = { has_variable = nesnd_holdout_recovered_answer_round }
         NOT = { var:nesnd_holdout_recovered_answer_round = nesnd_holdout_round_value }
     }
 }
 
+# Play identity remains available to an enforcement callback after the loser has left the war.
 nesnd_south_wu_japan_play = {
-    OR = {
-        AND = { initiator_is = c:USM target_is = c:JAP }
-        AND = { initiator_is = c:JAP target_is = c:USM }
-        AND = { nesnd_south_named_play = yes nesnd_play_has_committed_target = { COUNTRY = c:JAP } c:JAP ?= { nesnd_south_campaign_holdout = yes } }
-    }
+    nesnd_south_named_play = yes
+    this ?= c:USM.var:nesnd_japan_jingnan_play
 }
 nesnd_south_wu_japan_callback = {
     OR = {
         AND = { exists = scope:diplomatic_play scope:diplomatic_play ?= { nesnd_south_wu_japan_play = yes } }
         AND = { exists = scope:war scope:war ?= { exists = diplomatic_play diplomatic_play ?= { nesnd_south_wu_japan_play = yes } } }
+    }
+}
+
+# Country scope. Japan's opposition answer carries the same obligation as the mainland summons.
+nesnd_jingnan_rebel_signatory = { has_variable = usm_opposition_country }
+
+nesnd_jingnan_wu_ally = { c:JAP ?= this has_variable = ce_usm_cw_ally_with_mng }
+nesnd_jingnan_may_receive_rebel_journal = {
+    exists = var:nesnd_jingnan_locked_play
+    any_scope_war = {
+        is_war_participant = prev
+        is_on_defending_side = prev
+        diplomatic_play ?= prev.var:nesnd_jingnan_locked_play
     }
 }

@@ -1,0 +1,172 @@
+﻿# 唐衣大食第③批：波斯人统治阶段（任务65）。按统治者文化判定（nesnd_per_persian_stage），PER 改朝换代后与分裂出的伊朗都适用。
+
+# 「沙阿的新朝」：处置国内的唐人人物。驱逐、流放、归化可交替使用，每次三人；优容旧贵则一并留任并开「旧唐人心」。
+nesnd_per_shah_court_journal = {
+    icon = "gfx/interface/icons/ideology_icons/royalist.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_per_persian_stage = yes NOT = { has_variable = nesnd_per_court_done } nesnd_per_court_has_tang = yes }
+    possible = { nesnd_per_persian_stage = yes NOT = { has_variable = nesnd_per_court_done } nesnd_per_court_has_tang = yes }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 1100
+
+    scripted_button = nesnd_per_court_expel_button
+    scripted_button = nesnd_per_court_exile_button
+    scripted_button = nesnd_per_court_naturalize_button
+    scripted_button = nesnd_per_court_tolerate_button
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_per_court_has_tang = yes } desc = nesnd_per_court_status_many }
+            desc = nesnd_per_court_status_none
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_per_court_done_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_per_court_done_tt
+                OR = {
+                    NOT = { nesnd_per_court_has_tang = yes }
+                    has_variable = nesnd_per_old_tang_tolerated
+                }
+            }
+        }
+        effect = { set_variable = nesnd_per_court_done }
+    }
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        conclusion_desc = nesnd_per_shah_invalid_conclusion
+        trigger = { custom_tooltip = { text = nesnd_per_shah_invalid_tt NOT = { nesnd_per_persian_stage = yes } } }
+    }
+}
+
+# 「旧唐人心」：优容旧贵后，旧唐贵族与唐人的怨望。二十年后渐平。
+nesnd_per_old_tang_journal = {
+    icon = "gfx/interface/icons/ideology_icons/confucian.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = { has_variable = nesnd_per_old_tang_tolerated nesnd_per_persian_stage = yes }
+    possible = { has_variable = nesnd_per_old_tang_tolerated nesnd_per_persian_stage = yes NOT = { has_variable = nesnd_per_old_tang_done } }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 1090
+
+    immediate = {
+        if = { limit = { NOT = { has_variable = nesnd_per_old_tang_clock } } set_variable = { name = nesnd_per_old_tang_clock months = 240 } }
+    }
+
+    scripted_progress_bar = nesnd_per_old_tang_bar
+    scripted_button = nesnd_per_old_tang_soothe_button
+
+    on_monthly_pulse = {
+        effect = {
+            set_variable = { name = nesnd_per_tang_share_v value = nesnd_per_tang_share }
+            set_variable = { name = nesnd_per_old_tang_v value = "scope:journal_entry.scripted_bar_progress(nesnd_per_old_tang_bar)" }
+            if = { limit = { has_variable = nesnd_per_old_tang_reset }
+                scope:journal_entry = { set_bar_progress = { name = nesnd_per_old_tang_bar value = root.var:nesnd_per_old_tang_reset } }
+                remove_variable = nesnd_per_old_tang_reset
+            }
+            else_if = { limit = { "scope:journal_entry.scripted_bar_progress(nesnd_per_old_tang_bar)" >= 100 }
+                trigger_event = { id = nesnd_per_rising.10 popup = yes }
+                scope:journal_entry = { set_bar_progress = { name = nesnd_per_old_tang_bar value = 90 } }
+            }
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_per_old_tang_v var:nesnd_per_old_tang_v >= 60 } desc = nesnd_per_old_tang_status_high }
+            desc = nesnd_per_old_tang_status_low
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_per_old_tang_done_conclusion
+        trigger = { custom_tooltip = { text = nesnd_per_old_tang_done_tt NOT = { has_variable = nesnd_per_old_tang_clock } } }
+        effect = { set_variable = nesnd_per_old_tang_done }
+    }
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        conclusion_desc = nesnd_per_shah_invalid_conclusion
+        trigger = { custom_tooltip = { text = nesnd_per_shah_invalid_tt NOT = { nesnd_per_persian_stage = yes } } }
+        effect = { set_variable = nesnd_per_old_tang_done }
+    }
+}
+
+# 「沙阿的道路」：北伐雪耻（取西秦一州）或西进（取两河与海湾的六个石油地区），择一而行。
+nesnd_per_shah_road_journal = {
+    icon = "gfx/interface/icons/ideology_icons/jingoist.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_per_persian_stage = yes NOT = { has_variable = nesnd_per_road_done } }
+    possible = { nesnd_per_persian_stage = yes NOT = { has_variable = nesnd_per_road_done } }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 1080
+
+    scripted_button = nesnd_per_road_north_button
+    scripted_button = nesnd_per_road_west_button
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_per_road var:nesnd_per_road = flag:north } desc = nesnd_per_road_status_north }
+            triggered_desc = { trigger = { has_variable = nesnd_per_road var:nesnd_per_road = flag:west } desc = nesnd_per_road_status_west }
+            desc = nesnd_per_road_status_none
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_per_road_north_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_per_road_north_done_tt
+                has_variable = nesnd_per_north_target
+                any_scope_state = { state_region = { this = root.var:nesnd_per_north_target } }
+            }
+        }
+        effect = {
+            set_variable = nesnd_per_road_done
+            remove_variable = nesnd_per_north_war
+            trigger_event = { id = nesnd_per_rising.20 popup = yes }
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_per_road_west_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_per_road_west_done_tt
+                has_variable = nesnd_per_road
+                var:nesnd_per_road = flag:west
+                nesnd_per_west_oil_owned = yes
+            }
+        }
+        effect = {
+            set_variable = nesnd_per_road_done
+            trigger_event = { id = nesnd_per_rising.21 popup = yes }
+        }
+    }
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        conclusion_desc = nesnd_per_shah_invalid_conclusion
+        trigger = { custom_tooltip = { text = nesnd_per_shah_invalid_tt NOT = { nesnd_per_persian_stage = yes } } }
+        effect = { if = { limit = { has_variable = nesnd_per_north_war } remove_variable = nesnd_per_north_war } }
+    }
+}

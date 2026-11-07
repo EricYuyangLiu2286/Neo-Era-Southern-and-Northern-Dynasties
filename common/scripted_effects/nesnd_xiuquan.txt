@@ -1,0 +1,78 @@
+﻿# 教士秀全到达一州。作用域：目的州。开局、每月漫游、驱赶、州对象失效后的补位共用。
+nesnd_xq_arrive = {
+	global_var:nesnd_xq_state ?= {
+		if = {
+			limit = { has_modifier = nesnd_xq_ministry }
+			remove_modifier = nesnd_xq_ministry
+		}
+	}
+	set_global_variable = { name = nesnd_xq_state value = this }
+	state_region = { save_scope_as = nesnd_xq_arrival_region }
+	set_global_variable = { name = nesnd_xq_region value = scope:nesnd_xq_arrival_region }
+	if = {
+		limit = { NOT = { has_modifier = nesnd_xq_ministry } }
+		add_modifier = { name = nesnd_xq_ministry }
+	}
+	owner ?= {
+		global_var:nesnd_xq_char ?= {
+			if = {
+				limit = { NOT = { owner ?= prev } }
+				transfer_character = prev
+			}
+		}
+	}
+}
+
+# 日志作用域。头像列表仅保存已创建的秀全；空列表不生成 GUI 人物控件。
+nesnd_xq_bind_portrait = {
+	if = {
+		limit = {
+			NOT = { has_variable_list = nesnd_xq_portrait_characters }
+			exists = global_var:nesnd_xq_char
+		}
+		add_to_variable_list = { name = nesnd_xq_portrait_characters target = global_var:nesnd_xq_char }
+	}
+}
+
+# 每周对账。作用域：日志。州对象因割让或拆分失效时，在同一地区另找一州；
+# 州易主时人物随之转籍；同步所在国和邻国的参与资格。
+nesnd_xq_sync = {
+	nesnd_xq_bind_portrait = yes
+	if = {
+		limit = { NOT = { exists = global_var:nesnd_xq_state } }
+		random_state = {
+			limit = { state_region = global_var:nesnd_xq_region }
+			nesnd_xq_arrive = yes
+		}
+	}
+	global_var:nesnd_xq_state ?= {
+		if = {
+			limit = { NOT = { has_modifier = nesnd_xq_ministry } }
+			add_modifier = { name = nesnd_xq_ministry }
+		}
+		owner ?= {
+			global_var:nesnd_xq_char ?= {
+				if = {
+					limit = { NOT = { owner ?= prev } }
+					transfer_character = prev
+				}
+			}
+		}
+	}
+	nesnd_xq_sync_participants = yes
+}
+
+# 日志作用域。驱逐成功后立即刷新，周同步也处理归属和国界变化。
+nesnd_xq_sync_participants = {
+	every_scope_je_involved = {
+		limit = { NOT = { nesnd_xq_should_be_involved = yes } }
+		scope:journal_entry = { remove_involved_country = prev }
+	}
+	every_country = {
+		limit = {
+			nesnd_xq_should_be_involved = yes
+			NOT = { is_involved_in_journal_entry = nesnd_xiuquan_journey }
+		}
+		scope:journal_entry = { add_involved_country = prev }
+	}
+}

@@ -1,0 +1,155 @@
+﻿# 唐衣大食第②批：三教影响力、代表人物、西域汉羌团结度（任务65）。
+
+# Country scope. 冻结规则同「波斯之忧」。
+nesnd_per_faith_live = {
+    nesnd_per_faith_regime = yes
+    nesnd_per_has_faith_journal = yes
+    NOT = { nesnd_per_tension_frozen = yes }
+}
+# Country scope. 「三教消长」的政权：唐人执政的唐衣大食，或改朝换代后由波斯人统治的同一 PER（第③批）。
+nesnd_per_faith_regime = {
+    OR = {
+        nesnd_per_tang_regime = yes
+        AND = { nesnd_per_country = yes nesnd_per_persian_stage = yes }
+    }
+}
+# Country scope. 两版「三教消长」任一在册（佛门版或天命说版）。
+nesnd_per_has_faith_journal = {
+    OR = {
+        has_journal_entry = nesnd_per_faith_journal
+        has_journal_entry = nesnd_per_faith_mandate_journal
+    }
+}
+# Country scope. 开局选了天命说作第三教（替换佛门）。永久变量，见事件 nesnd_per_faith.2。
+nesnd_per_third_is_mandate = { has_variable = nesnd_per_third_mandate }
+# Country scope. 与西秦有往来：未走向东路线断交，且未与西秦交战。
+nesnd_per_qin_ties = {
+    nesnd_per_tang_regime = yes
+    NOT = { AND = { has_variable = nesnd_per_route_covert NOT = { has_variable = nesnd_per_route_aid } } }
+    NOT = { c:QE1 ?= { has_war_with = root } }
+}
+# Country scope. 天命说传道可推进：天命说版日志在册且未冻结、唐人团结度不低于 60、与西秦有往来。
+nesnd_per_preach_open = {
+    nesnd_per_faith_live = yes
+    nesnd_per_third_is_mandate = yes
+    has_variable = nesnd_per_unity
+    var:nesnd_per_unity >= 60
+    nesnd_per_qin_ties = yes
+}
+# Pop scope. 传道对象：唐人中的佛门、什叶、逊尼信众。
+nesnd_per_preach_tang_pop = {
+    nesnd_per_tang_pop = yes
+    OR = { has_pop_religion = mahayana has_pop_religion = shiite has_pop_religion = sunni }
+}
+# Pop scope. 天命说立为国教后的传道对象：非唐人的什叶、逊尼信众。
+nesnd_per_preach_other_pop = {
+    NOT = { nesnd_per_tang_pop = yes }
+    OR = { has_pop_religion = shiite has_pop_religion = sunni }
+}
+# Pop scope. 三教（含第三教两种）的信众：原改宗条在这些人里吸收信众。
+nesnd_per_faith_pop = {
+    OR = {
+        has_pop_religion = shiite
+        has_pop_religion = sunni
+        has_pop_religion = mahayana
+        has_pop_religion = kaimeng_confucianism
+    }
+}
+nesnd_per_unity_live = {
+    nesnd_per_country = yes
+    has_journal_entry = nesnd_per_unity_journal
+    NOT = { nesnd_per_tension_frozen = yes }
+}
+# Country scope. 按中华（外来人）处理的统治者：唐人文化，或不属伊朗、中东、中亚传承的文化。
+nesnd_per_ruler_counts_as_chinese = {
+    trigger_if = {
+        limit = { exists = ruler }
+        ruler = {
+            OR = {
+                has_culture = cu:ce_xiyu
+                has_culture = cu:ce_sichuan
+                has_culture = cu:ce_chu
+                has_culture = cu:ce_wuu
+                has_culture = cu:ce_xinan
+                has_culture = cu:ce_liaodong
+                has_culture = cu:ce_laoqin
+                has_culture = cu:ce_xibei
+                has_culture = cu:yue
+                has_culture = cu:yi
+                has_culture = cu:zhuang
+                has_culture = cu:min
+                has_culture = cu:hakka
+                has_culture = cu:miao
+                has_culture = cu:han
+                has_culture = cu:ce_zhonghua
+                has_culture = cu:manchu
+                NOT = {
+                    culture = {
+                        OR = {
+                            has_discrimination_trait = heritage_iranian
+                            has_discrimination_trait_group = heritage_group_middle_eastern
+                            has_discrimination_trait_group = heritage_group_central_asian
+                        }
+                    }
+                }
+            }
+        }
+    }
+    trigger_else = { always = yes }
+}
+# 国家作用域。继任序号从 0 起算，日志预览时可能尚未初始化。
+nesnd_per_rep_index_at_most = {
+    trigger_if = {
+        limit = { has_variable = nesnd_per_rep_$SLOT$_idx }
+        var:nesnd_per_rep_$SLOT$_idx <= $MAX_INDEX$
+    }
+    trigger_else = { always = yes }
+}
+# Character scope, SLOT = shia/sunni/buddhist. 代表人物仍在本国。
+nesnd_per_rep_valid = {
+    trigger_if = {
+        limit = { exists = var:nesnd_per_rep_$SLOT$ }
+        var:nesnd_per_rep_$SLOT$ = { is_character_alive = yes owner ?= root }
+    }
+    trigger_else = { always = no }
+}
+# Country scope. FAITH（shia/sunni/buddhist/mandate）的影响力在三教中最高（读月度变量）。
+# 第三教用 nesnd_per_inf_third_v 比较；未启用的第三教没有自己的变量，判定为否。
+nesnd_per_faith_is_top = {
+    trigger_if = {
+        limit = { has_variable = nesnd_per_inf_$FAITH$_v has_variable = nesnd_per_inf_shia_v has_variable = nesnd_per_inf_sunni_v has_variable = nesnd_per_inf_third_v }
+        var:nesnd_per_inf_$FAITH$_v >= var:nesnd_per_inf_shia_v
+        var:nesnd_per_inf_$FAITH$_v >= var:nesnd_per_inf_sunni_v
+        var:nesnd_per_inf_$FAITH$_v >= var:nesnd_per_inf_third_v
+    }
+    trigger_else = { always = no }
+}
+nesnd_per_faith_is_bottom = {
+    trigger_if = {
+        limit = { has_variable = nesnd_per_inf_$FAITH$_v has_variable = nesnd_per_inf_shia_v has_variable = nesnd_per_inf_sunni_v has_variable = nesnd_per_inf_third_v }
+        var:nesnd_per_inf_$FAITH$_v <= var:nesnd_per_inf_shia_v
+        var:nesnd_per_inf_$FAITH$_v <= var:nesnd_per_inf_sunni_v
+        var:nesnd_per_inf_$FAITH$_v <= var:nesnd_per_inf_third_v
+    }
+    trigger_else = { always = no }
+}
+# Pop scope. 团结度转换的对象：非唐人，且不是阿塞拜疆人。
+nesnd_per_unity_convertible_pop = {
+    NOT = { nesnd_per_tang_pop = yes }
+    NOT = { has_pop_culture = azerbaijani }
+}
+# Pop scope. 广义伊朗人，阿塞拜疆除外（低团结时西域汉羌可转入的文化）。
+nesnd_per_unity_iranian_target_pop = {
+    nesnd_per_iranian_pop = yes
+    NOT = { has_pop_culture = azerbaijani }
+}
+# State scope. 低团结时可能离散的州：有不少于 5000 西域汉羌，且有可转入的广义伊朗人。
+nesnd_per_unity_decay_state = {
+    any_scope_pop = { has_pop_culture = ce_xiyu total_size >= 5000 }
+    any_scope_pop = { nesnd_per_unity_iranian_target_pop = yes }
+}
+# State scope. 伊朗系统治下低团结时“旧唐人重新抬头”的州：有西域汉羌，也有广义伊朗人。
+nesnd_per_unity_revival_state = {
+    any_scope_pop = { has_pop_culture = ce_xiyu }
+    any_scope_pop = { nesnd_per_unity_iranian_target_pop = yes total_size >= 5000 }
+}

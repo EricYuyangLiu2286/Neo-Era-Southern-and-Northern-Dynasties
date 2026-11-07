@@ -431,11 +431,13 @@ ce_usm_suppress_rebellion = {
 ce_usm_restoration_of_ming = {
 	icon = "gfx/interface/icons/politics_icons/revolution.dds"
 
-	can_revolution_inherit = yes
+	can_revolution_inherit = no
+	transferable = no
 	group = je_group_historical_content
 	activation_description = { always = yes }
 
 	immediate = {
+		nesnd_raise_jingnan_officers = yes
 		s:STATE_NANJING = {
 			add_claim = ROOT
 		}
@@ -459,7 +461,9 @@ ce_usm_restoration_of_ming = {
 		}
 	}
 
-	on_monthly_pulse = { effect = { } }
+	on_monthly_pulse = {
+		effect = { nesnd_raise_jingnan_officers = yes }
+	}
 
 	outcome = {
 		header = je_standard_completion_header
@@ -494,11 +498,13 @@ ce_usm_restoration_of_ming = {
 ce_usm_acheive_revolution = {
 	icon = "gfx/interface/icons/politics_icons/revolution.dds"
 
-	can_revolution_inherit = yes
+	can_revolution_inherit = no
+	transferable = no
 	group = je_group_historical_content
 	activation_description = { always = yes }
 
 	immediate = {
+		nesnd_raise_jingnan_officers = yes
 		s:STATE_NANJING = {
 			add_claim = ROOT
 		}
@@ -522,7 +528,9 @@ ce_usm_acheive_revolution = {
 		}
 	}
 
-	on_monthly_pulse = { effect = { } }
+	on_monthly_pulse = {
+		effect = { nesnd_raise_jingnan_officers = yes }
+	}
 
 	outcome = {
 		header = je_standard_completion_header
@@ -573,7 +581,8 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 		color = "gold_positive"
 		conclusion_desc = je_standard_completion_conclusion_desc
 		trigger = { c:JAP ?= this is_country_alive = yes
-        OR = { ce_japan_early_exit_ready = yes AND = {
+        NOT = { any_diplomatic_play = { nesnd_south_named_play = yes is_war = yes } }
+        AND = {
 			custom_tooltip = { text = nesnd_south_settled_tt has_global_variable = nesnd_south_settled }
 			custom_tooltip = { text = nesnd_ui_south_postwar_order_ready_tt OR = {
 				NOT = {
@@ -588,7 +597,7 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 					has_variable = nesnd_rebel_settlement_seen
 				}
 			} }
-		} }
+		}
 
         has_global_variable = usm_civilwar_occured
 
@@ -596,24 +605,21 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 		effect = {
         set_variable = nesnd_japan_civilwar_interest_resolved
         if = { limit = {
-                has_variable = usm_opposition_country
+                has_variable = usm_opposition_country has_variable = nesnd_japan_fought_against_wu
                 c:USM ?= { has_variable = tag_WUU_var has_variable = usm_government_winner_civilwar }
                 NOT = { has_global_variable = nesnd_japan_partitioned }
             }
             c:USM = { set_variable = nesnd_japan_defeat_confirmed nesnd_queue_war_collapse_check = yes }
         }
-        else_if = { limit = { ce_japan_early_exit_ready = yes }
-            trigger_event = { id = usm_civilwar.17 popup = yes }
-        }
         else_if = { limit = {
-                has_variable = ce_usm_cw_ally_with_mng
+                has_variable = ce_usm_cw_ally_with_mng has_variable = nesnd_japan_fought_for_wu
                 c:USM ?= { is_country_alive = yes has_variable = usm_government_winner_civilwar }
             }
             set_variable = ce_japan_kyushu_winner
             trigger_event = { id = usm_civilwar.14 popup = yes }
         }
         else_if = { limit = {
-                has_variable = ce_usm_cw_ally_with_mng
+                has_variable = ce_usm_cw_ally_with_mng has_variable = nesnd_japan_fought_for_wu
                 has_global_variable = usm_civilwar_status_quo
                 c:USM ?= { is_country_alive = yes has_variable = tag_WUU_var }
             }
@@ -621,23 +627,13 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
             trigger_event = { id = usm_civilwar.14 popup = yes }
         }
         else_if = { limit = {
-                has_variable = usm_opposition_country
+                has_variable = usm_opposition_country has_variable = nesnd_japan_fought_against_wu
                 c:USM ?= { is_country_alive = yes has_variable = usm_rebel_winner_of_the_civil_war }
             }
             trigger_event = { id = usm_civilwar.17 popup = yes }
         }
-        else_if = { limit = {
-                NOT = { has_variable = ce_usm_cw_ally_with_mng }
-                c:USM ?= { is_country_alive = yes has_variable = usm_rebel_winner_of_the_civil_war }
-                OR = {
-                    country_or_subject_owns_entire_state_region = STATE_KYUSHU
-                    s:STATE_KYUSHU = { any_scope_state = { owner = c:USM controller = root } }
-                }
-            }
-            trigger_event = { id = usm_civilwar.17 popup = yes }
-        }
-        else = {
-            if = { limit = { has_variable = ce_usm_cw_ally_with_mng }
+        else_if = { limit = { OR = { has_variable = nesnd_japan_fought_for_wu has_variable = nesnd_japan_fought_against_wu } }
+            if = { limit = { has_variable = nesnd_japan_fought_for_wu }
                 set_variable = usm_cw_jap_loss_when_pro_usm
             }
             trigger_event = { id = usm_civilwar.20 popup = yes }

@@ -1,0 +1,362 @@
+﻿# USA. The bar is the only writer of the crisis value; the journal pulse mirrors it
+# into var:nesnd_acw_bar afterwards and clears the one-time variables.
+# Every source is an inline progress_condition with a desc: 1.15 lists these in the
+# journal panel even when the limit fails (empty box). Factors whose value is a named
+# script value are counted but not listed, so the arithmetic stays inline here.
+# Coefficients: nesnd-workbench/reports/2026-11-07-acw-plan (acw_sim.py, v3).
+nesnd_acw_crisis_bar = {
+    name = nesnd_acw_crisis_bar_name
+    desc = nesnd_acw_crisis_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default_bad = yes
+    monthly_progress = {
+        progress_condition = {
+            limit = {
+                nesnd_acw_pre_abolition = yes
+                any_scope_state = { is_slave_state = yes }
+                any_scope_state = { is_slave_state = no }
+            }
+            add = { desc = nesnd_acw_src_base value = 0.015 }
+        }
+        # Pull toward the historical line: 0 in 1836.1, 100 at month 306 (mid 1861).
+        # Paused while a congressional compromise holds.
+        progress_condition = {
+            limit = {
+                nesnd_acw_pre_abolition = yes
+                has_variable = nesnd_acw_months
+                has_variable = nesnd_acw_bar
+                NOT = { has_variable = nesnd_acw_compromise_active }
+            }
+            add = {
+                desc = nesnd_acw_src_drift
+                value = var:nesnd_acw_months
+                multiply = 0.3268
+                max = 100
+                subtract = var:nesnd_acw_bar
+                multiply = 0.02
+                min = -0.08
+                max = 0.18
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes }
+            add = {
+                desc = nesnd_acw_src_senate
+                value = 0
+                every_scope_state = { limit = { is_incorporated = yes is_slave_state = yes } add = 1 }
+                every_scope_state = { limit = { is_incorporated = yes is_slave_state = no } subtract = 1 }
+                abs = yes
+                multiply = 0.02
+                max = 0.08
+            }
+        }
+        progress_condition = {
+            limit = {
+                nesnd_acw_pre_abolition = yes
+                any_political_movement = { is_political_movement_type = movement_anti_slavery }
+            }
+            add = {
+                desc = nesnd_acw_src_anti
+                value = 0
+                every_political_movement = {
+                    limit = { is_political_movement_type = movement_anti_slavery }
+                    add = this.political_movement_radicalism
+                }
+                multiply = 0.08
+            }
+        }
+        progress_condition = {
+            limit = {
+                NOT = { has_variable = nesnd_acw_crisis }
+                any_political_movement = { is_political_movement_type = movement_pro_slavery }
+            }
+            add = {
+                desc = nesnd_acw_src_pro
+                value = 0
+                every_political_movement = {
+                    limit = { is_political_movement_type = movement_pro_slavery }
+                    add = this.political_movement_radicalism
+                }
+                if = {
+                    limit = { has_law_or_variant = law_type:law_slavery_banned }
+                    multiply = 0.40
+                }
+                else = { multiply = 0.08 }
+            }
+        }
+        progress_condition = {
+            limit = {
+                NOT = { has_variable = nesnd_acw_crisis }
+                any_political_movement = {
+                    OR = {
+                        is_political_movement_type = movement_anti_slavery
+                        is_political_movement_type = movement_pro_slavery
+                    }
+                    is_being_suppressed = yes
+                }
+            }
+            add = {
+                desc = nesnd_acw_src_suppress
+                value = 0
+                every_political_movement = {
+                    limit = {
+                        OR = {
+                            is_political_movement_type = movement_anti_slavery
+                            is_political_movement_type = movement_pro_slavery
+                        }
+                        is_being_suppressed = yes
+                    }
+                    add = -0.05
+                }
+            }
+        }
+        progress_condition = {
+            limit = {
+                has_law_or_variant = law_type:law_slavery_banned
+                NOT = { has_variable = nesnd_acw_crisis }
+                any_scope_state = {
+                    count >= 3
+                    nesnd_acw_southern_state = yes
+                    has_decree = decree_violent_suppression
+                }
+            }
+            add = { desc = nesnd_acw_src_decree value = -0.05 }
+        }
+        # Sepoy-style: only states at or above 10% count, averaged over all southern states.
+        progress_condition = {
+            limit = {
+                NOT = { has_variable = nesnd_acw_crisis }
+                any_scope_state = { nesnd_acw_southern_state = yes turmoil >= 0.10 }
+            }
+            add = {
+                desc = nesnd_acw_src_turmoil
+                value = 0
+                every_scope_state = {
+                    limit = { nesnd_acw_southern_state = yes turmoil >= 0.10 }
+                    add = this.turmoil
+                }
+                divide = {
+                    value = 0
+                    every_scope_state = { limit = { nesnd_acw_southern_state = yes } add = 1 }
+                    min = 1
+                }
+                multiply = 0.8
+            }
+        }
+        progress_condition = {
+            limit = {
+                NOT = { has_variable = nesnd_acw_crisis }
+                any_scope_state = { nesnd_acw_southern_state = yes loyalists >= 0.10 }
+            }
+            add = {
+                desc = nesnd_acw_src_loyal
+                value = 0
+                every_scope_state = {
+                    limit = { nesnd_acw_southern_state = yes loyalists >= 0.10 }
+                    add = this.loyalists
+                }
+                divide = {
+                    value = 0
+                    every_scope_state = { limit = { nesnd_acw_southern_state = yes } add = 1 }
+                    min = 1
+                }
+                multiply = -0.5
+            }
+        }
+        progress_condition = {
+            limit = {
+                NOT = { has_variable = nesnd_acw_crisis }
+                exists = ig:ig_landowners
+                ig:ig_landowners = { ig_counts_as_marginal = no }
+            }
+            add = {
+                desc = nesnd_acw_src_landowners
+                value = 0
+                if = { limit = { ig:ig_landowners = { ig_approval <= angry } } value = 0.15 }
+                else_if = { limit = { ig:ig_landowners = { ig_approval <= unhappy } } value = 0.08 }
+                else_if = { limit = { ig:ig_landowners = { ig_approval >= loyal } } value = -0.12 }
+                else_if = { limit = { ig:ig_landowners = { ig_approval >= happy } } value = -0.06 }
+            }
+        }
+        # The least satisfied abolitionist group sets the line.
+        progress_condition = {
+            limit = {
+                NOT = { has_variable = nesnd_acw_crisis }
+                any_interest_group = { nesnd_acw_abolitionist_ig = yes }
+            }
+            add = {
+                desc = nesnd_acw_src_abolitionists
+                value = 0
+                if = { limit = { any_interest_group = { nesnd_acw_abolitionist_ig = yes ig_approval <= angry } } value = 0.12 }
+                else_if = { limit = { any_interest_group = { nesnd_acw_abolitionist_ig = yes ig_approval <= unhappy } } value = 0.06 }
+                else_if = { limit = { NOT = { any_interest_group = { nesnd_acw_abolitionist_ig = yes ig_approval < loyal } } } value = -0.08 }
+                else_if = { limit = { NOT = { any_interest_group = { nesnd_acw_abolitionist_ig = yes ig_approval < happy } } } value = -0.04 }
+            }
+        }
+        progress_condition = {
+            limit = {
+                NOT = { has_variable = nesnd_acw_crisis }
+                any_interest_group = {
+                    is_in_government = yes
+                    OR = { nesnd_acw_proslavery_ig = yes nesnd_acw_abolitionist_ig = yes }
+                }
+            }
+            add = {
+                desc = nesnd_acw_src_government
+                value = 0.06
+                if = {
+                    limit = {
+                        any_interest_group = { is_in_government = yes nesnd_acw_proslavery_ig = yes }
+                        any_interest_group = { is_in_government = yes nesnd_acw_abolitionist_ig = yes }
+                    }
+                    value = -0.06
+                }
+            }
+        }
+        progress_condition = {
+            limit = {
+                nesnd_acw_pre_abolition = yes
+                ruler ?= {
+                    OR = {
+                        has_ideology = ideology:ideology_abolitionist
+                        has_ideology = ideology:ideology_slaver
+                        has_ideology = ideology:ideology_jacksonian_democrat
+                    }
+                }
+            }
+            add = {
+                desc = nesnd_acw_src_ruler
+                value = 0.05
+                if = { limit = { ruler ?= { has_ideology = ideology:ideology_abolitionist } } value = 0.25 }
+            }
+        }
+        progress_condition = {
+            limit = {
+                nesnd_acw_pre_abolition = yes
+                NOT = { has_variable = bleeding_kansas_happened }
+                has_variable = nesnd_acw_months
+                var:nesnd_acw_months < 216
+            }
+            add = { desc = nesnd_acw_src_missouri value = -0.08 }
+        }
+        # Event aftermath: timed country variables carrying their monthly value.
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes has_variable = nesnd_acw_after_martyr }
+            add = { desc = nesnd_acw_src_martyr value = var:nesnd_acw_after_martyr }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes has_variable = nesnd_acw_after_fugitive }
+            add = { desc = nesnd_acw_src_fugitive value = var:nesnd_acw_after_fugitive }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes has_variable = nesnd_acw_after_wilmot }
+            add = { desc = nesnd_acw_src_wilmot value = var:nesnd_acw_after_wilmot }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes has_variable = nesnd_acw_after_sumner }
+            add = { desc = nesnd_acw_src_sumner value = var:nesnd_acw_after_sumner }
+        }
+        # One-time jumps: set by events or buttons, counted by the bar, cleared by the journal pulse.
+        progress_condition = {
+            limit = { has_variable = nesnd_acw_once_ruler }
+            add = { desc = nesnd_acw_src_once_ruler value = var:nesnd_acw_once_ruler }
+        }
+        progress_condition = {
+            limit = { has_variable = nesnd_acw_once_kansas }
+            add = { desc = nesnd_acw_src_once_kansas value = var:nesnd_acw_once_kansas }
+        }
+        progress_condition = {
+            limit = { has_variable = nesnd_acw_once_compromise }
+            add = { desc = nesnd_acw_src_once_compromise value = var:nesnd_acw_once_compromise }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes has_variable = nesnd_acw_escape_heat }
+            add = { desc = nesnd_acw_src_escape value = var:nesnd_acw_escape_heat }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes has_variable = nesnd_acw_hunt_active }
+            add = { desc = nesnd_acw_src_hunt value = 0.05 }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes c:HUS ?= { has_variable = nesnd_hus_west_funding } }
+            add = { desc = nesnd_acw_src_hus_funding value = 0.15 }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes has_variable = nesnd_acw_compromise_active }
+            add = { desc = nesnd_acw_src_compromise value = -0.12 }
+        }
+        # 1862.1 is month 312; 1867.1 is month 372.
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes has_variable = nesnd_acw_months var:nesnd_acw_months >= 312 }
+            add = {
+                desc = nesnd_acw_src_ramp
+                value = 0.25
+                if = { limit = { var:nesnd_acw_months >= 372 } value = 0.8 }
+            }
+        }
+        progress_condition = {
+            limit = { nesnd_acw_pre_abolition = yes is_enacting_law = law_type:law_slavery_banned }
+            add = { desc = nesnd_acw_src_debate value = 0.25 }
+        }
+        # After abolition: 0.8 a month, falling to 0 over 120 months.
+        progress_condition = {
+            limit = {
+                has_law_or_variant = law_type:law_slavery_banned
+                NOT = { has_variable = nesnd_acw_crisis }
+                has_variable = nesnd_acw_abolished_months
+                var:nesnd_acw_abolished_months < 120
+            }
+            add = {
+                desc = nesnd_acw_src_resent
+                value = 120
+                subtract = var:nesnd_acw_abolished_months
+                divide = 120
+                multiply = 0.8
+            }
+        }
+    }
+}
+
+# HUS. Claim pressure on the United States.
+nesnd_hus_west_claim_bar = {
+    name = nesnd_hus_west_claim_bar_name
+    desc = nesnd_hus_west_claim_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default_green = yes
+    monthly_progress = {
+        progress_condition = {
+            limit = { c:USA ?= { has_variable = nesnd_acw_bar var:nesnd_acw_bar >= 60 } }
+            add = { desc = nesnd_hus_west_src_crisis value = 0.5 }
+        }
+        progress_condition = {
+            limit = { c:USA ?= { has_journal_entry = je_acw_war } }
+            add = { desc = nesnd_hus_west_src_war value = 2 }
+        }
+        progress_condition = {
+            limit = { has_variable = nesnd_hus_west_funding }
+            add = { desc = nesnd_hus_west_src_funding value = 1 }
+        }
+        progress_condition = {
+            limit = { has_variable = nesnd_hus_west_once_batches }
+            add = { desc = nesnd_hus_west_src_batches value = var:nesnd_hus_west_once_batches }
+        }
+        progress_condition = {
+            limit = { has_variable = nesnd_hus_west_once_spent }
+            add = { desc = nesnd_hus_west_src_spent value = var:nesnd_hus_west_once_spent }
+        }
+    }
+}
+
+# HUS. Progress toward the next group of escapees (one batch every six months).
+nesnd_hus_west_batch_bar = {
+    name = nesnd_hus_west_batch_bar_name
+    desc = nesnd_hus_west_batch_bar_desc
+    min_value = 0 max_value = 100 start_value = 0
+    default = yes
+    monthly_progress = {
+        progress_condition = {
+            limit = { has_variable = nesnd_hus_west_open exists = c:USA NOT = { has_war_with = c:USA } }
+            add = { desc = nesnd_hus_west_src_border_open value = 16.67 }
+        }
+    }
+}

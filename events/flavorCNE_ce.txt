@@ -893,7 +893,10 @@ flavorCNE.12 = { # 牧仲棠逝世
 			}
 
 		}
-	}
+	
+        scope:ce_muchiwu_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
+        scope:ce_muchisheng_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
+    }
 
 	option = { # 扶保太子，屏退乱贼！
 		name = flavorCNE.12.1
@@ -925,7 +928,7 @@ flavorCNE.12 = { # 牧仲棠逝世
 			traits = {
 				reserved
 			}
-			#save_scope_as = ce_mudeyu_scope
+			save_scope_as = ce_mudeyu_scope
 			on_created = {
 				set_variable = this_is_mu_deyu 
 			}
@@ -934,6 +937,10 @@ flavorCNE.12 = { # 牧仲棠逝世
 		hidden_effect = {
 			random_list = {
 				80 = {
+					scope:ce_muchiwu_scope ?= { set_variable = { name = nesnd_story_event_pending value = flag:nesnd_mu_succession days = 40 } }
+					scope:ce_muchisheng_scope ?= { set_variable = { name = nesnd_story_event_pending value = flag:nesnd_mu_succession days = 40 } }
+					scope:ce_mudeyu_scope ?= { set_variable = { name = nesnd_story_event_pending value = flag:nesnd_mu_succession days = 40 } }
+					ruler ?= { set_variable = { name = nesnd_story_event_pending value = flag:nesnd_mu_succession days = 40 } }
 					trigger_event = { id = flavorCNE.13 months = 1 }
 				}
 				20 = {
@@ -944,6 +951,7 @@ flavorCNE.12 = { # 牧仲棠逝世
 								has_template = CNE_mu_muzi
 							}
 						}
+						set_variable = { name = nesnd_story_mu_journey_pending months = 6 }
 						trigger_event = { id = flavorCNE.14 months = 5 }
 					}
 				}
@@ -966,12 +974,17 @@ flavorCNE.12 = { # 牧仲棠逝世
 						has_template = CNE_mu_muzi
 					}
 				}
+				set_variable = { name = nesnd_story_mu_journey_pending months = 5 }
 				trigger_event = { id = flavorCNE.14 months = 4 }
 			}
 		}	
 	}
 
 	
+    after = {
+        scope:ce_muchiwu_scope ?= { if = { limit = { NOT = { var:nesnd_story_event_pending ?= flag:nesnd_mu_succession } } remove_variable = nesnd_story_event_pending } }
+        scope:ce_muchisheng_scope ?= { if = { limit = { NOT = { var:nesnd_story_event_pending ?= flag:nesnd_mu_succession } } remove_variable = nesnd_story_event_pending } }
+    }
 }
 
 flavorCNE.13 = { # 1.2.1 诸子之乱
@@ -1013,7 +1026,11 @@ flavorCNE.13 = { # 1.2.1 诸子之乱
 				save_scope_as = ce_mudeyu_scope
 			}
 		}
-	}
+	
+        scope:ce_muchiwu_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
+        scope:ce_muchisheng_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
+        scope:ce_mudeyu_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
+    }
 
 	option = { # 依国法，父子相继。我等当扶保太孙。
 		name = flavorCNE.13.1
@@ -1109,9 +1126,14 @@ flavorCNE.13 = { # 1.2.1 诸子之乱
 					}
 				}
 			}
+			set_variable = { name = nesnd_story_mu_journey_pending months = 5 }
 			trigger_event = { id = flavorCNE.14 months = 4 }
 		}
-	}
+	
+        scope:ce_muchiwu_scope ?= { remove_variable = nesnd_story_event_pending }
+        scope:ce_muchisheng_scope ?= { remove_variable = nesnd_story_event_pending }
+        scope:ce_mudeyu_scope ?= { remove_variable = nesnd_story_event_pending }
+    }
 }
 
 flavorCNE.14 = { # 木沐子离开
@@ -1165,6 +1187,7 @@ flavorCNE.14 = { # 木沐子离开
 		
 		random_scope_character = {
 			limit = { has_template = CNE_mu_muzi }
+			set_variable = nesnd_story_mu_author
 			transfer_character = scope:mu_muzi_new_home
 		}
 		
@@ -1206,6 +1229,9 @@ flavorCNE.14 = { # 木沐子离开
 		}
 		
 	}	
+    after = {
+        remove_variable = nesnd_story_mu_journey_pending
+    }
 }
 
 flavorCNE.15 = { # 
@@ -1246,6 +1272,7 @@ flavorCNE.15 = { #
 			random_scope_character = {
 				limit = { has_template = CNE_mu_muzi }
 				save_scope_as = mu_muzi_scope
+                set_variable = { name = nesnd_story_event_pending days = 3 }
 			}
 		}
 	}
@@ -1264,4 +1291,7 @@ flavorCNE.15 = { #
 		}
 	}
 
+    after = {
+        scope:mu_muzi_scope ?= { remove_variable = nesnd_story_event_pending remove_variable = nesnd_story_mu_author }
+    }
 }

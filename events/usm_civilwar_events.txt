@@ -194,13 +194,14 @@ usm_civilwar.1 = {
             }
         }
         trigger = {
+            is_direct_subject_of = c:USM
             OR = {
                 c:HNA ?= this
                 c:YN1 = This
                 c:JAP = This
             }
         }
-        make_independent = yes
+        create_diplomatic_play = { target_country = c:USM type = dp_nesnd_southern_independence war = yes }
         add_change_relations_progress = {
             country = c:USM
             value = -25
@@ -285,6 +286,9 @@ usm_civilwar.2 = {
     }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
     trigger = {
+        trigger_if = { limit = { has_variable = usm_opposition_country NOT = { c:JAP ?= this } }
+            nesnd_jingnan_may_receive_rebel_journal = yes
+        }
         NOT = {
             has_variable = have_seen_dierci_jingnan
         }
@@ -296,6 +300,27 @@ usm_civilwar.2 = {
                 c:USM ?= this
             }
             nesnd_open_southern_war = yes
+        }
+    
+        if = {
+            limit = { has_variable = usm_opposition_country }
+            if = { limit = { c:YN1 ?= this }
+                c:USM ?= { random_scope_character = {
+                    limit = { has_template = USM_lin_hanhan is_character_alive = yes is_in_exile_pool = no
+                        is_ruler_of_own_country = no is_heir_of_own_country = no }
+                    save_scope_as = nesnd_story_opening_figure
+                } }
+            }
+            else = {
+                random_scope_character = { limit = {
+                    OR = {
+                        AND = { owner = c:SIH has_template = USM_xiao_huli }
+                        AND = { owner = c:GNG has_template = USM_zhu_jingyin }
+                        AND = { owner = c:HNA has_template = USM_zhu_jiangchen }
+                    }
+                } save_scope_as = nesnd_story_opening_figure }
+            }
+            scope:nesnd_story_opening_figure ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
         }
     }
     option = {
@@ -324,6 +349,7 @@ usm_civilwar.2 = {
                 c:JAP ?= this
             }
             has_variable = usm_opposition_country
+            nesnd_jingnan_may_receive_rebel_journal = yes
         }
         set_variable = nesnd_restoration_side
         if = {
@@ -423,6 +449,7 @@ usm_civilwar.2 = {
                 c:JAP ?= this
             }
             has_variable = usm_opposition_country
+            nesnd_jingnan_may_receive_rebel_journal = yes
         }
         set_variable = ce_usm_republican_revolution_tag
         add_journal_entry = {
@@ -464,6 +491,9 @@ usm_civilwar.2 = {
                 has_variable = usm_opposition_country
             }
         }
+    }
+    after = {
+        scope:nesnd_story_opening_figure ?= { remove_variable = nesnd_story_event_pending }
     }
 }
 
@@ -1517,20 +1547,12 @@ usm_civilwar.17 = {
     trigger = {
     c:JAP ?= this is_country_alive = yes exists = c:USM
     NOT = { has_global_variable = nesnd_japan_partitioned }
-    OR = { ce_japan_early_exit_ready = yes
-        AND = { has_global_variable = nesnd_south_settled
-            c:USM = { has_variable = usm_rebel_winner_of_the_civil_war } }
-    }
+    has_global_variable = nesnd_south_settled
+    c:USM = { has_variable = usm_rebel_winner_of_the_civil_war }
+    has_variable = nesnd_japan_fought_against_wu
+    NOT = { any_diplomatic_play = { nesnd_south_named_play = yes is_war = yes } }
 }
-    immediate = {
-    save_scope_as = current_jap
-    clear_saved_scope = ce_japan_former_war_leader
-    random_diplomatic_play = {
-        limit = { nesnd_south_named_play = yes is_war = yes
-            nesnd_play_has_committed_target = { COUNTRY = root } NOT = { target = root } }
-        target = { save_scope_as = ce_japan_former_war_leader }
-    }
-}
+    immediate = { save_scope_as = current_jap }
     option = {
     name = usm_civilwar.17.1 default_option = yes
     nesnd_jp_bootstrap = yes
@@ -1554,20 +1576,7 @@ usm_civilwar.17 = {
             trigger_event = { id = usm_civilwar.18 weeks = 1 popup = yes }
         }
     }
-    if = { limit = { exists = scope:ce_japan_former_war_leader
-            has_war_with = c:USM
-            NOT = { any_scope_war = { NOT = { exists = diplomatic_play diplomatic_play ?= { nesnd_south_named_play = yes } } } }
-        }
-        leave_plays_supporting = scope:ce_japan_former_war_leader
-        if = { limit = { NOT = { has_war_with = c:USM } }
-            remove_variable = usm_opposition_country
-            set_variable = { name = nesnd_south_stance value = 4 }
-            create_bidirectional_truce = { country = c:USM months = 60 }
-            every_country = { limit = {
-                NOT = { this = root } has_variable = usm_opposition_country has_war_with = c:USM
-            } trigger_event = { id = usm_civilwar.19 months = 1 popup = yes } }
-        }
-    }
+
 }
     after = {
 

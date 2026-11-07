@@ -1,0 +1,133 @@
+﻿namespace = nesnd_per_unity
+namespace = nesnd_per_faith
+
+# 唐人团结度过低：一州的部分西域汉羌转入广义伊朗文化。
+nesnd_per_unity.1 = {
+    type = country_event
+    title = nesnd_per_unity.1.t
+    desc = nesnd_per_unity.1.d
+    flavor = nesnd_per_unity.1.f
+    event_image = { video = "asia_poor_people_moving" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    duration = 3
+    trigger = { exists = scope:nesnd_per_unity_state }
+    cancellation_trigger = { NOT = { exists = scope:nesnd_per_unity_state } }
+    option = {
+        name = nesnd_per_unity.1.a
+        default_option = yes
+        custom_tooltip = nesnd_per_unity.1.a.tt
+        hidden_effect = {
+            scope:nesnd_per_unity_state ?= {
+                if = { limit = { owner = root nesnd_per_unity_decay_state = yes }
+                    random_scope_pop = {
+                        limit = { nesnd_per_unity_iranian_target_pop = yes }
+                        culture = { save_temporary_scope_as = nesnd_per_unity_target_culture }
+                    }
+                    every_scope_pop = {
+                        limit = { has_pop_culture = ce_xiyu }
+                        change_pop_culture = { target = scope:nesnd_per_unity_target_culture value = 0.25 }
+                    }
+                }
+            }
+        }
+        ai_chance = { base = 50 }
+    }
+    option = {
+        name = nesnd_per_unity.1.b
+        custom_tooltip = nesnd_per_unity.1.b.tt
+        add_treasury = { value = nesnd_per_shrine_cost multiply = -1 }
+        ai_chance = { base = 50 }
+    }
+}
+
+# 伊朗系统治下团结度过低：旧唐人重新聚拢，一州的部分广义伊朗人转为西域汉羌。
+nesnd_per_unity.2 = {
+    type = country_event
+    title = nesnd_per_unity.2.t
+    desc = nesnd_per_unity.2.d
+    flavor = nesnd_per_unity.2.f
+    event_image = { video = "asia_union_leader" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    duration = 3
+    trigger = { exists = scope:nesnd_per_unity_state }
+    cancellation_trigger = { NOT = { exists = scope:nesnd_per_unity_state } }
+    option = {
+        name = nesnd_per_unity.2.a
+        default_option = yes
+        custom_tooltip = nesnd_per_unity.2.a.tt
+        hidden_effect = {
+            scope:nesnd_per_unity_state ?= {
+                if = { limit = { owner = root nesnd_per_unity_revival_state = yes }
+                    every_scope_pop = {
+                        limit = { nesnd_per_unity_iranian_target_pop = yes }
+                        change_pop_culture = { target = cu:ce_xiyu value = 0.25 }
+                    }
+                }
+            }
+        }
+        ai_chance = { base = 50 }
+    }
+    option = {
+        name = nesnd_per_unity.2.b
+        custom_tooltip = nesnd_per_unity.2.b.tt
+        add_treasury = { value = nesnd_per_shrine_cost multiply = -1 }
+        ai_chance = { base = 50 }
+    }
+}
+
+# 改宗批次的通知（不弹窗）：哪一州、哪一教争得了信众。
+nesnd_per_faith.1 = {
+    type = country_event
+    title = nesnd_per_faith.1.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_per_faith_last_faith var:nesnd_per_faith_last_faith = flag:preach } desc = nesnd_per_faith.1.d_preach }
+            triggered_desc = { trigger = { has_variable = nesnd_per_faith_last_faith var:nesnd_per_faith_last_faith = flag:mandate } desc = nesnd_per_faith.1.d_mandate }
+            triggered_desc = { trigger = { has_variable = nesnd_per_faith_last_faith var:nesnd_per_faith_last_faith = flag:shia } desc = nesnd_per_faith.1.d_shia }
+            triggered_desc = { trigger = { has_variable = nesnd_per_faith_last_faith var:nesnd_per_faith_last_faith = flag:sunni } desc = nesnd_per_faith.1.d_sunni }
+            desc = nesnd_per_faith.1.d_buddhist
+        }
+    }
+    flavor = nesnd_per_faith.1.f
+    event_image = { video = "middleeast_islam" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = { exists = scope:nesnd_per_faith_conv_state }
+    option = {
+        name = nesnd_per_faith.1.a
+        default_option = yes
+    }
+}
+
+# 开局二选一：第三教守佛门，或迎西秦的天命说（任务65 第②批补充）。AI 九成守佛门。
+nesnd_per_faith.2 = {
+    type = country_event
+    title = nesnd_per_faith.2.t
+    desc = nesnd_per_faith.2.d
+    flavor = nesnd_per_faith.2.f
+    gui_window = event_window
+    event_image = { texture = "gfx/event_pictures/nesnd_per_faith_teaching.dds" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = { NOT = { has_variable = nesnd_per_third_chosen } }
+    option = {
+        name = nesnd_per_faith.2.a
+        default_option = yes
+        custom_tooltip = nesnd_per_faith.2.a.tt
+        hidden_effect = { set_variable = nesnd_per_third_chosen }
+        ai_chance = { base = 90 }
+    }
+    option = {
+        name = nesnd_per_faith.2.b
+        custom_tooltip = nesnd_per_faith.2.b.tt
+        hidden_effect = {
+            set_variable = nesnd_per_third_chosen
+            set_variable = nesnd_per_third_mandate
+        }
+        ai_chance = { base = 10 }
+    }
+}

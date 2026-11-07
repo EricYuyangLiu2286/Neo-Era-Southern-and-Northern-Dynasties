@@ -1,0 +1,242 @@
+﻿namespace = nesnd_acw
+
+# An abolitionist takes power for the first time (the Lincoln node).
+# Fired by je_acw_countdown's monthly pulse.
+nesnd_acw.1 = {
+    type = country_event
+    placement = root
+    event_image = { video = "europenorthamerica_springtime_of_nations" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+    title = nesnd_acw.1.t
+    desc = nesnd_acw.1.d
+    flavor = nesnd_acw.1.f
+    duration = 3
+
+    immediate = {
+        ruler = { save_scope_as = nesnd_acw_new_ruler }
+    }
+    left_icon = scope:nesnd_acw_new_ruler
+
+    option = {
+        name = nesnd_acw.1.a
+        default_option = yes
+        custom_tooltip = nesnd_acw.1.a.tt
+    }
+}
+
+# The Wilmot Proviso, for the MOD's map: vanilla acw_events.3 needs Mexican-claimed
+# land in northern Mexico, which belongs to 东洲 here. Same text and options; fires
+# once the Union holds any state region it did not hold when the question opened.
+nesnd_acw.3 = {
+    type = country_event
+    title = acw_events.3.t
+    desc = acw_events.3.d
+    flavor = acw_events.3.f
+    event_image = { video = "europenorthamerica_capitalists_meeting" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    duration = 3
+
+    trigger = {
+        exists = c:USA
+        c:USA = ROOT
+        has_journal_entry = je_acw_countdown
+        nesnd_acw_pre_abolition = yes
+        NOT = { has_variable = american_civil_war }
+        NOT = { has_variable = USA_wilmot_proviso }
+        any_scope_state = {
+            NOT = { root = { is_target_in_variable_list = { name = nesnd_acw_start_regions target = prev.state_region } } }
+            is_split_state = no
+        }
+        any_interest_group = {
+            is_revolutionary = no
+            is_insurrectionary = no
+            ig_counts_as_marginal = no
+            OR = {
+                has_ideology = ideology:ideology_anti_slavery
+                leader = { has_ideology = ideology:ideology_abolitionist }
+            }
+        }
+    }
+
+    immediate = {
+        set_variable = { name = USA_wilmot_proviso value = yes }
+        random_interest_group = {
+            limit = {
+                is_revolutionary = no
+                is_insurrectionary = no
+                ig_counts_as_marginal = no
+                OR = {
+                    has_ideology = ideology:ideology_anti_slavery
+                    leader = { has_ideology = ideology:ideology_abolitionist }
+                }
+            }
+            save_scope_as = wilmot_proviso_ig
+            leader = {
+                save_scope_as = wilmot_proviso_ig_leader
+                set_temporary_event_immortality = { DURATION = 3 }
+            }
+        }
+    }
+
+    after = {
+        revoke_temporary_event_immortality = { CHARACTER = scope:wilmot_proviso_ig_leader }
+    }
+
+    cancellation_trigger = { has_global_variable = american_civil_war }
+
+    option = { # Leave it to the states
+        name = acw_events.3.a
+        default_option = yes
+        custom_tooltip = nesnd_acw_wilmot_a_tt
+        hidden_effect = { set_variable = { name = nesnd_acw_after_wilmot value = 0.08 months = 60 } }
+        every_interest_group = {
+            limit = {
+                OR = { nesnd_acw_proslavery_ig = yes nesnd_acw_abolitionist_ig = yes leader = { has_ideology = ideology:ideology_slaver } leader = { has_ideology = ideology:ideology_abolitionist } }
+                NOT = { has_modifier = disappointing_compromise }
+            }
+            add_modifier = { name = disappointing_compromise days = short_modifier_time }
+        }
+    }
+    option = { # Free soil in all the new territories
+        name = acw_events.3.b
+        custom_tooltip = nesnd_acw_wilmot_b_tt
+        hidden_effect = { set_variable = { name = nesnd_acw_after_wilmot value = 0.06 months = 60 } }
+        every_scope_state = {
+            limit = {
+                NOT = { root = { is_target_in_variable_list = { name = nesnd_acw_start_regions target = prev.state_region } } }
+            }
+            liberate_slaves = yes
+        }
+        every_interest_group = {
+            limit = {
+                OR = { has_ideology = ideology:ideology_pro_slavery has_ideology = ideology:ideology_pro_slavery_colonial leader = { has_ideology = ideology:ideology_slaver } }
+                NOT = { has_modifier = ig_slavers_mad }
+            }
+            add_modifier = { name = ig_slavers_mad days = short_modifier_time }
+        }
+        every_interest_group = {
+            limit = {
+                OR = { has_ideology = ideology:ideology_anti_slavery leader = { has_ideology = ideology:ideology_abolitionist } }
+                NOT = { has_modifier = ig_abolitionists_happy }
+            }
+            add_modifier = { name = ig_abolitionists_happy days = short_modifier_time }
+        }
+    }
+    option = { # Slavery follows the flag
+        name = acw_events.3.c
+        custom_tooltip = nesnd_acw_wilmot_c_tt
+        hidden_effect = { set_variable = { name = nesnd_acw_after_wilmot value = 0.10 months = 60 } }
+        every_interest_group = {
+            limit = {
+                OR = { has_ideology = ideology:ideology_pro_slavery has_ideology = ideology:ideology_pro_slavery_colonial leader = { has_ideology = ideology:ideology_slaver } }
+                NOT = { has_modifier = ig_slavers_happy }
+            }
+            add_modifier = { name = ig_slavers_happy days = short_modifier_time }
+        }
+        every_interest_group = {
+            limit = {
+                OR = { has_ideology = ideology:ideology_anti_slavery leader = { has_ideology = ideology:ideology_abolitionist } }
+                NOT = { has_modifier = ig_abolitionists_mad }
+            }
+            add_modifier = { name = ig_abolitionists_mad days = short_modifier_time }
+        }
+    }
+}
+
+# The secession crisis. Fired once by je_acw_countdown when the bar fills or the
+# 1872 deadline passes. The journal stays open until the engine starts the war.
+nesnd_acw.10 = {
+    type = country_event
+    placement = root
+    event_image = { video = "europenorthamerica_political_extremism" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    title = nesnd_acw.10.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { has_variable = nesnd_acw_crisis_side var:nesnd_acw_crisis_side = 2 }
+                desc = nesnd_acw.10.d_north
+            }
+            triggered_desc = { trigger = { always = yes } desc = nesnd_acw.10.d_south }
+        }
+    }
+    flavor = nesnd_acw.10.f
+    duration = 3
+
+    immediate = {
+        nesnd_acw_push_secession = yes
+    }
+
+    option = {
+        name = nesnd_acw.10.a
+        default_option = yes
+        custom_tooltip = nesnd_acw.10.a.tt
+    }
+}
+
+# Hidden forwarders: copy the vanilla trigger, record the aftermath on the crisis bar,
+# then fire the unchanged vanilla event.
+nesnd_acw.92 = { # -> acw_events.2 The Fugitive Slave
+    type = country_event
+    hidden = yes
+    cooldown = { days = normal_modifier_time }
+    trigger = {
+        has_journal_entry = je_acw_countdown
+        NOT = { has_law_or_variant = law_type:law_slavery_banned }
+        NOT = { has_variable = american_civil_war }
+        any_interest_group = {
+            is_revolutionary = no
+            is_insurrectionary = no
+            ig_counts_as_marginal = no
+            OR = {
+                has_ideology = ideology:ideology_pro_slavery
+                has_ideology = ideology:ideology_pro_slavery_colonial
+                leader = { has_ideology = ideology:ideology_slaver }
+            }
+        }
+    }
+    immediate = {
+        set_variable = { name = nesnd_acw_after_fugitive value = 0.04 months = 60 }
+        trigger_event = { id = acw_events.2 }
+    }
+}
+
+nesnd_acw.96 = { # -> acw_events.6 The Caning of Charles Sumner
+    type = country_event
+    hidden = yes
+    fire_only_once = yes
+    trigger = {
+        has_journal_entry = je_acw_countdown
+        exists = c:USA
+        c:USA = ROOT
+        NOT = { has_law_or_variant = law_type:law_slavery_banned }
+        any_interest_group = {
+            is_revolutionary = no
+            is_insurrectionary = no
+            ig_counts_as_marginal = no
+            OR = {
+                has_ideology = ideology:ideology_pro_slavery
+                has_ideology = ideology:ideology_pro_slavery_colonial
+                leader = { has_ideology = ideology:ideology_slaver }
+            }
+            leader = { is_immortal = no }
+        }
+        any_interest_group = {
+            is_revolutionary = no
+            is_insurrectionary = no
+            ig_counts_as_marginal = no
+            OR = {
+                has_ideology = ideology:ideology_anti_slavery
+                leader = { has_ideology = ideology:ideology_abolitionist }
+            }
+            leader = { is_immortal = no }
+        }
+    }
+    immediate = {
+        set_variable = { name = nesnd_acw_after_sumner value = 0.05 months = 60 }
+        trigger_event = { id = acw_events.6 }
+    }
+}

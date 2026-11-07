@@ -1,0 +1,31 @@
+﻿# State scope. A state without an urban center contributes zero.
+nesnd_court_urban_levels = {
+    value = 0
+    every_scope_building = {
+        limit = { is_building_type = building_urban_center }
+        add = this.level
+    }
+}
+
+nesnd_court_total_levels = {
+    value = 0
+    every_scope_state = {
+        limit = { nesnd_court_metropolitan = yes }
+        add = nesnd_court_urban_levels
+    }
+}
+
+nesnd_court_paris_levels = {
+    value = 0
+    s:STATE_ILE_DE_FRANCE.region_state:FRA ?= { add = nesnd_court_urban_levels }
+}
+
+nesnd_court_paris_share = {
+    value = 0
+    if = {
+        limit = { nesnd_court_total_levels > 0 }
+        value = nesnd_court_paris_levels
+        multiply = 100
+        divide = nesnd_court_total_levels
+    }
+}

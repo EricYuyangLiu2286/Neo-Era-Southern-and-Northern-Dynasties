@@ -92,7 +92,7 @@ nesnd_c2_duan_qualification = {
  if = { limit = { nesnd_usm_civic_country = yes has_variable = nesnd_c2_usm_constitution_done has_variable = nesnd_c2_usm_constitution_choice }
   if = { limit = { OR = { var:nesnd_c2_usm_constitution_choice = 2 var:nesnd_c2_usm_constitution_choice = 3 } }
   every_scope_character = { limit = { has_template = nesnd_usm_duan is_character_alive = yes has_role_of_type = politician }
-   if = { limit = { NOT = { has_variable = nesnd_c2_delegate_qualified } } set_variable = nesnd_c2_delegate_qualified owner = { trigger_event = { id = nesnd_civic_characters.200 popup = yes } } }
+   if = { limit = { NOT = { has_variable = nesnd_c2_delegate_qualified } } set_variable = nesnd_c2_delegate_qualified save_scope_as = nesnd_duan_delegate set_variable = { name = nesnd_story_event_pending days = 3 } owner = { trigger_event = { id = nesnd_civic_characters.200 popup = yes } } }
   }
   }
  }
@@ -385,4 +385,16 @@ if = { limit = { has_global_variable = nesnd_introduced_usm_jiang nesnd_c2_perso
  if = { limit = { has_global_variable = nesnd_seen_usm_luo NOR = { any_character = { has_template = nesnd_usm_luo is_character_alive = yes } any_character_in_exile_pool = { has_template = nesnd_usm_luo is_character_alive = yes } any_character_in_void = { has_template = nesnd_usm_luo is_character_alive = yes } } } set_global_variable = nesnd_closed_usm_luo }
  if = { limit = { has_global_variable = nesnd_seen_usm_han NOR = { any_character = { has_template = nesnd_usm_han is_character_alive = yes } any_character_in_exile_pool = { has_template = nesnd_usm_han is_character_alive = yes } any_character_in_void = { has_template = nesnd_usm_han is_character_alive = yes } } } set_global_variable = nesnd_closed_usm_han }
  if = { limit = { has_global_variable = nesnd_seen_usm_jiang NOR = { any_character = { has_template = nesnd_usm_jiang is_character_alive = yes } any_character_in_exile_pool = { has_template = nesnd_usm_jiang is_character_alive = yes } any_character_in_void = { has_template = nesnd_usm_jiang is_character_alive = yes } } } set_global_variable = nesnd_closed_usm_jiang }
+}
+
+# The organisation can speak without a delegate. Protect only a living local speaker.
+nesnd_civic_mark_event_speaker = {
+    clear_saved_scope = nesnd_civic_event_speaker
+    random_scope_character = {
+        limit = { has_template = $TEMPLATE$ is_character_alive = yes
+            OR = { has_role_of_type = politician has_role_of_type = agitator has_role_of_type = general }
+        }
+        save_scope_as = nesnd_civic_event_speaker
+        set_variable = { name = nesnd_story_civic_event days = 3 }
+    }
 }

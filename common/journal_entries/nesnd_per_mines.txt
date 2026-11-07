@@ -1,0 +1,229 @@
+﻿# 唐衣大食第④批：经济线「大食的矿冶」（任务65）。三个阶段依次开启，各有 20 年期限；
+# 唐人执政时每阶段开头选一次利权（唐人专营或波斯商贾入股），第三阶段另选油田特许权。
+# 「波斯之忧」≥ 60 时伊朗诸州会有罢工与破坏；≥ 70 时完成只领一半奖励。改朝换代后的同一 PER 接着走，新国家（伊朗）从第一阶段起按建筑判定。
+
+nesnd_per_mines_1_journal = {
+    icon = "gfx/interface/icons/goods_icons/iron.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_per_mines_regime = yes NOT = { has_variable = nesnd_per_mines_1_over } }
+    possible = {
+        nesnd_per_mines_regime = yes
+        NOT = { has_variable = nesnd_per_mines_1_over }
+    }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 1060
+    timeout = 7300
+
+    immediate = { nesnd_per_mines_stage_end = yes }
+
+    scripted_button = nesnd_per_concession_tang_button
+    scripted_button = nesnd_per_concession_persian_button
+
+    on_monthly_pulse = {
+        random_events = {
+            200 = 0
+            10 = nesnd_per_mines.1
+            10 = nesnd_per_mines.2
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_per_concession var:nesnd_per_concession = flag:tang } desc = nesnd_per_mines_status_tang }
+            triggered_desc = { trigger = { has_variable = nesnd_per_concession var:nesnd_per_concession = flag:persian } desc = nesnd_per_mines_status_persian }
+            desc = nesnd_per_mines_status_none
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_per_mines_1_conclusion
+        trigger = { custom_tooltip = { text = nesnd_per_mines_1_goal_tt nesnd_per_mines_1_goal = yes } }
+        effect = {
+            custom_tooltip = nesnd_per_mines_1_reward_tt
+            hidden_effect = {
+                set_variable = nesnd_per_mines_1_over
+                set_variable = nesnd_per_mines_1_won
+                nesnd_per_mines_reward = { MOD = nesnd_per_mines_boom }
+                nesnd_per_mines_stage_end = yes
+            }
+        }
+    }
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        flags = { timeout }
+        conclusion_desc = nesnd_per_mines_timeout_conclusion
+        effect = {
+            custom_tooltip = nesnd_per_mines_timeout_tt
+            hidden_effect = {
+                set_variable = nesnd_per_mines_1_over
+                nesnd_per_mines_stage_end = yes
+            }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_per_mines_regime = yes } }
+        effect = { nesnd_per_mines_stage_end = yes }
+    }
+}
+
+nesnd_per_mines_2_journal = {
+    icon = "gfx/interface/icons/goods_icons/steel.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_per_mines_regime = yes NOT = { has_variable = nesnd_per_mines_2_over } }
+    possible = {
+        nesnd_per_mines_regime = yes
+        NOT = { has_variable = nesnd_per_mines_2_over }
+        has_variable = nesnd_per_mines_1_over
+        has_technology_researched = steelworking
+        has_technology_researched = railways
+    }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 1060
+    timeout = 7300
+
+    immediate = { nesnd_per_mines_stage_end = yes }
+
+    scripted_button = nesnd_per_concession_tang_button
+    scripted_button = nesnd_per_concession_persian_button
+
+    on_monthly_pulse = {
+        random_events = {
+            200 = 0
+            10 = nesnd_per_mines.1
+            10 = nesnd_per_mines.2
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_per_concession var:nesnd_per_concession = flag:tang } desc = nesnd_per_mines_status_tang }
+            triggered_desc = { trigger = { has_variable = nesnd_per_concession var:nesnd_per_concession = flag:persian } desc = nesnd_per_mines_status_persian }
+            desc = nesnd_per_mines_status_none
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_per_mines_2_conclusion
+        trigger = { custom_tooltip = { text = nesnd_per_mines_2_goal_tt nesnd_per_mines_2_goal = yes } }
+        effect = {
+            custom_tooltip = nesnd_per_mines_2_reward_tt
+            hidden_effect = {
+                set_variable = nesnd_per_mines_2_over
+                set_variable = nesnd_per_mines_2_won
+                nesnd_per_mines_reward = { MOD = nesnd_per_steel_belt }
+                nesnd_per_mines_stage_end = yes
+            }
+        }
+    }
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        flags = { timeout }
+        conclusion_desc = nesnd_per_mines_timeout_conclusion
+        effect = {
+            custom_tooltip = nesnd_per_mines_timeout_tt
+            hidden_effect = {
+                set_variable = nesnd_per_mines_2_over
+                nesnd_per_mines_stage_end = yes
+            }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_per_mines_regime = yes } }
+        effect = { nesnd_per_mines_stage_end = yes }
+    }
+}
+
+nesnd_per_mines_3_journal = {
+    icon = "gfx/interface/icons/goods_icons/oil.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = { nesnd_per_mines_regime = yes NOT = { has_variable = nesnd_per_mines_3_over } }
+    possible = {
+        nesnd_per_mines_regime = yes
+        NOT = { has_variable = nesnd_per_mines_3_over }
+        has_variable = nesnd_per_mines_2_over
+        has_technology_researched = pumpjacks
+        has_technology_researched = combustion_engine
+    }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 1060
+    timeout = 7300
+
+    immediate = { nesnd_per_mines_stage_end = yes }
+
+    scripted_button = nesnd_per_concession_tang_button
+    scripted_button = nesnd_per_concession_persian_button
+    scripted_button = nesnd_per_oil_foreign_button
+    scripted_button = nesnd_per_oil_self_button
+
+    on_monthly_pulse = {
+        random_events = {
+            200 = 0
+            10 = nesnd_per_mines.1
+            10 = nesnd_per_mines.2
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_per_concession var:nesnd_per_concession = flag:tang } desc = nesnd_per_mines_status_tang }
+            triggered_desc = { trigger = { has_variable = nesnd_per_concession var:nesnd_per_concession = flag:persian } desc = nesnd_per_mines_status_persian }
+            desc = nesnd_per_mines_status_none
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_per_mines_3_conclusion
+        trigger = { custom_tooltip = { text = nesnd_per_mines_3_goal_tt nesnd_per_mines_3_goal = yes } }
+        effect = {
+            custom_tooltip = nesnd_per_mines_3_reward_tt
+            hidden_effect = {
+                set_variable = nesnd_per_mines_3_over
+                set_variable = nesnd_per_mines_3_won
+                nesnd_per_mines_reward = { MOD = nesnd_per_gulf_oil }
+                nesnd_per_mines_stage_end = yes
+            trigger_event = { id = nesnd_per_mines.3 popup = yes }
+            }
+        }
+    }
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        flags = { timeout }
+        conclusion_desc = nesnd_per_mines_timeout_conclusion
+        effect = {
+            custom_tooltip = nesnd_per_mines_timeout_tt
+            hidden_effect = {
+                set_variable = nesnd_per_mines_3_over
+                nesnd_per_mines_stage_end = yes
+            }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_per_mines_regime = yes } }
+        effect = { nesnd_per_mines_stage_end = yes }
+    }
+}
+

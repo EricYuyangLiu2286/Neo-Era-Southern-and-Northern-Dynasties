@@ -1,0 +1,25 @@
+﻿# 国家作用域：只有秀全当前所在州的所属国可以驱逐他。
+nesnd_xq_is_host = {
+	exists = global_var:nesnd_xq_state.owner
+	global_var:nesnd_xq_state.owner ?= this
+}
+
+# 国家作用域：所在国与所有接壤国共同参与日志。
+nesnd_xq_should_be_involved = {
+	exists = global_var:nesnd_xq_state.owner
+	global_var:nesnd_xq_state.owner ?= {
+		OR = {
+			this = prev
+			is_adjacent_to_country = prev
+		}
+	}
+}
+
+# 州作用域：中国境内由外国持有、与秀全所在国陆地接壤的州。
+nesnd_xq_expel_destination = {
+	is_in_geographic_region = geographic_region_china
+	exists = owner
+	exists = global_var:nesnd_xq_state.owner
+	NOT = { owner ?= global_var:nesnd_xq_state.owner }
+	global_var:nesnd_xq_state.owner ?= { is_land_adjacent_to_state = prev }
+}

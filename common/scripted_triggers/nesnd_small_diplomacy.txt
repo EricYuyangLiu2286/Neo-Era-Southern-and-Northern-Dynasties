@@ -13,11 +13,33 @@
   } }
  } trigger_else = { always = no }
 }
-nesnd_small_diplomacy_ready = {
-    nesnd_small_safe = yes nesnd_small_governance_done = yes nesnd_small_political = yes nesnd_small_case_free = yes is_active_in_diplomatic_play = no
-    exists = market.owner
-    custom_tooltip = { text = nesnd_canon_no_pending_reply NOR = { has_variable = nesnd_india_request_clock has_variable = nesnd_external_pending has_variable = nesnd_small_market_verification has_variable = nesnd_small_market_verifying } }
-    custom_tooltip = { text = nesnd_canon_diplomatic_cooldown NOR = { has_variable = nesnd_india_request_cooldown has_variable = nesnd_external_cooldown } }
+# Sender readiness shared by small-state requests (kinds 6-9). Evaluated outside the sender scope so each line shows without a header.
+nesnd_small_request_common = {
+    custom_tooltip = { text = nesnd_canon_pair_valid_tt nesnd_canon_pair_valid = yes }
+    custom_tooltip = { text = nesnd_small_request_calm_tt
+        scope:canon_sender = {
+            nesnd_small_safe = yes is_active_in_diplomatic_play = no
+            NOT = { is_diplomatic_play_enemy_of = scope:canon_partner }
+            nesnd_small_case_free = yes
+        }
+    }
+    custom_tooltip = { text = nesnd_small_governance_completed_tt scope:canon_sender = { nesnd_small_governance_done = yes } }
+    custom_tooltip = { text = nesnd_small_request_political_tt scope:canon_sender = { nesnd_small_political = yes } }
+    hidden_trigger = {
+        scope:canon_sender = {
+            exists = market.owner
+            trigger_if = { limit = { has_variable = nesnd_canon_request_clock } nesnd_small_request_snapshots_valid = yes }
+        }
+    }
+}
+# The reply to our current request must not be blocked by its own clock/cooldown.
+nesnd_small_other_diplomacy_free = {
+    NOR = { has_variable = nesnd_india_request_clock has_variable = nesnd_external_pending has_variable = nesnd_small_market_verification has_variable = nesnd_small_market_verifying has_variable = nesnd_india_request_cooldown has_variable = nesnd_external_cooldown }
+}
+nesnd_small_send_ready = {
+    custom_tooltip = { text = nesnd_small_diplomacy_not_cooling_tt
+        nesnd_canon_request_free = yes nesnd_small_other_diplomacy_free = yes
+    }
 }
 nesnd_small_request_snapshots_valid = {
  nesnd_small_state_country = yes
@@ -27,43 +49,58 @@ nesnd_small_request_snapshots_valid = {
  trigger_if = { limit = { exists = market.owner exists = var:nesnd_small_request_market } market.owner = var:nesnd_small_request_market }
  trigger_else = { always = no }
 }
-nesnd_small_request_eligible = {
- trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
-scope:canon_sender = { nesnd_small_diplomacy_ready = yes NOT = { is_diplomatic_play_enemy_of = scope:canon_partner }
-        trigger_if = { limit = { has_variable = nesnd_canon_request_clock } nesnd_small_request_snapshots_valid = yes }
+# Kind 6: request higher autonomy from the direct overlord.
+nesnd_small_request_rules_6 = {
+    nesnd_small_request_common = yes
+    custom_tooltip = { text = nesnd_small_request_direct_subject_tt scope:canon_sender = { is_subject = yes nesnd_small_known_subject = yes nesnd_small_direct_partner = yes } }
+    custom_tooltip = { text = nesnd_small_request_can_raise_autonomy_tt scope:canon_sender = { can_increase_autonomy = yes } }
+    custom_tooltip = { text = nesnd_small_request_liberty_75_tt scope:canon_sender = { liberty_desire >= 75 } }
+    custom_tooltip = { text = nesnd_canon_relations_0_tt scope:canon_sender = { "relations(scope:canon_partner)" >= 0 } }
+    custom_tooltip = { text = nesnd_small_request_strength_20_tt scope:canon_sender = { OR = { nesnd_small_army_ratio >= 0.2 nesnd_small_gdp_ratio >= 0.2 nesnd_small_reliable_support = yes } } }
+    trigger_if = { limit = { scope:canon_sender = { has_government_type = gov_chartered_company } }
+        custom_tooltip = { text = nesnd_small_request_company_tech_tt scope:canon_sender = { has_technology_researched = civilizing_mission } }
     }
-    trigger_if = { limit = { scope:canon_kind = 6 }
-        scope:canon_sender = {
-            is_subject = yes nesnd_small_known_subject = yes nesnd_small_direct_partner = yes
-            can_increase_autonomy = yes liberty_desire >= 75 "relations(scope:canon_partner)" >= 0
-            OR = { nesnd_small_army_ratio >= 0.2 nesnd_small_gdp_ratio >= 0.2 nesnd_small_reliable_support = yes }
-            OR = { NOT = { has_government_type = gov_chartered_company } has_technology_researched = civilizing_mission }
-            OR = { NOT = { is_subject_type = subject_type_personal_union } has_technology_researched = nationalism }
-            NOT = { any_diplomatic_catalyst = { is_diplomatic_catalyst_type = catalyst_autonomy_change_imposed target = scope:canon_partner } }
-        }
+    trigger_if = { limit = { scope:canon_sender = { is_subject_type = subject_type_personal_union } }
+        custom_tooltip = { text = nesnd_small_request_union_tech_tt scope:canon_sender = { has_technology_researched = nationalism } }
+    }
+    custom_tooltip = { text = nesnd_small_request_no_recent_autonomy_tt
+        scope:canon_sender = { NOT = { any_diplomatic_catalyst = { is_diplomatic_catalyst_type = catalyst_autonomy_change_imposed target = scope:canon_partner } } }
         scope:canon_partner = { NOT = { any_diplomatic_catalyst = { is_diplomatic_catalyst_type = catalyst_autonomy_increase_requested target = scope:canon_sender } } }
     }
-    trigger_else_if = { limit = { scope:canon_kind = 7 }
-        scope:canon_sender = { is_subject = yes nesnd_small_direct_partner = yes liberty_desire >= 75 "relations(scope:canon_partner)" >= -20
-            OR = { nesnd_small_army_ratio >= 0.4 nesnd_small_gdp_ratio >= 0.4 nesnd_small_reliable_support = yes }
-        }
-    }
-    trigger_else_if = { limit = { scope:canon_kind = 8 }
+}
+# Kind 7: request peaceful independence from the direct overlord.
+nesnd_small_request_rules_7 = {
+    nesnd_small_request_common = yes
+    custom_tooltip = { text = nesnd_small_request_direct_subject_tt scope:canon_sender = { is_subject = yes nesnd_small_direct_partner = yes } }
+    custom_tooltip = { text = nesnd_small_request_liberty_75_tt scope:canon_sender = { liberty_desire >= 75 } }
+    custom_tooltip = { text = nesnd_canon_relations_neg20_tt scope:canon_sender = { "relations(scope:canon_partner)" >= -20 } }
+    custom_tooltip = { text = nesnd_small_request_strength_40_tt scope:canon_sender = { OR = { nesnd_small_army_ratio >= 0.4 nesnd_small_gdp_ratio >= 0.4 nesnd_small_reliable_support = yes } } }
+}
+# Kind 8: ask the current market owner to allow our own market.
+nesnd_small_request_rules_8 = {
+    nesnd_small_request_common = yes
+    custom_tooltip = { text = nesnd_small_request_in_partner_market_tt
         scope:canon_sender = {
             trigger_if = { limit = { exists = market.owner } market.owner = scope:canon_partner NOT = { market.owner = this } }
             trigger_else = { always = no }
-            trigger_if = { limit = { is_subject = yes } is_direct_subject_of = scope:canon_partner liberty_desire >= 25 }
-            "relations(scope:canon_partner)" >= 0
         }
-        scope:canon_partner = { can_create_diplomatic_pact = { target = scope:canon_sender type = grant_own_market } }
     }
-    trigger_else_if = { limit = { scope:canon_kind = 9 }
-        scope:canon_sender = { is_subject = no is_at_war = no "relations(scope:canon_partner)" >= 20 }
-        scope:canon_partner = { is_subject = no is_at_war = no is_active_in_diplomatic_play = no }
+    trigger_if = { limit = { scope:canon_sender = { is_subject = yes } }
+        custom_tooltip = { text = nesnd_small_request_market_subject_tt scope:canon_sender = { is_direct_subject_of = scope:canon_partner liberty_desire >= 25 } }
+    }
+    custom_tooltip = { text = nesnd_canon_relations_0_tt scope:canon_sender = { "relations(scope:canon_partner)" >= 0 } }
+    custom_tooltip = { text = nesnd_small_request_market_pact_tt scope:canon_partner = { can_create_diplomatic_pact = { target = scope:canon_sender type = grant_own_market } } }
+}
+# Kind 9: five-year defensive pact with a named power or a neighbour.
+nesnd_small_request_rules_9 = {
+    nesnd_small_request_common = yes
+    custom_tooltip = { text = nesnd_small_request_not_at_war_tt scope:canon_sender = { is_at_war = no } }
+    hidden_trigger = { scope:canon_sender = { is_subject = no } }
+    custom_tooltip = { text = nesnd_canon_relations_20_tt scope:canon_sender = { "relations(scope:canon_partner)" >= 20 } }
+    custom_tooltip = { text = nesnd_small_request_partner_free_tt scope:canon_partner = { is_subject = no is_at_war = no is_active_in_diplomatic_play = no } }
+    custom_tooltip = { text = nesnd_canon_treaty_defensive_pact_tt
         can_create_treaty = { first_country = scope:canon_sender second_country = scope:canon_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = defensive_pact } } }
     }
-    trigger_else = { always = no }
- } trigger_else = { always = no }
 }
 nesnd_small_request_result = {
  trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }

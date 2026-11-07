@@ -1,0 +1,74 @@
+﻿# Slavery question and 东洲 lever shared effects. Task 58.
+
+# COUNTRY scope (USA). Called by every ending of je_acw_countdown.
+nesnd_acw_cleanup = {
+    remove_variable = nesnd_acw_months
+    remove_variable = nesnd_acw_bar
+    remove_variable = nesnd_acw_once_ruler
+    remove_variable = nesnd_acw_once_kansas
+    remove_variable = nesnd_acw_once_compromise
+    remove_variable = nesnd_acw_escape_heat
+    remove_variable = nesnd_acw_seen_martyr
+    remove_variable = nesnd_acw_seen_kansas
+    remove_variable = nesnd_acw_abolished_months
+    remove_variable = nesnd_acw_crisis
+    remove_variable = nesnd_acw_crisis_side
+    remove_variable = nesnd_acw_push_wait
+    remove_variable = nesnd_acw_compromise_uses
+    clear_variable_list = nesnd_acw_start_regions
+}
+
+# COUNTRY scope (USA), during the secession crisis. Gives the seceding movement's
+# supporters radicals so the engine starts its civil war; var:nesnd_acw_crisis_side
+# 1 = southern secession (CSA), 2 = northern secession (FSA).
+nesnd_acw_push_secession = {
+    set_variable = { name = nesnd_acw_push_wait months = 6 }
+    if = {
+        limit = { has_variable = nesnd_acw_crisis_side var:nesnd_acw_crisis_side = 2 }
+        if = {
+            limit = { NOT = { any_political_movement = { is_political_movement_type = movement_anti_slavery } } }
+            create_political_movement = { type = movement_anti_slavery }
+        }
+        every_scope_state = {
+            limit = { is_slave_state = no }
+            add_radicals_in_state = { value = 0.25 strata = middle }
+            add_radicals_in_state = { value = 0.25 strata = upper }
+        }
+    }
+    else = {
+        if = {
+            limit = { NOT = { any_political_movement = { is_political_movement_type = movement_pro_slavery } } }
+            create_political_movement = { type = movement_pro_slavery }
+        }
+        # Same border-state exceptions as the vanilla secession weights.
+        every_scope_state = {
+            limit = {
+                nesnd_acw_southern_state = yes
+                NOR = {
+                    state_region = s:STATE_MARYLAND
+                    state_region = s:STATE_DELAWARE
+                    state_region = s:STATE_DISTRICT_OF_COLUMBIA
+                    state_region = s:STATE_WEST_VIRGINIA
+                }
+            }
+            add_radicals_in_state = { value = 0.30 strata = upper }
+            add_radicals_in_state = { value = 0.20 pop_type = farmers }
+            add_radicals_in_state = { value = 0.30 pop_type = officers }
+        }
+    }
+}
+
+# COUNTRY scope (HUS). Called by every ending of the 东洲 lever journal.
+nesnd_hus_west_cleanup = {
+    set_variable = nesnd_hus_west_closed
+    remove_variable = nesnd_hus_west_open
+    remove_variable = nesnd_hus_west_funding
+    remove_variable = nesnd_hus_west_bar
+    remove_variable = nesnd_hus_west_once_batches
+    remove_variable = nesnd_hus_west_once_spent
+    remove_variable = nesnd_hus_west_claim_cooldown
+    remove_variable = nesnd_hus_west_border_cooldown
+    remove_variable = nesnd_hus_west_launching
+    remove_variable = nesnd_hus_west_policy_cooldown
+    clear_variable_list = nesnd_hus_west_claims
+}

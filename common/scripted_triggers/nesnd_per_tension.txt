@@ -1,0 +1,107 @@
+﻿# 唐衣大食：唐人统治与民族矛盾（任务65 第①批）。
+# 唐人 = 作者 coa_heritage_han_culture_trigger 名单中的文化（同名单，人口作用域）。
+
+# Country scope.
+nesnd_per_tang_regime = { nesnd_per_country = yes coa_heritage_han_culture_trigger = yes }
+nesnd_per_tension_frozen = { num_states < 3 }
+nesnd_per_tension_live = {
+    nesnd_per_tang_regime = yes
+    has_journal_entry = nesnd_per_tension_journal
+    NOT = { nesnd_per_tension_frozen = yes }
+}
+
+# Pop scope. Tier 1: 唐人.
+nesnd_per_tang_pop = {
+    custom_tooltip = {
+        text = nesnd_per_tang_pop_tt
+        OR = {
+            has_pop_culture = ce_xiyu
+            has_pop_culture = ce_sichuan
+            has_pop_culture = ce_chu
+            has_pop_culture = ce_wuu
+            has_pop_culture = ce_xinan
+            has_pop_culture = ce_liaodong
+            has_pop_culture = ce_laoqin
+            has_pop_culture = ce_xibei
+            has_pop_culture = yue
+            has_pop_culture = yi
+            has_pop_culture = zhuang
+            has_pop_culture = min
+            has_pop_culture = hakka
+            has_pop_culture = miao
+            has_pop_culture = han
+            has_pop_culture = ce_zhonghua
+            has_pop_culture = manchu
+        }
+    }
+}
+# Pop scope. Tier 2: 广义伊朗人——伊朗传承及中亚诸传承（含突厥系，阿塞拜疆、土耳其等安纳托利亚传承除外）。
+nesnd_per_iranian_pop = {
+    custom_tooltip = {
+        text = nesnd_per_iranian_pop_tt
+        NOT = { nesnd_per_tang_pop = yes }
+        culture = {
+            OR = {
+                has_discrimination_trait = heritage_iranian
+                has_discrimination_trait_group = heritage_group_central_asian
+            }
+        }
+    }
+}
+# Pop scope. Tier 3: 其余（阿拉伯、安纳托利亚、叙利亚等中东传承，以及所有其他人口）。
+nesnd_per_other_pop = {
+    custom_tooltip = {
+        text = nesnd_per_other_pop_tt
+        NOT = { nesnd_per_tang_pop = yes }
+        NOT = { nesnd_per_iranian_pop = yes }
+    }
+}
+
+# State scope. 伊朗诸州：广义伊朗人故土所在的州。
+nesnd_per_iranian_state = {
+    state_region = {
+        OR = {
+            is_homeland = cu:persian
+            is_homeland = cu:mazanderani
+            is_homeland = cu:luri
+            is_homeland = cu:kurdish
+            is_homeland = cu:baluchi
+            is_homeland = cu:turkmen
+            is_homeland = cu:hazara
+            is_homeland = cu:tajik
+            is_homeland = cu:pashtun
+            is_homeland = cu:uzbek
+        }
+    }
+}
+
+# Country scope. 与奉伊斯兰教为国教的国家交战。
+nesnd_per_at_war_with_muslims = {
+    any_country = {
+        has_war_with = root
+        OR = {
+            country_has_state_religion = rel:sunni
+            country_has_state_religion = rel:shiite
+            country_has_state_religion = rel:ibadi
+        }
+    }
+}
+nesnd_per_has_tang_law = {
+    OR = {
+        has_law = law_type:law_nesnd_per_tang_strict
+        has_law = law_type:law_nesnd_per_tang_codified
+        has_law = law_type:law_nesnd_per_tang_lenient
+    }
+}
+
+# 远西变身的执政文化（国家作用域）：唐人优先，其次波斯（伊朗传承），再次阿拉伯。任务65。
+nesnd_per_west_ruler_tang = { coa_heritage_han_culture_trigger = yes }
+nesnd_per_west_ruler_persian = {
+    NOT = { coa_heritage_han_culture_trigger = yes }
+    any_primary_culture = { has_discrimination_trait = heritage_iranian }
+}
+nesnd_per_west_ruler_arab = {
+    NOT = { coa_heritage_han_culture_trigger = yes }
+    NOT = { any_primary_culture = { has_discrimination_trait = heritage_iranian } }
+    any_primary_culture = { has_discrimination_trait = heritage_arab }
+}

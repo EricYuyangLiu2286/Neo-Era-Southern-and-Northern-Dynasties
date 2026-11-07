@@ -1,0 +1,99 @@
+﻿# 唐衣大食第③批：伊朗人起义、改朝换代或分裂、波斯人统治阶段（任务65）。
+
+# Character scope. 唐人人物：文化在唐人名单中（同 nesnd_per_tang_pop）。
+nesnd_per_tang_character = {
+    OR = {
+        has_culture = cu:ce_xiyu
+        has_culture = cu:ce_sichuan
+        has_culture = cu:ce_chu
+        has_culture = cu:ce_wuu
+        has_culture = cu:ce_xinan
+        has_culture = cu:ce_liaodong
+        has_culture = cu:ce_laoqin
+        has_culture = cu:ce_xibei
+        has_culture = cu:yue
+        has_culture = cu:yi
+        has_culture = cu:zhuang
+        has_culture = cu:min
+        has_culture = cu:hakka
+        has_culture = cu:miao
+        has_culture = cu:han
+        has_culture = cu:ce_zhonghua
+        has_culture = cu:manchu
+    }
+}
+
+# Country scope. 波斯人统治阶段（作者定：按统治者文化）：主体文化不含唐人，君主属伊朗传承，首都在伊朗高原。
+# 改朝换代后的 PER、分裂出的伊朗（IRN）以及日后任何满足条件的国家都适用。
+# 高原只算波斯、马赞德兰、卢尔、库尔德的故土：开局的俾路支诸邦（卡拉特、莫克兰）首都在俾路支斯坦，不算。
+nesnd_per_persian_stage = {
+    NOT = { coa_heritage_han_culture_trigger = yes }
+    exists = ruler
+    ruler = { culture = { has_discrimination_trait = heritage_iranian } }
+    exists = capital
+    capital = { nesnd_per_plateau_state = yes }
+}
+# State scope. 伊朗高原的州：波斯、马赞德兰、卢尔、库尔德的故土。
+nesnd_per_plateau_state = {
+    state_region = {
+        OR = {
+            is_homeland = cu:persian
+            is_homeland = cu:mazanderani
+            is_homeland = cu:luri
+            is_homeland = cu:kurdish
+        }
+    }
+}
+
+# Country scope. 起义时可迎立沙阿：广义伊朗人不少于全国一半。
+nesnd_per_rising_shah_possible = {
+    has_variable = nesnd_per_iran_share_var
+    var:nesnd_per_iran_share_var >= 0.5
+}
+# Country scope. 平叛后打成内战（否则为独立战争）：广义伊朗人不少于六成，或十年内两次用过激化按钮。
+nesnd_per_rising_civil_war = {
+    OR = {
+        AND = { has_variable = nesnd_per_iran_share_var var:nesnd_per_iran_share_var >= 0.6 }
+        AND = { has_variable = nesnd_per_provoke_1 has_variable = nesnd_per_provoke_2 }
+    }
+}
+
+# State scope. 起义分裂时归伊朗的州：广义伊朗人过半，且不是首都。
+nesnd_per_split_state = {
+    is_capital = no
+    nesnd_per_state_iran_share > 0.5
+}
+
+# Country scope. 「沙阿的新朝」可开：国内还有非君主的唐人人物。
+nesnd_per_court_has_tang = {
+    any_scope_character = { nesnd_per_tang_character = yes is_ruler_of_own_country = no }
+}
+
+# Country scope. 北伐可选的目标：西秦与本国接壤的州。
+nesnd_per_north_has_target = {
+    exists = c:QE1
+    c:QE1 = { any_scope_state = { any_neighbouring_state = { owner = root } } }
+}
+
+# Country scope. 西进：两河与海湾的六个石油地区全部归本国。
+nesnd_per_west_oil_owned = {
+    owns_entire_state_region = STATE_KHUZESTAN
+    owns_entire_state_region = STATE_FARS
+    owns_entire_state_region = STATE_LARISTAN
+    owns_entire_state_region = STATE_BASRA
+    owns_entire_state_region = STATE_BAGHDAD
+    owns_entire_state_region = STATE_MOSUL
+}
+# State scope. 西进宣称的对象：六个石油地区中别国的州。
+nesnd_per_west_oil_state = {
+    state_region = {
+        OR = {
+            this = s:STATE_KHUZESTAN
+            this = s:STATE_FARS
+            this = s:STATE_LARISTAN
+            this = s:STATE_BASRA
+            this = s:STATE_BAGHDAD
+            this = s:STATE_MOSUL
+        }
+    }
+}

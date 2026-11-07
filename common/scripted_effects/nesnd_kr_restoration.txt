@@ -1,0 +1,153 @@
+﻿nesnd_kr_find_center = {
+ if = { limit = { c:KOR ?= { is_country_alive = yes } } set_global_variable = { name = nesnd_kr_center value = c:KOR } }
+ else_if = { limit = { NOT = { global_var:nesnd_kr_center ?= { nesnd_kr_successor = yes } } }
+ remove_global_variable = nesnd_kr_center
+ ordered_country = { limit = { nesnd_kr_successor = yes } order_by = nesnd_kr_pop max = 1 set_global_variable = { name = nesnd_kr_center value = this } } }
+}
+nesnd_kr_wipe_case = {
+ remove_global_variable = nesnd_kr_offer_center remove_global_variable = nesnd_kr_offer_had_center remove_global_variable = nesnd_kr_play remove_global_variable = nesnd_kr_signer remove_global_variable = nesnd_kr_target remove_global_variable = nesnd_kr_seed remove_global_variable = nesnd_kr_pending
+ remove_global_variable = nesnd_kr_actor remove_global_variable = nesnd_kr_months
+ set_global_variable = { name = nesnd_kr_phase value = 0 }
+ every_state = { limit = { has_variable = nesnd_kr_war_seed } remove_variable = nesnd_kr_war_seed }
+}
+nesnd_kr_clear_local = {
+ remove_variable = nesnd_kr_count remove_variable = nesnd_kr_share remove_variable = nesnd_kr_rights remove_variable = nesnd_kr_voice remove_variable = nesnd_kr_unrest remove_variable = nesnd_kr_orders remove_variable = nesnd_kr_sum
+ if = { limit = { has_modifier = nesnd_kr_councils } remove_modifier = nesnd_kr_councils }
+ if = { limit = { has_modifier = nesnd_kr_police } remove_modifier = nesnd_kr_police }
+}
+nesnd_kr_close = {
+ nesnd_kr_wipe_case = yes
+ every_country = { limit = { OR = { has_variable = nesnd_kr_count has_modifier = nesnd_kr_police has_modifier = nesnd_kr_councils } } nesnd_kr_clear_local = yes }
+ remove_global_variable = nesnd_kr_phase remove_global_variable = nesnd_kr_center remove_global_variable = nesnd_kr_open
+ remove_global_variable = nesnd_kr_pressure remove_global_variable = nesnd_kr_total remove_global_variable = nesnd_kr_delta remove_global_variable = nesnd_kr_rest
+}
+nesnd_kr_create_center = {
+ # Caller owns the selected, freshly revalidated seed. Recheck the living centre before creation.
+ nesnd_kr_find_center = yes
+ if = { limit = { NOT = { exists = global_var:nesnd_kr_center } scope:kr_seed ?= { owner = prev nesnd_kr_inhabited = yes controller = owner } }
+ create_country = { tag = KOR origin = this $SEED$ = scope:$SCOPE$
+ on_created = { make_independent = yes add_primary_culture = cu:korean
+ save_scope_as = kr_new_country every_primary_culture = { limit = { NOT = { has_discrimination_trait = heritage_korean } } scope:kr_new_country = { remove_primary_culture = prev } }
+ if = { limit = { NOT = { exists = ruler } } create_character = { ruler = yes culture = cu:korean } } set_global_variable = { name = nesnd_kr_center value = this } trigger_event = { id = nesnd_kr.5 days = 1 popup = yes } } }
+ }
+}
+nesnd_kr_handover = {
+ if = { limit = { nesnd_kr_can_deal = yes exists = scope:kr_seed scope:kr_seed = { owner = prev nesnd_kr_inhabited = yes controller = owner } }
+ save_scope_as = kr_grantor
+ nesnd_kr_create_center = { SEED = state SCOPE = kr_seed }
+ if = { limit = { exists = global_var:nesnd_kr_center }
+ scope:kr_grantor ?= { every_scope_state = { limit = { nesnd_kr_land = yes controller = owner } set_state_owner = global_var:nesnd_kr_center } }
+ if = { limit = { global_var:nesnd_kr_target ?= scope:kr_grantor } nesnd_kr_wipe_case = yes }
+ global_var:nesnd_kr_center = { trigger_event = { id = nesnd_kr.3 popup = yes } }
+ } }
+}
+nesnd_kr_mobilize = {
+ remove_global_variable = nesnd_kr_pending
+ set_global_variable = { name = nesnd_kr_phase value = 2 } set_global_variable = { name = nesnd_kr_months value = 0 }
+}
+nesnd_kr_new_request = {
+ ordered_state = { limit = { nesnd_kr_inhabited = yes controller = owner owner = { nesnd_kr_can_deal = yes } }
+ order_by = nesnd_kr_state_pop max = 1
+ save_scope_as = kr_offer_seed set_global_variable = { name = nesnd_kr_seed value = this }
+ owner = {
+ nesnd_kr_open_offer = yes
+ } }
+}
+nesnd_kr_open_offer = {
+ set_global_variable = { name = nesnd_kr_target value = this }
+ if = { limit = { exists = global_var:nesnd_kr_center } set_global_variable = nesnd_kr_offer_had_center set_global_variable = { name = nesnd_kr_offer_center value = global_var:nesnd_kr_center } }
+ set_global_variable = { name = nesnd_kr_signer value = this }
+ if = { limit = { is_subject = yes exists = overlord } set_global_variable = { name = nesnd_kr_signer value = overlord } }
+ set_global_variable = { name = nesnd_kr_phase value = 1 } set_global_variable = { name = nesnd_kr_pending days = 90 }
+ if = { limit = { NOT = { has_global_variable = nesnd_kr_serial } } set_global_variable = { name = nesnd_kr_serial value = 0 } }
+ change_global_variable = { name = nesnd_kr_serial add = 1 } save_scope_value_as = { name = kr_offer_id value = global_var:nesnd_kr_serial }
+ global_var:nesnd_kr_signer = { trigger_event = { id = nesnd_kr.2 popup = yes } }
+}
+nesnd_kr_launch = {
+ if = { limit = { nesnd_kr_seed_live = yes }
+ global_var:nesnd_kr_seed = { save_scope_as = kr_seed }
+ global_var:nesnd_kr_target = {
+ nesnd_kr_find_center = yes
+ if = { limit = { NOT = { exists = global_var:nesnd_kr_center } }
+ # Leave the defender a real country. If this is its final state use a province.
+ if = { limit = { any_scope_state = { count >= 2 } } nesnd_kr_create_center = { SEED = state SCOPE = kr_seed } }
+ else_if = { limit = { scope:kr_seed = { any_province = { count >= 2 } } }
+ scope:kr_seed = { random_province = { save_scope_as = kr_province } }
+ nesnd_kr_create_center = { SEED = province SCOPE = kr_province } }
+ global_var:nesnd_kr_center ?= {
+ every_scope_state = { set_variable = nesnd_kr_war_seed }
+ if = { limit = { any_scope_state = { nesnd_kr_inhabited = yes } } nesnd_restoration_army = yes }
+ else = { every_scope_state = { limit = { nesnd_kr_land = yes has_variable = nesnd_kr_war_seed } set_state_owner = global_var:nesnd_kr_target } }
+ } }
+ if = { limit = { global_var:nesnd_kr_center ?= { is_subject = no is_at_war = no is_active_in_diplomatic_play = no } }
+ set_global_variable = { name = nesnd_kr_actor value = global_var:nesnd_kr_center }
+ set_global_variable = { name = nesnd_kr_phase value = 3 }
+ global_var:nesnd_kr_actor = { create_diplomatic_play = { name = dp_nesnd_kr_restoration type = dp_nesnd_kr_restoration target_country = global_var:nesnd_kr_target escalation = 50 } }
+ random_diplomatic_play = { limit = { is_diplomatic_play_type = dp_nesnd_kr_restoration initiator ?= global_var:nesnd_kr_actor target ?= global_var:nesnd_kr_target }
+ set_global_variable = { name = nesnd_kr_play value = this } }
+ if = { limit = { NOT = { exists = global_var:nesnd_kr_play } }
+ global_var:nesnd_kr_actor ?= { every_scope_state = { limit = { nesnd_kr_land = yes has_variable = nesnd_kr_war_seed } set_state_owner = global_var:nesnd_kr_target } }
+ nesnd_kr_end_case = yes }
+ }
+ else_if = { limit = { NOT = { exists = global_var:nesnd_kr_center } } nesnd_kr_end_case = yes }
+ } }
+}
+nesnd_kr_pair = {
+ # Executed only by the enforced goal with its actual play and opponent.
+ if = { limit = { global_var:nesnd_kr_phase = 3 exists = scope:diplomatic_play exists = scope:target_country
+ scope:diplomatic_play ?= global_var:nesnd_kr_play
+ scope:diplomatic_play = { is_diplomatic_play_type = dp_nesnd_kr_restoration initiator = global_var:nesnd_kr_actor target = global_var:nesnd_kr_target }
+ OR = { AND = { global_var:nesnd_kr_actor ?= this scope:target_country = global_var:nesnd_kr_target }
+ AND = { global_var:nesnd_kr_target ?= this scope:target_country = global_var:nesnd_kr_actor } } }
+ save_scope_as = kr_winner
+ if = { limit = { global_var:nesnd_kr_actor ?= this }
+ scope:target_country = { every_scope_state = { limit = { nesnd_kr_land = yes } set_state_owner = scope:kr_winner } } }
+ else = { scope:target_country = { every_scope_state = { limit = { nesnd_kr_land = yes has_variable = nesnd_kr_war_seed } set_state_owner = scope:kr_winner } } }
+ nesnd_kr_end_case = yes
+ trigger_event = { id = nesnd_kr.3 popup = yes }
+ }
+}
+nesnd_kr_end_case = {
+ nesnd_kr_wipe_case = yes
+ set_global_variable = { name = nesnd_kr_rest months = 12 }
+ change_global_variable = { name = nesnd_kr_pressure subtract = 25 }
+ clamp_global_variable = { name = nesnd_kr_pressure min = 0 max = 100 }
+}
+nesnd_kr_month = {
+ nesnd_kr_find_center = yes
+ every_country = { limit = { has_variable = nesnd_kr_count NOT = { nesnd_kr_holder = yes } } nesnd_kr_clear_local = yes }
+ every_scope_je_involved = { limit = { NOT = { nesnd_kr_holder = yes } }
+ nesnd_kr_clear_local = yes scope:journal_entry = { remove_involved_country = prev } }
+ every_country = { limit = { nesnd_kr_holder = yes NOT = { is_involved_in_journal_entry = nesnd_kr_restoration } }
+ scope:journal_entry = { add_involved_country = prev } }
+ nesnd_kr_read_factors = yes
+ change_global_variable = { name = nesnd_kr_pressure add = global_var:nesnd_kr_delta }
+ clamp_global_variable = { name = nesnd_kr_pressure min = 0 max = 100 }
+ if = { limit = { global_var:nesnd_kr_phase = 3 }
+ if = { limit = { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_nesnd_kr_restoration initiator ?= global_var:nesnd_kr_actor target ?= global_var:nesnd_kr_target } }
+ NOT = { global_var:nesnd_kr_actor ?= { exists = global_var:nesnd_kr_target has_war_with = global_var:nesnd_kr_target } } }
+ nesnd_kr_end_case = yes } }
+ else_if = { limit = { global_var:nesnd_kr_phase > 0 OR = { NOT = { nesnd_kr_seed_live = yes } NOT = { nesnd_kr_signature_valid = yes } } } nesnd_kr_wipe_case = yes }
+ else_if = { limit = { global_var:nesnd_kr_phase = 1 NOT = { has_global_variable = nesnd_kr_pending } } nesnd_kr_mobilize = yes }
+ else_if = { limit = { global_var:nesnd_kr_phase = 2 global_var:nesnd_kr_pressure >= 75 }
+ if = { limit = { global_var:nesnd_kr_months < 12 } change_global_variable = { name = nesnd_kr_months add = 1 } }
+ if = { limit = { global_var:nesnd_kr_months >= 12 NOT = { global_var:nesnd_kr_center ?= { OR = { is_subject = yes has_truce_with = global_var:nesnd_kr_target } } } } nesnd_kr_launch = yes } }
+ else_if = { limit = { global_var:nesnd_kr_phase = 0 global_var:nesnd_kr_pressure >= 75 NOT = { has_global_variable = nesnd_kr_rest } } nesnd_kr_new_request = yes }
+ set_bar_progress = { name = nesnd_kr_pressure_bar value = global_var:nesnd_kr_pressure }
+}
+
+nesnd_kr_read_factors = {
+ set_global_variable = { name = nesnd_kr_total value = 0 }
+ every_country = { limit = { nesnd_kr_holder = yes }
+ set_variable = { name = nesnd_kr_count value = nesnd_kr_pop }
+ if = { limit = { NOT = { nesnd_kr_center = yes } } change_global_variable = { name = nesnd_kr_total add = var:nesnd_kr_count } } }
+ set_global_variable = { name = nesnd_kr_delta value = 0 }
+ every_country = { limit = { nesnd_kr_holder = yes }
+ set_variable = { name = nesnd_kr_share value = nesnd_kr_weight }
+ set_variable = { name = nesnd_kr_rights value = nesnd_kr_citizenship }
+ set_variable = { name = nesnd_kr_voice value = nesnd_kr_speech }
+ set_variable = { name = nesnd_kr_unrest value = nesnd_kr_turmoil }
+ set_variable = { name = nesnd_kr_orders value = nesnd_kr_action }
+ set_variable = { name = nesnd_kr_sum value = { value = 0.25 add = var:nesnd_kr_rights add = var:nesnd_kr_voice add = var:nesnd_kr_unrest add = var:nesnd_kr_orders multiply = var:nesnd_kr_share } }
+ change_global_variable = { name = nesnd_kr_delta add = var:nesnd_kr_sum } }
+}

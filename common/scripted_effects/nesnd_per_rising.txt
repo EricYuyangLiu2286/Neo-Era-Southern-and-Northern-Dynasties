@@ -1,0 +1,207 @@
+﻿# 唐衣大食第③批：伊朗人起义、改朝换代或分裂、波斯人统治阶段（任务65）。
+
+# 激化按钮（唐人实边、整肃清议）用过一次记一笔，十年后消去；两笔都在时起义打成内战。
+nesnd_per_provoke_mark = {
+    if = { limit = { has_variable = nesnd_per_provoke_1 } set_variable = { name = nesnd_per_provoke_2 years = 10 } }
+    else = { set_variable = { name = nesnd_per_provoke_1 years = 10 } }
+}
+
+# 主体文化去掉唐人名单中的全部文化。
+nesnd_per_drop_tang_cultures = {
+    if = { limit = { country_has_primary_culture = cu:ce_xiyu } remove_primary_culture = cu:ce_xiyu }
+    if = { limit = { country_has_primary_culture = cu:ce_sichuan } remove_primary_culture = cu:ce_sichuan }
+    if = { limit = { country_has_primary_culture = cu:ce_chu } remove_primary_culture = cu:ce_chu }
+    if = { limit = { country_has_primary_culture = cu:ce_wuu } remove_primary_culture = cu:ce_wuu }
+    if = { limit = { country_has_primary_culture = cu:ce_xinan } remove_primary_culture = cu:ce_xinan }
+    if = { limit = { country_has_primary_culture = cu:ce_liaodong } remove_primary_culture = cu:ce_liaodong }
+    if = { limit = { country_has_primary_culture = cu:ce_laoqin } remove_primary_culture = cu:ce_laoqin }
+    if = { limit = { country_has_primary_culture = cu:ce_xibei } remove_primary_culture = cu:ce_xibei }
+    if = { limit = { country_has_primary_culture = cu:yue } remove_primary_culture = cu:yue }
+    if = { limit = { country_has_primary_culture = cu:yi } remove_primary_culture = cu:yi }
+    if = { limit = { country_has_primary_culture = cu:zhuang } remove_primary_culture = cu:zhuang }
+    if = { limit = { country_has_primary_culture = cu:min } remove_primary_culture = cu:min }
+    if = { limit = { country_has_primary_culture = cu:hakka } remove_primary_culture = cu:hakka }
+    if = { limit = { country_has_primary_culture = cu:miao } remove_primary_culture = cu:miao }
+    if = { limit = { country_has_primary_culture = cu:han } remove_primary_culture = cu:han }
+    if = { limit = { country_has_primary_culture = cu:ce_zhonghua } remove_primary_culture = cu:ce_zhonghua }
+    if = { limit = { country_has_primary_culture = cu:manchu } remove_primary_culture = cu:manchu }
+    if = { limit = { NOT = { country_has_primary_culture = cu:persian } } add_primary_culture = cu:persian }
+}
+
+# 唐人统治阶段结束：讲堂与天命说代表人物作废，矛盾条清零，记下波斯人统治。
+nesnd_per_end_tang_stage = {
+    set_variable = nesnd_per_persian_rule
+    if = { limit = { has_variable = nesnd_per_mandate_halls } remove_variable = nesnd_per_mandate_halls }
+    if = { limit = { has_variable = nesnd_per_rep_mandate } remove_variable = nesnd_per_rep_mandate }
+    # 经济线：唐人时代的利权作废（第④批）。
+    nesnd_per_mines_stage_end = yes
+    nesnd_per_tension_clear = yes
+}
+
+# 迎立沙阿：PER 改朝换代。恺加王子仍在国内则立他，否则另立一位波斯贵人。
+nesnd_per_shah_takeover = {
+    set_global_variable = nesnd_per_rising_done
+    clear_saved_scope = nesnd_per_new_shah
+    random_scope_character = {
+        limit = { has_template = per_mohammad_shah_qajar_template is_character_alive = yes }
+        save_scope_as = nesnd_per_new_shah
+    }
+    if = { limit = { NOT = { exists = scope:nesnd_per_new_shah } }
+        create_character = {
+            culture = cu:persian
+            religion = rel:shiite
+            interest_group = ig_landowners
+            ideology = ideology_royalist
+            age = 40
+            save_scope_as = nesnd_per_new_shah
+        }
+    }
+    scope:nesnd_per_new_shah = { set_character_as_ruler = yes }
+    if = { limit = { exists = heir heir = { nesnd_per_tang_character = yes } }
+        create_character = { heir = yes culture = cu:persian religion = rel:shiite age = 18 }
+    }
+    nesnd_per_drop_tang_cultures = yes
+    if = { limit = { NOT = { country_has_state_religion = rel:shiite } } set_state_religion = rel:shiite }
+    if = { limit = { NOT = { has_social_hierarchy = default_social_hierarchy } } set_social_hierarchy = default_social_hierarchy }
+    add_modifier = { name = nesnd_per_new_dynasty months = 60 }
+    ig:ig_armed_forces ?= { add_modifier = { name = nesnd_per_tang_slighted months = 60 } }
+    ig:ig_devout ?= { add_modifier = { name = nesnd_per_ulama_pleased months = 36 } }
+    nesnd_per_end_tang_stage = yes
+}
+
+# 平叛：伊朗诸州另立伊朗（IRN）。内战还是独立战争，按 nesnd_per_rising_civil_war 判定。
+# 种子州：广义伊朗人过半的非首都州中人口最多者；没有则取任一非首都的伊朗州；再没有则改为迎立沙阿。
+nesnd_per_split = {
+    set_global_variable = nesnd_per_rising_done
+    set_variable = { name = nesnd_per_rising_cooldown years = 10 }
+    clear_saved_scope = nesnd_per_split_seed
+    ordered_scope_state = { limit = { nesnd_per_split_state = yes } order_by = state_population max = 1 save_scope_as = nesnd_per_split_seed }
+    if = { limit = { NOT = { exists = scope:nesnd_per_split_seed } }
+        ordered_scope_state = { limit = { nesnd_per_iranian_state = yes is_capital = no } order_by = state_population max = 1 save_scope_as = nesnd_per_split_seed }
+    }
+    if = { limit = { exists = scope:nesnd_per_split_seed NOT = { exists = c:IRN } }
+        create_country = {
+            tag = IRN
+            origin = root
+            state = scope:nesnd_per_split_seed
+            on_created = { nesnd_per_irn_setup = yes }
+        }
+        if = { limit = { exists = c:IRN }
+            every_scope_state = { limit = { nesnd_per_split_state = yes } set_state_owner = c:IRN }
+            c:IRN = {
+                if = { limit = { root = { nesnd_per_rising_civil_war = yes } } set_variable = nesnd_per_irn_civil }
+                else = { set_variable = nesnd_per_irn_independence }
+                trigger_event = { id = nesnd_per_rising.90 days = 1 popup = no }
+            }
+            nesnd_per_tension_clear = yes
+        }
+    }
+    else = { nesnd_per_shah_takeover = yes }
+}
+
+# 新伊朗国的开局设置（create_country 的 on_created）。
+nesnd_per_irn_setup = {
+    nesnd_per_drop_tang_cultures = yes
+    if = { limit = { NOT = { country_has_state_religion = rel:shiite } } set_state_religion = rel:shiite }
+    if = { limit = { NOT = { has_social_hierarchy = default_social_hierarchy } } set_social_hierarchy = default_social_hierarchy }
+    activate_law = law_type:law_monarchy
+    activate_law = law_type:law_autocracy
+    set_ruling_interest_groups = { ig_devout ig_landowners }
+    create_character = { culture = cu:persian religion = rel:shiite ruler = yes interest_group = ig_landowners ideology = ideology_royalist age = 35 }
+    add_modifier = { name = nesnd_per_rebel_zeal months = 60 }
+    add_technology_researched = line_infantry
+    add_technology_researched = artillery
+    set_variable = nesnd_per_irn_rebels
+    save_scope_as = nesnd_per_irn_scope
+    create_military_formation = {
+        name = nesnd_per_irn_army
+        type = army
+        hq_region = scope:nesnd_per_irn_scope.capital.region
+        combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = scope:nesnd_per_irn_scope.capital.state_region count = 12 }
+        combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = scope:nesnd_per_irn_scope.capital.state_region count = 3 }
+    }
+    create_character = { culture = cu:persian religion = rel:shiite is_general = yes interest_group = ig_armed_forces ideology = ideology_jingoist_leader }
+}
+
+# 起义战争（由伊朗的隐藏事件 nesnd_per_rising.90 在建国次日发起）。
+nesnd_per_rising_start_war = {
+    if = { limit = { exists = c:PER c:PER = { is_country_alive = yes } NOT = { has_war_with = c:PER } }
+        if = { limit = { has_variable = nesnd_per_irn_civil }
+            create_diplomatic_play = { type = dp_nesnd_per_civil target_country = c:PER war = yes }
+        }
+        else = {
+            save_scope_as = nesnd_per_irn_target
+            c:PER = { create_diplomatic_play = { type = dp_nesnd_per_reconquest target_country = scope:nesnd_per_irn_target war = yes } }
+        }
+    }
+}
+
+# 沙阿的新朝：每次处置至多三位唐人人物（君主除外）。
+nesnd_per_court_expel = {
+    while = {
+        count = 3
+        limit = { exists = c:QE1 any_scope_character = { nesnd_per_tang_character = yes is_ruler_of_own_country = no } }
+        random_scope_character = {
+            limit = { nesnd_per_tang_character = yes is_ruler_of_own_country = no }
+            transfer_character = c:QE1
+        }
+    }
+}
+nesnd_per_court_exile = {
+    while = {
+        count = 3
+        limit = { any_scope_character = { nesnd_per_tang_character = yes is_ruler_of_own_country = no } }
+        random_scope_character = {
+            limit = { nesnd_per_tang_character = yes is_ruler_of_own_country = no }
+            exile_character = yes
+        }
+    }
+}
+nesnd_per_court_naturalize = {
+    while = {
+        count = 3
+        limit = { any_scope_character = { nesnd_per_tang_character = yes is_ruler_of_own_country = no } }
+        random_scope_character = {
+            limit = { nesnd_per_tang_character = yes is_ruler_of_own_country = no }
+            change_character_culture = cu:persian
+            change_character_religion = rel:shiite
+        }
+    }
+}
+
+# 沙阿的道路·北伐雪耻：取西秦与本国接壤、人口最多的一州，宣称并发起外交博弈。
+nesnd_per_north_launch = {
+    clear_saved_scope = nesnd_per_north_target
+    c:QE1 ?= {
+        ordered_scope_state = {
+            limit = { any_neighbouring_state = { owner = root } }
+            order_by = state_population
+            max = 1
+            save_scope_as = nesnd_per_north_target
+        }
+    }
+    if = { limit = { exists = scope:nesnd_per_north_target }
+        set_variable = { name = nesnd_per_road value = flag:north }
+        set_variable = { name = nesnd_per_north_target value = scope:nesnd_per_north_target.state_region }
+        set_variable = nesnd_per_north_war
+        scope:nesnd_per_north_target.state_region = { add_claim = root }
+        create_diplomatic_play = {
+            name = nesnd_per_north_play
+            type = dp_nesnd_per_north
+            target_country = c:QE1
+            target_state = scope:nesnd_per_north_target
+            escalation = 40
+        }
+    }
+}
+# 沙阿的道路·西进：宣称两河与海湾六个石油地区中别国的州。
+nesnd_per_west_launch = {
+    set_variable = { name = nesnd_per_road value = flag:west }
+    every_country = {
+        limit = { NOT = { this = root } any_scope_state = { nesnd_per_west_oil_state = yes } }
+        every_scope_state = {
+            limit = { nesnd_per_west_oil_state = yes }
+            state_region = { add_claim = root }
+        }
+    }
+}

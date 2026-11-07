@@ -2,6 +2,14 @@
 
 **项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
 
+[任务64 · 洞庭《接旗》主菜单](issues/64-dongting-main-menu.md) 已替换任务63占位画面，场外解码通过。
+
+[任务63 · 主菜单主题第一步](issues/63-main-menu-theme-spec.md) 已交绘图规格、俄国视频参考帧与「南 · 北」占位主题，待作者提供正式背景。
+
+[任务61 · 宫殿加载画面](issues/61-throne-hall-loadingscreen.md) 已加入原版加载画面候选池，DDS 回读通过。
+
+[任务62 · 成都焚掠加载画面](issues/62-chengdu-loadingscreen.md) 已修正村道与炮位尺度，4K BC2 及全部 mipmap 回读通过。
+
 [任务55 · 事件恢复、退役清理与文本归档](issues/55-event-recovery-and-text-archive.md)：已落实82条批准意见，另清理被替代的旧AI结局；62个事件定义删除，19项适配，2个有效入口保留。842条文字入技能；STATIC_PASS，待新开局复测。
 
 [任务51 · USM月度事件与事件恢复审查](issues/51-usm-monthly-events.md)：补 .8–.10 入口及必要条件，保留 .6/.7 原调度；STATIC_PASS。已列82条待确认事件，第二步未实施，待作者复测与确认。
@@ -202,7 +210,7 @@ Updated: 2026-11-01
 
 ## 当前研究交付：法国政治与地区建设（2026-11-03）
 
-[29 法国方案](issues/29-france-political-planning.md)：RAHF动员与原生党派机制已核。常规目标IG执政＋合法性50，不检测党派组合。补“宫廷与外省”及共和国分配/右转的条件性路线，保留波拿巴原方向。新增政治难度技能规则。本批仅文档，未实施玩法、未开游戏。后续以WORK/reports/france-politics-plan-20261103/france-development-plan.md为准，不沿用被纠正的组合门槛。
+[29 法国方案](issues/29-france-political-planning.md)：常规目标IG执政＋合法性50，不检测党派组合。补“宫廷与外省”及共和国分配/右转的条件性路线，保留波拿巴原方向。新增政治难度技能规则。本批仅文档，未实施玩法、未开游戏。后续以WORK/reports/france-politics-plan-20261103/france-development-plan.md为准，不沿用被纠正的组合门槛。
 
 ## 2026-11-04四项日志与停战反馈
 
@@ -212,3 +220,37 @@ Updated: 2026-11-01
 - [54 天竺的土地改为成立天竺宣慰司](issues/54-tianzhu-commission.md)：已改为8地区里程碑＋自治领建司＋划归决议。STATIC_PASS，待作者复测。
 
 - [53 朝鲜重建运动研究](issues/53-korea-restoration-plan.md)：研究已交付，global方案待作者审阅，未实施。
+
+- [56 朝鲜重建运动](issues/56-korean-restoration.md)：任务53方案已实施，STATIC_PASS，待作者复测。
+
+- [57 普鲁士共同防卫条件的 country_c_equal 报错](issues/57-prussian-coalition-tooltip.md)：custom_tooltip 包住 any_country，STATIC_PASS，待作者复测。
+
+- [58 外交请求按钮的“永不”与条件提示](issues/58-request-button-tooltips.md)：请求条件按类型拆分，按钮不再依赖隐藏的临时作用域；STATIC_PASS，待作者复测。
+
+- [59 日本国政条面与海峡彼岸治理](issues/59-japan-strait-and-progress.md)：修复条面挤压，实施总督和议事会两种里程碑，保留独立后的交涉；STATIC_PASS，待作者复测。
+
+- [60 美国奴隶制存废之争论与东洲联动](issues/60-acw-slavery-question.md)：以 `REPLACE:je_acw_countdown` 重写为分裂危机条（Monte Carlo 调参，AI 约 1860.5 年爆发、最晚 1872），新增东洲「西岸的砝码」；STATIC_PASS，待作者复测。
+
+- [66 《接旗》默认主菜单](issues/66-main-menu-default.md)：提前注册，接管旧默认背景，保留原版自动选片；STATIC_PASS，待作者复测。
+
+- [67 靖难参战、幕府危局与剧情人物](issues/67-jingnan-participation-and-characters.md)：日本选边、人物保护、征召与战时锁定已实施，STATIC_PASS，待新局复测。
+
+- [68 日志与按钮描述的结局剧透](issues/68-description-spoilers.md)：改共和军日志、西部置省、东征、原住民编户、西境、陈东阳护卫共七键（中英），STATIC_PASS。
+
+- [69 教士秀全的旅途](issues/69-xiuquan-saint.md)：全局人物日志、驱逐按钮、传教条与「追认圣徒」；STATIC_PASS，事件图占位，待作者新开局复测。
+
+- [70 法国后继路线首批](issues/70-france-court-and-provinces.md)：宫廷与外省、共和承接与五年评议已实施。STATIC_PASS，待作者新局复测。
+
+- [71 远山宣慰司门槛](issues/71-yuanshan-commission.md)：民主＋4个南非直辖地区，去掉开化使命与建筑要求，改自治领并加划归决议，日志加状态行与进度条；STATIC_PASS，待作者复测。
+
+- [72 观察者局报错](issues/72-observer-1826-errors.md)：秀全、重复日志与征兵已修，原版报错和总部港点已核对，待新局复测。
+
+- [73 进度条条面](issues/73-progress-bar-labels.md)：秀全读数与规则分开，已核对全 MOD 中英文，并同步条面与悬停的技能指引。
+
+- [74 打开秀全日志崩溃](issues/74-xiuquan-je-crash.md)：按 1.15.0 原版大名列表的头像上下文修复，待实机开窗、悬停和点击。
+
+- [75 秀全日志参与国与驱逐](issues/75-xiuquan-neighbours.md)：所在国与邻国共同参与，驱逐按实际陆界选外国州，待作者复测。
+
+- [76 商路筹备按钮条件提示](issues/76-supply-button-tooltips.md)：遣使、通商及结案条件改为中英文玩家提示，待复测。
+- [77 开局目标推荐国](issues/77-objective-countries.md)：四栏名单和瑞典、普鲁士、奥斯曼、俄国、美国双语国情已更新，待新局复测。
+- [78 刺刀之林](issues/78-forest-of-bayonets.md)：双语首段、和议术语及后继日志开头已改，待界面复测。
