@@ -10,7 +10,9 @@
 ## 2026-11-05实测纠正：公开条件、条内文本与配图
 
 - 从玩家入口`possible/complete/fail`递归展开scripted trigger后审查。身份枚举、初始化和防重复记录用`hidden_trigger`；影响玩家决定的前置、等待、正在进行的选择，各用一句具名条件；法律、建筑、合法性等仍用原生条件。不要把`visible`或状态分支内的变量误计为屏幕上的裸变量。`any_*`中的国家身份比较会产生scope-dependent描述警告，对实际候选集合做简短提示，不展示“他们是本国”的枚举。
-- `second_desc`是进度条右侧标签，不是悬浮说明。只放短单行。长统计移至已绑定国家的tooltip；状态入口用`ROOT.GetCountry.GetTooltipTag`绑定后，目标tooltip才可用`Country.MakeScope`。条内读数使用`JournalEntry`/`ScriptedProgressBar`上下文。每条新增bar的desc须同时有指标名与实时值，不能只有数字或“已连续经营月数”静态文字。
+- **进度条表面只留短指标名和读数**，如“传教：42/100”。原版 1.15.0 的 `gui/journal_entry.gui:428–534` 把顶层 `desc` 画在条内，普通条 504×30，动态图形条 430×30。文本框自动加宽、单行无折行，条面没有独立的 `name`。有右标签的样式用 `second_desc`，左右标签共用这一行。条面读数用 `JournalEntry` 和 `ScriptedProgressBar`。
+- “满 100 时当地人口改宗，随后清零”这类整句放在玩家查看后果的位置；作者指定时放到日志状态行。每周、每月、每年的增减来源写入周期块的具名 `desc`，由 `GetPeriodicProgressBreakdown` 悬停显示。长统计可放到状态行绑定的国家提示，使用 `ROOT.GetCountry.GetTooltipTag` 提供 `Country` 上下文。
+- 排查按定义取直接子字段 `desc`、`second_desc`，遇到条件描述只展开该字段内的分支。核对中英文本，展开本地化别名，区分链接的可见标签和悬停目标。把读数代入后看条面是否仍为短单行；全文搜索同名 `desc` 会把周期来源误算为条面。
 - 图标不等于事件大图。检查非隐藏弹窗是否有`event_image`，同时检查专用人物窗口、已禁用旧事件的例外；已有路径全部存在不代表缺少字段也正确。外交行动未写`texture`会按类型名推导资源，新增类型必须核这一隐式路径。
 - 常驻议程可无胜负，明确存续及关闭原因；真正成果用complete，身份/所有权失去用invalid。退出条件需要否定整个合取时，用明确OR的各项失效原因或NOT包AND，不能依赖多项NOT的含混阅读。已有国别counter完成而旧阶段JE仍在时先查真实存档，不再给一遍进度/奖励。
 
@@ -23,7 +25,7 @@
 | JE 标题与 `_reason` | 持续冲突、历史背景、各方的要求；可在正文末有简短目标，但不罗列隐藏变量 | `JournalEntry.GetReason`，gui 约 742 行 |
 | `status_desc` / 默认 `_status` | 当前处境/阶段、目前阻碍，直接说明，无文学修辞；用 first_valid/triggered_desc 按状态切换 | journal_entries.md 约 175 行；gui 188 行 |
 | scripted button | 行动名称；可用/不可用原因、成本、时长、冷却与后果放按钮 tooltip；选择不等于禁用，要用 possible | `common/scripted_buttons/scripted_buttons.md`；gui 215–235 行 |
-| scripted progress bar | name 是指标；desc/second_desc 是当前读数；周期增减的 desc 解释来源；两个相反指标可放同一 JE | `common/scripted_progress_bars/scripted_progress_bars.md`；实际印度兵变示例 |
+| scripted progress bar | 顶层 desc 写短指标名与读数；支持右标签的样式用 second_desc；周期块内的 desc 写悬停来源 | `common/scripted_progress_bars/scripted_progress_bars.md`；实际印度兵变示例 |
 | 完成/失败/超时 | 可观察的判定与结果；自定义 tooltip 隐藏实现细节时不能隐瞒真实代价 | JE complete/fail/timeout 及对应 on_* |
 | 事件 desc | 发生了什么、谁请求什么、玩家面对什么决定 | 当前 events 示例与事件 GUI |
 | 事件 flavor | 首先参照作者原有引文、诗句和人物话语；需要时再写场景，不能每条强造一段官署故事 | 原版 MOD 的 `.f` 键；见 `nesnd-player-writing` 技能 |

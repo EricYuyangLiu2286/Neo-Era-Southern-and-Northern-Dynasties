@@ -35,9 +35,9 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 任务 | 读 |
 |---|---|
 | 新内容，或改造日志链、事件、按钮、进度条 | [content-design.md](references/content-design.md)（必读），再查 GAME 同类 |
-| 玩家文字（事件、日志、按钮、提示、修正名） | `nesnd-player-writing` 技能 |
+| 玩家文字（事件、日志、按钮、进度条、提示、修正名） | `nesnd-player-writing` 技能 |
 | 语法、作用域、按钮预览与延迟回复的引用安全 | [syntax-and-routing.md](references/syntax-and-routing.md)、[recipes.md](references/recipes.md) |
-| 1.15 日志 outcome 接口、各界面字段放什么 | [journal-text-contract.md](references/journal-text-contract.md)（查阅用） |
+| 1.15 日志 outcome、各界面字段、进度条条面与悬停 | [journal-text-contract.md](references/journal-text-contract.md)（查阅用） |
 | 政治目标、IG 执政、合法性、党派 | [political-design-and-difficulty.md](references/political-design-and-difficulty.md) |
 | 数值、成本、奖励节奏 | [numeric-scale-contract.md](references/numeric-scale-contract.md) |
 | 经济压力、市场、自给经济 | [economic-agency-and-crises.md](references/economic-agency-and-crises.md)、[subsistence-transition.md](references/subsistence-transition.md)、[native-treaty-aid.md](references/native-treaty-aid.md) |

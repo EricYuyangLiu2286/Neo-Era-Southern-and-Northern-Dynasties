@@ -17,7 +17,7 @@ add_journal_entry = { type = ce_usm_conflicts_within }
 
 ## 带进度条的日志
 
-定义 `common/scripted_progress_bars/ce_*.txt` → JE 用 `scripted_progress_bar = key` 引用 → `complete/fail/invalid` 收尾 → 按钮/事件只改变指定的 bar 或用于 bar 计算的变量 → 本地化所有名称、说明、变化原因。
+定义 `common/scripted_progress_bars/ce_*.txt` → JE 用 `scripted_progress_bar = key` 引用 → `complete/fail/invalid` 收尾 → 按钮/事件只改变指定的 bar 或用于 bar 计算的变量 → 条面本地化写短指标名与读数，周期变化原因写在悬停明细。字段和排查示例见 [日志文字约定](journal-text-contract.md)。
 
 真实参考：MOD `ce_poland_progress_bars.txt` 的 `ce_polish_reconquest_energy_bar`、`journal_entries/ce_europe_poland_issude.txt`、`scripted_buttons/ce_poland_scripted_buttons.txt`。另读原版 `00_je_progress_bars.txt` 及引用者验证 scope。原版文档规定 weekly/monthly/yearly 的进度更新先于对应 JE pulse；不要双重累计。
 
