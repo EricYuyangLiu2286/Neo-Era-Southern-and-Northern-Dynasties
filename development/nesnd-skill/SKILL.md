@@ -42,6 +42,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 数值、成本、奖励节奏 | [numeric-scale-contract.md](references/numeric-scale-contract.md) |
 | 经济压力、市场、自给经济 | [economic-agency-and-crises.md](references/economic-agency-and-crises.md)、[subsistence-transition.md](references/subsistence-transition.md)、[native-treaty-aid.md](references/native-treaty-aid.md) |
 | 地图、拆州、人口分配 | [map-economy-design.md](references/map-economy-design.md) |
+| 梳理系统结构（日志链、事件链） | [content-tree.md](references/content-tree.md) |
 | 修 bug（作者报告、error.log、存档） | [debugging-and-updates.md](references/debugging-and-updates.md) |
 | 游戏更新后 | [debugging-and-updates.md](references/debugging-and-updates.md)，再按 [migration.md](references/migration.md) 迁移 |
 | 世界观、南北朝制度、人物 | [narrative-context.md](references/narrative-context.md)、[north-south-institutions.md](references/north-south-institutions.md)、`worldbook.json`、`character-book.json` |
