@@ -6,17 +6,26 @@ nesnd_xq_on_death = {
 		has_template = nesnd_xiuquan_template
 		NOT = { has_global_variable = nesnd_xq_dead }
 	}
-	effect = {
-		set_global_variable = nesnd_xq_dead
-		global_var:nesnd_xq_state ?= {
-			if = {
-				limit = { has_modifier = nesnd_xq_ministry }
-				remove_modifier = nesnd_xq_ministry
+	effect = { nesnd_xq_commemorate = yes }
+}
+
+# 只处理旅途所在州的易主。若吞并已将人物交给新东道国，只登记新所属国。
+on_state_owner_change = { on_actions = { nesnd_xq_host_changed } }
+nesnd_xq_host_changed = {
+	trigger = {
+		exists = global_var:nesnd_xq_state
+		this = global_var:nesnd_xq_state
+		exists = owner
+		exists = global_var:nesnd_xq_host_country
+		NOT = { owner = global_var:nesnd_xq_host_country }
+		exists = global_var:nesnd_xq_char
+		global_var:nesnd_xq_char = {
+			nesnd_xq_active_missionary = yes
+			OR = {
+				owner = global_var:nesnd_xq_host_country
+				owner = global_var:nesnd_xq_state.owner
 			}
 		}
-		every_country = {
-			limit = { is_player = yes }
-			trigger_event = { id = nesnd_xiuquan.1 popup = yes }
-		}
 	}
+	effect = { owner = { nesnd_xq_enter_host = yes } }
 }

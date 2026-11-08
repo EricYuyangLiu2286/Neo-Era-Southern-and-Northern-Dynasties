@@ -23,40 +23,98 @@
     scripted_progress_bar = nesnd_eastern_readiness_bar
     scripted_button = nesnd_japan_send_terms
     scripted_button = nesnd_japan_accept_status_quo
+    timeout = 3650
     outcome = {
-    	header = je_standard_completion_header
-    	effect_header = je_standard_on_completion_header
-    	color = "gold_positive"
-    	conclusion_desc = je_standard_completion_conclusion_desc
-    	trigger = { custom_tooltip = { text = nesnd_eastern_question_resolved_tt has_global_variable = nesnd_japan_dossier_closed } }
-    	effect = { }
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_eastern_defeat_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_eastern_defeat_tt
+                has_variable = nesnd_eastern_military_loss
+                nesnd_eastern_target_valid = yes
+                NOT = { has_global_variable = nesnd_japan_dossier_closed }
+            }
+        }
+        effect = { nesnd_japan_eastern_failure = yes }
+        event_outcome_desc = { desc = nesnd_eastern_failure_effect_tt }
     }
     outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { OR = { NOT = { has_global_variable = nesnd_south_settled } NOT = { has_variable = tag_WUU_var } NOT = { has_variable = nesnd_eastern_absolute_v2 } } }
-    	effect = { if = { limit = { NOT = { has_variable = tag_WUU_var } } set_global_variable = nesnd_japan_dossier_closed } else = { remove_variable = nesnd_japan_dossier_entered } }
-    }
-    on_monthly_pulse = { effect = {
-            nesnd_japan_consider_terms_once = yes
-            nesnd_japan_observe_other_house = yes
-            if = { limit = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_eastern_submission_conclusion
+        trigger = { custom_tooltip = {
+            text = nesnd_eastern_submission_tt
+            OR = {
+                has_variable = nesnd_eastern_submission_accepted
+                AND = {
+                    has_global_variable = nesnd_japan_war_started
                     NOT = { has_global_variable = nesnd_japan_dossier_closed }
-                    OR = {
-                        NOT = { c:JAP ?= { is_country_alive = yes } }
-                        AND = {
-                            has_global_variable = nesnd_japan_war_started
-                            NOT = { has_variable = nesnd_japan_war_grace }
-                            NOT = { has_war_with = c:JAP }
-                            NOT = { any_diplomatic_play = { has_variable = nesnd_eastern_intervention_play } }
-                        }
-                    }
+                    exists = c:JAP
+                    c:JAP ?= { is_country_alive = yes is_subject_of = c:USM }
                 }
+            }
+        } }
+        effect = { nesnd_eastern_settle_submission = yes }
+        event_outcome_desc = { desc = nesnd_japan_partition_tt }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = { custom_tooltip = {
+            text = nesnd_eastern_question_resolved_tt
+            NOT = { has_variable = nesnd_eastern_submission_accepted }
+            OR = {
+                has_global_variable = nesnd_japan_dossier_closed
+                AND = {
+                    has_variable = nesnd_eastern_hostilities_ended
+                    NOT = { has_variable = nesnd_eastern_military_loss }
+                    nesnd_eastern_target_valid = yes
+                }
+            }
+        } }
+        effect = {
+            if = { limit = { NOT = { has_global_variable = nesnd_japan_dossier_closed } }
                 set_global_variable = nesnd_japan_dossier_closed
                 trigger_event = { id = nesnd_japan.4 popup = yes }
             }
         }
     }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_eastern_invalid_conclusion
+        trigger = {
+            NOT = { has_global_variable = nesnd_japan_dossier_closed }
+            OR = {
+                NOT = { exists = c:JAP c:JAP ?= { is_country_alive = yes } }
+                NOT = { has_global_variable = nesnd_south_settled }
+                NOT = { has_variable = tag_WUU_var }
+                NOT = { has_variable = nesnd_eastern_absolute_v2 }
+            }
+        }
+        effect = {
+            if = { limit = { OR = { NOT = { exists = c:JAP c:JAP ?= { is_country_alive = yes } } NOT = { has_variable = tag_WUU_var } } }
+                set_global_variable = nesnd_japan_dossier_closed
+            }
+            else = { remove_variable = nesnd_japan_dossier_entered }
+        }
+    }
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        flags = { timeout }
+        conclusion_desc = nesnd_eastern_timeout_conclusion
+        effect = { nesnd_japan_eastern_failure = yes }
+        event_outcome_desc = { desc = nesnd_eastern_failure_effect_tt }
+    }
+    on_monthly_pulse = { effect = {
+        nesnd_japan_consider_terms_once = yes
+        nesnd_japan_observe_other_house = yes
+    } }
     weight = 900
     should_be_pinned_by_default_uninvolved_or_context = yes
 }

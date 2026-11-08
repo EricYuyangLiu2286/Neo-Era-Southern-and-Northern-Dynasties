@@ -1,0 +1,269 @@
+﻿namespace = nesnd_celestial_collapse
+
+# Wu (USM) has lost the mainland and no longer fights any Jingnan opponent.
+# Fired by the failure outcome of ce_usm_suppress_rebellion. The immediate block carries the whole collapse,
+# so a player who closes the window late changes nothing.
+nesnd_celestial_collapse.1 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_celestial_collapse.1.t
+    desc = nesnd_celestial_collapse.1.d
+    flavor = nesnd_celestial_collapse.1.f
+    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_5.dds" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this is_country_alive = yes NOT = { has_variable = nesnd_celestial_collapsed } }
+    immediate = {
+        set_variable = nesnd_celestial_collapsed
+        # The Jingnan War is over: rebel journals close, and nesnd_south_remnant_window keeps it closed.
+        set_global_variable = nesnd_south_settled
+        if = { limit = { is_power_bloc_leader = yes }
+            power_bloc = { destroy_power_bloc = yes }
+        }
+        every_country = { limit = { is_direct_subject_of = root } make_independent = yes }
+        every_country = { limit = { is_player = yes NOT = { this = root } }
+            trigger_event = { id = nesnd_celestial_collapse.2 popup = yes }
+        }
+        # Court host: an existing Ming court; else Huai, then Shu; else the loyalist with the most prestige.
+        clear_saved_scope = nesnd_federation_host
+        if = { limit = { any_country = { has_variable = nesnd_ming_court nesnd_ming_federation_loyalist = yes is_subject = no } }
+            random_country = { limit = { has_variable = nesnd_ming_court nesnd_ming_federation_loyalist = yes is_subject = no }
+                save_scope_as = nesnd_federation_host
+            }
+        }
+        else_if = { limit = { c:GNG ?= { nesnd_ming_federation_loyalist = yes is_subject = no } }
+            c:GNG = { save_scope_as = nesnd_federation_host }
+        }
+        else_if = { limit = { c:SIH ?= { nesnd_ming_federation_loyalist = yes is_subject = no } }
+            c:SIH = { save_scope_as = nesnd_federation_host }
+        }
+        else_if = { limit = { any_country = { nesnd_ming_federation_loyalist = yes is_subject = no } }
+            ordered_country = { limit = { nesnd_ming_federation_loyalist = yes is_subject = no } order_by = prestige
+                save_scope_as = nesnd_federation_host
+            }
+        }
+        scope:nesnd_federation_host ?= {
+            set_variable = nesnd_ming_court
+            set_variable = nesnd_restoration_side
+            set_global_variable = { name = nesnd_ming_federation_host value = this }
+            trigger_event = { id = nesnd_celestial_collapse.3 days = 1 popup = yes }
+        }
+    }
+    option = {
+        name = nesnd_celestial_collapse.1.a
+        default_option = yes
+    }
+}
+
+# The same news for every other player. No effect.
+nesnd_celestial_collapse.2 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_celestial_collapse.1.t
+    desc = nesnd_celestial_collapse.1.d
+    flavor = nesnd_celestial_collapse.1.f
+    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_5.dds" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    option = {
+        name = nesnd_celestial_collapse.2.a
+        default_option = yes
+    }
+}
+
+# The court host founds the Ming Federation, takes the other loyalists as vassals and receives the Son of Heaven.
+nesnd_celestial_collapse.3 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_celestial_collapse.3.t
+    desc = nesnd_celestial_collapse.3.d
+    flavor = nesnd_celestial_collapse.3.f
+    event_image = { video = "gfx/event_pictures/unspecific_signed_contract.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { is_country_alive = yes has_variable = nesnd_ming_court NOT = { has_variable = nesnd_ming_federation_founded } }
+    immediate = {
+        set_variable = nesnd_ming_federation_founded
+        save_scope_as = nesnd_federation_court
+        if = { limit = { is_in_power_bloc = yes } leave_power_bloc = yes }
+        if = { limit = { is_in_power_bloc = no }
+            create_power_bloc = {
+                name = nesnd_ming_federation_bloc
+                map_color = { 214 168 44 }
+                identity = identity_trade_league
+                principle = principle_market_unification_1
+            }
+        }
+        # AI loyalists submit at once; players are asked.
+        every_country = { limit = { NOT = { this = root } nesnd_ming_federation_loyalist = yes is_subject = no }
+            if = { limit = { is_ai = yes }
+                root = { create_diplomatic_pact = { country = prev type = vassal } }
+            }
+            else = { trigger_event = { id = nesnd_celestial_collapse.4 days = 1 popup = yes } }
+        }
+
+        # The Son of Heaven: a living Ming claimant who rules no other country.
+        # Huai keeps its own house unless neither its ruler nor its heir is a Zhu.
+        clear_saved_scope = nesnd_federation_emperor
+        if = { limit = {
+                NOT = { ruler ?= { has_variable = nesnd_ming_claimant nesnd_ming_authorized_dynast = yes } }
+                trigger_if = { limit = { c:GNG ?= this }
+                    NOR = { ruler ?= { nesnd_ming_authorized_dynast = yes } heir ?= { nesnd_ming_authorized_dynast = yes } }
+                }
+            }
+            if = { limit = { any_character = { has_variable = nesnd_original_ming_emperor has_variable = nesnd_ming_claimant nesnd_ming_authorized_dynast = yes nesnd_ming_claimant_available = yes } }
+                random_character = { limit = { has_variable = nesnd_original_ming_emperor has_variable = nesnd_ming_claimant nesnd_ming_authorized_dynast = yes nesnd_ming_claimant_available = yes }
+                    save_scope_as = nesnd_federation_emperor
+                }
+            }
+            else_if = { limit = { any_character = { has_variable = nesnd_ming_claimant nesnd_ming_authorized_dynast = yes nesnd_ming_claimant_available = yes } }
+                random_character = { limit = { has_variable = nesnd_ming_claimant nesnd_ming_authorized_dynast = yes nesnd_ming_claimant_available = yes }
+                    save_scope_as = nesnd_federation_emperor
+                }
+            }
+        }
+        if = { limit = { exists = scope:nesnd_federation_emperor }
+            scope:nesnd_federation_emperor = {
+                if = { limit = { NOT = { owner ?= root } } transfer_character = root }
+            }
+            set_variable = { name = nesnd_ming_court_monarch value = scope:nesnd_federation_emperor }
+            # A monarchy enthrones him now; a republic does so in .5 when it changes its government.
+            if = { limit = { has_law_or_variant = law_type:law_monarchy
+                    scope:nesnd_federation_emperor = { owner ?= root } }
+                ruler ?= { save_scope_as = nesnd_federation_old_ruler }
+                scope:nesnd_federation_emperor = {
+                    if = { limit = { has_role = character_role_nesnd_ming_refuge } remove_character_role = character_role_nesnd_ming_refuge }
+                    set_character_as_ruler = yes
+                }
+                remove_variable = nesnd_ming_interregnum
+                # The former ruler leads the landowners; their previous leader stays on as an ordinary noble politician.
+                if = { limit = { exists = scope:nesnd_federation_old_ruler
+                        scope:nesnd_federation_old_ruler = { is_character_alive = yes is_ruler_of_own_country = no owner ?= root } }
+                    ig:ig_landowners ?= {
+                        leader ?= {
+                            if = { limit = { NOT = { this = scope:nesnd_federation_old_ruler } }
+                                remove_as_interest_group_leader = yes
+                                if = { limit = { NOT = { has_role = character_role_politician } } add_character_role = character_role_politician }
+                                set_is_noble = yes
+                            }
+                        }
+                    }
+                    scope:nesnd_federation_old_ruler = {
+                        set_interest_group = root.ig:ig_landowners
+                        if = { limit = { NOT = { has_role = character_role_politician } } add_character_role = character_role_politician }
+                        set_as_interest_group_leader = yes
+                    }
+                }
+            }
+            else = {
+                scope:nesnd_federation_emperor = {
+                    if = { limit = { NOT = { has_role = character_role_nesnd_ming_refuge } is_ruler_of_own_country = no }
+                        add_character_role = character_role_nesnd_ming_refuge
+                    }
+                }
+            }
+        }
+        if = { limit = { OR = {
+                has_law_or_variant = law_type:law_presidential_republic
+                has_law_or_variant = law_type:law_parliamentary_republic
+                has_law_or_variant = law_type:law_council_republic
+            } }
+            trigger_event = { id = nesnd_celestial_collapse.5 days = 1 popup = yes }
+        }
+    }
+    option = {
+        name = nesnd_celestial_collapse.3.a
+        default_option = yes
+    }
+}
+
+# A player loyalist decides whether to join the Ming Federation as a vassal of the court.
+nesnd_celestial_collapse.4 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_celestial_collapse.4.t
+    desc = nesnd_celestial_collapse.4.d
+    flavor = nesnd_celestial_collapse.4.f
+    event_image = { video = "gfx/event_pictures/unspecific_signed_contract.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = {
+        is_country_alive = yes is_subject = no
+        has_global_variable = nesnd_ming_federation_host
+        global_var:nesnd_ming_federation_host ?= { is_country_alive = yes NOT = { this = root } }
+    }
+    immediate = { global_var:nesnd_ming_federation_host ?= { save_scope_as = nesnd_federation_court } }
+    option = {
+        name = nesnd_celestial_collapse.4.a
+        default_option = yes
+        scope:nesnd_federation_court ?= { create_diplomatic_pact = { country = root type = vassal } }
+    }
+    option = {
+        name = nesnd_celestial_collapse.4.b
+        custom_tooltip = nesnd_celestial_collapse.4.b_tt
+        hidden_effect = {
+            if = { limit = { exists = scope:nesnd_federation_court }
+                every_scope_state = {
+                    state_region = { add_claim = scope:nesnd_federation_court }
+                }
+            }
+        }
+    }
+}
+
+# A republican court restores the monarchy under the Son of Heaven, or under a Zhu prince raised for the throne.
+nesnd_celestial_collapse.5 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_celestial_collapse.5.t
+    desc = nesnd_celestial_collapse.5.d
+    flavor = nesnd_celestial_collapse.5.f
+    event_image = { video = "gfx/event_pictures/unspecific_ruler_speaking_to_people.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { is_country_alive = yes has_variable = nesnd_ming_court NOT = { has_law_or_variant = law_type:law_monarchy } }
+    immediate = {
+        activate_law = law_type:law_monarchy
+        # Autocracy becomes landed voting; technocracy and every other voting law stay.
+        if = { limit = { has_law_or_variant = law_type:law_autocracy } activate_law = law_type:law_landed_voting }
+        clear_saved_scope = nesnd_federation_emperor
+        if = { limit = { exists = var:nesnd_ming_court_monarch var:nesnd_ming_court_monarch = { is_character_alive = yes owner ?= root } }
+            var:nesnd_ming_court_monarch = { save_scope_as = nesnd_federation_emperor }
+        }
+        else = {
+            create_character = {
+                first_name = nesnd_ming_ning_qinzhi
+                last_name = Zhu
+                female = no
+                noble = yes
+                historical = no
+                age = 30
+                interest_group = ig_landowners
+                ideology = ideology_traditionalist
+                on_created = {
+                    set_variable = nesnd_ming_dynastic_verified
+                    set_variable = nesnd_ming_generated_dynast
+                    set_variable = nesnd_ming_ning_line
+                    set_variable = nesnd_ming_claimant
+                    set_variable = { name = nesnd_ming_generation value = 4 }
+                    save_scope_as = nesnd_federation_emperor
+                }
+            }
+            if = { limit = { OR = { NOT = { has_global_variable = nesnd_ming_ning_generation_highwater } global_var:nesnd_ming_ning_generation_highwater < 4 } }
+                set_global_variable = { name = nesnd_ming_ning_generation_highwater value = 4 }
+            }
+        }
+        scope:nesnd_federation_emperor ?= {
+            if = { limit = { has_role = character_role_nesnd_ming_refuge } remove_character_role = character_role_nesnd_ming_refuge }
+            set_character_as_ruler = yes
+        }
+        if = { limit = { exists = scope:nesnd_federation_emperor }
+            set_variable = { name = nesnd_ming_court_monarch value = scope:nesnd_federation_emperor }
+            remove_variable = nesnd_ming_interregnum
+        }
+    }
+    option = {
+        name = nesnd_celestial_collapse.5.a
+        default_option = yes
+    }
+}

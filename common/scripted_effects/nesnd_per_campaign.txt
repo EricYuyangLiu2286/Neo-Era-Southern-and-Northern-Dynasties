@@ -4,9 +4,23 @@
 	}
 }
 nesnd_per_future_sync = { if = { limit = { has_journal_entry = nesnd_per_future_journal } je:nesnd_per_future_journal = { set_bar_progress = { name = nesnd_per_future_bar value = root.var:nesnd_per_future_progress } } } }
+nesnd_per_choose_route = {
+    if = {
+        limit = { nesnd_per_future_live = yes nesnd_per_route_unset = yes }
+        set_variable = nesnd_per_route_$ROUTE$
+        nesnd_per_future_sync = yes
+    }
+}
 nesnd_per_future_monthly = {
 	if = { limit = { nesnd_per_future_live = yes }
-		if = { limit = { is_ai = yes nesnd_per_route_unset = yes } random_list = { 75 = { set_variable = nesnd_per_route_aid } 25 = { set_variable = nesnd_per_route_covert } } }
+		if = {
+			limit = { nesnd_per_route_unset = yes NOT = { has_variable = nesnd_per_route_choice_pending } }
+			if = {
+				limit = { is_ai = yes }
+				random_list = { 75 = { set_variable = nesnd_per_route_aid } 25 = { set_variable = nesnd_per_route_covert } }
+			}
+			else = { trigger_event = { id = nesnd_per.9 popup = yes } }
+		}
 		change_variable = { name = nesnd_per_future_progress add = nesnd_per_future_delta }
 		clamp_variable = { name = nesnd_per_future_progress min = 0 max = 100 }
 		if = { limit = { nesnd_per_aid_live = yes var:nesnd_per_future_progress < 100 }

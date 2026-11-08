@@ -80,3 +80,37 @@ nesnd_per.8 = {
         custom_tooltip = nesnd_per.8.a.tt
     }
 }
+
+nesnd_per.9 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_per.9.t
+    desc = nesnd_per.9.d
+    event_image = { video = "unspecific_signed_contract" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+
+    trigger = {
+        is_ai = no
+        nesnd_per_future_live = yes
+        nesnd_per_route_unset = yes
+        NOT = { has_variable = nesnd_per_route_choice_pending }
+    }
+    cancellation_trigger = { OR = { nesnd_per_future_live = no nesnd_per_route_unset = no } }
+    # 正常作答后立即解锁。事件若随日志失效而取消，锁在事件期限之后自行清除。
+    immediate = { set_variable = { name = nesnd_per_route_choice_pending months = 4 } }
+
+    option = {
+        name = nesnd_per_seek_aid_button
+        default_option = yes
+        custom_tooltip = nesnd_feedback_per_aid_tt
+        hidden_effect = { nesnd_per_choose_route = { ROUTE = aid } }
+    }
+    option = {
+        name = nesnd_per_subvert_button
+        custom_tooltip = nesnd_feedback_per_covert_tt
+        hidden_effect = { nesnd_per_choose_route = { ROUTE = covert } }
+    }
+    after = { remove_variable = nesnd_per_route_choice_pending }
+}

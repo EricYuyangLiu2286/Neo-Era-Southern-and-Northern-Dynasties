@@ -290,3 +290,55 @@ nesnd_holdout_record_open_break = {
         if = { limit = { "relations(c:USM)" > -25 } set_relations = { country = c:USM value = -25 } }
     }
 }
+
+# USM scope; the full "continue the war" bar on ce_usm_suppress_rebellion calls this.
+# A running Jingnan play absorbs every unreached opponent. Otherwise one new play targets the opponent with the
+# largest GDP that is free of other wars and plays (any opponent if none is free), and the rest join it.
+# Joining uses the same call as the opening war; the weekly holdout pulse enrols each caller once the play is a war.
+nesnd_continue_war_open = {
+    if = { limit = { c:USM ?= this nesnd_south_wu_survives = yes any_country = { nesnd_continue_war_candidate = yes } }
+        clear_saved_scope = nesnd_continue_war_play
+        clear_saved_scope = nesnd_continue_war_target
+        # A truce from an earlier round does not stop the war: end it in both directions first.
+        every_country = { limit = { nesnd_continue_war_candidate = yes has_truce_with = root }
+            end_truce = root
+            root = { end_truce = prev }
+        }
+        if = { limit = { any_diplomatic_play = { nesnd_south_named_play = yes } }
+            random_diplomatic_play = { limit = { nesnd_south_named_play = yes } save_scope_as = nesnd_continue_war_play }
+        }
+        else = {
+            if = { limit = { any_country = { nesnd_continue_war_candidate = yes is_at_war = no is_active_in_diplomatic_play = no } }
+                ordered_country = { limit = { nesnd_continue_war_candidate = yes is_at_war = no is_active_in_diplomatic_play = no } order_by = gdp
+                    save_scope_as = nesnd_continue_war_target
+                }
+            }
+            else = {
+                ordered_country = { limit = { nesnd_continue_war_candidate = yes } order_by = gdp save_scope_as = nesnd_continue_war_target }
+            }
+            if = { limit = { exists = scope:nesnd_continue_war_target }
+                create_diplomatic_play = { name = usm_civilwar_play target_country = scope:nesnd_continue_war_target type = dp_usm_civil_war }
+                random_diplomatic_play = { limit = { nesnd_south_named_play = yes target_is = scope:nesnd_continue_war_target is_war = no }
+                    set_variable = this_is_nanming_civilwar_var
+                    save_scope_as = nesnd_continue_war_play
+                }
+            }
+            if = { limit = { exists = scope:nesnd_continue_war_play }
+                if = { limit = { NOT = { has_global_variable = nesnd_south_war_round } } set_global_variable = { name = nesnd_south_war_round value = 1 } }
+                change_global_variable = { name = nesnd_south_war_round add = 1 }
+                remove_global_variable = nesnd_south_settled
+                set_variable = { name = nesnd_war_opening_grace months = 2 }
+            }
+        }
+        if = { limit = { exists = scope:nesnd_continue_war_play }
+            every_country = { limit = { nesnd_continue_war_candidate = yes }
+                nesnd_call_jingnan_participant = { PLAY = scope:nesnd_continue_war_play }
+            }
+            if = { limit = { scope:nesnd_continue_war_play = { is_war = no } exists = scope:nesnd_continue_war_target }
+                scope:nesnd_continue_war_play = { nesnd_start_jingnan_war = yes }
+            }
+        }
+        clear_saved_scope = nesnd_continue_war_play
+        clear_saved_scope = nesnd_continue_war_target
+    }
+}

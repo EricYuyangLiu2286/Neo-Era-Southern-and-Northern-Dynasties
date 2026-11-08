@@ -254,3 +254,5 @@ Updated: 2026-11-01
 - [76 商路筹备按钮条件提示](issues/76-supply-button-tooltips.md)：遣使、通商及结案条件改为中英文玩家提示，待复测。
 - [77 开局目标推荐国](issues/77-objective-countries.md)：四栏名单和瑞典、普鲁士、奥斯曼、俄国、美国双语国情已更新，待新局复测。
 - [78 刺刀之林](issues/78-forest-of-bayonets.md)：双语首段、和议术语及后继日志开头已改，待界面复测。
+- [79 东洋之议](issues/79-eastern-question.md)：拒议直入倒计时、双语目标选择器与失败结算已修，待作者复测。
+- [81 教士秀全失联](issues/81-xiuquan-disappearance.md)：存档证实淮国灭亡同日退休清理；已补旅途人物保护与原死亡结局兜底，待复测。

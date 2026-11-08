@@ -2,7 +2,7 @@
 
 这是项目唯一的“当前”入口。只写现在的情况；历史放 `docs/agents/history/`。维护规则见文末。
 
-更新：2026-11-07（任务78刺刀之林）
+更新：2026-11-08（内容树工具）
 
 ## 基线
 
@@ -31,7 +31,7 @@
 - 主菜单「南 · 北」已使用《接旗》1836四人版（陈东阳居中，牧仲棠、李霄业、拿破仑三世分列）。李霄业的模板注释记明留后与沙阿双重身份。场外解码及安全区检查通过，实际切换及重启记忆待作者复测。见[任务64](../../.scratch/debug-release/issues/64-dongting-main-menu.md)。
 - 《接旗》已提前注册，原版旧默认入口也指向它；「原版自动（随 DLC）」可恢复原版选片。场外选取检查通过，列表首项及重启效果待作者复测。见[任务66](../../.scratch/debug-release/issues/66-main-menu-default.md)。
 - [任务72](../../.scratch/debug-release/issues/72-observer-1826-errors.md) 已修秀全无效所属国、外交政策与波斯西线重复添加、复国征兵候选不足，STATIC_PASS，待作者观察者新局复测。19:24 崩溃包证实旧头像绑定被 GUI 拒绝；[任务74](../../.scratch/debug-release/issues/74-xiuquan-je-crash.md) 已改为原版大名列表项的作用域，待作者复测打开、悬停和点击；两处原版脚本及三个海军总部只记录。
-- Claude：任务69「教士秀全的旅途」全局人物日志（高凉起步、逐州行走、驱逐按钮、传教条、追认圣徒）STATIC_PASS，仅主 MOD，待作者新开局复测；事件图占位，作图说明见任务账附件。见[任务69](../../.scratch/debug-release/issues/69-xiuquan-saint.md)。[任务73](../../.scratch/debug-release/issues/73-progress-bar-labels.md) 已分开传教读数与满条规则，完成全 MOD 条面排查并同步技能，待界面复测。[任务75](../../.scratch/debug-release/issues/75-xiuquan-neighbours.md) 驱逐已由作者实测成功；追加中国地理区目的州限制，待复测落点。
+- Claude：任务69「教士秀全的旅途」全局人物日志（高凉起步、逐州行走、驱逐按钮、传教条、追认圣徒）STATIC_PASS，仅主 MOD，待作者新开局复测；事件图占位，作图说明见任务账附件。见[任务69](../../.scratch/debug-release/issues/69-xiuquan-saint.md)。[任务73](../../.scratch/debug-release/issues/73-progress-bar-labels.md) 已分开传教读数与满条规则，完成全 MOD 条面排查并同步技能，待界面复测。[任务75](../../.scratch/debug-release/issues/75-xiuquan-neighbours.md) 驱逐已由作者实测成功；追加中国地理区目的州限制，待复测落点。[任务81](../../.scratch/debug-release/issues/81-xiuquan-disappearance.md) 据存档定位淮国灭亡时的人物清理，已补剧情保护与失联后追认圣徒；原版法西斯事件的候选提名照常，任命失败后仍可传教。待旧档和新局复测。
 
 - 宫殿及成都焚掠画面已加入随机加载池，DDS 回读通过，待实机观察。见[任务61](../../.scratch/debug-release/issues/61-throne-hall-loadingscreen.md)、[任务62](../../.scratch/debug-release/issues/62-chengdu-loadingscreen.md)。
 
@@ -54,7 +54,13 @@
 - [任务76](../../.scratch/debug-release/issues/76-supply-button-tooltips.md) 商路筹备按钮的中英文条件提示已修，STATIC_PASS，待界面复测。
 
 - [任务77](../../.scratch/debug-release/issues/77-objective-countries.md) 经济第三位为莫卧儿，四栏共16国；已补齐推荐卡双语标题、正文组合键，待重启复测。
+- Claude：[内容树工具](../../.scratch/content-tree/issues/01-content-tree-tool.md)已交付（工作台 `tools/content_tree`），USM 内战与南美土著叛乱两份交互图、覆盖率报告见 `nesnd-workbench/reports/content-tree/DELIVERY.md`；查图所见疑似问题只列未改。工作流已写进技能（`references/content-tree.md`），提交 `91ed9a1`，未推送。[独立成仓库](../../.scratch/content-tree/issues/02-standalone-package.md)已完成，仓库在 `OneDrive/Documents/Modings/V3-content-tree`（本地提交，未推送）。
+
 - [任务78](../../.scratch/debug-release/issues/78-forest-of-bayonets.md) 《刺刀之林》首段、和议术语和《人民之春》开头已按 MOD 欧洲史改写。中英文静态检查通过，待实机查看悬停与后继日志。
+
+- Claude：[任务80](../../.scratch/debug-release/issues/80-jingnan-continuation.md) 第二次靖难加蜀军子日志、吴方“继续战争”进度条、吴失大陆后的“天朝帝国解体”与大明联邦链，STATIC_PASS，仅主 MOD，待作者复测。
+
+- [任务79 东洋之议](../../.scratch/debug-release/issues/79-eastern-question.md) 已修吴日倒计时、分封与失败后果及目标选择器。日本重新臣属按日方落败执行解体及后续。作者已实测倒计时、日方羞辱及吴属国自动支持。创建效果已补吴方重组主要要求，待复测吴方要求、两国结案与四岛迁移。
 
 ## 已知差异
 

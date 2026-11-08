@@ -9,6 +9,17 @@ nesnd_per_faith_init = {
         set_variable = { name = nesnd_per_rep_buddhist_idx value = 0 }
         set_variable = { name = nesnd_per_rep_mandate_idx value = 0 }
     }
+    nesnd_per_sync_clergy_leader_faith = yes
+}
+
+# 教士领袖按本国现行国教改宗，席位空缺时跳过。
+nesnd_per_sync_clergy_leader_faith = {
+    ig:ig_devout.leader ?= {
+        if = {
+            limit = { NOT = { religion = owner.religion } }
+            change_character_religion = owner.religion
+        }
+    }
 }
 # 月度：三教影响力写入变量，份额写入三条进度条，算出转化速度与国教代价。须在日志 scope 内调用。
 # 第三教为佛门或天命说（nesnd_per_third_is_mandate），其影响力另存一份到 nesnd_per_inf_third_v 供比较。
@@ -124,6 +135,22 @@ nesnd_per_mandate_halls_decay = {
         if = { limit = { var:nesnd_per_mandate_halls <= 0 } remove_variable = nesnd_per_mandate_halls }
     }
 }
+# 人物变量决定继任，头像列表只供界面使用。已在任者也在每周补缺时同步，兼容旧档。
+nesnd_per_rep_sync_portrait = {
+    if = {
+        limit = { nesnd_per_rep_valid = { SLOT = $SLOT$ } }
+        if = {
+            limit = { NOT = { is_target_in_variable_list = { name = nesnd_per_rep_$SLOT$_portrait target = var:nesnd_per_rep_$SLOT$ } } }
+            clear_variable_list = nesnd_per_rep_$SLOT$_portrait
+            add_to_variable_list = { name = nesnd_per_rep_$SLOT$_portrait target = var:nesnd_per_rep_$SLOT$ }
+        }
+    }
+    else_if = {
+        limit = { has_variable_list = nesnd_per_rep_$SLOT$_portrait }
+        clear_variable_list = nesnd_per_rep_$SLOT$_portrait
+    }
+}
+
 # 代表人物：在任者去世或离国时，按链条接续；链条用尽或下一位尚未出道时，生成同宗教的继任者。
 nesnd_per_rep_fill_shia = {
     if = { limit = { NOT = { nesnd_per_rep_valid = { SLOT = shia } } }
@@ -161,6 +188,7 @@ nesnd_per_rep_fill_shia = {
             scope:nesnd_per_new_rep = { set_variable = nesnd_per_faith_rep change_character_religion = rel:shiite }
         }
     }
+    nesnd_per_rep_sync_portrait = { SLOT = shia }
 }
 # 代表人物：在任者去世或离国时，按链条接续；链条用尽或下一位尚未出道时，生成同宗教的继任者。
 nesnd_per_rep_fill_sunni = {
@@ -195,6 +223,7 @@ nesnd_per_rep_fill_sunni = {
             scope:nesnd_per_new_rep = { set_variable = nesnd_per_faith_rep change_character_religion = rel:sunni }
         }
     }
+    nesnd_per_rep_sync_portrait = { SLOT = sunni }
 }
 # 代表人物：在任者去世或离国时，按链条接续；链条用尽或下一位尚未出道时，生成同宗教的继任者。
 nesnd_per_rep_fill_buddhist = {
@@ -229,6 +258,7 @@ nesnd_per_rep_fill_buddhist = {
             scope:nesnd_per_new_rep = { set_variable = nesnd_per_faith_rep change_character_religion = rel:mahayana }
         }
     }
+    nesnd_per_rep_sync_portrait = { SLOT = buddhist }
 }
 # 天命说代表人物：三位自创西秦经师（待作者定名），链尽生成老秦文化继任者。
 # 服装不另设：本 MOD 的 EACR 给本国政治人物明式朝服，正合儒士。
@@ -263,6 +293,7 @@ nesnd_per_rep_fill_mandate = {
             scope:nesnd_per_new_rep = { set_variable = nesnd_per_faith_rep change_character_religion = rel:kaimeng_confucianism }
         }
     }
+    nesnd_per_rep_sync_portrait = { SLOT = mandate }
 }
 # 年度复核只处理仍在本国的现任代表。旧档人物先转入知识分子，再核对本派信仰。
 nesnd_per_rep_keep_faith = {

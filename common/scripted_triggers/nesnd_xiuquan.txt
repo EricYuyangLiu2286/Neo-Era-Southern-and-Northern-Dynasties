@@ -23,3 +23,50 @@ nesnd_xq_expel_destination = {
 	NOT = { owner ?= global_var:nesnd_xq_state.owner }
 	global_var:nesnd_xq_state.owner ?= { is_land_adjacent_to_state = prev }
 }
+
+# 人物作用域。仅在旅途中排除这个模板；不占用原版政变等剧情的变量。
+nesnd_xq_is_traveller = {
+	has_template = nesnd_xiuquan_template
+	NOT = { has_global_variable = nesnd_xq_dead }
+}
+
+# 保留原版 00_ep2_victoria_scripted_triggers 的三项准入条件。
+REPLACE:character_is_valid_for_events = {
+	NOT = { has_role = character_role_emperor_of_japan }
+	NOT = { has_variable = golpista_var }
+	is_adult = yes
+	nesnd_xq_is_traveller = no
+}
+
+# 人物作用域。只认已保存的本人仍在所属国人物名单中并担任传教士。
+nesnd_xq_active_missionary = {
+	nesnd_xq_is_traveller = yes
+	is_character_alive = yes
+	is_in_void = no
+	is_in_exile_pool = no
+	has_role = character_role_nesnd_missionary
+	exists = owner
+	owner ?= {
+		is_country_alive = yes
+		any_scope_character = { this = global_var:nesnd_xq_char }
+	}
+}
+
+# 州被拆分时，周同步只可在同地区、上次抵达的国家内恢复地点。
+nesnd_xq_can_continue = {
+	exists = global_var:nesnd_xq_char
+	global_var:nesnd_xq_char ?= { nesnd_xq_active_missionary = yes }
+	trigger_if = {
+		limit = { exists = global_var:nesnd_xq_state }
+		exists = global_var:nesnd_xq_state.owner
+		global_var:nesnd_xq_char.owner ?= global_var:nesnd_xq_state.owner
+	}
+	trigger_else = {
+		exists = global_var:nesnd_xq_host_country
+		exists = global_var:nesnd_xq_region
+		global_var:nesnd_xq_char.owner ?= global_var:nesnd_xq_host_country
+		global_var:nesnd_xq_host_country ?= {
+			any_scope_state = { state_region = global_var:nesnd_xq_region }
+		}
+	}
+}

@@ -1,0 +1,60 @@
+﻿# The original tributary pact predates this journal. A new submission concedes the settlement.
+on_become_subject = { on_actions = { nesnd_eastern_new_subject } }
+nesnd_eastern_new_subject = {
+    trigger = {
+        c:JAP ?= this
+        exists = c:USM
+        NOT = { has_global_variable = nesnd_japan_dossier_closed }
+        NOT = { has_variable = nesnd_japan_partition_state }
+        is_subject_of = c:USM
+        c:USM = { has_variable = tag_WUU_var has_journal_entry = nesnd_wu_eastern_question }
+    }
+    effect = { c:USM = { nesnd_eastern_settle_submission = yes } }
+}
+
+# If a required seat was unavailable at submission, use the existing partition as soon as it is possible.
+on_monthly_pulse_country = { on_actions = { nesnd_eastern_pending_partition } }
+nesnd_eastern_pending_partition = {
+    trigger = {
+        c:JAP ?= this
+        NOT = { has_global_variable = nesnd_japan_partitioned }
+        c:USM ?= { has_variable = nesnd_eastern_submission_accepted }
+        is_subject_of = c:USM
+        nesnd_japan_partition_possible = yes
+    }
+    effect = { nesnd_partition_japan = yes }
+}
+
+# Native Balkan League uses scope:actor for the country backing down.
+on_diplo_play_back_down = { on_actions = { nesnd_eastern_back_down } }
+nesnd_eastern_back_down = {
+    trigger = {
+        is_diplomatic_play_type = dp_nesnd_eastern_intervention
+        exists = scope:actor
+        scope:actor ?= c:USM
+    }
+    effect = { c:USM = { set_variable = nesnd_eastern_military_loss } }
+}
+
+on_lost_war = { on_actions = { nesnd_eastern_war_loss } }
+nesnd_eastern_war_loss = {
+    trigger = {
+        c:USM ?= this
+        exists = scope:diplomatic_play
+        scope:diplomatic_play = { is_diplomatic_play_type = dp_nesnd_eastern_intervention }
+    }
+    effect = { set_variable = nesnd_eastern_military_loss }
+}
+
+# The final enforcement callback also covers demands conceded in a negotiated peace.
+on_wargoal_enforced = { on_actions = { nesnd_eastern_demand_enforced } }
+nesnd_eastern_demand_enforced = {
+    trigger = {
+        exists = scope:diplomatic_play
+        scope:diplomatic_play = { is_diplomatic_play_type = dp_nesnd_eastern_intervention }
+        scope:actor ?= c:JAP
+        scope:target ?= c:USM
+        c:JAP = { has_diplomatic_pact = { who = c:USM type = humiliation is_initiator = yes } }
+    }
+    effect = { c:USM = { set_variable = nesnd_eastern_military_loss } }
+}

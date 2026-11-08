@@ -19,8 +19,10 @@ nesnd_japan_partition_possible = {
                 }
                 c:JAP = {
                     is_country_alive = yes
-                    has_law = law_type:law_monarchy
-                    nesnd_japan_three_houses = yes
+                    OR = {
+                        AND = { has_law = law_type:law_monarchy nesnd_japan_three_houses = yes }
+                        AND = { is_subject_of = c:USM c:USM = { has_variable = nesnd_eastern_submission_accepted } }
+                    }
                     OR = {
                         is_subject = no
                         is_subject_of = c:USM
@@ -30,12 +32,7 @@ nesnd_japan_partition_possible = {
                     owns_entire_state_region = STATE_KANSAI
                     owns_entire_state_region = STATE_CHUGOKU
                     NOT = { any_scope_state = {
-                        OR = {
-                            state_region = s:STATE_KANTO state_region = s:STATE_KYOTO state_region = s:STATE_KANSAI
-                            state_region = s:STATE_CHUGOKU state_region = s:STATE_TOHOKU state_region = s:STATE_TOKAI
-                            state_region = s:STATE_HOKUSHINETSU state_region = s:STATE_HOKKAIDO
-                            state_region = s:STATE_KYUSHU state_region = s:STATE_SHIKOKU
-                        }
+                        nesnd_eastern_archipelago_state = yes
                         NOR = { controller = owner controller = c:USM }
                     } }
                 }
@@ -84,6 +81,7 @@ nesnd_japan_diplomatic_window = {
         NOT = { has_variable = nesnd_japan_recovery_pending }
         NOT = { has_global_variable = nesnd_japan_dossier_closed }
         nesnd_japan_partition_possible = yes
+        nesnd_eastern_target_valid = yes
         is_at_war = no
         is_diplomatic_play_committed_participant = no
         c:JAP = {
@@ -223,7 +221,7 @@ nesnd_japan_structural_peace = {
 nesnd_japan_matching_intervention = {
     trigger_if = {
         limit = { exists = c:USM exists = c:JAP }
-        any_diplomatic_play = { is_diplomatic_play_type = dp_nesnd_eastern_intervention initiator = root target = c:JAP }
+        any_diplomatic_play = { is_diplomatic_play_type = dp_nesnd_eastern_intervention initiator = c:USM target = c:JAP }
     }
     trigger_else = { always = no }
 }
@@ -265,4 +263,41 @@ nesnd_japan_intervention_pact_safe = {
         }
     }
     trigger_else = { always = no }
+}
+
+# The tributary relationship at the opening is historical. A new submission ends the dispute.
+nesnd_eastern_target_valid = {
+    exists = c:JAP
+    c:JAP ?= { is_country_alive = yes }
+    NOR = {
+        has_variable = nesnd_eastern_submission_accepted
+        AND = { has_global_variable = nesnd_japan_war_started c:JAP ?= { is_subject_of = c:USM } }
+    }
+}
+
+# Native war goal callbacks supply the play as a named scope. A late peace cannot reopen a closed expedition.
+nesnd_eastern_reorganization_valid = {
+    c:USM ?= this
+    nesnd_japan_partition_possible = yes
+    trigger_if = {
+        limit = { exists = scope:diplomatic_play scope:diplomatic_play ?= { is_diplomatic_play_type = dp_nesnd_eastern_intervention } }
+        NOT = { has_global_variable = nesnd_japan_dossier_closed }
+        nesnd_eastern_target_valid = yes
+    }
+}
+
+# Honshu, Hokkaido, Kyushu and Shikoku use the same boundary for the expedition and the exodus.
+nesnd_eastern_archipelago_state = {
+    OR = {
+        state_region = s:STATE_KANTO state_region = s:STATE_KYOTO state_region = s:STATE_KANSAI
+        state_region = s:STATE_CHUGOKU state_region = s:STATE_TOHOKU state_region = s:STATE_TOKAI
+        state_region = s:STATE_HOKUSHINETSU state_region = s:STATE_HOKKAIDO
+        state_region = s:STATE_KYUSHU state_region = s:STATE_SHIKOKU
+    }
+}
+
+# Pop scope, iterated only over JAP's own population.
+nesnd_eastern_refugee_pop = {
+    state = { nesnd_eastern_archipelago_state = yes }
+    culture = { has_discrimination_trait = heritage_han }
 }

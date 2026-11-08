@@ -66,19 +66,28 @@ nesnd_india_reply_valid = {
     } trigger_else = { always = no }
 }
 nesnd_india_defence_treaty_possible = {
-    trigger_if = { limit = { exists = scope:india_sender exists = scope:india_partner }
-        can_create_treaty = {
-            first_country = scope:india_sender second_country = scope:india_partner is_draft = no
-            binding_period = { years = 3 }
-            articles_to_create = { { article = defensive_pact } }
-        }
-    } trigger_else = { always = no }
+    can_create_treaty = {
+        first_country = $SENDER$ second_country = $PARTNER$ is_draft = no
+        binding_period = { years = 3 }
+        articles_to_create = { { article = defensive_pact } }
+    }
+}
+nesnd_india_can_offer_defence = {
+    nesnd_india_can_send = yes
+    is_subject = no
+    trigger_if = {
+        limit = { exists = $PARTNER$ }
+        NOT = { this = $PARTNER$ }
+        $PARTNER$ = { is_subject = no is_at_war = no }
+        nesnd_india_defence_treaty_possible = { SENDER = this PARTNER = $PARTNER$ }
+    }
+    trigger_else = { always = no }
 }
 nesnd_india_reply_can_accept = {
     nesnd_india_reply_valid = yes
     trigger_if = { limit = { exists = scope:india_sender }
         trigger_if = { limit = { nesnd_india_incoming_kind <= 3 } gold_reserves >= scope:india_sender.nesnd_india_request_quote in_default = no NOT = { has_modifier = declared_bankruptcy } }
-        trigger_if = { limit = { nesnd_india_incoming_kind = 5 } nesnd_india_defence_treaty_possible = yes }
+        trigger_if = { limit = { nesnd_india_incoming_kind = 5 } nesnd_india_defence_treaty_possible = { SENDER = scope:india_sender PARTNER = scope:india_partner } }
         trigger_if = { limit = { nesnd_india_incoming_kind = 6 } scope:india_sender = { gold_reserves >= nesnd_india_request_quote } }
     } trigger_else = { always = no }
 }

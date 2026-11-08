@@ -18,6 +18,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 - **启动游戏须有用户在当次任务中的明确要求。**“修复”“测试”“继续”或过去的许可都不算。要求“观察者五速并保存”时，做完这三步就停止，不监看、不轮询日志、不重开。
 - 静态检查通过不等于游戏内验证；交付时分开写。
 - 版本迁移保留架空领土、人口、文化与制度意图，不照搬原版新国界，不删掉不再受支持的设计（改写为新接口）。
+- 每次游戏版本更新或开始适配新版前，先提醒作者一句：「请先按[修改的原版文件清单](references/vanilla-overrides.md)复查新版原版文件是否有改动。」
 - 不改既有译名和名词；作者的改稿优先于任何代理稿。
 
 ## 3. 默认工作方式
@@ -42,6 +43,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 数值、成本、奖励节奏 | [numeric-scale-contract.md](references/numeric-scale-contract.md) |
 | 经济压力、市场、自给经济 | [economic-agency-and-crises.md](references/economic-agency-and-crises.md)、[subsistence-transition.md](references/subsistence-transition.md)、[native-treaty-aid.md](references/native-treaty-aid.md) |
 | 地图、拆州、人口分配 | [map-economy-design.md](references/map-economy-design.md) |
+| 梳理系统结构（日志链、事件链） | [content-tree.md](references/content-tree.md) |
 | 修 bug（作者报告、error.log、存档） | [debugging-and-updates.md](references/debugging-and-updates.md) |
 | 游戏更新后 | [debugging-and-updates.md](references/debugging-and-updates.md)，再按 [migration.md](references/migration.md) 迁移 |
 | 世界观、南北朝制度、人物 | [narrative-context.md](references/narrative-context.md)、[north-south-institutions.md](references/north-south-institutions.md)、`worldbook.json`、`character-book.json` |

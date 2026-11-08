@@ -251,7 +251,14 @@ nesnd_partition_japan = {
                     is_country_alive = yes
                 }
             }
-            if = { limit = { OR = { exists = scope:nesnd_partition_tokugawa_incumbent exists = scope:nesnd_partition_yamato_incumbent } }
+            if = { limit = { c:USM = { has_variable = nesnd_eastern_submission_accepted } NOT = { has_law = law_type:law_monarchy } }
+                activate_law = law_type:law_monarchy
+            }
+            if = { limit = { OR = {
+                    exists = scope:nesnd_partition_tokugawa_incumbent
+                    exists = scope:nesnd_partition_yamato_incumbent
+                    AND = { c:USM = { has_variable = nesnd_eastern_submission_accepted } NOT = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_toyotomi } } } }
+                } }
                 nesnd_japan_seat_partition_incumbent = yes
             }
             s:STATE_KANTO = {
@@ -590,7 +597,6 @@ nesnd_japan_consider_terms_once = {
                     has_variable = nesnd_japan_consultation_period
                     has_variable = nesnd_japan_recovery_pending
                     has_global_variable = nesnd_japan_offer_sent
-                    has_global_variable = nesnd_japan_terms_rejected
                     has_global_variable = nesnd_japan_unity_offer
                     has_global_variable = nesnd_japan_war_started
                     has_global_variable = nesnd_japan_dossier_closed
@@ -632,8 +638,13 @@ nesnd_japan_observe_other_house = {
 }
 nesnd_japan_create_eastern_intervention = {
     create_diplomatic_play = {
+        escalation = 80
         name = dp_nesnd_eastern_intervention target_country = c:JAP type = dp_nesnd_eastern_intervention
-        add_war_goal = { holder = c:JAP target_country = root type = humiliation primary_demand = yes }
+        add_war_goal = { holder = c:USM target_country = c:JAP type = wg_nesnd_japan_reorganization primary_demand = yes }
+        add_war_goal = { holder = c:JAP target_country = c:USM type = humiliation primary_demand = yes }
+    }
+    if = { limit = { nesnd_japan_matching_intervention = yes }
+        set_global_variable = nesnd_japan_war_started
     }
 }
 # Only a verified previously existing pact is eligible for restoration.
@@ -645,6 +656,8 @@ nesnd_japan_open_subject_intervention = {
             nesnd_japan_create_eastern_intervention = yes
         }
         if = { limit = { nesnd_japan_original_intervention_pair = yes nesnd_japan_matching_intervention = no }
+            # This restores the pre-play pact after a failed launch. It is not a Japanese surrender.
+            set_global_variable = nesnd_japan_dossier_closed
             create_diplomatic_pact = { country = scope:nesnd_eastern_original_subject type = $PACT$ }
         }
         clear_saved_scope = nesnd_eastern_original_subject
@@ -686,5 +699,64 @@ nesnd_japan_launch_intervention = {
         else_if = { limit = { nesnd_japan_restorable_pact = { PACT = nesnd_egypt_protectorate } }
             nesnd_japan_open_subject_intervention = { PACT = nesnd_egypt_protectorate }
         }
+    }
+}
+
+# Wu scope. Close the case before partition creates any subject pacts of its own.
+nesnd_eastern_settle_submission = {
+    if = { limit = { NOT = { has_global_variable = nesnd_japan_dossier_closed } }
+        set_variable = nesnd_eastern_submission_accepted
+        set_global_variable = nesnd_japan_dossier_closed
+        c:JAP = { nesnd_partition_japan = yes }
+    }
+}
+
+# Both the military and timeout outcomes settle here. The receipt precedes all awards.
+nesnd_japan_eastern_failure = {
+    if = {
+        limit = {
+            has_variable = tag_WUU_var
+            NOT = { has_global_variable = nesnd_japan_dossier_closed }
+            nesnd_eastern_target_valid = yes
+        }
+        save_scope_as = eastern_wu
+        set_global_variable = nesnd_japan_dossier_closed
+        c:JAP = {
+            save_scope_as = eastern_japan
+            add_modifier = { name = nesnd_eastern_vindication years = 30 }
+            every_interest_group = { add_modifier = { name = nesnd_eastern_ig_confidence years = 30 } }
+            nesnd_jp_initialize = yes
+            change_variable = { name = nesnd_jp_cohesion add = 25 }
+            clamp_variable = { name = nesnd_jp_cohesion min = 0 max = 100 }
+            nesnd_jp_sync_cohesion = yes
+
+            # move_pop transfers whole Pops. Count people first, then fit whole communities to the quota.
+            set_local_variable = { name = eastern_refugees_remaining value = 0 }
+            every_scope_pop = {
+                limit = { nesnd_eastern_refugee_pop = yes }
+                change_local_variable = { name = eastern_refugees_remaining add = total_size }
+            }
+            change_local_variable = { name = eastern_refugees_remaining multiply = 0.1 }
+            ordered_scope_pop = {
+                limit = { nesnd_eastern_refugee_pop = yes }
+                order_by = total_size
+                if = {
+                    limit = { total_size <= local_var:eastern_refugees_remaining }
+                    change_local_variable = { name = eastern_refugees_remaining subtract = total_size }
+                    c:USM.capital = { save_scope_as = eastern_refuge }
+                    move_pop = scope:eastern_refuge
+                }
+                else = { save_temporary_scope_as = eastern_smallest_remaining_pop }
+            }
+            scope:eastern_smallest_remaining_pop ?= {
+                if = {
+                    limit = { total_size < { value = local_var:eastern_refugees_remaining multiply = 2 } }
+                    c:USM.capital = { save_scope_as = eastern_refuge }
+                    move_pop = scope:eastern_refuge
+                }
+            }
+            trigger_event = { id = nesnd_japan.7 popup = yes }
+        }
+        trigger_event = { id = nesnd_japan.6 popup = yes }
     }
 }

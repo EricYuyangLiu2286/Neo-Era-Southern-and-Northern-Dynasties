@@ -1,5 +1,5 @@
 ﻿# 教士秀全的旅途：全局人物日志，开局由 common/history/global/nesnd_xiuquan.txt 加入。
-# 无成败结局；唯一结局是他去世时隐藏失效（由 on_character_death 设 nesnd_xq_dead）。
+# 去世或无法继续随行时，沿用同一个隐藏结局。
 nesnd_xiuquan_journey = {
 	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	group = je_group_global_international_situations
@@ -25,59 +25,71 @@ nesnd_xiuquan_journey = {
 
 	on_weekly_pulse = {
 		effect = {
-			scope:journal_entry = { nesnd_xq_sync = yes }
+			if = {
+				limit = { nesnd_xq_can_continue = yes }
+				scope:journal_entry = { nesnd_xq_sync = yes }
+			}
 		}
 	}
 
 	on_monthly_pulse = {
 		effect = {
-			remove_global_variable = nesnd_xq_expel_result
-
-			# 传教进度满：所在州0.1%人口皈依一种基督教，人们对他信仰的判断各不相同。
-			scope:journal_entry = {
-				if = {
-					limit = { scripted_bar_progress = { name = nesnd_xq_ministry_bar value >= 100 } }
-					global_var:nesnd_xq_state ?= {
-						random_list = {
-							1 = {
-								convert_population = { target = rel:catholic value = 0.001 }
-								set_global_variable = { name = nesnd_xq_faith value = 1 }
-							}
-							1 = {
-								convert_population = { target = rel:protestant value = 0.001 }
-								set_global_variable = { name = nesnd_xq_faith value = 2 }
-							}
-							1 = {
-								convert_population = { target = rel:orthodox value = 0.001 }
-								set_global_variable = { name = nesnd_xq_faith value = 3 }
-							}
-							1 = {
-								convert_population = { target = rel:oriental_orthodox value = 0.001 }
-								set_global_variable = { name = nesnd_xq_faith value = 4 }
-							}
-						}
-						set_global_variable = { name = nesnd_xq_convert_state value = this }
-					}
-					set_bar_progress = { name = nesnd_xq_ministry_bar value = 0 }
-				}
-			}
-
-			# 每月25%：随追随者去一个相邻的州，不分国界。
-			random = {
-				chance = 25
-				global_var:nesnd_xq_state ?= {
-					random_neighbouring_state = { save_scope_as = nesnd_xq_next_state }
-				}
-				scope:nesnd_xq_next_state ?= { nesnd_xq_arrive = yes }
-			}
-
-			# 无意外则享年八十：活到1894年1月1日时去世。此前仍可能自然死亡。
 			if = {
-				limit = { game_date >= 1894.1.1 }
-				global_var:nesnd_xq_char ?= { kill_character = yes }
-			}
+				limit = { nesnd_xq_can_continue = yes }
+				remove_global_variable = nesnd_xq_expel_result
 
-			scope:journal_entry = { nesnd_xq_sync = yes }
+				# 传教进度满：所在州0.1%人口皈依一种基督教，人们对他信仰的判断各不相同。
+				scope:journal_entry = {
+					if = {
+						limit = { scripted_bar_progress = { name = nesnd_xq_ministry_bar value >= 100 } }
+						global_var:nesnd_xq_state ?= {
+							random_list = {
+								1 = {
+									convert_population = { target = rel:catholic value = 0.001 }
+									set_global_variable = { name = nesnd_xq_faith value = 1 }
+								}
+								1 = {
+									convert_population = { target = rel:protestant value = 0.001 }
+									set_global_variable = { name = nesnd_xq_faith value = 2 }
+								}
+								1 = {
+									convert_population = { target = rel:orthodox value = 0.001 }
+									set_global_variable = { name = nesnd_xq_faith value = 3 }
+								}
+								1 = {
+									convert_population = { target = rel:oriental_orthodox value = 0.001 }
+									set_global_variable = { name = nesnd_xq_faith value = 4 }
+								}
+							}
+							set_global_variable = { name = nesnd_xq_convert_state value = this }
+						}
+						set_bar_progress = { name = nesnd_xq_ministry_bar value = 0 }
+					}
+				}
+
+				# 每月25%：随追随者去一个相邻的州，不分国界。
+				random = {
+					chance = 25
+					global_var:nesnd_xq_state ?= {
+						random_neighbouring_state = {
+							limit = { exists = owner }
+							save_scope_as = nesnd_xq_next_state
+						}
+					}
+					scope:nesnd_xq_next_state ?= { nesnd_xq_arrive = yes }
+				}
+
+				scope:journal_entry = { nesnd_xq_sync = yes }
+
+				# 无意外则享年八十：活到1894年1月1日时去世，先解除剧情保护。
+				if = {
+					limit = { game_date >= 1894.1.1 }
+					global_var:nesnd_xq_char ?= {
+						set_character_busy_and_immortal = no
+						kill_character = yes
+					}
+				}
+			}
 		}
 	}
 
@@ -114,14 +126,33 @@ nesnd_xiuquan_journey = {
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = nesnd_xiuquan_journey_ended
-		trigger = { has_global_variable = nesnd_xq_dead }
+		trigger = {
+			OR = {
+				has_global_variable = nesnd_xq_dead
+				nesnd_xq_can_continue = no
+			}
+		}
 		effect = {
+			nesnd_xq_commemorate = yes
 			global_var:nesnd_xq_state ?= {
 				if = {
 					limit = { has_modifier = nesnd_xq_ministry }
 					remove_modifier = nesnd_xq_ministry
 				}
 			}
+			# 主引用失效时，仍可由日志原有头像引用解除本日志施加的保护。
+			scope:journal_entry = {
+				every_in_list = {
+					variable = nesnd_xq_portrait_characters
+					limit = { has_variable = nesnd_xq_journey_protection }
+					set_character_busy_and_immortal = no
+					remove_variable = nesnd_xq_journey_protection
+				}
+			}
+			remove_global_variable = nesnd_xq_char
+			remove_global_variable = nesnd_xq_state
+			remove_global_variable = nesnd_xq_region
+			remove_global_variable = nesnd_xq_host_country
 			remove_global_variable = nesnd_xq_expel_result
 			remove_global_variable = nesnd_xq_faith
 			remove_global_variable = nesnd_xq_convert_state

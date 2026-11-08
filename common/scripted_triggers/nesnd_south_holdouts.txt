@@ -26,7 +26,8 @@ nesnd_south_campaign_holdout = {
 nesnd_south_remnant_window = {
     nesnd_south_wu_survives = yes has_global_variable = usm_civilwar_occured
     c:USM ?= { NOR = { has_variable = usm_government_winner_civilwar has_variable = nesnd_south_peace_committed
-        has_variable = nesnd_south_inconclusive_settlement has_variable = nesnd_ming_preserved } }
+        has_variable = nesnd_south_inconclusive_settlement has_variable = nesnd_ming_preserved
+        has_variable = nesnd_celestial_collapsed } }
 }
 nesnd_south_wu_survives = {
     trigger_if = { limit = { exists = c:USM } c:USM = { is_country_alive = yes has_variable = tag_WUU_var NOT = { has_variable = usm_rebel_winner_of_the_civil_war } } }
@@ -212,4 +213,21 @@ nesnd_jingnan_may_receive_rebel_journal = {
         is_on_defending_side = prev
         diplomatic_play ?= prev.var:nesnd_jingnan_locked_play
     }
+}
+
+# Country scope. A Wu opponent the war has not reached: not fighting Wu (a war with anyone else does not count),
+# not in a play against Wu, not settled or waiting on a holdout answer. A truce does not protect it:
+# nesnd_continue_war_open ends the truce before the war.
+nesnd_continue_war_candidate = {
+    nesnd_south_campaign_holdout = yes
+    is_subject = no
+    NOT = { has_variable = nesnd_holdout_resolved }
+    NOT = { has_variable = nesnd_capital_surrender_pending }
+    NOT = { has_variable = nesnd_holdout_choice_pending }
+    NOT = { has_variable = nesnd_holdout_north_awaited }
+    trigger_if = { limit = { exists = c:USM }
+        NOT = { has_war_with = c:USM }
+        NOT = { is_diplomatic_play_enemy_of = c:USM }
+    }
+    trigger_else = { always = no }
 }
