@@ -6,7 +6,7 @@ Status: ready-for-agent
 Execution: completed
 Assignee: root
 Blocked by: none
-Validation: STATIC_PASS（任务32已实施部分、日本新政九项干预；日本待作者实测）
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [计划61](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/61-continuity-and-journal-rework-20261104.md>) · [日本改动和定向检查](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-reform-choices-20261107/validation.json>) · [Tiger 前后对照](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-reform-choices-20261107/tiger-scope.json>)
 
 ## 已完成

@@ -1,6 +1,7 @@
 # 任务42 · 靖难余部、建设、自治、流散与法国（1.15.0）
 
 Execution: completed
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 
 ## 当前交付与验收
 

@@ -12,7 +12,7 @@ Assignee: Codex
 
 Blocked by: none
 
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 
 Evidence: [交付与检查证据](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/aixue-split-20261107/皑雪三州交付.md>)
 

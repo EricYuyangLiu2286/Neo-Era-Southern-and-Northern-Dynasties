@@ -4,7 +4,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Claude
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: WORK/backups/spoiler-fix-20261107/（改前四个文件）
 
 # 68 日志与按钮描述的结局剧透

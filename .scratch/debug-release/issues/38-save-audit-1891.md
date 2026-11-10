@@ -5,7 +5,7 @@ Category: bug
 Status: ready-for-agent
 Execution: completed
 Assignee: /root
-Validation: STATIC_PASS。游戏内行为的证据来自改前存档与日志，本轮全程离线。
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 
 取同一局1836年8月11日和1891年11月4日的存档。终档在工作台 `live-observer-20261105/save games/美利坚合众国_1891_11_04.v3`，SHA256 的开头为 `d2fc2e0f87a1c27d`。运行副本对应 `9cdfd02`，本轮主 MOD 基点为 `254ca1f`。原存档保持原字节。
 

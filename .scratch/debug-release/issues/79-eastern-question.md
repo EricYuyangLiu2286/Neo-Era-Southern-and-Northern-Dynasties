@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [静态核验、开局人口模板算例及 11 个玩法文件指纹](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-08-eastern-question/static.json>) · [检查脚本](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-08-eastern-question/verify.py>) · [Tiger 原始输出](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-08-eastern-question/tiger.txt>)
 
 ## 现象与期望

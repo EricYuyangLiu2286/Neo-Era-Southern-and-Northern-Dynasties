@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Claude
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [静态检查脚本](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-08-jingnan-continuation/verify.py>) · [结果](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-08-jingnan-continuation/static.json>) · [Tiger 原始输出](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-08-jingnan-continuation/tiger.json>) · 内容树：改前 `cases/jingnan2/`，改后 [map.html](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/content-tree/v3tree-output/cases/jingnan3/map.html>)、[report.md](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/content-tree/v3tree-output/cases/jingnan3/report.md>)
 
 ## 现象与期望

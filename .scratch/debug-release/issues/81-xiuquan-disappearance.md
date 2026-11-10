@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [存档、选人排查与逐文件说明](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/test-evidence/xiuquan-20261108-194046-562/核查与复测.md>)
 
 ## 现象与期望

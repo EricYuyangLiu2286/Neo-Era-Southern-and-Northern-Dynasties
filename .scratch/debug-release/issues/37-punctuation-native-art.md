@@ -6,7 +6,7 @@ Status: ready-for-agent
 Execution: completed
 Assignee: root
 Blocked by: none
-Validation: STATIC_PASS — 主代理复跑 A/B/C，分别54、64、48组；以下分阶段“待审”状态均为历史。整合及未实测范围见[交接](../../../docs/agents/handoff-20261105.md)。
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [本轮报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/punctuation-native-art-20261105/astra-task37-plan.md>)
 
 ## 当前范围

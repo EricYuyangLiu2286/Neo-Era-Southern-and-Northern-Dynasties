@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [作图规格、定义位置与参考图](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-07-main-menu-theme/作图规格与接入清单.md>)
 
 ## 现象与期望

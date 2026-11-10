@@ -4,7 +4,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: root
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: WORK/reports/2026-11-06-hus-classes/
 
 # HUS 社会阶序条件显示（2026-11-06）

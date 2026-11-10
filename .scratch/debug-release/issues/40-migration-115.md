@@ -1,6 +1,7 @@
 # 任务40 · Ivan-Chai 迁移与三项实机回报
 
 Execution: completed
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 
 2026-11-05。主 MOD 版本 0.2.0，游戏 1.15.0，Steam build 26453692。上一基线为 1.13.11，build 24799966。本轮全程游戏外验证。先前观察者存档及日志属于旧版。
 

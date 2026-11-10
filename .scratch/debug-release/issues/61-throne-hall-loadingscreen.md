@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [纹理回读记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-07-throne-hall-loadingscreen/verification.json>)
 
 ## 现象与期望

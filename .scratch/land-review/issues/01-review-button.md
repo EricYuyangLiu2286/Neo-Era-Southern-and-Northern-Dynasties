@@ -6,7 +6,7 @@ Status: ready-for-agent
 Execution: completed  
 Assignee: Codex  
 Blocked by: none  
-Validation: ENGINE_PASS（作者内审通过，2026-11-10，游戏 1.15.0，Git main 0dfb25c；原始记录未附）  
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）  
 Evidence: [按钮条件、变量和旧档复测](<../../../../../nesnd-workbench/reports/2026-11-09-land-review/button-audit.md>)、[地权革命功能说明](<../../../../../nesnd-workbench/reports/2026-11-09-land-review/guide.md>)、[离线内容树](<../../../../../nesnd-workbench/reports/2026-11-09-land-review/map.html>)
 
 ## 现象与期望
@@ -31,4 +31,4 @@ Evidence: [按钮条件、变量和旧档复测](<../../../../../nesnd-workbench
 
 ## Comments
 
-2026-11-10：作者内审通过。正文中“未启动游戏”“待复测”等为交付时的状态。
+2026-11-10：作者测试完毕。正文中“未启动游戏”“待复测”等为交付时的状态。

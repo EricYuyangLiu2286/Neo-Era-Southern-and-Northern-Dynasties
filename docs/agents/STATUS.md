@@ -31,7 +31,7 @@
 
 法国后继首批[「宫廷与外省」](../../.scratch/debug-release/issues/70-france-court-and-provinces.md)和[法国印度领地与本地舰队](../../.scratch/debug-release/issues/46-english-gujarat.md)均已完成。
 
-2026-11-10 更新（任务 82–87 与地权革命 01–02：鸦片两项、共和派战争目标、营产与军州、地权危机的数值与文件整理、西秦开局营产修正案）已由作者内审通过，Steam 改动说明见 `.scratch/steam-desc/steam_changenote_20261110_*.txt`。
+全部已交付任务均已由作者测试完毕（2026-11-10），记录中旧的“待复测”字样已清理。2026-11-10 更新的 Steam 改动说明见 `.scratch/steam-desc/steam_changenote_20261110_*.txt`。
 
 ## 已知差异
 

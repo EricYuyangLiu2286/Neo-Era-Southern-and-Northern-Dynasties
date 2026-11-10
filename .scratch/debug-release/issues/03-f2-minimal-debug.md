@@ -6,7 +6,7 @@ Status: ready-for-agent
 Execution: completed
 Assignee: root
 Blocked by: 01
-Validation: ENGINE_PARTIAL
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [综合A实机记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/resumed-runtime-20261101-root-observations.md>)。[综合统一报告](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/validation/runs/resumed-integrated-20261101-a-global/report.md>)
 
 ## Scope

@@ -6,7 +6,7 @@ Status: ready-for-agent
 Execution: completed
 Assignee: root
 Blocked by: 03
-Validation: ENGINE_PARTIAL
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [恢复后综合实机记录](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/plans/two-empires/evidence/resumed-runtime-20261101-root-observations.md>)。[新局基线](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/runtime/20261101T014437Z/evidence/Jan1-new-baseline/baseline-review.md>)
 Resume: 用户明确恢复。旧停止保留为历史证据，本轮重新启动隔离运行。新增女性发型同人前后对照、六地区地图和实际交通覆盖。
 

@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS（引擎待用户测试）
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [journal-war-feedback-20261103](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/journal-war-feedback-20261103/spec.md>)
 
 ## Result

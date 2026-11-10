@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: root
 Blocked by: none
-Validation: STATIC_PASS；1.15.0 build 26453692，未启动游戏
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [文件指纹、定向验证、Tiger差异](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/korea-restoration-20261107/>)
 
 ## 现象与期望

@@ -6,7 +6,7 @@ Status: ready-for-agent
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [导出目录](../../../gfx/loadingscreens/)
 
 ## 现象与期望

@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: root
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [integrity-recheck-20261102](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/integrity-recheck-20261102/release-notes.md>)
 
 CW262实际冷加载与缺定义反例对照。修复scope、重复取消条件、西秦建国/军队/战争链，英文编辑审查。用户新增战争诉求、人口、科技、tooltip、奖励及英文要求纳入同轮。范围内源码与定向检查通过。全局继承/依赖/未运行诊断如实保留，ENGINE_NOT_RUN。

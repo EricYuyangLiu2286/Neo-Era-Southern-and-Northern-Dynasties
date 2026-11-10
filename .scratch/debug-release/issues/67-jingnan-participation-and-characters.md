@@ -4,7 +4,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: WORK/reports/2026-11-07-jingnan-japan-155023/
 
 # 67 靖难参战、幕府危局及人物保护

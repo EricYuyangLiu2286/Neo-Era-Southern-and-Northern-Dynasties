@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Claude
 Blocked by: none
-Validation: STATIC_PASS（括号/BOM/引用/本地化键集与 vic3-tiger 1.19.0 前后对比；未实机验证）
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [计划](../../acw-slavery/spec.md)；[模拟、检查与 Tiger](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-07-acw-plan/>)；改前备份 `nesnd-workbench/backups/pre-change-acw-slavery-question-20261107T031512Z`
 
 ## 1. 现象与期望

@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Claude
 Blocked by: none（第①至⑤批全部交付，待作者统一复测，再集中修错）
-Validation: STATIC_PASS（第①至⑤批及天命说补充：括号/BOM/引用/本地化键与 vic3-tiger 1.19.0 前后对比；第①批作者实机复测发现 2 处问题已修，第②至⑤批未实机验证）
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [方案](../../per-ethnic/spec.md)；模拟、检查与 Tiger `nesnd-workbench/reports/2026-11-07-per-ethnic-plan/`；第①批改前备份 `nesnd-workbench/backups/pre-change-per-ethnic-batch1-20261107T134331Z`
 
 ## 1. 现象与期望

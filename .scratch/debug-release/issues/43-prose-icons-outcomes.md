@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: root
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/prose-icons-20261106/root/validation-main.json
 
 ## 2026-11-06 范围与结果

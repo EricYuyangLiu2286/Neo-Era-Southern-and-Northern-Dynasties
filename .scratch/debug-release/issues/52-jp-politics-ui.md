@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: root
 Blocked by: none
-Validation: STATIC_PASS（有序解析、本地化和定向检查；未实机验证）
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [检查、差异与方案](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/jp-politics-ui-20261107/>)
 
 ## 现象与期望

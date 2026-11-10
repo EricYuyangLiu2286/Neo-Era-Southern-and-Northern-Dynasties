@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS，1.15.0 / 26453692，待作者实机复测
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [三版调查、内容树与复测](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-journals-20261107/调查与复测.md>)、[10 个游戏文件及校验结果](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/japan-journals-20261107/validation.json>)
 
 ## 现象与期望

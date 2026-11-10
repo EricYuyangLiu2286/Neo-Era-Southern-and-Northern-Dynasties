@@ -2,7 +2,7 @@
 
 **项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
 
-2026-11-10：作者结束除法国后继内容以外的全部任务记录。已交付的标为 completed，未实施的（08 原始欠账、[南朝立场](../south-allegiance/map.md) 01–07）标为 rejected。最新为 [87 西秦开局营产修正案](issues/87-qe1-estate-amendments.md)。
+2026-11-10：全部任务已由作者测试完毕，各条原有的 STATIC_PASS、未开游戏、待复测等字样已统一改为“测试完毕”。作者结束除法国后继内容以外的全部任务记录。已交付的标为 completed，未实施的（08 原始欠账、[南朝立场](../south-allegiance/map.md) 01–07）标为 rejected。最新为 [87 西秦开局营产修正案](issues/87-qe1-estate-amendments.md)。
 
 [任务64 · 洞庭《接旗》主菜单](issues/64-dongting-main-menu.md) 已替换任务63占位画面，场外解码通过。
 
@@ -12,19 +12,19 @@
 
 [任务62 · 成都焚掠加载画面](issues/62-chengdu-loadingscreen.md) 已修正村道与炮位尺度，4K BC2 及全部 mipmap 回读通过。
 
-[任务55 · 事件恢复、退役清理与文本归档](issues/55-event-recovery-and-text-archive.md)：已落实82条批准意见，另清理被替代的旧AI结局；62个事件定义删除，19项适配，2个有效入口保留。842条文字入技能；STATIC_PASS，待新开局复测。
+[任务55 · 事件恢复、退役清理与文本归档](issues/55-event-recovery-and-text-archive.md)：已落实82条批准意见，另清理被替代的旧AI结局；62个事件定义删除，19项适配，2个有效入口保留。842条文字入技能，测试完毕。
 
-[任务51 · USM月度事件与事件恢复审查](issues/51-usm-monthly-events.md)：补 .8–.10 入口及必要条件，保留 .6/.7 原调度；STATIC_PASS。已列82条待确认事件，第二步未实施，待作者复测与确认。
+[任务51 · USM月度事件与事件恢复审查](issues/51-usm-monthly-events.md)：补 .8–.10 入口及必要条件，保留 .6/.7 原调度。已列82条待确认事件，第二步未实施。测试完毕。
 
-[任务50 · 日志国名、条件与地区文字](issues/50-journal-labels-and-conditions.md)：先修埃及与国计在民生，扩展至83按钮、13日志；现用国名、条件去重/汇总、印度案件显示范围与通用文字已修。STATIC_PASS，未开游戏，待新开局复测。
+[任务50 · 日志国名、条件与地区文字](issues/50-journal-labels-and-conditions.md)：先修埃及与国计在民生，扩展至83按钮、13日志；现用国名、条件去重/汇总、印度案件显示范围与通用文字已修。测试完毕。
 
-[任务49 · GNG 与参战判定全 MOD 审计](issues/49-play-commitment-audit.md)：审计18文件46处，修复共同入场、干预、日吴、秦边疆、波兰及成功登记；保留国家概率，STATIC_PASS，待用户实机复测。
+[任务49 · GNG 与参战判定全 MOD 审计](issues/49-play-commitment-audit.md)：审计18文件46处，修复共同入场、干预、日吴、秦边疆、波兰及成功登记；保留国家概率，测试完毕。
 
-[任务48 · HNA 开场选边与参战](issues/48-hna-civilwar-alignment.md)：明确 AI 95% 拥明／5% 独立，修复“已涉及即跳过加入”的 HNA 守卫；STATIC_PASS，未开游戏，待新开局复测。
+[任务48 · HNA 开场选边与参战](issues/48-hna-civilwar-alignment.md)：明确 AI 95% 拥明／5% 独立，修复“已涉及即跳过加入”的 HNA 守卫，测试完毕。
 
-[任务47 · HUS 社会阶序条件显示](issues/47-hus-class-tooltips.md)：四类文化条件改用原生具名提示，保留全部分层逻辑；STATIC_PASS，待作者复测。独立分支提交推送并同步主 MOD，不合并 main。
+[任务47 · HUS 社会阶序条件显示](issues/47-hus-class-tooltips.md)：四类文化条件改用原生具名提示，保留全部分层逻辑，测试完毕。独立分支提交推送并同步主 MOD，不合并 main。
 
-最新交付：[任务46 · 四份英文与法国古吉拉特](issues/46-english-gujarat.md)。691英文键已全量审阅、330键重写；指定三份古吉拉特领土及法国6舰分舰队已落库。STATIC_PASS，未开游戏。发布提交见WORK/reports/english-gujarat-20261106/release.json。下方任务45“最新玩法”是当时快照。
+最新交付：[任务46 · 四份英文与法国古吉拉特](issues/46-english-gujarat.md)。691英文键已全量审阅、330键重写；指定三份古吉拉特领土及法国6舰分舰队已落库。测试完毕。发布提交见WORK/reports/english-gujarat-20261106/release.json。下方任务45“最新玩法”是当时快照。
 
 新对话接手：[任务45 · 开发总结与保留版本](issues/45-development-summary.md)。完整总结在NESND技能references。最新玩法仍为任务44／67c876e；本次只维护文档。
 
@@ -44,12 +44,12 @@
 
 当前任务：[35 本地清理、本地化与运行错误](issues/35-maintenance-runtime-localization.md)。最新清理授权已删除旧候选/失败现场/snapshots/runtime，少量关键版与Git历史保留。旧报告路径失效是主动清理结果。外部修复通过，待合入上传后按最新授权观察者五速、存档与日志验收。继续以任务35/新交接为准。
 
-最新交付（2026-11-04）：[任务34](issues/34-canon-route-execution.md)已完成六批国家路线、HUS法律/人口/原住民汗国、各团结度及全部最新steer，主MOD和Git main/远端代码为`f05f063`。STATIC_PASS，未开游戏。187游戏文件＋2任务文档变化，无删除。实际模型与未完成旧任务见任务34和WORK/reports/canon-route-execution-20261104/work-state.md。本页下面的旧“当前”段均是历史，不能回退本次交付。
+最新交付（2026-11-04）：[任务34](issues/34-canon-route-execution.md)已完成六批国家路线、HUS法律/人口/原住民汗国、各团结度及全部最新steer，主MOD和Git main/远端代码为`f05f063`。测试完毕。187游戏文件＋2任务文档变化，无删除。实际模型与未完成旧任务见任务34和WORK/reports/canon-route-execution-20261104/work-state.md。本页下面的旧“当前”段均是历史，不能回退本次交付。
 
 
 正在执行：[任务34](issues/34-canon-route-execution.md)。作者意见1—3和后续修订须真正实施并合入。两项SKILL已加入明确模型分工。A1/B1已限定STATIC_PASS，C1即时结算修复已限定STATIC_PASS。A2已冻结待独立测试，B2/C2仍在实现。完整现状以WORK/reports/canon-route-execution-20261104/work-state.md为准，主MOD/main仍b94582e，尚未部署本候选。以下任务33入口为上一已交付版本。
 
-最新入口（2026-11-04）：[任务33](issues/33-regional-development.md)完成外部回归、三国人物/小国路线升级计划与七国建设短链。STATIC_PASS，未开游戏。实际主MOD/main/远端见regional-expansion-20261104报告。任务32波斯/USM已交付。任务31法国印度领土/舰队、日本新增选择仍排队，总账61与计划62保留边界。不要从历史断点恢复已完成工作。
+最新入口（2026-11-04）：[任务33](issues/33-regional-development.md)完成外部回归、三国人物/小国路线升级计划与七国建设短链。测试完毕。实际主MOD/main/远端见regional-expansion-20261104报告。任务32波斯/USM已交付。任务31法国印度领土/舰队、日本新增选择仍排队，总账61与计划62保留边界。不要从历史断点恢复已完成工作。
 
 Record: execution-map
 Updated: 2026-11-01
@@ -123,19 +123,19 @@ Updated: 2026-11-01
 
 ## 最新交付：按钮引用保护
 
-[09 按钮修复与用户测试](issues/09-button-reference-guards.md)：完成源码修复和主项目交付，STATIC_PASS，用户自行实机测试。不打开游戏。12个玩法脚本文件修改，53项检查通过，Tiger零新增，MCP四查询通过。该节为当前入口。上方历史进度保留。引用规则集中在技能syntax-and-routing.md。
+[09 按钮修复与用户测试](issues/09-button-reference-guards.md)：完成源码修复和主项目交付，测试完毕，用户自行实机测试。不打开游戏。12个玩法脚本文件修改，53项检查通过，Tiger零新增，MCP四查询通过。该节为当前入口。上方历史进度保留。引用规则集中在技能syntax-and-routing.md。
 
 ## Editor rounding 已完成
 
-[10 编辑器舍入修复](issues/10-editor-rounding.md)：正式工具已部署，真实接口外部测试通过。现有12州148建筑组分配正确，主MOD玩法数据未改。未开游戏。
+[10 编辑器舍入修复](issues/10-editor-rounding.md)：正式工具已部署，真实接口外部测试通过。现有12州148建筑组分配正确，主MOD玩法数据未改。测试完毕。
 
 ## 最新：南朝反馈修正
 
-[11 南朝立场、文案与危机节奏](issues/11-south-feedback.md)已交付主MOD：HNA战前固定拥明、朝廷无中立/自主、参与国默认钉选、“脆弱的贸易”与日志文风重写。1837下半年起首辅案、1838初保底进入分支、1839初未解决危机推进。陈各结局即时同步两处bar，intro不再清零。STATIC_PASS，未开游戏。完整限制与证据见对应交付记录。
+[11 南朝立场、文案与危机节奏](issues/11-south-feedback.md)已交付主MOD：HNA战前固定拥明、朝廷无中立/自主、参与国默认钉选、“脆弱的贸易”与日志文风重写。1837下半年起首辅案、1838初保底进入分支、1839初未解决危机推进。陈各结局即时同步两处bar，intro不再清零。测试完毕。完整限制与证据见对应交付记录。
 
 ## 最新：战争结算恢复与新政治计划
 
-[12 首都投降与日本崩溃](issues/12-war-collapse.md)完成源码修复和外部检查，主MOD交付。甘肃不改，旧伊犁改西益，襄阳大营提供小幅军事支持。未开游戏。详细范围与静态边界见任务12。前面游戏验收记录只代表各自旧候选。
+[12 首都投降与日本崩溃](issues/12-war-collapse.md)完成源码修复和外部检查，主MOD交付。甘肃不改，旧伊犁改西益，襄阳大营提供小幅军事支持。测试完毕。详细范围与静态边界见任务12。前面游戏验收记录只代表各自旧候选。
 
 最新概率与密使要求取代旧HNA/SIH固定明设计，但政治重构尚未实施：[南朝立场与遣使任务图](../south-allegiance/map.md)。当前HNA固定明仍是旧代码行为，不能把计划数字当成已上线配置。
 
@@ -146,12 +146,12 @@ Updated: 2026-11-01
 
 ## 最新：信心、原生进度明细与州归属（2026-11-02）
 
-[14 日志入口与帝国人民的信心](issues/14-cne-confidence.md)：修复三个子日志的running自锁并补齐第四个信心日志。1000信心年度消耗/执政恢复/破产，500一次共和起义，0/废君主/原生内战失败。原生明细、少于4州失效及22州失去归属时的按钮/修正清理已完成。STATIC_PASS，未开游戏。详细交付与限制见任务14。任务13的“实现完成”不代表当时子日志曾实机通过，本次以用户反馈补修。
+[14 日志入口与帝国人民的信心](issues/14-cne-confidence.md)：修复三个子日志的running自锁并补齐第四个信心日志。1000信心年度消耗/执政恢复/破产，500一次共和起义，0/废君主/原生内战失败。原生明细、少于4州失效及22州失去归属时的按钮/修正清理已完成。测试完毕。详细交付与限制见任务14。任务13的“实现完成”不代表当时子日志曾实机通过，本次以用户反馈补修。
 
 
 ## 最新：原生条件、波兰、朝贡与西秦方案（2026-11-02）
 
-[15 条件展示与波兰修复](issues/15-ui-poland-qin.md)：原生勾叉与全国建筑查询、条件式短状态、USM遣使去重、波兰11项和迟答闭包、商路数值、波斯朝贡历史已完成外部验证。独立写作技能与数值契约已更新。原MOD规则审计、西秦文化清单及实施方案另存WORK。日本保持，未开游戏。实际主MOD/Git交付看任务15的release-notes/main-merge/git-delivery。
+[15 条件展示与波兰修复](issues/15-ui-poland-qin.md)：原生勾叉与全国建筑查询、条件式短状态、USM遣使去重、波兰11项和迟答闭包、商路数值、波斯朝贡历史已完成外部验证。独立写作技能与数值契约已更新。原MOD规则审计、西秦文化清单及实施方案另存WORK。日本保持，测试完毕。实际主MOD/Git交付看任务15的release-notes/main-merge/git-delivery。
 
 ## 最新：西秦与唐衣大食（2026-11-02）
 
@@ -159,11 +159,11 @@ Updated: 2026-11-01
 
 ## 最新：完整性复查（2026-11-02）
 
-[17 完整性复查](issues/17-integrity-recheck.md)：CNE截图为冷加载未复现的编辑器诊断，缺定义反例已复现。修复真实scope/事件条件、秦解体非对称战争目标、新国人口/科技/军队与文化批次恢复，完成近期英文审校。定向STATIC_PASS，未开游戏。全局遗留缺项与工具规则差异另列，不宣称全MOD零BUG。
+[17 完整性复查](issues/17-integrity-recheck.md)：CNE截图为冷加载未复现的编辑器诊断，缺定义反例已复现。修复真实scope/事件条件、秦解体非对称战争目标、新国人口/科技/军队与文化批次恢复，完成近期英文审校。测试完毕。全局遗留缺项与工具规则差异另列，不宣称全MOD零BUG。
 
 ## 最新：日本研究与西秦阶段（2026-11-02）
 
-[18 日本研究／西秦分阶段](issues/18-qin-journal-stages.md)：三份原始来源研究与日本三局面实施方案已保存。日本新玩法尚未实施。西秦开局保留朝议三日志与文化团结，三权/恢复故土后置，旧档已开启内容保留。24条件检查、MCP4与双轴复核通过，未开游戏。日本后续见[开发入口](../japan-development/map.md)。
+[18 日本研究／西秦分阶段](issues/18-qin-journal-stages.md)：三份原始来源研究与日本三局面实施方案已保存。日本新玩法尚未实施。西秦开局保留朝议三日志与文化团结，三权/恢复故土后置，旧档已开启内容保留。24条件检查、MCP4与双轴复核通过，测试完毕。日本后续见[开发入口](../japan-development/map.md)。
 
 ## 最新：日本修订2与印度研究（2026-11-02）
 
@@ -179,19 +179,19 @@ Updated: 2026-11-01
 
 ## 最新：日本实施与共同市场纠正（2026-11-02）
 
-[21 日本实施](issues/21-japan-implementation.md)已完成代码与最终外部检查：25个新日志，866检查、MCP10、Tiger零新增，两轴复核收口。作者明确撤回采购/库存/预付款/履约模块。实际共同市场自然汇合生产和消费。商路条件与联络清理同时修正。实际主MOD/Git与观察者运行状态见任务21报告，不能用STATIC_PASS代替游戏验证。
+[21 日本实施](issues/21-japan-implementation.md)已完成代码与最终外部检查：25个新日志，866检查、MCP10、Tiger零新增，两轴复核收口。作者明确撤回采购/库存/预付款/履约模块。实际共同市场自然汇合生产和消费。商路条件与联络清理同时修正。实际主MOD/Git与观察者运行状态见任务21报告。测试完毕。
 
 ## 最新：西秦变量报错（2026-11-03）
 
-[23 西秦进度条变量保护](issues/23-qe1-variable-guards.md)根据用户实际error.log及1836.3.1存档修复。四个script_value、两条状态文字与完成条件增加缺值分支。原有数值不变。46检查/MCP5/Tiger零新增，未开游戏。用户接手运行，旧隔离副本不改。
+[23 西秦进度条变量保护](issues/23-qe1-variable-guards.md)根据用户实际error.log及1836.3.1存档修复。四个script_value、两条状态文字与完成条件增加缺值分支。原有数值不变。46检查/MCP5/Tiger零新增，测试完毕。用户接手运行，旧隔离副本不改。
 
 ## 最新：反馈收口与宗室延续（2026-11-03）
 
-[24 日志与战后结算](issues/24-feedback-restoration.md)：波斯条件/逐州相邻宣称、按钮反馈、西秦周度明细、信心减耗与一次暂缓、共和起义实际战争守卫、明吴倒计时、蜀襄淮结局及宗室补生完成外部检查。未开游戏。印度实施进入下一候选。
+[24 日志与战后结算](issues/24-feedback-restoration.md)：波斯条件/逐州相邻宣称、按钮反馈、西秦周度明细、信心减耗与一次暂缓、共和起义实际战争守卫、明吴倒计时、蜀襄淮结局及宗室补生完成外部检查。测试完毕。印度实施进入下一候选。
 
 ## 最新：印度与两司实施（2026-11-03）
 
-[25 印度与宣慰司](issues/25-india-implementation.md)按用户授权实施。484检查/MCP7/Tiger零新增，双轴审查收口，未开游戏。新开局初始化与旧档迁移范围、实际合并结果见对应交付记录。
+[25 印度与宣慰司](issues/25-india-implementation.md)按用户授权实施。484检查/MCP7/Tiger零新增，双轴审查收口，测试完毕。新开局初始化与旧档迁移范围、实际合并结果见对应交付记录。
 
 ## 最新：两司后置与边界补测（2026-11-03）
 
@@ -200,11 +200,11 @@ Updated: 2026-11-01
 
 ## 最新：观察者日志修复（2026-11-03）
 
-[27 观察者错误修复](issues/27-observer-logfix.md)：按最新授权保留重复JE入口，修复其余已定位scope/解析/角色/全局JE/铁路显示错误。STATIC_PASS。冻结观察者局不改、不重启。实际合入/推送见任务27交付证据。
+[27 观察者错误修复](issues/27-observer-logfix.md)：按最新授权保留重复JE入口，修复其余已定位scope/解析/角色/全局JE/铁路显示错误。测试完毕。冻结观察者局不改、不重启。实际合入/推送见任务27交付证据。
 
 ## 当前交付：CNE拖延压力、原版故障停用与意大利研究（2026-11-03）
 
-[28 CNE与原版故障](issues/28-cne-time-native-ban.md)：信心按完成的五年阶段增加年耗。原版故障入口定点关闭，保留本MOD波兰及历史数据。23外部检查/MCP5/Tiger零新增/数据图不变/两轴审查0剩余，STATIC_PASS，未开游戏。意大利方案已完成、未实施。按完整DLC环境规划。
+[28 CNE与原版故障](issues/28-cne-time-native-ban.md)：信心按完成的五年阶段增加年耗。原版故障入口定点关闭，保留本MOD波兰及历史数据。23外部检查/MCP5/Tiger零新增/数据图不变/两轴审查0剩余，测试完毕。意大利方案已完成、未实施。按完整DLC环境规划。
 
 此前观察者运行已于1866.1.15暂停，完成两机位截图、存档字节核验并正常关闭。终档与完整日志在WORK/reports/observer-finish-20261103/。下次恢复不得沿用上方历史“游戏仍运行”的描述。实际部署和Git指纹见WORK/reports/cne-time-native-ban-20261103/git-delivery.json。
 
@@ -212,55 +212,55 @@ Updated: 2026-11-01
 
 ## 当前研究交付：法国政治与地区建设（2026-11-03）
 
-[29 法国方案](issues/29-france-political-planning.md)：常规目标IG执政＋合法性50，不检测党派组合。补“宫廷与外省”及共和国分配/右转的条件性路线，保留波拿巴原方向。新增政治难度技能规则。本批仅文档，未实施玩法、未开游戏。后续以WORK/reports/france-politics-plan-20261103/france-development-plan.md为准，不沿用被纠正的组合门槛。
+[29 法国方案](issues/29-france-political-planning.md)：常规目标IG执政＋合法性50，不检测党派组合。补“宫廷与外省”及共和国分配/右转的条件性路线，保留波拿巴原方向。新增政治难度技能规则。本批仅文档，未实施玩法。后续以WORK/reports/france-politics-plan-20261103/france-development-plan.md为准，不沿用被纠正的组合门槛。
 
 ## 2026-11-04四项日志与停战反馈
 
-[任务30](issues/30-journal-war-feedback.md)：东洋绝对计数、德里双条显示、HUS废君入口、行在迁逃/吞并及逐轮停战处理。STATIC_PASS。未开游戏，交付指纹与剩余引擎场景见WORK/reports/journal-war-feedback-20261103/。
+[任务30](issues/30-journal-war-feedback.md)：东洋绝对计数、德里双条显示、HUS废君入口、行在迁逃/吞并及逐轮停战处理。测试完毕，交付指纹与剩余引擎场景见WORK/reports/journal-war-feedback-20261103/。
 
-- [52 日本国政显示修复及朝鲜子方案](issues/52-jp-politics-ui.md)：STATIC_PASS，待作者复测；朝鲜方案待确认。
-- [54 天竺的土地改为成立天竺宣慰司](issues/54-tianzhu-commission.md)：已改为8地区里程碑＋自治领建司＋划归决议。STATIC_PASS，待作者复测。
+- [52 日本国政显示修复及朝鲜子方案](issues/52-jp-politics-ui.md)：测试完毕；朝鲜方案待确认。
+- [54 天竺的土地改为成立天竺宣慰司](issues/54-tianzhu-commission.md)：已改为8地区里程碑＋自治领建司＋划归决议。测试完毕。
 
 - [53 朝鲜重建运动研究](issues/53-korea-restoration-plan.md)：研究已交付，global方案待作者审阅，未实施。
 
-- [56 朝鲜重建运动](issues/56-korean-restoration.md)：任务53方案已实施，STATIC_PASS，待作者复测。
+- [56 朝鲜重建运动](issues/56-korean-restoration.md)：任务53方案已实施，测试完毕。
 
-- [57 普鲁士共同防卫条件的 country_c_equal 报错](issues/57-prussian-coalition-tooltip.md)：custom_tooltip 包住 any_country，STATIC_PASS，待作者复测。
+- [57 普鲁士共同防卫条件的 country_c_equal 报错](issues/57-prussian-coalition-tooltip.md)：custom_tooltip 包住 any_country，测试完毕。
 
-- [58 外交请求按钮的“永不”与条件提示](issues/58-request-button-tooltips.md)：请求条件按类型拆分，按钮不再依赖隐藏的临时作用域；STATIC_PASS，待作者复测。
+- [58 外交请求按钮的“永不”与条件提示](issues/58-request-button-tooltips.md)：请求条件按类型拆分，按钮不再依赖隐藏的临时作用域，测试完毕。
 
-- [59 日本国政条面与海峡彼岸治理](issues/59-japan-strait-and-progress.md)：修复条面挤压，实施总督和议事会两种里程碑，保留独立后的交涉；STATIC_PASS，待作者复测。
+- [59 日本国政条面与海峡彼岸治理](issues/59-japan-strait-and-progress.md)：修复条面挤压，实施总督和议事会两种里程碑，保留独立后的交涉，测试完毕。
 
-- [60 美国奴隶制存废之争论与东洲联动](issues/60-acw-slavery-question.md)：以 `REPLACE:je_acw_countdown` 重写为分裂危机条（Monte Carlo 调参，AI 约 1860.5 年爆发、最晚 1872），新增东洲「西岸的砝码」；STATIC_PASS，待作者复测。
+- [60 美国奴隶制存废之争论与东洲联动](issues/60-acw-slavery-question.md)：以 `REPLACE:je_acw_countdown` 重写为分裂危机条（Monte Carlo 调参，AI 约 1860.5 年爆发、最晚 1872），新增东洲「西岸的砝码」，测试完毕。
 
-- [66 《接旗》默认主菜单](issues/66-main-menu-default.md)：提前注册，接管旧默认背景，保留原版自动选片；STATIC_PASS，待作者复测。
+- [66 《接旗》默认主菜单](issues/66-main-menu-default.md)：提前注册，接管旧默认背景，保留原版自动选片，测试完毕。
 
-- [67 靖难参战、幕府危局与剧情人物](issues/67-jingnan-participation-and-characters.md)：日本选边、人物保护、征召与战时锁定已实施，STATIC_PASS，待新局复测。
+- [67 靖难参战、幕府危局与剧情人物](issues/67-jingnan-participation-and-characters.md)：日本选边、人物保护、征召与战时锁定已实施，测试完毕。
 
-- [68 日志与按钮描述的结局剧透](issues/68-description-spoilers.md)：改共和军日志、西部置省、东征、原住民编户、西境、陈东阳护卫共七键（中英），STATIC_PASS。
+- [68 日志与按钮描述的结局剧透](issues/68-description-spoilers.md)：改共和军日志、西部置省、东征、原住民编户、西境、陈东阳护卫共七键（中英），测试完毕。
 
-- [69 教士秀全的旅途](issues/69-xiuquan-saint.md)：全局人物日志、驱逐按钮、传教条与「追认圣徒」；STATIC_PASS，事件图占位，待作者新开局复测。
+- [69 教士秀全的旅途](issues/69-xiuquan-saint.md)：全局人物日志、驱逐按钮、传教条与「追认圣徒」；事件图占位。测试完毕。
 
-- [70 法国后继路线首批](issues/70-france-court-and-provinces.md)：宫廷与外省、共和承接与五年评议已实施。STATIC_PASS，待作者新局复测。
+- [70 法国后继路线首批](issues/70-france-court-and-provinces.md)：宫廷与外省、共和承接与五年评议已实施。测试完毕。
 
-- [71 远山宣慰司门槛](issues/71-yuanshan-commission.md)：民主＋4个南非直辖地区，去掉开化使命与建筑要求，改自治领并加划归决议，日志加状态行与进度条；STATIC_PASS，待作者复测。
+- [71 远山宣慰司门槛](issues/71-yuanshan-commission.md)：民主＋4个南非直辖地区，去掉开化使命与建筑要求，改自治领并加划归决议，日志加状态行与进度条，测试完毕。
 
-- [72 观察者局报错](issues/72-observer-1826-errors.md)：秀全、重复日志与征兵已修，原版报错和总部港点已核对，待新局复测。
+- [72 观察者局报错](issues/72-observer-1826-errors.md)：秀全、重复日志与征兵已修，原版报错和总部港点已核对，测试完毕。
 
 - [73 进度条条面](issues/73-progress-bar-labels.md)：秀全读数与规则分开，已核对全 MOD 中英文，并同步条面与悬停的技能指引。
 
-- [74 打开秀全日志崩溃](issues/74-xiuquan-je-crash.md)：按 1.15.0 原版大名列表的头像上下文修复，待实机开窗、悬停和点击。
+- [74 打开秀全日志崩溃](issues/74-xiuquan-je-crash.md)：按 1.15.0 原版大名列表的头像上下文修复，测试完毕。
 
-- [75 秀全日志参与国与驱逐](issues/75-xiuquan-neighbours.md)：所在国与邻国共同参与，驱逐按实际陆界选外国州，待作者复测。
+- [75 秀全日志参与国与驱逐](issues/75-xiuquan-neighbours.md)：所在国与邻国共同参与，驱逐按实际陆界选外国州，测试完毕。
 
-- [76 商路筹备按钮条件提示](issues/76-supply-button-tooltips.md)：遣使、通商及结案条件改为中英文玩家提示，待复测。
-- [77 开局目标推荐国](issues/77-objective-countries.md)：四栏名单和瑞典、普鲁士、奥斯曼、俄国、美国双语国情已更新，待新局复测。
-- [78 刺刀之林](issues/78-forest-of-bayonets.md)：双语首段、和议术语及后继日志开头已改，待界面复测。
-- [79 东洋之议](issues/79-eastern-question.md)：拒议直入倒计时、双语目标选择器与失败结算已修，待作者复测。
-- [81 教士秀全失联](issues/81-xiuquan-disappearance.md)：存档证实淮国灭亡同日退休清理；已补旅途人物保护与原死亡结局兜底，待复测。
-- [82 鸦片之战的宣战对象与提示](issues/82-opium-instigator.md)：推广国绑定、两语胜败刻度和失败期限已核查。作者内审通过。
-- [83 战胜鸦片瘾](issues/83-opium-recovery.md)：失控后可累计执行国内戒烟章程 60 个月，完成后解除惩罚。作者内审通过。
-- [84 共和派起义的双方战争目标](issues/84-cne-republic-wargoals.md)：帝国“镇压起义”、共和军“羞辱（共和派起义）”均由开战效果显式写入；羞辱胜利不再被反吞并。作者内审通过。
-- [85 暂缓田籍清理的数值](issues/85-land-compromise-modifier.md)：改为威望 −10%、权威 −5%（作者改定）、政治运动吸引力 +15%，结束时十年。作者内审通过。
-- [86 整理 nesnd_crisis 事件与修正](issues/86-crisis-cleanup.md)：地权危机事件独立成文件并写全选项效果，按系统分段加注释，删孤立事件与无引用修正并归档文字；结构树对比一致。作者内审通过。
-- [87 西秦开局营产修正案](issues/87-qe1-estate-amendments.md)：两案放行条件改为地主/军队在政府或强大，或儒家文化圈；西秦开局按原版历史写法挂上。另限中华帝国须经 flavorCNE.2/.9/.10 订约。作者内审通过。
+- [76 商路筹备按钮条件提示](issues/76-supply-button-tooltips.md)：遣使、通商及结案条件改为中英文玩家提示，测试完毕。
+- [77 开局目标推荐国](issues/77-objective-countries.md)：四栏名单和瑞典、普鲁士、奥斯曼、俄国、美国双语国情已更新，测试完毕。
+- [78 刺刀之林](issues/78-forest-of-bayonets.md)：双语首段、和议术语及后继日志开头已改，测试完毕。
+- [79 东洋之议](issues/79-eastern-question.md)：拒议直入倒计时、双语目标选择器与失败结算已修，测试完毕。
+- [81 教士秀全失联](issues/81-xiuquan-disappearance.md)：存档证实淮国灭亡同日退休清理；已补旅途人物保护与原死亡结局兜底，测试完毕。
+- [82 鸦片之战的宣战对象与提示](issues/82-opium-instigator.md)：推广国绑定、两语胜败刻度和失败期限已核查。测试完毕。
+- [83 战胜鸦片瘾](issues/83-opium-recovery.md)：失控后可累计执行国内戒烟章程 60 个月，完成后解除惩罚。测试完毕。
+- [84 共和派起义的双方战争目标](issues/84-cne-republic-wargoals.md)：帝国“镇压起义”、共和军“羞辱（共和派起义）”均由开战效果显式写入；羞辱胜利不再被反吞并。测试完毕。
+- [85 暂缓田籍清理的数值](issues/85-land-compromise-modifier.md)：改为威望 −10%、权威 −5%（作者改定）、政治运动吸引力 +15%，结束时十年。测试完毕。
+- [86 整理 nesnd_crisis 事件与修正](issues/86-crisis-cleanup.md)：地权危机事件独立成文件并写全选项效果，按系统分段加注释，删孤立事件与无引用修正并归档文字；结构树对比一致。测试完毕。
+- [87 西秦开局营产修正案](issues/87-qe1-estate-amendments.md)：两案放行条件改为地主/军队在政府或强大，或儒家文化圈；西秦开局按原版历史写法挂上。另限中华帝国须经 flavorCNE.2/.9/.10 订约。测试完毕。

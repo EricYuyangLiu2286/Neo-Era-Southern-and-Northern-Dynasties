@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: ENGINE_PASS（作者内审通过，2026-11-10，游戏 1.15.0，Git main 0dfb25c；原始记录未附）
+Validation: ENGINE_PASS（作者测试完毕，2026-11-10）
 Evidence: [1.15.0 静态用例和文件指纹](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-09-opium-recovery/validation.json>)
 
 另见[月度条件复核](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-09-opium-recovery/monthly-factors.json>)。
@@ -40,4 +40,4 @@ Evidence: [1.15.0 静态用例和文件指纹](<D:/Users/Eric Liu/Documents/Para
 
 2026-11-10：作者在 `ce_opium_je_progress_bars.txt` 修正生活水平条件：主流文化平均生活水平低于 8 时每月 +1.5（原写反为高于 8），新增高于 10 时每月 −1.5；中英文条件文字已补。
 
-2026-11-10：作者内审通过。正文中“未启动游戏”“待复测”等为交付时的状态。
+2026-11-10：作者测试完毕。正文中“未启动游戏”“待复测”等为交付时的状态。
