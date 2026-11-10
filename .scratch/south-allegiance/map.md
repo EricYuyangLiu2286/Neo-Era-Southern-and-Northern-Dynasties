@@ -1,12 +1,14 @@
 # 南朝立场、遣使与密使
 
 Record: execution-map
-Updated: 2026-11-01
+Updated: 2026-11-10
 
 ## Destination
 把用户给定的地方政治、一次选边、可重议盟约、日本声索和北方保护转为完整事件链。和平统一困难但条件可解释。
 
 ## Notes
+2026-11-10：作者结束本工作的全部任务记录，01–07 均未实施，标为 rejected。下方表格保留为当时的分诊。
+
 本轮详细计划已保存，以下政治实施任务尚未开始。[唯一规格](spec.md)。工具与算例在WORK/reports/south-allegiance-plan-20261101，均非引擎模拟。当前已交付战争修复见[任务12](../debug-release/issues/12-war-collapse.md)。
 
 ## Tasks

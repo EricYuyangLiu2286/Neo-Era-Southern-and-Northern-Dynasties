@@ -3,7 +3,7 @@
 Record: implementation
 Category: enhancement
 Status: ready-for-agent
-Execution: open
+Execution: completed
 Assignee: root
 Blocked by: none
 Validation: STATIC_PASS（任务32已实施部分、日本新政九项干预；日本待作者实测）
@@ -57,6 +57,8 @@ Evidence: [计划61](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3
 | 公开审议法案 | 法律制定速度 +15%，知识分子认可 +2 | 权威力 −50 |
 
 沿用原目标、主条四项月变及既有失效处理，不设总时限。临时干预在换线、搁置或主日志结案时撤去，已支出的款项与已产生的激进派保留。按钮灰显时仍预览金额、修正、期限及冷却，执行时重验。
+
+2026-11-10：作者结束本记录。交付与未实机验证的范围以上文为准；“剩余待实施”各项不再在此跟踪。
 
 ## Result
 

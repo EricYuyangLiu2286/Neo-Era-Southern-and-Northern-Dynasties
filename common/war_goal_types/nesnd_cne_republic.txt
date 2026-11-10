@@ -1,0 +1,61 @@
+﻿# Republican uprising (dp_nesnd_cne_republic). Both primary demands are written by
+# nesnd_cne_start_republic_war; the play mirrors nothing.
+wg_nesnd_cne_suppress_uprising = {
+    icon = "gfx/interface/icons/war_goals/annex_country.dds"
+    kind = annex_country
+    settings = { require_target_be_part_of_war annexes_entire_country skip_build_list validate_conflicts_war_goals_all validate_conflicts_annex_country }
+    execution_priority = 80
+    contestion_type = control_half_target_country_states
+    target_type = country
+    possible = { always = no }
+    valid = { root = { c:CNE ?= this } scope:target_country = { c:NRP ?= this } }
+    maneuvers = { value = 10 }
+    infamy = { value = 0 }
+    on_enforced = {
+        root = {
+            if = {
+                limit = {
+                    c:CNE ?= this
+                    nesnd_reform_active = yes
+                    has_journal_entry = ce_cne_land_reform
+                    NOT = { has_variable = nesnd_reform_terminal_pending }
+                    has_variable = cne_landreform_completion_tracker
+                    has_variable = cne_landreform_failure_tracker
+                }
+                change_variable = { name = cne_landreform_completion_tracker add = 15 }
+                change_variable = { name = cne_landreform_failure_tracker add = -20 }
+                clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+                clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+                nesnd_refresh_land_display = yes
+            }
+        }
+    }
+    mirrored_wargoal = { method = territorial }
+    ai = { is_significant_demand = yes }
+}
+
+wg_nesnd_cne_republican_humiliation = {
+    icon = "gfx/interface/icons/war_goals/humiliation.dds"
+    kind = humiliation
+    settings = { require_target_be_part_of_war validate_conflicts_war_goals_all }
+    execution_priority = 18
+    contestion_type = control_half_target_country_states
+    target_type = country
+    possible = { always = no }
+    valid = { scope:target_country = { c:CNE ?= this } }
+    maneuvers = { value = 10 }
+    infamy = { value = 0 }
+    on_enforced = {
+        # The republic survives: the republic journal must not annex it as a beaten rebel.
+        root = { set_variable = nesnd_cne_republic_humbled_empire }
+        scope:target_country = {
+            if = {
+                limit = { c:CNE ?= this is_country_alive = yes }
+                if = { limit = { has_modifier = nesnd_cne_republican_humiliation } remove_modifier = nesnd_cne_republican_humiliation }
+                add_modifier = { name = nesnd_cne_republican_humiliation months = 120 }
+            }
+        }
+    }
+    mirrored_wargoal = { method = no_mirror }
+    ai = { is_significant_demand = yes }
+}

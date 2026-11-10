@@ -3,7 +3,7 @@
 Record: implementation
 Category: enhancement
 Status: ready-for-human
-Execution: claimed
+Execution: completed
 Assignee: root
 Blocked by: none
 Validation: STATIC_PASS
@@ -24,3 +24,7 @@ Evidence: WORK/reports/japan-development-20261102/review-aggregate.md
 ## Remaining work
 
 印度/土邦/法国玩法与南朝新概率/密使仍在各自任务图，未由本次日本交付替代。
+
+## Comments
+
+2026-11-10：作者结束本记录。交付与未实机验证的范围以上文为准。

@@ -1,0 +1,78 @@
+﻿nesnd_cne_settle_military_estates = {
+    if = {
+        limit = { exists = currently_enacting_law }
+        if = {
+            limit = {
+                currently_enacting_law.type = {
+                    OR = {
+                        is_same_law_group_as = law_type:law_tenant_farmers
+                        is_same_law_group_as = law_type:law_professional_army
+                    }
+                }
+            }
+            cancel_enactment = yes
+        }
+    }
+    if = {
+        limit = { NOT = { has_modifier = nesnd_cne_estate_settlement } }
+        add_modifier = { name = nesnd_cne_estate_settlement months = 240 }
+    }
+    # Permanent: the amendments stay available to CNE after the 20-year modifier expires.
+    set_variable = nesnd_cne_estate_settled
+    nesnd_cne_enforce_estate_laws = yes
+}
+
+nesnd_cne_enforce_estate_laws = {
+    if = {
+        limit = { NOT = { has_law = law_type:law_tenant_farmers } }
+        activate_law = law_type:law_tenant_farmers
+    }
+    if = {
+        limit = { NOT = { has_law = law_type:law_professional_army } }
+        activate_law = law_type:law_professional_army
+    }
+    active_law:lawgroup_land_reform = {
+        if = {
+            limit = { NOT = { has_amendment = amendment_type:amendment_nesnd_cne_estate_ownership } }
+            add_amendment = {
+                type = amendment_nesnd_cne_estate_ownership
+                sponsor = prev.ig:ig_landowners
+                cooldown = 0
+            }
+        }
+    }
+    active_law:lawgroup_army_model = {
+        if = {
+            limit = { NOT = { has_amendment = amendment_type:amendment_nesnd_cne_chartered_districts } }
+            add_amendment = {
+                type = amendment_nesnd_cne_chartered_districts
+                sponsor = prev.ig:ig_armed_forces
+                cooldown = 0
+            }
+        }
+    }
+}
+
+nesnd_cne_back_estate_rights = {
+    every_interest_group = {
+        limit = {
+            nesnd_cne_estate_backer = yes
+            NOT = { has_ideology = ideology:ideology_nesnd_cne_estate_rights }
+        }
+        add_ideology = ideology_nesnd_cne_estate_rights
+    }
+}
+
+nesnd_cne_end_estate_backing = {
+    if = {
+        limit = {
+            NOT = {
+                active_law:$OTHER_GROUP$ ?= { has_amendment = amendment_type:$OTHER_AMENDMENT$ }
+            }
+        }
+        every_interest_group = {
+            limit = { has_ideology = ideology:ideology_nesnd_cne_estate_rights }
+            remove_ideology = ideology_nesnd_cne_estate_rights
+        }
+    }
+}

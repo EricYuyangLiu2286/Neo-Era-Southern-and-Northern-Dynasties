@@ -2,6 +2,8 @@
 
 **项目当前状态见 [docs/agents/STATUS.md](../../docs/agents/STATUS.md)。** 本页是任务索引；下面各段的“当前”“最新”均为写入时的历史入口，按时间倒序。
 
+2026-11-10：作者结束除法国后继内容以外的全部任务记录。已交付的标为 completed，未实施的（08 原始欠账、[南朝立场](../south-allegiance/map.md) 01–07）标为 rejected。最新为 [87 西秦开局营产修正案](issues/87-qe1-estate-amendments.md)。
+
 [任务64 · 洞庭《接旗》主菜单](issues/64-dongting-main-menu.md) 已替换任务63占位画面，场外解码通过。
 
 [任务63 · 主菜单主题第一步](issues/63-main-menu-theme-spec.md) 已交绘图规格、俄国视频参考帧与「南 · 北」占位主题，待作者提供正式背景。
@@ -256,3 +258,9 @@ Updated: 2026-11-01
 - [78 刺刀之林](issues/78-forest-of-bayonets.md)：双语首段、和议术语及后继日志开头已改，待界面复测。
 - [79 东洋之议](issues/79-eastern-question.md)：拒议直入倒计时、双语目标选择器与失败结算已修，待作者复测。
 - [81 教士秀全失联](issues/81-xiuquan-disappearance.md)：存档证实淮国灭亡同日退休清理；已补旅途人物保护与原死亡结局兜底，待复测。
+- [82 鸦片之战的宣战对象与提示](issues/82-opium-instigator.md)：推广国绑定、两语胜败刻度和失败期限已核查。
+- [83 战胜鸦片瘾](issues/83-opium-recovery.md)：失控后可累计执行国内戒烟章程 60 个月，完成后解除惩罚。STATIC_PASS。
+- [84 共和派起义的双方战争目标](issues/84-cne-republic-wargoals.md)：帝国“镇压起义”、共和军“羞辱（共和派起义）”均由开战效果显式写入；羞辱胜利不再被反吞并。STATIC_PASS。
+- [85 暂缓田籍清理的数值](issues/85-land-compromise-modifier.md)：改为威望 −10%、权威 −5%（作者改定）、政治运动吸引力 +15%，结束时十年。STATIC_PASS。
+- [86 整理 nesnd_crisis 事件与修正](issues/86-crisis-cleanup.md)：地权危机事件独立成文件并写全选项效果，按系统分段加注释，删孤立事件与无引用修正并归档文字；结构树对比一致。STATIC_PASS。
+- [87 西秦开局营产修正案](issues/87-qe1-estate-amendments.md)：两案放行条件改为地主/军队在政府或强大，或儒家文化圈；西秦开局按原版历史写法挂上。STATIC_PASS，另限中华帝国须经 flavorCNE.2/.9/.10 订约。待新开局复测。

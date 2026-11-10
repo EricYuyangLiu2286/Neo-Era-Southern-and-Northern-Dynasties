@@ -1,0 +1,59 @@
+﻿nesnd_opium_register_dispensaries = {
+	name = nesnd_opium_register_dispensaries
+	desc = nesnd_opium_register_dispensaries_desc
+	icon = "gfx/interface/icons/production_method_icons/pharmacies.dds"
+
+	visible = {
+		has_journal_entry = je_nesnd_opium_recovery
+		NOT = { has_modifier = nesnd_opium_regulations }
+	}
+	possible = {
+		hidden_trigger = {
+			has_journal_entry = je_nesnd_opium_recovery
+			NOT = { has_modifier = nesnd_opium_regulations }
+		}
+		OR = {
+			institution_investment_level = { institution = institution_health_system value >= 2 }
+			institution_investment_level = { institution = institution_police value >= 2 }
+		}
+	}
+	ai_chance = { value = 100 }
+	effect = {
+		add_modifier = { name = nesnd_opium_regulations years = 5 }
+		hidden_effect = { set_variable = { name = nesnd_opium_repeal_lock months = 3 } }
+	}
+}
+
+nesnd_opium_repeal_regulations = {
+	name = nesnd_opium_repeal_regulations
+	desc = nesnd_opium_repeal_regulations_desc
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_documents_negative.dds"
+
+	visible = {
+		has_journal_entry = je_nesnd_opium_recovery
+		has_modifier = nesnd_opium_regulations
+	}
+	possible = {
+		hidden_trigger = {
+			has_journal_entry = je_nesnd_opium_recovery
+			has_modifier = nesnd_opium_regulations
+		}
+		custom_tooltip = {
+			text = nesnd_opium_repeal_unlocked
+			NOT = { has_variable = nesnd_opium_repeal_lock }
+		}
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				NOR = {
+					institution_investment_level = { institution = institution_health_system value >= 2 }
+					institution_investment_level = { institution = institution_police value >= 2 }
+				}
+			}
+			add = 100
+		}
+	}
+	effect = { remove_modifier = nesnd_opium_regulations }
+}

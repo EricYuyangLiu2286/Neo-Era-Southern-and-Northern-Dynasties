@@ -203,3 +203,80 @@ je_ce_war_to_opium = {
 
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }
+
+je_nesnd_opium_recovery = {
+	icon = "gfx/interface/icons/character_trait_icons/opium_addiction.dds"
+	group = je_group_internal_affairs
+	activation_description = { has_modifier = ce_war_to_opium_fail_modifier }
+	is_shown_when_inactive = { has_modifier = ce_war_to_opium_fail_modifier }
+	possible = { has_modifier = ce_war_to_opium_fail_modifier }
+
+	scripted_button = nesnd_opium_register_dispensaries
+	scripted_button = nesnd_opium_repeal_regulations
+	scripted_progress_bar = nesnd_opium_recovery_bar
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					NOR = {
+						institution_investment_level = { institution = institution_health_system value >= 2 }
+						institution_investment_level = { institution = institution_police value >= 2 }
+					}
+				}
+				desc = je_nesnd_opium_recovery_no_capacity
+			}
+			triggered_desc = {
+				trigger = { NOT = { has_modifier = nesnd_opium_regulations } }
+				desc = je_nesnd_opium_recovery_awaiting_order
+			}
+			triggered_desc = { desc = je_nesnd_opium_recovery_underway }
+		}
+	}
+
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_nesnd_opium_recovery_conclusion
+		trigger = {
+			has_modifier = ce_war_to_opium_fail_modifier
+			custom_tooltip = {
+				text = je_nesnd_opium_recovery_goal
+				scope:journal_entry = { "scripted_bar_progress(nesnd_opium_recovery_bar)" <= 40 }
+			}
+		}
+		effect = {
+			remove_modifier = ce_war_to_opium_fail_modifier
+			every_primary_culture = {
+				limit = { has_cultural_obsession = opium }
+				remove_cultural_obsession = opium
+			}
+			if = {
+				limit = { has_modifier = nesnd_opium_regulations }
+				remove_modifier = nesnd_opium_regulations
+			}
+			if = {
+				limit = { has_variable = nesnd_opium_repeal_lock }
+				remove_variable = nesnd_opium_repeal_lock
+			}
+		}
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = { NOT = { has_modifier = ce_war_to_opium_fail_modifier } }
+		effect = {
+			if = {
+				limit = { has_modifier = nesnd_opium_regulations }
+				remove_modifier = nesnd_opium_regulations
+			}
+			if = {
+				limit = { has_variable = nesnd_opium_repeal_lock }
+				remove_variable = nesnd_opium_repeal_lock
+			}
+		}
+	}
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}

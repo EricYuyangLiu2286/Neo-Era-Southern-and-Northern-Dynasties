@@ -84,15 +84,16 @@ ce_opium_events.1 = {
 		trigger = { nesnd_opium_selected_target_valid = yes }
 		if = {
 			limit = { nesnd_opium_selected_target_valid = yes }
-scope:opium_addict_country = {
-			set_variable = can_have_je_ce_war_to_opium_variable
-			trigger_event = { id = ce_opium_events.2 days = 1 }
-		}
-		custom_tooltip = ce_opium_events.1.b.tt
-		add_modifier = {
-			name = opium_exporter_modifier
-			days = normal_modifier_time
-		}
+			scope:opium_addict_country = {
+				set_variable = { name = ce_opium_instigator value = root }
+				set_variable = can_have_je_ce_war_to_opium_variable
+				trigger_event = { id = ce_opium_events.2 days = 1 }
+			}
+			custom_tooltip = ce_opium_events.1.b.tt
+			add_modifier = {
+				name = opium_exporter_modifier
+				days = normal_modifier_time
+			}
 		}
 		ai_chance = {
 			base = 10
@@ -121,6 +122,7 @@ ce_opium_events.2 = {
 	flavor = ce_opium_events.2.f
 
 	immediate = {
+		var:ce_opium_instigator ?= { save_scope_as = ce_opium_instigator }
 		if = {
 			limit = { is_ai = yes }
 			random_list = {
@@ -135,6 +137,10 @@ ce_opium_events.2 = {
 		name = ce_opium_events.2.a
 		default_option = yes
 		add_journal_entry = { type = je_ce_war_to_opium }
+		if = {
+			limit = { exists = scope:ce_opium_instigator }
+			custom_tooltip = ce_opium_events.2.instigator_tt
+		}
 		# set_variable = {
 		# 	name = ce_war_to_opium_progress
 		# 	value = 50
@@ -207,6 +213,7 @@ ce_opium_events.4 = {
 
 	option = {
 		name = ce_opium_events.4.a
+		custom_tooltip = ce_opium_events.4.recovery_tt
 		add_modifier = {
 			name = ce_war_to_opium_fail_modifier
 		}

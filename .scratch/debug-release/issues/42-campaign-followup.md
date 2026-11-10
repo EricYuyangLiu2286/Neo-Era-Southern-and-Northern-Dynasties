@@ -1,5 +1,7 @@
 # 任务42 · 靖难余部、建设、自治、流散与法国（1.15.0）
 
+Execution: completed
+
 ## 当前交付与验收
 
 以工作区主 MOD 的最终字节发布，包括作者本轮本地化修改。当前主程序版本 Ivan-Chai 1.15.0，build 26453692。上次实机观察对应提交 278616a，履行了五速观察、先读日志、暂停保存、再读日志、恢复五速的顺序。保存于 1837 年 6 月 18 日，存档为无绑定国家、speed=4，第五档。保存后冻结轮转共 1629 条，面板总数包含旧档缩略图、外部 HUD、本体及 MOD 多类记录。后续操作已交还作者。本轮修复在游戏外验收，新开局用于实测；没有修写玩家的存档。
@@ -18,3 +20,7 @@
 整包解析与有变更本地化基础格式结果见工作台 reports/campaign-followup-115/package.json。流散与奥斯曼的当前检查见 checks.py、diaspora-supplement.py。法国原分支适配新失地条件的检查入口是 reports/runtime-115-first/french-seat-loss/verify_previous.py。区域自治以 reports/regional-autonomy-alt-20261105/combined-regional-main-manifest.json 和对应新局用例为准。
 
 静态回归没有代替实机。建议作者优先观察首轮靖难及菲律宾处置、完整州失去后的流散改道、东青行母子日志的实际绘制。
+
+## Comments
+
+2026-11-10：作者结束本记录。交付与未实机验证的范围以上文为准。

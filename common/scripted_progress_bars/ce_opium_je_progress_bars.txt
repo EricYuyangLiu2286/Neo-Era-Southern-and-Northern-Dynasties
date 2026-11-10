@@ -117,6 +117,69 @@
 			}
 		}
 	}
-} 
+}
 
+nesnd_opium_recovery_bar = {
+	name = nesnd_opium_recovery_bar
+	desc = nesnd_opium_recovery_bar_desc
+	default_bad = yes
+	is_inverted = yes
+	min_value = 0
+	max_value = 100
+	start_value = 100
 
+	monthly_progress = {
+		add = { desc = nesnd_opium_recovery_social_spread value = 0.5 }
+		progress_condition = {
+			limit = { is_banning_goods = g:opium }
+			add = { desc = nesnd_opium_recovery_bar_ban value = -1.5 }
+		}
+		progress_condition = {
+			limit = {
+				custom_tooltip = {
+					text = nesnd_opium_recovery_order_in_force
+					has_modifier = nesnd_opium_regulations
+				}
+				OR = {
+					institution_investment_level = { institution = institution_health_system value >= 2 }
+					institution_investment_level = { institution = institution_police value >= 2 }
+				}
+			}
+			#is_banning_goods = g:opium
+			add = { desc = nesnd_opium_recovery_bar_month value = -1.5 }
+		}
+		progress_condition = {
+			limit = {
+				has_modifier = nesnd_opium_regulations
+				market = {
+					owner = root
+					exists = mg:opium
+					mg:opium = { market_goods_sell_orders < 400 }
+				}
+			}
+			add = { desc = nesnd_opium_recovery_supply_low value = -1.5 }
+		}
+		progress_condition = {
+			limit = {
+				market = {
+					owner = root
+					exists = mg:opium
+					mg:opium = { market_goods_sell_orders >= 400 }
+				}
+			}
+			add = { desc = nesnd_opium_recovery_supply_high value = 1 }
+		}
+		progress_condition = {
+			limit = { has_modifier = declared_bankruptcy }
+			add = { desc = nesnd_opium_recovery_bankruptcy value = 1 }
+		}
+		progress_condition = {
+			limit = { country_turmoil > 0.5 }
+			add = { desc = nesnd_opium_recovery_turmoil value = 1 }
+		}
+		progress_condition = {
+			limit = { average_sol_for_primary_cultures > 8 }
+			add = { desc = ce_war_to_opium_pb_low_sol value = 1.5 }
+		}
+	}
+}

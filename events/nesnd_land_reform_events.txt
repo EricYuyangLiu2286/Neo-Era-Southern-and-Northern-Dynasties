@@ -1,0 +1,280 @@
+﻿# 地权革命（ce_cne_land_reform）的危机事件。
+# 事件 ID 沿用 nesnd_crisis 命名空间，与 nesnd_crisis_events.txt 共用。
+# 每个选项都先检查改革仍在进行（nesnd_reform_active），再改两条进度条，
+# 最后把两条变量夹在 0–100 并刷新条面。
+#   进度条：cne_landreform_completion_tracker = 地权改革
+#           cne_landreform_failure_tracker    = 地方失序
+
+namespace = nesnd_crisis
+
+# ------------------------------------------------------------------
+# .30 清丈风潮（地方请愿）
+# 触发：月度结算中地方失序首次达到 55（nesnd_crisis_effects.txt 的 nesnd_land_monthly）。
+# 选取改革区无业率最高的州作为请愿地点。
+# ------------------------------------------------------------------
+nesnd_crisis.30 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_crisis.30.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_land_petition_state }
+                desc = nesnd_crisis.30.local
+            }
+            desc = nesnd_crisis.30.d
+        }
+    }
+    flavor = nesnd_crisis.30.f
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+    trigger = {
+        nesnd_reform_active = yes
+        NOT = { has_variable = nesnd_reform_petition_event_seen }
+    }
+    immediate = {
+        set_variable = nesnd_reform_petition_event_seen
+        clear_saved_scope = nesnd_land_petition_state
+        ordered_scope_state = {
+            limit = { nesnd_reform_region = yes }
+            order_by = nesnd_reform_state_unemployment_rate
+            position = 0
+            check_range_bounds = no
+            save_scope_as = nesnd_land_petition_state
+        }
+    }
+
+    # a. 复核田契：进度 −5，失序 −10，田籍复核局 24 个月
+    option = {
+        name = nesnd_crisis.30.a
+        default_option = yes
+        ai_chance = { base = 65 }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            custom_tooltip = nesnd_cne_feedback_progress_down_5_bound
+            change_variable = { name = cne_landreform_completion_tracker add = -5 }
+            custom_tooltip = nesnd_cne_feedback_disorder_down_10_bound
+            change_variable = { name = cne_landreform_failure_tracker add = -10 }
+            add_modifier = { name = nesnd_land_appeals months = 24 }
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+    # b. 省督议处：失序 −8，暂缓田籍清理 60 个月（改革继续）
+    option = {
+        name = nesnd_crisis.30.b
+        ai_chance = { base = 25 }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            custom_tooltip = nesnd_cne_feedback_disorder_down_8_bound
+            change_variable = { name = cne_landreform_failure_tracker add = -8 }
+            if = { limit = { has_modifier = nesnd_land_compromise } remove_modifier = nesnd_land_compromise }
+            add_modifier = { name = nesnd_land_compromise months = 60 }
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+    # c. 依法惩办：失序 +12，全国激进 +2%
+    option = {
+        name = nesnd_crisis.30.c
+        ai_chance = { base = 10 }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            custom_tooltip = nesnd_cne_feedback_disorder_up_12_bound
+            change_variable = { name = cne_landreform_failure_tracker add = 12 }
+            set_variable = nesnd_land_repressed
+            add_radicals = { value = 0.02 }
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+
+    after = { nesnd_refresh_land_display = yes }
+}
+
+# ------------------------------------------------------------------
+# .31 兵权下移（极端危机的裁决）
+# 触发：母日志因极端危机失败，nesnd_cne_end_failed_reform 设下 nesnd_reform_terminal_pending。
+# ------------------------------------------------------------------
+nesnd_crisis.31 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_crisis.31.t
+    desc = nesnd_crisis.31.d
+    flavor = nesnd_crisis.31.f
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+    trigger = {
+        nesnd_reform_active = yes
+        has_variable = nesnd_reform_terminal_pending
+        NOT = { has_variable = nesnd_reform_terminal_event_seen }
+    }
+    immediate = { set_variable = nesnd_reform_terminal_event_seen }
+
+    # a. 议定地方章程：结束改革（暂缓田籍清理 120 个月），另加军政重组 60 个月
+    option = {
+        name = nesnd_crisis.31.a
+        default_option = yes
+        ai_chance = { base = 55 }
+        trigger = { nesnd_reform_active = yes }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            custom_tooltip = nesnd_cne_feedback_end_reform
+            nesnd_land_freeze = yes
+            add_modifier = { name = nesnd_secession_disorder months = 60 }
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+    # b. 诸军各奉其主：重测危机，仍成立则放出 NSX、NHB、NSD，结束改革，激进 +10%；
+    #    危机已解除则只结束改革（不加军政重组）。两种情形都挂暂缓田籍清理 120 个月
+    option = {
+        name = nesnd_crisis.31.b
+        ai_chance = { base = 45 }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            nesnd_reform_measure = yes
+            nesnd_land_collapse = yes
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+
+    after = { nesnd_refresh_land_display = yes }
+}
+
+# ------------------------------------------------------------------
+# .32 安石旧祸（“议止地权革命”按钮打开）
+# 触发：母日志按钮 nesnd_land_suspend（nesnd_crisis_buttons.txt）。
+# ------------------------------------------------------------------
+nesnd_crisis.32 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_crisis.32.t
+    desc = nesnd_crisis.32.d
+    flavor = nesnd_crisis.32.f
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+    trigger = { nesnd_reform_active = yes }
+
+    # a. 颁诏收束：结束改革（暂缓田籍清理 120 个月），触发 flavorCNE.2
+    option = {
+        name = nesnd_crisis.32.a
+        ai_chance = { base = 20 }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            custom_tooltip = nesnd_cne_feedback_end_reform
+            nesnd_land_freeze = yes
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+    # b. 改革继续：不改变任何数值
+    option = {
+        name = nesnd_crisis.32.b
+        default_option = yes
+        ai_chance = { base = 80 }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            custom_tooltip = nesnd_cne_feedback_continue_reform
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+
+    after = { nesnd_refresh_land_display = yes }
+}
+
+# ------------------------------------------------------------------
+# .33 旧旗出山（晋北、山西的地方危机）
+# 触发：月度结算中 nesnd_reform_local_crisis 成立（采样 ≥9、失序 ≥65、
+# 晋北或山西非首都州连续 6 个月无业 >10% 且动乱 >25%），一局一次。
+# ------------------------------------------------------------------
+nesnd_crisis.33 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_crisis.33.t
+    desc = nesnd_crisis.33.d
+    flavor = nesnd_crisis.33.f
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+    trigger = {
+        nesnd_reform_local_crisis = yes
+        NOT = { has_variable = nesnd_reform_local_event_seen }
+    }
+    immediate = { set_variable = nesnd_reform_local_event_seen }
+
+    # a. 撤官重审：进度 −10，失序 −15，独立清丈经费 36 个月
+    option = {
+        name = nesnd_crisis.33.a
+        default_option = yes
+        ai_chance = { base = 65 }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            custom_tooltip = nesnd_cne_feedback_progress_down_10_bound
+            change_variable = { name = cne_landreform_completion_tracker add = -10 }
+            custom_tooltip = nesnd_cne_feedback_disorder_down_15_bound
+            change_variable = { name = cne_landreform_failure_tracker add = -15 }
+            add_modifier = { name = nesnd_land_survey_cost months = 36 }
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+    # b. 依法惩办：危机仍成立时放出 NSX（共和派），激进 +5%，失序 +10；
+    #    双方都空闲时，帝国对 NSX 发起内战吞并博弈
+    option = {
+        name = nesnd_crisis.33.b
+        ai_chance = { base = 35 }
+        if = {
+            limit = { nesnd_reform_active = yes }
+            if = {
+                limit = { nesnd_reform_local_crisis = yes }
+                nesnd_release_nsx = yes
+                add_radicals = { value = 0.05 }
+                custom_tooltip = nesnd_cne_feedback_disorder_up_10_bound
+                change_variable = { name = cne_landreform_failure_tracker add = 10 }
+                if = {
+                    limit = {
+                        is_at_war = no
+                        is_diplomatic_play_committed_participant = no
+                        c:NSX ?= {
+                            is_country_alive = yes
+                            is_subject = no
+                            is_at_war = no
+                            is_diplomatic_play_committed_participant = no
+                            has_variable = nesnd_republican_rising
+                        }
+                    }
+                    create_diplomatic_play = {
+                        target_country = c:NSX
+                        type = dp_annex_war
+                        escalation = 60
+                        annex_as_civil_war = yes
+                        add_war_goal = { holder = c:NSX type = revoke_all_claims target_country = root primary_demand = yes }
+                    }
+                }
+            }
+            clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+            nesnd_refresh_land_display = yes
+        }
+    }
+
+    after = { nesnd_refresh_land_display = yes }
+}
