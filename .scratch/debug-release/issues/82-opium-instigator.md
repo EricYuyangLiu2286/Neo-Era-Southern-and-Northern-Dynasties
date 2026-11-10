@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Codex
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者内审通过，2026-11-10，游戏 1.15.0，Git main 0dfb25c；原始记录未附）
 Evidence: [工作台静态核查](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-09-opium-instigator/静态核查.md>)
 
 ## 现象与期望
@@ -28,3 +28,7 @@ A 对 B 推广，另设有园的 C。B 结案后应只能向仍有园的 A 提�
 ## 遗留问题
 
 旧档已发生事件且没有来源记录时无法追溯。失败国家修正当前没有自动到期。未启动游戏。
+
+## Comments
+
+2026-11-10：作者内审通过。正文中“未启动游戏”“待复测”等为交付时的状态。

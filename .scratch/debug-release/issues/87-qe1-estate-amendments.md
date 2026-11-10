@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Claude
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者内审通过，2026-11-10，游戏 1.15.0，Git main 0dfb25c；原始记录未附）
 Evidence: [Tiger 原始输出](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-10-qe1-estate-amendments/tiger.json>) · [改前备份](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/backups/pre-change-qe1-estate-amendments-20261110>)
 
 ## 现象与期望
@@ -37,3 +37,7 @@ Evidence: [Tiger 原始输出](<D:/Users/Eric Liu/Documents/Paradox Interactive/
 - `ai_will_revoke = { always = yes }`：AI 操控的西秦在合法性够时会尝试废止两案；西秦没有二十年锁。
 - 中文 `amendment_nesnd_cne_estate_ownership_desc` 句子不通（“……土地。无论在城市或是乡村，并将其上获得的产出……”）。未改。
 - 原有：QE1 与 CNE 历史文件里各有一行 `add_ideology` 跟在注释后面被一起注释掉（QE1 `ideology_patriotic`、CNE `ideology_oligarchic`）；QE1 `law_racial_segregation` 重复激活。未改。
+
+## Comments
+
+2026-11-10：作者内审通过。正文中“未启动游戏”“待复测”等为交付时的状态。

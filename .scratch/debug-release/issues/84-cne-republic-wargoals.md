@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Claude
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者内审通过，2026-11-10，游戏 1.15.0，Git main 0dfb25c；原始记录未附）
 Evidence: [Tiger 原始输出](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-09-cne-republic-wargoals/tiger.json>) · [改前备份](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/backups/2026-11-09-cne-republic-wargoals>) · [起因核算](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-09-land-review/odds.md>)
 
 ## 现象与期望
@@ -40,3 +40,7 @@ Evidence: [Tiger 原始输出](<D:/Users/Eric Liu/Documents/Paradox Interactive/
 - Tiger 1.19.0 面向 1.13.5，对 `control_half_target_country_states`、`mirrored_wargoal` 与日志 `outcome` 的报错均为版本滞后。原版 1.15 的 `00_annex_country.txt`、`08_humiliation.txt` 使用相同写法。
 - 已在进行中的共和战争不会重算目标，复测须用尚未起义的存档。
 - NRP 羞辱帝国后作为独立共和国存续，后续没有专门内容。
+
+## Comments
+
+2026-11-10：作者内审通过。正文中“未启动游戏”“待复测”等为交付时的状态。

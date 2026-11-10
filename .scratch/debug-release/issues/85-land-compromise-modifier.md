@@ -6,7 +6,7 @@ Status: ready-for-human
 Execution: completed
 Assignee: Claude
 Blocked by: none
-Validation: STATIC_PASS
+Validation: ENGINE_PASS（作者内审通过，2026-11-10，游戏 1.15.0，Git main 0dfb25c；原始记录未附）
 Evidence: [Tiger 原始输出](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-10-land-compromise/tiger.json>) · [改前备份](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/backups/2026-11-10-land-compromise>)
 
 ## 现象与期望
@@ -29,3 +29,7 @@ Evidence: [Tiger 原始输出](<D:/Users/Eric Liu/Documents/Paradox Interactive/
 
 - 请愿事件 `nesnd_crisis.30` 的选项 b 在改革进行中也施加此修正，期限 60 个月，现在同样是新数值。未改期限。
 - 该修正原本就没有 `_desc` 说明文字，未补。
+
+## Comments
+
+2026-11-10：作者内审通过。正文中“未启动游戏”“待复测”等为交付时的状态。

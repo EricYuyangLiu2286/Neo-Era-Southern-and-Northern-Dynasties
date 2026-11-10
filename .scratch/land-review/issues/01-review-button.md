@@ -6,7 +6,7 @@ Status: ready-for-agent
 Execution: completed  
 Assignee: Codex  
 Blocked by: none  
-Validation: STATIC_PASS  
+Validation: ENGINE_PASS（作者内审通过，2026-11-10，游戏 1.15.0，Git main 0dfb25c；原始记录未附）  
 Evidence: [按钮条件、变量和旧档复测](<../../../../../nesnd-workbench/reports/2026-11-09-land-review/button-audit.md>)、[地权革命功能说明](<../../../../../nesnd-workbench/reports/2026-11-09-land-review/guide.md>)、[离线内容树](<../../../../../nesnd-workbench/reports/2026-11-09-land-review/map.html>)
 
 ## 现象与期望
@@ -28,3 +28,7 @@ Evidence: [按钮条件、变量和旧档复测](<../../../../../nesnd-workbench
 ## 遗留问题
 
 界面“11 个月”与实际结束日待作者实测，既有计时不迁移。树中发现的未调用、未读变量及期限单位等见功能说明末节。
+
+## Comments
+
+2026-11-10：作者内审通过。正文中“未启动游戏”“待复测”等为交付时的状态。

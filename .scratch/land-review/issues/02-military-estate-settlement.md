@@ -6,7 +6,7 @@ Status: ready-for-agent
 Execution: completed  
 Assignee: Codex  
 Blocked by: none  
-Validation: STATIC_PASS  
+Validation: ENGINE_PASS（作者内审通过，2026-11-10，游戏 1.15.0，Git main 0dfb25c；原始记录未附）  
 Evidence: [游戏外核验](<../../../../../nesnd-workbench/reports/2026-11-09-cne-estate-laws/validation.txt>)
 
 ## 现象与期望
@@ -31,3 +31,7 @@ Evidence: [游戏外核验](<../../../../../nesnd-workbench/reports/2026-11-09-c
 ## 实现口径
 
 “农业类建筑产出”采用农业组吞吐量 +10%，按原版口径同时增加投入与产出，牧场和种植园另属其他建筑组。行政力效果针对已整合人口的基础行政消耗。原“被扭曲的改革”等修正与新案按引擎规则共同生效。单独选择极端危机中的分裂结局且没有触发同名事件时，沿用该结局原有的分国效果。
+
+## Comments
+
+2026-11-10：作者内审通过。正文中“未启动游戏”“待复测”等为交付时的状态。
