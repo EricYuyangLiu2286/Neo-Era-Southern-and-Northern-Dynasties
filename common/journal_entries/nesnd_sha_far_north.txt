@@ -1,0 +1,133 @@
+﻿nesnd_sha_far_north = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_historical_content
+    activation_description = { nesnd_sha_far_north_open = yes }
+    is_shown_when_inactive = { nesnd_sha_far_north_open = yes }
+    possible = { nesnd_sha_far_north_open = yes }
+    can_revolution_inherit = no
+    transferable = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    timeout = 4380
+
+    scripted_progress_bar = nesnd_sha_far_north_bar
+    scripted_button = nesnd_sha_relief
+    scripted_button = nesnd_sha_volunteers
+    scripted_button = nesnd_sha_arms
+    scripted_button = nesnd_sha_reunite
+    
+    on_weekly_pulse = {
+        effect = {
+            scope:journal_entry = { set_bar_progress = { name = nesnd_sha_far_north_bar value = nesnd_sha_liaodong_progress } }
+        }
+    }
+    on_monthly_pulse = {
+        random_events = {
+            190 = 0
+            5 = nesnd_sha_north.4
+            5 = nesnd_sha_north.5
+        }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_sha_lake_independent nesnd_sha_lake_republic = yes } desc = nesnd_sha_lake_status }
+            triggered_desc = { trigger = { exists = var:nesnd_sha_seceder } desc = nesnd_sha_revolt_status }
+            desc = nesnd_sha_relief_status
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            any_scope_state = { state_region = s:STATE_IRKUTSK }
+        }
+        effect = {
+            nesnd_sha_close_far_north = yes
+            add_modifier = { name = nesnd_sha_east_of_baikal years = 10 }
+            trigger_event = { id = nesnd_sha_north.2 popup = yes }
+            nesnd_sha_enter_yan = yes
+        }
+    }
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            custom_tooltip = { text = nesnd_sha_merge_defeat_tt has_variable = nesnd_sha_merge_defeated }
+        }
+        effect = {
+            nesnd_sha_close_far_north = yes
+            add_modifier = { name = nesnd_sha_failed_expedition years = 5 }
+            nesnd_sha_enter_yan = yes
+        }
+    }
+    outcome = {
+        flags = { timeout }
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        conclusion_desc = JOURNAL_ENTRY_TIMEOUT_CONCLUSION_DESC
+        effect = { nesnd_sha_close_far_north = yes trigger_event = { id = nesnd_sha_north.6 popup = yes } nesnd_sha_enter_yan = yes }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { nesnd_sha_native = no }
+        effect = { nesnd_sha_close_far_north = yes }
+    }
+}
+
+nesnd_sha_gold_alliance = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_historical_content
+    activation_description = { nesnd_sha_gold_open = yes }
+    is_shown_when_inactive = { nesnd_sha_gold_open = yes }
+    possible = { nesnd_sha_gold_open = yes }
+    can_revolution_inherit = no
+    transferable = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    timeout = 4380
+
+    scripted_button = nesnd_sha_prospect
+    scripted_button = nesnd_sha_attract_exiles
+    status_desc = { desc = nesnd_sha_gold_status }
+    on_yearly_pulse = {
+        random_events = {
+            70 = 0
+            10 = nesnd_sha_north.10
+            10 = nesnd_sha_north.11
+            10 = nesnd_sha_north.12
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            custom_tooltip = { text = nesnd_sha_gold_eight_tt nesnd_sha_gold_levels >= 8 }
+            total_population >= 550000
+            custom_tooltip = { text = nesnd_sha_partner_tt nesnd_sha_has_eastern_partner = yes }
+        }
+        effect = {
+            set_variable = nesnd_sha_northern_stage_ended
+            add_modifier = { name = nesnd_sha_land_of_gold years = 10 }
+            trigger_event = { id = nesnd_sha_north.8 popup = yes }
+            nesnd_sha_enter_yan = yes
+        }
+    }
+    outcome = {
+        flags = { timeout }
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        conclusion_desc = JOURNAL_ENTRY_TIMEOUT_CONCLUSION_DESC
+        effect = { set_variable = nesnd_sha_northern_stage_ended trigger_event = { id = nesnd_sha_north.9 popup = yes } nesnd_sha_enter_yan = yes }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { nesnd_sha_native = no }
+        effect = { set_variable = nesnd_sha_northern_stage_ended }
+    }
+}

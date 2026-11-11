@@ -1,0 +1,80 @@
+﻿# 「宫廷力量」与「执政者与派系」的数值。Root = country。月度增减见 nesnd_power_generated.txt。
+# 费用照原版 tsarpoints_cost_regular_value / tsarpoints_cost_large_value：没有选举权时减半。
+
+nesnd_power_cost_regular = {
+	if = { limit = { country_has_voting_franchise = no } value = 5 }
+	else = { value = 10 }
+}
+nesnd_power_cost_large = {
+	if = { limit = { country_has_voting_franchise = no } value = 10 }
+	else = { value = 20 }
+}
+# 安抚诸派：当权者不满现行政体时多付 5 点。
+nesnd_power_cost_placate = {
+	value = nesnd_power_cost_regular
+	if = { limit = { var:nesnd_power_type ?= 3 } add = 5 }
+	# 宪政派执政者与反对党协商时少付 5 点。
+	if = { limit = { var:nesnd_power_type ?= 1 var:nesnd_power_regime ?= 2 } subtract = 5 }
+	min = 0
+}
+nesnd_power_cost_restrain = 20
+nesnd_power_cost_free = 0
+
+# AI 花费后仍须留下 20 点（原版留 10 点，我们的权势是被动增长，留两倍）。
+nesnd_power_ai_reserve = 20
+nesnd_power_ai_spare_regular = { value = nesnd_power_cost_regular add = nesnd_power_ai_reserve }
+nesnd_power_ai_spare_large = { value = nesnd_power_cost_large add = nesnd_power_ai_reserve }
+nesnd_power_ai_spare_placate = { value = nesnd_power_cost_placate add = nesnd_power_ai_reserve }
+
+# 情形 A：最大集团影响力是当权者集团的几倍。
+nesnd_power_clout_ratio = {
+	value = 1
+	if = {
+		limit = { exists = var:nesnd_power_top_ig exists = var:nesnd_power_holder_ig }
+		value = var:nesnd_power_top_ig.ig_clout
+		divide = { value = var:nesnd_power_holder_ig.ig_clout min = 0.01 }
+	}
+}
+
+# 平衡点偏离中点的程度，带符号：正数偏向当权者一方，负数偏向对方。-1 至 1。
+nesnd_power_deviation = {
+	value = 0
+	if = {
+		limit = { has_variable = nesnd_power_balance }
+		value = var:nesnd_power_balance
+		subtract = 50
+		divide = 50
+	}
+}
+
+# 按 GDP 计的一次性国库收付（宫廷事件用）。
+nesnd_power_treasury_small = { value = gdp multiply = 0.02 min = 5000 }
+nesnd_power_treasury_small_neg = { value = nesnd_power_treasury_small multiply = -1 }
+
+# 统治者下令拘押、查办时的成功率（%）。取决于统治者（宫廷）或执政者（共和）的人气。
+nesnd_power_arrest_chance = {
+	value = 45
+	if = { limit = { ruler ?= { popularity >= 50 } } add = 15 }
+	else_if = { limit = { ruler ?= { popularity >= 20 } } add = 5 }
+	else_if = { limit = { ruler ?= { popularity <= -50 } } subtract = 20 }
+	else_if = { limit = { ruler ?= { popularity <= -20 } } subtract = 10 }
+}
+nesnd_power_arrest_fail = { value = 100 subtract = nesnd_power_arrest_chance }
+
+# 安全读数：变量未设（国家从未开启过本日志，例如帝国以下的国家）时取默认值，避免条件比较报错。
+nesnd_power_p = { value = 0 if = { limit = { has_variable = nesnd_power_power } value = var:nesnd_power_power } }
+nesnd_power_b = { value = 50 if = { limit = { has_variable = nesnd_power_balance } value = var:nesnd_power_balance } }
+nesnd_power_i = { value = 0 if = { limit = { has_variable = nesnd_power_intrigue } value = var:nesnd_power_intrigue } }
+nesnd_power_ten = { value = 0 if = { limit = { has_variable = nesnd_power_tenure } value = var:nesnd_power_tenure } }
+
+# 当权者所属集团与最大集团的理念差距（两集团 average_progressiveness 之差的绝对值）。缺任一方时取 0。
+nesnd_power_ideology_gap = {
+	value = 0
+	if = {
+		limit = { exists = var:nesnd_power_holder_ig exists = var:nesnd_power_top_ig }
+		value = var:nesnd_power_holder_ig.average_progressiveness
+		subtract = var:nesnd_power_top_ig.average_progressiveness
+		abs = yes
+	}
+}
+

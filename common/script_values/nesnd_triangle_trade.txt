@@ -1,0 +1,57 @@
+﻿# 买方税收修正持续天数。原版 short_modifier_time（2.5 年）。
+nesnd_triangle_credit_days = 913
+
+# AI 对三角贸易的兴趣（国家作用域，0–80，即每年开启的百分比）。
+nesnd_triangle_ai_interest = {
+	value = 0
+	if = {
+		limit = { has_law_or_variant = law_type:law_slave_trade }
+		add = 40
+	}
+	else_if = {
+		limit = { has_law_or_variant = law_type:law_colonial_slavery }
+		add = 25
+	}
+	else_if = {
+		limit = { has_law_or_variant = law_type:law_debt_slavery }
+		add = 15
+	}
+	else_if = {
+		limit = { has_law_or_variant = law_type:law_legacy_slavery }
+		add = 10
+	}
+	if = {
+		limit = { ig:ig_landowners ?= { is_in_government = yes } }
+		add = 20
+	}
+	if = {
+		limit = { ig:ig_intelligentsia ?= { is_in_government = yes } }
+		subtract = 10
+	}
+	if = {
+		limit = { ruler ?= { has_ideology = ideology:ideology_abolitionist } }
+		subtract = 40
+	}
+}
+
+# 买入：本国已有使用奴隶的州时更积极。
+nesnd_triangle_ai_buy = {
+	value = nesnd_triangle_ai_interest
+	if = {
+		limit = { any_scope_state = { is_slave_state = yes } }
+		add = 10
+	}
+	min = 0
+	max = 80
+}
+
+# 卖出：负债时更积极。
+nesnd_triangle_ai_sell = {
+	value = nesnd_triangle_ai_interest
+	if = {
+		limit = { scaled_debt > 0 }
+		add = 15
+	}
+	min = 0
+	max = 80
+}

@@ -1,14 +1,14 @@
-# NESND 当前状态
+﻿# NESND 当前状态
 
 这是项目唯一的“当前”入口。只写现在的情况；历史放 `docs/agents/history/`。维护规则见文末。
 
-更新于 2026-11-10。除法国后继内容外，全部任务记录已由作者结束：已交付的标 completed，未实施的（任务 08 原始欠账、南朝立场 01–07）标 rejected。
+更新于 2026-11-11。当前跟进法国后继内容和登莱原生路线。此前收口的任务中，已交付的标 completed，未实施的任务 08 原始欠账、南朝立场 01–07 标 rejected。
 
 ## 基线
 
-- 游戏：Victoria 3 **1.15.0 Ivan-Chai / Steam build 26453692**。上一基线 1.13.11 / 24799966。
+- 游戏：Victoria 3 **1.15.1 Ivan-Chai / Steam build 26591675**。上一基线 1.15.0 / 26453692。[原版覆盖迁移](../../.scratch/migration-1151/issues/02-merge.md)已完成游戏外检查，待作者复测法律生效、分州铜矿及开局历史。
 - Git main：2026-11-10 与主 MOD 逐文件同步，主 MOD 的新增、改动与删除均已提交。只在 Git 中的 `development/` 旧参考与 `README.md` 照旧保留。其余分支为历史记录，未合入的内容以主 MOD 为准。
-- metadata 版本 0.2.0，声明支持 1.15.0（仅为包声明）。
+- metadata 版本 0.2.0，声明支持 1.15.1。
 
 ## 位置
 
@@ -31,11 +31,21 @@
 
 法国后继首批[「宫廷与外省」](../../.scratch/debug-release/issues/70-france-court-and-provinces.md)和[法国印度领地与本地舰队](../../.scratch/debug-release/issues/46-english-gujarat.md)均已完成。
 
-全部已交付任务均已由作者测试完毕（2026-11-10），记录中旧的“待复测”字样已清理。2026-11-10 更新的 Steam 改动说明见 `.scratch/steam-desc/steam_changenote_20261110_*.txt`。
+此前收口的任务均已由作者测试完毕（2026-11-10），记录中旧的“待复测”字样已清理。2026-11-10 更新的 Steam 改动说明见 `.scratch/steam-desc/steam_changenote_20261110_*.txt`。
+
+[北洋 / 西洋三角贸易](../../.scratch/triangle-trade/map.md)两个全局日志已完成游戏外检查，连带改了登莱、日本、俄国开局奴隶制法律和藏族、琉球的文化传统，等作者新开局复测。
+
+登莱共和国按[六批定稿](../../.scratch/denglai-route/map.md)实施。作者截图已确认「雪国共和」在通商局显示，[两位周公的选举保护](../../.scratch/denglai-route/issues/03-opening-and-presidents.md)仍待实测。[第 2 批远北、黄金与北海公司](../../.scratch/denglai-route/issues/05-far-north-and-gold.md)及[两批文字的贸易、领土与人物口吻修订](../../.scratch/denglai-route/issues/06-trade-and-state-prose.md)已完成游戏外检查，等作者复测。[第 3 批「复燕」](../../.scratch/denglai-route/issues/07-restore-eastern-yan.md)已完成游戏外检查，等作者实测东燕起事、两种划界及北朝镇压后的整编。[勘金条件与复燕后续文案](../../.scratch/denglai-route/issues/08-survey-and-yan-prose.md)已修订，等作者复测。[第 4 批「渡海」「齐鲁之约」](../../.scratch/denglai-route/issues/09-shandong.md)已实施，待测山东省城与口岸分属不同国家时的外交，以及停战回退。[第 5 批非洲落脚点、垦殖船期与远洋公司](../../.scratch/denglai-route/issues/10-overseas.md)已实施，等作者实测。[第 6 批「君主主义阴谋」](../../.scratch/denglai-route/issues/11-monarchist-conspiracy.md)已实施，六批现均待按各自记录实测。2026-11-11 [外东北分为海参崴、勃利两州，延迟回调改为事件，渡海结盟分支重做](../../.scratch/denglai-route/issues/14-boli-split-delay-alliance.md)，游戏外检查通过，待实测。
+
+2026-11-11 新增帝国级以上国家的常驻日志[「宫廷力量」与「执政者与派系」](../../.scratch/court-power/map.md)，连带给西秦「伊犁的朝议」加了朝争条与两个按钮，并在明吴明论战、法国维持拿破仑王朝的月度随机事件中各加 3 件宫廷事件。游戏外检查通过。[22 张界面素材](../../.scratch/court-power/issues/02-art.md)已接入脚本与界面，待作者实测。
+
+2026-11-11 [西秦“比例代表制”改为地产投票](../../.scratch/debug-release/issues/88-qe1-pr-to-landed.md)，游戏外检查通过，待作者复测。
+
+[四国开局科举投票制](../../.scratch/debug-release/issues/90-keju-voting.md)已完成游戏外检查，待作者新开局复测修正案、文人立场和法律显隐。科举已列入民族之春变量清理。
 
 ## 已知差异
 
-- 无。2026-11-10 同步后主 MOD 与 Git main 的游戏文件一致；此后在主 MOD 直接改动的文件，同步前先比较差异。
+- 主 MOD 比 Git main 多远北人口与祖地、登莱第 1–2 批及开局补丁，以及三角贸易（文件见其[任务记录](../../.scratch/triangle-trade/issues/01-implement.md)）。文件范围见[登莱路线任务记录](../../.scratch/denglai-route/map.md)，尚未同步。
 
 ## 历史
 

@@ -1,0 +1,56 @@
+﻿# Both native secession callbacks have the old country as root and the uprising as target.
+on_secession_start = { on_actions = { nesnd_sha_note_secession } }
+nesnd_sha_note_secession = {
+    trigger = {
+        c:RUS ?= this
+        exists = c:SHA
+        c:SHA ?= { has_journal_entry = nesnd_sha_far_north has_variable = nesnd_sha_aid_sent NOT = { has_variable = nesnd_sha_lake_independent } }
+        scope:target ?= { country_has_primary_culture = cu:ce_liaodong }
+    }
+    effect = { c:SHA = { set_variable = { name = nesnd_sha_seceder value = scope:target } } }
+}
+on_secession_end = { on_actions = { nesnd_sha_settle_secession } }
+nesnd_sha_settle_secession = {
+    trigger = {
+        c:RUS ?= this
+        c:SHA ?= {
+            has_journal_entry = nesnd_sha_far_north
+            has_variable = nesnd_sha_aid_sent
+            NOT = { has_variable = nesnd_sha_lake_independent }
+            OR = {
+                var:nesnd_sha_seceder ?= scope:target
+                scope:target ?= { country_has_primary_culture = cu:ce_liaodong }
+            }
+        }
+    }
+    effect = {
+        c:SHA = {
+            # A rising that began before the aid was sent was never recorded at its start.
+            if = {
+                limit = { NOT = { exists = var:nesnd_sha_seceder } scope:target ?= { country_has_primary_culture = cu:ce_liaodong } }
+                set_variable = { name = nesnd_sha_seceder value = scope:target }
+            }
+            trigger_event = { id = nesnd_sha_delay.3 days = 1 }
+        }
+    }
+}
+on_wargoal_enforced = { on_actions = { nesnd_sha_lose_lake_war } }
+nesnd_sha_lose_lake_war = {
+    trigger = {
+        scope:diplomatic_play ?= { is_diplomatic_play_type = nesnd_sha_annex_lake }
+        scope:target ?= { nesnd_sha_native = yes has_journal_entry = nesnd_sha_far_north }
+    }
+    effect = { scope:target = { set_variable = nesnd_sha_merge_defeated } }
+}
+
+# A minority movement may also dissolve without ever fielding an uprising country.
+on_political_movement_disbanded = { on_actions = { nesnd_sha_news_from_border } }
+nesnd_sha_news_from_border = {
+    trigger = {
+        owner ?= c:RUS
+        culture ?= cu:ce_liaodong
+        is_political_movement_type = movement_cultural_minority
+        c:SHA ?= { has_journal_entry = nesnd_sha_far_north has_variable = nesnd_sha_aid_sent }
+    }
+    effect = { c:SHA ?= { trigger_event = { id = nesnd_sha_delay.5 days = 1 } } }
+}

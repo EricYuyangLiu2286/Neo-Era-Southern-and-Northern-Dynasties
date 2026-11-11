@@ -1,0 +1,106 @@
+﻿nesnd_sha_shandong_open = {
+    nesnd_sha_native = yes
+    has_variable = nesnd_sha_yan_ended
+    NOT = { has_variable = nesnd_sha_shandong_ended }
+}
+nesnd_sha_crossing_active = {
+    nesnd_sha_shandong_open = yes
+    has_journal_entry = nesnd_sha_crossing
+}
+nesnd_sha_qilu_active = {
+    nesnd_sha_shandong_open = yes
+    has_journal_entry = nesnd_sha_qilu
+}
+nesnd_sha_coastal_district = {
+    OR = { state_region = s:STATE_SHANDONG state_region = s:STATE_ZHILI state_region = s:STATE_BEIJING }
+}
+nesnd_sha_can_signal = {
+    nesnd_sha_crossing_active = yes
+    has_variable = nesnd_sha_shandong_contacts
+    NOT = { has_variable = nesnd_sha_claim_opponent }
+    NOT = { exists = s:STATE_SHANDONG.region_state:SHA }
+    je:nesnd_sha_crossing = { "scripted_bar_progress(nesnd_sha_old_guard)" >= 100 }
+    exists = c:CNE
+    c:CNE ?= { OR = { is_at_war = yes has_revolution = yes nesnd_cne_native_civil_war = yes has_variable = nesnd_land_failed } }
+    exists = p:x9D1474.state.owner
+    p:x9D1474.state.owner ?= {
+        OR = { c:CNE ?= this c:NRP ?= this is_at_war = yes has_revolution = yes }
+    }
+    NOT = { has_truce_with = p:x9D1474.state.owner }
+    NOT = {
+        exists = var:nesnd_sha_shandong_sister
+        var:nesnd_sha_shandong_sister ?= p:x9D1474.state.owner
+        has_treaty_alliance_with = { TARGET = p:x9D1474.state.owner }
+    }
+}
+# War route, alliance branch: a year after allying with the republic holding Shandong, once that
+# republic is at peace with the north, Denglai asks it for Dengzhou as a treaty port.
+nesnd_sha_dengzhou_request_ready = {
+    nesnd_sha_crossing_active = yes
+    NOT = { exists = s:STATE_SHANDONG.region_state:SHA }
+    exists = var:nesnd_sha_shandong_sister
+    NOR = {
+        has_variable = nesnd_sha_sister_pact
+        has_variable = nesnd_sha_dengzhou_request_wait
+        has_variable = nesnd_sha_dengzhou_pending
+    }
+    var:nesnd_sha_shandong_sister ?= {
+        nesnd_sha_republican_government = yes
+        has_treaty_alliance_with = { TARGET = c:SHA }
+        exists = p:x9D1474.state.owner
+        this = p:x9D1474.state.owner
+        exists = p:xAC24A6.state.owner
+        p:xAC24A6.state = { owner = prev controls_treaty_port_province = yes is_treaty_port = no }
+        trigger_if = { limit = { exists = c:CNE } NOT = { has_war_with = c:CNE } }
+    }
+}
+nesnd_sha_port_offer = {
+    nesnd_sha_qilu_active = yes
+    NOT = { has_modifier = declared_bankruptcy }
+    NOT = { has_variable = nesnd_sha_dengzhou_refusal }
+    exists = scope:target_country
+    scope:target_country ?= {
+        NOT = { this = c:SHA }
+        this = p:xAC24A6.state.owner
+        any_scope_state = { state_region = s:STATE_SHANDONG controls_treaty_port_province = yes is_treaty_port = no }
+        NOT = { has_war_with = c:SHA }
+    }
+}
+nesnd_sha_republic_league_offer = {
+    nesnd_sha_qilu_active = yes
+    is_subject = no
+    OR = { is_in_power_bloc = no is_power_bloc_leader = yes can_leave_power_bloc = yes }
+    NOT = { has_variable = nesnd_sha_republic_league_refusal }
+    exists = scope:target_country
+    scope:target_country ?= {
+        nesnd_sha_league_partner = yes
+        NOT = { has_war_with = c:SHA }
+        NOT = { is_in_same_power_bloc = c:SHA }
+        OR = { is_in_power_bloc = no AND = { is_power_bloc_leader = no can_leave_power_bloc = yes } }
+    }
+}
+nesnd_sha_league_partner = {
+    NOT = { this = c:SHA }
+    OR = { c:YAN ?= this c:HUS ?= this c:NRP ?= this nesnd_sha_republican_government = yes }
+}
+nesnd_sha_shandong_congress = {
+    exists = p:x9D1474.state.owner
+    p:x9D1474.state.owner ?= {
+        NOT = { this = c:SHA }
+        nesnd_sha_republican_government = yes
+        OR = { has_treaty_alliance_with = { TARGET = c:SHA } is_in_same_power_bloc = c:SHA }
+    }
+}
+nesnd_sha_refugee_window = {
+    nesnd_sha_qilu_active = yes
+    NOT = { has_variable = nesnd_sha_qilu_refugees_received }
+    exists = c:CNE
+    c:CNE ?= {
+        OR = {
+            has_revolution = yes nesnd_cne_native_civil_war = yes
+            AND = { exists = c:NRP has_war_with = c:NRP }
+            AND = { has_variable = nesnd_cne_republic_settled NOT = { has_variable = nesnd_cne_republic_restored } }
+        }
+        any_scope_pop = { has_pop_culture = han total_size >= 5000 }
+    }
+}

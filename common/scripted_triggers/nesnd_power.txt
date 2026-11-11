@@ -1,0 +1,120 @@
+﻿# 「宫廷力量」(nesnd_palace_journal) 与「执政者与派系」(nesnd_cabinet_journal) 的共用判定。Root = country，另注明者除外。
+
+nesnd_power_empire_tier = {
+	custom_tooltip = {
+		text = nesnd_power_cond_tier
+		OR = { country_tier = empire country_tier = hegemony }
+	}
+}
+
+nesnd_power_republic_law = {
+	OR = {
+		has_law = law_type:law_presidential_republic
+		has_law = law_type:law_parliamentary_republic
+		has_law = law_type:law_council_republic
+	}
+}
+
+# 已有专门宫廷或王朝日志、或处在明内战链中的国家，两个日志都让位。
+nesnd_power_story_excluded = {
+	OR = {
+		has_journal_entry = nesnd_qe1_court_journal
+		has_journal_entry = je_ce_unstable_imperium
+		has_journal_entry = je_nesnd_france_court
+		has_journal_entry = ce_usm_conflicts_within
+		has_journal_entry = ce_usm_ruling_of_nanfu
+		has_journal_entry = ce_usm_civilwar_journal
+		has_journal_entry = ce_usm_suppress_rebellion
+		has_journal_entry = ce_usm_restoration_of_ming
+		has_journal_entry = ce_usm_acheive_revolution
+	}
+}
+
+nesnd_palace_eligible = {
+	custom_tooltip = { text = nesnd_power_cond_not_rus NOT = { c:RUS ?= this } }
+	nesnd_power_empire_tier = yes
+	custom_tooltip = { text = nesnd_palace_cond_not_republic nesnd_power_republic_law = no }
+	custom_tooltip = { text = nesnd_palace_cond_favorites can_have_favorites = yes }
+	custom_tooltip = { text = nesnd_power_cond_not_story nesnd_power_story_excluded = no }
+}
+
+# 未激活时是否显示（比适用条件宽）：帝国以上等级的非共和国（俄罗斯除外）、帝国以上等级的共和国。
+nesnd_palace_shown = {
+	NOT = { c:RUS ?= this }
+	OR = { country_tier = empire country_tier = hegemony }
+	nesnd_power_republic_law = no
+}
+nesnd_cabinet_shown = {
+	OR = { country_tier = empire country_tier = hegemony }
+	nesnd_power_republic_law = yes
+}
+
+nesnd_cabinet_eligible = {
+	nesnd_power_empire_tier = yes
+	custom_tooltip = { text = nesnd_cabinet_cond_republic nesnd_power_republic_law = yes }
+	custom_tooltip = { text = nesnd_power_cond_not_story nesnd_power_story_excluded = no }
+	exists = ruler
+}
+
+# Character scope. 两个日志中凡会杀死、流放或撤去人物的事件与按钮都只对通过此判定的人物生效。
+# is_immortal 覆盖永生人物，以及郭庆达、寿汴辩的连任保护、洪秀全的旅途保护；
+# nesnd_story_character_protected 覆盖 MOD 现有的全部剧情保护。
+nesnd_power_character_removable = {
+	custom_tooltip = {
+		text = nesnd_power_cond_removable
+		is_character_alive = yes
+		is_immortal = no
+		NOT = { nesnd_story_character_protected = yes }
+		owner ?= { NOT = { has_variable = favorite_event_active_var } }
+	}
+}
+
+nesnd_power_has_holder = { exists = var:nesnd_power_holder var:nesnd_power_holder ?= { is_character_alive = yes } }
+nesnd_power_case_a = { nesnd_power_has_holder = yes var:nesnd_power_case ?= 1 exists = var:nesnd_power_leader }
+nesnd_power_case_b = { nesnd_power_has_holder = yes var:nesnd_power_case ?= 2 }
+
+# 平衡点 ≥ 90：当权者一方压倒对方；≤ 10：对方压倒当权者。
+nesnd_power_holder_dominant = { has_variable = nesnd_power_balance nesnd_power_b >= 90 }
+nesnd_power_rival_dominant = { has_variable = nesnd_power_balance nesnd_power_b <= 10 }
+
+nesnd_power_can_afford = {
+	custom_tooltip = {
+		text = nesnd_power_cond_afford_$COST$
+		nesnd_power_p >= nesnd_power_cost_$COST$
+	}
+}
+
+# AI 只在花完后仍留 20 点时花费权势。
+nesnd_power_ai_can_spare = {
+	nesnd_power_p >= nesnd_power_ai_spare_$COST$
+}
+
+# 宫廷事件的抽取条件（事件 trigger 与抽取表共用）。
+nesnd_palace_ev_quarrel_ok = { OR = { nesnd_power_case_a = yes nesnd_power_case_b = yes } }
+nesnd_palace_ev_counsel_ok = { nesnd_power_has_holder = yes OR = { taking_loans = yes in_default = yes } }
+nesnd_palace_ev_retire_ok = { nesnd_power_has_holder = yes nesnd_power_ten >= 60 var:nesnd_power_holder ?= { nesnd_power_character_removable = yes } }
+nesnd_palace_ev_strike_ok = { nesnd_power_has_holder = yes nesnd_power_rival_dominant = yes var:nesnd_power_holder ?= { nesnd_power_character_removable = yes } }
+nesnd_palace_ev_coerce_ok = { nesnd_power_case_b = yes nesnd_power_holder_dominant = yes NOT = { var:nesnd_power_type ?= 1 } }
+nesnd_palace_ev_purge_side_ok = { nesnd_power_case_a = yes nesnd_power_rival_dominant = yes }
+nesnd_palace_ev_night_ok = { nesnd_power_case_a = yes nesnd_power_holder_dominant = yes var:nesnd_power_leader ?= { nesnd_power_character_removable = yes } }
+
+nesnd_cabinet_ev_debate_ok = { OR = { nesnd_power_case_a = yes nesnd_power_case_b = yes } }
+nesnd_cabinet_ev_budget_ok = { nesnd_power_has_holder = yes OR = { taking_loans = yes in_default = yes } }
+nesnd_cabinet_ev_strike_ok = { nesnd_power_has_holder = yes nesnd_power_rival_dominant = yes var:nesnd_power_holder ?= { nesnd_power_character_removable = yes } }
+nesnd_cabinet_ev_no_confidence_ok = { nesnd_power_case_a = yes nesnd_power_rival_dominant = yes }
+nesnd_cabinet_ev_strongman_ok = { nesnd_power_case_b = yes nesnd_power_holder_dominant = yes NOT = { var:nesnd_power_type ?= 1 } }
+nesnd_cabinet_ev_rival_falls_ok = { nesnd_power_case_a = yes nesnd_power_holder_dominant = yes var:nesnd_power_leader ?= { nesnd_power_character_removable = yes } }
+
+nesnd_palace_ev_army_ok = { nesnd_power_has_holder = yes exists = ig:ig_armed_forces NOT = { var:nesnd_power_holder_ig ?= ig:ig_armed_forces } }
+nesnd_palace_ev_relief_ok = { nesnd_power_has_holder = yes any_scope_state = { turmoil >= 0.15 } }
+nesnd_cabinet_ev_strike_labor_ok = { nesnd_power_has_holder = yes exists = ig:ig_trade_unions ig:ig_trade_unions = { ig_clout >= 0.05 } }
+nesnd_cabinet_ev_army_ok = {
+	nesnd_power_has_holder = yes
+	OR = { nesnd_power_holder_dominant = yes nesnd_power_rival_dominant = yes }
+	exists = ig:ig_armed_forces
+	ig:ig_armed_forces = { ig_clout >= 0.15 }
+}
+
+nesnd_power_aligned = { nesnd_power_case_a = yes var:nesnd_power_relation ?= 1 }
+nesnd_power_opposed = { nesnd_power_case_a = yes var:nesnd_power_relation ?= 3 }
+

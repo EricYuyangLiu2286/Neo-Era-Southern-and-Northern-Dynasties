@@ -1,0 +1,406 @@
+﻿# 「宫廷力量」与「执政者与派系」的共用效果。Root = country。
+# REGIME = palace | cabinet。三条数值都存在国家变量 nesnd_power_power / _balance / _intrigue 中，
+# 进度条只做显示：每次改动后由 nesnd_power_sync_bars 绝对同步。
+
+# 日志激活（首次、或不再适用后重新适用）时调用。
+nesnd_power_begin = {
+	hidden_effect = {
+		if = {
+			limit = { NOT = { has_variable = nesnd_power_power } }
+			set_variable = { name = nesnd_power_power value = 20 }
+			set_variable = { name = nesnd_power_balance value = 50 }
+			set_variable = { name = nesnd_power_intrigue value = 0 }
+		}
+		else_if = {
+			# 君主制与共和国之间切换：权势保留三成，平衡回到中点，宫廷事件清零。
+			limit = { has_variable = nesnd_power_regime NOT = { var:nesnd_power_regime = $REGIME_ID$ } }
+			change_variable = { name = nesnd_power_power multiply = 0.3 }
+			set_variable = { name = nesnd_power_balance value = 50 }
+			set_variable = { name = nesnd_power_intrigue value = 0 }
+			remove_variable = nesnd_power_holder
+			remove_variable = nesnd_power_holder_ig
+			remove_variable = nesnd_power_had_holder
+			remove_variable = nesnd_power_leader
+			remove_variable = nesnd_power_top_ig
+			remove_variable = nesnd_power_case
+		}
+		set_variable = { name = nesnd_power_regime value = $REGIME_ID$ }
+		nesnd_power_refresh = { REGIME = $REGIME$ }
+	}
+}
+
+nesnd_power_find_holder_palace = {
+	random_scope_character = {
+		limit = { has_role = character_role_favorite is_character_alive = yes }
+		save_scope_as = nesnd_power_new_holder
+	}
+}
+nesnd_power_find_holder_cabinet = {
+	ruler ?= { save_scope_as = nesnd_power_new_holder }
+}
+
+# 换人保留：宠臣更替保留一半。
+nesnd_power_holder_changed_palace = {
+	change_variable = { name = nesnd_power_power multiply = 0.5 }
+}
+# 共和换届：同一集团连任保留七成，换了集团保留一半。
+nesnd_power_holder_changed_cabinet = {
+	if = {
+		limit = { exists = var:nesnd_power_holder_ig exists = scope:nesnd_power_new_holder.interest_group var:nesnd_power_holder_ig = scope:nesnd_power_new_holder.interest_group }
+		change_variable = { name = nesnd_power_power multiply = 0.7 }
+	}
+	else = {
+		change_variable = { name = nesnd_power_power multiply = 0.5 }
+	}
+}
+
+# 平衡点偏离中点的部分减半（最大集团或其领袖更替、情形切换时）。
+nesnd_power_halve_balance = {
+	set_variable = { name = nesnd_power_balance value = { value = var:nesnd_power_balance subtract = 50 divide = 2 add = 50 } }
+}
+
+# Character scope。按本国现行政体法，把此人的态度写入本国变量 $VAR$：1 拥护，2 中立，3 不满。
+nesnd_power_stance_vs = {
+	if = {
+		limit = { law_stance = { law = law_type:$LAW$ value >= approve } }
+		owner = { set_variable = { name = $VAR$ value = 1 } }
+	}
+	else_if = {
+		limit = { law_stance = { law = law_type:$LAW$ value <= disapprove } }
+		owner = { set_variable = { name = $VAR$ value = 3 } }
+	}
+	else = {
+		owner = { set_variable = { name = $VAR$ value = 2 } }
+	}
+}
+nesnd_power_stance_type = {
+	if = { limit = { owner = { has_law = law_type:law_monarchy } } nesnd_power_stance_vs = { LAW = law_monarchy VAR = $VAR$ } }
+	else_if = { limit = { owner = { has_law = law_type:law_social_monarchy } } nesnd_power_stance_vs = { LAW = law_social_monarchy VAR = $VAR$ } }
+	else_if = { limit = { owner = { has_law = law_type:law_presidential_republic } } nesnd_power_stance_vs = { LAW = law_presidential_republic VAR = $VAR$ } }
+	else_if = { limit = { owner = { has_law = law_type:law_parliamentary_republic } } nesnd_power_stance_vs = { LAW = law_parliamentary_republic VAR = $VAR$ } }
+	else_if = { limit = { owner = { has_law = law_type:law_council_republic } } nesnd_power_stance_vs = { LAW = law_council_republic VAR = $VAR$ } }
+	else_if = { limit = { owner = { has_law = law_type:law_theocracy } } nesnd_power_stance_vs = { LAW = law_theocracy VAR = $VAR$ } }
+	else_if = { limit = { owner = { has_law = law_type:law_corporate_state } } nesnd_power_stance_vs = { LAW = law_corporate_state VAR = $VAR$ } }
+	else_if = { limit = { owner = { has_law = law_type:law_chiefdom } } nesnd_power_stance_vs = { LAW = law_chiefdom VAR = $VAR$ } }
+	else_if = { limit = { owner = { has_law = law_type:law_colonial_administration } } nesnd_power_stance_vs = { LAW = law_colonial_administration VAR = $VAR$ } }
+	else = { owner = { set_variable = { name = $VAR$ value = 2 } } }
+}
+
+# 每周：认定当权者（宠臣或统治者）、最大集团及其领袖、情形与类型；同步头像列表与平衡修正。
+nesnd_power_refresh = {
+	hidden_effect = {
+		nesnd_power_find_holder_$REGIME$ = yes
+		if = {
+			limit = { exists = scope:nesnd_power_new_holder }
+			if = {
+				limit = { NOT = { var:nesnd_power_holder ?= scope:nesnd_power_new_holder } }
+				if = {
+					limit = { has_variable = nesnd_power_had_holder }
+					nesnd_power_holder_changed_$REGIME$ = yes
+				}
+				set_variable = { name = nesnd_power_holder value = scope:nesnd_power_new_holder }
+				set_variable = nesnd_power_had_holder
+				set_variable = { name = nesnd_power_tenure value = 0 }
+			}
+			if = {
+				limit = { exists = scope:nesnd_power_new_holder.interest_group }
+				set_variable = { name = nesnd_power_holder_ig value = scope:nesnd_power_new_holder.interest_group }
+			}
+			else = { remove_variable = nesnd_power_holder_ig }
+		}
+		else = {
+			remove_variable = nesnd_power_holder
+			remove_variable = nesnd_power_holder_ig
+		}
+
+		# position = 0 取影响力最高的一个（不写时会遍历全部，save_scope_as 留下的是最小的集团）。
+		ordered_interest_group = {
+			order_by = ig_clout
+			position = 0
+			save_scope_as = nesnd_power_new_top
+		}
+		scope:nesnd_power_new_top ?= { leader ?= { save_scope_as = nesnd_power_new_leader } }
+		if = {
+			limit = { exists = scope:nesnd_power_new_top }
+			if = {
+				limit = {
+					has_variable = nesnd_power_top_ig
+					OR = {
+						NOT = { var:nesnd_power_top_ig = scope:nesnd_power_new_top }
+						AND = {
+							exists = scope:nesnd_power_new_leader
+							NOT = { var:nesnd_power_leader ?= scope:nesnd_power_new_leader }
+						}
+					}
+				}
+				nesnd_power_halve_balance = yes
+			}
+			set_variable = { name = nesnd_power_top_ig value = scope:nesnd_power_new_top }
+		}
+		if = {
+			limit = { exists = scope:nesnd_power_new_leader }
+			set_variable = { name = nesnd_power_leader value = scope:nesnd_power_new_leader }
+		}
+		else = { remove_variable = nesnd_power_leader }
+
+		if = {
+			limit = { exists = var:nesnd_power_holder var:nesnd_power_holder ?= var:nesnd_power_leader }
+			if = { limit = { var:nesnd_power_case ?= 1 } nesnd_power_halve_balance = yes }
+			set_variable = { name = nesnd_power_case value = 2 }
+		}
+		else = {
+			if = { limit = { var:nesnd_power_case ?= 2 } nesnd_power_halve_balance = yes }
+			set_variable = { name = nesnd_power_case value = 1 }
+		}
+
+		if = {
+			limit = { exists = var:nesnd_power_holder }
+			var:nesnd_power_holder ?= { nesnd_power_stance_type = { VAR = nesnd_power_type } }
+		}
+		else = { remove_variable = nesnd_power_type }
+		if = {
+			limit = { exists = var:nesnd_power_leader }
+			var:nesnd_power_leader ?= { nesnd_power_stance_type = { VAR = nesnd_power_leader_type } }
+		}
+		else = { remove_variable = nesnd_power_leader_type }
+
+		# 两人分属不同集团时，按理念差距定关系：1 相近（差距 ≤ 25），2 不一，3 相左（≥ 50）。同一集团视为相近。
+		if = {
+			limit = { nesnd_power_case_a = yes }
+			if = {
+				limit = { OR = { var:nesnd_power_holder_ig ?= var:nesnd_power_top_ig nesnd_power_ideology_gap <= 25 } }
+				set_variable = { name = nesnd_power_relation value = 1 }
+			}
+			else_if = {
+				limit = { nesnd_power_ideology_gap >= 50 }
+				set_variable = { name = nesnd_power_relation value = 3 }
+			}
+			else = { set_variable = { name = nesnd_power_relation value = 2 } }
+		}
+		else = { remove_variable = nesnd_power_relation }
+		nesnd_power_sync_portraits = yes
+		nesnd_power_set_approval = yes
+		nesnd_power_sync_bars = yes
+	}
+}
+
+# 头像列表只保存在世的现任人物；空列表不生成头像控件（仿 nesnd_per_rep_sync_portrait）。
+nesnd_power_sync_portraits = {
+	if = {
+		limit = { nesnd_power_has_holder = yes }
+		if = {
+			limit = { NOT = { is_target_in_variable_list = { name = nesnd_power_holder_portrait target = var:nesnd_power_holder } } }
+			clear_variable_list = nesnd_power_holder_portrait
+			add_to_variable_list = { name = nesnd_power_holder_portrait target = var:nesnd_power_holder }
+		}
+	}
+	else_if = {
+		limit = { has_variable_list = nesnd_power_holder_portrait }
+		clear_variable_list = nesnd_power_holder_portrait
+	}
+	if = {
+		limit = { exists = var:nesnd_power_leader var:nesnd_power_leader ?= { is_character_alive = yes } }
+		if = {
+			limit = { NOT = { is_target_in_variable_list = { name = nesnd_power_leader_portrait target = var:nesnd_power_leader } } }
+			clear_variable_list = nesnd_power_leader_portrait
+			add_to_variable_list = { name = nesnd_power_leader_portrait target = var:nesnd_power_leader }
+		}
+	}
+	else_if = {
+		limit = { has_variable_list = nesnd_power_leader_portrait }
+		clear_variable_list = nesnd_power_leader_portrait
+	}
+}
+
+# 平衡点带来的赞同度（满偏离时）：
+#   情形 A：偏向当权者 → 当权者集团 +2、最大集团 −3；偏向对方 → 当权者集团 −3、最大集团 +2。
+#   情形 B：偏向当权者 → 当权者集团 +2、其余集团 −1；偏向对方 → 当权者集团 −3、其余集团 +1。
+nesnd_power_set_approval = {
+	set_variable = { name = nesnd_power_appr_holder value = 0 }
+	set_variable = { name = nesnd_power_appr_top value = 0 }
+	set_variable = { name = nesnd_power_appr_all value = 0 }
+	if = {
+		limit = { nesnd_power_case_a = yes nesnd_power_deviation >= 0 }
+		set_variable = { name = nesnd_power_appr_holder value = { value = nesnd_power_deviation multiply = 2 } }
+		set_variable = { name = nesnd_power_appr_top value = { value = nesnd_power_deviation multiply = -3 } }
+	}
+	else_if = {
+		limit = { nesnd_power_case_a = yes }
+		set_variable = { name = nesnd_power_appr_holder value = { value = nesnd_power_deviation multiply = 3 } }
+		set_variable = { name = nesnd_power_appr_top value = { value = nesnd_power_deviation multiply = -2 } }
+	}
+	else_if = {
+		limit = { nesnd_power_case_b = yes nesnd_power_deviation >= 0 }
+		set_variable = { name = nesnd_power_appr_holder value = { value = nesnd_power_deviation multiply = 3 } }
+		set_variable = { name = nesnd_power_appr_all value = { value = nesnd_power_deviation multiply = -1 } }
+	}
+	else_if = {
+		limit = { nesnd_power_case_b = yes }
+		set_variable = { name = nesnd_power_appr_holder value = { value = nesnd_power_deviation multiply = 4 } }
+		set_variable = { name = nesnd_power_appr_all value = { value = nesnd_power_deviation multiply = -1 } }
+	}
+}
+
+nesnd_power_sync_bars = {
+	if = {
+		limit = { has_journal_entry = nesnd_palace_journal }
+		je:nesnd_palace_journal = {
+			set_bar_progress = { name = nesnd_palace_power_bar value = root.var:nesnd_power_power }
+			set_bar_progress = { name = nesnd_palace_balance_bar value = root.var:nesnd_power_balance }
+			set_bar_progress = { name = nesnd_palace_intrigue_bar value = root.var:nesnd_power_intrigue }
+		}
+	}
+	if = {
+		limit = { has_journal_entry = nesnd_cabinet_journal }
+		je:nesnd_cabinet_journal = {
+			set_bar_progress = { name = nesnd_cabinet_power_bar value = root.var:nesnd_power_power }
+			set_bar_progress = { name = nesnd_cabinet_balance_bar value = root.var:nesnd_power_balance }
+			set_bar_progress = { name = nesnd_cabinet_intrigue_bar value = root.var:nesnd_power_intrigue }
+		}
+	}
+}
+
+# 每月：先按进度条明细的同一组条目求出增量，再一次写入，最后检查宫廷事件条。
+nesnd_power_month = {
+	hidden_effect = {
+		set_variable = { name = nesnd_power_d_power value = nesnd_$REGIME$_power_monthly }
+		set_variable = { name = nesnd_power_d_balance value = nesnd_$REGIME$_balance_monthly }
+		set_variable = { name = nesnd_power_d_intrigue value = nesnd_$REGIME$_intrigue_monthly }
+		change_variable = { name = nesnd_power_power add = var:nesnd_power_d_power }
+		change_variable = { name = nesnd_power_balance add = var:nesnd_power_d_balance }
+		change_variable = { name = nesnd_power_intrigue add = var:nesnd_power_d_intrigue }
+		clamp_variable = { name = nesnd_power_power min = 0 max = 100 }
+		clamp_variable = { name = nesnd_power_balance min = 0 max = 100 }
+		clamp_variable = { name = nesnd_power_intrigue min = 0 max = 100 }
+		remove_variable = nesnd_power_d_power
+		remove_variable = nesnd_power_d_balance
+		remove_variable = nesnd_power_d_intrigue
+		if = {
+			limit = { nesnd_power_has_holder = yes }
+			change_variable = { name = nesnd_power_tenure add = 1 }
+		}
+		nesnd_power_set_approval = yes
+		if = {
+			limit = { nesnd_power_i >= 100 }
+			set_variable = { name = nesnd_power_intrigue value = 0 }
+			nesnd_$REGIME$_fire_event = yes
+		}
+		nesnd_power_sync_bars = yes
+	}
+}
+
+# 按钮与事件改动数值。显示文字随政体变化（见 customizable_localization/nesnd_power.txt）。
+nesnd_power_add = {
+	custom_tooltip = {
+		text = nesnd_power_$BAR$_add_$AMT$_tt
+		change_variable = { name = nesnd_power_$BAR$ add = $AMT$ }
+		clamp_variable = { name = nesnd_power_$BAR$ min = 0 max = 100 }
+	}
+	hidden_effect = { nesnd_power_set_approval = yes nesnd_power_sync_bars = yes }
+}
+nesnd_power_sub = {
+	custom_tooltip = {
+		text = nesnd_power_$BAR$_sub_$AMT$_tt
+		change_variable = { name = nesnd_power_$BAR$ subtract = $AMT$ }
+		clamp_variable = { name = nesnd_power_$BAR$ min = 0 max = 100 }
+	}
+	hidden_effect = { nesnd_power_set_approval = yes nesnd_power_sync_bars = yes }
+}
+# 平衡点向中点移动 AMT，不越过中点。
+nesnd_power_center = {
+	custom_tooltip = {
+		text = nesnd_power_center_$AMT$_tt
+		if = {
+			limit = { nesnd_power_b > 50 }
+			change_variable = { name = nesnd_power_balance subtract = $AMT$ }
+			if = { limit = { nesnd_power_b < 50 } set_variable = { name = nesnd_power_balance value = 50 } }
+		}
+		else_if = {
+			limit = { nesnd_power_b < 50 }
+			change_variable = { name = nesnd_power_balance add = $AMT$ }
+			if = { limit = { nesnd_power_b > 50 } set_variable = { name = nesnd_power_balance value = 50 } }
+		}
+	}
+	hidden_effect = { nesnd_power_set_approval = yes nesnd_power_sync_bars = yes }
+}
+nesnd_power_reset_balance = {
+	custom_tooltip = {
+		text = nesnd_power_reset_balance_tt
+		set_variable = { name = nesnd_power_balance value = 50 }
+	}
+	hidden_effect = { nesnd_power_set_approval = yes nesnd_power_sync_bars = yes }
+}
+nesnd_power_pay = {
+	custom_tooltip = {
+		text = nesnd_power_pay_$COST$_tt
+		change_variable = { name = nesnd_power_power subtract = nesnd_power_cost_$COST$ }
+		clamp_variable = { name = nesnd_power_power min = 0 max = 100 }
+	}
+	hidden_effect = { nesnd_power_sync_bars = yes }
+}
+
+# 事件用的保存对象。
+nesnd_power_save_scopes = {
+	var:nesnd_power_holder ?= { if = { limit = { is_character_alive = yes } save_scope_as = nesnd_power_holder_scope } }
+	var:nesnd_power_leader ?= { if = { limit = { is_character_alive = yes } save_scope_as = nesnd_power_leader_scope } }
+	var:nesnd_power_holder_ig ?= { save_scope_as = nesnd_power_holder_ig_scope }
+	var:nesnd_power_top_ig ?= { save_scope_as = nesnd_power_top_ig_scope }
+	ruler ?= { save_scope_as = nesnd_power_ruler_scope }
+}
+
+# 当权者被撤去或离开后的结算：宠臣权势按换人规则保留，平衡回到中点。
+nesnd_power_after_removal = {
+	hidden_effect = {
+		remove_variable = nesnd_power_holder
+		remove_variable = nesnd_power_holder_ig
+		nesnd_power_refresh = { REGIME = $REGIME$ }
+	}
+}
+
+# 宫廷事件条满时抽取一件。权势 ≥ 60 时，能降低权势的事件权重加倍。
+# 极端事件（权重 15）只在平衡点超出 10–90 时可抽到，仍须与常规事件竞争，平衡失衡时约有三成机会。
+nesnd_palace_fire_event = {
+	random_list = {
+		10 = { trigger = { nesnd_palace_ev_quarrel_ok = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 5 } } trigger_event = { id = nesnd_palace.11 popup = yes } }
+		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.12 popup = yes } }
+		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.13 popup = yes } }
+		8 = { trigger_event = { id = nesnd_palace.14 popup = yes } }
+		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.15 popup = yes } }
+		8 = { trigger = { nesnd_palace_ev_counsel_ok = yes } trigger_event = { id = nesnd_palace.16 popup = yes } }
+		6 = { trigger = { nesnd_palace_ev_retire_ok = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.17 popup = yes } }
+		15 = { trigger = { nesnd_palace_ev_strike_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_palace.21 popup = yes } }
+		15 = { trigger = { nesnd_palace_ev_coerce_ok = yes } modifier = { if = { limit = { var:nesnd_power_type ?= 3 } add = 15 } if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_palace.22 popup = yes } }
+		15 = { trigger = { nesnd_palace_ev_purge_side_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_palace.23 popup = yes } }
+		15 = { trigger = { nesnd_palace_ev_night_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_palace.24 popup = yes } }
+		8 = { trigger = { nesnd_power_has_holder = yes } trigger_event = { id = nesnd_palace.31 popup = yes } }
+		8 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 8 } } trigger_event = { id = nesnd_palace.32 popup = yes } }
+		8 = { trigger = { nesnd_palace_ev_army_ok = yes } trigger_event = { id = nesnd_palace.33 popup = yes } }
+		8 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 8 } } trigger_event = { id = nesnd_palace.34 popup = yes } }
+		8 = { trigger = { nesnd_palace_ev_relief_ok = yes } trigger_event = { id = nesnd_palace.35 popup = yes } }
+		15 = { trigger = { nesnd_power_has_holder = yes nesnd_power_holder_dominant = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_palace.41 popup = yes } }
+		15 = { trigger = { nesnd_power_has_holder = yes nesnd_power_rival_dominant = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_palace.42 popup = yes } }
+	}
+}
+
+nesnd_cabinet_fire_event = {
+	random_list = {
+		10 = { trigger = { nesnd_cabinet_ev_debate_ok = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 5 } } trigger_event = { id = nesnd_cabinet.11 popup = yes } }
+		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.12 popup = yes } }
+		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.13 popup = yes } }
+		8 = { trigger_event = { id = nesnd_cabinet.14 popup = yes } }
+		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.15 popup = yes } }
+		8 = { trigger = { nesnd_cabinet_ev_budget_ok = yes } trigger_event = { id = nesnd_cabinet.16 popup = yes } }
+		6 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.17 popup = yes } }
+		15 = { trigger = { nesnd_cabinet_ev_strike_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.21 popup = yes } }
+		15 = { trigger = { nesnd_cabinet_ev_no_confidence_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.22 popup = yes } }
+		15 = { trigger = { nesnd_cabinet_ev_strongman_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.23 popup = yes } }
+		15 = { trigger = { nesnd_cabinet_ev_rival_falls_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.24 popup = yes } }
+		8 = { trigger = { nesnd_power_case_a = yes } trigger_event = { id = nesnd_cabinet.31 popup = yes } }
+		8 = { trigger = { nesnd_power_has_holder = yes } trigger_event = { id = nesnd_cabinet.32 popup = yes } }
+		8 = { trigger = { nesnd_power_case_a = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 8 } } trigger_event = { id = nesnd_cabinet.33 popup = yes } }
+		8 = { trigger = { nesnd_cabinet_ev_strike_labor_ok = yes } trigger_event = { id = nesnd_cabinet.34 popup = yes } }
+		8 = { trigger = { nesnd_power_has_holder = yes exists = var:nesnd_power_holder_ig } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 8 } } trigger_event = { id = nesnd_cabinet.35 popup = yes } }
+		15 = { trigger = { nesnd_cabinet_ev_army_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.41 popup = yes } }
+		15 = { trigger = { nesnd_power_has_holder = yes nesnd_power_rival_dominant = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.42 popup = yes } }
+	}
+}

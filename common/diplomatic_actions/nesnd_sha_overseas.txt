@@ -1,0 +1,49 @@
+﻿nesnd_sha_lease_port = {
+    texture = "gfx/interface/icons/diplomatic_action_icons/offer_recognition.dds"
+    groups = { general }
+    requires_approval = yes
+    can_use_obligations = no
+    should_notify_third_parties = no
+    show_effect_in_tooltip = yes
+    selectable = { has_journal_entry = nesnd_sha_foothold }
+    potential = { scope:target_country ?= { any_scope_state = { nesnd_sha_lease_state = yes } } }
+    possible = { nesnd_sha_can_lease = yes }
+    accept_effect = {
+        custom_tooltip = nesnd_sha_lease_terms
+        hidden_effect = {
+            if = {
+                limit = { nesnd_sha_can_lease = yes }
+                save_scope_value_as = { name = nesnd_sha_lease_price value = { value = gdp multiply = 0.03 min = 7500 } }
+                scope:target_country = {
+                    ordered_scope_state = {
+                        limit = { nesnd_sha_lease_state = yes }
+                        order_by = state_population
+                        position = 0
+                        check_range_bounds = no
+                        state_region = { save_scope_as = nesnd_sha_leased_region }
+                        cede_treaty_port = c:SHA
+                    }
+                }
+                if = {
+                    limit = { any_scope_state = { state_region = scope:nesnd_sha_leased_region controls_treaty_port_province = yes } }
+                    add_treasury = { value = scope:nesnd_sha_lease_price multiply = -1 }
+                    scope:target_country = { add_treasury = scope:nesnd_sha_lease_price }
+                }
+            }
+        }
+    }
+    decline_effect = { set_variable = { name = nesnd_sha_lease_refused months = 36 } }
+    ai = {
+        evaluation_chance = { value = 0.25 }
+        propose_score = { value = 20 }
+        will_propose = { nesnd_sha_can_lease = yes }
+        accept_score = {
+            value = 0
+            add = { desc = DIPLOMATIC_ACCEPTANCE_BASE value = -30 }
+            if = { limit = { "relations(c:SHA)" >= relations_threshold:friendly } add = { desc = nesnd_sha_score_friendly value = 35 } }
+            else_if = { limit = { "relations(c:SHA)" >= relations_threshold:amicable } add = { desc = nesnd_sha_score_warm value = 20 } }
+            if = { limit = { is_country_type = unrecognized } add = { desc = nesnd_sha_lease_unrecognized value = 10 } }
+            if = { limit = { is_at_war = yes } add = { desc = nesnd_sha_qi_war value = 15 } }
+        }
+    }
+}

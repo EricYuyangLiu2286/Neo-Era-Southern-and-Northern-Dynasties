@@ -1,0 +1,66 @@
+﻿# 「伊犁的朝议」的朝争条与朝中一时偏向。Root = country。
+
+nesnd_qe1_intrigue_sync = {
+	if = {
+		limit = { has_journal_entry = nesnd_qe1_court_journal }
+		je:nesnd_qe1_court_journal = { set_bar_progress = { name = nesnd_qe1_intrigue_bar value = root.var:nesnd_qe1_intrigue } }
+	}
+}
+
+nesnd_qe1_intrigue_month = {
+	hidden_effect = {
+		if = {
+			limit = { nesnd_qe1_court_live = yes }
+			if = { limit = { NOT = { has_variable = nesnd_qe1_intrigue } } set_variable = { name = nesnd_qe1_intrigue value = 0 } }
+			change_variable = { name = nesnd_qe1_intrigue add = nesnd_qe1_intrigue_monthly }
+			clamp_variable = { name = nesnd_qe1_intrigue min = 0 max = 100 }
+			if = {
+				limit = { var:nesnd_qe1_intrigue >= 100 }
+				set_variable = { name = nesnd_qe1_intrigue value = 0 }
+				nesnd_qe1_fire_court_event = yes
+			}
+			nesnd_qe1_intrigue_sync = yes
+		}
+	}
+}
+
+nesnd_qe1_fire_court_event = {
+	random_list = {
+		10 = { trigger_event = { id = nesnd_qe1_intrigue.1 popup = yes } }
+		10 = { trigger_event = { id = nesnd_qe1_intrigue.2 popup = yes } }
+		10 = { trigger_event = { id = nesnd_qe1_intrigue.3 popup = yes } }
+		30 = { trigger = { nesnd_qe1_court_dominant = yes } trigger_event = { id = nesnd_qe1_intrigue.4 popup = yes } }
+	}
+}
+
+# 朝中一时偏向：加入三方份额公式（script_values/nesnd_qe1_court.txt），三年后失效，限 -20 至 20。
+nesnd_qe1_sway_add = {
+	custom_tooltip = {
+		text = nesnd_qe1_sway_$WHO$_add_$AMT$_tt
+		set_variable = {
+			name = nesnd_qe1_sway_$WHO$
+			value = { value = 0 if = { limit = { has_variable = nesnd_qe1_sway_$WHO$ } add = var:nesnd_qe1_sway_$WHO$ } add = $AMT$ max = 20 }
+			years = 3
+		}
+	}
+	hidden_effect = { set_variable = nesnd_qe1_power_recalculate nesnd_qe1_compute_court = yes }
+}
+nesnd_qe1_sway_sub = {
+	custom_tooltip = {
+		text = nesnd_qe1_sway_$WHO$_sub_$AMT$_tt
+		set_variable = {
+			name = nesnd_qe1_sway_$WHO$
+			value = { value = 0 if = { limit = { has_variable = nesnd_qe1_sway_$WHO$ } add = var:nesnd_qe1_sway_$WHO$ } subtract = $AMT$ min = -20 }
+			years = 3
+		}
+	}
+	hidden_effect = { set_variable = nesnd_qe1_power_recalculate nesnd_qe1_compute_court = yes }
+}
+nesnd_qe1_intrigue_change = {
+	custom_tooltip = {
+		text = nesnd_qe1_intrigue_$DIR$_$AMT$_tt
+		change_variable = { name = nesnd_qe1_intrigue $DIR$ = $AMT$ }
+		clamp_variable = { name = nesnd_qe1_intrigue min = 0 max = 100 }
+	}
+	hidden_effect = { nesnd_qe1_intrigue_sync = yes }
+}

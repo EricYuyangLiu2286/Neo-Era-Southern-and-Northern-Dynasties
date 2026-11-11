@@ -1,0 +1,114 @@
+﻿nesnd_sha_far_north_open = {
+    nesnd_sha_native = yes
+    NOT = { has_variable = nesnd_sha_northern_stage_ended }
+    var:nesnd_sha_route ?= flag:nesnd_sha_war
+}
+nesnd_sha_gold_open = {
+    nesnd_sha_native = yes
+    NOT = { has_variable = nesnd_sha_northern_stage_ended }
+    var:nesnd_sha_route ?= flag:nesnd_sha_peace
+}
+nesnd_sha_russian_borderland = {
+    OR = { state_region = s:STATE_IRKUTSK state_region = s:STATE_UPPER_YENISEYSK }
+}
+nesnd_sha_northern_state = {
+    OR = {
+        state_region = s:STATE_KOLYMA
+        state_region = s:STATE_YAKUTSK
+        state_region = s:STATE_OKHOTSK
+        state_region = s:STATE_CHUKOTKA
+        state_region = s:STATE_KAMCHATKA
+        state_region = s:STATE_SAKHALIN
+    }
+}
+nesnd_sha_survey_region = {
+    OR = { state_region = s:STATE_KOLYMA state_region = s:STATE_YAKUTSK state_region = s:STATE_OKHOTSK }
+}
+nesnd_sha_survey_state = {
+    nesnd_sha_survey_region = yes
+    state_region = { remaining_undepleted = { type = building_gold_field amount > 0 } }
+}
+nesnd_sha_has_eastern_partner = {
+    trigger_if = {
+        limit = { exists = c:HUS }
+        OR = {
+            market = c:HUS.market
+            any_scope_treaty = { binds = c:HUS any_scope_article = { has_type = foreign_investment_rights } }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_sha_lake_republic = {
+    NOT = { exists = s:STATE_IRKUTSK.region_state:RUS }
+    NOT = { exists = s:STATE_IRKUTSK.region_state:SHA }
+    exists = var:nesnd_sha_seceder
+    var:nesnd_sha_seceder ?= {
+        is_country_alive = yes
+        is_subject = no
+        is_secessionist = no
+        any_scope_state = { state_region = s:STATE_IRKUTSK }
+    }
+}
+nesnd_sha_can_take_lake = {
+    nesnd_sha_lake_republic = yes
+    has_variable = nesnd_sha_lake_independent
+    trigger_if = {
+        limit = { exists = var:nesnd_sha_seceder }
+        NOT = { has_war_with = var:nesnd_sha_seceder }
+        NOT = { has_truce_with = var:nesnd_sha_seceder }
+        NOT = { is_diplomatic_play_enemy_of = var:nesnd_sha_seceder }
+        trigger_if = {
+            limit = { is_ai = yes }
+            is_at_war = no
+            army_size > 0
+            army_size >= var:nesnd_sha_seceder.army_size
+        }
+    }
+    trigger_else = { always = no }
+}
+
+nesnd_sha_shares_available = {
+    nesnd_sha_gold_open = yes
+    trigger_if = {
+        limit = { exists = c:HUS }
+        NOT = { has_war_with = c:HUS }
+        custom_tooltip = { text = nesnd_sha_talks_ready_tt NOT = { has_variable = nesnd_sha_shares_cooldown } }
+        NOT = { c:HUS ?= { has_treaty_foreign_investment_rights_with = { TARGET = c:SHA } } }
+        can_create_treaty = {
+            first_country = c:SHA second_country = c:HUS is_draft = no
+            articles_to_create = { { article = foreign_investment_rights source_country = c:SHA target_country = c:HUS } }
+        }
+    }
+    trigger_else = { always = no }
+}
+
+nesnd_sha_mediate_available = {
+    nesnd_sha_gold_open = yes
+    trigger_if = {
+        limit = { exists = c:HUS exists = c:CNE }
+        NOT = { has_war_with = c:HUS }
+        custom_tooltip = { text = nesnd_sha_talks_ready_tt NOT = { has_variable = nesnd_sha_mediate_cooldown } }
+        NOT = { has_modifier = declared_bankruptcy }
+        c:HUS = { is_in_same_power_bloc = c:CNE NOT = { has_war_with = c:CNE } }
+        is_in_same_power_bloc = c:CNE
+    }
+    trigger_else = { always = no }
+}
+
+nesnd_sha_league_available = {
+    nesnd_sha_gold_open = yes
+    trigger_if = {
+        limit = { exists = c:HUS }
+        NOT = { has_war_with = c:HUS }
+        custom_tooltip = { text = nesnd_sha_talks_ready_tt NOT = { has_variable = nesnd_sha_league_cooldown } }
+        NOT = { is_in_same_power_bloc = c:HUS }
+        is_subject = no
+        OR = { is_in_power_bloc = no can_leave_power_bloc = yes }
+        c:HUS = {
+            is_subject = no
+            OR = { is_in_power_bloc = no is_power_bloc_leader = yes }
+            trigger_if = { limit = { exists = c:CNE } NOT = { is_in_same_power_bloc = c:CNE } }
+        }
+    }
+    trigger_else = { always = no }
+}

@@ -1,8 +1,10 @@
-﻿# 数值量纲与成本：改数值前必读
+# 数值量纲与成本：改数值前必读
+
+> 何时读：改事件、日志、按钮、修正、进度条、AI 权重的数字，或在设计提案里写候选公式。不必读：只改文字。各数值的量级与已核实例在 [numeric-facts.md](../lookup/numeric-facts.md)。
 
 适用于事件、日志、按钮、修正、进度条、AI权重，以及设计提案中的候选公式。先核本机版本，再定数字；不能凭“+10看起来小”或“百分号看起来大”判定收益。
 
-同名AI字段按调用上下文核格式。1.13.11当前可执行脚本中，scripted_button的`ai_chance`采用script value形状（`value`、`if/limit/add`）；事件选项的`ai_chance`采用`base`及`modifier`。不能互相移植，也不能以旧按钮README的base示例覆盖当前实际按钮。事件modifier的trigger内部出现动态add不证明外层AI权重接受动态值。来源：GAME/common/scripted_buttons/00_scripted_buttons.txt、当前events语料；任务34 A2/B2验证。保持概率时读取两份真实AST，枚举相关条件组合核等价，不默改权重。
+按钮与事件的 `ai_chance` 是两种形状，不能互相移植，见 [engine-facts.md](../lookup/engine-facts.md#按钮事件与-ai-权重)。
 
 1. 写明数值属于哪一层：库存、每期流量、容量、比率、百分点、概率权重、进度；记录接口和scope。按当前 GAME 定义核上下限及转换规则，不混淆同名概念。
    商品供应按产出、投入、买卖订单、价格和市场接入衡量；金库是货币余额，舰船是单位，造船能力是容量。涉及宗主、属国或共同市场的产业贡献，先读[共同市场与产业专长](economic-agency-and-crises.md#共同市场与产业专长作者2026-11-02纠正)，不另造采购库存层。
@@ -11,22 +13,4 @@
 4. 用代表性极值与重复路径算结果：最小/最大基线、一次/多次、期满前后、拒绝/取消。静态算式通过不等于难度已实测。
 5. 区分修复量纲错误与主动平衡调整，记录原值、新值、依据及适用档期。原生效果已展示的数字不要在自定义提示里再重复。
 
-## 本机1.13.11已核实例
-
-- 关系范围是−100至+100；总跨度200不等于上限200。change_relations 的 value=10 是直接10点；不要与关系进度转换混用。
-- 国家影响力容量没有统一1000上限；国家等级基础约600–1100，另受制度、集团与修正影响。外交 leverage 的1000上限不是 influence 上限。
-- country_influence_add 是生成侧加值，可受生成倍率影响；不能承诺它与直接增加usage完全等价。百分比修正、固定容量与货币库存分别处理。
-- 本轮商使费用由−15改−100持续6个月、首次通商直接关系+25、完成奖励由+25改+100持续24个月。这是本项目平衡选择，不是原版接口强制值；首联与完成标记防止循环刷奖励。
-
-具体源码、行号和期限追踪见 WORK/reports/ui-trade-feedback-20261102/research.md；未来版本先查原文件，不把这些实例当永恒常量。
-
-## 本机陆军军需数量与舰船维持
-
-1.13.11 的有效 `combat_unit_types` 是19种战斗营，含陆战队；舰队使用独立 `ship_types`、ship-mask修正与 `SHIP_UPKEEP_*` 定义。实际原版 `events/brazil/paraguay.txt` 的 `paraguay.6` 在国家作用域施加 `unit_supply_consumption_mult`，改变战斗营维持所需商品数量；货币费用减免是另一种效果。不能把旧版本“unit也含舰船”的记忆搬到本版。
-
-同一原版按钮里的军营片段只是tooltip预览，不证明building上的unit修正会传给军队。本轮Tiger指出此传递不成立，改用原版真实国家效果。每次迁移重查有效单位/舰船数据库和修正传递，来源见 WORK/reports/canon-route-execution-20261104/batch-b-repair-plan.md 及对应source-hashes；该证据不等于新候选已实机验收。
-
-## 有界算术与单向生活变化（1.13.11，西秦实证）
-
-script_value 的 `min` 是下限、`max` 是上限；以当前原版实例核验，再执行真实AST的边界算术，不凭自然语言误读。两者颠倒会把人口比例、力量和收益推到极端。
-SoL带来的“额外15%效忠”是对对应新增量乘0.15，不是每月把全国15%人口变成效忠派。当前原生仅有双向合并修正；需要单向时先记录近似边界，再按原版define的基础量、农民折减及高SoL折减采样。月度净变化无法还原月内所有涨跌。来源及720样本见 WORK/reports/qin-persia-20261102/native-political-contracts.md、sol-approximation.json、arithmetic-cases.json。
+估算一条日志链的完成概率和时间，照 [content-design.md](content-design.md) §7 的地权革命模拟实例做。

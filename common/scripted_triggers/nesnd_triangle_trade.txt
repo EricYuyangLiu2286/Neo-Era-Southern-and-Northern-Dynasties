@@ -1,0 +1,233 @@
+﻿# 北洋 / 西洋三角贸易。KEY = north 或 west。
+# 国家变量（月结时重算）：
+#   nesnd_<KEY>_trade_member       资格 a、b、e（失效判定看这一组）
+#   nesnd_<KEY>_trade_participant  再加上港口（或有港口的邻国）与未禁奴
+#   nesnd_<KEY>_trade_buying / _selling  玩家按钮或 AI 选定的模式
+
+# ---------- 地域与身份 ----------
+
+# 资格 a：首都在地域内，或拥有任一判定州。e：人口不太少。
+nesnd_triangle_region_country = {
+	NOT = { is_country_type = decentralized }
+	total_population >= 250000
+	OR = {
+		capital ?= { state_region = { is_in_geographic_region = geographic_region_nesnd_$KEY$_triangle } }
+		nesnd_$KEY$_triangle_anchor = yes
+	}
+}
+
+nesnd_north_triangle_anchor = {
+	any_scope_state = {
+		OR = {
+			state_region = s:STATE_IRKUTSK
+			state_region = s:STATE_OKHOTSK
+			state_region = s:STATE_KAMCHATKA
+			state_region = s:STATE_NANJING
+			state_region = s:STATE_GUANGDONG
+			state_region = s:STATE_SHAOZHOU
+			state_region = s:STATE_FUJIAN
+			state_region = s:STATE_NORTHERN_FUJIAN
+			state_region = s:STATE_ZHEJIANG
+			state_region = s:STATE_JIANGSU
+			state_region = s:STATE_SUZHOU
+			state_region = s:STATE_SOUTHERN_ANHUI
+			state_region = s:STATE_NORTHERN_ANHUI
+			state_region = s:STATE_TONKIN
+			state_region = s:STATE_CALIFORNIA
+		}
+	}
+}
+
+nesnd_west_triangle_anchor = { always = no }
+
+# 主体文化含日本人的国家：日本，及日本分裂后的各国。
+nesnd_north_triangle_japan = {
+	country_has_primary_culture = cu:japanese
+}
+
+nesnd_north_triangle_can_buy = {
+	OR = {
+		c:SHA ?= this
+		c:RUS ?= this
+		nesnd_north_triangle_japan = yes
+		c:HUS ?= this
+		c:YN1 ?= this
+		capital ?= {
+			state_region = {
+				OR = {
+					is_in_geographic_region = geographic_region_pacific_coast
+					is_in_geographic_region = geographic_region_oceania
+				}
+			}
+		}
+	}
+}
+
+nesnd_north_triangle_can_sell = {
+	OR = {
+		c:SHA ?= this
+		c:RUS ?= this
+		nesnd_north_triangle_japan = yes
+		NOT = { nesnd_north_triangle_can_buy = yes }
+	}
+}
+
+# 西欧、南欧与北非为双向；美洲只买；撒哈拉以南只卖。
+nesnd_west_triangle_can_buy = {
+	capital ?= {
+		state_region = {
+			OR = {
+				is_in_geographic_region = geographic_region_western_europe
+				is_in_geographic_region = geographic_region_southern_europe
+				is_in_geographic_region = geographic_region_north_africa
+				is_in_geographic_region = geographic_region_atlantic_coast
+				is_in_geographic_region = geographic_region_great_plains
+				is_in_geographic_region = geographic_region_central_america
+				is_in_geographic_region = geographic_region_brazil
+				is_in_geographic_region = geographic_region_gran_colombia
+				is_in_geographic_region = geographic_region_la_plata
+			}
+		}
+	}
+}
+
+nesnd_west_triangle_can_sell = {
+	capital ?= {
+		state_region = {
+			OR = {
+				is_in_geographic_region = geographic_region_western_europe
+				is_in_geographic_region = geographic_region_southern_europe
+				is_in_geographic_region = geographic_region_north_africa
+				is_in_geographic_region = geographic_region_west_africa
+				is_in_geographic_region = geographic_region_equatorial_africa
+				is_in_geographic_region = geographic_region_southern_africa
+			}
+		}
+	}
+}
+
+# ---------- 人口与文化 ----------
+
+# 州在本日志地域内。
+nesnd_triangle_trade_state = {
+	state_region = { is_in_geographic_region = geographic_region_nesnd_$KEY$_triangle }
+}
+
+# 贫困、不识字的劳动人口。财富 10 是原版债务奴隶制失效的门槛。
+nesnd_triangle_poor_pop = {
+	OR = {
+		is_pop_type = peasants
+		is_pop_type = laborers
+		is_pop_type = slaves
+	}
+	wealth < 10
+	literacy_rate < 0.3
+	total_size >= 5000
+}
+
+# 卖方额外条件（pop 所有国即卖方）。
+nesnd_north_triangle_seller_pop = { always = yes }
+
+nesnd_west_triangle_seller_pop = {
+	pop_acceptance < acceptance_status_4
+}
+
+# 国家作用域：本国能否买卖 CULT 文化的人口。卖方与买方都用这一条。
+nesnd_north_triangle_accepts_culture = {
+	OR = {
+		# 女真虽属儒家文化圈，仍可买卖。
+		AND = {
+			$CULT$ = { this = cu:manchu }
+			NOT = { country_has_primary_culture = $CULT$ }
+		}
+		# 日本系国家可买卖日本人（含本国主体文化）与朝鲜人。
+		AND = {
+			nesnd_north_triangle_japan = yes
+			$CULT$ = { OR = { this = cu:japanese this = cu:korean } }
+		}
+		# 只卖国可卖日本人。
+		AND = {
+			nesnd_north_triangle_can_buy = no
+			$CULT$ = { this = cu:japanese }
+			NOT = { country_has_primary_culture = $CULT$ }
+		}
+		# 登莱可买卖辽东人。
+		AND = {
+			c:SHA ?= this
+			$CULT$ = { this = cu:ce_liaodong }
+		}
+		# 其余：儒家文化圈以外、非本国主体文化；俄国另不买卖斯拉夫人。
+		AND = {
+			$CULT$ = { NOT = { has_discrimination_trait = tradition_sinosphere } }
+			NOT = { country_has_primary_culture = $CULT$ }
+			trigger_if = {
+				limit = { c:RUS ?= this }
+				$CULT$ = {
+					NOR = {
+						has_discrimination_trait = heritage_east_slavic
+						has_discrimination_trait = heritage_west_slavic
+						has_discrimination_trait = heritage_south_slavic
+					}
+				}
+			}
+		}
+	}
+}
+
+nesnd_west_triangle_accepts_culture = {
+	NOT = { country_has_primary_culture = $CULT$ }
+}
+
+# ---------- 奴隶制与目标州 ----------
+
+# 州能留住奴隶：所有国未禁奴；殖民地奴隶制只在未并入州有效。
+nesnd_triangle_state_takes_slaves = {
+	owner = { NOT = { has_law_or_variant = law_type:law_slavery_banned } }
+	trigger_if = {
+		limit = { owner = { has_law_or_variant = law_type:law_colonial_slavery } }
+		is_incorporated = no
+	}
+}
+
+# 目标州：地域内、能留住奴隶，且没有同文化同宗教的非奴隶人口（迁入者会与之合并）。
+nesnd_triangle_destination = {
+	nesnd_triangle_trade_state = { KEY = $KEY$ }
+	nesnd_triangle_state_takes_slaves = yes
+	NOT = {
+		any_scope_pop = {
+			culture = $CULT$
+			religion = $REL$
+			NOT = { is_pop_type = slaves }
+		}
+	}
+}
+
+# 国家作用域：可作为这一单的买方。SELLER 为卖方。
+nesnd_triangle_buyer = {
+	has_variable = nesnd_$KEY$_trade_participant
+	has_variable = nesnd_$KEY$_trade_buying
+	NOT = { this = $SELLER$ }
+	NOT = { has_war_with = $SELLER$ }
+	nesnd_$KEY$_triangle_accepts_culture = { CULT = $CULT$ }
+	any_scope_state = { nesnd_triangle_destination = { KEY = $KEY$ CULT = $CULT$ REL = $REL$ } }
+}
+
+# 结算时核对订单。需先存 scope:nesnd_tt_pop / _seller / _buyer / _dest / _culture / _religion。
+nesnd_triangle_order_valid = {
+	scope:nesnd_tt_pop = {
+		state = global_var:nesnd_$KEY$_trade_source
+		nesnd_triangle_poor_pop = yes
+		nesnd_$KEY$_triangle_seller_pop = yes
+	}
+	scope:nesnd_tt_seller = {
+		has_variable = nesnd_$KEY$_trade_participant
+		has_variable = nesnd_$KEY$_trade_selling
+		nesnd_$KEY$_triangle_accepts_culture = { CULT = scope:nesnd_tt_culture }
+	}
+	scope:nesnd_tt_buyer = {
+		nesnd_triangle_buyer = { KEY = $KEY$ SELLER = scope:nesnd_tt_seller CULT = scope:nesnd_tt_culture REL = scope:nesnd_tt_religion }
+	}
+	scope:nesnd_tt_dest = {
+		nesnd_triangle_destination = { KEY = $KEY$ CULT = scope:nesnd_tt_culture REL = scope:nesnd_tt_religion }
+	}
+}

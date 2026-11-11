@@ -1,0 +1,157 @@
+﻿nesnd_sha_crossing = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_historical_content
+    activation_description = { nesnd_sha_shandong_open = yes var:nesnd_sha_route ?= flag:nesnd_sha_war }
+    is_shown_when_inactive = { nesnd_sha_shandong_open = yes var:nesnd_sha_route ?= flag:nesnd_sha_war }
+    possible = { nesnd_sha_shandong_open = yes var:nesnd_sha_route ?= flag:nesnd_sha_war }
+    can_revolution_inherit = no
+    transferable = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    timeout = 5475
+    scripted_progress_bar = nesnd_sha_old_guard
+    scripted_button = nesnd_sha_land_agents
+    scripted_button = nesnd_sha_coastal_aid
+    on_weekly_pulse = {
+        effect = {
+            if = {
+                limit = {
+                    has_variable = nesnd_sha_claim_opponent
+                    NOT = { exists = s:STATE_SHANDONG.region_state:SHA }
+                    OR = {
+                        NOT = { exists = var:nesnd_sha_claim_opponent }
+                        NOT = { var:nesnd_sha_claim_opponent ?= p:x9D1474.state.owner }
+                        trigger_if = {
+                            limit = { exists = var:nesnd_sha_claim_opponent }
+                            has_truce_with = var:nesnd_sha_claim_opponent
+                        }
+                        trigger_else = { always = no }
+                    }
+                }
+                if = {
+                    limit = { has_variable = nesnd_sha_granted_claim }
+                    s:STATE_SHANDONG = { remove_claim = c:SHA }
+                    remove_variable = nesnd_sha_granted_claim
+                }
+                remove_variable = nesnd_sha_claim_opponent
+                remove_variable = nesnd_sha_shandong_contacts
+                scope:journal_entry = { set_bar_progress = { name = nesnd_sha_old_guard value = 0 } }
+            }
+            if = {
+                limit = { nesnd_sha_can_signal = yes NOT = { has_variable = nesnd_sha_signal_pending } }
+                set_variable = { name = nesnd_sha_signal_pending days = 7 }
+                if = {
+                    limit = { p:x9D1474.state.owner = { nesnd_sha_republican_government = yes } }
+                    trigger_event = { id = nesnd_sha_qi.2 popup = yes }
+                }
+                else = { trigger_event = { id = nesnd_sha_qi.1 popup = yes } }
+            }
+            # Alliance branch: the request goes to the ally, which decides.
+            if = {
+                limit = { nesnd_sha_dengzhou_request_ready = yes }
+                set_variable = { name = nesnd_sha_dengzhou_pending days = 60 }
+                var:nesnd_sha_shandong_sister = { trigger_event = { id = nesnd_sha_qi.9 popup = yes } }
+            }
+        }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_sha_claim_opponent } desc = nesnd_sha_claim_ready }
+            triggered_desc = { trigger = { exists = var:nesnd_sha_shandong_sister var:nesnd_sha_shandong_sister ?= p:x9D1474.state.owner has_treaty_alliance_with = { TARGET = p:x9D1474.state.owner } } desc = nesnd_sha_qi_allied_status }
+            desc = nesnd_sha_crossing_status
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_sha_crossing_landed
+        trigger = { custom_tooltip = { text = nesnd_sha_crossing_landed exists = s:STATE_SHANDONG.region_state:SHA } }
+        effect = {
+            nesnd_sha_shandong_success = yes
+            if = {
+                limit = { has_variable = nesnd_sha_dengzhou_granted }
+                trigger_event = { id = nesnd_sha_qi.5 popup = yes }
+            }
+            else = {
+                add_modifier = { name = nesnd_sha_homecoming_army years = 10 }
+                trigger_event = { id = nesnd_sha_qi.3 popup = yes }
+            }
+        }
+    }
+    outcome = {
+        flags = { timeout }
+        header = nesnd_sha_qi_deadline
+        effect_header = nesnd_sha_qi_on_deadline
+        conclusion_desc = nesnd_sha_qi_time_up
+        effect = {
+            set_variable = nesnd_sha_shandong_ended
+            trigger_event = { id = nesnd_sha_qi.4 popup = yes }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { nesnd_sha_native = no }
+    }
+}
+
+nesnd_sha_qilu = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_historical_content
+    activation_description = { nesnd_sha_shandong_open = yes var:nesnd_sha_route ?= flag:nesnd_sha_peace }
+    is_shown_when_inactive = { nesnd_sha_shandong_open = yes var:nesnd_sha_route ?= flag:nesnd_sha_peace }
+    possible = { nesnd_sha_shandong_open = yes var:nesnd_sha_route ?= flag:nesnd_sha_peace }
+    can_revolution_inherit = no
+    transferable = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    timeout = 5475
+    scripted_button = nesnd_sha_coastal_aid
+    scripted_button = nesnd_sha_court_gentry
+    status_desc = { desc = nesnd_sha_qilu_status }
+    on_monthly_pulse = {
+        effect = {
+            if = {
+                limit = { nesnd_sha_refugee_window = yes NOT = { has_variable = nesnd_sha_qilu_refugees_offered } }
+                set_variable = nesnd_sha_qilu_refugees_offered
+                trigger_event = { id = nesnd_sha_qi.7 popup = yes }
+            }
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_sha_qilu_open_port
+        trigger = { custom_tooltip = { text = nesnd_sha_qilu_open_port OR = { owns_treaty_port_in = STATE_SHANDONG owns_entire_state_region = STATE_SHANDONG } } }
+        effect = {
+            nesnd_sha_shandong_success = yes
+            trigger_event = { id = nesnd_sha_qi.5 popup = yes }
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_sha_qilu_allied
+        trigger = { custom_tooltip = { text = nesnd_sha_qilu_allied nesnd_sha_shandong_congress = yes } }
+        effect = {
+            nesnd_sha_shandong_success = yes
+            trigger_event = { id = nesnd_sha_qi.6 popup = yes }
+        }
+    }
+    outcome = {
+        flags = { timeout }
+        header = nesnd_sha_qi_deadline
+        effect_header = nesnd_sha_qi_on_deadline
+        conclusion_desc = nesnd_sha_qi_time_up
+        effect = {
+            set_variable = nesnd_sha_shandong_ended
+            trigger_event = { id = nesnd_sha_qi.8 popup = yes }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { nesnd_sha_native = no }
+    }
+}

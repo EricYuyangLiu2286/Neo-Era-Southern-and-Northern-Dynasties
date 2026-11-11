@@ -1,0 +1,395 @@
+﻿# 「宫廷力量」「执政者与派系」的人物面板与诏令卡片。
+# 仿原版 gui/journal_entry_widgets/tsarpoints_widgets.gui；头像沿用本 MOD nesnd_per_rep_portrait 的做法：
+# 只为国家变量列表中的人物创建头像控件，列表为空（人物缺失、死亡、离国）时不生成任何人物控件。
+# 底图与图标见 gfx/interface/illustrations/journal/nesnd_power/ 与 gfx/interface/icons/nesnd_power/，画稿见 .scratch/court-power/art-prompt.md。
+
+types nesnd_power_widget_types
+{
+	type nesnd_power_portrait_slot = fixedgridbox {
+		size = { 160 220 }
+		addcolumn = 160
+		addrow = 220
+
+		item = {
+			flowcontainer = {
+				visible = "[Scope.GetCharacter.IsValid]"
+				direction = vertical
+				spacing = 2
+				widget = {
+					size = { 160 176 }
+					character_portrait_medium_torso_tsarpoint = {
+						datacontext = "[Scope.AccessCharacter]"
+						visible = "[And( Character.IsValid, Not(Character.IsHistorical) )]"
+						parentanchor = center
+						scale = 0.95
+					}
+					character_portrait_medium_torso_tsarpoint_historical_info_link = {
+						datacontext = "[Scope.AccessCharacter]"
+						visible = "[And3( Character.IsValid, Character.IsHistorical, Not(StringIsEmpty(Character.GetHistoricalUrl)) )]"
+						parentanchor = center
+						scale = 0.95
+					}
+					character_portrait_medium_torso_tsarpoint_historical_no_info_link = {
+						datacontext = "[Scope.AccessCharacter]"
+						visible = "[And3( Character.IsValid, Character.IsHistorical, StringIsEmpty(Character.GetHistoricalUrl) )]"
+						parentanchor = center
+						scale = 0.95
+					}
+				}
+				textbox = {
+					datacontext = "[Scope.AccessCharacter]"
+					autoresize = yes
+					align = hcenter|nobaseline
+					minimumsize = { 160 -1 }
+					maximumsize = { 160 -1 }
+					multiline = yes
+					raw_text = "[Character.GetFullName]"
+					using = fontsize_small
+				}
+				textbox = {
+					datacontext = "[Scope.AccessCharacter]"
+					visible = "[Character.GetInterestGroup.IsValid]"
+					autoresize = yes
+					align = hcenter|nobaseline
+					minimumsize = { 160 -1 }
+					maximumsize = { 160 -1 }
+					multiline = yes
+					raw_text = "#v [Character.GetInterestGroup.GetNameNoFormatting]#!"
+					using = fontsize_small
+				}
+			}
+		}
+	}
+
+	type nesnd_power_decree_button = widget {
+		size = { 256 124 }
+		alpha = "[TransparentIfFalse(IsValid( ScriptedButton.ExecuteEffect ))]"
+		tooltip = "nesnd_power_card_tt"
+
+		background = {
+			using = entry_bg_fancy_dark
+			modify_texture = {
+				spriteType = Corneredstretched
+				spriteborder = { 0 0 }
+				blend_mode = add
+				alpha = 0.3
+				texture = "gfx/interface/backgrounds/paper_texture.dds"
+			}
+		}
+		background = {
+			visible = "[ScriptedButton.HasIcon]"
+			alpha = 0.2
+			using = top_illu_properties
+			texture = "[ScriptedButton.GetIcon]"
+		}
+		background = {
+			visible = "[Not(ScriptedButton.HasIcon)]"
+			alpha = 0.2
+			using = top_illu_properties
+			texture = "gfx/interface/illustrations/journal/je_group_illu_internal_affairs.dds"
+		}
+
+		vbox = {
+			size = { 100% 100% }
+			margin = { 6 6 }
+
+			default_header_clean = {
+				blockoverride "size" {
+					layoutpolicy_horizontal = expanding
+					size = { 0 34 }
+				}
+				blockoverride "text_mod" {
+					max_width = 244
+				}
+				blockoverride "margin" {
+					margin = { 6 0 }
+				}
+				blockoverride "header_background" {
+					background = {
+						color = { 0.0 0.0 0.0 1.0 }
+						alpha = 0.3
+						using = entry_bg_mask_top
+						texture = "gfx/interface/backgrounds/white.dds"
+						modify_texture = {
+							spriteType = Corneredstretched
+							spriteborder = { 0 0 }
+							blend_mode = alphamultiply
+							texture = "gfx/interface/masks/fade_vertical_top.dds"
+						}
+					}
+				}
+				blockoverride "text_size" {
+					fontsize = 18
+				}
+				blockoverride "text" {
+					raw_text = "#b [ScriptedButton.GetName]#!"
+				}
+			}
+
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				margin = { 5 2 }
+				margin_top = 6
+
+				widget = { layoutpolicy_horizontal = expanding }
+
+				flowcontainer = {
+					spacing = 2
+					margin = { 5 0 }
+					background = {
+						margin = { 1 2 }
+						using = entry_bg_simple_solid
+						modify_texture = {
+							spriteType = Corneredstretched
+							spriteborder = { 0 0 }
+							color = { 0.45 0.45 0.45 1.0 }
+							blend_mode = multiply
+							texture = "gfx/interface/backgrounds/white.dds"
+						}
+					}
+					icon = {
+						visible = "[ScriptedButton.HasTag('nesnd_palace')]"
+						size = { 24 24 }
+						parentanchor = vcenter
+						texture = "gfx/interface/icons/nesnd_power/nesnd_power_cost_palace.dds"
+					}
+					icon = {
+						visible = "[Not(ScriptedButton.HasTag('nesnd_palace'))]"
+						size = { 24 24 }
+						parentanchor = vcenter
+						texture = "gfx/interface/icons/nesnd_power/nesnd_power_cost_cabinet.dds"
+					}
+					textbox = {
+						parentanchor = vcenter
+						autoresize = yes
+						align = nobaseline
+						raw_text = "#r [ScriptedButton.GetCost|0]#!"
+					}
+				}
+
+				widget = {
+					size = { 32 32 }
+					icon = {
+						size = { 26 26 }
+						parentanchor = center
+						texture = "gfx/interface/icons/tsarpoint_icons/repeatable_action.dds"
+					}
+				}
+
+				widget = { layoutpolicy_horizontal = expanding }
+			}
+
+			widget = { layoutpolicy_vertical = expanding }
+
+			button = {
+				size = { 218 31 }
+				enabled = "[IsValid( ScriptedButton.ExecuteEffect )]"
+				onclick = "[Execute( ScriptedButton.ExecuteEffect )]"
+				using = default_button_action
+
+				textbox = {
+					parentanchor = center
+					autoresize = yes
+					align = center|nobaseline
+					text = "nesnd_power_card_execute"
+				}
+			}
+
+			widget = { size = { 0 4 } }
+		}
+	}
+}
+
+### 宫廷力量：人物面板
+flowcontainer = {
+	name = "nesnd_palace_characters"
+	ignoreinvisible = yes
+	margin_bottom = 1
+
+	widget = {
+		size = { 510 280 }
+
+		background = {
+			margin = { 25 0 }
+			alpha = 0.3
+			using = top_illu_properties
+			texture = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_panel_palace.dds"
+		}
+
+		textbox = {
+			position = { 20 20 }
+			size = { 180 24 }
+			align = hcenter|nobaseline
+			using = fontsize_medium
+			text = "nesnd_power_label_leader"
+		}
+		nesnd_power_portrait_slot = {
+			position = { 30 50 }
+			datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('nesnd_power_leader_portrait')]"
+		}
+
+		textbox = {
+			position = { 310 20 }
+			size = { 180 24 }
+			align = hcenter|nobaseline
+			using = fontsize_medium
+			text = "nesnd_palace_label_holder"
+		}
+		nesnd_power_portrait_slot = {
+			position = { 320 50 }
+			datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('nesnd_power_holder_portrait')]"
+		}
+
+		textbox = {
+			position = { 195 120 }
+			size = { 120 60 }
+			align = hcenter|nobaseline
+			multiline = yes
+			using = fontsize_medium
+			text = "nesnd_palace_label_center"
+		}
+	}
+}
+
+### 执政者与派系：人物面板
+flowcontainer = {
+	name = "nesnd_cabinet_characters"
+	ignoreinvisible = yes
+	margin_bottom = 1
+
+	widget = {
+		size = { 510 280 }
+
+		background = {
+			margin = { 25 0 }
+			alpha = 0.3
+			using = top_illu_properties
+			texture = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_panel_cabinet.dds"
+		}
+
+		textbox = {
+			position = { 20 20 }
+			size = { 180 24 }
+			align = hcenter|nobaseline
+			using = fontsize_medium
+			text = "nesnd_power_label_leader"
+		}
+		nesnd_power_portrait_slot = {
+			position = { 30 50 }
+			datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('nesnd_power_leader_portrait')]"
+		}
+
+		textbox = {
+			position = { 310 20 }
+			size = { 180 24 }
+			align = hcenter|nobaseline
+			using = fontsize_medium
+			text = "nesnd_cabinet_label_holder"
+		}
+		nesnd_power_portrait_slot = {
+			position = { 320 50 }
+			datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('nesnd_power_holder_portrait')]"
+		}
+
+		textbox = {
+			position = { 195 120 }
+			size = { 120 60 }
+			align = hcenter|nobaseline
+			multiline = yes
+			using = fontsize_medium
+			text = "nesnd_cabinet_label_center"
+		}
+	}
+}
+
+### 状态与诏令卡片（两个日志共用）
+flowcontainer = {
+	name = "nesnd_power_decrees"
+	ignoreinvisible = yes
+
+	flowcontainer = {
+		direction = vertical
+		minimumsize = { 560 -1 }
+		maximumsize = { 560 -1 }
+		parentanchor = hcenter
+		spacing = 5
+		margin = { 0 12 }
+		margin_top = 10
+		ignoreinvisible = yes
+
+		textbox = {
+			minimumsize = { 560 -1 }
+			maximumsize = { 560 -1 }
+			autoresize = yes
+			align = hcenter|nobaseline
+			using = fontsize_large
+			text = "nesnd_power_status_line"
+		}
+
+		flowcontainer = {
+			direction = vertical
+			parentanchor = hcenter
+			spacing = 6
+			ignoreinvisible = yes
+
+			background = {
+				alpha = 0.2
+				margin = { 10 0 }
+				using = entry_bg_fancy_dark
+			}
+
+			panel_dropdown = {
+				blockoverride "section_header_left_text" {
+					text = "nesnd_power_decrees_header"
+				}
+				blockoverride "section_header_right_text" {
+					raw_text = "#v [GetDataModelSize(JournalEntry.GetScriptedButtons)]#!"
+				}
+				blockoverride "onclick" {
+					onclick = "[GetVariableSystem.Toggle('nesnd_power_decrees_collapsed')]"
+				}
+				blockoverride "onclick_showmore" {
+					visible = "[GetVariableSystem.Exists('nesnd_power_decrees_collapsed')]"
+				}
+				blockoverride "onclick_showless" {
+					visible = "[Not(GetVariableSystem.Exists('nesnd_power_decrees_collapsed'))]"
+				}
+				blockoverride "items_visibility" {
+					visible = "[Not(GetVariableSystem.Exists('nesnd_power_decrees_collapsed'))]"
+				}
+				blockoverride "items_parentanchor" {
+					parentanchor = hcenter
+				}
+				blockoverride "dropdown_datamodel" {
+					minimumsize = { 528 -1 }
+					maximumsize = { 528 -1 }
+					flipdirection = yes
+					datamodel_wrap = 2
+					datamodel = "[JournalEntry.GetScriptedButtons]"
+				}
+				blockoverride "item" {
+					widget = {
+						size = { 264 128 }
+						nesnd_power_decree_button = {
+							parentanchor = center
+						}
+					}
+				}
+				blockoverride "second_list" {}
+				blockoverride "empty_state_visibility" {
+					visible = no
+				}
+			}
+		}
+	}
+}
+
+### 原版按钮区留空（照 widget_je_tsarpoints_buttons：登记空控件，让 journal_entry.gui 不再绘制默认按钮）
+flowcontainer = {
+	name = "nesnd_power_buttons_empty"
+	ignoreinvisible = yes
+	widget = {
+		size = { 0 0 }
+	}
+}

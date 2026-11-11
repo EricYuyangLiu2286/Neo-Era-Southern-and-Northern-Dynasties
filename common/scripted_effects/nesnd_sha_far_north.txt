@@ -1,0 +1,41 @@
+﻿# Country scope (SHA). Only the Russian-owned pieces of the two border regions participate.
+nesnd_sha_aid_communities = {
+    c:RUS ?= {
+        every_scope_state = {
+            limit = { nesnd_sha_russian_borderland = yes }
+            save_scope_as = nesnd_sha_aid_state
+            every_scope_culture = {
+                limit = { NOT = { this = cu:russian } }
+                scope:nesnd_sha_aid_state = { add_radicals_in_state = { culture = prev value = $SHARE$ } }
+            }
+        }
+    }
+}
+nesnd_sha_end_aid = {
+    if = {
+        limit = { has_variable = nesnd_sha_funded_pact }
+        if = {
+            limit = { exists = c:RUS has_diplomatic_pact = { who = c:RUS type = support_separatism is_initiator = yes } }
+            remove_diplomatic_pact = { country = c:RUS type = support_separatism }
+        }
+        remove_variable = nesnd_sha_funded_pact
+    }
+    remove_variable = nesnd_sha_aid_quarters
+    if = { limit = { has_modifier = nesnd_sha_aid_expense } remove_modifier = nesnd_sha_aid_expense }
+}
+nesnd_sha_close_far_north = {
+    set_variable = nesnd_sha_northern_stage_ended
+    nesnd_sha_end_aid = yes
+    remove_variable = nesnd_sha_seceder
+    remove_variable = nesnd_sha_lake_independent
+    remove_variable = nesnd_sha_merge_defeated
+    remove_variable = nesnd_sha_volunteers_raised
+    remove_variable = nesnd_sha_aid_sent
+}
+
+nesnd_sha_retreat_from_lake = {
+    remove_variable = nesnd_sha_seceder
+    nesnd_sha_end_aid = yes
+    set_variable = { name = nesnd_sha_aid_cooldown months = 12 }
+    trigger_event = { id = nesnd_sha_north.3 popup = yes }
+}

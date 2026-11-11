@@ -1,0 +1,92 @@
+﻿nesnd_sha_open_dengzhou = {
+    texture = "gfx/interface/icons/diplomatic_action_icons/offer_recognition.dds"
+    groups = { general }
+    requires_approval = yes
+    can_use_obligations = no
+    should_notify_third_parties = no
+    show_effect_in_tooltip = yes
+    selectable = { nesnd_sha_qilu_active = yes }
+    potential = { scope:target_country ?= { this = p:xAC24A6.state.owner } }
+    possible = { nesnd_sha_port_offer = yes }
+    accept_effect = {
+        if = {
+            limit = { nesnd_sha_port_offer = yes }
+            custom_tooltip = nesnd_sha_open_dengzhou_terms
+            hidden_effect = {
+                p:xAC24A6.state = { cede_treaty_port = c:SHA }
+                if = {
+                    limit = { p:xAC24A6.state.owner = c:SHA }
+                    save_scope_value_as = { name = nesnd_sha_purchase_price value = { value = gdp multiply = 0.05 min = 7500 } }
+                    add_treasury = { value = scope:nesnd_sha_purchase_price multiply = -1 }
+                    scope:target_country = { add_treasury = scope:nesnd_sha_purchase_price }
+                }
+            }
+        }
+    }
+    decline_effect = { set_variable = { name = nesnd_sha_dengzhou_refusal months = 60 } }
+    ai = {
+        evaluation_chance = { value = 0.25 }
+        propose_score = { value = 20 }
+        will_propose = { nesnd_sha_port_offer = yes }
+        accept_score = {
+            value = 0
+            add = { desc = DIPLOMATIC_ACCEPTANCE_BASE value = -40 }
+            if = { limit = { "relations(c:SHA)" >= relations_threshold:friendly } add = { desc = nesnd_sha_score_friendly value = 30 } }
+            else_if = { limit = { "relations(c:SHA)" >= relations_threshold:amicable } add = { desc = nesnd_sha_score_warm value = 15 } }
+            if = { limit = { has_modifier = declared_bankruptcy } add = { desc = nesnd_sha_qi_bankrupt value = 30 } }
+            if = { limit = { is_at_war = yes } add = { desc = nesnd_sha_qi_war value = 20 } }
+            if = { limit = { nesnd_sha_republican_government = yes } add = { desc = nesnd_sha_qi_republic value = 25 } }
+        }
+    }
+}
+
+nesnd_sha_republic_league = {
+    texture = "gfx/interface/icons/diplomatic_action_icons/offer_recognition.dds"
+    groups = { general }
+    requires_approval = yes
+    can_use_obligations = no
+    should_notify_third_parties = no
+    show_effect_in_tooltip = yes
+    selectable = { nesnd_sha_qilu_active = yes }
+    potential = { scope:target_country ?= { nesnd_sha_league_partner = yes } }
+    possible = { nesnd_sha_republic_league_offer = yes }
+    accept_effect = {
+        if = {
+            limit = { nesnd_sha_republic_league_offer = yes }
+            custom_tooltip = nesnd_sha_republic_league_terms
+            hidden_effect = {
+                if = { limit = { is_in_power_bloc = yes is_power_bloc_leader = no } leave_power_bloc = yes }
+                if = {
+                    limit = { is_in_power_bloc = no }
+                    create_power_bloc = {
+                        name = nesnd_sha_league_of_republics
+                        map_color = { 64 95 129 }
+                        identity = identity_ideological_union
+                        principle = principle_creative_legislature_1
+                    }
+                }
+                if = {
+                    limit = { is_power_bloc_leader = yes }
+                    scope:target_country = {
+                        if = { limit = { is_in_power_bloc = yes } leave_power_bloc = yes }
+                        join_power_bloc = c:SHA
+                    }
+                }
+            }
+        }
+    }
+    decline_effect = { set_variable = { name = nesnd_sha_republic_league_refusal months = 24 } }
+    ai = {
+        evaluation_chance = { value = 0.25 }
+        propose_score = { value = 20 }
+        will_propose = { nesnd_sha_republic_league_offer = yes }
+        accept_score = {
+            value = 0
+            add = { desc = DIPLOMATIC_ACCEPTANCE_BASE value = -20 }
+            if = { limit = { "relations(c:SHA)" >= relations_threshold:friendly } add = { desc = nesnd_sha_score_friendly value = 30 } }
+            if = { limit = { nesnd_sha_republican_government = yes } add = { desc = nesnd_sha_qi_republic value = 20 } }
+            if = { limit = { exists = c:CNE NOT = { c:CNE ?= this } has_war_with = c:CNE } add = { desc = nesnd_sha_qi_against_north value = 20 } }
+            if = { limit = { is_subject = yes } add = { desc = nesnd_sha_qi_subject value = -100 } }
+        }
+    }
+}

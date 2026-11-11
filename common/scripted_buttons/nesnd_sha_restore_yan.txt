@@ -1,0 +1,66 @@
+﻿nesnd_sha_yan_subsidy = {
+    name = nesnd_sha_yan_subsidy
+    desc = nesnd_sha_yan_subsidy_desc
+    visible = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_restore_yan NOT = { has_variable = nesnd_sha_yan_rose } }
+    possible = {
+        nesnd_sha_yan_preparing = yes
+        NOT = { has_modifier = declared_bankruptcy }
+        NOR = { has_modifier = nesnd_sha_yan_funding has_modifier = nesnd_sha_aid_expense }
+        c:CNE ?= { any_scope_state = { nesnd_sha_yan_region = yes } }
+        exists = c:CNE
+    }
+    effect = {
+        add_modifier = { name = nesnd_sha_yan_funding months = 12 multiplier = { value = gdp multiply = 0.0005 } }
+        custom_tooltip = nesnd_sha_yan_subsidy_terms_tt
+        hidden_effect = {
+            set_variable = nesnd_sha_yan_contacts
+            c:CNE ?= {
+                every_scope_state = {
+                    limit = { nesnd_sha_yan_region = yes }
+                    add_radicals_in_state = { culture = cu:ce_liaodong value = 0.10 }
+                    add_radicals_in_state = { culture = cu:manchu value = 0.10 }
+                }
+                random = { chance = 25 change_relations = { country = c:SHA value = -10 } }
+            }
+        }
+    }
+    ai_chance = { value = 20 if = { limit = { in_default = yes } value = 0 } }
+}
+
+# The J1 migration journal has closed. Reuse its fare and ship cooldown for the northeastern pool.
+nesnd_sha_yan_recruit = {
+    name = nesnd_sha_yan_recruit
+    desc = nesnd_sha_yan_recruit_desc
+    visible = { nesnd_sha_native = yes has_variable = nesnd_sha_yan_ended }
+    possible = {
+        NOT = { has_modifier = declared_bankruptcy }
+        custom_tooltip = { text = nesnd_sha_ships_ready_tt NOT = { has_variable = nesnd_sha_exile_ships } }
+        any_country = { nesnd_sha_yan_migrant_origin = yes }
+        any_scope_state = { state_is_eligible_as_mass_migration_target = yes }
+    }
+    effect = {
+        random_country = {
+            limit = { nesnd_sha_yan_migrant_origin = yes }
+            save_scope_as = nesnd_sha_yan_migration_origin
+            random_scope_state = {
+                limit = { nesnd_sha_yan_migrant_state = yes }
+                random_scope_culture = {
+                    limit = { nesnd_sha_yan_migrant_culture = yes }
+                    save_scope_as = nesnd_sha_yan_migrants
+                }
+            }
+        }
+        if = {
+            limit = { exists = scope:nesnd_sha_yan_migration_origin exists = scope:nesnd_sha_yan_migrants }
+            random_scope_state = {
+                limit = { state_is_eligible_as_mass_migration_target = yes }
+                create_mass_migration = { origin = scope:nesnd_sha_yan_migration_origin culture = scope:nesnd_sha_yan_migrants }
+                owner = {
+                    add_treasury = nesnd_sha_recruitment_cost
+                    set_variable = { name = nesnd_sha_exile_ships months = 36 }
+                }
+            }
+        }
+    }
+    ai_chance = { value = 10 if = { limit = { in_default = yes } value = 0 } }
+}

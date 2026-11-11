@@ -1,0 +1,72 @@
+﻿nesnd_sha_land_agents = {
+    name = nesnd_sha_land_agents
+    desc = nesnd_sha_land_agents_desc
+    visible = { nesnd_sha_crossing_active = yes }
+    possible = {
+        NOT = { has_modifier = declared_bankruptcy }
+        exists = p:x9D1474.state.owner
+        exists = c:CNE
+        NOT = { has_variable = nesnd_sha_agent_cooldown }
+        NOT = { has_variable = nesnd_sha_claim_opponent }
+    }
+    effect = {
+        add_treasury = { value = gdp multiply = 0.01 min = 1000 multiply = -1 }
+        scope:journal_entry = { add_progress = { name = nesnd_sha_old_guard value = 10 } }
+        custom_tooltip = nesnd_sha_agents_terms
+        hidden_effect = {
+            set_variable = nesnd_sha_shandong_contacts
+            set_variable = { name = nesnd_sha_agent_cooldown months = 12 }
+            random = { chance = 5 c:CNE ?= { change_relations = { country = c:SHA value = -20 } } }
+        }
+    }
+    ai_chance = { value = 20 if = { limit = { in_default = yes } value = 0 } }
+}
+nesnd_sha_coastal_aid = {
+    name = nesnd_sha_coastal_aid
+    desc = nesnd_sha_coastal_aid_desc
+    visible = { OR = { nesnd_sha_crossing_active = yes nesnd_sha_qilu_active = yes } }
+    possible = {
+        NOR = { has_modifier = declared_bankruptcy has_modifier = nesnd_sha_coastal_funding has_modifier = nesnd_sha_yan_funding has_modifier = nesnd_sha_aid_expense }
+        exists = c:CNE
+        c:CNE ?= { any_scope_state = { nesnd_sha_coastal_district = yes } }
+    }
+    effect = {
+        add_modifier = { name = nesnd_sha_coastal_funding months = 12 multiplier = { value = gdp multiply = 0.0005 } }
+        custom_tooltip = nesnd_sha_coastal_aid_terms
+        hidden_effect = {
+            set_variable = nesnd_sha_shandong_contacts
+            nesnd_sha_back_coastal_republicans = yes
+            c:CNE ?= {
+                every_scope_state = { limit = { nesnd_sha_coastal_district = yes } add_modifier = { name = nesnd_sha_coastal_societies months = 12 } }
+                random = { chance = 20 change_relations = { country = c:SHA value = -30 } }
+            }
+            c:CNE ?= {
+                trigger_event = { id = nesnd_sha_delay.8 months = 6 }
+                trigger_event = { id = nesnd_sha_delay.8 months = 12 }
+            }
+        }
+    }
+    ai_chance = { value = 15 if = { limit = { in_default = yes } value = 0 } }
+}
+nesnd_sha_court_gentry = {
+    name = nesnd_sha_court_gentry
+    desc = nesnd_sha_court_gentry_desc
+    visible = { nesnd_sha_qilu_active = yes }
+    possible = {
+        exists = c:CNE
+        NOT = { has_modifier = declared_bankruptcy }
+        NOT = { has_variable = nesnd_sha_gentry_cooldown }
+    }
+    effect = {
+        add_treasury = nesnd_sha_medium_cost
+        custom_tooltip = nesnd_sha_gentry_terms
+        hidden_effect = {
+            set_variable = { name = nesnd_sha_gentry_cooldown months = 48 }
+            c:CNE ?= {
+                add_modifier = { name = nesnd_sha_gentry_opposition months = 24 }
+                random = { chance = 20 change_relations = { country = c:SHA value = -30 } }
+            }
+        }
+    }
+    ai_chance = { value = 10 if = { limit = { in_default = yes } value = 0 } }
+}

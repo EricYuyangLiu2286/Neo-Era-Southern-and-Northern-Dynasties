@@ -1,0 +1,112 @@
+﻿namespace = nesnd_sha_delay
+
+# Hidden follow-ups that used to be delayed on_actions. Each one fires in the country whose
+# land, people or records it changes, and re-checks its conditions when it fires.
+
+# CNE, one day after enforcing the annex-Yan war goal: re-incorporate the states taken back.
+nesnd_sha_delay.1 = {
+    type = country_event
+    hidden = yes
+    trigger = { c:CNE ?= this has_variable_list = nesnd_sha_yan_old_cores }
+    immediate = {
+        every_in_list = {
+            variable = nesnd_sha_yan_old_cores
+            region_state:CNE ?= { set_state_type = incorporated }
+        }
+        clear_variable_list = nesnd_sha_yan_old_cores
+    }
+}
+
+# CNE, after a suppression war that left Yan standing: no re-incorporation is due.
+nesnd_sha_delay.2 = {
+    type = country_event
+    hidden = yes
+    trigger = {
+        c:CNE ?= this
+        has_variable_list = nesnd_sha_yan_old_cores
+        exists = c:YAN
+        c:YAN = { has_variable = nesnd_sha_yan_restored_court }
+    }
+    immediate = { clear_variable_list = nesnd_sha_yan_old_cores }
+}
+
+# SHA, the day after a Liaodong secession in Russia ends.
+nesnd_sha_delay.3 = {
+    type = country_event
+    hidden = yes
+    trigger = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_far_north }
+    immediate = {
+        if = {
+            limit = { nesnd_sha_lake_republic = yes }
+            set_variable = nesnd_sha_lake_independent
+            if = { limit = { exists = c:RUS } create_bidirectional_truce = { country = c:RUS months = 60 } }
+            trigger_event = { id = nesnd_sha_north.1 popup = yes }
+        }
+        else_if = {
+            limit = { NOT = { has_variable = nesnd_sha_aid_cooldown } }
+            nesnd_sha_retreat_from_lake = yes
+        }
+    }
+}
+
+# RUS, every three months while Denglai's relief is running: the aid reaches its border communities.
+nesnd_sha_delay.4 = {
+    type = country_event
+    hidden = yes
+    trigger = {
+        c:RUS ?= this
+        exists = c:SHA
+        c:SHA = { has_journal_entry = nesnd_sha_far_north has_variable = nesnd_sha_aid_quarters }
+    }
+    immediate = {
+        c:SHA = {
+            nesnd_sha_aid_communities = { SHARE = 0.03 }
+            change_variable = { name = nesnd_sha_aid_quarters subtract = 1 }
+            if = { limit = { var:nesnd_sha_aid_quarters <= 0 } remove_variable = nesnd_sha_aid_quarters }
+        }
+        if = {
+            limit = { c:SHA = { has_variable = nesnd_sha_aid_quarters } }
+            trigger_event = { id = nesnd_sha_delay.4 months = 3 }
+        }
+    }
+}
+
+# SHA, the day after the Liaodong movement in Russia dissolves without an uprising.
+nesnd_sha_delay.5 = {
+    type = country_event
+    hidden = yes
+    trigger = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_far_north }
+    immediate = {
+        if = {
+            limit = {
+                has_variable = nesnd_sha_aid_sent
+                NOR = { has_variable = nesnd_sha_seceder has_variable = nesnd_sha_lake_independent has_variable = nesnd_sha_aid_cooldown }
+            }
+            nesnd_sha_retreat_from_lake = yes
+        }
+    }
+}
+
+# SHA, the day after the third election campaign: the engine has chosen the winner.
+nesnd_sha_delay.6 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = nesnd_sha_elections_completed }
+    immediate = { nesnd_sha_end_presidency = yes }
+}
+
+# SHA, the day after a law change: the first presidency may have ended with the old regime.
+nesnd_sha_delay.7 = {
+    type = country_event
+    hidden = yes
+    trigger = { has_variable = nesnd_sha_elections_completed }
+    immediate = { nesnd_sha_review_presidency = yes }
+}
+
+# CNE, six and twelve months after Denglai funds the coastal republicans.
+nesnd_sha_delay.8 = {
+    type = country_event
+    hidden = yes
+    trigger = { c:CNE ?= this exists = c:SHA c:SHA = { nesnd_sha_native = yes } }
+    immediate = { nesnd_sha_back_coastal_republicans = yes }
+}

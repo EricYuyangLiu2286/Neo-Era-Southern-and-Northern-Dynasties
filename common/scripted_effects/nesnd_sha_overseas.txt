@@ -1,0 +1,130 @@
+﻿nesnd_sha_enter_overseas = {
+    if = {
+        limit = {
+            nesnd_sha_overseas_ready = yes
+            NOT = { has_variable = nesnd_sha_foothold_started }
+            NOT = { has_journal_entry = nesnd_sha_foothold }
+        }
+        add_journal_entry = { type = nesnd_sha_foothold }
+    }
+    if = {
+        limit = { nesnd_sha_settlement_ready = yes NOT = { has_journal_entry = nesnd_sha_settlement } }
+        add_journal_entry = { type = nesnd_sha_settlement }
+    }
+}
+nesnd_sha_file_landing = {
+    if = {
+        limit = { nesnd_sha_landing_available = yes $CANDIDATE$ = yes }
+        if = {
+            limit = { exists = var:nesnd_sha_landing_claim }
+            var:nesnd_sha_landing_claim = { remove_claim = c:SHA }
+            remove_variable = nesnd_sha_landing_claim
+        }
+        if = {
+            limit = { NOT = { has_claim = $REGION$ } }
+            $REGION$ = { add_claim = c:SHA }
+            set_variable = { name = nesnd_sha_landing_claim value = $REGION$ }
+        }
+        set_variable = { name = nesnd_sha_landing_choice value = $REGION$ }
+        set_variable = { name = nesnd_sha_landing_cooldown months = 24 }
+        add_treasury = { value = gdp multiply = 0.01 min = 1000 multiply = -1 }
+    }
+}
+# Keep the engine's state-list order and wrap after the last populated holding.
+nesnd_sha_next_destination = {
+    set_local_variable = { name = nesnd_sha_next_found value = 0 }
+    set_local_variable = { name = nesnd_sha_seen_current value = 0 }
+    every_scope_state = {
+        limit = { nesnd_sha_valid_destination = yes }
+        if = {
+            limit = { local_var:nesnd_sha_seen_current = 1 local_var:nesnd_sha_next_found = 0 }
+            save_scope_as = nesnd_sha_next_harbor
+            set_local_variable = { name = nesnd_sha_next_found value = 1 }
+        }
+        if = { limit = { c:SHA.var:nesnd_sha_destination ?= this } set_local_variable = { name = nesnd_sha_seen_current value = 1 } }
+    }
+    if = {
+        limit = { local_var:nesnd_sha_next_found = 0 }
+        every_scope_state = {
+            limit = { nesnd_sha_valid_destination = yes }
+            if = {
+                limit = { local_var:nesnd_sha_next_found = 0 }
+                save_scope_as = nesnd_sha_next_harbor
+                set_local_variable = { name = nesnd_sha_next_found value = 1 }
+            }
+        }
+    }
+    if = {
+        limit = { local_var:nesnd_sha_next_found = 1 }
+        set_variable = { name = nesnd_sha_destination value = scope:nesnd_sha_next_harbor }
+    }
+}
+nesnd_sha_restart_shipping = {
+    set_variable = { name = nesnd_sha_misses value = 0 }
+    je:nesnd_sha_settlement = { set_bar_progress = { name = nesnd_sha_sailings value = 0 } }
+}
+nesnd_sha_arrival_census = {
+    set_local_variable = { name = $COUNT$ value = 0 }
+    var:nesnd_sha_destination = {
+        every_scope_pop = { change_local_variable = { name = $COUNT$ add = total_size } }
+    }
+}
+nesnd_sha_ship_migrants = {
+    set_local_variable = { name = nesnd_sha_arrived value = 0 }
+    if = {
+        limit = { exists = var:nesnd_sha_destination var:nesnd_sha_destination ?= { nesnd_sha_valid_destination = yes } }
+        random_country = {
+            limit = {
+                NOT = { this = c:SHA }
+                NOT = { has_war_with = c:SHA }
+                any_scope_state = { nesnd_sha_migrant_origin = yes }
+            }
+            random_scope_state = {
+                limit = { nesnd_sha_migrant_origin = yes }
+                save_scope_as = nesnd_sha_embarkation
+                random_scope_pop = {
+                    limit = { nesnd_sha_migrant_pop = yes }
+                    save_scope_as = nesnd_sha_passengers
+                }
+            }
+        }
+        if = {
+            limit = { exists = scope:nesnd_sha_passengers }
+            nesnd_sha_arrival_census = { COUNT = nesnd_sha_before }
+            scope:nesnd_sha_passengers = {
+                if = { limit = { total_size <= c:SHA.var:nesnd_sha_capacity } move_pop = c:SHA.var:nesnd_sha_destination }
+                else = { move_partial_pop = { state = c:SHA.var:nesnd_sha_destination population = c:SHA.var:nesnd_sha_capacity } }
+            }
+            nesnd_sha_arrival_census = { COUNT = nesnd_sha_after }
+            set_local_variable = {
+                name = nesnd_sha_arrived
+                value = { value = local_var:nesnd_sha_after subtract = local_var:nesnd_sha_before min = 0 max = var:nesnd_sha_capacity }
+            }
+        }
+    }
+    je:nesnd_sha_settlement = { set_bar_progress = { name = nesnd_sha_sailings value = 0 } }
+    if = {
+        limit = { local_var:nesnd_sha_arrived > 0 }
+        change_variable = { name = nesnd_sha_voyages add = 1 }
+        set_variable = { name = nesnd_sha_misses value = 0 }
+        save_scope_value_as = { name = nesnd_sha_landed value = local_var:nesnd_sha_arrived }
+        var:nesnd_sha_destination = { save_scope_as = nesnd_sha_harbor }
+        if = { limit = { var:nesnd_sha_voyages = 1 } trigger_event = { id = nesnd_sha_overseas.2 popup = yes } }
+        else_if = { limit = { var:nesnd_sha_voyages = 3 } trigger_event = { id = nesnd_sha_overseas.3 popup = yes } }
+    }
+    else = {
+        change_variable = { name = nesnd_sha_misses add = 1 }
+        trigger_event = { id = nesnd_sha_overseas.4 popup = yes }
+    }
+}
+nesnd_sha_end_shipping = {
+    remove_modifier = nesnd_sha_settlement_office
+    if = { limit = { has_modifier = nesnd_sha_extra_colonists } remove_modifier = nesnd_sha_extra_colonists }
+    remove_variable = nesnd_sha_destination
+    remove_variable = nesnd_sha_voyages
+    remove_variable = nesnd_sha_misses
+    remove_variable = nesnd_sha_sailing_level
+    remove_variable = nesnd_sha_capacity
+    remove_variable = nesnd_sha_recruit_level
+    remove_variable = nesnd_sha_people
+}

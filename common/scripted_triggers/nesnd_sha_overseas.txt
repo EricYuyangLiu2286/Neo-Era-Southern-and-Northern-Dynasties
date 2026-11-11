@@ -1,0 +1,136 @@
+﻿nesnd_sha_has_african_state = { any_scope_state = { is_in_geographic_region = geographic_region_africa } }
+nesnd_sha_overseas_ready = {
+    nesnd_sha_native = yes
+    OR = {
+        exists = s:STATE_OUTER_MANCHURIA.region_state:SHA
+        exists = s:STATE_BOLI.region_state:SHA
+        exists = s:STATE_AMUR.region_state:SHA
+        has_variable = nesnd_sha_yan_ended
+    }
+}
+nesnd_sha_settlement_ready = {
+    nesnd_sha_native = yes
+    nesnd_sha_has_african_state = yes
+    NOT = { has_variable = nesnd_sha_settlement_started }
+}
+nesnd_sha_valid_destination = {
+    owner ?= c:SHA
+    is_in_geographic_region = geographic_region_africa
+    state_population > 0
+}
+nesnd_sha_landing_available = {
+    has_journal_entry = nesnd_sha_foothold
+    NOT = { has_variable = nesnd_sha_landing_cooldown }
+    NOT = { has_modifier = declared_bankruptcy }
+}
+# Country owning a possible landing site. AI weighs the defending coalition before filing a claim.
+nesnd_sha_safe_landing = {
+    NOT = { this = c:SHA }
+    trigger_if = {
+        limit = { c:SHA = { is_ai = yes } }
+        c:SHA = { is_at_war = no }
+        army_size <= { value = c:SHA.army_size multiply = 0.75 }
+        NOT = { top_overlord ?= { country_rank >= rank_value:major_power } }
+        NOT = {
+            any_country = {
+                country_rank >= rank_value:major_power
+                NOT = { this = prev }
+                save_temporary_scope_as = nesnd_sha_foreign_guarantor
+                prev = {
+                    OR = {
+                        has_treaty_defensive_pact_with = { TARGET = scope:nesnd_sha_foreign_guarantor }
+                        has_treaty_alliance_with = { TARGET = scope:nesnd_sha_foreign_guarantor }
+                        has_treaty_guarantee_independence_with = { TARGET = scope:nesnd_sha_foreign_guarantor }
+                    }
+                }
+            }
+        }
+    }
+}
+nesnd_sha_lease_state = {
+    controls_treaty_port_province = yes
+    is_treaty_port = no
+    OR = {
+        state_region = s:STATE_SOMALILAND
+        state_region = s:STATE_NORTH_MADAGASCAR
+        AND = { state_region = s:STATE_LOURENCO_MARQUES owner ?= c:USM }
+    }
+}
+nesnd_sha_can_lease = {
+    has_journal_entry = nesnd_sha_foothold
+    NOT = { has_modifier = declared_bankruptcy }
+    NOT = { has_variable = nesnd_sha_lease_refused }
+    scope:target_country ?= {
+        NOT = { this = c:SHA }
+        NOT = { has_war_with = c:SHA }
+        NOT = { is_country_type = decentralized }
+        any_scope_state = { nesnd_sha_lease_state = yes }
+    }
+}
+nesnd_sha_migrant_pop = {
+    total_size >= 500
+    OR = {
+        AND = {
+            c:SHA = { var:nesnd_sha_people = 1 }
+            has_pop_culture = han
+            OR = { is_pop_type = academics is_pop_type = clergymen wealth < 10 }
+        }
+        AND = {
+            c:SHA = { var:nesnd_sha_people = 2 }
+            OR = { has_pop_culture = ce_liaodong has_pop_culture = manchu }
+        }
+        AND = {
+            c:SHA = { var:nesnd_sha_people = 3 }
+            OR = {
+                AND = { has_pop_culture = korean OR = { NOT = { exists = c:KOR } c:SHA = { has_variable = nesnd_sha_korean_compact } } }
+                AND = {
+                    state.owner ?= c:RUS
+                    state = { OR = { nesnd_sha_northern_state = yes nesnd_sha_russian_borderland = yes } }
+                    OR = { has_pop_culture = ce_liaodong has_pop_culture = han has_pop_culture = ce_xibei has_pop_culture = manchu has_pop_culture = mongol }
+                }
+            }
+        }
+    }
+}
+nesnd_sha_migrant_origin = {
+    state_population >= 100000
+    NOT = { owner ?= c:SHA }
+    owner ?= { NOT = { has_war_with = c:SHA } }
+    OR = {
+        AND = { c:SHA = { var:nesnd_sha_people = 1 } owner ?= c:CNE }
+        AND = { c:SHA = { var:nesnd_sha_people = 2 } nesnd_sha_yan_region = yes }
+        AND = {
+            c:SHA = { var:nesnd_sha_people = 3 }
+            OR = {
+                is_in_geographic_region = geographic_region_korea
+                AND = { owner ?= c:RUS OR = { nesnd_sha_northern_state = yes nesnd_sha_russian_borderland = yes } }
+                nesnd_sha_yan_region = yes
+            }
+        }
+    }
+    any_scope_pop = { nesnd_sha_migrant_pop = yes }
+}
+nesnd_sha_can_claim_somaliland = {
+    NOT = { var:nesnd_sha_landing_choice ?= s:STATE_SOMALILAND }
+    s:STATE_SOMALILAND = {
+        any_scope_state = {
+            controls_treaty_port_province = yes
+            owner = { nesnd_sha_safe_landing = yes }
+        }
+    }
+}
+nesnd_sha_can_claim_madagascar = {
+    NOT = { var:nesnd_sha_landing_choice ?= s:STATE_NORTH_MADAGASCAR }
+    s:STATE_NORTH_MADAGASCAR = {
+        any_scope_state = {
+            controls_treaty_port_province = yes
+            owner = { nesnd_sha_safe_landing = yes }
+        }
+    }
+}
+nesnd_sha_can_claim_kenya = {
+    NOT = { var:nesnd_sha_landing_choice ?= s:STATE_KENYA }
+    s:STATE_KENYA = {
+        any_scope_state = { owner = { is_country_type = decentralized nesnd_sha_safe_landing = yes } }
+    }
+}

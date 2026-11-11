@@ -1,0 +1,748 @@
+﻿namespace = nesnd_cabinet
+
+# 「执政者与派系」的政潮事件。由 nesnd_power_month 在政潮条满时抽取（common/scripted_effects/nesnd_power.txt）。
+# 情形 A：执政者不是最大利益集团的领袖（执政者与反对党）。情形 B：执政者兼领最大集团（执政者与各派）。
+# 凡杀死、流放人物的结果，目标都已通过 nesnd_power_character_removable。
+# 极端结果的概率：执政者遇刺身亡 15%、负伤 20%；反对党领袖遇害 20%、被捕流放 15%；调查成功 45%。
+
+# 11 政纲之争
+nesnd_cabinet.11 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.11.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { nesnd_power_case_b = yes } desc = nesnd_cabinet.11.d_b }
+			desc = nesnd_cabinet.11.d_a
+		}
+	}
+	flavor = nesnd_cabinet.11.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "unspecific_politicians_arguing" }
+	icon = "gfx/interface/icons/event_icons/event_election.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_cabinet_ev_debate_ok = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.11.a
+		nesnd_power_add = { BAR = power AMT = 5 }
+		nesnd_power_add = { BAR = balance AMT = 10 }
+		if = {
+			limit = { nesnd_power_case_a = yes }
+			scope:nesnd_power_top_ig_scope ?= { add_modifier = { name = nesnd_power_humbled days = short_modifier_time } }
+		}
+		else = {
+			every_interest_group = {
+				limit = { ig_clout >= 0.05 NOT = { scope:nesnd_power_holder_ig_scope ?= this } }
+				add_modifier = { name = nesnd_power_slighted days = short_modifier_time }
+			}
+		}
+		ai_chance = { base = 15 modifier = { trigger = { nesnd_power_b <= 40 } add = 20 } }
+	}
+	option = {
+		name = nesnd_cabinet.11.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		nesnd_power_center = { AMT = 10 }
+		add_modifier = { name = nesnd_power_mediation days = short_modifier_time }
+		ai_chance = { base = 30 modifier = { trigger = { nesnd_power_p >= 60 } add = 40 } }
+	}
+	option = {
+		name = nesnd_cabinet.11.c
+		nesnd_power_sub = { BAR = power AMT = 10 }
+		nesnd_power_sub = { BAR = balance AMT = 10 }
+		if = {
+			limit = { nesnd_power_case_a = yes }
+			scope:nesnd_power_top_ig_scope ?= { add_modifier = { name = nesnd_power_gratified days = short_modifier_time } }
+		}
+		else = {
+			every_interest_group = {
+				limit = { ig_clout >= 0.05 NOT = { scope:nesnd_power_holder_ig_scope ?= this } }
+				add_modifier = { name = nesnd_power_gratified days = short_modifier_time }
+			}
+		}
+		ai_chance = { base = 10 modifier = { trigger = { nesnd_power_b >= 70 } add = 30 } }
+	}
+}
+
+# 12 竞选献金
+nesnd_cabinet.12 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.12.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { nesnd_power_case_b = yes } desc = nesnd_cabinet.12.d_b }
+			desc = nesnd_cabinet.12.d_a
+		}
+	}
+	flavor = nesnd_cabinet.12.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "europenorthamerica_capitalists_meeting" }
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_has_holder = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.12.a
+		nesnd_power_add = { BAR = power AMT = 10 }
+		nesnd_power_add = { BAR = balance AMT = 5 }
+		add_modifier = { name = nesnd_power_tax_farming days = short_modifier_time }
+		ai_chance = { base = 10 }
+	}
+	option = {
+		name = nesnd_cabinet.12.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 10 }
+		add_treasury = nesnd_power_treasury_small
+		scope:nesnd_power_holder_ig_scope ?= { add_modifier = { name = nesnd_power_humbled days = short_modifier_time } }
+		ai_chance = { base = 20 modifier = { trigger = { nesnd_power_p >= 60 } add = 50 } }
+	}
+}
+
+# 13 联合执政之议
+nesnd_cabinet.13 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.13.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { nesnd_power_case_a = yes } desc = nesnd_cabinet.13.d_a }
+			desc = nesnd_cabinet.13.d_b
+		}
+	}
+	flavor = nesnd_cabinet.13.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "unspecific_signed_contract" }
+	icon = "gfx/interface/icons/event_icons/event_election.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_has_holder = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.13.a
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		nesnd_power_center = { AMT = 15 }
+		add_modifier = { name = nesnd_power_mediation days = short_modifier_time }
+		ai_chance = { base = 20 modifier = { trigger = { nesnd_power_p >= 60 } add = 40 } }
+	}
+	option = {
+		name = nesnd_cabinet.13.b
+		default_option = yes
+		nesnd_power_add = { BAR = power AMT = 10 }
+		nesnd_power_add = { BAR = balance AMT = 10 }
+		nesnd_power_add = { BAR = intrigue AMT = 30 }
+		ai_chance = { base = 10 }
+	}
+}
+
+# 14 报章舆论
+nesnd_cabinet.14 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.14.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { nesnd_power_case_b = yes } desc = nesnd_cabinet.14.d_b }
+			desc = nesnd_cabinet.14.d_a
+		}
+	}
+	flavor = nesnd_cabinet.14.f
+	duration = 3
+	event_image = { video = "ep1_printing_press" }
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.14.a
+		nesnd_power_add = { BAR = power AMT = 5 }
+		add_radicals = { value = small_radicals strata = middle }
+		ai_chance = { base = 15 }
+	}
+	option = {
+		name = nesnd_cabinet.14.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		add_loyalists = { value = small_radicals strata = middle }
+		ai_chance = { base = 20 modifier = { trigger = { nesnd_power_p >= 60 } add = 40 } }
+	}
+}
+
+# 15 举荐亲信
+nesnd_cabinet.15 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.15.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { nesnd_power_case_b = yes } desc = nesnd_cabinet.15.d_b }
+			desc = nesnd_cabinet.15.d_a
+		}
+	}
+	flavor = nesnd_cabinet.15.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "unspecific_politicians_arguing" }
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_has_holder = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.15.a
+		nesnd_power_add = { BAR = power AMT = 10 }
+		add_modifier = { name = nesnd_power_patronage_posts days = short_modifier_time }
+		ai_chance = { base = 15 }
+	}
+	option = {
+		name = nesnd_cabinet.15.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		add_modifier = { name = nesnd_power_mediation days = short_modifier_time }
+		ai_chance = { base = 20 modifier = { trigger = { nesnd_power_p >= 60 } add = 30 } }
+	}
+	option = {
+		name = nesnd_cabinet.15.c
+		nesnd_power_sub = { BAR = power AMT = 10 }
+		nesnd_power_sub = { BAR = intrigue AMT = 20 }
+		ai_chance = { base = 10 modifier = { trigger = { nesnd_power_p >= 60 } add = 30 } }
+	}
+}
+
+# 16 预算之争（举债或违约时）
+nesnd_cabinet.16 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.16.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { nesnd_power_case_b = yes } desc = nesnd_cabinet.16.d_b }
+			desc = nesnd_cabinet.16.d_a
+		}
+	}
+	flavor = nesnd_cabinet.16.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "europenorthamerica_rich_and_poor" }
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_cabinet_ev_budget_ok = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.16.a
+		add_treasury = nesnd_power_treasury_small
+		add_radicals = { value = small_radicals strata = lower }
+		nesnd_power_add = { BAR = power AMT = 5 }
+		ai_chance = { base = 20 }
+	}
+	option = {
+		name = nesnd_cabinet.16.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		ai_chance = { base = 15 modifier = { trigger = { nesnd_power_p >= 60 } add = 30 } }
+	}
+}
+
+# 17 健康传闻
+nesnd_cabinet.17 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.17.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { nesnd_power_case_b = yes } desc = nesnd_cabinet.17.d_b }
+			desc = nesnd_cabinet.17.d_a
+		}
+	}
+	flavor = nesnd_cabinet.17.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "unspecific_sick_in_hospital" }
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_has_holder = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.17.a
+		nesnd_power_add = { BAR = power AMT = 5 }
+		ai_chance = { base = 20 }
+	}
+	option = {
+		name = nesnd_cabinet.17.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 10 }
+		nesnd_power_sub = { BAR = intrigue AMT = 20 }
+		nesnd_power_center = { AMT = 10 }
+		ai_chance = { base = 10 modifier = { trigger = { nesnd_power_p >= 60 } add = 40 } }
+	}
+}
+
+# 21 行刺执政者（对方压倒执政者一方时）
+nesnd_cabinet.21 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.21.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { var:nesnd_power_ev_outcome ?= 1 } desc = nesnd_cabinet.21.d_dead }
+			triggered_desc = { trigger = { var:nesnd_power_ev_outcome ?= 2 } desc = nesnd_cabinet.21.d_wounded }
+			desc = nesnd_cabinet.21.d_escaped
+		}
+	}
+	flavor = nesnd_cabinet.21.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "southamerica_public_figure_assassination" }
+	icon = "gfx/interface/icons/event_icons/event_skull.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_cabinet_ev_strike_ok = yes }
+	immediate = {
+		nesnd_power_save_scopes = yes
+		random_list = {
+			15 = { set_variable = { name = nesnd_power_ev_outcome value = 1 } }
+			20 = { set_variable = { name = nesnd_power_ev_outcome value = 2 } }
+			65 = { set_variable = { name = nesnd_power_ev_outcome value = 3 } }
+		}
+		if = {
+			limit = { var:nesnd_power_ev_outcome = 1 }
+			scope:nesnd_power_holder_scope = { kill_character = yes }
+		}
+		else_if = {
+			limit = { var:nesnd_power_ev_outcome = 2 }
+			scope:nesnd_power_holder_scope = { add_trait = wounded }
+		}
+	}
+	option = {
+		name = nesnd_cabinet.21.a
+		nesnd_power_add = { BAR = power AMT = 10 }
+		nesnd_power_add = { BAR = balance AMT = 15 }
+		add_modifier = { name = nesnd_power_shamed days = short_modifier_time }
+		ai_chance = { base = 15 }
+	}
+	option = {
+		name = nesnd_cabinet.21.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 10 }
+		add_modifier = { name = nesnd_power_mediation days = short_modifier_time }
+		ai_chance = { base = 25 }
+	}
+	after = {
+		remove_variable = nesnd_power_ev_outcome
+		nesnd_power_refresh = { REGIME = cabinet }
+	}
+}
+
+# 22 不信任风潮
+nesnd_cabinet.22 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.22.t
+	desc = nesnd_cabinet.22.d
+	flavor = nesnd_cabinet.22.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_leader_scope
+	event_image = { video = "southamerica_election" }
+	icon = "gfx/interface/icons/event_icons/event_election.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_cabinet_ev_no_confidence_ok = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.22.a
+		call_election = { months = 6 }
+		nesnd_power_reset_balance = yes
+		ai_chance = { base = 20 }
+	}
+	option = {
+		name = nesnd_cabinet.22.b
+		default_option = yes
+		add_modifier = { name = nesnd_power_shamed days = short_modifier_time }
+		if = {
+			limit = { exists = scope:nesnd_power_top_ig_scope }
+			add_radicals = { value = medium_radicals interest_group = scope:nesnd_power_top_ig_scope }
+		}
+		ai_chance = { base = 15 }
+	}
+}
+
+# 23 强人专断（执政者压倒各派，且不拥护现行共和制）
+nesnd_cabinet.23 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.23.t
+	desc = nesnd_cabinet.23.d
+	flavor = nesnd_cabinet.23.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "unspecific_ruler_speaking_to_people" }
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_cabinet_ev_strongman_ok = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.23.a
+		nesnd_power_add = { BAR = power AMT = 20 }
+		add_modifier = { name = nesnd_power_concession days = normal_modifier_time }
+		ai_chance = { base = 10 }
+	}
+	option = {
+		name = nesnd_cabinet.23.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 20 }
+		nesnd_power_sub = { BAR = balance AMT = 20 }
+		ai_chance = { base = 30 }
+	}
+}
+
+# 24 反对党领袖遭难（执政者一方压倒反对党）
+nesnd_cabinet.24 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.24.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { var:nesnd_power_ev_outcome ?= 1 } desc = nesnd_cabinet.24.d_dead }
+			triggered_desc = { trigger = { var:nesnd_power_ev_outcome ?= 2 } desc = nesnd_cabinet.24.d_ousted }
+			desc = nesnd_cabinet.24.d_escaped
+		}
+	}
+	flavor = nesnd_cabinet.24.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_leader_scope
+	event_image = { video = "votp_conspiring" }
+	icon = "gfx/interface/icons/event_icons/event_skull.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_cabinet_ev_rival_falls_ok = yes }
+	immediate = {
+		nesnd_power_save_scopes = yes
+		random_list = {
+			20 = { set_variable = { name = nesnd_power_ev_outcome value = 1 } }
+			15 = { set_variable = { name = nesnd_power_ev_outcome value = 2 } }
+			65 = { set_variable = { name = nesnd_power_ev_outcome value = 3 } }
+		}
+		if = {
+			limit = { var:nesnd_power_ev_outcome = 1 }
+			scope:nesnd_power_leader_scope = { kill_character = yes }
+		}
+		else_if = {
+			limit = { var:nesnd_power_ev_outcome = 2 }
+			scope:nesnd_power_leader_scope = { exile_character = yes }
+		}
+	}
+	option = {
+		name = nesnd_cabinet.24.a
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 20 }
+		nesnd_power_sub = { BAR = balance AMT = 20 }
+		ai_chance = { base = 25 modifier = { trigger = { nesnd_power_p >= 60 } add = 30 } }
+	}
+	option = {
+		name = nesnd_cabinet.24.b
+		nesnd_power_add = { BAR = power AMT = 10 }
+		if = {
+			limit = { exists = scope:nesnd_power_top_ig_scope }
+			add_radicals = { value = medium_radicals interest_group = scope:nesnd_power_top_ig_scope }
+		}
+		ai_chance = { base = 10 }
+	}
+	after = {
+		remove_variable = nesnd_power_ev_outcome
+		nesnd_power_refresh = { REGIME = cabinet }
+	}
+}
+
+# 26 调查反对党领袖（按钮）
+nesnd_cabinet.26 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.26.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { var:nesnd_power_ev_outcome ?= 2 } desc = nesnd_cabinet.26.d_success }
+			desc = nesnd_cabinet.26.d_fail
+		}
+	}
+	flavor = nesnd_cabinet.26.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_leader_scope
+	event_image = { video = "middleeast_courtroom_upheaval" }
+	icon = "gfx/interface/icons/event_icons/event_scales.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal exists = var:nesnd_power_leader }
+	immediate = {
+		nesnd_power_save_scopes = yes
+		if = {
+			limit = { scope:nesnd_power_leader_scope ?= { nesnd_power_character_removable = yes } }
+			random_list = {
+				0 = { modifier = { add = nesnd_power_arrest_chance } set_variable = { name = nesnd_power_ev_outcome value = 2 } }
+				0 = { modifier = { add = nesnd_power_arrest_fail } set_variable = { name = nesnd_power_ev_outcome value = 3 } }
+			}
+		}
+		else = { set_variable = { name = nesnd_power_ev_outcome value = 3 } }
+		if = {
+			limit = { var:nesnd_power_ev_outcome = 2 }
+			scope:nesnd_power_leader_scope = { exile_character = yes }
+		}
+	}
+	option = {
+		name = nesnd_cabinet.26.a
+		default_option = yes
+		if = {
+			limit = { exists = scope:nesnd_power_top_ig_scope }
+			add_radicals = { value = medium_radicals interest_group = scope:nesnd_power_top_ig_scope }
+		}
+		if = {
+			limit = { NOT = { var:nesnd_power_ev_outcome ?= 2 } }
+			nesnd_power_sub = { BAR = balance AMT = 10 }
+		}
+	}
+	after = {
+		remove_variable = nesnd_power_ev_outcome
+		nesnd_power_refresh = { REGIME = cabinet }
+	}
+}
+
+########## 2026-11-11 追加：常规 31–35，极端 41–42 ##########
+
+# 31 议员倒戈
+nesnd_cabinet.31 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.31.t
+	desc = nesnd_cabinet.31.d
+	flavor = nesnd_cabinet.31.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_leader_scope
+	event_image = { video = "unspecific_politicians_arguing" }
+	icon = "gfx/interface/icons/event_icons/event_election.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_case_a = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.31.a
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		add_modifier = { name = nesnd_power_patronage_posts days = short_modifier_time }
+		ai_chance = { base = 15 }
+	}
+	option = {
+		name = nesnd_cabinet.31.b
+		default_option = yes
+		nesnd_power_add = { BAR = power AMT = 5 }
+		nesnd_power_sub = { BAR = balance AMT = 10 }
+		nesnd_power_add = { BAR = intrigue AMT = 10 }
+		ai_chance = { base = 15 }
+	}
+}
+
+# 32 地方选举失利
+nesnd_cabinet.32 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.32.t
+	desc = nesnd_cabinet.32.d
+	flavor = nesnd_cabinet.32.f
+	duration = 3
+	event_image = { video = "southamerica_election" }
+	icon = "gfx/interface/icons/event_icons/event_election.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_has_holder = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.32.a
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		add_modifier = { name = nesnd_power_mediation days = short_modifier_time }
+		ai_chance = { base = 20 }
+	}
+	option = {
+		name = nesnd_cabinet.32.b
+		nesnd_power_add = { BAR = power AMT = 5 }
+		add_radicals = { value = small_radicals strata = middle }
+		add_modifier = { name = nesnd_power_shamed days = short_modifier_time }
+		ai_chance = { base = 10 }
+	}
+}
+
+# 33 外交质询
+nesnd_cabinet.33 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.33.t
+	desc = nesnd_cabinet.33.d
+	flavor = nesnd_cabinet.33.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_leader_scope
+	event_image = { video = "africa_diplomats_negotiating" }
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_case_a = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.33.a
+		nesnd_power_add = { BAR = power AMT = 5 }
+		nesnd_power_add = { BAR = intrigue AMT = 10 }
+		ai_chance = { base = 10 }
+	}
+	option = {
+		name = nesnd_cabinet.33.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		add_loyalists = { value = small_radicals strata = middle }
+		ai_chance = { base = 15 modifier = { trigger = { nesnd_power_p >= 60 } add = 30 } }
+	}
+}
+
+# 34 工潮
+nesnd_cabinet.34 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.34.t
+	desc = nesnd_cabinet.34.d
+	flavor = nesnd_cabinet.34.f
+	duration = 3
+	event_image = { video = "votp_barricade" }
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_cabinet_ev_strike_labor_ok = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.34.a
+		nesnd_power_add = { BAR = power AMT = 5 }
+		add_radicals = { value = small_radicals strata = lower }
+		ig:ig_trade_unions ?= { add_modifier = { name = nesnd_power_humbled days = short_modifier_time } }
+		ai_chance = { base = 10 }
+	}
+	option = {
+		name = nesnd_cabinet.34.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 5 }
+		ig:ig_trade_unions ?= { add_modifier = { name = nesnd_power_gratified days = short_modifier_time } }
+		ai_chance = { base = 15 }
+	}
+}
+
+# 35 党魁之争
+nesnd_cabinet.35 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.35.t
+	desc = nesnd_cabinet.35.d
+	flavor = nesnd_cabinet.35.f
+	duration = 3
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:nesnd_power_holder_scope
+	event_image = { video = "unspecific_politicians_arguing" }
+	icon = "gfx/interface/icons/event_icons/event_election.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_has_holder = yes exists = var:nesnd_power_holder_ig }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.35.a
+		nesnd_power_add = { BAR = power AMT = 5 }
+		scope:nesnd_power_holder_ig_scope ?= { add_modifier = { name = nesnd_power_humbled days = short_modifier_time } }
+		ai_chance = { base = 10 }
+	}
+	option = {
+		name = nesnd_cabinet.35.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 10 }
+		nesnd_power_sub = { BAR = intrigue AMT = 20 }
+		ai_chance = { base = 15 modifier = { trigger = { nesnd_power_p >= 60 } add = 30 } }
+	}
+}
+
+# 41 军方干政（平衡失衡且军方势大时，可能发生）
+nesnd_cabinet.41 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.41.t
+	desc = nesnd_cabinet.41.d
+	flavor = nesnd_cabinet.41.f
+	duration = 3
+	event_image = { video = "unspecific_military_parade" }
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_cabinet_ev_army_ok = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.41.a
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 10 }
+		nesnd_power_center = { AMT = 15 }
+		ig:ig_armed_forces ?= { add_modifier = { name = nesnd_power_gratified days = short_modifier_time } }
+		ai_chance = { base = 20 }
+	}
+	option = {
+		name = nesnd_cabinet.41.b
+		nesnd_power_add = { BAR = power AMT = 10 }
+		if = {
+			limit = { exists = ig:ig_armed_forces }
+			add_radicals = { value = medium_radicals interest_group = ig:ig_armed_forces }
+		}
+		ai_chance = { base = 10 }
+	}
+}
+
+# 42 街头对峙（反对一方压倒执政者时，可能发生）
+nesnd_cabinet.42 = {
+	type = country_event
+	placement = root
+	title = nesnd_cabinet.42.t
+	desc = nesnd_cabinet.42.d
+	flavor = nesnd_cabinet.42.f
+	duration = 3
+	event_image = { video = "votp_barricade" }
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = { has_journal_entry = nesnd_cabinet_journal nesnd_power_has_holder = yes nesnd_power_rival_dominant = yes }
+	immediate = { nesnd_power_save_scopes = yes }
+
+	option = {
+		name = nesnd_cabinet.42.a
+		nesnd_power_add = { BAR = power AMT = 5 }
+		add_radicals = { value = medium_radicals strata = lower }
+		add_modifier = { name = nesnd_power_shamed days = short_modifier_time }
+		ai_chance = { base = 10 }
+	}
+	option = {
+		name = nesnd_cabinet.42.b
+		default_option = yes
+		nesnd_power_sub = { BAR = power AMT = 15 }
+		nesnd_power_center = { AMT = 15 }
+		ai_chance = { base = 20 }
+	}
+	option = {
+		name = nesnd_cabinet.42.c
+		nesnd_power_add = { BAR = intrigue AMT = 30 }
+		ai_chance = { base = 10 }
+	}
+}

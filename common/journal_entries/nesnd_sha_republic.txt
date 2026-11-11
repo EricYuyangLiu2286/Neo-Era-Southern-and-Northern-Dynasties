@@ -1,0 +1,129 @@
+﻿nesnd_sha_snow_republic = {
+    icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+    group = je_group_historical_content
+    can_revolution_inherit = no
+    transferable = no
+    activation_description = { nesnd_sha_native = yes }
+    is_shown_in_lobby = { nesnd_sha_native = yes }
+    is_shown_when_inactive = { nesnd_sha_snow_republic_open = yes }
+    possible = { nesnd_sha_snow_republic_open = yes }
+    immediate = {
+        if = {
+            limit = { NOT = { has_variable = nesnd_sha_route } }
+            trigger_event = { id = nesnd_sha_republic.1 days = 1 popup = yes }
+        }
+    }
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 1000
+
+    scripted_button = nesnd_sha_yan_recruit
+    scripted_button = nesnd_sha_muster
+    scripted_button = nesnd_sha_publish_constitution
+
+    on_weekly_pulse = {
+        effect = {
+            # Also admit saves in which the northern stage closed before this journal was installed.
+            nesnd_sha_enter_yan = yes
+            nesnd_sha_enter_shandong = yes
+            nesnd_sha_enter_overseas = yes
+            nesnd_sha_enter_conspiracy = yes
+            if = {
+                limit = {
+                    has_modifier = nesnd_sha_sole_republic
+                    any_country = {
+                        OR = {
+                            AND = {
+                                c:CNE ?= this
+                                OR = { nesnd_sha_republican_government = yes has_variable = nesnd_cne_republican_rose }
+                            }
+                            AND = { c:NRP ?= this has_variable = nesnd_cne_republican_challenger }
+                        }
+                    }
+                }
+                remove_modifier = nesnd_sha_sole_republic
+                add_modifier = { name = nesnd_sha_sister_republic }
+            }
+        }
+    }
+    on_yearly_pulse = {
+        random_events = {
+            70 = 0
+            5 = nesnd_sha_republic.2
+            5 = nesnd_sha_republic.3
+            5 = nesnd_sha_republic.4
+            5 = nesnd_sha_republic.5
+            5 = nesnd_sha_republic.6
+            5 = nesnd_sha_republic.7
+        }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { c:CHI ?= this }
+                desc = nesnd_sha_united_status
+            }
+            triggered_desc = {
+                trigger = { nesnd_sha_in_china = yes is_unification_candidate = CHI }
+                desc = nesnd_sha_candidate_status
+            }
+            triggered_desc = {
+                trigger = { nesnd_sha_in_china = yes has_technology_researched = pan-nationalism }
+                desc = nesnd_sha_researched_status
+            }
+            triggered_desc = {
+                trigger = { nesnd_sha_in_china = yes }
+                desc = nesnd_sha_unification_status
+            }
+            triggered_desc = { trigger = { has_journal_entry = nesnd_sha_crossing } desc = nesnd_sha_crossing_status }
+            triggered_desc = { trigger = { has_journal_entry = nesnd_sha_qilu } desc = nesnd_sha_qilu_status }
+            triggered_desc = { trigger = { has_variable = nesnd_sha_shandong_succeeded } desc = nesnd_sha_shandong_settled_status }
+            triggered_desc = { trigger = { has_variable = nesnd_sha_shandong_ended } desc = nesnd_sha_qi_time_up }
+            triggered_desc = { trigger = { has_variable = nesnd_sha_yan_ended exists = s:STATE_OUTER_MANCHURIA.region_state:SHA } desc = nesnd_sha_yan_root_port }
+            triggered_desc = { trigger = { has_variable = nesnd_sha_yan_ended } desc = nesnd_sha_yan_root_no_port }
+            triggered_desc = { trigger = { has_journal_entry = nesnd_sha_restore_yan } desc = nesnd_sha_yan_root_active }
+            triggered_desc = { trigger = { has_variable = nesnd_sha_northern_stage_ended } desc = nesnd_sha_northern_stage_closed }
+            triggered_desc = {
+                trigger = { var:nesnd_sha_route ?= flag:nesnd_sha_war }
+                desc = nesnd_sha_war_status
+            }
+            triggered_desc = {
+                trigger = { var:nesnd_sha_route ?= flag:nesnd_sha_peace }
+                desc = nesnd_sha_peace_status
+            }
+            desc = nesnd_sha_undecided_status
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_sha_united_status
+        trigger = {
+            custom_tooltip = { text = nesnd_sha_united_status c:CHI ?= this }
+            # Let the existing CHI culture event resolve first.
+            hidden_trigger = { has_variable = ce_event_culture_1_happened }
+        }
+        effect = {
+            set_variable = nesnd_sha_story_ended
+            trigger_event = { id = nesnd_sha_republic.9 popup = yes }
+        }
+    }
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_sha_overtaken_status
+        trigger = { custom_tooltip = { text = nesnd_sha_overtaken_status exists = c:CHI NOT = { c:CHI ?= this } } }
+        effect = { set_variable = nesnd_sha_story_ended }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            OR = {
+                has_variable = warlord_state
+                NOR = { c:SHA ?= this c:CHI ?= this }
+            }
+        }
+    }
+}

@@ -1,0 +1,140 @@
+﻿# SHA scope. Yan rises in the four required northern states, plus Liaodong and Jilin while CNE still holds them.
+nesnd_sha_raise_yan = {
+    if = {
+        limit = { nesnd_sha_yan_can_rise = yes }
+        c:CNE = {
+            if = { limit = { has_variable_list = nesnd_sha_yan_old_cores } clear_variable_list = nesnd_sha_yan_old_cores }
+            every_scope_state = {
+                limit = { nesnd_sha_yan_region = yes is_incorporated = yes }
+                owner = { add_to_variable_list = { name = nesnd_sha_yan_old_cores target = prev.state_region } }
+            }
+            create_country = {
+                tag = YAN
+                origin = c:CNE
+                state = s:STATE_SONGJIANG.region_state:CNE
+                state = s:STATE_NORTHERN_MANCHURIA.region_state:CNE
+                state = s:STATE_AMUR.region_state:CNE
+                state = s:STATE_OUTER_MANCHURIA.region_state:CNE
+                state = s:STATE_BOLI.region_state:CNE
+                on_created = {
+                    set_variable = nesnd_sha_yan_restored_court
+                    activate_law = law_type:law_monarchy
+                    create_character = {
+                        template = nesnd_sha_yan_xu_jingheng
+                        on_created = { set_character_as_ruler = yes }
+                    }
+                    create_military_formation = {
+                        name = nesnd_sha_yan_restoration_army
+                        type = army
+                        hq_region = s:STATE_SONGJIANG.region
+                        combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = s:STATE_SONGJIANG count = 20 }
+                        combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = s:STATE_SONGJIANG count = 5 }
+                        combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = s:STATE_NORTHERN_MANCHURIA count = 20 }
+                        combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = s:STATE_NORTHERN_MANCHURIA count = 5 }
+                    }
+                    create_character = { is_general = yes interest_group = ig_armed_forces }
+                }
+            }
+        }
+        if = {
+            limit = { exists = c:YAN c:YAN ?= { has_variable = nesnd_sha_yan_restored_court } }
+            s:STATE_SHENGJING.region_state:CNE ?= { set_state_owner = c:YAN }
+            s:STATE_SOUTHERN_MANCHURIA.region_state:CNE ?= { set_state_owner = c:YAN }
+            set_variable = nesnd_sha_yan_rose
+            set_variable = { name = nesnd_sha_yan_partition value = flag:$TERMS$ }
+            if = {
+                limit = { var:nesnd_sha_yan_partition = flag:nesnd_sha_yan_port }
+                c:YAN = { nesnd_sha_yan_extra_infantry = { NAME = nesnd_sha_yan_local_army COUNT = 8 } }
+            }
+            if = {
+                limit = { var:nesnd_sha_route = flag:nesnd_sha_peace }
+                add_treasury = { value = gdp multiply = 0.05 min = 7500 multiply = -1 }
+                c:YAN = { nesnd_sha_yan_extra_infantry = { NAME = nesnd_sha_yan_supplied_army COUNT = 6 } }
+            }
+            if = {
+                limit = { has_variable = nesnd_sha_korean_compact exists = c:KOR }
+                c:KOR = {
+                    change_relations = { country = c:SHA value = 15 }
+                    change_relations = { country = c:YAN value = 15 }
+                }
+            }
+            c:CNE = {
+                end_truce = c:YAN
+                add_modifier = { name = nesnd_sha_yan_disorder months = 6 }
+                if = {
+                    limit = { c:SHA = { var:nesnd_sha_route = flag:nesnd_sha_war } }
+                    create_diplomatic_play = {
+                        name = nesnd_sha_yan_war
+                        type = nesnd_sha_yan_suppression
+                        target_country = c:YAN
+                        add_target_backers = { c:SHA }
+                        war = yes
+                        annex_as_civil_war = no
+                        add_war_goal = { holder = c:CNE target_country = c:YAN type = nesnd_sha_annex_yan primary_demand = yes }
+                        add_war_goal = { holder = c:YAN target_country = c:CNE type = humiliation primary_demand = yes }
+                    }
+                }
+                else = {
+                    create_diplomatic_play = {
+                        name = nesnd_sha_yan_war
+                        type = nesnd_sha_yan_suppression
+                        target_country = c:YAN
+                        war = yes
+                        annex_as_civil_war = no
+                        add_war_goal = { holder = c:CNE target_country = c:YAN type = nesnd_sha_annex_yan primary_demand = yes }
+                        add_war_goal = { holder = c:YAN target_country = c:CNE type = humiliation primary_demand = yes }
+                    }
+                }
+            }
+            if = {
+                limit = { var:nesnd_sha_route = flag:nesnd_sha_war }
+                create_diplomatic_pact = { country = c:YAN type = protectorate }
+                nesnd_sha_yan_deliver_land = yes
+            }
+            trigger_event = { id = nesnd_sha_yan.1 popup = yes }
+        }
+    }
+}
+
+# YAN scope. Both increments are in addition to the 40 infantry and 10 artillery.
+nesnd_sha_yan_extra_infantry = {
+    create_military_formation = {
+        name = $NAME$
+        type = army
+        hq_region = s:STATE_SONGJIANG.region
+        combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = s:STATE_SONGJIANG count = $COUNT$ }
+    }
+    create_character = { is_general = yes interest_group = ig_armed_forces }
+}
+
+# SHA scope. Never take a province from a third country to fulfil Yan's promise.
+nesnd_sha_yan_deliver_land = {
+    s:STATE_AMUR.region_state:YAN ?= { set_state_owner = c:SHA }
+    s:STATE_OUTER_MANCHURIA.region_state:YAN ?= { set_state_owner = c:SHA }
+    if = {
+        limit = { NOT = { var:nesnd_sha_yan_partition ?= flag:nesnd_sha_yan_port } }
+        s:STATE_BOLI.region_state:YAN ?= { set_state_owner = c:SHA }
+    }
+}
+
+nesnd_sha_yan_close = {
+    set_variable = nesnd_sha_yan_ended
+    nesnd_sha_enter_shandong = yes
+    nesnd_sha_enter_overseas = yes
+    remove_variable = nesnd_sha_yan_preparation_window
+    remove_variable = nesnd_sha_yan_preparation_started
+    remove_variable = nesnd_sha_yan_contacts
+    remove_variable = nesnd_sha_yan_council_pending
+    remove_variable = nesnd_sha_yan_rose
+    remove_variable = nesnd_sha_yan_partition
+    remove_variable = nesnd_sha_yan_war_over
+    remove_variable = nesnd_sha_yan_terms_settled
+    remove_variable = nesnd_sha_yan_korean_exiles
+}
+
+nesnd_sha_enter_yan = {
+    if = {
+        limit = { nesnd_sha_yan_open = yes NOT = { has_journal_entry = nesnd_sha_restore_yan } }
+        add_journal_entry = { type = nesnd_sha_restore_yan }
+    }
+}

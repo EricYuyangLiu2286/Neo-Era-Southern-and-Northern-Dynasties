@@ -1,0 +1,31 @@
+﻿nesnd_sha_korean_compact = {
+    texture = "gfx/interface/icons/diplomatic_action_icons/offer_recognition.dds"
+    groups = { general }
+    requires_approval = yes
+    can_use_obligations = no
+    should_notify_third_parties = no
+    show_effect_in_tooltip = yes
+    selectable = { nesnd_sha_yan_preparing = yes }
+    potential = { scope:target_country ?= { c:KOR ?= this } }
+    possible = { nesnd_sha_yan_korean_offer = yes }
+    accept_effect = {
+        if = {
+            limit = { nesnd_sha_yan_korean_offer = yes }
+            custom_tooltip = nesnd_sha_yan_korea_accept_tt
+            hidden_effect = { set_variable = nesnd_sha_korean_compact }
+        }
+    }
+    decline_effect = { set_variable = { name = nesnd_sha_yan_korean_refusal months = 36 } }
+    ai = {
+        evaluation_chance = { value = 0.25 }
+        propose_score = { value = 20 }
+        accept_score = {
+            value = 0
+            add = { desc = DIPLOMATIC_ACCEPTANCE_BASE value = -30 }
+            if = { limit = { "relations(c:SHA)" >= relations_threshold:friendly } add = { desc = nesnd_sha_score_friendly value = 35 } }
+            else_if = { limit = { "relations(c:SHA)" >= relations_threshold:amicable } add = { desc = nesnd_sha_score_warm value = 20 } }
+            if = { limit = { c:CNE ?= { is_at_war = yes } } add = { desc = nesnd_sha_yan_at_war_korea value = 25 } }
+            if = { limit = { c:SHA ?= { army_size >= 10 } } add = { desc = nesnd_sha_yan_ten_battalions value = 10 } }
+        }
+    }
+}

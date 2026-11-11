@@ -1,0 +1,119 @@
+﻿nesnd_sha_foothold = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_historical_content
+    can_revolution_inherit = no
+    transferable = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    activation_description = { nesnd_sha_overseas_ready = yes }
+    is_shown_when_inactive = { nesnd_sha_overseas_ready = yes NOT = { has_variable = nesnd_sha_foothold_started } }
+    possible = { nesnd_sha_overseas_ready = yes NOT = { has_variable = nesnd_sha_foothold_started } }
+    immediate = { set_variable = nesnd_sha_foothold_started }
+    timeout = 3650
+    scripted_button = nesnd_sha_choose_landing
+    status_desc = { desc = nesnd_sha_foothold_status }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = { nesnd_sha_has_african_state = yes }
+        effect = { custom_tooltip = nesnd_sha_ocean_company_tt hidden_effect = { nesnd_sha_enter_overseas = yes } }
+    }
+    outcome = {
+        flags = { timeout }
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        conclusion_desc = JOURNAL_ENTRY_TIMEOUT_CONCLUSION_DESC
+        effect = { remove_variable = nesnd_sha_landing_choice }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { nesnd_sha_native = no }
+
+    }
+}
+
+nesnd_sha_settlement = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_historical_content
+    can_revolution_inherit = no
+    transferable = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    activation_description = { nesnd_sha_settlement_ready = yes }
+    is_shown_when_inactive = { nesnd_sha_settlement_ready = yes }
+    possible = { nesnd_sha_settlement_ready = yes }
+    timeout = 10950
+    scripted_progress_bar = nesnd_sha_sailings
+    scripted_button = nesnd_sha_change_destination
+    scripted_button = nesnd_sha_change_people
+    scripted_button = nesnd_sha_extra_sailings
+    scripted_button = nesnd_sha_expand_transport
+    scripted_button = nesnd_sha_expand_recruitment
+    scripted_button = nesnd_sha_intensive_settlement
+    immediate = {
+        set_variable = nesnd_sha_settlement_started
+        set_variable = { name = nesnd_sha_misses value = 0 }
+        set_variable = { name = nesnd_sha_voyages value = 0 }
+        set_variable = { name = nesnd_sha_sailing_level value = 0 }
+        set_variable = { name = nesnd_sha_capacity value = 5000 }
+        set_variable = { name = nesnd_sha_recruit_level value = 1 }
+        set_variable = { name = nesnd_sha_people value = 1 }
+        nesnd_sha_next_destination = yes
+        add_modifier = { name = nesnd_sha_settlement_office }
+    }
+    on_weekly_pulse = {
+        effect = {
+            if = {
+                limit = { var:nesnd_sha_misses < 3 }
+                if = {
+                    limit = { var:nesnd_sha_sailing_level > 0 }
+                    add_treasury = { value = gdp multiply = -0.00025 multiply = var:nesnd_sha_sailing_level }
+                }
+                if = {
+                    limit = { scope:journal_entry = { "scripted_bar_progress(nesnd_sha_sailings)" >= 100 } }
+                    nesnd_sha_ship_migrants = yes
+                }
+            }
+        }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { var:nesnd_sha_misses >= 3 } desc = nesnd_sha_settlement_paused }
+            desc = nesnd_sha_settlement_status
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = { custom_tooltip = { text = nesnd_sha_seven_states_tt nesnd_sha_has_african_state = yes controlled_colonies_in_africa >= 7 } }
+        effect = {
+            hidden_effect = { nesnd_sha_end_shipping = yes }
+            add_modifier = { name = nesnd_sha_ocean_republic years = 10 }
+            trigger_event = { id = nesnd_sha_overseas.5 popup = yes }
+        }
+    }
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { nesnd_sha_has_african_state = no }
+        effect = { nesnd_sha_end_shipping = yes }
+    }
+    outcome = {
+        flags = { timeout }
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        conclusion_desc = JOURNAL_ENTRY_TIMEOUT_CONCLUSION_DESC
+        effect = { nesnd_sha_end_shipping = yes }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { nesnd_sha_native = no }
+        effect = { nesnd_sha_end_shipping = yes }
+    }
+}

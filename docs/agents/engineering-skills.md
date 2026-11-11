@@ -14,7 +14,7 @@
 | 文档与技能 | `writing-for-agents`。可维护规则放项目文档或 NESND 技能，保留插件缓存原样 |
 | 资料研究 | `research`。本机当前源码、引擎文档为首选原始来源，研究成果放 WORK |
 
-WORK 为 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench`。工具、独立备份、基线、地图工程和测试证据遵循 [目录路由](<C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/references/paths.md>)，不因通用技能默认目录而搬进 MOD。
+WORK 为 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench`。工具、独立备份、基线、地图工程和测试证据遵循 [目录路由](<C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/lookup/paths.md>)，不因通用技能默认目录而搬进 MOD。
 任务索引存项目 `.scratch/`，详细设计及已有证据保留原路径与编号。术语表和 ADR 依 [领域文档约定](domain.md) 按实际决策建立。
 
 ## 版本与审查对象

@@ -1,0 +1,39 @@
+﻿# Character scope. Only the two starting character history entries call this.
+nesnd_sha_begin_presidency = {
+    save_scope_as = nesnd_sha_elected_president
+    set_character_immortal = yes
+    interest_group = { add_modifier = { name = nesnd_sha_presidential_mandate } }
+    owner = {
+        set_variable = { name = nesnd_sha_first_president value = scope:nesnd_sha_elected_president }
+        set_variable = { name = nesnd_sha_elections_completed value = 0 }
+    }
+}
+
+# Country scope. The reference still points to the outgoing president after succession.
+nesnd_sha_end_presidency = {
+    var:nesnd_sha_first_president ?= { set_character_immortal = no }
+    every_interest_group = {
+        limit = { has_modifier = nesnd_sha_presidential_mandate }
+        remove_modifier = nesnd_sha_presidential_mandate
+    }
+    remove_variable = nesnd_sha_first_president
+    remove_variable = nesnd_sha_elections_completed
+}
+
+# Country scope. The protected presidency ends with the president, the republic or its elections.
+nesnd_sha_review_presidency = {
+    if = {
+        limit = {
+            OR = {
+                NOT = { ruler ?= var:nesnd_sha_first_president }
+                nesnd_sha_republican_government = no
+                country_has_voting_franchise = no
+                NOR = {
+                    government_transfer_of_power = presidential_elective
+                    government_transfer_of_power = parliamentary_elective
+                }
+            }
+        }
+        nesnd_sha_end_presidency = yes
+    }
+}

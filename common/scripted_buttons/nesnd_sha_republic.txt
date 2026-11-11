@@ -1,0 +1,50 @@
+﻿nesnd_sha_muster = {
+    name = nesnd_sha_muster
+    desc = nesnd_sha_muster_desc
+    visible = {
+        nesnd_sha_native = yes
+        nesnd_sha_in_china = yes
+        var:nesnd_sha_route ?= flag:nesnd_sha_war
+    }
+    possible = {
+        NOT = { has_modifier = declared_bankruptcy }
+        custom_tooltip = {
+            text = nesnd_sha_muster_cooldown_tt
+            NOT = { has_variable = nesnd_sha_muster_cooldown }
+        }
+    }
+    effect = {
+        add_treasury = { value = gdp multiply = 0.025 min = 3000 multiply = -1 }
+        add_modifier = { name = nesnd_sha_mustered months = 24 }
+        # The 60-month cooldown starts after the 24-month military modifier ends.
+        hidden_effect = { set_variable = { name = nesnd_sha_muster_cooldown months = 84 } }
+    }
+    ai_chance = { value = 0 if = { limit = { is_at_war = yes in_default = no } value = 10 } }
+}
+
+nesnd_sha_publish_constitution = {
+    name = nesnd_sha_publish_constitution
+    desc = nesnd_sha_publish_constitution_desc
+    visible = {
+        nesnd_sha_native = yes
+        nesnd_sha_in_china = yes
+        var:nesnd_sha_route ?= flag:nesnd_sha_peace
+        NOT = { has_variable = nesnd_sha_constitution_published }
+    }
+    possible = { always = yes }
+    effect = {
+        custom_tooltip = nesnd_sha_constitution_relations_tt
+        hidden_effect = {
+            set_variable = nesnd_sha_constitution_published
+            every_country = {
+                limit = { NOT = { this = root } nesnd_sha_in_china = yes }
+                if = {
+                    limit = { nesnd_sha_republican_government = yes }
+                    change_relations = { country = root value = 30 }
+                }
+                else = { change_relations = { country = root value = 15 } }
+            }
+        }
+    }
+    ai_chance = { value = 100 }
+}

@@ -1,0 +1,43 @@
+﻿nesnd_sha_plot_bar = {
+    name = nesnd_sha_plot_bar
+    desc = nesnd_sha_plot_bar_desc
+    default = yes
+    min_value = 0
+    max_value = 100
+    start_value = 30
+    monthly_progress = {
+        c:SHA ?= {
+            if = { limit = { ig:ig_landowners = { is_powerful = yes } } add = { desc = nesnd_sha_plot_landowners_power value = 1 } }
+            if = { limit = { ig:ig_landowners = { is_in_government = yes } } add = { desc = nesnd_sha_plot_landowners_office value = 1 } }
+            if = { limit = { ig:ig_rural_folk = { is_powerful = yes } } add = { desc = nesnd_sha_plot_rural_folk_power value = 0.5 } }
+            if = { limit = { ig:ig_rural_folk = { is_in_government = yes } } add = { desc = nesnd_sha_plot_rural_folk_office value = 0.5 } }
+            if = { limit = { ig:ig_armed_forces = { is_powerful = yes } } add = { desc = nesnd_sha_plot_armed_forces_power value = 0.5 } }
+            if = { limit = { ig:ig_armed_forces = { is_in_government = yes } } add = { desc = nesnd_sha_plot_armed_forces_office value = 0.5 } }
+            if = { limit = { government_legitimacy < 25 } add = { desc = nesnd_sha_plot_legitimacy_25 value = 2 } }
+            else_if = { limit = { government_legitimacy < 50 } add = { desc = nesnd_sha_plot_legitimacy_50 value = 1 } }
+            if = { limit = { radical_fraction = { value >= 0.25 } } add = { desc = nesnd_sha_plot_radicals_25 value = 2 } }
+            else_if = { limit = { radical_fraction = { value >= 0.15 } } add = { desc = nesnd_sha_plot_radicals_15 value = 1 } }
+            if = { limit = { has_modifier = declared_bankruptcy } add = { desc = nesnd_sha_plot_bankruptcy value = 2 } }
+            else_if = { limit = { has_variable = nesnd_sha_plot_sol_falling } add = { desc = nesnd_sha_plot_hardship value = 1 } }
+            if = {
+                limit = {
+                    ig:ig_landowners = { is_powerful = no is_in_government = no }
+                    ig:ig_rural_folk = { is_powerful = no is_in_government = no }
+                    ig:ig_armed_forces = { is_powerful = no is_in_government = no }
+                }
+                subtract = { desc = nesnd_sha_plot_out_of_office value = 1.5 }
+            }
+            if = { limit = { nesnd_sha_plot_schools = yes } subtract = { desc = nesnd_sha_plot_schooling value = 0.5 } }
+            if = {
+                limit = { OR = {
+                    institution_investment_level = { institution = institution_police value >= 2 }
+                    institution_investment_level = { institution = institution_home_affairs value >= 2 }
+                } }
+                subtract = { desc = nesnd_sha_plot_police value = 0.5 }
+            }
+            if = { limit = { has_technology_researched = egalitarianism } subtract = { desc = egalitarianism value = 0.5 } }
+            if = { limit = { has_technology_researched = human_rights } subtract = { desc = human_rights value = 0.5 } }
+            if = { limit = { has_technology_researched = political_agitation } subtract = { desc = political_agitation value = 0.5 } }
+        }
+    }
+}

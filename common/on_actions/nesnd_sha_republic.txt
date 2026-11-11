@@ -1,0 +1,98 @@
+﻿# The first return to Shandong permanently lifts the restriction, including a split state.
+on_state_owner_change = { on_actions = { nesnd_sha_return_to_shandong } }
+on_state_created = { on_actions = { nesnd_sha_return_to_shandong } }
+nesnd_sha_return_to_shandong = {
+    trigger = { state_region = s:STATE_SHANDONG owner ?= { nesnd_sha_native = yes } }
+    effect = {
+        owner = {
+            set_variable = nesnd_sha_returned_to_shandong
+            nesnd_sha_enter_conspiracy = yes
+        }
+    }
+}
+
+# A scripted change of law can bypass can_enact.
+on_law_activated = { on_actions = { nesnd_sha_change_of_government nesnd_sha_presidential_law_changed } }
+nesnd_sha_change_of_government = {
+    trigger = {
+        owner ?= {
+            nesnd_sha_governance_unlocked = no
+            has_game_started = yes
+            nesnd_sha_republican_government = no
+            NOT = { has_variable = nesnd_sha_government_overturned }
+        }
+    }
+    effect = {
+        owner = {
+            set_variable = nesnd_sha_government_overturned
+            add_modifier = { name = nesnd_sha_broken_compact years = 10 }
+        }
+    }
+}
+
+# Recheck a forced change of government after a revolution has settled.
+on_monthly_pulse_country = { on_actions = { nesnd_sha_after_revolution nesnd_sha_review_presidency } }
+nesnd_sha_after_revolution = {
+    trigger = { nesnd_sha_native = yes has_variable = nesnd_sha_route }
+    effect = {
+        if = {
+            limit = { has_variable = nesnd_sha_government_overturned nesnd_sha_republican_government = yes }
+            remove_variable = nesnd_sha_government_overturned
+        }
+        else_if = {
+            limit = {
+                nesnd_sha_governance_unlocked = no
+                nesnd_sha_republican_government = no
+                NOT = { has_variable = nesnd_sha_government_overturned }
+            }
+            set_variable = nesnd_sha_government_overturned
+            add_modifier = { name = nesnd_sha_broken_compact years = 10 }
+        }
+    }
+}
+
+# The imperial annexation demand may remove NRP before its defeat journal can settle.
+on_wargoal_enforced = { on_actions = { nesnd_sha_news_of_suppression } }
+nesnd_sha_news_of_suppression = {
+    trigger = {
+        c:CNE ?= this
+        exists = scope:diplomatic_play
+        scope:diplomatic_play ?= { is_diplomatic_play_type = dp_nesnd_cne_republic }
+    }
+    effect = { c:SHA ?= { if = { limit = { nesnd_sha_native = yes } set_variable = nesnd_sha_suppression_reported } } }
+}
+
+on_election_campaign_end = { on_actions = { nesnd_sha_count_election } }
+nesnd_sha_count_election = {
+    trigger = { has_variable = nesnd_sha_elections_completed }
+    effect = {
+        change_variable = { name = nesnd_sha_elections_completed add = 1 }
+        if = {
+            limit = { var:nesnd_sha_elections_completed >= 3 }
+            # Keep the advantage through the engine's selection of the third winner.
+            trigger_event = { id = nesnd_sha_delay.6 days = 1 }
+        }
+    }
+}
+
+on_new_ruler = { on_actions = { nesnd_sha_president_replaced } }
+nesnd_sha_president_replaced = {
+    trigger = {
+        has_game_started = yes
+        owner ?= {
+            has_variable = nesnd_sha_elections_completed
+            NOT = { var:nesnd_sha_first_president ?= root }
+        }
+    }
+    effect = { owner = { nesnd_sha_end_presidency = yes } }
+}
+
+# Law activations have a Law root. Recheck in country scope after regime changes settle.
+nesnd_sha_presidential_law_changed = {
+    trigger = { has_game_started = yes owner ?= { has_variable = nesnd_sha_elections_completed } }
+    effect = { owner = { trigger_event = { id = nesnd_sha_delay.7 days = 1 } } }
+}
+nesnd_sha_review_presidency = {
+    trigger = { has_variable = nesnd_sha_elections_completed }
+    effect = { nesnd_sha_review_presidency = yes }
+}

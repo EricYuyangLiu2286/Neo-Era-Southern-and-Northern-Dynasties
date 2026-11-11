@@ -1,0 +1,54 @@
+﻿nesnd_sha_enter_conspiracy = {
+    if = {
+        limit = { nesnd_sha_plot_eligible = yes NOT = { has_journal_entry = nesnd_sha_conspiracy } }
+        add_journal_entry = { type = nesnd_sha_conspiracy }
+    }
+}
+# Called in country scope after entry, a progress update, or an intervention.
+nesnd_sha_plot_refresh = {
+    set_local_variable = {
+        name = nesnd_sha_plot_level
+        value = "scope:journal_entry.scripted_bar_progress(nesnd_sha_plot_bar)"
+    }
+    if = {
+        limit = { NOT = { var:nesnd_sha_plot_last_level ?= local_var:nesnd_sha_plot_level } }
+        if = { limit = { has_modifier = nesnd_sha_plot_royal_support } remove_modifier = nesnd_sha_plot_royal_support }
+        if = { limit = { has_modifier = nesnd_sha_plot_corporate_support } remove_modifier = nesnd_sha_plot_corporate_support }
+        set_variable = { name = nesnd_sha_plot_last_level value = local_var:nesnd_sha_plot_level }
+        if = {
+            limit = { local_var:nesnd_sha_plot_level > 0 }
+            if = {
+                limit = { has_variable = nesnd_sha_plot_corporate }
+                add_modifier = { name = nesnd_sha_plot_corporate_support multiplier = { value = c:SHA.var:nesnd_sha_plot_last_level divide = 100 } }
+            }
+            else = { add_modifier = { name = nesnd_sha_plot_royal_support multiplier = { value = c:SHA.var:nesnd_sha_plot_last_level divide = 100 } } }
+        }
+    }
+    if = {
+        limit = { local_var:nesnd_sha_plot_level <= 0 NOT = { has_variable = nesnd_sha_plot_quiet } }
+        set_variable = nesnd_sha_plot_quiet
+        set_variable = { name = nesnd_sha_plot_quiet_year months = 12 }
+    }
+    else_if = {
+        limit = { local_var:nesnd_sha_plot_level > 0 has_variable = nesnd_sha_plot_quiet }
+        remove_variable = nesnd_sha_plot_quiet
+        remove_variable = nesnd_sha_plot_quiet_year
+    }
+}
+nesnd_sha_plot_close = {
+    if = { limit = { has_modifier = nesnd_sha_plot_royal_support } remove_modifier = nesnd_sha_plot_royal_support }
+    if = { limit = { has_modifier = nesnd_sha_plot_corporate_support } remove_modifier = nesnd_sha_plot_corporate_support }
+    if = { limit = { has_modifier = nesnd_sha_plot_royal_ledgers } remove_modifier = nesnd_sha_plot_royal_ledgers }
+    if = { limit = { has_modifier = nesnd_sha_plot_corporate_ledgers } remove_modifier = nesnd_sha_plot_corporate_ledgers }
+    remove_variable = nesnd_sha_plot_quiet
+    remove_variable = nesnd_sha_plot_quiet_year
+    remove_variable = nesnd_sha_plot_last_level
+    remove_variable = nesnd_sha_plot_previous_sol
+    remove_variable = nesnd_sha_plot_sol_falling
+    remove_variable = nesnd_sha_plot_corporate
+}
+nesnd_sha_plot_republic_secure = {
+    nesnd_sha_plot_close = yes
+    add_modifier = { name = nesnd_sha_plot_stable years = 10 }
+    trigger_event = { id = nesnd_sha_plot.1 popup = yes }
+}

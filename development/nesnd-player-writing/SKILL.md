@@ -5,38 +5,27 @@ description: 为 NESND／北明世界撰写或修订中英文玩家文本，包�
 
 # NESND 玩家文字
 
-## 1. 先定叙述者与事实
+本技能管玩家在游戏里读到的中英文字：日志、事件、按钮、进度条、提示和修正名。脚本、作用域，以及字段在界面上的位置归 `nesnd-victoria3`。按第 2 节只读本次需要的文件。
 
-玩家以国家的身份判断局势。日志容许政治判断与反讽。外交来文、财政提案、政府答复用正式、雅致的现代书面语。人物对白、街头口号与民谣依说话者的身份取声。较长的正文应写得出一段政策的来历、利益的归属或制度的变化。
+## 1. 硬规则
 
-取 `original-20261030` 中同字段、相近题材为例，见 [作者样本](references/author-samples.md)。修稿以主 MOD 现文为底本，辨认作者后来的改稿。逐句判断可否保留：原稿准确就保留，仅末句重复就只改末句。成组修订时连读相邻条目，检查是否反复用反问、三项排比、平衡句或同一种结尾。
+- **中文玩家文字绝对禁止使用分号“；”。** 作者 2026-11-11 硬性要求，没有例外。并列或转折改用句号分句，或用逗号加连词。反例：“在任官员不得被推举；考题由执政者拟定。”正例：“在任官员不得被推举。考题由执政者拟定。”交稿前逐键检索“；”。
+- **不编造、不八股。** 不替玩法数值编理由，不预设脚本没有检查的剧情事实，国家用动态国名，不用“结案”“交付”之类公文用语。逐条反例见 [no-invention.md](references/no-invention.md)，写或改文字前对照一遍。
+- **严禁为仿古而漏字、截词或硬省主语、宾语**，用完整的现代书面中文；例子见 [voice.md](references/voice.md)。
+- 不改既有译名和名词；作者的改稿优先。修稿以主 MOD 现文为底本。
+- 样本只取 tag `original-20261030` 的作者原作（[author-samples.md](lookup/author-samples.md)）；当前 `ce_*` 已被代理改过，`nesnd_*` 是代理稿。
+- 改稿逐键保留函数、作用域、共用键、数字、格式参数和颜色；两种语言各自保持键唯一、UTF-8 BOM 和正确语言头（[dynamic-loc.md](lookup/dynamic-loc.md) 末条）。
+- 不用于人物列传（另用 `beiming-biography`），不做脚本验证（归 `nesnd-victoria3`）。
 
-中文优先交代谁采取行动、行动涉及什么权利或资源。按自然语序安排主谓宾，动词可以结句；重点看动作的对象是否明确。“总得有一家先领”隐去了政府的财政决定。两枚改革按钮可以共用“学务与实业均需国库拨款，政府须确定两项事业的先后次序。”机构的权限宜用相应的政治术语。把管辖权写成官署钥匙、把融资写成“开这个口”，都会改变玩家对事项的理解。
+## 2. 路由表
 
-写日本纺织业，农户随农时织布，受雇后按日领薪，工场主开始支配工时。这层利益变化比虚构织工歇息的场景更值得展开。政权及官署称谓依本地制度，南北朝制度查 `nesnd-victoria3/references/north-south-institutions.md`。
+`references/` 是写法，`lookup/` 是样本与函数。
 
-## 2. 按玩家看到文字的时点落笔
-
-| 字段 | 写法 |
-|---|---|
-| 日志 `_reason` | 写历史来路、当下矛盾与各方立场。原作「维持拿破仑王朝」的反问来自工业支出与皇位安危的矛盾。反问也须有实义。 |
-| 事件 `.t`、`.d`、`.f` | 标题简洁点题。正文分清提案、答复与已经发生的结果。引文可以用有出处的诗文或现场人物的话；拟作台词须归于场中人物，署名的引文须有依据。 |
-| 选项、按钮及 `_desc` | 以作决定者的口吻表明选择、理由或条款。外交和公款事项写明对象、权限、用途。人物确有鲜明立场时，可用原作式的讽刺。多枚按钮共用一键，逐一代入联络、暂停、恢复等实际操作核对。 |
-| 进度条条面（顶层 `desc`） | **只写短指标名和读数**：`继续战争：1 / 5 个月`。条面在条内单行显示，不折行；写成“满 5 个月时朝廷……”就会溢出。规则与满条后果放进状态行，或用 `#tooltippable` 挂在条面悬停。周期条目的 `desc` 显示为“+1.00从〈条目〉开始每月”，写成短句，如“尚有反吴国家未参战”。 |
-| 条件、效果、状态行 | 写明读数、门槛、期限和生效时点。原生条件已有清楚提示时避免重复。状态行只报告脚本已经检查的条件。结案行说明具体终止或完成了哪项事务。修正名宜短。 |
-
-**条款与剧透。** 作者定稿：“`[SCOPE.sCountry('india_sender').GetName]`的来使请求结束两国宗藩关系，真正行使国家主权。”再写下次递国书就是重复。合邦来文要保留王公所得年金，以及对土地与人民管辖权的移交。两项都是签约依据。提案用“请求”“拟”“若获准”交代条件，获准、失地或失败的实际结果留在答复与结案。持续显示的日志还须适用于政策或政体改变后的局面。
-
-**英文。** 英文写清行动者及请求，区分 *sovereignty*、*autonomy* 与 *jurisdiction*，让读者知道哪项权力将由谁行使。相同场合沿用相同语体：共用联络按钮可写 “Local preparations for the uprising depend on financial support from our government.” 政治讽刺则可读原作 “Bread and circuses never go out of style.” 专名遵从作者定译；按任务约定同步对应键或将待译键单列。
-
-## 3. 主动使用 Victoria 3 的动态本地化
-
-写中英文时，主动为当前对象、可悬停的概念和实时数值选用文本函数，以加粗与颜色标示决定性的条款。历史叙述保留史称，当前交涉对象优先用动态国名。
-
-- **国旗与国名。** 埃及投资按钮 `nesnd_egypt_investor_fra`（1.15.0）。中文为 `接受[SCOPE.sCountry('nesnd_label_fra').GetName]投资`，英文为 `Choose [SCOPE.sCountry('nesnd_label_fra').GetName] as investment partner`。用 `GetName` 显示带旗国名。同名日志与按钮脚本 `nesnd_egypt_independence.txt` 中，日志开启及月度更新时以 `c:FRA ?= { save_scope_as = nesnd_label_fra }` 保存对象，按钮用 `exists = scope:nesnd_label_fra` 控制可见性。写别的按钮时换成该按钮实际持有的作用域；延迟答复须查显示时的对象。缺少必要作用域时，纯文字任务记录脚本缺口，先用在各分支都成立的称谓。
-- **概念与共用键。** 如 `[concept_diplomatic_play]` 供玩家悬停查看概念，`$ce_cne_land_reform$` 复用日志的正式名称。分别查 GAME 的 `common/game_concepts/` 和对应语言的本地化定义。
-- **实时读数。** 日本国民团结条用 `$nesnd_jp_cohesion_bar_name$：#v [JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|1] / 100#!`。此函数依赖进度条上下文。其他字段查同类调用。
-- **加粗与颜色。** 用 `#bold 地权革命#!` 突出关键政策或条款，用 `#v 24#! 个月` 标出中性期限。收益如 `#g +50#!`，不利的激进派增长可标为 `#r 10%#!`。红绿依效果对玩家的利弊确定，每个标记均以 `#!` 闭合。
-- **改稿校验。** 新写内容主动选用适配字段的动态表达。已有文本若只改语体，逐键保留函数、作用域、共用键、数字、格式参数和颜色。中英文可以调整语序，但要引用同一对象、显示相同数值并表达相同效果。技术错误单独修正。两种语言各自保持键唯一、UTF-8 BOM 和正确语言头。字段上下文详见 `nesnd-victoria3/references/journal-text-contract.md`。
-
-需要旧素材时查 [退役本地化](resources/unused_localisations/README.md)，按逐键来源辨认作者、代理与原版文字，再核对现行设定和脚本。
+| 任务 | 必读 | 可选 |
+|---|---|---|
+| 新写日志、事件、按钮、进度条、提示 | [voice.md](references/voice.md)、[fields.md](references/fields.md)、[no-invention.md](references/no-invention.md) | [author-samples.md](lookup/author-samples.md)、[dynamic-loc.md](lookup/dynamic-loc.md)；字段在界面何处显示：`nesnd-victoria3/lookup/journal-ui.md`；设定：`nesnd-victoria3/lookup/canon/` |
+| 成组改稿（语体、八股、重复句式） | [voice.md](references/voice.md)、[no-invention.md](references/no-invention.md)、[author-samples.md](lookup/author-samples.md) | [fields.md](references/fields.md) |
+| 英文 | [fields.md](references/fields.md) 的“英文”段 | [author-samples.md](lookup/author-samples.md) 的英文表 |
+| 动态国名、实时读数、概念、颜色 | [dynamic-loc.md](lookup/dynamic-loc.md) | 作用域与保存对象：`nesnd-victoria3/references/script-safety.md` |
+| 南北朝制度与称谓 | `nesnd-victoria3/lookup/canon/north-south-institutions.md` | — |
+| 找旧素材 | [退役本地化](resources/unused_localisations/README.md)：按逐键来源辨认作者、代理与原版文字，再核对现行设定和脚本 | — |

@@ -1,0 +1,173 @@
+﻿nesnd_sha_relief = {
+    name = nesnd_sha_relief
+    desc = nesnd_sha_relief_desc
+    visible = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_far_north }
+    possible = {
+        NOT = { has_modifier = declared_bankruptcy }
+        trigger_if = {
+            limit = { exists = c:RUS }
+            c:RUS ?= { any_scope_state = { nesnd_sha_russian_borderland = yes } }
+            NOT = { has_war_with = c:RUS }
+        }
+        trigger_else = { always = no }
+        NOT = { has_modifier = nesnd_sha_aid_expense }
+        custom_tooltip = { text = nesnd_sha_relief_ready_tt NOR = { has_variable = nesnd_sha_aid_cooldown has_variable = nesnd_sha_aid_quarters has_variable = nesnd_sha_lake_independent } }
+    }
+    effect = {
+        add_modifier = { name = nesnd_sha_aid_expense months = 12 multiplier = { value = gdp multiply = 0.0005 } }
+        custom_tooltip = nesnd_sha_relief_terms_tt
+        hidden_effect = {
+            set_variable = nesnd_sha_aid_sent
+            if = {
+                limit = {
+                    exists = c:RUS
+                    NOT = { has_diplomatic_pact = { who = c:RUS type = support_separatism is_initiator = yes } }
+                }
+                create_diplomatic_pact = { country = c:RUS type = support_separatism }
+                set_variable = nesnd_sha_funded_pact
+            }
+            nesnd_sha_aid_communities = { SHARE = 0.10 }
+            set_variable = { name = nesnd_sha_aid_quarters value = 4 }
+            c:RUS ?= { trigger_event = { id = nesnd_sha_delay.4 months = 3 } }
+        }
+    }
+    ai_chance = { value = 10 if = { limit = { in_default = yes } value = 0 } }
+}
+
+nesnd_sha_volunteers = {
+    name = nesnd_sha_volunteers
+    desc = nesnd_sha_volunteers_desc
+    visible = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_far_north }
+    possible = {
+        NOT = { has_modifier = declared_bankruptcy }
+        exists = s:STATE_YAKUTSK.region_state:SHA
+        custom_tooltip = { text = nesnd_sha_halfway_tt nesnd_sha_liaodong_progress >= 50 }
+        custom_tooltip = { text = nesnd_sha_no_volunteers_tt NOT = { has_variable = nesnd_sha_volunteers_raised } }
+    }
+    effect = {
+        add_treasury = nesnd_sha_medium_cost
+        create_military_formation = {
+            name = nesnd_sha_volunteer_army
+            type = army
+            hq_region = s:STATE_YAKUTSK.region
+            combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = s:STATE_YAKUTSK count = 6 }
+            combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = s:STATE_YAKUTSK count = 1 }
+        }
+        ig:ig_armed_forces = { add_modifier = { name = nesnd_sha_petition_heard years = 5 } }
+        hidden_effect = { set_variable = nesnd_sha_volunteers_raised }
+    }
+    ai_chance = { value = 100 }
+}
+
+nesnd_sha_arms = {
+    name = nesnd_sha_arms
+    desc = nesnd_sha_arms_desc
+    visible = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_far_north }
+    possible = {
+        NOT = { has_modifier = declared_bankruptcy }
+        trigger_if = {
+            limit = { exists = c:HUS }
+            NOT = { has_war_with = c:HUS }
+        }
+        trigger_else = { always = no }
+        NOT = { has_modifier = nesnd_sha_arms_contract }
+    }
+    effect = {
+        add_treasury = {
+            value = nesnd_sha_medium_cost
+            if = { limit = { c:HUS ?= { has_modifier = nesnd_hus_west_triumph } } multiply = 0.5 }
+        }
+        add_modifier = { name = nesnd_sha_arms_contract months = 24 }
+    }
+    ai_chance = { value = 0 if = { limit = { exists = var:nesnd_sha_seceder in_default = no } value = 10 } }
+}
+
+nesnd_sha_reunite = {
+    name = nesnd_sha_reunite
+    desc = nesnd_sha_reunite_desc
+    visible = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_far_north }
+    possible = {
+        custom_tooltip = { text = nesnd_sha_lake_free_tt nesnd_sha_can_take_lake = yes }
+    }
+    effect = {
+        custom_tooltip = nesnd_sha_merge_wargoal_tt
+        hidden_effect = {
+            if = {
+                limit = { nesnd_sha_can_take_lake = yes }
+                create_diplomatic_play = {
+                    name = nesnd_sha_annex_lake
+                    type = nesnd_sha_annex_lake
+                    target_country = var:nesnd_sha_seceder
+                    add_war_goal = { holder = c:SHA target_country = var:nesnd_sha_seceder type = annex_country primary_demand = yes }
+                    add_war_goal = { holder = var:nesnd_sha_seceder target_country = c:SHA type = humiliation primary_demand = yes }
+                }
+            }
+        }
+    }
+    ai_chance = { value = 100 }
+}
+
+nesnd_sha_prospect = {
+    name = nesnd_sha_prospect
+    desc = nesnd_sha_prospect_desc
+    visible = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_gold_alliance }
+    possible = {
+        NOT = { has_modifier = declared_bankruptcy }
+        custom_tooltip = { text = nesnd_sha_survey_land_tt any_scope_state = { nesnd_sha_survey_region = yes } }
+        custom_tooltip = { text = nesnd_sha_survey_deposit_tt any_scope_state = { nesnd_sha_survey_state = yes } }
+        custom_tooltip = { text = nesnd_sha_survey_ready_tt NOT = { has_variable = nesnd_sha_survey_cooldown } }
+        custom_tooltip = { text = nesnd_sha_survey_limit_tt trigger_if = { limit = { has_variable = nesnd_sha_surveys } var:nesnd_sha_surveys < 3 } }
+    }
+    effect = {
+        show_as_tooltip = {
+            add_treasury = nesnd_sha_medium_cost
+            trigger_event = { id = nesnd_sha_north.7 popup = yes }
+        }
+        hidden_effect = {
+            ordered_scope_state = {
+                limit = { nesnd_sha_survey_state = yes }
+                order_by = nesnd_sha_gold_left
+                position = 0
+                check_range_bounds = no
+                save_scope_as = nesnd_sha_diggings
+            }
+            if = {
+                limit = { exists = scope:nesnd_sha_diggings }
+                scope:nesnd_sha_diggings = { force_resource_discovery = building_gold_field }
+                add_treasury = nesnd_sha_medium_cost
+                if = { limit = { NOT = { has_variable = nesnd_sha_surveys } } set_variable = { name = nesnd_sha_surveys value = 0 } }
+                change_variable = { name = nesnd_sha_surveys add = 1 }
+                set_variable = { name = nesnd_sha_survey_cooldown months = 24 }
+                trigger_event = { id = nesnd_sha_north.7 popup = yes }
+            }
+        }
+    }
+    ai_chance = { value = 25 if = { limit = { in_default = yes } value = 0 } }
+}
+
+nesnd_sha_attract_exiles = {
+    name = nesnd_sha_attract_exiles
+    desc = nesnd_sha_attract_exiles_desc
+    visible = { nesnd_sha_native = yes has_journal_entry = nesnd_sha_gold_alliance }
+    possible = {
+        NOT = { has_modifier = declared_bankruptcy }
+        trigger_if = {
+            limit = { exists = c:CNE }
+            NOT = { has_war_with = c:CNE }
+        }
+        trigger_else = { always = no }
+        c:CNE ?= { country_can_have_mass_migration_to = root any_scope_pop = { has_pop_culture = han } }
+        cu:han = { culture_can_have_mass_migration_to_country = root }
+        any_scope_state = { state_is_eligible_as_mass_migration_target = yes }
+        custom_tooltip = { text = nesnd_sha_ships_ready_tt NOT = { has_variable = nesnd_sha_exile_ships } }
+    }
+    effect = {
+        add_treasury = nesnd_sha_recruitment_cost
+        random_scope_state = {
+            limit = { state_is_eligible_as_mass_migration_target = yes }
+            create_mass_migration = { origin = c:CNE culture = cu:han }
+        }
+        hidden_effect = { set_variable = { name = nesnd_sha_exile_ships months = 36 } }
+    }
+    ai_chance = { value = 10 if = { limit = { in_default = yes } value = 0 } }
+}

@@ -1,12 +1,19 @@
 # 内容树：梳理一个系统的结构
 
-工具在工作台 `tools/content_tree/`，用法见其 `README.md`。给定根（JE、事件、决议 id 或国家 tag），脚本从全局引用索引里取邻居，代理逐项判定，最后出离线 HTML、节点与边 JSON 和覆盖率报告。
+> 何时读：改造、审查或向作者说明一条日志链或一个系统之前；需要“某对象连到哪里”的有出处的回答时。不必读：只改一处已知的引用。
+
+现行工具是 **V3-content-tree（v3tree）**，在 `D:\Users\Eric Liu\OneDrive\Documents\Modings\V3-content-tree`（只登记，不移动）。用法见其 `README.zh-CN.md` 与 `AGENTS.md`；配置、判定与渲染流程在其 `docs/zh/`。给定根（JE、事件、决议 id 或国家 tag），脚本从全局引用索引里取邻居，代理逐项判定，最后出离线 HTML、节点与边 JSON 和覆盖率报告。常用命令：
+
+- `python run.py index --config <配置>`：MOD 改动后重建索引。
+- `python run.py near <节点> --json --config <配置>`：一个节点的直接邻居，每条带文件:行号。登莱各批的 `neighbors.py`（`WORK/reports/denglai-route/batch*/`）是批量调用的样例。
+- `python run.py new / expand / render`：建用例、列待判定邻居、出图。
+
+工作台 `WORK/tools/content_tree/` 是它的前身（2026-11-08），旧用例仍可读，新工作用 v3tree。
 
 ## 什么时候用
 
 - 改造、审查或向作者说明一条日志链或一个系统之前，先跑一次内容树，弄清入口、分支和结局。
 - 报告第 8 节（只写不读、只读不写、无调用、仅提示未执行、禁用分支）当作待核对清单，逐条回原文确认后再提出；不顺手修改。
-- MOD 改动后先 `python content_tree.py index` 重建索引。
 
 ## 规则
 
@@ -17,3 +24,5 @@
    - 正例：它开局对东洲开启，两个按钮选满蒙编户或原住民编户，结局是两部编户法，属于“人口接纳”，判为同主题。
 4. **共享对象已纳入时不另画软边。** 写读关系已作为硬边画在对象节点上；对象未纳入（通用变量、人口、法律）时才判软边。
 5. **漏抓先修索引。** 反向检查列出的未解释出现，先判断是索引漏抓还是同名不同对象；漏抓就修 `ct_index.py` 重跑，不在判定文件里手工补边。
+
+实例：地权革命的内容树报告 `WORK/reports/2026-11-09-land-review/`（`report.md`、`map.html`、`decisions.txt`，按钮核对见 `button-audit.md`），可作判定写法与第 8 节核对清单的样板。

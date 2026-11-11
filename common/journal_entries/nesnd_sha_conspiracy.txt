@@ -1,0 +1,119 @@
+﻿nesnd_sha_conspiracy = {
+    icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+    group = je_group_historical_content
+    activation_description = { nesnd_sha_plot_eligible = yes }
+    is_shown_when_inactive = { nesnd_sha_plot_eligible = yes }
+    possible = { nesnd_sha_plot_eligible = yes }
+    can_revolution_inherit = no
+    transferable = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    timeout = 9125
+    scripted_progress_bar = nesnd_sha_plot_bar
+    scripted_button = nesnd_sha_plot_investigate
+    scripted_button = nesnd_sha_plot_publish
+    immediate = {
+        set_variable = nesnd_sha_plot_started
+        set_variable = { name = nesnd_sha_plot_previous_sol value = average_sol }
+        if = {
+            limit = { has_technology_researched = corporatism }
+            set_variable = nesnd_sha_plot_corporate
+            if = {
+                limit = { NOT = { any_political_movement = { is_political_movement_type = movement_corporatist } } }
+                create_political_movement = { type = movement_corporatist }
+            }
+        }
+        else_if = {
+            limit = { NOT = { any_political_movement = { is_political_movement_type = movement_royalist_constitutional } } }
+            create_political_movement = { type = movement_royalist_constitutional }
+        }
+        nesnd_sha_plot_refresh = yes
+    }
+    on_monthly_pulse = {
+        effect = {
+            if = { limit = { average_sol < var:nesnd_sha_plot_previous_sol } set_variable = nesnd_sha_plot_sol_falling }
+            else = { remove_variable = nesnd_sha_plot_sol_falling }
+            set_variable = { name = nesnd_sha_plot_previous_sol value = average_sol }
+        }
+    }
+    on_weekly_pulse = { effect = { nesnd_sha_plot_refresh = yes } }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_sha_plot_quiet } desc = nesnd_sha_plot_quiet_status }
+            triggered_desc = { trigger = { has_variable = nesnd_sha_plot_corporate } desc = nesnd_sha_plot_corporate_status }
+            desc = nesnd_sha_plot_royal_status
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { OR = { nesnd_sha_native = no nesnd_sha_republican_government = no } }
+        effect = { nesnd_sha_plot_close = yes }
+    }
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_sha_plot_coup_tt
+        trigger = {
+            nesnd_sha_native = yes
+            nesnd_sha_republican_government = yes
+            custom_tooltip = {
+                text = nesnd_sha_plot_coup_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_sha_plot_bar)" >= 100 }
+                radical_fraction = { value >= 0.20 }
+            }
+        }
+        effect = {
+            if = {
+                limit = { has_variable = nesnd_sha_plot_corporate }
+                activate_law = law_type:law_corporate_state
+                trigger_event = { id = nesnd_sha_plot.3 popup = yes }
+            }
+            else = {
+                activate_law = law_type:law_monarchy
+                trigger_event = { id = nesnd_sha_plot.2 popup = yes }
+            }
+            nesnd_sha_plot_close = yes
+            add_modifier = { name = nesnd_sha_plot_new_order years = 20 }
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_sha_plot_stable
+        trigger = {
+            nesnd_sha_native = yes
+            nesnd_sha_republican_government = yes
+            OR = {
+                custom_tooltip = {
+                    text = nesnd_sha_plot_quiet_tt
+                    has_variable = nesnd_sha_plot_quiet
+                    NOT = { has_variable = nesnd_sha_plot_quiet_year }
+                    scope:journal_entry = { "scripted_bar_progress(nesnd_sha_plot_bar)" <= 0 }
+                }
+                custom_tooltip = {
+                    text = nesnd_sha_plot_institutions_tt
+                    ig:ig_landowners = { is_marginal = yes }
+                    ig:ig_rural_folk = { is_marginal = yes }
+                    ig:ig_armed_forces = { is_marginal = yes }
+                    nesnd_sha_plot_schools = yes
+                    calc_true_if = {
+                        amount >= 2
+                        has_technology_researched = egalitarianism
+                        has_technology_researched = human_rights
+                        has_technology_researched = political_agitation
+                    }
+                }
+            }
+        }
+        effect = { nesnd_sha_plot_republic_secure = yes }
+    }
+    outcome = {
+        flags = { timeout }
+        header = nesnd_sha_plot_deadline
+        effect_header = nesnd_sha_plot_on_deadline
+        conclusion_desc = nesnd_sha_plot_stable
+        effect = { nesnd_sha_plot_republic_secure = yes }
+    }
+}

@@ -1,0 +1,136 @@
+﻿nesnd_sha_restore_yan = {
+    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    group = je_group_historical_content
+    activation_description = { nesnd_sha_yan_open = yes }
+    is_shown_when_inactive = { nesnd_sha_yan_open = yes }
+    possible = { nesnd_sha_yan_open = yes }
+    can_revolution_inherit = no
+    transferable = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+
+    # The 12-year limit is for launching the rising. A war started in year 12 may run longer.
+    immediate = {
+        # Text shows the northern government's current name.
+        if = { limit = { exists = c:CNE } set_variable = { name = nesnd_sha_yan_north value = c:CNE } }
+        if = {
+            limit = { NOT = { has_variable = nesnd_sha_yan_preparation_started } }
+            set_variable = nesnd_sha_yan_preparation_started
+            set_variable = { name = nesnd_sha_yan_preparation_window days = 4380 }
+        }
+    }
+    scripted_progress_bar = nesnd_sha_yan_banner
+    scripted_button = nesnd_sha_yan_subsidy
+
+    on_weekly_pulse = {
+        effect = {
+            if = { limit = { exists = c:CNE } set_variable = { name = nesnd_sha_yan_north value = c:CNE } }
+            if = {
+                limit = {
+                    nesnd_sha_yan_preparing = yes
+                    NOT = { exists = c:KOR }
+                    NOT = { has_variable = nesnd_sha_yan_korean_exiles }
+                }
+                set_variable = nesnd_sha_yan_korean_exiles
+                scope:journal_entry = { add_progress = { name = nesnd_sha_yan_banner value = 10 } }
+                trigger_event = { id = nesnd_sha_yan.7 popup = yes }
+            }
+            if = {
+                limit = { nesnd_sha_yan_can_rise = yes NOT = { has_variable = nesnd_sha_yan_council_pending } }
+                set_variable = { name = nesnd_sha_yan_council_pending days = 7 }
+                trigger_event = { id = nesnd_sha_yan.2 popup = yes }
+            }
+            if = {
+                limit = {
+                    has_variable = nesnd_sha_yan_war_over
+                    NOT = { has_variable = nesnd_sha_yan_terms_settled }
+                    c:YAN ?= { has_variable = nesnd_sha_yan_restored_court }
+                    exists = c:YAN
+                }
+                if = {
+                    limit = { var:nesnd_sha_route ?= flag:nesnd_sha_peace }
+                    nesnd_sha_yan_deliver_land = yes
+                    if = {
+                        limit = { nesnd_sha_yan_holds_terms = yes NOT = { has_treaty_alliance_with = { TARGET = c:YAN } } }
+                        create_treaty = {
+                            first_country = c:SHA second_country = c:YAN is_draft = no
+                            articles_to_create = { { article = alliance } }
+                        }
+                    }
+                }
+                set_variable = nesnd_sha_yan_terms_settled
+            }
+        }
+    }
+    on_yearly_pulse = {
+        random_events = {
+            70 = 0
+            15 = nesnd_sha_yan.5
+            15 = nesnd_sha_yan.6
+        }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_sha_yan_rose var:nesnd_sha_route ?= flag:nesnd_sha_peace } desc = nesnd_sha_yan_observer_status }
+            triggered_desc = { trigger = { has_variable = nesnd_sha_yan_rose } desc = nesnd_sha_yan_war_status }
+            triggered_desc = { trigger = { exists = c:YAN } desc = nesnd_sha_yan_existing_status }
+            triggered_desc = { trigger = { scope:journal_entry ?= { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 100 } } desc = nesnd_sha_yan_ready_status }
+            desc = nesnd_sha_yan_prep_status
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_sha_yan_complete_desc
+        trigger = {
+            custom_tooltip = { text = nesnd_sha_yan_survived_tt has_variable = nesnd_sha_yan_terms_settled exists = c:YAN }
+            custom_tooltip = { text = nesnd_sha_yan_holds_terms_tt nesnd_sha_yan_holds_terms = yes }
+        }
+        effect = {
+            trigger_event = { id = nesnd_sha_yan.3 popup = yes }
+            nesnd_sha_yan_close = yes
+        }
+    }
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_sha_yan_defeat_desc
+        trigger = { custom_tooltip = {
+            text = nesnd_sha_yan_defeat_tt
+            has_variable = nesnd_sha_yan_rose
+            OR = {
+                NOT = { exists = c:YAN }
+                AND = { has_variable = nesnd_sha_yan_terms_settled nesnd_sha_yan_holds_terms = no }
+            }
+        } }
+        effect = {
+            c:CNE ?= { change_relations = { country = c:SHA value = -50 } }
+            if = {
+                limit = { var:nesnd_sha_route ?= flag:nesnd_sha_war }
+                add_modifier = { name = nesnd_sha_failed_expedition years = 5 }
+            }
+            else = { ig:ig_intelligentsia = { add_modifier = { name = nesnd_sha_yan_disavowed years = 5 } } }
+            trigger_event = { id = nesnd_sha_yan.4 popup = yes }
+            nesnd_sha_yan_close = yes
+        }
+    }
+    outcome = {
+        header = nesnd_sha_yan_time_header
+        effect_header = nesnd_sha_yan_time_effect_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_sha_yan_timeout_desc
+        trigger = { custom_tooltip = {
+            text = nesnd_sha_yan_time_tt
+            has_variable = nesnd_sha_yan_preparation_started
+            NOR = { has_variable = nesnd_sha_yan_preparation_window has_variable = nesnd_sha_yan_rose }
+        } }
+        effect = { trigger_event = { id = nesnd_sha_yan.8 popup = yes } nesnd_sha_yan_close = yes }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { nesnd_sha_native = no }
+        effect = { nesnd_sha_yan_close = yes }
+    }
+}

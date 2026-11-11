@@ -1,0 +1,500 @@
+﻿# 「宫廷力量」(nesnd_palace_*) 与「执政者与派系」(nesnd_cabinet_*) 的按钮。仿原版 08_tsarpoints_buttons.txt：
+# cost 只作卡片显示，实际扣费在 effect 中；AI 花费后至少留 20 点。
+# 卡片底图在 gfx/interface/illustrations/journal/nesnd_power/。宫廷按钮带 tag nesnd_palace，卡片据此显示宫廷或共和的费用图标。
+
+########## 宫廷力量 ##########
+
+nesnd_palace_btn_law = {
+	name = nesnd_palace_btn_law
+	desc = nesnd_palace_btn_law_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_palace_law.dds"
+	tags = { nesnd_palace }
+	cost = nesnd_power_cost_large
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = large }
+		enacting_any_law = yes
+		trigger_if = {
+			limit = { enacting_any_law = yes }
+			custom_tooltip = {
+				text = nesnd_palace_cond_holder_backs_law
+				nesnd_power_has_holder = yes
+				var:nesnd_power_holder ?= { law_enactment_stance = { law = owner.currently_enacting_law.type value > neutral } }
+			}
+		}
+	}
+	effect = {
+		nesnd_power_pay = { COST = large }
+		add_enactment_phase = 1
+		nesnd_power_add = { BAR = balance AMT = 8 }
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				nesnd_power_ai_can_spare = { COST = large }
+				enacting_any_law = yes
+				ruler ?= { law_enactment_stance = { law = owner.currently_enacting_law.type value > neutral } }
+			}
+			add = 60
+		}
+	}
+}
+
+nesnd_palace_btn_reward = {
+	name = nesnd_palace_btn_reward
+	desc = nesnd_palace_btn_reward_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_palace_reward.dds"
+	tags = { nesnd_palace }
+	cost = nesnd_power_cost_regular
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = regular }
+		custom_tooltip = { text = nesnd_palace_cond_has_holder_ig nesnd_power_has_holder = yes exists = var:nesnd_power_holder_ig }
+	}
+	effect = {
+		nesnd_power_pay = { COST = regular }
+		var:nesnd_power_holder_ig ?= { add_modifier = { name = nesnd_power_reward days = normal_modifier_time } }
+		nesnd_power_add = { BAR = balance AMT = 10 }
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = { nesnd_power_ai_can_spare = { COST = regular } exists = var:nesnd_power_holder_ig nesnd_power_b < 65 }
+			add = 5
+			if = { limit = { var:nesnd_power_holder_ig ?= { ig_approval < 0 } } add = 20 }
+		}
+	}
+}
+
+nesnd_palace_btn_placate = {
+	name = nesnd_palace_btn_placate
+	desc = nesnd_palace_btn_placate_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_palace_placate.dds"
+	tags = { nesnd_palace }
+	cost = nesnd_power_cost_placate
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = placate }
+		custom_tooltip = { text = nesnd_palace_cond_has_holder nesnd_power_has_holder = yes }
+	}
+	effect = {
+		nesnd_power_pay = { COST = placate }
+		if = {
+			limit = { nesnd_power_case_a = yes }
+			var:nesnd_power_top_ig ?= { add_modifier = { name = nesnd_power_placated days = normal_modifier_time } }
+		}
+		else = {
+			every_interest_group = {
+				limit = { is_in_government = yes NOT = { root.var:nesnd_power_holder_ig ?= this } }
+				add_modifier = { name = nesnd_power_placated_small days = normal_modifier_time }
+			}
+		}
+		nesnd_power_center = { AMT = 15 }
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = { nesnd_power_ai_can_spare = { COST = placate } }
+			add = 5
+			if = { limit = { OR = { nesnd_power_b >= 70 nesnd_power_b <= 30 } } add = 35 }
+		}
+	}
+}
+
+nesnd_palace_btn_free_rein = {
+	name = nesnd_palace_btn_free_rein
+	desc = nesnd_palace_btn_free_rein_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_palace_free_rein.dds"
+	tags = { nesnd_palace }
+	cost = nesnd_power_cost_free
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_palace_cond_has_holder nesnd_power_has_holder = yes }
+	}
+	effect = {
+		if = {
+			limit = { var:nesnd_power_type ?= 3 }
+			nesnd_power_add = { BAR = power AMT = 20 }
+		}
+		else = {
+			nesnd_power_add = { BAR = power AMT = 15 }
+		}
+		if = {
+			limit = { var:nesnd_power_type ?= 1 }
+			nesnd_power_add = { BAR = balance AMT = 8 }
+		}
+		else = {
+			nesnd_power_add = { BAR = balance AMT = 15 }
+		}
+		if = {
+			limit = { nesnd_power_case_a = yes }
+			var:nesnd_power_top_ig ?= { add_modifier = { name = nesnd_power_slighted days = short_modifier_time } }
+		}
+		else = {
+			every_interest_group = {
+				limit = { NOT = { root.var:nesnd_power_holder_ig ?= this } }
+				add_modifier = { name = nesnd_power_slighted days = short_modifier_time }
+			}
+		}
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_p < 30 nesnd_power_b <= 65 } add = 20 }
+	}
+}
+
+nesnd_palace_btn_restrain = {
+	name = nesnd_palace_btn_restrain
+	desc = nesnd_palace_btn_restrain_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_palace_restrain.dds"
+	tags = { nesnd_palace }
+	cost = nesnd_power_cost_restrain
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = restrain }
+		custom_tooltip = { text = nesnd_palace_cond_has_holder nesnd_power_has_holder = yes }
+	}
+	effect = {
+		nesnd_power_pay = { COST = restrain }
+		add_modifier = { name = nesnd_power_restraint days = short_modifier_time }
+		nesnd_power_sub = { BAR = intrigue AMT = 20 }
+		# 统治者（执政者）越得人心，越能把平衡拉回中点。
+		if = {
+			limit = { ruler ?= { popularity >= 20 } }
+			nesnd_power_center = { AMT = 15 }
+		}
+		else_if = {
+			limit = { ruler ?= { popularity <= -20 } }
+			nesnd_power_center = { AMT = 5 }
+		}
+		else = {
+			nesnd_power_center = { AMT = 10 }
+		}
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_p >= 60 } add = 20 }
+		if = { limit = { nesnd_power_p >= 70 } add = 30 }
+	}
+}
+
+nesnd_palace_btn_calm = {
+	name = nesnd_palace_btn_calm
+	desc = nesnd_palace_btn_calm_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_palace_calm.dds"
+	tags = { nesnd_palace }
+	cost = nesnd_power_cost_regular
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = regular }
+		custom_tooltip = { text = nesnd_power_cond_intrigue_30 nesnd_power_i >= 30 }
+	}
+	effect = {
+		nesnd_power_pay = { COST = regular }
+		nesnd_power_sub = { BAR = intrigue AMT = 40 }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_ai_can_spare = { COST = regular } nesnd_power_i >= 70 } add = 15 }
+	}
+}
+
+nesnd_palace_btn_press_rival = {
+	name = nesnd_palace_btn_press_rival
+	desc = nesnd_palace_btn_press_rival_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_palace_press_rival.dds"
+	tags = { nesnd_palace }
+	cost = nesnd_power_cost_large
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_power_cond_case_a nesnd_power_case_a = yes }
+		nesnd_power_can_afford = { COST = large }
+		custom_tooltip = { text = nesnd_power_cond_balance_le_20 nesnd_power_b <= 20 }
+		trigger_if = {
+			limit = { exists = var:nesnd_power_leader }
+			var:nesnd_power_leader ?= { nesnd_power_character_removable = yes }
+		}
+		trigger_else = { always = no }
+	}
+	effect = {
+		nesnd_power_pay = { COST = large }
+		custom_tooltip = nesnd_palace_btn_press_rival_tt
+		hidden_effect = { trigger_event = { id = nesnd_palace.26 popup = yes } }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_ai_can_spare = { COST = large } } add = 5 }
+	}
+}
+
+nesnd_palace_btn_curb = {
+	name = nesnd_palace_btn_curb
+	desc = nesnd_palace_btn_curb_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_palace_curb.dds"
+	tags = { nesnd_palace }
+	cost = nesnd_power_cost_large
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_power_cond_case_b nesnd_power_case_b = yes }
+		nesnd_power_can_afford = { COST = large }
+		custom_tooltip = { text = nesnd_power_cond_balance_ge_80 nesnd_power_b >= 80 }
+		trigger_if = {
+			limit = { exists = var:nesnd_power_holder }
+			var:nesnd_power_holder ?= { nesnd_power_character_removable = yes }
+		}
+		trigger_else = { always = no }
+	}
+	effect = {
+		nesnd_power_pay = { COST = large }
+		custom_tooltip = nesnd_palace_btn_curb_tt
+		hidden_effect = { trigger_event = { id = nesnd_palace.25 popup = yes } }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_ai_can_spare = { COST = large } } add = 5 }
+	}
+}
+
+########## 执政者与派系 ##########
+
+nesnd_cabinet_btn_law = {
+	name = nesnd_cabinet_btn_law
+	desc = nesnd_cabinet_btn_law_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_law.dds"
+	cost = nesnd_power_cost_large
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = large }
+		enacting_any_law = yes
+		trigger_if = {
+			limit = { enacting_any_law = yes }
+			custom_tooltip = {
+				text = nesnd_cabinet_cond_holder_backs_law
+				nesnd_power_has_holder = yes
+				var:nesnd_power_holder ?= { law_enactment_stance = { law = owner.currently_enacting_law.type value > neutral } }
+			}
+		}
+	}
+	effect = {
+		nesnd_power_pay = { COST = large }
+		add_enactment_phase = 1
+		nesnd_power_add = { BAR = balance AMT = 8 }
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				nesnd_power_ai_can_spare = { COST = large }
+				enacting_any_law = yes
+				ruler ?= { law_enactment_stance = { law = owner.currently_enacting_law.type value > neutral } }
+			}
+			add = 60
+		}
+	}
+}
+
+nesnd_cabinet_btn_reward = {
+	name = nesnd_cabinet_btn_reward
+	desc = nesnd_cabinet_btn_reward_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_reward.dds"
+	cost = nesnd_power_cost_regular
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = regular }
+		custom_tooltip = { text = nesnd_cabinet_cond_has_holder_ig nesnd_power_has_holder = yes exists = var:nesnd_power_holder_ig }
+	}
+	effect = {
+		nesnd_power_pay = { COST = regular }
+		var:nesnd_power_holder_ig ?= { add_modifier = { name = nesnd_power_reward days = normal_modifier_time } }
+		nesnd_power_add = { BAR = balance AMT = 10 }
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = { nesnd_power_ai_can_spare = { COST = regular } exists = var:nesnd_power_holder_ig nesnd_power_b < 65 }
+			add = 5
+			if = { limit = { var:nesnd_power_holder_ig ?= { ig_approval < 0 } } add = 20 }
+		}
+	}
+}
+
+nesnd_cabinet_btn_placate = {
+	name = nesnd_cabinet_btn_placate
+	desc = nesnd_cabinet_btn_placate_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_placate.dds"
+	cost = nesnd_power_cost_placate
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = placate }
+		custom_tooltip = { text = nesnd_cabinet_cond_has_holder nesnd_power_has_holder = yes }
+	}
+	effect = {
+		nesnd_power_pay = { COST = placate }
+		if = {
+			limit = { nesnd_power_case_a = yes }
+			var:nesnd_power_top_ig ?= { add_modifier = { name = nesnd_power_placated days = normal_modifier_time } }
+		}
+		else = {
+			every_interest_group = {
+				limit = { NOT = { root.var:nesnd_power_holder_ig ?= this } ig_clout >= 0.05 }
+				add_modifier = { name = nesnd_power_placated_small days = normal_modifier_time }
+			}
+		}
+		nesnd_power_center = { AMT = 15 }
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = { nesnd_power_ai_can_spare = { COST = placate } }
+			add = 5
+			if = { limit = { OR = { nesnd_power_b >= 70 nesnd_power_b <= 30 } } add = 35 }
+		}
+	}
+}
+
+nesnd_cabinet_btn_mobilize = {
+	name = nesnd_cabinet_btn_mobilize
+	desc = nesnd_cabinet_btn_mobilize_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_mobilize.dds"
+	cost = nesnd_power_cost_free
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_cabinet_cond_has_holder nesnd_power_has_holder = yes }
+	}
+	effect = {
+		if = {
+			limit = { var:nesnd_power_type ?= 3 }
+			nesnd_power_add = { BAR = power AMT = 20 }
+			nesnd_power_add = { BAR = intrigue AMT = 10 }
+		}
+		else = {
+			nesnd_power_add = { BAR = power AMT = 15 }
+		}
+		nesnd_power_add = { BAR = balance AMT = 15 }
+		add_radicals = { value = small_radicals strata = lower }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_p < 30 nesnd_power_b <= 65 } add = 20 }
+	}
+}
+
+nesnd_cabinet_btn_restrain = {
+	name = nesnd_cabinet_btn_restrain
+	desc = nesnd_cabinet_btn_restrain_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_restrain.dds"
+	cost = nesnd_power_cost_restrain
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = restrain }
+		custom_tooltip = { text = nesnd_cabinet_cond_has_holder nesnd_power_has_holder = yes }
+	}
+	effect = {
+		nesnd_power_pay = { COST = restrain }
+		add_modifier = { name = nesnd_power_restraint days = short_modifier_time }
+		nesnd_power_sub = { BAR = intrigue AMT = 20 }
+		# 统治者（执政者）越得人心，越能把平衡拉回中点。
+		if = {
+			limit = { ruler ?= { popularity >= 20 } }
+			nesnd_power_center = { AMT = 15 }
+		}
+		else_if = {
+			limit = { ruler ?= { popularity <= -20 } }
+			nesnd_power_center = { AMT = 5 }
+		}
+		else = {
+			nesnd_power_center = { AMT = 10 }
+		}
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_p >= 60 } add = 20 }
+		if = { limit = { nesnd_power_p >= 70 } add = 30 }
+	}
+}
+
+nesnd_cabinet_btn_calm = {
+	name = nesnd_cabinet_btn_calm
+	desc = nesnd_cabinet_btn_calm_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_calm.dds"
+	cost = nesnd_power_cost_regular
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		nesnd_power_can_afford = { COST = regular }
+		custom_tooltip = { text = nesnd_power_cond_intrigue_30 nesnd_power_i >= 30 }
+	}
+	effect = {
+		nesnd_power_pay = { COST = regular }
+		nesnd_power_sub = { BAR = intrigue AMT = 40 }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_ai_can_spare = { COST = regular } nesnd_power_i >= 70 } add = 15 }
+	}
+}
+
+nesnd_cabinet_btn_investigate = {
+	name = nesnd_cabinet_btn_investigate
+	desc = nesnd_cabinet_btn_investigate_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_investigate.dds"
+	cost = nesnd_power_cost_large
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_power_cond_case_a nesnd_power_case_a = yes }
+		nesnd_power_can_afford = { COST = large }
+		custom_tooltip = { text = nesnd_power_cond_balance_le_20 nesnd_power_b <= 20 }
+		trigger_if = {
+			limit = { exists = var:nesnd_power_leader }
+			var:nesnd_power_leader ?= { nesnd_power_character_removable = yes }
+		}
+		trigger_else = { always = no }
+	}
+	effect = {
+		nesnd_power_pay = { COST = large }
+		custom_tooltip = nesnd_cabinet_btn_investigate_tt
+		hidden_effect = { trigger_event = { id = nesnd_cabinet.26 popup = yes } }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_ai_can_spare = { COST = large } } add = 5 }
+	}
+}
+
+nesnd_cabinet_btn_share = {
+	name = nesnd_cabinet_btn_share
+	desc = nesnd_cabinet_btn_share_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_share.dds"
+	cost = nesnd_power_cost_restrain
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_power_cond_case_b nesnd_power_case_b = yes }
+		nesnd_power_can_afford = { COST = restrain }
+		custom_tooltip = { text = nesnd_power_cond_balance_ge_80 nesnd_power_b >= 80 }
+	}
+	effect = {
+		nesnd_power_pay = { COST = restrain }
+		nesnd_power_sub = { BAR = balance AMT = 30 }
+		add_modifier = { name = nesnd_power_restraint days = normal_modifier_time }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_power_b >= 85 } add = 20 }
+	}
+}

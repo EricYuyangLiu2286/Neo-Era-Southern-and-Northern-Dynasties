@@ -1,0 +1,109 @@
+﻿nesnd_sha_shares = {
+    texture = "gfx/interface/icons/diplomatic_action_icons/da_grant_investment_rights.dds"
+    groups = { general }
+    requires_approval = yes
+    can_use_obligations = no
+    should_notify_third_parties = no
+    show_effect_in_tooltip = yes
+    selectable = { nesnd_sha_gold_open = yes }
+    potential = { scope:target_country ?= { c:HUS ?= this } }
+    possible = { nesnd_sha_shares_available = yes }
+    accept_effect = {
+        if = {
+            limit = { nesnd_sha_shares_available = yes }
+            create_treaty = {
+                first_country = c:SHA second_country = c:HUS is_draft = no
+                articles_to_create = { { article = foreign_investment_rights source_country = c:SHA target_country = c:HUS } }
+            }
+        }
+    }
+    decline_effect = { set_variable = { name = nesnd_sha_shares_cooldown months = 24 } }
+    ai = {
+        evaluation_chance = { value = 0.25 }
+        propose_score = { value = 20 }
+        will_propose = { nesnd_sha_shares_available = yes }
+        accept_score = {
+            value = 0
+            add = { desc = DIPLOMATIC_ACCEPTANCE_BASE value = -10 }
+            if = { limit = { "relations(c:SHA)" >= relations_threshold:amicable } add = { desc = nesnd_sha_score_warm value = 20 } }
+            if = { limit = { c:SHA = { nesnd_sha_gold_levels >= 4 } } add = { desc = nesnd_sha_score_four_mines value = 15 } }
+            if = { limit = { has_modifier = nesnd_hus_west_triumph } add = { desc = nesnd_sha_score_west value = 15 } }
+            if = { limit = { is_at_war = yes } add = { desc = nesnd_sha_score_war value = -100 } }
+        }
+    }
+}
+
+nesnd_sha_mediate = {
+    texture = "gfx/interface/icons/diplomatic_action_icons/offer_recognition.dds"
+    groups = { general }
+    requires_approval = yes
+    can_use_obligations = no
+    should_notify_third_parties = no
+    show_effect_in_tooltip = yes
+    selectable = { nesnd_sha_gold_open = yes }
+    potential = { scope:target_country ?= { c:HUS ?= this } }
+    possible = { nesnd_sha_mediate_available = yes }
+    accept_effect = {
+        if = {
+            limit = { nesnd_sha_mediate_available = yes }
+            add_treasury = { value = gdp multiply = 0.01 min = 1000 multiply = -1 }
+            change_relations = { country = c:HUS value = 15 }
+            c:HUS = { change_relations = { country = c:CNE value = 15 } }
+            set_variable = { name = nesnd_sha_mediate_cooldown months = 24 }
+        }
+    }
+    decline_effect = { set_variable = { name = nesnd_sha_mediate_cooldown months = 24 } }
+    ai = {
+        evaluation_chance = { value = 0.25 }
+        propose_score = { value = 20 }
+        will_propose = { nesnd_sha_mediate_available = yes }
+        accept_score = {
+            value = 0
+            add = { desc = DIPLOMATIC_ACCEPTANCE_BASE value = 1 }
+
+        }
+    }
+}
+
+nesnd_sha_league = {
+    texture = "gfx/interface/icons/diplomatic_action_icons/offer_recognition.dds"
+    groups = { general }
+    requires_approval = yes
+    can_use_obligations = no
+    should_notify_third_parties = no
+    show_effect_in_tooltip = yes
+    selectable = { nesnd_sha_gold_open = yes }
+    potential = { scope:target_country ?= { c:HUS ?= this } }
+    possible = { nesnd_sha_league_available = yes }
+    accept_effect = {
+        if = {
+            limit = { nesnd_sha_league_available = yes }
+            if = { limit = { is_in_power_bloc = yes } leave_power_bloc = yes }
+            if = { limit = { c:HUS = { is_in_power_bloc = no } }
+                c:HUS = {
+                    create_power_bloc = {
+                        name = nesnd_sha_northern_league
+                        map_color = { 46 107 133 }
+                        identity = identity_trade_league
+                        principle = principle_market_unification_1
+                    }
+                }
+            }
+            join_power_bloc = c:HUS
+        }
+    }
+    decline_effect = { set_variable = { name = nesnd_sha_league_cooldown months = 24 } }
+    ai = {
+        evaluation_chance = { value = 0.25 }
+        propose_score = { value = 20 }
+        will_propose = { nesnd_sha_league_available = yes }
+        accept_score = {
+            value = 0
+            add = { desc = DIPLOMATIC_ACCEPTANCE_BASE value = -20 }
+            if = { limit = { "relations(c:SHA)" >= relations_threshold:friendly } add = { desc = nesnd_sha_score_friendly value = 30 } }
+            if = { limit = { AND = { "relations(c:SHA)" >= relations_threshold:amicable "relations(c:SHA)" < relations_threshold:friendly } } add = { desc = nesnd_sha_score_warm value = 15 } }
+            if = { limit = { c:SHA = { calc_true_if = { amount >= 2 nesnd_sha_gold_levels >= 8 total_population >= 550000 nesnd_sha_has_eastern_partner = yes } } } add = { desc = nesnd_sha_score_two_goals value = 15 } }
+            if = { limit = { is_at_war = yes } add = { desc = nesnd_sha_score_war value = -50 } }
+        }
+    }
+}
