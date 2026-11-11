@@ -2,7 +2,7 @@
 
 > 何时读：游戏更新时复查被整文件覆盖的原版文件；新增或撤回同路径覆盖时。不必读：只改本 MOD 自有文件。重新生成：`python scripts/vanilla_overrides.py`（见 [tools.md](../references/tools.md)）。
 
-对照 Victoria 3 1.15.0，Steam build 26453692。文件夹从 MOD 根目录或原版 `game/` 起算，拼上文件名即可定位双方文件。
+对照 Victoria 3 1.15.1，Steam build 26591675。文件夹从 MOD 根目录或原版 `game/` 起算，拼上文件名即可定位双方文件。
 
 本表用于复查整文件覆盖。新增、撤回同路径覆盖，或完成版本迁移时，按主 MOD 实际加载目录与本机原版重新比对，并同步技能副本。独立文件中的 `REPLACE:` 按覆盖的定义另行比对；例如秀全的通用选人条件对应 `common/scripted_triggers/00_ep2_victoria_scripted_triggers.txt` 中的 `character_is_valid_for_events`。
 
@@ -76,17 +76,17 @@
 | `map_data/state_regions` | `00_west_europe.txt`、`05_north_america.txt`、`08_middle_east.txt`、`09_central_asia.txt`、`11_east_asia.txt` |
 | `map_data/state_regions` | `12_indonesia.txt`、`13_australasia.txt`、`14_siberia.txt`、`15_russia.txt` |
 
-## 仅编码标记或换行有差异（2 个）
+## 仅编码标记或换行有差异（1 个）
 
 | 文件夹 | 文件名 |
 | --- | --- |
-| `common/journal_entries` | `journal_entries.md` |
 | `common/scripted_progress_bars` | `scripted_progress_bars.md` |
 
-## 与原版逐字节相同的同路径副本（3 个）
+## 与原版逐字节相同的同路径副本（4 个）
 
 | 文件夹 | 文件名 |
 | --- | --- |
 | `common/discrimination_traits` | `discrimination_traits.md` |
 | `common/history/characters` | `net - netherlands.txt` |
+| `common/journal_entries` | `journal_entries.md` |
 | `common/scripted_buttons` | `scripted_buttons.md` |

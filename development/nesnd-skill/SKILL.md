@@ -20,7 +20,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 - **静态检查通过不等于游戏内验证**；交付时分开写（`STATIC_PASS` / `ENGINE_VERIFIED`，见 [verification.md](references/verification.md) §3）。参考文件不再逐条重复这句。
 - 修复以修正版的**新开局**为验收基准，旧存档只用来定位问题，不写救档（[debugging-and-updates.md](references/debugging-and-updates.md) §1）。
 - 版本迁移保留架空领土、人口、文化与制度意图，不照搬原版新国界，不删掉不再受支持的设计（改写为新接口）。
-- 每次游戏版本更新或开始适配新版前，先提醒作者一句：「请先按[修改的原版文件清单](lookup/vanilla-overrides.md)复查新版原版文件是否有改动。」
+- 版本更新时提醒作者并复查 **MOD 覆盖的原版文件和键**：按[同路径清单](lookup/vanilla-overrides.md)核对文件，再按[迁移步骤](references/migration.md)核对异文件同名键。
 - 不改既有译名和名词；作者的改稿优先于任何代理稿。
 - **工作产物、备份、日志、临时文件都写到 D 盘工作台**（`nesnd-workbench` 的 `backups/`、`reports/<日期>-<主题>/`、`tools/`），不写到 C 盘。会话草稿目录只放用完即弃的中间文件。可改的缓存与输出路径见 [lookup/paths.md](lookup/paths.md#本机输出路径)。
 
