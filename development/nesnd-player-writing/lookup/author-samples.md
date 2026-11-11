@@ -1,5 +1,7 @@
 # 作者样本
 
+> 何时读：定语体、找同字段原文对照时。不必读：只改动态函数或键名。
+
 全部取自 Git tag `original-20261030`（提交 `f18b6c4`），即 AI 参与前的作者原作。读全文：`git show original-20261030:localization/simp_chinese/replace/<文件>`。
 
 文件：

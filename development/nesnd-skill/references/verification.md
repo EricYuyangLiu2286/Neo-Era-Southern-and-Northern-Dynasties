@@ -1,5 +1,7 @@
 # 检查、日志、备份与交付
 
+> 何时读：每次交付前；写完脚本跑外部检查时；读 error.log 时；实质修改前做备份时。不必读：纯设计讨论。
+
 ## 1. 检查顺序
 
 1. **写之前**：在 GAME 找到同类实例，读它的调用者、effect/trigger 和本地化。接口名以用户文档目录 `docs/effects.log`、`triggers.log`、`modifiers.log`、`on_actions.log`、`event_targets.log`、`custom_localization.log` 为准（当前版本的 script_docs 导出；游戏更新后请作者重新导出）。
@@ -9,6 +11,8 @@
    - 查一个具体问题就写一个小检查，不建通用模拟器；检查条数不代表质量。
    - 声称某些对象相互连接时（结构梳理、调用链），做两项防幻觉检查：随机抽若干条边回原文件逐行核对；反向检查——每个对象的 id 在原文中的每处出现，都能由一条边或定义解释。内容树报告自带这两项，见 [content-tree.md](content-tree.md)。
 3. **游戏内**：只在用户当次明确要求时启动（见 SKILL.md）。通常由作者自己测试，代理读作者留下的日志。
+
+现成的检查脚本（Toolkit 语言服务器、Tiger 前后对比、按 script_docs 交叉检查）见 [tools.md](tools.md)。逐批检查的写法可参照登莱路线的 `WORK/reports/denglai-route/batch6/verify.py`：解析新文件、核本地化成对与 BOM、用内容树核邻居。
 
 ## 2. 读日志
 
@@ -29,3 +33,5 @@
 - 实质修改前用 `scripts/backup.py --status pre-change` 备份到工作台 `backups/`；交付后清理多余的中间副本，清理前确认作者的改稿已进 Git。
 - 主 MOD（游戏加载目录）和 Git 工作副本（工作台 `projects/nesnd-repository`）是两个目录。合并时按文件比较，保留作者在主 MOD 里直接做的修改。
 - 远端：`EricYuyangLiu2286/Neo-Era-Southern-and-Northern-Dynasties`。不直接推送 main；用分支，交由作者合并。
+
+只备份将要改动的部分（例如技能目录、`AGENTS.md`、`docs/agents/`）时，用 `scripts/backup.py --paths <文件或目录>…`；路径须在主 MOD 或技能目录内，备份目录同样带 SHA-256 清单。

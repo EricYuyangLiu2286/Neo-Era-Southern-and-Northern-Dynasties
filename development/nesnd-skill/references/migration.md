@@ -1,5 +1,7 @@
 # 保留设计意图的版本迁移
 
+> 何时读：游戏版本更新后迁移本 MOD，或做三方比较。不必读：同版本内的普通修复。
+
 ## 三份数据，而不是新旧文件覆盖
 
 - A：上次已核验的原版基线（WORK/baselines/<version>）。
@@ -30,7 +32,11 @@
 
 备份、候选MOD、测试MOD均放主 MOD 目录外，避免游戏误载测试脚本。不要使用递归同步删除更新本体/工坊/资料。导出应先写候选目录，再完整校验，最后以可回滚文件集应用。
 
-
 ## 1.15 保留旧文化的引用检查
 
 除文化、人口与名称外，核验每种文化的生活水平、文化接纳与狂热度。逐一从静态修正追到 modifier_type_definitions 的实际定义，并对照同版同类文化。人口与文化 ID 检查通过仍可能遗漏这一级。旧版 Tiger 对新版字段可能误报。先与本机同版本原例核对，再复跑相同配置比较改动。
+
+## 迁移用的工具与清单
+
+- 重新生成[修改的原版文件清单](../lookup/vanilla-overrides.md)：`python scripts/vanilla_overrides.py`（见 [tools.md](tools.md)）。
+- 海域与港口的版本迁移见 [map-transport.md](map-transport.md) 的“海域版本迁移”节；接口差异逐条对照 [engine-facts.md](../lookup/engine-facts.md) 的版本标记。

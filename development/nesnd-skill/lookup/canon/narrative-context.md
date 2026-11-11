@@ -1,8 +1,10 @@
 # 设定、角色与文风入口
 
+> 何时读：写设定相关内容、人物、地区剧情前，找世界书、人物卡、原资料与专题研究的入口。不必读：纯脚本修复。事件文字的写法在 `nesnd-player-writing`。
+
 这里是按需加载的世界书/角色书/写作预设，服务于本 MOD；不把整套小说无条件塞进上下文，也不把一次拟稿永久当成正史。
 
-玩家文本的完整写作与审查流程由独立技能 [nesnd-player-writing](../../nesnd-player-writing/SKILL.md)维护；本页只负责设定与资料路由。涉及条件展示同时读 [日志契约](journal-text-contract.md)。
+玩家文本的完整写作与审查流程由独立技能 [nesnd-player-writing](../../../nesnd-player-writing/SKILL.md)维护；本页只负责设定与资料路由。涉及条件展示同时读 [日志契约](../journal-ui.md)。
 
 ## 读取顺序
 
@@ -12,7 +14,7 @@
 3. `character-book.json` 中人物的目标、筹码、限制、关系及生死/身份条件。别名和模板需核查，不靠现实同名人物补齐生平。
 4. **游戏文案首先读作者原有 `localization/simp_chinese/replace/`，按事件正文、引文、选项、标题、日志正文、按钮、进度条、modifier 分别对读。** 用户明确：设定资料多为简化文案。作者原文以 Git tag `original-20261030`（或备份 `WORK/backups/pre-update-20261030T233944Z/mod`）为准；当前文件中的代理新增不能冒充风格依据。
 5. 读对应 events/JE/buttons/progress bars，确认触发条件、说话者及有效 scope。写作流程与作者样本见 `nesnd-player-writing` 技能。
-6. 用 [文本呈现层](journal-text-contract.md) 决定 UI 字段。任务是人物列传或需要补充场景时再使用 `beiming-biography` 的文体；世界书、人物卡负责事实和立场，不自动规定事件句法。
+6. 用 [文本呈现层](../journal-ui.md) 决定 UI 字段。任务是人物列传或需要补充场景时再使用 `beiming-biography` 的文体；世界书、人物卡负责事实和立场，不自动规定事件句法。
 
 原资料只读目录：`D:/Users/Eric Liu/OneDrive/文档/文案-EMP2286/Modings/北明战国世`。重点：`北明ppet.pptx`、`朱班博传（上）.docx`、`朱班博传（中）.docx`、`北明人物列传.docx`；补充《骆军始末》《海军人物》及时间线。缓存 `WORK/research/20261031` 的 JSON 保留原文定位与 SHA；使用前核验 SHA，变更后重新提取。提取脚本：`beiming-biography/scripts/extract_ooxml.py`。
 
@@ -23,12 +25,6 @@
 - 《海军人物》多数角色生于 19 世纪末；1836 不生成他们，不倒置航母/潜艇/一战经历。官制沿革也要核对适用年代。
 - 《骆军始末》是早期土地、族群与组织成长的因果参考；1836 不无条件复活 15 世纪人物/组织。
 - 证据类型：author_explicit、text_attested、inference、gameplay_proposal、unresolved_variant。批准实施分支不等于它是小说唯一未来；只有作者明确确认才升级正史。
-
-## 事件文本预设
-
-标题点明具体冲突或意象。描述写谁提出什么、凭什么能做到、谁承担代价。风味段可用有对象的短对白；人物判断与旁白分开。选项写实际行动，效果提示告知成本、时长、条件与风险，不在风味段堆变量。
-
-自然现代中文为主，保留编年、制度、利益与因果；避免过密文言、空洞宣言和人人金句。原文讽刺、角色辱称不能自动升格为全知旁白。吴朝的建制能力与战争暴行可以同时呈现。
 
 ## 图片预设
 

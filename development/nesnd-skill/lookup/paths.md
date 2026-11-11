@@ -1,5 +1,7 @@
 # 绝对路径和读写范围
 
+> 何时读：第一次接手、找某个目录或文件该去哪里、确认某处能不能写。不必读：已知路径时。
+
 | 代号 | 路径 | 用途与权限 |
 |---|---|---|
 | MOD | `D:\Users\Eric Liu\Documents\Paradox Interactive\Victoria 3\mod\Neo-Era Southern and Northern Dynasties` | 唯一主 MOD；授权修改，修改前独立备份 |
@@ -48,3 +50,31 @@
 | 本地化 | `localization/simp_chinese/replace/`、`localization/english/replace/` | 两种语言保留相同键；地图名在 `replace/map/`，避免重复键 |
 
 路径和文件列表由 `scripts/catalog.py refresh` 从实际磁盘生成到 WORK/reports/source-catalog.json；索引用于定位，源文件是最终内容依据。
+
+## 向谁学
+
+- **引擎写法**：GAME 本体（当前 1.15.0，见 STATUS.md）。原版是最可靠的范例，但也会出错。
+- **作者的设计与文风**：Git tag `original-20261030`（提交 `f18b6c4`）中的 `ce_*` 文件，是未经 AI 改动的原作。当前主 MOD 的 `ce_*` 已被代理改过，不能直接当作者样本。
+- **`nesnd_*` 文件**：代理写的现有实现，不是范本。
+
+## 本机输出路径
+
+工作产物、备份、日志和临时文件写到 WORK（D 盘），不写到 C 盘。两个代理应用自身的数据目录由 `WORK/tools/migrate-agent-data.ps1` 移到 D 盘，原位置留目录连接（junction），路径写法不变：
+
+| C 盘原位置 | D 盘新位置 | 内容 |
+|---|---|---|
+| `C:\Users\Eric Liu\.codex` | `D:\Users\Eric Liu\Documents\ChatGPT\Codex\.codex` | Codex 会话、日志、sqlite、插件、技能（含本技能） |
+| `C:\Users\Eric Liu\.cache\codex-runtimes` | `…\ChatGPT\Codex\.cache\codex-runtimes` | Codex 运行时与内置插件 |
+| `C:\Users\Eric Liu\AppData\Local\OpenAI\Codex` | `…\ChatGPT\Codex\AppData-Local\OpenAI-Codex` | Codex 命令行程序 |
+| `C:\Users\Eric Liu\.claude` | `D:\Users\Eric Liu\Documents\Claude\.claude` | Claude Code 会话记录、file-history、设置 |
+| `C:\Users\Eric Liu\AppData\Local\Claude-Data` | `…\Documents\Claude\AppData-Local\Claude-Data` | Claude 桌面版数据与内置 Claude Code |
+
+不迁移：`AppData\Local\Packages\*`（Windows 应用包目录，放连接会影响更新，只清其中缓存）；`C:\Users\Eric Liu\.claude.json`（单个文件）；系统临时目录 `AppData\Local\Temp\claude\…`（会话草稿，只放用完即弃的中间文件，要留的证据复制到 `WORK/reports/<日期>-<主题>/`）。
+
+可设置的位置与保留期（改前以各自官方文档为准）：
+
+- Codex：环境变量 `CODEX_HOME` 决定整个数据目录。`~/.codex/config.toml` 已写 `CODEX_HOME = 'C:\Users\Eric Liu\.codex'`，迁移后经连接指向 D 盘，不必改。
+- Claude Code：环境变量 `CLAUDE_CONFIG_DIR` 指定配置与数据目录；`~/.claude/settings.json` 的 `cleanupPeriodDays` 控制本地会话记录保留天数。
+- Claude 桌面版：没有用户可设置的数据目录，靠连接迁移。
+
+技能本体的规范路径仍是 `C:\Users\Eric Liu\.codex\skills\…`；迁移后它是指向 D 盘的目录连接，引用不变。
