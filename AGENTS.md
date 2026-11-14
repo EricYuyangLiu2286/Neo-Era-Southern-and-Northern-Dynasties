@@ -1,10 +1,26 @@
 # 本项目开发入口
 
+> **开工前检查：每次开始任何工作之前，先做这一步。**
+>
+> 1. 运行 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/tools/source_deploy/deploy.bat check`；或者直接读取 MOD 文件夹和源目录最外层的 `nesnd_deploy_version.txt`，以及源目录 `update_record.json` 的最后一条记录。
+> 2. 三个版本号必须一致。
+> 3. 不一致时，立即停止一切工作。查阅 `update_record.json`，判断是否有奇怪的误差（例如 MOD 文件夹被直接修改、部署中断、时间顺序异常），向用户发出警告，等用户指示后才能继续。不要自行运行 `deploy.bat force`，也不要手工改版本号或记录。
+
+## 源目录与 MOD 文件夹
+
+- **源目录**：本文件所在的目录，`D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-source`。保存 MOD 全部内容（运行文件、开发资料、.git）的唯一工作位置。所有修改都在这里进行。
+- **MOD 文件夹**：文档下 mod 文件夹中本 MOD 的那个文件夹，即 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties`。它是部署产物，只包含运行文件和部署版本号，每次部署都会被完全清空后重建，不得直接修改。
+- 所有读写都在源目录进行；MOD 文件夹不得直接修改。
+- 需要进游戏测试、读取 error.log 对应的部署版本，或者发布之前，先运行部署脚本（`deploy.bat`，用法见技能 `references/tools.md` §4）。
+- 报告中提到路径时，写明是源目录还是 MOD 文件夹。
+
+## 入口
+
 1. 读技能 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`（仓库副本：`development/nesnd-skill/SKILL.md`）。写玩家文字时另读 `nesnd-player-writing`。
 2. 读 `docs/agents/STATUS.md`：当前基线、未完成事项、各目录位置。
 3. 在 Codex 中开子代理前，读 `docs/agents/gpt_subagent_usage.md`：何时用、各类任务的模型与强度（上限 `gpt-6-astra` / high，不用 Luna）。
 
-只有本目录是主 MOD。维多利亚3本体、所有创意工坊 MOD、旧项目与文案/翻译资料均只读。工坊 MOD 只用于查兼容接口，不学习、不复制其他作者的设计与代码。
+维多利亚3本体、所有创意工坊 MOD、旧项目与文案/翻译资料均只读。工坊 MOD 只用于查兼容接口，不学习、不复制其他作者的设计与代码。
 
 **启动游戏须有用户在当次任务中的明确要求。**“修复”“测试”“继续”或过去的许可都不算。默认在游戏外验证。用户指定观察者五速并保存时，完成这三步就停止，不监看、不轮询日志、不自行重开。
 

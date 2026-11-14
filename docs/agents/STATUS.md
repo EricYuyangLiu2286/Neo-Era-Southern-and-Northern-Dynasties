@@ -7,15 +7,16 @@
 ## 基线
 
 - 游戏：Victoria 3 **1.15.1 Ivan-Chai / Steam build 26591675**。上一基线 1.15.0 / 26453692。[原版覆盖迁移](../../.scratch/migration-1151/issues/02-merge.md)已完成游戏外检查，待作者复测法律生效、分州铜矿及开局历史。
-- Git：2026-11-14 主 MOD 已逐文件同步到 Git 并合入 main（`77b8509`），分支 `fix/tooltip-concepts-observer-buttons` 与 main 相同。同步工具 `nesnd-workbench/tools/sync_main_mod_to_repo.py` 以主 MOD 为准，会删除主 MOD 中没有的文件，发布时移出代理文件期间不要运行。只在 Git 中的 `development/` 旧参考与 `README.md` 照旧保留。
+- Git：2026-11-14 起 Git 仓库就在源目录里（main `737a81b` 时迁入）。MOD 文件夹由部署脚本从源目录生成；工作台 `projects/nesnd-repository` 与同步工具 `sync_main_mod_to_repo.py` 停用。
 - metadata 版本 0.2.0，声明支持 1.15.1。
 
 ## 位置
 
 | 名称 | 路径 | 说明 |
 |---|---|---|
-| 主 MOD | `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties` | 游戏加载目录，唯一可写的游戏目录 |
-| Git 工作副本 | `…/Victoria 3/nesnd-workbench/projects/nesnd-repository` | 与主 MOD 是两个目录，合并时逐文件比较 |
+| 源目录 | `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-source` | MOD 全部内容与 Git，唯一工作位置 |
+| MOD 文件夹 | `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties` | 部署产物，游戏加载目录；不得直接修改 |
+| 部署脚本 | `…/Victoria 3/nesnd-workbench/tools/source_deploy/deploy.bat` | 部署、预览、检查；记录在源目录 `update_record.json` |
 | 远端 | `github.com/EricYuyangLiu2286/Neo-Era-Southern-and-Northern-Dynasties` | 代理用分支，作者合并 |
 | 工作台 | `…/Victoria 3/nesnd-workbench` | 工具、备份、报告、原版基线 |
 | 技能 | `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3`、`nesnd-player-writing` | 仓库副本在 `development/` |
