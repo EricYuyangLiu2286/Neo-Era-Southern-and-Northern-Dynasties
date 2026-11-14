@@ -1,4 +1,4 @@
-﻿# 唐衣大食「三教消长」：三教影响力（份额条）、转化条、代表人物与立国教。任务65 第②批。
+﻿# 唐衣大食「三教消长」：三教影响力（份额条）、转化条、代表人物与立国教。
 nesnd_per_faith_journal = {
     icon = "gfx/interface/icons/religion_icons/shiite.dds"
     group = je_group_historical_content
@@ -82,12 +82,13 @@ nesnd_per_faith_journal = {
     outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
         conclusion_desc = nesnd_per_faith_invalid_conclusion
         trigger = { custom_tooltip = { text = nesnd_per_faith_invalid_tt NOT = { nesnd_per_faith_regime = yes } } }
     }
 }
 
-# 唐衣大食「三教消长」天命说版：开局选了天命说替换佛门时代替上一条（任务65 第②批补充）。
+# 唐衣大食「三教消长」天命说版：开局选了天命说替换佛门时代替上一条。
 # 天命说开局无信众：靠与西秦的往来、讲堂起步，靠传道条把唐人信众引入天命说。
 nesnd_per_faith_mandate_journal = {
     icon = "gfx/interface/icons/religion_icons/kaimeng_confucianism.dds"
@@ -178,6 +179,7 @@ nesnd_per_faith_mandate_journal = {
     outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
         conclusion_desc = nesnd_per_faith_invalid_conclusion
         trigger = { custom_tooltip = { text = nesnd_per_faith_invalid_tt NOT = { nesnd_per_faith_regime = yes } } }
     }
@@ -189,8 +191,8 @@ nesnd_per_unity_journal = {
     group = je_group_historical_content
     activation_description = { always = yes }
     can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_per_country = yes }
-    possible = { nesnd_per_country = yes any_scope_state = { any_scope_pop = { has_pop_culture = ce_xiyu } } }
+    is_shown_when_inactive = { nesnd_per_country = yes hidden_trigger = { nesnd_cohesion_open = yes } }
+    possible = { nesnd_per_country = yes any_scope_state = { any_scope_pop = { has_pop_culture = ce_xiyu } } nesnd_cohesion_open = yes }
     should_be_pinned_by_default_uninvolved_or_context = yes
     weight = 1080
 
@@ -212,6 +214,7 @@ nesnd_per_unity_journal = {
                 }
             }
             if = { limit = { NOT = { nesnd_per_tension_frozen = yes } } nesnd_per_unity_effects = yes }
+            else = { nesnd_per_unity_clear_plan = yes }
         }
     }
 
@@ -232,11 +235,72 @@ nesnd_per_unity_journal = {
             }
             desc = nesnd_per_unity_status_mid
         }
+        # 下次月结的文化转化：低团结读上月抽定的变量（与 nesnd_per_unity_settle_plan 同一条件），
+        # 高团结按当月团结度每月发生。
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_per_tension_frozen = yes } desc = nesnd_per_unity_next_none }
+            triggered_desc = {
+                trigger = { nesnd_per_unity_plan_valid = yes trigger_if = { limit = { has_variable = nesnd_per_next_mode } var:nesnd_per_next_mode = 2 } trigger_else = { always = no } exists = var:nesnd_per_next_culture }
+                desc = nesnd_per_unity_next_decay
+            }
+            triggered_desc = {
+                trigger = { nesnd_per_unity_plan_valid = yes trigger_if = { limit = { has_variable = nesnd_per_next_mode } var:nesnd_per_next_mode = 2 } trigger_else = { always = no } }
+                desc = nesnd_per_unity_next_decay_any
+            }
+            triggered_desc = {
+                trigger = { nesnd_per_unity_plan_valid = yes }
+                desc = nesnd_per_unity_next_revival
+            }
+            triggered_desc = {
+                trigger = {
+                    trigger_if = { limit = { has_variable = nesnd_per_unity } var:nesnd_per_unity > 75 } trigger_else = { always = no }
+                    nesnd_per_ruler_counts_as_chinese = yes
+                }
+                desc = nesnd_per_unity_next_gain
+            }
+            triggered_desc = {
+                trigger = { trigger_if = { limit = { has_variable = nesnd_per_unity } var:nesnd_per_unity > 75 } trigger_else = { always = no } }
+                desc = nesnd_per_unity_next_loss
+            }
+            triggered_desc = {
+                trigger = {
+                    has_variable = nesnd_per_next_mode
+                    OR = {
+                        AND = { nesnd_per_ruler_counts_as_chinese = yes any_scope_state = { nesnd_per_unity_decay_state = yes } }
+                        AND = { nesnd_per_ruler_counts_as_chinese = no any_scope_state = { nesnd_per_unity_revival_state = yes } }
+                    }
+                }
+                desc = nesnd_per_unity_next_missed
+            }
+            triggered_desc = {
+                trigger = { trigger_if = { limit = { has_variable = nesnd_per_unity } var:nesnd_per_unity < 40 } trigger_else = { always = no } }
+                desc = nesnd_per_unity_next_no_state
+            }
+            triggered_desc = { trigger = { has_variable = nesnd_per_unity } desc = nesnd_per_unity_next_mid }
+            desc = nesnd_per_unity_next_none
+        }
     }
 
     outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_cohesion_fixed_by_ideas_conclusion
+        trigger = { nesnd_cohesion_fixed_by_ideas = yes }
+        effect = { remove_variable = nesnd_per_unity nesnd_per_unity_clear_plan = yes hidden_effect = { set_variable = nesnd_cohesion_fixed } }
+    }
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_cohesion_fixed_by_ideology_conclusion
+        trigger = { nesnd_cohesion_fixed_by_ideology = yes }
+        effect = { remove_variable = nesnd_per_unity nesnd_per_unity_clear_plan = yes hidden_effect = { set_variable = nesnd_cohesion_fixed } }
+    }
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
         conclusion_desc = nesnd_per_unity_invalid_conclusion
         trigger = {
             custom_tooltip = {
@@ -247,6 +311,6 @@ nesnd_per_unity_journal = {
                 }
             }
         }
-        effect = { remove_variable = nesnd_per_unity }
+        effect = { remove_variable = nesnd_per_unity nesnd_per_unity_clear_plan = yes }
     }
 }

@@ -27,31 +27,36 @@ nesnd_jp_culture_plan_valid = {
         }
         country_definition = var:nesnd_jp_next_realm
         var:nesnd_jp_next_state = { owner = prev state_population > 0 }
+        # A Pop keeps its culture when part of it converts, so the saved source culture
+        # stays true while the Pop exists. Culture checks use literal cu: keys only.
         trigger_if = { limit = { var:nesnd_jp_next_mode = 1 }
             nesnd_jp_cohesion_value < 25
             trigger_if = {
                 limit = { exists = var:nesnd_jp_next_pop exists = var:nesnd_jp_next_source_culture }
                 var:nesnd_jp_next_source_culture = { is_primary_culture_of = prev }
-                var:nesnd_jp_next_pop = {
-                    state = prev.var:nesnd_jp_next_state
-                    culture = prev.var:nesnd_jp_next_source_culture
-                    NOT = { culture = prev.var:nesnd_jp_next_target }
-                }
+                var:nesnd_jp_next_pop = { state = prev.var:nesnd_jp_next_state }
             }
             trigger_else = { always = no }
             trigger_if = { limit = { nesnd_jp_drift_toward_japanese = yes }
-                var:nesnd_jp_next_target = cu:japanese
+                var:nesnd_jp_next_target = { this = cu:japanese }
+                var:nesnd_jp_next_pop = { NOT = { culture = cu:japanese } }
             }
-            trigger_else = { OR = { var:nesnd_jp_next_target = cu:han var:nesnd_jp_next_target = cu:ce_wuu } }
+            trigger_else_if = { limit = { var:nesnd_jp_next_target = { this = cu:han } }
+                var:nesnd_jp_next_pop = { NOT = { culture = cu:han } }
+            }
+            trigger_else_if = { limit = { var:nesnd_jp_next_target = { this = cu:ce_wuu } }
+                var:nesnd_jp_next_pop = { NOT = { culture = cu:ce_wuu } }
+            }
+            trigger_else = { always = no }
         }
         trigger_else_if = { limit = { var:nesnd_jp_next_mode = 2 }
             nesnd_jp_cohesion_value > 75
             trigger_if = { limit = { nesnd_jp_jiangnan_policy = yes }
-                var:nesnd_jp_next_target = cu:ce_wuu
+                var:nesnd_jp_next_target = { this = cu:ce_wuu }
                 var:nesnd_jp_next_state = { any_scope_pop = { NOT = { culture = cu:ce_wuu } } }
             }
             trigger_else = {
-                var:nesnd_jp_next_target = cu:japanese
+                var:nesnd_jp_next_target = { this = cu:japanese }
                 var:nesnd_jp_next_state = { any_scope_pop = { NOT = { culture = cu:japanese } } }
             }
         }

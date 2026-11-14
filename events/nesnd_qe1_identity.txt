@@ -2,6 +2,15 @@
 nesnd_qe1_identity.1 = { type = country_event placement = scope:nesnd_qe1_declining_state duration = 3 title = nesnd_qe1_identity.1.t desc = nesnd_qe1_identity.1.d
 	event_image = { video = "unspecific_signed_contract" }
 	trigger = { nesnd_qe1_unity_live = yes var:nesnd_qe1_unity < 50 exists = scope:nesnd_qe1_declining_state exists = scope:nesnd_qe1_declining_region scope:nesnd_qe1_declining_state ?= { nesnd_qe1_decay_state = yes } }
-	immediate = { if = { limit = { exists = scope:nesnd_qe1_declining_state } scope:nesnd_qe1_declining_state = { if = { limit = { nesnd_qe1_decay_state = yes } nesnd_qe1_select_old_identity = yes } } } }
+	# Uses the culture and faith drawn last month and shown in the journal.
+	# A plan from a save made before the draw moved has none, so draw here instead.
+	immediate = { if = { limit = { exists = scope:nesnd_qe1_declining_state } scope:nesnd_qe1_declining_state = { if = { limit = { nesnd_qe1_decay_state = yes }
+		if = { limit = { exists = scope:nesnd_qe1_settle_culture exists = scope:nesnd_qe1_settle_religion }
+			scope:nesnd_qe1_settle_culture = { save_scope_as = nesnd_qe1_return_culture }
+			scope:nesnd_qe1_settle_religion = { save_scope_as = nesnd_qe1_return_religion }
+		}
+		else = { nesnd_qe1_select_old_identity = yes }
+		if = { limit = { exists = scope:nesnd_qe1_return_culture exists = scope:nesnd_qe1_return_religion } nesnd_qe1_convert_selected_cohort = yes }
+	} } } }
 	option = { name = nesnd_qe1_identity.1.a default_option = yes }
 }

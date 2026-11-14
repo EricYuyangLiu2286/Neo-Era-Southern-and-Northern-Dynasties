@@ -3,8 +3,8 @@
     group = je_group_historical_content
     activation_description = { always = yes }
     can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_jp_country = yes }
-    possible = { nesnd_jp_country = yes }
+    is_shown_when_inactive = { nesnd_jp_country = yes hidden_trigger = { nesnd_cohesion_open = yes } }
+    possible = { nesnd_jp_country = yes nesnd_cohesion_open = yes }
     immediate = {
         nesnd_jp_initialize = yes
         nesnd_jp_reset_culture_plan = yes
@@ -17,11 +17,29 @@
     outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_cohesion_fixed_by_ideas_conclusion
+        trigger = { nesnd_cohesion_fixed_by_ideas = yes }
+        effect = { nesnd_jp_reset_culture_plan = yes if = { limit = { has_modifier = nesnd_jp_divided_councils } remove_modifier = nesnd_jp_divided_councils } nesnd_unity_stop_subsidies = yes hidden_effect = { set_variable = nesnd_cohesion_fixed } }
+    }
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_cohesion_fixed_by_ideology_conclusion
+        trigger = { nesnd_cohesion_fixed_by_ideology = yes }
+        effect = { nesnd_jp_reset_culture_plan = yes if = { limit = { has_modifier = nesnd_jp_divided_councils } remove_modifier = nesnd_jp_divided_councils } nesnd_unity_stop_subsidies = yes hidden_effect = { set_variable = nesnd_cohesion_fixed } }
+    }
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
         conclusion_desc = nesnd_journal_closures_japan_cohesion_conclusion
         trigger = { custom_tooltip = { text = nesnd_journal_closures_japan_cohesion_tt NOT = { nesnd_jp_country = yes } } }
         effect = {
     	    nesnd_jp_reset_culture_plan = yes
     	    if = { limit = { has_modifier = nesnd_jp_divided_councils } remove_modifier = nesnd_jp_divided_councils }
+    	    nesnd_unity_stop_subsidies = yes
     	}
     }
     on_monthly_pulse = { effect = { nesnd_jp_cohesion_monthly = yes } }
@@ -33,10 +51,27 @@
             triggered_desc = { trigger = { nesnd_jp_cohesion_value > 75 } desc = nesnd_jp_cohesion_confident }
             desc = nesnd_jp_cohesion_calm
         }
+        # Next conversion: read from the plan that the monthly settlement will execute.
         first_valid = {
+            triggered_desc = {
+                trigger = { nesnd_jp_culture_plan_valid = yes trigger_if = { limit = { has_variable = nesnd_jp_next_mode } var:nesnd_jp_next_mode = 1 } trigger_else = { always = no } }
+                desc = nesnd_jp_culture_preview_pop
+            }
             triggered_desc = {
                 trigger = { nesnd_jp_culture_plan_valid = yes }
                 desc = nesnd_jp_culture_preview_state
+            }
+            triggered_desc = {
+                trigger = { has_variable = nesnd_jp_next_mode nesnd_jp_cohesion_value > 75 }
+                desc = nesnd_jp_culture_preview_missed
+            }
+            triggered_desc = {
+                trigger = { has_variable = nesnd_jp_next_mode nesnd_jp_cohesion_value < 25 }
+                desc = nesnd_jp_culture_preview_no_state
+            }
+            triggered_desc = {
+                trigger = { has_variable = nesnd_jp_next_mode }
+                desc = nesnd_jp_culture_preview_mid
             }
             desc = nesnd_jp_culture_preview_none
         }

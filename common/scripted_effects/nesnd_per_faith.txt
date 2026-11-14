@@ -344,18 +344,6 @@ nesnd_per_unity_effects = {
                     }
                 }
             }
-            else_if = { limit = { var:nesnd_per_unity < 40 any_scope_state = { nesnd_per_unity_decay_state = yes } }
-                random_list = {
-                    85 = { }
-                    15 = {
-                        random_scope_state = {
-                            limit = { nesnd_per_unity_decay_state = yes }
-                            save_scope_as = nesnd_per_unity_state
-                        }
-                        trigger_event = { id = nesnd_per_unity.1 popup = yes }
-                    }
-                }
-            }
         }
         else = {
             if = { limit = { var:nesnd_per_unity > 75 }
@@ -371,18 +359,71 @@ nesnd_per_unity_effects = {
                     }
                 }
             }
-            else_if = { limit = { var:nesnd_per_unity < 40 any_scope_state = { nesnd_per_unity_revival_state = yes } }
+        }
+        nesnd_per_unity_settle_plan = yes
+    }
+    nesnd_per_unity_prepare_plan = yes
+}
+
+# Low cohesion: last month's draw (state, and for Chinese rulers the Iranian culture)
+# is executed here. The journal shows the same variables. Draw odds are unchanged (15%).
+nesnd_per_unity_settle_plan = {
+    if = { limit = { nesnd_per_unity_plan_valid = yes }
+        var:nesnd_per_next_state = { save_scope_as = nesnd_per_unity_state }
+        if = { limit = { var:nesnd_per_next_mode = 2 }
+            if = { limit = { exists = var:nesnd_per_next_culture }
+                var:nesnd_per_next_culture = { save_scope_as = nesnd_per_unity_planned_culture }
+            }
+            trigger_event = { id = nesnd_per_unity.1 popup = yes }
+        }
+        else = { trigger_event = { id = nesnd_per_unity.2 popup = yes } }
+    }
+}
+# Mode 0 = drawn, nothing happens. 2 = Chinese ruler, event 1. 4 = Iranian ruler, event 2.
+nesnd_per_unity_prepare_plan = {
+    nesnd_per_unity_clear_plan = yes
+    if = { limit = { nesnd_per_unity_live = yes has_variable = nesnd_per_unity }
+        if = { limit = { var:nesnd_per_unity < 40 }
+            set_variable = { name = nesnd_per_next_mode value = 0 }
+            save_scope_as = nesnd_per_plan_owner
+            if = { limit = { nesnd_per_ruler_counts_as_chinese = yes any_scope_state = { nesnd_per_unity_decay_state = yes } }
+                random_list = {
+                    85 = { }
+                    15 = {
+                        random_scope_state = {
+                            limit = { nesnd_per_unity_decay_state = yes }
+                            scope:nesnd_per_plan_owner = {
+                                set_variable = { name = nesnd_per_next_state value = prev }
+                                set_variable = { name = nesnd_per_next_mode value = 2 }
+                            }
+                            random_scope_pop = {
+                                limit = { nesnd_per_unity_iranian_target_pop = yes }
+                                scope:nesnd_per_plan_owner = { set_variable = { name = nesnd_per_next_culture value = prev.culture } }
+                            }
+                        }
+                    }
+                }
+            }
+            else_if = { limit = { nesnd_per_ruler_counts_as_chinese = no any_scope_state = { nesnd_per_unity_revival_state = yes } }
                 random_list = {
                     85 = { }
                     15 = {
                         random_scope_state = {
                             limit = { nesnd_per_unity_revival_state = yes }
-                            save_scope_as = nesnd_per_unity_state
+                            scope:nesnd_per_plan_owner = {
+                                set_variable = { name = nesnd_per_next_state value = prev }
+                                set_variable = { name = nesnd_per_next_mode value = 4 }
+                            }
                         }
-                        trigger_event = { id = nesnd_per_unity.2 popup = yes }
                     }
                 }
             }
+            clear_saved_scope = nesnd_per_plan_owner
         }
     }
+}
+nesnd_per_unity_clear_plan = {
+    if = { limit = { has_variable = nesnd_per_next_mode } remove_variable = nesnd_per_next_mode }
+    if = { limit = { has_variable = nesnd_per_next_state } remove_variable = nesnd_per_next_state }
+    if = { limit = { has_variable = nesnd_per_next_culture } remove_variable = nesnd_per_next_culture }
 }

@@ -2,6 +2,8 @@
 
 > 何时读：写或修日志的可用/完成条件、按钮预览、custom_tooltip、状态行、进度条明细与结局面板。不必读：只改措辞（读玩家写作技能）；查字段名与 GUI 位置（读 lookup/journal-ui.md）。
 
+预告下次文化转化（州、人数、方向）的状态行写法见 [cohesion-journal.md](cohesion-journal.md) §2。
+
 ## 1. 原生条件优先与状态节制（2026-11-02）
 
 - 先读作者原始日志/按钮的 trigger，再查当前 GAME 同类条目。能直接呈现的法律、科技、机构、建筑、国库等条件直接写在 possible/complete，独立条件各占原生勾叉。不要把多项真实门槛塞入一个 custom_tooltip；换行不能替代独立真假状态。

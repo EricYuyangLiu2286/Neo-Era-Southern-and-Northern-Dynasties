@@ -21,6 +21,12 @@ nesnd_qe1_unity_monthly = {
 				save_scope_as = nesnd_qe1_declining_state
 				state_region = { save_scope_as = nesnd_qe1_declining_region }
 			}
+			# Hand the identity drawn last month to the event under names that
+			# nesnd_qe1_prepare_identity below does not overwrite.
+			if = { limit = { exists = var:nesnd_qe1_next_culture exists = var:nesnd_qe1_next_religion }
+				var:nesnd_qe1_next_culture = { save_scope_as = nesnd_qe1_settle_culture }
+				var:nesnd_qe1_next_religion = { save_scope_as = nesnd_qe1_settle_religion }
+			}
 			trigger_event = { id = nesnd_qe1_identity.1 popup = yes }
 		}
 		if = { limit = { var:nesnd_qe1_unity < 25 }
@@ -38,6 +44,8 @@ nesnd_qe1_unity_monthly = {
 nesnd_qe1_clear_forecast = {
 	remove_variable = nesnd_qe1_next_state
 	remove_variable = nesnd_qe1_next_all
+	remove_variable = nesnd_qe1_next_culture
+	remove_variable = nesnd_qe1_next_religion
 }
 nesnd_qe1_prepare_identity = {
 	nesnd_qe1_clear_forecast = yes
@@ -61,6 +69,16 @@ nesnd_qe1_prepare_identity = {
 					random_scope_state = {
 						limit = { nesnd_qe1_decay_state = yes }
 						owner = { set_variable = { name = nesnd_qe1_next_state value = prev } }
+						# Draw the returning culture and faith now, so the journal can show them.
+						nesnd_qe1_select_old_identity = yes
+						if = { limit = { exists = scope:nesnd_qe1_return_culture exists = scope:nesnd_qe1_return_religion }
+							owner = {
+								set_variable = { name = nesnd_qe1_next_culture value = scope:nesnd_qe1_return_culture }
+								set_variable = { name = nesnd_qe1_next_religion value = scope:nesnd_qe1_return_religion }
+							}
+						}
+						clear_saved_scope = nesnd_qe1_return_culture
+						clear_saved_scope = nesnd_qe1_return_religion
 					}
 				}
 			}
@@ -4432,7 +4450,6 @@ nesnd_qe1_select_old_identity = {
 			31900 = { cu:xhosa = { save_scope_as = nesnd_qe1_return_culture } rel:animist = { save_scope_as = nesnd_qe1_return_religion } }
 			267996 = { cu:zulu = { save_scope_as = nesnd_qe1_return_culture } rel:animist = { save_scope_as = nesnd_qe1_return_religion } }
 		} }
-	if = { limit = { exists = scope:nesnd_qe1_return_culture exists = scope:nesnd_qe1_return_religion } nesnd_qe1_convert_selected_cohort = yes }
 }
 
 

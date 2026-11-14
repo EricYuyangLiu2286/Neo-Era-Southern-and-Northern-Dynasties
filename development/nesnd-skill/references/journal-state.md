@@ -6,6 +6,8 @@
 
 旧候选把土地进度和风险拆成两个无故事日志，又把规则塞进正文，需要改造。若用 scripted progress bars，必须核对独立存储与变量的同步：不能让条本身 monthly_progress 与 JE on_monthly 同时重复计分。源注释说明前者先执行；旧国家变量、存档迁移、按钮与事件变更均应统一到一个权威状态，真实游戏测月界和保存重载。
 
+团结条按高低转化 Pop 文化的日志另见 [cohesion-journal.md](cohesion-journal.md)。
+
 ### 带进度条的日志
 
 定义 `common/scripted_progress_bars/ce_*.txt` → JE 用 `scripted_progress_bar = key` 引用 → `complete/fail/invalid` 收尾 → 按钮/事件只改变指定的 bar 或用于 bar 计算的变量 → 条面本地化写短指标名与读数，周期变化原因写在悬停明细。字段和排查示例见 [日志文字约定](../lookup/journal-ui.md)。

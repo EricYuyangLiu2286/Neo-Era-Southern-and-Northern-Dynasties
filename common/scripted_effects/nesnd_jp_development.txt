@@ -129,32 +129,34 @@ nesnd_jp_select_exchange = {
     }
 }
 
+# Executes only the plan saved last month; the journal preview reads the same variables.
+# Pop culture is compared with literal cu: keys: comparing it with a saved scope or
+# variable failed every time in the 1891 save ("Invalid right side during comparison").
 nesnd_jp_settle_culture_plan = {
     if = { limit = { nesnd_jp_culture_plan_valid = yes }
-        var:nesnd_jp_next_target = { save_scope_as = nesnd_jp_settle_target }
-        if = { limit = { var:nesnd_jp_next_mode = 1 }
-            var:nesnd_jp_next_pop = { change_pop_culture = { target = scope:nesnd_jp_settle_target value = 0.25 } }
-        } else = {
-            var:nesnd_jp_next_state = {
-                if = { limit = { scope:nesnd_jp_settle_target = cu:ce_wuu }
-                    set_variable = { name = nesnd_jp_conversion_fraction value = nesnd_jp_conversion_fraction_jiangnan }
-                } else = {
-                    set_variable = { name = nesnd_jp_conversion_fraction value = nesnd_jp_conversion_fraction_japanese }
-                }
-                every_scope_pop = {
-                    limit = { NOT = { culture = scope:nesnd_jp_settle_target } }
-                    change_pop_culture = { target = scope:nesnd_jp_settle_target value = state.var:nesnd_jp_conversion_fraction }
-                }
-                remove_variable = nesnd_jp_conversion_fraction
+        if = { limit = { var:nesnd_jp_next_target = { this = cu:japanese } } nesnd_jp_settle_to = { TARGET = cu:japanese FRACTION = nesnd_jp_conversion_fraction_japanese } }
+        else_if = { limit = { var:nesnd_jp_next_target = { this = cu:ce_wuu } } nesnd_jp_settle_to = { TARGET = cu:ce_wuu FRACTION = nesnd_jp_conversion_fraction_jiangnan } }
+        else_if = { limit = { var:nesnd_jp_next_target = { this = cu:han } } nesnd_jp_settle_to = { TARGET = cu:han FRACTION = nesnd_jp_conversion_fraction_japanese } }
+    }
+}
+nesnd_jp_settle_to = {
+    if = { limit = { var:nesnd_jp_next_mode = 1 }
+        var:nesnd_jp_next_pop = { change_pop_culture = { target = $TARGET$ value = 0.25 } }
+    } else = {
+        var:nesnd_jp_next_state = {
+            set_variable = { name = nesnd_jp_conversion_fraction value = $FRACTION$ }
+            every_scope_pop = {
+                limit = { NOT = { culture = $TARGET$ } }
+                change_pop_culture = { target = $TARGET$ value = state.var:nesnd_jp_conversion_fraction }
             }
+            remove_variable = nesnd_jp_conversion_fraction
         }
-        clear_saved_scope = nesnd_jp_settle_target
     }
 }
 nesnd_jp_bootstrap = {
     if = { limit = { nesnd_jp_country = yes }
         nesnd_jp_initialize = yes
-        if = { limit = { NOT = { has_journal_entry = nesnd_jp_cohesion } } add_journal_entry = { type = nesnd_jp_cohesion } }
+        if = { limit = { NOT = { has_journal_entry = nesnd_jp_cohesion } nesnd_cohesion_open = yes } add_journal_entry = { type = nesnd_jp_cohesion } }
         nesnd_jp_prepare_culture_plan = yes
         nesnd_jp_ensure_establishment = yes
 
