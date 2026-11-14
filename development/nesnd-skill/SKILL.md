@@ -58,6 +58,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 政治目标、IG、合法性、党派 | political-design-and-difficulty | engine-facts §政治 |
 | 经济压力、市场、自给经济、援助 | economic-agency-and-crises、subsistence-transition | native-treaty-aid |
 | 地图、拆州、人口分配、交通与港口 | map-economy-design、map-transport | map-data |
+| 具体人物的出场、任职、保护与退场 | [character-design](references/character-design.md) | — |
 | 多国路线、历史人物、小国、势力 | regional-history-and-survival | — |
 | 世界观、南北朝制度、人物 | — | canon/narrative-context、canon/north-south-institutions、canon/worldbook.json、canon/character-book.json |
 | 服装与 UI 兼容、人物像崩溃 | compatibility | — |

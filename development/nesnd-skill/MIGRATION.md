@@ -219,6 +219,11 @@
 | u:4a0becd1 | lookup/engine-facts.md §按钮 第二段 | 合并（2026-11-12） | 同上；“事件 modifier 内动态 add 不证明外层接受动态值”“两份 AST 核等价”两句保留 |
 | u:ce2381f3 | references/journal-display.md §1“公开条件逐层展开” | 改写（2026-11-12） | 末句“any_* 中的国家身份比较”展开为同文件新小节“`any_*` 里随遍历对象变化的比较”，原处改为一句指引 |
 | u:ac89d69c | references/journal-display.md §4 激活一段 | 改写（2026-11-12） | 纠正“add_journal_entry 绕过 possible”的说法：1.15.1 实测 `possible = { always = no }` 时 add 被拒，补正确写法 |
+| u:7935d76e | references/character-design.md §二“用于” | 改写（2026-11-14） | 删去工坊 MOD 列宁一例（作者决定技能只引原版和 NESND），补“煽动者后来当君主接第八节”；现在 character-office.md §二 |
+| u:7b7b474f | references/character-design.md §五“用于” | 改写（2026-11-14） | 删去工坊 MOD 银行经理一例，改为周学熙一句；现在 character-office.md §五 |
+| u:30567507 | references/character-design.md §六“用于” | 改写（2026-11-14） | 工坊 MOD 居里一例换成原版沙皇宠臣议程（08_tsarpoints.txt:2678）；现在 character-office.md §六 |
+| u:25ec218f | references/character-design.md 检查清单末条 | 改写（2026-11-14） | 命令出处由研究目录改为 tools.md（person 命令已写入），补变量列表节点的核对提示 |
+| u:1291c06a | references/regional-history-and-survival.md §人物 第一段 | 改写（2026-11-14） | “人物死亡后组织延续”一句与 character-design.md 重复，改为一句指向；“唯一身份跨国复用”同理删去，规则在 character-office.md §四 |
 
 ## 4. 顺带修正的问题
 
@@ -258,4 +263,10 @@
 
 ```
 {"kept": 730, "edited": 0, "documented": 4, "missing": 0}
+```
+
+2026-11-14 拆分人物设计参考（备份 `WORK/backups/pre-change-character-design-split-20261114T182616Z/`）。
+
+```
+{"kept": 1016, "edited": 3, "documented": 5, "missing": 0}
 ```

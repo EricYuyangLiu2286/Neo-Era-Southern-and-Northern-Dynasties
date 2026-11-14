@@ -27,7 +27,7 @@
 
 | 工具 | 位置 | 用途 |
 |---|---|---|
-| V3-content-tree（v3tree） | `D:\Users\Eric Liu\OneDrive\Documents\Modings\V3-content-tree` | 内容树：`index`、`near`、`new/expand/render`，见 [content-tree.md](content-tree.md) |
+| V3-content-tree（v3tree） | `D:\Users\Eric Liu\OneDrive\Documents\Modings\V3-content-tree` | 内容树：`index`、`near`、`new/expand/render`，见 [content-tree.md](content-tree.md)；单个人物的全部出处用 `person ID [--context 节点键]` 导出 |
 | Paradox Modding Toolkit | VS Code 扩展 `jdeffner.px-toolkit`（语言服务器 `dist/server.js`） | 解析、作用域、本地化诊断；`toolkit_check.py` 自动找最新版本。`common/on_actions/` 下的文件会报 `wrong-on-action-folder`，这是 CK3 规则（要求单数 `on_action/`），维多利亚 3 原版就在 `common/on_actions/`，属误报 |
 | vic3-tiger 1.19.0 | `WORK/tools/tiger-1.19.0/vic3-tiger.exe` | 静态检查；规则可能落后于新版本 |
 | Rakaly 0.8.22 | `WORK/tools/rakaly-0.8.22/` | 解码存档副本（先复制到工作台） |
