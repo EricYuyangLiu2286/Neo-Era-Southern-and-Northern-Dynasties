@@ -41,6 +41,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 任务 | 必读 | 可选 |
 |---|---|---|
 | 修复 | [debugging-and-updates.md](references/debugging-and-updates.md) §1、[verification.md](references/verification.md) | 引用/预览/延迟回复报错：[script-safety.md](references/script-safety.md)；日志与进度条：[journal-state.md](references/journal-state.md)、[journal-display.md](references/journal-display.md)；崩溃与人物像：[compatibility.md](references/compatibility.md)；接口事实：[engine-facts.md](lookup/engine-facts.md) |
+| 设计或修改与具体人物相关的内容 | [人物设计](references/character-design.md) | — |
 | 新内容 | [content-design.md](references/content-design.md)、[verification.md](references/verification.md) | 第 5 节对应主题；玩家文字另用 `nesnd-player-writing` |
 | 文字 | `nesnd-player-writing` 技能 | 字段在界面何处显示：[journal-ui.md](lookup/journal-ui.md)；设定：[canon/](lookup/canon/narrative-context.md)；动态引用的作用域：[script-safety.md](references/script-safety.md) |
 | 迁移 | [debugging-and-updates.md](references/debugging-and-updates.md) §2、[migration.md](references/migration.md)、[verification.md](references/verification.md) | [vanilla-overrides.md](lookup/vanilla-overrides.md)、[engine-facts.md](lookup/engine-facts.md)（逐条核版本）、地图海域：[map-transport.md](references/map-transport.md) |
