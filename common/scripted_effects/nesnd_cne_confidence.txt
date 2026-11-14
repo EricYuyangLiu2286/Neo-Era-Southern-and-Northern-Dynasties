@@ -14,22 +14,41 @@ nesnd_cne_confidence_watch = {
         nesnd_cne_confidence_init = yes
         if = { limit = { has_modifier = declared_bankruptcy NOT = { has_variable = nesnd_cne_bankruptcy_charged } }
             set_variable = nesnd_cne_bankruptcy_charged
-            change_variable = { name = nesnd_cne_confidence add = -250 }
+            nesnd_cne_confidence_add = { VALUE = -250 }
         }
         if = { limit = { NOT = { has_modifier = declared_bankruptcy } } remove_variable = nesnd_cne_bankruptcy_charged }
-        clamp_variable = { name = nesnd_cne_confidence min = 0 max = 1000 }
-        nesnd_cne_confidence_sync = yes
+        nesnd_cne_confidence_pull = yes
         if = { limit = { var:nesnd_cne_confidence <= 500 NOT = { has_variable = nesnd_cne_republican_rose } }
             nesnd_cne_spawn_republicans = yes
         }
     }
 }
-nesnd_cne_confidence_yearly = {
+# 条的 monthly_progress 先于日志月脉冲结算；这里只刷新营产数并把条值读回变量。
+nesnd_cne_confidence_monthly = {
     if = { limit = { nesnd_cne_programs_live = yes }
         nesnd_cne_confidence_init = yes
         nesnd_cne_refresh_camp_count = yes
-        change_variable = { name = nesnd_cne_confidence add = nesnd_cne_confidence_annual_change }
         nesnd_cne_confidence_watch = yes
+    }
+}
+# 条为权威值，变量只是副本，供阈值判断与其他日志读取。
+nesnd_cne_confidence_pull = {
+    if = { limit = { has_journal_entry = nesnd_cne_confidence_journal }
+        je:nesnd_cne_confidence_journal = { save_scope_as = nesnd_cne_confidence_je }
+        set_variable = { name = nesnd_cne_confidence value = "scope:nesnd_cne_confidence_je.scripted_bar_progress(nesnd_cne_confidence_bar)" }
+        clamp_variable = { name = nesnd_cne_confidence min = 0 max = 1000 }
+    }
+}
+# 一次性增减（破产、暂缓改革）。日志尚未挂出时先记在变量里，日志挂出时由 immediate 写入条。
+nesnd_cne_confidence_add = {
+    if = { limit = { has_journal_entry = nesnd_cne_confidence_journal }
+        je:nesnd_cne_confidence_journal = { add_progress = { name = nesnd_cne_confidence_bar value = $VALUE$ } }
+        nesnd_cne_confidence_pull = yes
+    }
+    else = {
+        nesnd_cne_confidence_init = yes
+        change_variable = { name = nesnd_cne_confidence add = $VALUE$ }
+        clamp_variable = { name = nesnd_cne_confidence min = 0 max = 1000 }
     }
 }
 nesnd_cne_confidence_sync = {
@@ -61,9 +80,7 @@ nesnd_cne_take_respite = {
         set_variable = nesnd_cne_respite_used
         set_variable = { name = nesnd_cne_respite_active months = 6 }
         nesnd_cne_stop_all_programs = yes
-        change_variable = { name = nesnd_cne_confidence add = 100 }
-        clamp_variable = { name = nesnd_cne_confidence min = 0 max = 1000 }
-        nesnd_cne_confidence_sync = yes
+        nesnd_cne_confidence_add = { VALUE = 100 }
         nesnd_refresh_land_display = yes
     }
 }

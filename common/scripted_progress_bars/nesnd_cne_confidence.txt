@@ -1,21 +1,80 @@
-﻿nesnd_cne_confidence_bar = {
+﻿# 帝国人民的信心。条是唯一的权威值，满值 1000。
+# 各项按年度值的十二分之一逐月结算；日志月脉冲把条值读回国家变量 nesnd_cne_confidence，供阈值判断。
+nesnd_cne_confidence_bar = {
  name = nesnd_cne_confidence_journal
  desc = nesnd_cne_confidence_bar_desc
+ second_desc = nesnd_cne_confidence_bar_glossary
  start_value = 1000
  min_value = 0
  max_value = 1000
  default_green = yes
- yearly_progress = {
-  add = { desc = nesnd_cne_conf_base_desc value = nesnd_cne_conf_base }
-  add = { desc = nesnd_cne_conf_delay_desc value = nesnd_cne_conf_delay }
-  add = { desc = nesnd_cne_delta_land value = nesnd_cne_conf_land }
-  add = { desc = nesnd_cne_delta_urban value = nesnd_cne_conf_urban }
-  add = { desc = nesnd_cne_delta_estates value = nesnd_cne_conf_estates }
-  add = { desc = nesnd_cne_delta_war value = nesnd_cne_conf_war }
-  add = { desc = nesnd_cne_conf_radicals_desc value = nesnd_cne_conf_radicals }
-  add = { desc = nesnd_cne_conf_intelligentsia_desc value = nesnd_cne_conf_intelligentsia }
-  add = { desc = nesnd_cne_conf_petty_bourgeoisie_desc value = nesnd_cne_conf_petty_bourgeoisie }
-  add = { desc = nesnd_cne_conf_trade_unions_desc value = nesnd_cne_conf_trade_unions }
-  add = { desc = nesnd_cne_conf_industrialists_desc value = nesnd_cne_conf_industrialists }
+ monthly_progress = {
+  # 每年 -25
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes }
+   add = { desc = nesnd_cne_conf_base_desc value = -2.08333 }
+  }
+  # 每满 5 年，每年再 -25
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes has_variable = nesnd_land_months var:nesnd_land_months >= 60 }
+   add = { desc = nesnd_cne_conf_delay_desc value = var:nesnd_land_months divide = 60 floor = yes multiply = -2.08333 }
+  }
+  # 每年 -5
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes has_variable = nesnd_cne_land_program }
+   add = { desc = nesnd_cne_delta_land value = -0.41667 }
+  }
+  # 每年 -5
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes has_variable = nesnd_cne_urban_program }
+   add = { desc = nesnd_cne_delta_urban value = -0.41667 }
+  }
+  # 每处营产每年 -5
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes has_variable = nesnd_cne_camps_active var:nesnd_cne_camps_active > 0 }
+   add = { desc = nesnd_cne_delta_estates value = var:nesnd_cne_camps_active multiply = -0.41667 }
+  }
+  # 每年 -25
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes is_at_war = yes }
+   add = { desc = nesnd_cne_delta_war value = -2.08333 }
+  }
+  # 每年 -20
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes radical_population_fraction > 0.15 }
+   add = { desc = nesnd_cne_conf_radicals_desc value = -1.66667 }
+  }
+  # 每年 -20
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes ig:ig_landowners ?= { is_in_government = yes } }
+   add = { desc = nesnd_cne_conf_landowners_desc value = -1.66667 }
+  }
+  # 以下各每年 +10
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes ig:ig_intelligentsia ?= { is_in_government = yes } }
+   add = { desc = nesnd_cne_conf_intelligentsia_desc value = 0.83333 }
+  }
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes ig:ig_petty_bourgeoisie ?= { is_in_government = yes } }
+   add = { desc = nesnd_cne_conf_petty_bourgeoisie_desc value = 0.83333 }
+  }
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes ig:ig_trade_unions ?= { is_in_government = yes } }
+   add = { desc = nesnd_cne_conf_trade_unions_desc value = 0.83333 }
+  }
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes ig:ig_industrialists ?= { is_in_government = yes } }
+   add = { desc = nesnd_cne_conf_industrialists_desc value = 0.83333 }
+  }
+  # 每年 +30
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes net_total_income > 0 }
+   add = { desc = nesnd_cne_conf_surplus_desc value = 2.5 }
+  }
+  # 每年 +30，与“民生与制度条件”同一统计
+  progress_condition = {
+   limit = { nesnd_cne_programs_live = yes has_variable = nesnd_reform_sol var:nesnd_reform_sol >= 11 }
+   add = { desc = nesnd_cne_conf_sol_desc value = 2.5 }
+  }
  }
 }
