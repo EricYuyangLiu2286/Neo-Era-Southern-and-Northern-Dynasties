@@ -24,7 +24,7 @@
 
 ## 未完成
 
-2026-11-14 [「帝国人民的信心」改为按月结算并加收支、民生两项，拨款按钮改按负债比例](../../.scratch/debug-release/issues/97-cne-confidence-monthly.md)已完成游戏外检查，未提交 Git，待作者复测条面明细、名词解释与欠债拨款。
+2026-11-14 [「帝国人民的信心」改为按月结算并加收支、民生两项，拨款按钮改按负债比例](../../.scratch/debug-release/issues/97-cne-confidence-monthly.md)已完成游戏外检查，已推送到分支 `fix/tooltip-concepts-observer-buttons`，待作者复测条面明细、名词解释与欠债拨款。
 
 2026-11-14 [地权革命悬停丢失与全 MOD 无效概念链接](../../.scratch/debug-release/issues/96-invalid-concepts.md)已完成游戏外检查，待复测；同批给三角贸易按钮加了观察者模式下的空 root 守卫，待观察者模式实测。
 
