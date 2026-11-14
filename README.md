@@ -22,6 +22,6 @@ Victoria 3 架空历史 MOD；当前源码核验环境为 1.13.11 / Steam build 
 
 保存原始版本、主 MOD 和候选的独立提交／标签，保留远端既有历史，不强制推送或重写已保存历史。
 候选须保留共同父版本、源文件指纹、静态检查及实际运行证据；按差异合并，保护新文档、原有机制和游戏数据。
-日志、parser、Tiger与MCP优先；已有行为证据按受改范围复用，仅新的未决引擎语义做一次定向验证。具体规则见 `development/nesnd-skill/references/log-first-delivery.md`。
+日志、parser、Tiger与MCP优先；已有行为证据按受改范围复用，仅新的未决引擎语义做一次定向验证。具体规则原在 `development/nesnd-skill/references/log-first-delivery.md`（已于 2026-11-14 移出本仓库，见 Git 历史；现行技能在 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3`）。
 
 East Asian Clothes: Redux 同时启用时仅引用其资源接口；仓库不收录该作者的模型、纹理、附件或动画。

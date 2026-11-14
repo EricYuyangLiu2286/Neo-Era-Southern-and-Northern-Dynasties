@@ -16,8 +16,8 @@
 
 ## 入口
 
-1. 读共用技能 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`（仓库副本：`development/nesnd-skill/SKILL.md`）。
-2. 按任务类型再读对应技能的 `SKILL.md`（都在 `C:/Users/Eric Liu/.codex/skills/` 下），照它列的必读文件做：
+1. 读共用技能 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`。技能有自己的 Git 仓库，就是这个文件夹；分工见其中的 `AGENTS.md`。
+2. 按任务类型再读对应技能的 `SKILL.md`（都在 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/skills/` 下），照它列的必读文件做：
 
    | 任务 | 技能 |
    |---|---|

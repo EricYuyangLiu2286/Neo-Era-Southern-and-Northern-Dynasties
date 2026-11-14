@@ -19,7 +19,7 @@
 | 部署脚本 | 源目录 `deploy.bat`（实现与白名单在 `deploy/`） | 部署、预览、检查；记录在源目录 `update_record.json` |
 | 远端 | `github.com/EricYuyangLiu2286/Neo-Era-Southern-and-Northern-Dynasties` | 代理用分支，作者合并 |
 | 工作台 | `…/Victoria 3/nesnd-workbench` | 工具、备份、报告、原版基线 |
-| 技能 | `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3`、`nesnd-player-writing` | 仓库副本在 `development/` |
+| 技能 | `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3`（其余技能在 `skills/` 下） | 独立的 Git 仓库，说明见其中的 `AGENTS.md`；2026-11-14 前的技能历史在本仓库 `development/` 的 Git 记录中 |
 | 任务账 | `.scratch/debug-release/issues/NN-*.md`，索引 `map.md` | 每项任务的细节与证据 |
 | 作者原作 | Git tag `original-20261030`（`f18b6c4`） | 风格与设计的样本 |
 
