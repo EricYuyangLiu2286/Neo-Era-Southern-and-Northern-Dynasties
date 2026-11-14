@@ -1,22 +1,32 @@
-﻿# SHA scope. Yan rises in the four required northern states, plus Liaodong and Jilin while CNE still holds them.
+﻿# SHA scope. The CNE warning has verified each saved state piece before transfer.
 nesnd_sha_raise_yan = {
     if = {
         limit = { nesnd_sha_yan_can_rise = yes }
         c:CNE = {
             if = { limit = { has_variable_list = nesnd_sha_yan_old_cores } clear_variable_list = nesnd_sha_yan_old_cores }
             every_scope_state = {
-                limit = { nesnd_sha_yan_region = yes is_incorporated = yes }
+                limit = { nesnd_yan_announced_state = yes is_incorporated = yes }
                 owner = { add_to_variable_list = { name = nesnd_sha_yan_old_cores target = prev.state_region } }
+            }
+            # Bind the five founding garrisons from the state pieces on the published notice.
+            every_in_list = {
+                variable = nesnd_yan_states
+                if = { limit = { state_region = s:STATE_SONGJIANG } save_scope_as = nesnd_yan_garrison_songjiang }
+                if = { limit = { state_region = s:STATE_OUTER_MANCHURIA } save_scope_as = nesnd_yan_garrison_outer_manchuria }
+                if = { limit = { state_region = s:STATE_NORTHERN_MANCHURIA } save_scope_as = nesnd_yan_garrison_northern_manchuria }
+                if = { limit = { state_region = s:STATE_AMUR } save_scope_as = nesnd_yan_garrison_amur }
+                if = { limit = { state_region = s:STATE_BOLI } save_scope_as = nesnd_yan_garrison_boli }
             }
             create_country = {
                 tag = YAN
                 origin = c:CNE
-                state = s:STATE_SONGJIANG.region_state:CNE
-                state = s:STATE_NORTHERN_MANCHURIA.region_state:CNE
-                state = s:STATE_AMUR.region_state:CNE
-                state = s:STATE_OUTER_MANCHURIA.region_state:CNE
-                state = s:STATE_BOLI.region_state:CNE
+                state = scope:nesnd_yan_garrison_songjiang
+                state = scope:nesnd_yan_garrison_northern_manchuria
+                state = scope:nesnd_yan_garrison_amur
+                state = scope:nesnd_yan_garrison_outer_manchuria
+                state = scope:nesnd_yan_garrison_boli
                 on_created = {
+                    nesnd_rising_clear_inherited = yes
                     set_variable = nesnd_sha_yan_restored_court
                     activate_law = law_type:law_monarchy
                     create_character = {
@@ -38,10 +48,10 @@ nesnd_sha_raise_yan = {
         }
         if = {
             limit = { exists = c:YAN c:YAN ?= { has_variable = nesnd_sha_yan_restored_court } }
-            s:STATE_SHENGJING.region_state:CNE ?= { set_state_owner = c:YAN }
-            s:STATE_SOUTHERN_MANCHURIA.region_state:CNE ?= { set_state_owner = c:YAN }
+            # The five founding states have already transferred. Transfer only remaining signed garrisons.
+            c:CNE = { every_scope_state = { limit = { nesnd_yan_announced_state = yes } set_state_owner = c:YAN } }
             set_variable = nesnd_sha_yan_rose
-            set_variable = { name = nesnd_sha_yan_partition value = flag:$TERMS$ }
+            remove_variable = nesnd_yan_notice
             if = {
                 limit = { var:nesnd_sha_yan_partition = flag:nesnd_sha_yan_port }
                 c:YAN = { nesnd_sha_yan_extra_infantry = { NAME = nesnd_sha_yan_local_army COUNT = 8 } }
@@ -59,6 +69,7 @@ nesnd_sha_raise_yan = {
                 }
             }
             c:CNE = {
+                if = { limit = { has_journal_entry = nesnd_rep_warning } set_variable = nesnd_rep_interrupted }
                 end_truce = c:YAN
                 add_modifier = { name = nesnd_sha_yan_disorder months = 6 }
                 if = {
@@ -118,6 +129,11 @@ nesnd_sha_yan_deliver_land = {
 }
 
 nesnd_sha_yan_close = {
+    if = { limit = { has_variable_list = nesnd_yan_contacts_by_state } clear_variable_list = nesnd_yan_contacts_by_state }
+    remove_variable = nesnd_yan_network_started
+    remove_variable = nesnd_yan_notice
+    remove_variable = nesnd_yan_wait_for_full
+    remove_variable = nesnd_yan_warning_entry
     set_variable = nesnd_sha_yan_ended
     nesnd_sha_enter_shandong = yes
     nesnd_sha_enter_overseas = yes
@@ -132,9 +148,126 @@ nesnd_sha_yan_close = {
     remove_variable = nesnd_sha_yan_korean_exiles
 }
 
+nesnd_sha_yan_send_hint = {
+    c:CNE ?= {
+        random_list = {
+            1 = {
+                trigger = {
+                    nesnd_yan_report_1_available = yes
+                    OR = { NOT = { has_variable = nesnd_cne_yan_hint_1 } nesnd_yan_has_unread_report = no }
+                }
+                trigger_event = { id = nesnd_cne_yan.1 popup = yes }
+            }
+            1 = {
+                trigger = {
+                    nesnd_yan_report_2_available = yes
+                    OR = { NOT = { has_variable = nesnd_cne_yan_hint_2 } nesnd_yan_has_unread_report = no }
+                }
+                trigger_event = { id = nesnd_cne_yan.2 popup = yes }
+            }
+            1 = {
+                trigger = {
+                    nesnd_yan_report_3_available = yes
+                    OR = { NOT = { has_variable = nesnd_cne_yan_hint_3 } nesnd_yan_has_unread_report = no }
+                }
+                trigger_event = { id = nesnd_cne_yan.3 popup = yes }
+            }
+            1 = {
+                trigger = {
+                    nesnd_yan_report_4_available = yes
+                    OR = { NOT = { has_variable = nesnd_cne_yan_hint_4 } nesnd_yan_has_unread_report = no }
+                }
+                trigger_event = { id = nesnd_cne_yan.4 popup = yes }
+            }
+            1 = {
+                trigger = {
+                    nesnd_yan_report_5_available = yes
+                    OR = { NOT = { has_variable = nesnd_cne_yan_hint_5 } nesnd_yan_has_unread_report = no }
+                }
+                trigger_event = { id = nesnd_cne_yan.5 popup = yes }
+            }
+        }
+    }
+}
+
 nesnd_sha_enter_yan = {
     if = {
         limit = { nesnd_sha_yan_open = yes NOT = { has_journal_entry = nesnd_sha_restore_yan } }
         add_journal_entry = { type = nesnd_sha_restore_yan }
     }
+}
+
+nesnd_yan_establish_network = {
+    if = {
+        limit = {
+            nesnd_sha_yan_preparing = yes
+            exists = s:STATE_SONGJIANG.region_state:CNE
+            exists = s:STATE_OUTER_MANCHURIA.region_state:CNE
+        }
+        set_variable = nesnd_yan_network_started
+        if = {
+            limit = { NOT = { is_target_in_variable_list = { name = nesnd_yan_contacts_by_state target = s:STATE_SONGJIANG.region_state:CNE } } }
+            add_to_variable_list = { name = nesnd_yan_contacts_by_state target = s:STATE_SONGJIANG.region_state:CNE }
+        }
+        if = {
+            limit = { NOT = { is_target_in_variable_list = { name = nesnd_yan_contacts_by_state target = s:STATE_OUTER_MANCHURIA.region_state:CNE } } }
+            add_to_variable_list = { name = nesnd_yan_contacts_by_state target = s:STATE_OUTER_MANCHURIA.region_state:CNE }
+        }
+    }
+}
+nesnd_yan_contact_attempt = {
+    if = {
+        limit = { nesnd_yan_can_contact = { REGION = $REGION$ } }
+        je:nesnd_sha_restore_yan = { add_progress = { name = nesnd_sha_yan_banner value = -50 } }
+        set_variable = { name = nesnd_yan_contact_cooldown months = 1 }
+        s:$REGION$.region_state:CNE = { save_scope_as = nesnd_yan_contact_target }
+        random = {
+            chance = nesnd_yan_contact_success
+            add_to_variable_list = { name = nesnd_yan_contacts_by_state target = scope:nesnd_yan_contact_target }
+            nesnd_sha_yan_send_hint = yes
+        }
+        if = {
+            limit = { is_target_in_variable_list = { name = nesnd_yan_contacts_by_state target = scope:nesnd_yan_contact_target } }
+            trigger_event = { id = nesnd_rising.3 popup = yes }
+        }
+        else = { trigger_event = { id = nesnd_rising.4 popup = yes } }
+    }
+}
+nesnd_yan_publish_warning = {
+    if = {
+        limit = { nesnd_yan_can_agree = yes }
+        set_variable = { name = nesnd_sha_yan_partition value = flag:$TERMS$ }
+        set_variable = nesnd_yan_notice
+        c:CNE = {
+            every_scope_state = {
+                limit = { nesnd_yan_contact_state = yes }
+                owner = { add_to_variable_list = { name = nesnd_yan_states target = prev } }
+            }
+            set_variable = { name = nesnd_yan_count value = nesnd_yan_valid_state_count }
+            add_journal_entry = { type = nesnd_yan_warning }
+            je:nesnd_yan_warning = { save_scope_as = nesnd_yan_new_entry }
+            c:SHA = { set_variable = { name = nesnd_yan_warning_entry value = scope:nesnd_yan_new_entry } }
+            trigger_event = { id = nesnd_rising.2 popup = yes }
+        }
+    }
+}
+nesnd_yan_warning_clear = {
+    clear_variable_list = nesnd_yan_states
+    remove_variable = nesnd_yan_count
+    remove_variable = nesnd_yan_interrupted
+    c:SHA ?= { remove_variable = nesnd_yan_warning_entry }
+}
+nesnd_yan_stand_down = {
+    c:SHA ?= {
+        set_variable = { name = nesnd_yan_cooldown months = 3 }
+        if = {
+            limit = { has_journal_entry = nesnd_sha_restore_yan
+                je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 95 "scripted_bar_progress(nesnd_sha_yan_banner)" < 100 }
+            }
+            set_variable = nesnd_yan_wait_for_full
+        }
+        remove_variable = nesnd_yan_notice
+        remove_variable = nesnd_sha_yan_partition
+    }
+    nesnd_yan_warning_clear = yes
 }

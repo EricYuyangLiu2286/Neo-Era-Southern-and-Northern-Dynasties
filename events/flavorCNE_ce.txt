@@ -130,7 +130,17 @@ flavorCNE.3 = {
 
 	trigger = { c:CNE ?= this has_variable = nesnd_land_succeeded NOT = { has_variable = nesnd_reform_success_seen } }
 
-	immediate = { set_variable = nesnd_reform_success_seen if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff } add_modifier = { name = CNE_post_landdraft_modifier months = long_modifier_time } }
+	immediate = {
+		set_variable = nesnd_reform_success_seen
+		if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff }
+		# 让步期间完成：减半的“不完全的改革”与“元老政治”，各 360 个月。否则照原设计。
+		if = {
+			limit = { has_variable = nesnd_cne_reform_conceded }
+			add_modifier = { name = nesnd_cne_incomplete_reform months = 360 }
+			add_modifier = { name = nesnd_cne_senatorial_politics months = 360 }
+		}
+		else = { add_modifier = { name = CNE_post_landdraft_modifier months = long_modifier_time } }
+	}
 
 	option = { # 人类的力量为改变其命运而抒发，是至上的财富之源。
 		name = flavorCNE.3.1
@@ -140,9 +150,16 @@ flavorCNE.3 = {
 			
 			if = { limit = { has_modifier = CNE_land_draft_debuff } remove_modifier = CNE_land_draft_debuff }
 
-			add_modifier = {
-				name = CNE_post_landdraft_modifier
-				months = long_modifier_time
+			if = {
+				limit = { has_variable = nesnd_cne_reform_conceded }
+				add_modifier = { name = nesnd_cne_incomplete_reform months = 360 }
+				add_modifier = { name = nesnd_cne_senatorial_politics months = 360 }
+			}
+			else = {
+				add_modifier = {
+					name = CNE_post_landdraft_modifier
+					months = long_modifier_time
+				}
 			}
 		}
 	}
@@ -907,8 +924,8 @@ flavorCNE.12 = { # 牧仲棠逝世
 
 		}
 	
-        scope:ce_muchiwu_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
-        scope:ce_muchisheng_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
+        scope:ce_muchiwu_scope ?= { set_variable = { name = nesnd_story_event_pending months = 3 } }
+        scope:ce_muchisheng_scope ?= { set_variable = { name = nesnd_story_event_pending months = 3 } }
     }
 
 	option = { # 扶保太子，屏退乱贼！
@@ -964,7 +981,7 @@ flavorCNE.12 = { # 牧仲棠逝世
 								has_template = CNE_mu_muzi
 							}
 						}
-						set_variable = { name = nesnd_story_mu_journey_pending months = 6 }
+						set_variable = { name = nesnd_story_mu_journey_pending months = 8 }
 						trigger_event = { id = flavorCNE.14 months = 5 }
 					}
 				}
@@ -987,7 +1004,7 @@ flavorCNE.12 = { # 牧仲棠逝世
 						has_template = CNE_mu_muzi
 					}
 				}
-				set_variable = { name = nesnd_story_mu_journey_pending months = 5 }
+				set_variable = { name = nesnd_story_mu_journey_pending months = 7 }
 				trigger_event = { id = flavorCNE.14 months = 4 }
 			}
 		}	
@@ -1040,9 +1057,9 @@ flavorCNE.13 = { # 1.2.1 诸子之乱
 			}
 		}
 	
-        scope:ce_muchiwu_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
-        scope:ce_muchisheng_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
-        scope:ce_mudeyu_scope ?= { set_variable = { name = nesnd_story_event_pending days = 3 } }
+        scope:ce_muchiwu_scope ?= { set_variable = { name = nesnd_story_event_pending months = 3 } }
+        scope:ce_muchisheng_scope ?= { set_variable = { name = nesnd_story_event_pending months = 3 } }
+        scope:ce_mudeyu_scope ?= { set_variable = { name = nesnd_story_event_pending months = 3 } }
     }
 
 	option = { # 依国法，父子相继。我等当扶保太孙。
@@ -1139,7 +1156,7 @@ flavorCNE.13 = { # 1.2.1 诸子之乱
 					}
 				}
 			}
-			set_variable = { name = nesnd_story_mu_journey_pending months = 5 }
+			set_variable = { name = nesnd_story_mu_journey_pending months = 7 }
 			trigger_event = { id = flavorCNE.14 months = 4 }
 		}
 	
@@ -1171,7 +1188,16 @@ flavorCNE.14 = { # 木沐子离开
 	#icon = "gfx/interface/icons/event_icons/event_skull.dds"
 
 	trigger = {
-		# triggered by another event		
+		# triggered by another event; she must still be here and have somewhere to go
+		any_scope_character = { has_template = CNE_mu_muzi }
+		any_country = {
+			NOT = { this = root }
+			any_scope_state = { state_region = s:STATE_CALIFORNIA }
+		}
+	}
+
+	cancellation_trigger = {
+		NOT = { any_scope_character = { has_template = CNE_mu_muzi } }
 	}
 
 	immediate = {
@@ -1181,6 +1207,7 @@ flavorCNE.14 = { # 木沐子离开
 			}
 			random_country = {
 				limit = {
+					NOT = { this = root }
 					any_scope_state = {
 						state_region = s:STATE_CALIFORNIA
 					}
@@ -1285,7 +1312,7 @@ flavorCNE.15 = { #
 			random_scope_character = {
 				limit = { has_template = CNE_mu_muzi }
 				save_scope_as = mu_muzi_scope
-                set_variable = { name = nesnd_story_event_pending days = 3 }
+                set_variable = { name = nesnd_story_event_pending months = 3 }
 			}
 		}
 	}

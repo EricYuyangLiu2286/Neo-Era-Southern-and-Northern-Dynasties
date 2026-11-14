@@ -1,0 +1,78 @@
+﻿# 帝国人民的信心：做出让步。挂在 nesnd_cne_confidence_journal 上。
+# 冷却 6 个月（源码估算，待实测）。原生 cooldown 会在按钮不可用原因里显示“冷却至某日”。
+nesnd_cne_concession_button = {
+    name = nesnd_cne_concession_button
+    desc = nesnd_cne_concession_button_desc
+    cooldown = { months = 6 }
+    # 地权革命进行期间始终显示；宠臣条件不满足时按钮变灰，逐项列出原因（作者 2026-11-14 定，避免玩家以为按钮消失）。
+    visible = {
+        nesnd_cne_programs_live = yes
+    }
+    # 宠臣与所属集团读宠臣日志每周写入的 nesnd_power_holder / nesnd_power_holder_ig，任命后最多一周才认定。
+    possible = {
+        hidden_trigger = { nesnd_cne_programs_live = yes }
+        # 信心已满时 +150 会被截掉，按钮变灰（作者 2026-11-14 定）。变量每月及每次增减后由条值读回。
+        custom_tooltip = { text = nesnd_cne_concession_not_full_tt has_variable = nesnd_cne_confidence var:nesnd_cne_confidence < 1000 }
+        custom_tooltip = { text = nesnd_cne_concession_palace_tt has_journal_entry = nesnd_palace_journal }
+        custom_tooltip = { text = nesnd_cne_concession_has_favorite_tt nesnd_power_has_holder = yes }
+        custom_tooltip = {
+            text = nesnd_cne_concession_holder_ig_tt
+            OR = {
+                var:nesnd_power_holder_ig ?= ig:ig_landowners
+                var:nesnd_power_holder_ig ?= ig:ig_armed_forces
+                var:nesnd_power_holder_ig ?= ig:ig_industrialists
+            }
+        }
+    }
+    # AI 每次评估的点击权重。C = 信心（变量 nesnd_cne_confidence，月度与每次增减后由条值读回），
+    # B = 权力平衡（nesnd_power_b，0–100，越高越偏向宠臣）。冷却中按钮不可用，AI 不会点。
+    ai_chance = {
+        value = 0
+        # 一、信心需求，四档互斥，取最紧迫的一档。信心高于 750 时为 0。
+        if = {
+            limit = { has_variable = nesnd_cne_confidence }
+            if = {
+                # 距失败（0）不足 250：一次破产（-250）就能让改革失败。
+                limit = { var:nesnd_cne_confidence <= 250 }
+                value = 30
+            }
+            else_if = {
+                # 尚未起事，信心距起义阈值 500 不足 100：+150 能把信心拉回 650 以上。
+                limit = { var:nesnd_cne_confidence <= 600 NOT = { has_variable = nesnd_cne_republican_rose } }
+                value = 25
+            }
+            else_if = {
+                # 起事已经发生过（每局只有一次），500 不再是阈值；信心仍在下半段。
+                limit = { var:nesnd_cne_confidence <= 450 }
+                value = 12
+            }
+            else_if = {
+                # 信心低于 750（状态行“地方请愿日多”的同一条线），且有改革项目每年继续消耗信心。
+                # 让步修正持续 10 年，期间完成改革会被减半，所以这一档只给很小的权重。
+                limit = { var:nesnd_cne_confidence < 750 nesnd_cne_reforms_in_progress = yes }
+                value = 3
+            }
+        }
+        # 二、权力平衡已偏向宠臣时降低。+25 会把 65 以上推到 90 以上（宠臣压倒对方，宫廷极端事件可抽）。
+        if = {
+            limit = { nesnd_power_b >= 65 }
+            multiply = 0.25
+        }
+        else_if = {
+            limit = { nesnd_power_b >= 50 }
+            multiply = 0.6
+        }
+        # 三、改革临近完成时降低：完成时身上有让步修正，完成奖励换成“不完全的改革”。
+        if = {
+            limit = { has_variable = cne_landreform_completion_tracker var:cne_landreform_completion_tracker >= 80 }
+            multiply = 0.5
+        }
+    }
+    effect = {
+        nesnd_cne_concession_balance = yes
+        custom_tooltip = nesnd_cne_concession_confidence_tt
+        hidden_effect = { nesnd_cne_confidence_add = { VALUE = 150 } }
+        nesnd_cne_concession_modifier = yes
+        custom_tooltip = nesnd_cne_concession_completion_tt
+    }
+}

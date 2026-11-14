@@ -27,11 +27,15 @@ nesnd_sha_coastal_aid = {
     visible = { OR = { nesnd_sha_crossing_active = yes nesnd_sha_qilu_active = yes } }
     possible = {
         NOR = { has_modifier = declared_bankruptcy has_modifier = nesnd_sha_coastal_funding has_modifier = nesnd_sha_yan_funding has_modifier = nesnd_sha_aid_expense }
+        custom_tooltip = { text = nesnd_sha_coastal_cooldown_tt NOT = { has_variable = nesnd_sha_coastal_cooldown } }
         exists = c:CNE
+        custom_tooltip = { text = nesnd_sha_coastal_independent_tt nesnd_sha_free_of_cne = yes }
         c:CNE ?= { any_scope_state = { nesnd_sha_coastal_district = yes } }
     }
     effect = {
-        add_modifier = { name = nesnd_sha_coastal_funding months = 12 multiplier = { value = gdp multiply = 0.0005 } }
+        # 12 months of funding, then 6 months before the next grant.
+        add_modifier = { name = nesnd_sha_coastal_funding months = 12 multiplier = nesnd_sha_coastal_weekly_cost }
+        set_variable = { name = nesnd_sha_coastal_cooldown months = 18 }
         custom_tooltip = nesnd_sha_coastal_aid_terms
         hidden_effect = {
             set_variable = nesnd_sha_shandong_contacts
@@ -42,7 +46,6 @@ nesnd_sha_coastal_aid = {
             }
             c:CNE ?= {
                 trigger_event = { id = nesnd_sha_delay.8 months = 6 }
-                trigger_event = { id = nesnd_sha_delay.8 months = 12 }
             }
         }
     }

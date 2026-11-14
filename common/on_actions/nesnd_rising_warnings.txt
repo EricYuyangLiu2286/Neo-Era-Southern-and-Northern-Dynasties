@@ -1,0 +1,53 @@
+﻿# Native parent = root, uprising country = scope:target. Only interrupt notices already issued.
+on_revolution_start = { on_actions = { nesnd_cne_new_insurrection } }
+on_secession_start = { on_actions = { nesnd_cne_new_insurrection } }
+nesnd_cne_new_insurrection = {
+    trigger = { c:CNE ?= this }
+    effect = {
+        if = { limit = { has_journal_entry = nesnd_rep_warning } set_variable = nesnd_rep_interrupted }
+        if = { limit = { has_journal_entry = nesnd_yan_warning } set_variable = nesnd_yan_interrupted }
+    }
+}
+# Root = diplomatic play. Joining someone else's war does not interrupt either notice.
+on_diplo_play_war_start = { on_actions = { nesnd_cne_rising_war_begun } }
+nesnd_cne_rising_war_begun = {
+    trigger = {
+        exists = c:CNE
+        OR = { initiator = c:CNE target = c:CNE }
+        OR = {
+            is_diplomatic_play_type = dp_revolution
+            is_diplomatic_play_type = dp_secession
+            is_diplomatic_play_type = dp_nesnd_cne_republic
+            is_diplomatic_play_type = nesnd_sha_yan_suppression
+        }
+    }
+    effect = {
+        if = {
+            limit = { NOT = { is_diplomatic_play_type = dp_nesnd_cne_republic } c:CNE = { has_journal_entry = nesnd_rep_warning } }
+            c:CNE = { set_variable = nesnd_rep_interrupted }
+        }
+        if = {
+            limit = { NOT = { is_diplomatic_play_type = nesnd_sha_yan_suppression } c:CNE = { has_journal_entry = nesnd_yan_warning } }
+            c:CNE = { set_variable = nesnd_yan_interrupted }
+        }
+    }
+}
+
+on_state_owner_change = { on_actions = { nesnd_risings_state_lost } }
+nesnd_risings_state_lost = {
+    trigger = {
+        NOT = { owner ?= c:CNE }
+        OR = { nesnd_yan_contact_state = yes nesnd_rep_reserved_state = yes }
+    }
+    effect = {
+        if = { limit = { nesnd_rep_reserved_state = yes } c:CNE ?= { set_variable = nesnd_rep_interrupted } }
+        if = { limit = { nesnd_yan_announced_state = yes } c:CNE ?= { set_variable = nesnd_yan_interrupted } }
+        if = { limit = { nesnd_yan_contact_state = yes } c:SHA ?= { remove_list_variable = { name = nesnd_yan_contacts_by_state target = prev } } }
+    }
+}
+
+on_revolution_end = { on_actions = { nesnd_usm_clear_republican_demand } }
+nesnd_usm_clear_republican_demand = {
+    trigger = { c:USM ?= this scope:target ?= { has_variable = nesnd_usm_republican_demand } }
+    effect = { scope:target ?= { remove_variable = nesnd_usm_republican_demand } }
+}

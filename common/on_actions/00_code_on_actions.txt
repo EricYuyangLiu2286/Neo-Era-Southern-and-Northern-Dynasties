@@ -3219,6 +3219,26 @@ on_revolution_start = {
 	effect = {
 		### Movement type variable setting
 		on_revolution_start_set_civil_war_variables_effect = yes
+		# The movement type is now recorded on this uprising country by the native effect.
+		if = {
+			limit = {
+				c:USM ?= this
+				exists = scope:target.var:civil_war_type_var
+				any_civil_war = {
+					is_civil_war_type = revolution
+					civil_war_progress >= 1
+					exists = political_movement.most_desired_law
+					political_movement ?= {
+						type = scope:target.var:civil_war_type_var
+						OR = {
+							most_desired_law ?= law_type:law_presidential_republic
+							most_desired_law ?= law_type:law_parliamentary_republic
+						}
+					}
+				}
+			}
+			scope:target = { set_variable = nesnd_usm_republican_demand }
+		}
 		on_revolution_start_handle_target_revolution_effect = yes
 		if = {
 			limit = {

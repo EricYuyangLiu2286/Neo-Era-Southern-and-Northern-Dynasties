@@ -7,7 +7,7 @@ Execution: completed
 Assignee: Claude (Opus 5.5)
 Blocked by: none
 Validation: STATIC_PASS
-Evidence: [清点与方案](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-12-cohesion-journals/round1.md>)；同目录 `verify.py`／`verify.json`、`tiger/tiger-delta.json`、`audit.json`、`content_tree_vars.txt`；备份 `WORK/backups/pre-change-cohesion-display-20261112T233440Z`
+Evidence: [清点与方案](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/reports/2026-11-12-cohesion-journals/round1.md>)；同目录 `verify.py`／`verify.json`、`tiger/tiger-delta.json`、`audit.json`、`content_tree_vars.txt`；备份 `WORK/backups/pre-change-cohesion-display-20261112T233440Z`；Git 分支 `feat/cohesion-journal-preview` 提交 `d30cc0d`（基于 origin/main `d8fabf8`，只含本任务改动）
 
 ## 1. 现象与期望
 
@@ -25,17 +25,17 @@ Evidence: [清点与方案](<D:/Users/Eric Liu/Documents/Paradox Interactive/Vic
 - `on_actions/nesnd_unity_policies.txt` 兜底清理加唐衣大食。
 - 本地化：`nesnd_japan_l_*`、`nesnd_qin_politics_l_*`、`nesnd_per_faith_l_*` 中英各改／增 6、7、9 键。
 - 统一结束（2026-11-13，作者选身份证件）：`scripted_triggers/nesnd_unity_policies.txt` 加三个条件；三个日志各加“研究身份证件”“采用委员会共和国或法团国家”两个蓝色结局，写永久标记 `nesnd_cohesion_fixed`；`possible`、未激活显示、日本与西秦的补加入口排除已结束的国家；`nesnd_journal_closures_l_*` 中英各加 2 条结语。
+- 补贴随日志停止（2026-11-14，作者要求）：`scripted_effects/nesnd_unity_policies.txt` 加 `nesnd_unity_stop_subsidies`，日本、西秦的全部结局调用，撤销补贴修正与期限变量。补贴按周计入开支，没有预付款，撤销即不再支出。奥斯曼、印度日志仍在用同一按钮时不撤。两个补贴按钮加一行提示，中英各 1 键。
 - 技能：新增 `references/cohesion-journal.md`，SKILL.md §5 加一行，journal-state.md、journal-display.md 各一句指向，已同步 `development/nesnd-skill/`。
 
 ## 4. 怎么复测
 
 可读档。日本状态行立即可见；西秦读档前已抽定的州显示“届时按当地原有人口抽定”，最多一个月；唐衣大食要过一次月结才有预选。看日志第二段“下次月结：州、约 N 人、A → B”，推进到月结后对照该州人口文化、西秦和唐衣大食的事件。
 
-结束条件：控制台研究身份证件或改政体为委员会共和国，看日志是否以对应结语结束、西秦「羌种暴动」随之失效，改回原政体后日志不再出现。
+结束条件：先在日本或西秦点一项团结补贴，再用 `conclude_journal_entry nesnd_jp_cohesion 0`（科技结局；`1` 为政体结局，西秦为 `nesnd_qe1_unity_journal`）。看结语是否对应、补贴修正与开支是否消失、西秦「羌种暴动」是否随之结束，此后日志不再出现。自然研究到身份证件时应自动结束。
 
 ## 5. 遗留问题
 
 - `GetReligion` 在 `Var()` 上的显示、`ScriptValue(...)|D` 的格式未实机看过。
 - 唐衣大食低档事件比原先晚一个月出现。高档不受影响。
-- 日志结束时，团结补贴（物资、政治）若仍在期内，修正和每月费用照旧走完剩余期限。原有的关闭结局也是如此，未改。
 - 顺带发现：`journal_entries/nesnd_acw_slavery_question.txt:379` 也有 `culture = scope:` 比较，不在本任务范围。

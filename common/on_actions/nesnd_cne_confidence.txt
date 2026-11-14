@@ -4,3 +4,31 @@ on_secession_start = { on_actions = { nesnd_cne_native_revolution_notice } }
 nesnd_cne_native_revolution_notice = {
  effect = { if = { limit = { nesnd_reform_active = yes has_journal_entry = ce_cne_land_reform } set_variable = nesnd_cne_native_revolution_began } }
 }
+
+# 帝国人民的信心：战争胜利。
+# on_wargoal_enforced：root = 执行战争目标的国家（原版 00_code_on_actions.txt 在 root 上设 recently_won_war），
+# scope:actor = 执行者，scope:target = 被执行国，scope:diplomatic_play = 所属博弈。和约里每个被执行的目标各触发一次。
+# “胜利”= 本国持有的战争目标在和约中（或经占领计时）被执行。同一场和约里多个目标只计一次（当天的锁）。
+# 共和军战争（dp_nesnd_cne_republic）不计入战争胜利，改由“再次击败共和主义者”结算，不重复加分。
+on_wargoal_enforced = { on_actions = { nesnd_cne_confidence_wargoal } }
+nesnd_cne_confidence_wargoal = {
+	trigger = {
+		c:CNE ?= this
+		scope:actor ?= this
+	}
+	effect = {
+		if = {
+			limit = { scope:diplomatic_play ?= { is_diplomatic_play_type = dp_nesnd_cne_republic } }
+			nesnd_cne_republicans_defeated = yes
+		}
+		else_if = {
+			limit = {
+				nesnd_cne_programs_live = yes
+				has_journal_entry = nesnd_cne_confidence_journal
+				NOT = { has_variable = nesnd_cne_war_victory_counted }
+			}
+			set_variable = { name = nesnd_cne_war_victory_counted days = 1 }
+			nesnd_cne_confidence_add = { VALUE = 50 }
+		}
+	}
+}

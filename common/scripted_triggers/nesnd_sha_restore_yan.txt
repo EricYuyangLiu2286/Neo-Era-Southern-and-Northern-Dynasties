@@ -6,7 +6,7 @@
 }
 nesnd_sha_yan_preparing = {
     nesnd_sha_yan_open = yes
-    has_variable = nesnd_sha_yan_preparation_window
+    OR = { has_variable = nesnd_sha_yan_preparation_window has_variable = nesnd_yan_notice }
     NOT = { has_variable = nesnd_sha_yan_rose }
 }
 # The northeastern states (Outer Manchuria is split into Haishenwai and Boli). Liaodong and Jilin join the rising
@@ -29,13 +29,19 @@ nesnd_sha_yan_four_states = {
     exists = s:STATE_OUTER_MANCHURIA.region_state:CNE
     exists = s:STATE_BOLI.region_state:CNE
 }
-nesnd_sha_yan_can_rise = {
+# SHA scope. All five core garrisons are needed for both settlements and the Yan army.
+nesnd_yan_conditions = {
     nesnd_sha_yan_preparing = yes
     has_variable = nesnd_sha_yan_contacts
-    NOT = { exists = c:YAN }
     nesnd_sha_yan_four_states = yes
+    exists = c:CNE
     has_journal_entry = nesnd_sha_restore_yan
-    je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 100 }
+    NOT = { exists = c:YAN }
+    s:STATE_SONGJIANG.region_state:CNE ?= { nesnd_yan_contact_state = yes }
+    s:STATE_OUTER_MANCHURIA.region_state:CNE ?= { nesnd_yan_contact_state = yes }
+    s:STATE_NORTHERN_MANCHURIA.region_state:CNE ?= { nesnd_yan_contact_state = yes }
+    s:STATE_AMUR.region_state:CNE ?= { nesnd_yan_contact_state = yes }
+    s:STATE_BOLI.region_state:CNE ?= { nesnd_yan_contact_state = yes }
     c:CNE ?= {
         OR = { is_at_war = yes has_revolution = yes has_variable = nesnd_land_failed }
         any_scope_state = { nesnd_sha_yan_region = no }
@@ -43,9 +49,62 @@ nesnd_sha_yan_can_rise = {
     trigger_if = {
         limit = { var:nesnd_sha_route ?= flag:nesnd_sha_peace }
         NOT = { has_modifier = declared_bankruptcy }
-        trigger_if = { limit = { exists = c:CNE } NOT = { has_war_with = c:CNE } }
+        c:CNE ?= { NOT = { has_war_with = c:SHA } }
     }
 }
+nesnd_yan_can_agree = {
+    nesnd_yan_conditions = yes
+    has_variable = nesnd_sha_yan_preparation_window
+    NOR = { has_variable = nesnd_yan_cooldown has_variable = nesnd_yan_notice }
+    c:CNE ?= { NOT = { has_journal_entry = nesnd_yan_warning } }
+    je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 95 }
+    OR = {
+        NOT = { has_variable = nesnd_yan_wait_for_full }
+        je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 100 }
+    }
+}
+# State scope. Entries are individual state pieces, never a claim on a whole split region.
+nesnd_yan_contact_state = {
+    exists = c:SHA
+    c:SHA ?= { is_target_in_variable_list = { name = nesnd_yan_contacts_by_state target = prev } }
+}
+nesnd_yan_announced_state = {
+    exists = c:CNE
+    c:CNE ?= { is_target_in_variable_list = { name = nesnd_yan_states target = prev } }
+}
+# CNE scope.
+nesnd_yan_warning_valid = {
+    c:CNE ?= this
+    exists = c:SHA
+    NOT = { has_variable = nesnd_yan_interrupted }
+    c:SHA ?= {
+        has_variable = nesnd_yan_notice
+        nesnd_yan_conditions = yes
+        je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 85 }
+    }
+    has_variable = nesnd_yan_count
+    nesnd_yan_valid_state_count = var:nesnd_yan_count
+    num_states > var:nesnd_yan_count
+}
+nesnd_sha_yan_can_rise = {
+    exists = c:CNE
+    has_journal_entry = nesnd_sha_restore_yan
+    c:CNE ?= { nesnd_yan_warning_valid = yes }
+    je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 100 }
+}
+nesnd_yan_can_contact = {
+    nesnd_sha_yan_preparing = yes
+    has_variable = nesnd_sha_yan_contacts
+    has_variable = nesnd_yan_network_started
+    NOR = { has_variable = nesnd_yan_notice has_variable = nesnd_yan_contact_cooldown }
+    has_journal_entry = nesnd_sha_restore_yan
+    je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 50 }
+    exists = s:$REGION$.region_state:CNE
+    exists = s:STATE_SONGJIANG.region_state:CNE
+    s:$REGION$.region_state:CNE ?= { nesnd_yan_contact_state = no nesnd_rep_reserved_state = no }
+    s:STATE_SONGJIANG.region_state:CNE ?= { nesnd_yan_contact_state = yes }
+}
+
 nesnd_sha_yan_korean_offer = {
     nesnd_sha_yan_preparing = yes
     exists = c:KOR
@@ -84,4 +143,39 @@ nesnd_sha_yan_migrant_origin = {
     }
     trigger_else = { always = no }
     any_scope_state = { nesnd_sha_yan_migrant_state = yes }
+}
+
+nesnd_yan_report_1_available = {
+    exists = s:STATE_SHENGJING.region_state:CNE
+    exists = s:STATE_SONGJIANG.region_state:CNE
+    exists = s:STATE_NORTHERN_MANCHURIA.region_state:CNE
+}
+
+nesnd_yan_report_2_available = {
+    exists = s:STATE_SONGJIANG.region_state:CNE
+}
+
+nesnd_yan_report_3_available = {
+    exists = s:STATE_NORTHERN_MANCHURIA.region_state:CNE
+}
+
+nesnd_yan_report_4_available = {
+    exists = s:STATE_SONGJIANG.region_state:CNE
+    exists = s:STATE_AMUR.region_state:CNE
+    exists = s:STATE_BOLI.region_state:CNE
+}
+
+nesnd_yan_report_5_available = {
+    exists = s:STATE_SONGJIANG.region_state:CNE
+    exists = s:STATE_NORTHERN_MANCHURIA.region_state:CNE
+}
+
+nesnd_yan_has_unread_report = {
+    OR = {
+        AND = { nesnd_yan_report_1_available = yes NOT = { has_variable = nesnd_cne_yan_hint_1 } }
+        AND = { nesnd_yan_report_2_available = yes NOT = { has_variable = nesnd_cne_yan_hint_2 } }
+        AND = { nesnd_yan_report_3_available = yes NOT = { has_variable = nesnd_cne_yan_hint_3 } }
+        AND = { nesnd_yan_report_4_available = yes NOT = { has_variable = nesnd_cne_yan_hint_4 } }
+        AND = { nesnd_yan_report_5_available = yes NOT = { has_variable = nesnd_cne_yan_hint_5 } }
+    }
 }

@@ -67,4 +67,4 @@ GAME/common/political_movements/political_movements.md：pop_support_factors仅U
 
 市场是随时间和AI行为变化的关系图。共同市场、宗属、集团、条约、海外投资与外交态度分别记录；退出其中一个不自动退出其余关系。HUS的开局共同市场不等于永久供货，需比较留盟、和平退盟、退出受阻/战争、提前准备、重入和对吴合作等可达路径；实际资格由`can_leave_power_bloc`及原生UI核验。1.13.11的贸易联盟身份本身统一市场，单移除market_unification_3原则不足以分市。当前来源与测试矩阵见WORK/plans/two-empires/evidence/market-exit-scenarios.md。
 
-既有剧情意图须对照实际AI的战略、态度、目标和能力。2026-10-31存档中HUS对USM为befriend/cooperative，不能因设定反吴便宣称已实现。可以有依据地初始化倾向，并为威胁变化、共同敌人、财政或玩家选择保留转向；不要按月强制覆写所有外交选择。所选玩家国家的无操作测试、AI代管测试和观察者全AI测试分开，执行命令后实际检查`IsAI`/`is_ai`，不能把“控制器存在”当成trigger成立。
+既有剧情意图须对照实际AI的战略、态度、目标和能力。2026-10-31存档中HUS对USM为befriend/cooperative，不能因设定反吴便宣称已实现。可以有依据地初始化倾向，并为威胁变化、共同敌人、财政或玩家选择保留转向；不要按月强制覆写所有外交选择。所选玩家国家的无操作测试、AI代管测试和观察者全AI测试分开，执行命令后实际检查`IsAI`/`is_ai`，不能把“控制器存在”当成trigger成立。调整 AI 倾向的部件与模式见 [ai-behavior.md](ai-behavior.md)。

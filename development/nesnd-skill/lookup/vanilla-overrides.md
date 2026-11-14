@@ -15,7 +15,18 @@
 | `common/amendments/00_amendments_historical_04.txt` | `amendment_electoral_clientelism`、`amendment_tradition_of_free_elections` | `common/amendments/nesnd_keju_voting_overrides.txt` | 两条适用法律清单分别加入科举 |
 | `common/scripted_triggers/00_ep2_victoria_scripted_triggers.txt` | `country_is_abolishing_bakufu` | `common/scripted_triggers/nesnd_keju_voting.txt` | 废除幕府的颁布判断加入科举 |
 
-## 内容有改动（185 个）
+## AI 触发器的单条原版覆盖（1.15.1，2026-11-14 由整文件覆盖改来）
+
+原版 `common/scripted_triggers/00_ai_triggers.txt` 不再整文件覆盖。MOD 文件 `common/scripted_triggers/ce_ai_triggers.txt` 用 `REPLACE:` 只替换下面 4 个键，原版其余 71 个触发器照常加载。版本更新时，把这 4 个键与新原版逐条比对，再把 MOD 的改动合并进去。
+
+| 单条覆盖键 | 与原版的差异 |
+| --- | --- |
+| `ai_has_reasons_to_not_oppose_law` | `imposed_law ?= scope:law`（原版写的是 `scope:law.type`） |
+| `ai_has_enact_weight_modifier_journal_entries` | 东学党三条法律直接按法律类型比较 |
+| `has_je_conquest_reason` | 昭昭天命加南北大垣两州；阿拉斯加改为 `nesnd_is_aixue_state`；加勃利 |
+| `has_je_subjugation_reason` | 加勃利 |
+
+## 内容有改动（184 个）
 
 | 文件夹 | 文件名 |
 | --- | --- |
@@ -63,7 +74,7 @@
 | `common/power_bloc_names` | `00_power_bloc_names.txt` |
 | `common/scripted_buttons` | `00_christ_of_europe_buttons.txt`、`07_meiji_buttons.txt` |
 | `common/scripted_effects` | `00_dynamic_state_names_europe.txt`、`00_victoria_ep2_scripted_effects.txt` |
-| `common/scripted_triggers` | `00_ai_triggers.txt`、`00_geography_triggers.txt`、`00_scripted_triggers.txt` |
+| `common/scripted_triggers` | `00_geography_triggers.txt`、`00_scripted_triggers.txt` |
 | `common/strategic_regions` | `east_asia_strategic_regions.txt`、`europe_strategic_regions.txt`、`north_america_strategic_regions.txt`、`west_south_asia_strategic_regions.txt` |
 | `events` | `1848.txt`、`alaska_events.txt`、`character_events.txt`、`colonial_administration_events.txt`、`commander_events.txt` |
 | `events` | `crime_events.txt`、`dei_breakup.txt`、`fascism_events.txt`、`ig_leaders.txt`、`ig_suppression_events.txt` |

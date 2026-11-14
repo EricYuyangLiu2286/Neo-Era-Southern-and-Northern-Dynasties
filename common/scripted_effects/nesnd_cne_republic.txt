@@ -1,22 +1,60 @@
-﻿nesnd_cne_spawn_republicans = {
-    if = { limit = { c:CNE ?= this NOT = { exists = c:NRP } NOT = { has_variable = nesnd_cne_republican_rose } num_states > 1
-            OR = { AND = { any_scope_state = { nesnd_cne_republic_west_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_west_region = yes } } } AND = { any_scope_state = { nesnd_cne_republic_northeast_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_northeast_region = yes } } } AND = { any_scope_state = { nesnd_cne_republic_north_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_north_region = yes } } } }
+﻿# Choose the district and seed once, before publishing the warning.
+nesnd_rep_choose_district = {
+    random_list = {
+        1 = {
+            trigger = { nesnd_rep_district_available = { REGION_TEST = nesnd_cne_republic_west_region } }
+            nesnd_rep_reserve_district = { REGION_TEST = nesnd_cne_republic_west_region }
         }
-        random_list = {
-            1 = {
-                trigger = { any_scope_state = { nesnd_cne_republic_west_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_west_region = yes } } }
-                nesnd_cne_republic_raise_west = yes
-            }
-            1 = {
-                trigger = { any_scope_state = { nesnd_cne_republic_northeast_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_northeast_region = yes } } }
-                nesnd_cne_republic_raise_northeast = yes
-            }
-            1 = {
-                trigger = { any_scope_state = { nesnd_cne_republic_north_region = yes } any_scope_state = { NOT = { nesnd_cne_republic_north_region = yes } } }
-                nesnd_cne_republic_raise_north = yes
-            }
+        1 = {
+            trigger = { nesnd_rep_district_available = { REGION_TEST = nesnd_cne_republic_northeast_region } nesnd_rep_northeast_unclaimed = yes }
+            nesnd_rep_reserve_district = { REGION_TEST = nesnd_cne_republic_northeast_region }
         }
-        if = { limit = { exists = c:NRP }
+        1 = {
+            trigger = { nesnd_rep_district_available = { REGION_TEST = nesnd_cne_republic_north_region } }
+            nesnd_rep_reserve_district = { REGION_TEST = nesnd_cne_republic_north_region }
+        }
+    }
+}
+
+nesnd_rep_reserve_district = {
+    every_scope_state = {
+        limit = { $REGION_TEST$ = yes }
+        owner = { add_to_variable_list = { name = nesnd_rep_states target = prev } }
+    }
+    random_scope_state = {
+        limit = { nesnd_rep_reserved_state = yes }
+        owner = { set_variable = { name = nesnd_rep_seed value = prev } }
+    }
+    set_variable = { name = nesnd_rep_count value = nesnd_rep_state_count }
+    add_journal_entry = { type = nesnd_rep_warning }
+    trigger_event = { id = nesnd_rising.1 popup = yes }
+}
+
+nesnd_rep_clear = {
+    clear_variable_list = nesnd_rep_states
+    remove_variable = nesnd_rep_count
+    remove_variable = nesnd_rep_seed
+    remove_variable = nesnd_rep_interrupted
+}
+
+nesnd_rep_stand_down = {
+    if = { limit = { nesnd_rep_confidence > 500 nesnd_rep_confidence <= 550 } set_variable = nesnd_rep_wait_for_drop }
+    set_variable = { name = nesnd_rep_cooldown months = 3 }
+    nesnd_rep_clear = yes
+}
+
+nesnd_cne_spawn_republicans = {
+    if = {
+        limit = { nesnd_rep_warning_valid = yes nesnd_rep_confidence <= 500 }
+        create_country = {
+            tag = NRP
+            origin = c:CNE
+            state = var:nesnd_rep_seed
+            on_created = { set_variable = nesnd_cne_republican_challenger }
+        }
+        if = {
+            limit = { exists = c:NRP }
+            every_scope_state = { limit = { nesnd_rep_reserved_state = yes } set_state_owner = c:NRP }
             if = { limit = { c:NRP = { has_variable = nesnd_cne_republican_challenger } }
                 set_variable = nesnd_cne_republican_rose
                 # Removed regional programmes must stop charging CNE immediately after the split.
@@ -28,40 +66,9 @@
         }
     }
 }
-nesnd_cne_republic_raise_west = {
-    random_scope_state = { limit = { nesnd_cne_republic_west_region = yes } save_scope_as = nesnd_cne_republic_seed }
-    if = { limit = { exists = scope:nesnd_cne_republic_seed }
-        create_country = { tag = NRP origin = root state = scope:nesnd_cne_republic_seed
-            on_created = { set_variable = nesnd_cne_republican_challenger }
-        }
-        if = { limit = { exists = c:NRP }
-            every_scope_state = { limit = { nesnd_cne_republic_west_region = yes } set_state_owner = c:NRP }
-        }
-    }
-}
-nesnd_cne_republic_raise_northeast = {
-    random_scope_state = { limit = { nesnd_cne_republic_northeast_region = yes } save_scope_as = nesnd_cne_republic_seed }
-    if = { limit = { exists = scope:nesnd_cne_republic_seed }
-        create_country = { tag = NRP origin = root state = scope:nesnd_cne_republic_seed
-            on_created = { set_variable = nesnd_cne_republican_challenger }
-        }
-        if = { limit = { exists = c:NRP }
-            every_scope_state = { limit = { nesnd_cne_republic_northeast_region = yes } set_state_owner = c:NRP }
-        }
-    }
-}
-nesnd_cne_republic_raise_north = {
-    random_scope_state = { limit = { nesnd_cne_republic_north_region = yes } save_scope_as = nesnd_cne_republic_seed }
-    if = { limit = { exists = scope:nesnd_cne_republic_seed }
-        create_country = { tag = NRP origin = root state = scope:nesnd_cne_republic_seed
-            on_created = { set_variable = nesnd_cne_republican_challenger }
-        }
-        if = { limit = { exists = c:NRP }
-            every_scope_state = { limit = { nesnd_cne_republic_north_region = yes } set_state_owner = c:NRP }
-        }
-    }
-}
+
 nesnd_cne_republic_setup = {
+    nesnd_rising_clear_inherited = yes
     # Local-only inherited cleanup, never global CNE cleanup from the new country.
     nesnd_land_cleanup = yes
     activate_law = law_type:law_presidential_republic
@@ -102,6 +109,7 @@ nesnd_cne_start_republic_war = {
         }
         if = {
             limit = { nesnd_cne_republic_has_play = yes }
+            if = { limit = { has_journal_entry = nesnd_yan_warning } set_variable = nesnd_yan_interrupted }
             c:NRP = { set_variable = nesnd_cne_republic_war_created }
         }
     }
@@ -160,7 +168,7 @@ nesnd_cne_republic_defeat = {
             c:CNE = {
                 set_variable = nesnd_cne_republic_settled
                 annex_with_incorporation = prev
-                trigger_event = { id = nesnd_cne_confidence.4 popup = yes }
+                nesnd_cne_republicans_defeated = yes
             }
         }
     }
@@ -199,4 +207,15 @@ nesnd_cne_republic_note_actual_war = {
             c:CNE = { set_variable = nesnd_cne_republic_war_confirmed }
         }
     }
+}
+
+# Country creation can copy variables. Never clear SHA or CNE from a spawned country.
+nesnd_rising_clear_inherited = {
+    if = { limit = { has_variable_list = nesnd_rep_states } clear_variable_list = nesnd_rep_states }
+    if = { limit = { has_variable_list = nesnd_yan_states } clear_variable_list = nesnd_yan_states }
+    remove_variable = nesnd_rep_seed
+    remove_variable = nesnd_rep_count
+    remove_variable = nesnd_rep_interrupted
+    remove_variable = nesnd_yan_count
+    remove_variable = nesnd_yan_interrupted
 }

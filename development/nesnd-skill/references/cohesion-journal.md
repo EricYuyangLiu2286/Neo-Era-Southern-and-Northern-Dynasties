@@ -23,7 +23,7 @@
 - **转化目标在上个月末抽定。** 执行时只读变量，不再抽签。显示与执行调用同一个有效性 trigger，复核失败时两边同时变成“不转化”。
 - **时间写“下次月结”。** 脚本存不了日期，周计数又耗性能（作者 2026-11-12 否决），所以状态行写“下次月结”和“届时团结度须仍低于／高于 X”。
 
-- **统一结束。** 研究身份证件（`identification_documents`），或采用委员会共和国／法团国家时，三个日志各以一个蓝色结局结束，并写入永久标记 `nesnd_cohesion_fixed`。条件统一放在 `common/scripted_triggers/nesnd_unity_policies.txt`：`nesnd_cohesion_fixed_by_ideas`、`nesnd_cohesion_fixed_by_ideology`、`nesnd_cohesion_open`。新日志的 `possible`、`is_shown_when_inactive` 以及所有 `add_journal_entry` 入口都要带 `nesnd_cohesion_open = yes`。选身份证件，是因为它有每州税收容量 +25，后面还接中央计划，玩家很难为保留同化而绕开它（作者 2026-11-13 定）。
+- **统一结束。** 研究身份证件（`identification_documents`），或采用委员会共和国／法团国家时，三个日志各以一个蓝色结局结束，并写入永久标记 `nesnd_cohesion_fixed`。条件统一放在 `common/scripted_triggers/nesnd_unity_policies.txt`：`nesnd_cohesion_fixed_by_ideas`、`nesnd_cohesion_fixed_by_ideology`、`nesnd_cohesion_open`。新日志的 `possible`、`is_shown_when_inactive` 以及所有 `add_journal_entry` 入口都要带 `nesnd_cohesion_open = yes`。带团结补贴按钮的日志，每个结局都调用 `nesnd_unity_stop_subsidies`：补贴按周计入开支，撤掉修正就不再支出。选身份证件，是因为它有每州税收容量 +25，后面还接中央计划，玩家很难为保留同化而绕开它（作者 2026-11-13 定）。
 
 ## 2. 最小范例
 
@@ -143,5 +143,5 @@
 - [ ] 状态行覆盖：将转化（州、人数、方向）、未抽中（附几率）、无合格州、团结在中段、日志未就绪。
 - [ ] 中英同键同函数，中文无“；”，英文英式拼写。
 - [ ] 关闭结局和 on_action 都清预告。
-- [ ] 加统一结束：两个结局（科技、制度），`possible` 与补加入口带 `nesnd_cohesion_open`。
+- [ ] 加统一结束：两个结局（科技、制度），`possible` 与补加入口带 `nesnd_cohesion_open`；有补贴按钮的，所有结局都停补贴。
 - [ ] 本地化里的阈值、几率与脚本一致。

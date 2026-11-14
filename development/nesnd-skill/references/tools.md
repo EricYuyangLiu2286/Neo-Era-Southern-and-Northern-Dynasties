@@ -18,7 +18,7 @@
 | `tiger_delta.py` | 对改动前备份和当前 MOD 各跑一次 vic3-tiger，只列改动文件新增的报错 | 交付前 | `python scripts/tiger_delta.py --before <备份>/mod --out <报告目录>` |
 | `static_lints.py` | 扫缺 UTF-8 BOM、可见结局缺 `color`、会生成说明的条件里随遍历对象变化的 `any_*` 比较。第三项是文本扫描，结果是风险清单，只有界面真的显示该条件时才会报错 | 交付前；读到相关加载或刷屏报错时 | `python scripts/static_lints.py [--checks bom,color,anyeq] [--out <报告.json>]` |
 | `script_xcheck.py` | 按 1.15 script_docs 交叉检查一组文件：未知 trigger/effect、条件与效果混用、作用域不符、变量只写不读、引用未定义 | 一个新系统写完时 | `python scripts/script_xcheck.py "common/**/nesnd_sha_*.txt" "events/nesnd_sha_*.txt"` |
-| `vanilla_overrides.py` | 比对主 MOD 与原版同路径文件，重写 [vanilla-overrides.md](../lookup/vanilla-overrides.md) 与基线 JSON | 版本更新；新增或撤回同路径覆盖 | `python scripts/vanilla_overrides.py --out <WORK/reports/…>` |
+| `vanilla_overrides.py` | 比对主 MOD 与原版同路径文件，重新生成 [vanilla-overrides.md](../lookup/vanilla-overrides.md) 中“内容有改动”及之后的三节，并写基线 JSON。该标题之前的手写内容（何时读、单条 `REPLACE:` 表）原样保留，只刷新版本行；手写部分引用的路径若在 MOD 和原版中都不存在，会打印 WARNING。找不到该标题时拒绝生成 | 版本更新；新增或撤回同路径覆盖 | `python scripts/vanilla_overrides.py --out <WORK/reports/…>` |
 | `pop_rewrite.py` | 按 JSON 计划改 `history/pops`：替换某文化人数、追加人口，逐州断言总量 | 人口重配、拆州后补人口 | `python scripts/pop_rewrite.py <plan.json>`（只预览）；确认后加 `--write` |
 | `backup.py` | 带 SHA-256 清单的校验备份 | 实质修改前 | `python scripts/backup.py --status pre-change --label <主题>`；只备份部分：`--paths <路径>…` |
 | `skill_loss_check.py` | 技能整理后，逐段核对旧内容的去向 | 整理或大改本技能后 | `python scripts/skill_loss_check.py --old <备份>/skills` |

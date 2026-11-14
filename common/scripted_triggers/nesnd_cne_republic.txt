@@ -26,3 +26,35 @@ nesnd_cne_republic_target_available = {
  }
  trigger_else = { always = no }
 }
+
+nesnd_rep_district_available = {
+    any_scope_state = { $REGION_TEST$ = yes }
+    any_scope_state = { $REGION_TEST$ = no }
+}
+nesnd_rep_northeast_unclaimed = {
+    NOT = { any_scope_state = { nesnd_cne_republic_northeast_region = yes nesnd_yan_contact_state = yes } }
+}
+nesnd_rep_reserved_state = {
+    exists = c:CNE
+    c:CNE ?= { is_target_in_variable_list = { name = nesnd_rep_states target = prev } }
+}
+nesnd_rep_may_prepare = {
+    exists = c:CNE
+    nesnd_cne_programs_live = yes
+    has_journal_entry = nesnd_cne_confidence_journal
+    NOR = {
+        exists = c:NRP
+        has_variable = nesnd_cne_republican_rose
+        any_diplomatic_play = { is_diplomatic_play_type = nesnd_sha_yan_suppression is_war = yes initiator = c:CNE }
+    }
+}
+nesnd_rep_warning_valid = {
+    nesnd_rep_may_prepare = yes
+    NOT = { has_variable = nesnd_rep_interrupted }
+    nesnd_rep_confidence < 575
+    exists = var:nesnd_rep_seed
+    var:nesnd_rep_seed ?= { owner = c:CNE }
+    has_variable = nesnd_rep_count
+    nesnd_rep_state_count = var:nesnd_rep_count
+    num_states > var:nesnd_rep_count
+}

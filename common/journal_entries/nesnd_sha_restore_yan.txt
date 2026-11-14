@@ -17,12 +17,30 @@
             set_variable = nesnd_sha_yan_preparation_started
             set_variable = { name = nesnd_sha_yan_preparation_window days = 4380 }
         }
+        nesnd_yan_establish_network = yes
     }
     scripted_progress_bar = nesnd_sha_yan_banner
     scripted_button = nesnd_sha_yan_subsidy
+    scripted_button = nesnd_yan_contact_northern_manchuria
+    scripted_button = nesnd_yan_contact_amur
+    scripted_button = nesnd_yan_contact_boli
+    scripted_button = nesnd_yan_contact_shengjing
+    scripted_button = nesnd_yan_contact_southern_manchuria
 
     on_weekly_pulse = {
         effect = {
+            if = {
+                limit = {
+                    has_variable = nesnd_yan_notice
+                    NOT = { exists = c:CNE }
+                }
+                remove_variable = nesnd_yan_notice
+                remove_variable = nesnd_yan_warning_entry
+                remove_variable = nesnd_sha_yan_partition
+                set_variable = { name = nesnd_yan_cooldown months = 3 }
+            }
+            nesnd_yan_establish_network = yes
+            if = { limit = { has_variable = nesnd_yan_wait_for_full scope:journal_entry = { "scripted_bar_progress(nesnd_sha_yan_banner)" < 95 } } remove_variable = nesnd_yan_wait_for_full }
             if = { limit = { exists = c:CNE } set_variable = { name = nesnd_sha_yan_north value = c:CNE } }
             if = {
                 limit = {
@@ -35,7 +53,7 @@
                 trigger_event = { id = nesnd_sha_yan.7 popup = yes }
             }
             if = {
-                limit = { nesnd_sha_yan_can_rise = yes NOT = { has_variable = nesnd_sha_yan_council_pending } }
+                limit = { nesnd_yan_can_agree = yes NOT = { has_variable = nesnd_sha_yan_council_pending } }
                 set_variable = { name = nesnd_sha_yan_council_pending days = 7 }
                 trigger_event = { id = nesnd_sha_yan.2 popup = yes }
             }
@@ -72,8 +90,10 @@
         first_valid = {
             triggered_desc = { trigger = { has_variable = nesnd_sha_yan_rose var:nesnd_sha_route ?= flag:nesnd_sha_peace } desc = nesnd_sha_yan_observer_status }
             triggered_desc = { trigger = { has_variable = nesnd_sha_yan_rose } desc = nesnd_sha_yan_war_status }
+            triggered_desc = { trigger = { has_variable = nesnd_yan_notice } desc = nesnd_yan_sha_warning_status }
             triggered_desc = { trigger = { exists = c:YAN } desc = nesnd_sha_yan_existing_status }
             triggered_desc = { trigger = { scope:journal_entry ?= { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 100 } } desc = nesnd_sha_yan_ready_status }
+            triggered_desc = { trigger = { NOT = { has_variable = nesnd_yan_network_started } } desc = nesnd_yan_missing_bases }
             desc = nesnd_sha_yan_prep_status
         }
     }
@@ -123,7 +143,7 @@
         trigger = { custom_tooltip = {
             text = nesnd_sha_yan_time_tt
             has_variable = nesnd_sha_yan_preparation_started
-            NOR = { has_variable = nesnd_sha_yan_preparation_window has_variable = nesnd_sha_yan_rose }
+            NOR = { has_variable = nesnd_sha_yan_preparation_window has_variable = nesnd_sha_yan_rose has_variable = nesnd_yan_notice }
         } }
         effect = { trigger_event = { id = nesnd_sha_yan.8 popup = yes } nesnd_sha_yan_close = yes }
     }

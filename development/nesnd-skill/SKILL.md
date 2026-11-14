@@ -55,6 +55,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 文化团结度日志（团结条 + 人口文化转化）：新建或修改时读 | [cohesion-journal](references/cohesion-journal.md) | — |
 | 语法、作用域、覆盖原版 | script-safety | engine-syntax、engine-facts |
 | 数值、成本、奖励节奏 | numeric-scale-contract | numeric-facts |
+| 设计 AI 倾向、`ai_chance`、AI 策略、秘密目标时读 | [ai-behavior](references/ai-behavior.md) | — |
 | 政治目标、IG、合法性、党派 | political-design-and-difficulty | engine-facts §政治 |
 | 经济压力、市场、自给经济、援助 | economic-agency-and-crises、subsistence-transition | native-treaty-aid |
 | 地图、拆州、人口分配、交通与港口 | map-economy-design、map-transport | map-data |

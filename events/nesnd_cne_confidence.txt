@@ -29,15 +29,51 @@ nesnd_cne_confidence.3 = {
  duration = 1
  option = { name = nesnd_cne_confidence.3.a default_option = yes }
 }
-nesnd_cne_confidence.4 = {
+# 再次击败共和主义者：两条击败路径共用（nesnd_cne_republicans_defeated）。取代原先只在停战路径弹出的 .4「共和军归降」。
+nesnd_cne_confidence.7 = {
  type = country_event
  placement = root
- title = nesnd_cne_confidence.4.t
- desc = nesnd_cne_confidence.4.d
- flavor = nesnd_cne_confidence.4.f
+ title = nesnd_cne_confidence.7.t
+ desc = nesnd_cne_confidence.7.d
+ flavor = nesnd_cne_confidence.7.f
  event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_2.dds" }
- duration = 1
- option = { name = nesnd_cne_confidence.4.a default_option = yes }
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ duration = 3
+ trigger = { c:CNE ?= this }
+ option = {
+  name = nesnd_cne_confidence.7.a
+  default_option = yes
+  if = {
+   limit = {
+    nesnd_reform_active = yes
+    has_journal_entry = ce_cne_land_reform
+    NOT = { has_variable = nesnd_reform_terminal_pending }
+    has_variable = cne_landreform_completion_tracker
+   }
+   custom_tooltip = push_land_reform_forward_25
+   hidden_effect = {
+    change_variable = { name = cne_landreform_completion_tracker add = 25 }
+    clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+    nesnd_refresh_land_display = yes
+   }
+   if = {
+    limit = { has_variable = cne_landreform_failure_tracker }
+    custom_tooltip = nesnd_cne_disorder_minus_20_tt
+    hidden_effect = {
+     change_variable = { name = cne_landreform_failure_tracker add = -20 }
+     clamp_variable = { name = cne_landreform_failure_tracker min = 0 max = 100 }
+     nesnd_refresh_land_display = yes
+    }
+   }
+  }
+  if = {
+   limit = { nesnd_cne_programs_live = yes has_journal_entry = nesnd_cne_confidence_journal }
+   custom_tooltip = nesnd_cne_confidence_plus_50_tt
+   hidden_effect = { nesnd_cne_confidence_add = { VALUE = 50 } }
+  }
+  hidden_effect = { if = { limit = { has_modifier = nesnd_cne_swift_purge } remove_modifier = nesnd_cne_swift_purge } }
+  add_modifier = { name = nesnd_cne_swift_purge months = 60 }
+ }
 }
 nesnd_cne_confidence.6 = {
  type = country_event

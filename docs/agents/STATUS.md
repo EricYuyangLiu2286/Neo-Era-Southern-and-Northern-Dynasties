@@ -24,13 +24,25 @@
 
 ## 未完成
 
+2026-11-14 [登莱「接济北朝共和党人」无限叠加激进](../../.scratch/debug-release/issues/100-sha-radicals-flood.md)：每次拨款改为两次各 5%，经费期满后冷却 6 个月，登莱为北朝附庸或盟友时禁用，AI 登莱在「渡海」中对北朝关系保持 −100。条款显示每周经费。游戏外检查通过，可读档复测。
+
+2026-11-14 [原创中期人物审核](../../.scratch/midgame-characters/issues/01-duan-muzi-audit.md)：段敬川 .14／.200 不再因月检而连弹、重复扣款；牧沐子「沐子东渡」要求她仍在 CNE、且有别国持有加州。待答保护由 3 天改为 3 个月。游戏外检查通过，待作者复测。另有 4 项牧沐子剧情的设计问题，以及 9 条中期丰富建议，待作者决定。
+
+2026-11-14 [AI 触发器改为按键 REPLACE](../../.scratch/ai-behavior/issues/01-ai-triggers-replace.md)：删去整文件覆盖的 `00_ai_triggers.txt`，新增 `ce_ai_triggers.txt`，只替换与原版不同的 4 个触发器。游戏外逐键比对与原覆盖一致，待新开局看 error.log。默认 AI 策略仍整文件覆盖。同日技能新增 AI 倾向参考 `references/ai-behavior.md`。
+
+2026-11-14 [人物设计研究的复核与调整](../../.scratch/character-design/issues/01-research-review.md)：技能人物参考已拆为三份、只引原版和 NESND，已合入 Git main（`db9351d`）；内容树工具已合入其 main（`842ea65`）。修复分支 `fix/tooltip-concepts-observer-buttons` 已并入新 main（`bb62624`），技能三处冲突已解决，合入 main 时不再冲突。
+
+2026-11-14 [共和军、复燕预警与南朝接纳和人决议](../../.scratch/rising-warnings/issues/01-cne-sha-usm.md)已完成游戏外检查。共和军和东燕各预警九十日。登莱逐州联络旧部，成功时给北朝送一件[任务 98 的呈报](../../.scratch/debug-release/issues/98-yan-rising-visibility.md)。八州词条已接入中英文本。待作者验收预警州份与开战、读档锁定、按钮成功和失败、原生内战的发起运动。
+
+2026-11-14 [地权革命加入战争胜利、「再次击败共和主义者」与「做出让步」](../../.scratch/debug-release/issues/99-cne-concessions.md)已完成游戏外检查，待作者复测平叛事件、让步按钮与完成奖励的替换。
+
 2026-11-14 [「帝国人民的信心」改为按月结算并加收支、民生两项，拨款按钮改按负债比例](../../.scratch/debug-release/issues/97-cne-confidence-monthly.md)已完成游戏外检查，已推送到分支 `fix/tooltip-concepts-observer-buttons`，待作者复测条面明细、名词解释与欠债拨款。
 
 2026-11-14 [地权革命悬停丢失与全 MOD 无效概念链接](../../.scratch/debug-release/issues/96-invalid-concepts.md)已完成游戏外检查，待复测；同批给三角贸易按钮加了观察者模式下的空 root 守卫，待观察者模式实测。
 
 [四类加载报错](../../.scratch/debug-release/issues/95-loading-errors.md)已完成游戏外检查。待新开局复测波斯规则、法国失效分支和两种中美洲文化修正。东亚服装重名来自原版与 EACR。
 
-2026-11-12 [文化团结度日志的转化预告](../../.scratch/cohesion-display/issues/01-cohesion-display.md)：日本、西秦、唐衣大食三个日志的状态行显示下次月结的州、人数和文化方向。同时修了日本转化中可能静默失效的文化比较，西秦与唐衣大食的抽签提前一个月。2026-11-13 加统一结束：研究身份证件或采用委员会共和国、法团国家后三个日志永久结束。技能新增 `references/cohesion-journal.md`。游戏外检查通过，可读档复测。
+2026-11-12 [文化团结度日志的转化预告](../../.scratch/cohesion-display/issues/01-cohesion-display.md)：日本、西秦、唐衣大食三个日志的状态行显示下次月结的州、人数和文化方向。同时修了日本转化中可能静默失效的文化比较，西秦与唐衣大食的抽签提前一个月。2026-11-13 加统一结束：研究身份证件或采用委员会共和国、法团国家后三个日志永久结束，进行中的团结补贴随之停止。技能新增 `references/cohesion-journal.md`。游戏外检查通过，可读档复测。
 
 2026-11-12 [东洲与唐衣大食取消等级制度](../../.scratch/hierarchy-abolition/issues/01-hus-per.md)已完成游戏外核验。待作者复测法律立场、主体文化切换与汗国资格。东洲在登记期内废除等级制度时，编户日志通过单一失效条件退出，待随读档复测。
 
