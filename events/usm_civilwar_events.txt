@@ -352,6 +352,7 @@ usm_civilwar.2 = {
             nesnd_jingnan_may_receive_rebel_journal = yes
         }
         set_variable = nesnd_restoration_side
+        nesnd_supply_reward_jingnan_muster = yes
         if = {
             limit = {
                 NOT = {
@@ -452,6 +453,7 @@ usm_civilwar.2 = {
             nesnd_jingnan_may_receive_rebel_journal = yes
         }
         set_variable = ce_usm_republican_revolution_tag
+        nesnd_supply_reward_jingnan_muster = yes
         add_journal_entry = {
             type = ce_usm_acheive_revolution
         }
@@ -609,6 +611,10 @@ usm_civilwar.4 = {
         custom_tooltip = nesnd_capital_surrender_tt
     }
     after = {
+        # Shu's regime choice treats the fall of Chu or Huai as a turn of the war.
+        if = { limit = { nesnd_south_capital_defeat = yes OR = { c:HNA ?= this c:GNG ?= this } }
+            set_global_variable = nesnd_jingnan_rebel_fell
+        }
         if = { limit = { has_variable = nesnd_ming_court }
             nesnd_south_court_collapse = yes
             remove_variable = nesnd_capital_surrender_pending
@@ -882,6 +888,8 @@ usm_civilwar.9 = {
     immediate = { if = { limit = { nesnd_south_campaign_peace = yes NOT = { any_country = { nesnd_rebel_unclaimed_total_victory = yes } } }
             set_variable = nesnd_status_quo_seen
             set_global_variable = usm_civilwar_status_quo
+            # Wu, left beside surviving rebels, takes up "Unify the South".
+            if = { limit = { c:USM ?= this } set_variable = nesnd_south_unifier }
             c:CNE ?= {
                 remove_variable = nesnd_north_intervention
             }
@@ -1040,14 +1048,30 @@ usm_civilwar.10 = {
         show_as_tooltip = { activate_law = law_type:law_monarchy add_modifier = { name = USM_not_wuu_post_war_modifier months = 120 } }
         hidden_effect = { nesnd_postwar_restore_original_ming = yes }
     }
+    # Great Han under a Liu: Xiao Huli's party enthrones Liu Zhongming, or a Liu kinsman if he is gone.
     option = {
         name = nesnd_postwar_great_han_option
         default_option = yes
-        trigger = { c:SIH ?= this exists = ruler }
-        ai_chance = { base = 30 }
+        trigger = { c:SIH ?= this }
+        ai_chance = { base = 15 }
         custom_tooltip = nesnd_postwar_great_han_tt
         show_as_tooltip = { activate_law = law_type:law_monarchy }
-        hidden_effect = { nesnd_postwar_sih_great_han = yes }
+        hidden_effect = {
+            remove_variable = nesnd_han_by_wei
+            nesnd_postwar_sih_great_han = yes
+        }
+    }
+    # Great Han under Wei Jian. Liu Zhongming dies in an "accident".
+    option = {
+        name = nesnd_postwar_great_han_wei_option
+        trigger = { c:SIH ?= this nesnd_sih_wei_available = yes }
+        ai_chance = { base = 15 }
+        custom_tooltip = nesnd_postwar_great_han_wei_tt
+        show_as_tooltip = { activate_law = law_type:law_monarchy }
+        hidden_effect = {
+            set_variable = nesnd_han_by_wei
+            nesnd_postwar_sih_great_han = yes
+        }
     }
     option = {
         name = nesnd_postwar_hna_republic_option
@@ -1110,6 +1134,11 @@ usm_civilwar.11 = {
         name = usm_civilwar.11.1
         ai_chance = {
             base = 30
+            # Ming loyalists rarely bow to the usurping Great Han (85 to 15).
+            modifier = {
+                add = 55
+                trigger = { scope:usm_rebel_winner ?= { has_variable = nesnd_postwar_great_han } nesnd_ming_federation_loyalist = yes }
+            }
         }
         if = {
             limit = {
@@ -1131,6 +1160,15 @@ usm_civilwar.11 = {
                         add_claim = scope:usm_rebel_winner
                     }
                 }
+                # Refusing Great Han: each side claims all of the other's land.
+                if = {
+                    limit = { scope:usm_rebel_winner = { has_variable = nesnd_postwar_great_han } }
+                    custom_tooltip = nesnd_great_han_mutual_claims_tt
+                    hidden_effect = {
+                        every_scope_state = { state_region = { add_claim = scope:usm_rebel_winner } }
+                        scope:usm_rebel_winner = { every_scope_state = { state_region = { add_claim = root } } }
+                    }
+                }
                 scope:usm_rebel_winner = {
                     trigger_event = {
                         id = usm_civilwar.12
@@ -1146,6 +1184,10 @@ usm_civilwar.11 = {
         default_option = yes
         ai_chance = {
             base = 70
+            modifier = {
+                add = -55
+                trigger = { scope:usm_rebel_winner ?= { has_variable = nesnd_postwar_great_han } nesnd_ming_federation_loyalist = yes }
+            }
             modifier = {
                 add = -60
                 trigger = {
@@ -1498,6 +1540,10 @@ usm_civilwar.16 = {
         name = usm_civilwar.16.2
         ai_chance = {
             base = 7
+            modifier = {
+                add = 5
+                trigger = { has_variable = tag_WUU_var NOT = { has_global_variable = nesnd_japan_dossier_closed } }
+            }
         }
         trigger = {
     is_country_alive = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no
@@ -1802,14 +1848,14 @@ usm_civilwar.23 = {
     option = {
         name = usm_civilwar.23.1
         ai_chance = {
-            base = 45
+            base = 50
         }
         set_variable = ce_usm_cw_ally_with_mng
     }
     option = {
         name = usm_civilwar.23.2
         ai_chance = {
-            base = 30
+            base = 40
         }
         set_variable = usm_opposition_country
     }
@@ -1817,7 +1863,7 @@ usm_civilwar.23 = {
         name = usm_civilwar.23.3
         default_option = yes
         ai_chance = {
-            base = 25
+            base = 10
         }
         set_variable = nesnd_japan_neutral
     }

@@ -1,4 +1,4 @@
-﻿# All effects below use country scope. The only permanent exit is clear_hierarchy.
+﻿# All effects below use country scope.
 nesnd_hus_clear_tiers = {
     if = { limit = { has_modifier = nesnd_hus_acceptance_hierarchy } remove_modifier = nesnd_hus_acceptance_hierarchy }
     if = { limit = { has_modifier = nesnd_hus_acceptance_manchu } remove_modifier = nesnd_hus_acceptance_manchu }
@@ -126,7 +126,7 @@ nesnd_hus_migrate_hierarchy = {
     }
 }
 nesnd_hus_initialize_hierarchy = {
-    if = { limit = { nesnd_hus_original_country = yes NOT = { has_variable = nesnd_hus_hierarchy_mutating } }
+    if = { limit = { nesnd_hus_original_country = yes NOT = { has_global_variable = nesnd_hus_registers_abolished } NOT = { has_variable = nesnd_hus_hierarchy_mutating } }
         nesnd_hus_migrate_hierarchy = yes
         if = { limit = { has_variable = nesnd_hus_hierarchy_active NOT = { has_variable = nesnd_hus_migration_conflict } }
             set_variable = nesnd_hus_hierarchy_mutating
@@ -174,6 +174,10 @@ nesnd_hus_restore_revolution_hierarchy = {
     }
 }
 nesnd_hus_clear_hierarchy = {
+    set_variable = nesnd_hus_hierarchy_retired
+    nesnd_hus_end_registration = yes
+}
+nesnd_hus_end_registration = {
     set_variable = nesnd_hus_hierarchy_mutating
     # Only the actual current record owner can terminate a registration globally.
     if = { limit = { nesnd_hus_epoch_matches_record = yes global_var:nesnd_hus_registration_record_owner ?= this }
@@ -181,7 +185,6 @@ nesnd_hus_clear_hierarchy = {
         remove_global_variable = nesnd_hus_registration_wait
     }
     remove_variable = nesnd_hus_hierarchy_active
-    set_variable = nesnd_hus_hierarchy_retired
     nesnd_hus_uninstall_hierarchy = yes
     if = { limit = { nesnd_hus_has_legacy_law = yes }
         if = { limit = { exists = var:nesnd_hus_frozen_citizenship_type } activate_law = var:nesnd_hus_frozen_citizenship_type }
@@ -227,7 +230,7 @@ nesnd_hus_update_registration_clock = {
     }
 }
 nesnd_hus_registration_settle = {
-    if = { limit = { nesnd_hus_registration_open = yes nesnd_hus_valid_registration_choice = yes }
+    if = { limit = { nesnd_hus_registration_open = yes nesnd_hus_valid_registration_choice = yes NOT = { nesnd_hus_registers_inapplicable = yes } }
         nesnd_hus_update_registration_clock = yes
         if = { limit = { nesnd_hus_registration_clock_ready = yes NOT = { has_variable = nesnd_hus_migration_conflict } }
             set_variable = nesnd_hus_hierarchy_mutating
@@ -319,6 +322,15 @@ nesnd_hus_reconcile_hierarchy = {
                 remove_variable = nesnd_hus_hierarchy_mutating
             }
         }
+        else_if = {
+            limit = { nesnd_hus_original_country = yes has_global_variable = nesnd_hus_registers_abolished }
+            if = { limit = { has_global_variable = nesnd_khanate_qualified_before_abolition NOT = { has_variable = nesnd_khanate_campaign_started } }
+                set_variable = nesnd_khanate_campaign_started
+            }
+            if = { limit = { NOT = { has_law = law_type:law_nesnd_hus_hierarchy_abolished } }
+                activate_law = law_type:law_nesnd_hus_hierarchy_abolished
+            }
+        }
         else = {
             # Recovery of a saved game already in a native revolution, before our start hook existed.
             if = { limit = { NOT = { has_variable = nesnd_hus_revolution_continuation } is_revolutionary = yes exists = civil_war_origin_country
@@ -358,7 +370,14 @@ nesnd_hus_manchu_exodus = {
     nesnd_a2_manchu_exodus = yes
 }
 nesnd_hus_registration_maintenance = {
+    # A victorious revolution must be judged under its restored register.
     nesnd_hus_reconcile_hierarchy = yes
+    if = {
+        limit = { nesnd_hus_original_country = yes nesnd_hus_registers_inapplicable = yes NOT = { has_global_variable = nesnd_hus_registers_abolished } }
+        if = { limit = { is_enacting_law = law_type:law_nesnd_hus_hierarchy_abolished } cancel_enactment = yes }
+        activate_law = law_type:law_nesnd_hus_hierarchy_abolished
+        if = { limit = { is_player = yes has_law = law_type:law_nesnd_hus_hierarchy_abolished } trigger_event = { id = nesnd_hierarchy_abolition.1 popup = yes } }
+    }
     if = { limit = { nesnd_hus_original_country = yes has_variable = nesnd_hus_hierarchy_active }
         nesnd_hus_registration_settle = yes
         if = { limit = { nesnd_hus_registration_enacted_correctly = yes NOT = { has_variable = nesnd_hus_migration_conflict } }

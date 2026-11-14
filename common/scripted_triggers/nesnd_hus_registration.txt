@@ -24,6 +24,38 @@ nesnd_hus_hierarchy_managed = { OR = {
     nesnd_hus_has_hierarchy_law = yes nesnd_hus_has_legacy_law = yes nesnd_hus_has_tier_modifier = yes
     AND = { is_revolutionary = yes exists = civil_war_origin_country civil_war_origin_country ?= { c:HUS ?= this has_variable = nesnd_hus_hierarchy_active NOT = { has_variable = nesnd_hus_native_successor } } }
 } }
+# Called in primary-culture scope, directly from the country iterator.
+nesnd_hus_first_tier_primary = {
+    OR = {
+        AND = {
+            has_discrimination_trait = heritage_han
+            NOT = { nesnd_hus_manchu_culture = yes }
+        }
+        AND = {
+            nesnd_hus_manchu_culture = yes
+            prev = { has_law = law_type:law_nesnd_hus_manchu_registration }
+        }
+        AND = {
+            nesnd_hus_native_culture = yes
+            NOT = { nesnd_hus_manchu_culture = yes }
+            prev = { has_law = law_type:law_nesnd_hus_native_registration }
+        }
+    }
+}
+nesnd_hus_registers_inapplicable = {
+    nesnd_hus_has_hierarchy_law = yes
+    OR = {
+        NOT = { any_primary_culture = { nesnd_hus_first_tier_primary = yes } }
+        any_primary_culture = {
+            NOT = { nesnd_hus_first_tier_primary = yes }
+            OR = {
+                nesnd_hus_manchu_culture = yes
+                nesnd_hus_native_culture = yes
+                has_discrimination_trait_group = heritage_group_european
+            }
+        }
+    }
+}
 nesnd_hus_citizenship_unlocked = {
     custom_tooltip = { text = nesnd_hus_registration_lock_tt
         NOR = { has_variable = nesnd_hus_hierarchy_active has_social_hierarchy = nesnd_hus_social_hierarchy nesnd_hus_has_hierarchy_law = yes nesnd_hus_has_legacy_law = yes }
@@ -70,7 +102,12 @@ nesnd_hus_native_culture = { has_discrimination_trait_group = heritage_group_ind
 # Population scope: classify Manchu by its database key before testing Han heritage.
 # SocialHierarchy.GetPopTriggerDesc has no pop scope. Keep culture traversal
 # inside named tooltips, as in the vanilla British Indian caste hierarchy.
+nesnd_hus_manchu_culture = {
+    OR = { this = cu:manchu has_discrimination_trait = heritage_mongolian }
+}
 nesnd_hus_manchu_pop = {
+    # Social class pop_criteria cannot resolve a cu: link (1.15.1: "Invalid right side during
+    # comparison 'cu'"), so test the culture key on the pop. Same rule as nesnd_hus_manchu_culture.
     custom_tooltip = {
         text = nesnd_hus_manchu_pop_tt
         OR = {

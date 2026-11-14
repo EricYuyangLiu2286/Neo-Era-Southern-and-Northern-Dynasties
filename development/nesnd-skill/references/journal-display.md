@@ -2,6 +2,8 @@
 
 > 何时读：写或修日志的可用/完成条件、按钮预览、custom_tooltip、状态行、进度条明细与结局面板。不必读：只改措辞（读玩家写作技能）；查字段名与 GUI 位置（读 lookup/journal-ui.md）。
 
+预告下次文化转化（州、人数、方向）的状态行写法见 [cohesion-journal.md](cohesion-journal.md) §2。
+
 ## 1. 原生条件优先与状态节制（2026-11-02）
 
 - 先读作者原始日志/按钮的 trigger，再查当前 GAME 同类条目。能直接呈现的法律、科技、机构、建筑、国库等条件直接写在 possible/complete，独立条件各占原生勾叉。不要把多项真实门槛塞入一个 custom_tooltip；换行不能替代独立真假状态。
@@ -15,7 +17,17 @@
 
 ### 公开条件逐层展开
 
-- 从玩家入口`possible/complete/fail`递归展开scripted trigger后审查。身份枚举、初始化和防重复记录用`hidden_trigger`；影响玩家决定的前置、等待、正在进行的选择，各用一句具名条件；法律、建筑、合法性等仍用原生条件。不要把`visible`或状态分支内的变量误计为屏幕上的裸变量。`any_*`中的国家身份比较会产生scope-dependent描述警告，对实际候选集合做简短提示，不展示“他们是本国”的枚举。
+- 从玩家入口`possible/complete/fail`递归展开scripted trigger后审查。身份枚举、初始化和防重复记录用`hidden_trigger`；影响玩家决定的前置、等待、正在进行的选择，各用一句具名条件；法律、建筑、合法性等仍用原生条件。不要把`visible`或状态分支内的变量误计为屏幕上的裸变量。`any_*`中的国家身份比较见下一小节。
+
+### `any_*` 里随遍历对象变化的比较（1.15.1，三次实际刷屏）
+
+规则：会被生成说明的条件里，`any_*` 内部（含经 scripted trigger 展开的部分）不能有 `c:X ?= this`、`this = scope:…` 这类随被遍历对象变化的比较。把整个 `any_*` 包进一句具名 `custom_tooltip`，内部条件不改。包在 scripted trigger 定义里，所有调用处一次修好。
+
+- 会生成说明的位置：按钮 `possible`、事件选项 `trigger`、日志 `possible`/结局 `trigger`、决议 `possible`，以及这些位置效果里 `if` 的 limit。`triggered_desc`、on_action、`hidden_trigger` 只判断，不生成说明。
+- 报错原文：`country_c_equal: Scope dependent values in localization inside an any trigger; consider using a custom_tooltip; at <文件>:<行>`。每生成一次说明，报“国家数 × 内部比较处数”条。界面显示时逐帧重建，几秒就能把 error.log 轮转一遍。
+- 反例：`nesnd_south_unresolved_holdouts = { any_country = { nesnd_south_mainland_holdout = yes … } }`，内部展开出 11 处 `c:X ?= this`，2026-11-12 一局报 28 万多条。
+- 正例：`nesnd_south_unresolved_holdouts = { custom_tooltip = { text = nesnd_south_unresolved_holdouts_tt any_country = { … } } }`。同类修复：`nesnd_europe_america.txt:12`（任务 57）、`scripted_buttons/nesnd_sha_restore_yan.txt:38`。
+- 写新条件时，先把 scripted trigger 逐层展开，查 `any_*` 内部有没有这类比较。交付前可用 `scripts/static_lints.py` 扫描。
 
 ## 2. 按钮预览与周期占比：2026-11-03实际反馈
 
@@ -37,7 +49,13 @@
 
 用户要求独立剧情日志有可见的关闭条件。按当前 `GAME/common/journal_entries/journal_entries.md:135–194`，`outcome` 的 `hidden invalid_outcome` 不显示在结局面板。结构合法不等于玩家能知道如何结束。查每个实际启用的日志：常驻政策可直接显示原有终止条件，不另造满条胜利、奖励或一套存在性分支；真正依附父日志的条目注明父日志，并核实际存续依赖。暂时无目标而允许恢复的隐藏失效，才与长期退出分开。
 
-同文档25–49说明自动激活需要 `is_shown_when_inactive` 与 `possible`，显式 `add_journal_entry` 则绕过两者。互斥子日志优先用“父日志有效＋方案已选”控制两项自动条件，单一入口。不能一边永远隐藏潜在条目，一边用每周重复add当作激活已证明的证据。若日志报告already has而UI不见，先查实际激活条件及实例状态。
+带 `trigger` 的非隐藏结局必须写 `color`，否则加载时报 `JE <键> outcome <序号> has no color`。本项目惯例：完成型（`je_standard_completion_header`）用 `gold_positive`，失败型和“终止条件”（`nesnd_journal_closures_header`）用 `blue_negative`。
+
+自动激活需要 `is_shown_when_inactive` 与 `possible` 同时成立（同文档25–49）。文档说 `add_journal_entry` 绕过两者，但 1.15.1 实测有例外：日志类型写了 `possible = { always = no }` 时，开局就给每个国家生成一个未激活实例，之后的 `add_journal_entry` 被当作重复拒绝（game.log：`<国名> already has a journal entry of type <键>`），日志永远不激活。证据：2026-11-12 外国干预日志 `nesnd_external_policy`，6 国已执行“跟进”，存档里 241 个实例全部 `active=no`。
+
+- 只由事件或按钮开启的日志，让 `is_shown_when_inactive` 和 `possible` 读入口设置的变量，例如 `possible = { has_variable = nesnd_external_following }`；结局里清掉这个变量，防止重新激活。
+- 互斥子日志优先用“父日志有效＋方案已选”控制两项自动条件，单一入口。
+- 日志报 already has 而界面看不到时，到存档的日志记录里查该国实例的 `active=`，不要只看 add 有没有执行。
 
 触发器能判真，不代表其原生自动描述有正确数据上下文。本轮 `is_on_defending_side` 可执行，但经国家条件展开时原版 `TRIGGER_IS_ON_DEFENDING_SIDE` 读取 `War.GetName` 而没有War上下文。保留原布尔子树，以一句具名custom_tooltip包装这一判定；不改战争创建、阵营或和平规则，也不伪造全局原版翻译。
 

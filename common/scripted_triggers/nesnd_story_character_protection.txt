@@ -33,15 +33,7 @@ nesnd_story_character_protected = {
     OR = {
         # Only the actual actor selected for a pending story option is marked.
         has_variable = nesnd_story_civic_event
-        AND = {
-            has_variable = nesnd_story_event_pending
-            trigger_if = {
-                limit = { has_template = nesnd_usm_duan }
-                has_variable = nesnd_c2_delegate_qualified
-                has_role_of_type = politician
-                owner ?= { nesnd_usm_civic_country = yes }
-            }
-        }
+        has_variable = nesnd_story_event_pending
         AND = {
             exists = var:nesnd_story_recruited
             var:nesnd_story_recruited ?= { nesnd_story_rebel_journal_active = yes }
@@ -50,11 +42,20 @@ nesnd_story_character_protected = {
                 has_template = nesnd_xiao_chaogui
                 has_template = nesnd_feng_yunshan
                 has_template = USM_wei_jian
+                has_template = USM_xiao_xinghua
                 has_template = USM_li_xiucheng
                 has_template = USM_shi_dakai
             }
         }
         AND = { has_template = USM_xiao_huli c:SIH ?= { nesnd_story_rebel_summoned = yes } }
+        # Shu's three candidates stay until the victory settlement has named a sovereign.
+        AND = {
+            OR = { has_template = USM_wei_jian has_template = USM_xiao_xinghua has_template = USM_xiao_huli }
+            owner ?= {
+                c:SIH ?= this
+                OR = { nesnd_story_rebel_journal_active = yes has_variable = nesnd_rebel_settlement_waiting }
+            }
+        }
         AND = { has_template = USM_zhu_jingyin c:GNG ?= { nesnd_story_rebel_summoned = yes } }
         AND = { has_template = USM_zhu_jiangchen c:HNA ?= { nesnd_story_rebel_summoned = yes } }
 

@@ -46,3 +46,4 @@ Evidence: `nesnd-workbench/reports/denglai-route/far_north_pops.py`（改写脚�
 - 原作没有把雅库特人改成 `siberian`。本次保留雅库特人，算作西伯利亚原住民。若作者的意思是用 `siberian` 取代 `yakut`，请指出。
 - 除上述两州的辽东人外，新族群没有祖地（女真、蒙古、西北人在俄属各州仍会被同化）。要不要加，等作者意见。
 - 未实机验证。未同步到 Git 工作副本。
+- 2026-11-12 俄属各州已按东西渐变重算，第 3 节表中俄属五州的数字已被取代，见 [17](17-far-north-pops-gradient.md)。

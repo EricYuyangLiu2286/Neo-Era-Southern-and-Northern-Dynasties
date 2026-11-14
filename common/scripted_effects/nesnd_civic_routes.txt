@@ -117,6 +117,11 @@ nesnd_c2_italy_common_budget_settle = {
 nesnd_c2_hus_transport_chartered_contractors_start = {
    if = { limit = { nesnd_c2_hus_transport_chartered_contractors_available = yes }
     set_variable = { name = nesnd_c2_hus_transport_target value = var:nesnd_c2_hus_transport_chartered_contractors_target }
+    remove_variable = nesnd_road_contractor
+    if = {
+        limit = { has_company = company_type:company_ce_daqing_coop }
+        set_variable = { name = nesnd_road_contractor value = company:company_ce_daqing_coop }
+    }
     set_variable = { name = nesnd_c2_hus_transport_choice value = 1 }
     set_variable = { name = nesnd_c2_hus_transport_baseline value = nesnd_c2_hus_transport_levels }
     set_variable = { name = nesnd_c2_hus_transport_quote value = nesnd_c2_weekly_quote }
@@ -171,7 +176,7 @@ nesnd_c2_hus_transport_settle = {
  }
  nesnd_c2_hus_transport_retarget = {
   if = { limit = { nesnd_c2_hus_transport_open = yes has_variable = nesnd_c2_hus_transport_active NOT = { has_modifier = nesnd_c2_hus_transport_expense } }
-   nesnd_c2_hus_transport_clear_local = yes remove_variable = nesnd_c2_hus_transport_active remove_variable = nesnd_c2_hus_transport_target remove_variable = nesnd_c2_hus_transport_baseline remove_variable = nesnd_c2_hus_transport_choice
+   nesnd_c2_hus_transport_clear_local = yes remove_variable = nesnd_road_contractor remove_variable = nesnd_c2_hus_transport_active remove_variable = nesnd_c2_hus_transport_target remove_variable = nesnd_c2_hus_transport_baseline remove_variable = nesnd_c2_hus_transport_choice
    set_variable = { name = nesnd_c2_hus_transport_months value = 0 }
    remove_variable = nesnd_c2_hus_transport_chartered_contractors_target remove_variable = nesnd_c2_hus_transport_open_tenders_target remove_variable = nesnd_c2_hus_transport_local_transport_target
    nesnd_c2_prepare_targets = yes
@@ -349,6 +354,7 @@ nesnd_c2_usm_constitution_classical_franchise_start = {
     if = { limit = { has_variable = nesnd_c2_usm_constitution_quote } add_modifier = { name = nesnd_c2_usm_constitution_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
     var:nesnd_c2_usm_constitution_target ?= { set_variable = { name = nesnd_c2_usm_constitution_classical_franchise_provider value = prev } add_modifier = { name = nesnd_c2_usm_constitution_classical_franchise_local months = 24 } }
     add_modifier = { name = nesnd_c2_usm_constitution_classical_franchise_politics months = 12 }
+    set_variable = nesnd_c2_usm_constitution_mandate_pending
    }
   }
 nesnd_c2_usm_constitution_practical_franchise_start = {
@@ -361,6 +367,7 @@ nesnd_c2_usm_constitution_practical_franchise_start = {
     if = { limit = { has_variable = nesnd_c2_usm_constitution_quote } add_modifier = { name = nesnd_c2_usm_constitution_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
     var:nesnd_c2_usm_constitution_target ?= { set_variable = { name = nesnd_c2_usm_constitution_practical_franchise_provider value = prev } add_modifier = { name = nesnd_c2_usm_constitution_practical_franchise_local months = 24 } }
     add_modifier = { name = nesnd_c2_usm_constitution_practical_franchise_politics months = 12 }
+    set_variable = nesnd_c2_usm_constitution_mandate_pending
    }
   }
 nesnd_c2_usm_constitution_local_franchise_start = {
@@ -373,10 +380,20 @@ nesnd_c2_usm_constitution_local_franchise_start = {
     if = { limit = { has_variable = nesnd_c2_usm_constitution_quote } add_modifier = { name = nesnd_c2_usm_constitution_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
     var:nesnd_c2_usm_constitution_target ?= { set_variable = { name = nesnd_c2_usm_constitution_local_franchise_provider value = prev } add_modifier = { name = nesnd_c2_usm_constitution_local_franchise_local months = 24 } }
     add_modifier = { name = nesnd_c2_usm_constitution_local_franchise_politics months = 12 }
+    set_variable = nesnd_c2_usm_constitution_mandate_pending
    }
   }
 nesnd_c2_usm_constitution_settle = {
   if = { limit = { nesnd_c2_usm_constitution_open = yes has_variable = nesnd_c2_usm_constitution_active nesnd_c2_usm_constitution_months >= 3 NOT = { has_variable = nesnd_c2_usm_constitution_rewarded } }
+   if = {
+    limit = { has_variable = nesnd_c2_usm_constitution_mandate_pending }
+    if = {
+     limit = { has_variable = nesnd_c2_usm_constitution_choice }
+     if = { limit = { OR = { var:nesnd_c2_usm_constitution_choice = 1 var:nesnd_c2_usm_constitution_choice = 2 } } nesnd_usm_mandate_project_shift = { AMOUNT = 5 } }
+     else_if = { limit = { var:nesnd_c2_usm_constitution_choice = 3 } nesnd_usm_mandate_project_shift = { AMOUNT = -5 } }
+    }
+    remove_variable = nesnd_c2_usm_constitution_mandate_pending
+   }
    set_variable = nesnd_c2_usm_constitution_done set_variable = nesnd_c2_usm_constitution_rewarded set_variable = nesnd_c2_exam_qualifications_recognised remove_variable = nesnd_c2_usm_constitution_active
    trigger_event = { id = nesnd_civic_routes.1 popup = yes }
   }
@@ -391,43 +408,80 @@ nesnd_c2_usm_constitution_settle = {
  }
  nesnd_c2_usm_constitution_retarget = {
   if = { limit = { nesnd_c2_usm_constitution_open = yes has_variable = nesnd_c2_usm_constitution_active NOT = { has_modifier = nesnd_c2_usm_constitution_expense } }
+   remove_variable = nesnd_c2_usm_constitution_mandate_pending
    nesnd_c2_usm_constitution_clear_local = yes remove_variable = nesnd_c2_usm_constitution_active remove_variable = nesnd_c2_usm_constitution_target remove_variable = nesnd_c2_usm_constitution_baseline remove_variable = nesnd_c2_usm_constitution_choice
    set_variable = { name = nesnd_c2_usm_constitution_months value = 0 }
    remove_variable = nesnd_c2_usm_constitution_classical_franchise_target remove_variable = nesnd_c2_usm_constitution_practical_franchise_target remove_variable = nesnd_c2_usm_constitution_local_franchise_target
    nesnd_c2_prepare_targets = yes
   }
  }
+# Old completed projects recorded their site plan but did not record an industrial funder.
+nesnd_c2_usm_remember_completed_plan = {
+ if = {
+  limit = {
+   has_variable = $DONE$
+   has_variable = $CHOICE$
+   NOT = { has_variable = $LAST$ }
+   NOT = { has_variable = $ACTIVE$ }
+  }
+  set_variable = { name = $LAST$ value = var:$CHOICE$ }
+ }
+}
 nesnd_c2_usm_schools_practical_schools_start = {
    if = { limit = { nesnd_c2_usm_schools_practical_schools_available = yes }
+    nesnd_c2_usm_remember_completed_plan = { DONE = nesnd_c2_usm_schools_done CHOICE = nesnd_c2_usm_schools_choice LAST = nesnd_c2_usm_schools_last_choice ACTIVE = nesnd_c2_usm_schools_active }
+    remove_variable = nesnd_c2_usm_schools_round_winner
     set_variable = { name = nesnd_c2_usm_schools_target value = var:nesnd_c2_usm_schools_practical_schools_target }
     set_variable = { name = nesnd_c2_usm_schools_choice value = 1 }
     set_variable = { name = nesnd_c2_usm_schools_baseline value = nesnd_c2_usm_schools_levels }
     set_variable = { name = nesnd_c2_usm_schools_quote value = nesnd_c2_weekly_quote }
     set_variable = { name = nesnd_c2_usm_schools_months value = 0 } set_variable = nesnd_c2_usm_schools_active
+    set_variable = nesnd_c2_usm_schools_mandate_pending
     if = { limit = { has_variable = nesnd_c2_usm_schools_quote } add_modifier = { name = nesnd_c2_usm_schools_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
-    var:nesnd_c2_usm_schools_target ?= { set_variable = { name = nesnd_c2_usm_schools_practical_schools_provider value = prev } add_modifier = { name = nesnd_c2_usm_schools_practical_schools_local months = 24 } }
+    var:nesnd_c2_usm_schools_target ?= { if = { limit = { NOT = { has_modifier = nesnd_c2_usm_schools_graduates } } set_variable = { name = nesnd_c2_usm_schools_practical_schools_provider value = prev } add_modifier = { name = nesnd_c2_usm_schools_practical_schools_local months = 24 } } }
     add_modifier = { name = nesnd_c2_usm_schools_practical_schools_politics months = 12 }
    }
   }
 nesnd_c2_usm_schools_provincial_schools_start = {
    if = { limit = { nesnd_c2_usm_schools_provincial_schools_available = yes }
+    nesnd_c2_usm_remember_completed_plan = { DONE = nesnd_c2_usm_schools_done CHOICE = nesnd_c2_usm_schools_choice LAST = nesnd_c2_usm_schools_last_choice ACTIVE = nesnd_c2_usm_schools_active }
+    remove_variable = nesnd_c2_usm_schools_round_winner
     set_variable = { name = nesnd_c2_usm_schools_target value = var:nesnd_c2_usm_schools_provincial_schools_target }
     set_variable = { name = nesnd_c2_usm_schools_choice value = 2 }
     set_variable = { name = nesnd_c2_usm_schools_baseline value = nesnd_c2_usm_schools_levels }
     set_variable = { name = nesnd_c2_usm_schools_quote value = nesnd_c2_weekly_quote }
     set_variable = { name = nesnd_c2_usm_schools_months value = 0 } set_variable = nesnd_c2_usm_schools_active
+    set_variable = nesnd_c2_usm_schools_mandate_pending
     if = { limit = { has_variable = nesnd_c2_usm_schools_quote } add_modifier = { name = nesnd_c2_usm_schools_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
-    var:nesnd_c2_usm_schools_target ?= { set_variable = { name = nesnd_c2_usm_schools_provincial_schools_provider value = prev } add_modifier = { name = nesnd_c2_usm_schools_provincial_schools_local months = 24 } }
+    var:nesnd_c2_usm_schools_target ?= { if = { limit = { NOT = { has_modifier = nesnd_c2_usm_schools_graduates } } set_variable = { name = nesnd_c2_usm_schools_provincial_schools_provider value = prev } add_modifier = { name = nesnd_c2_usm_schools_provincial_schools_local months = 24 } } }
     add_modifier = { name = nesnd_c2_usm_schools_provincial_schools_politics months = 12 }
    }
   }
 nesnd_c2_usm_schools_settle = {
-  if = { limit = { nesnd_c2_usm_schools_open = yes has_variable = nesnd_c2_usm_schools_active nesnd_c2_usm_schools_months >= 3 NOT = { has_variable = nesnd_c2_usm_schools_rewarded } }
-   set_variable = nesnd_c2_usm_schools_done set_variable = nesnd_c2_usm_schools_rewarded remove_variable = nesnd_c2_usm_schools_active
+  if = {
+   limit = { nesnd_c2_usm_schools_open = yes has_variable = nesnd_c2_usm_schools_active nesnd_c2_usm_schools_months >= 3 nesnd_c2_usm_schools_target_valid = yes }
+   set_variable = { name = nesnd_c2_usm_schools_last_choice value = var:nesnd_c2_usm_schools_choice }
+   set_variable = { name = nesnd_c2_usm_schools_round_winner value = var:nesnd_c2_usm_schools_choice }
+   if = {
+    limit = { has_variable = nesnd_c2_usm_schools_mandate_pending }
+    if = { limit = { var:nesnd_c2_usm_schools_round_winner = 1 } nesnd_usm_mandate_project_shift = { AMOUNT = 5 } }
+    else = { nesnd_usm_mandate_project_shift = { AMOUNT = -5 } }
+    remove_variable = nesnd_c2_usm_schools_mandate_pending
+   }
+   nesnd_c2_usm_schools_clear_local = yes
+   var:nesnd_c2_usm_schools_target = {
+    if = { limit = { has_modifier = nesnd_c2_usm_schools_graduates } remove_modifier = nesnd_c2_usm_schools_graduates }
+    add_modifier = { name = nesnd_c2_usm_schools_graduates months = 60 }
+   }
+   set_variable = nesnd_c2_usm_schools_done
+   remove_variable = nesnd_c2_usm_schools_active
+   set_variable = { name = nesnd_c2_usm_schools_cooldown value = 24 }
+   remove_variable = nesnd_c2_usm_schools_practical_schools_target
+   remove_variable = nesnd_c2_usm_schools_provincial_schools_target
    trigger_event = { id = nesnd_civic_routes.1 popup = yes }
   }
  }
- nesnd_c2_usm_schools_monthly = { if = { limit = { has_variable = nesnd_c2_usm_schools_active NOT = { nesnd_c2_usm_schools_target_valid = yes } } nesnd_c2_usm_schools_clear_local = yes }
+ nesnd_c2_usm_schools_monthly = { if = { limit = { has_variable = nesnd_c2_usm_schools_active NOT = { nesnd_c2_usm_schools_target_valid = yes } } nesnd_c2_usm_schools_clear_local = yes remove_variable = nesnd_c2_usm_schools_target }
   if = { limit = { has_variable = nesnd_c2_usm_schools_active NOT = { nesnd_c2_usm_schools_open = yes } } set_variable = { name = nesnd_c2_usm_schools_months value = 0 } }
   if = { limit = { nesnd_c2_usm_schools_open = yes has_variable = nesnd_c2_usm_schools_active }
    if = { limit = { nesnd_c2_usm_schools_operating = yes } change_variable = { name = nesnd_c2_usm_schools_months add = 1 } }
@@ -437,43 +491,58 @@ nesnd_c2_usm_schools_settle = {
  }
  nesnd_c2_usm_schools_retarget = {
   if = { limit = { nesnd_c2_usm_schools_open = yes has_variable = nesnd_c2_usm_schools_active NOT = { has_modifier = nesnd_c2_usm_schools_expense } }
+   remove_variable = nesnd_c2_usm_schools_mandate_pending
    nesnd_c2_usm_schools_clear_local = yes remove_variable = nesnd_c2_usm_schools_active remove_variable = nesnd_c2_usm_schools_target remove_variable = nesnd_c2_usm_schools_baseline remove_variable = nesnd_c2_usm_schools_choice
    set_variable = { name = nesnd_c2_usm_schools_months value = 0 }
    remove_variable = nesnd_c2_usm_schools_practical_schools_target remove_variable = nesnd_c2_usm_schools_provincial_schools_target
    nesnd_c2_prepare_targets = yes
   }
  }
-nesnd_c2_usm_industry_coastal_industry_start = {
-   if = { limit = { nesnd_c2_usm_industry_coastal_industry_available = yes }
-    set_variable = { name = nesnd_c2_usm_industry_target value = var:nesnd_c2_usm_industry_coastal_industry_target }
-    set_variable = { name = nesnd_c2_usm_industry_choice value = 1 }
-    set_variable = { name = nesnd_c2_usm_industry_baseline value = nesnd_c2_usm_industry_levels }
-    set_variable = { name = nesnd_c2_usm_industry_quote value = nesnd_c2_weekly_quote }
-    set_variable = { name = nesnd_c2_usm_industry_months value = 0 } set_variable = nesnd_c2_usm_industry_active
-    if = { limit = { has_variable = nesnd_c2_usm_industry_quote } add_modifier = { name = nesnd_c2_usm_industry_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
-    var:nesnd_c2_usm_industry_target ?= { set_variable = { name = nesnd_c2_usm_industry_coastal_industry_provider value = prev } add_modifier = { name = nesnd_c2_usm_industry_coastal_industry_local months = 24 } }
-    add_modifier = { name = nesnd_c2_usm_industry_coastal_industry_politics months = 12 }
+nesnd_c2_usm_industry_start = {
+ if = {
+  limit = { $AVAILABLE$ = yes }
+  nesnd_c2_usm_remember_completed_plan = { DONE = nesnd_c2_usm_industry_done CHOICE = nesnd_c2_usm_industry_choice LAST = nesnd_c2_usm_industry_last_choice ACTIVE = nesnd_c2_usm_industry_active }
+  remove_variable = nesnd_c2_usm_industry_round_winner
+  # Confirming a legacy appropriation keeps the site, baseline and expenses.
+  if = {
+   limit = { NOT = { has_variable = nesnd_c2_usm_industry_active } }
+   set_variable = { name = nesnd_c2_usm_industry_target value = $TARGET$ }
+   set_variable = { name = nesnd_c2_usm_industry_choice value = $CHOICE$ }
+   set_variable = { name = nesnd_c2_usm_industry_baseline value = nesnd_c2_usm_industry_levels }
+   set_variable = { name = nesnd_c2_usm_industry_quote value = nesnd_c2_weekly_quote }
+   set_variable = nesnd_c2_usm_industry_active
+   add_modifier = { name = nesnd_c2_usm_industry_expense months = 12 multiplier = nesnd_c2_weekly_quote }
+   var:nesnd_c2_usm_industry_target = {
+    set_variable = { name = $PROVIDER$ value = prev }
+    add_modifier = { name = $LOCAL$ months = 24 }
    }
+   add_modifier = { name = $POLITICS$ months = 12 }
   }
-nesnd_c2_usm_industry_inland_industry_start = {
-   if = { limit = { nesnd_c2_usm_industry_inland_industry_available = yes }
-    set_variable = { name = nesnd_c2_usm_industry_target value = var:nesnd_c2_usm_industry_inland_industry_target }
-    set_variable = { name = nesnd_c2_usm_industry_choice value = 2 }
-    set_variable = { name = nesnd_c2_usm_industry_baseline value = nesnd_c2_usm_industry_levels }
-    set_variable = { name = nesnd_c2_usm_industry_quote value = nesnd_c2_weekly_quote }
-    set_variable = { name = nesnd_c2_usm_industry_months value = 0 } set_variable = nesnd_c2_usm_industry_active
-    if = { limit = { has_variable = nesnd_c2_usm_industry_quote } add_modifier = { name = nesnd_c2_usm_industry_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
-    var:nesnd_c2_usm_industry_target ?= { set_variable = { name = nesnd_c2_usm_industry_inland_industry_provider value = prev } add_modifier = { name = nesnd_c2_usm_industry_inland_industry_local months = 24 } }
-    add_modifier = { name = nesnd_c2_usm_industry_inland_industry_politics months = 12 }
-   }
-  }
+  set_variable = { name = nesnd_c2_usm_industry_funder value = $FUNDER$ }
+  set_variable = { name = nesnd_c2_usm_industry_months value = 0 }
+ }
+}
 nesnd_c2_usm_industry_settle = {
-  if = { limit = { nesnd_c2_usm_industry_open = yes has_variable = nesnd_c2_usm_industry_active nesnd_c2_usm_industry_months >= 3 NOT = { has_variable = nesnd_c2_usm_industry_rewarded } }
-   set_variable = nesnd_c2_usm_industry_done set_variable = nesnd_c2_usm_industry_rewarded remove_variable = nesnd_c2_usm_industry_active
+  if = {
+   limit = { nesnd_c2_usm_industry_open = yes has_variable = nesnd_c2_usm_industry_active nesnd_c2_usm_industry_months >= 3 nesnd_c2_usm_industry_target_valid = yes }
+   set_variable = { name = nesnd_c2_usm_industry_last_choice value = var:nesnd_c2_usm_industry_choice }
+   set_variable = { name = nesnd_c2_usm_industry_last_funder value = var:nesnd_c2_usm_industry_funder }
+   set_variable = { name = nesnd_c2_usm_industry_round_winner value = var:nesnd_c2_usm_industry_funder }
+   if = { limit = { var:nesnd_c2_usm_industry_round_winner = 1 } nesnd_usm_mandate_project_shift = { AMOUNT = 5 } }
+   else = { nesnd_usm_mandate_project_shift = { AMOUNT = -5 } }
+   var:nesnd_c2_usm_industry_target = {
+    if = { limit = { has_modifier = nesnd_c2_usm_industry_workshops } remove_modifier = nesnd_c2_usm_industry_workshops }
+    add_modifier = { name = nesnd_c2_usm_industry_workshops months = 60 }
+   }
+   set_variable = nesnd_c2_usm_industry_done
+   remove_variable = nesnd_c2_usm_industry_active
+   set_variable = { name = nesnd_c2_usm_industry_cooldown value = 24 }
+   remove_variable = nesnd_c2_usm_industry_coastal_industry_target
+   remove_variable = nesnd_c2_usm_industry_inland_industry_target
    trigger_event = { id = nesnd_civic_routes.1 popup = yes }
   }
  }
- nesnd_c2_usm_industry_monthly = { if = { limit = { has_variable = nesnd_c2_usm_industry_active NOT = { nesnd_c2_usm_industry_target_valid = yes } } nesnd_c2_usm_industry_clear_local = yes }
+ nesnd_c2_usm_industry_monthly = { if = { limit = { has_variable = nesnd_c2_usm_industry_active NOT = { nesnd_c2_usm_industry_target_valid = yes } } nesnd_c2_usm_industry_clear_local = yes remove_variable = nesnd_c2_usm_industry_target }
   if = { limit = { has_variable = nesnd_c2_usm_industry_active NOT = { nesnd_c2_usm_industry_open = yes } } set_variable = { name = nesnd_c2_usm_industry_months value = 0 } }
   if = { limit = { nesnd_c2_usm_industry_open = yes has_variable = nesnd_c2_usm_industry_active }
    if = { limit = { nesnd_c2_usm_industry_operating = yes } change_variable = { name = nesnd_c2_usm_industry_months add = 1 } }
@@ -483,7 +552,7 @@ nesnd_c2_usm_industry_settle = {
  }
  nesnd_c2_usm_industry_retarget = {
   if = { limit = { nesnd_c2_usm_industry_open = yes has_variable = nesnd_c2_usm_industry_active NOT = { has_modifier = nesnd_c2_usm_industry_expense } }
-   nesnd_c2_usm_industry_clear_local = yes remove_variable = nesnd_c2_usm_industry_active remove_variable = nesnd_c2_usm_industry_target remove_variable = nesnd_c2_usm_industry_baseline remove_variable = nesnd_c2_usm_industry_choice
+   nesnd_c2_usm_industry_clear_local = yes remove_variable = nesnd_c2_usm_industry_funder remove_variable = nesnd_c2_usm_industry_active remove_variable = nesnd_c2_usm_industry_target remove_variable = nesnd_c2_usm_industry_baseline remove_variable = nesnd_c2_usm_industry_choice
    set_variable = { name = nesnd_c2_usm_industry_months value = 0 }
    remove_variable = nesnd_c2_usm_industry_coastal_industry_target remove_variable = nesnd_c2_usm_industry_inland_industry_target
    nesnd_c2_prepare_targets = yes
@@ -499,6 +568,7 @@ nesnd_c2_usm_distribution_commercial_empire_start = {
     if = { limit = { has_variable = nesnd_c2_usm_distribution_quote } add_modifier = { name = nesnd_c2_usm_distribution_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
     var:nesnd_c2_usm_distribution_target ?= { set_variable = { name = nesnd_c2_usm_distribution_commercial_empire_provider value = prev } add_modifier = { name = nesnd_c2_usm_distribution_commercial_empire_local months = 24 } }
     add_modifier = { name = nesnd_c2_usm_distribution_commercial_empire_politics months = 12 }
+    set_variable = nesnd_c2_usm_distribution_mandate_pending
    }
   }
 nesnd_c2_usm_distribution_provincial_balance_start = {
@@ -510,7 +580,9 @@ nesnd_c2_usm_distribution_provincial_balance_start = {
     set_variable = { name = nesnd_c2_usm_distribution_months value = 0 } set_variable = nesnd_c2_usm_distribution_active
     if = { limit = { has_variable = nesnd_c2_usm_distribution_quote } add_modifier = { name = nesnd_c2_usm_distribution_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
     var:nesnd_c2_usm_distribution_target ?= { set_variable = { name = nesnd_c2_usm_distribution_provincial_balance_provider value = prev } add_modifier = { name = nesnd_c2_usm_distribution_provincial_balance_local months = 24 } }
+    var:nesnd_c2_usm_distribution_partner ?= { set_variable = { name = nesnd_c2_usm_distribution_provincial_balance_provider value = prev } add_modifier = { name = nesnd_c2_usm_distribution_provincial_balance_local months = 24 } }
     add_modifier = { name = nesnd_c2_usm_distribution_provincial_balance_politics months = 12 }
+    set_variable = nesnd_c2_usm_distribution_mandate_pending
    }
   }
 nesnd_c2_usm_distribution_scholars_franchise_start = {
@@ -523,10 +595,20 @@ nesnd_c2_usm_distribution_scholars_franchise_start = {
     if = { limit = { has_variable = nesnd_c2_usm_distribution_quote } add_modifier = { name = nesnd_c2_usm_distribution_expense months = 12 multiplier = nesnd_c2_weekly_quote } }
     var:nesnd_c2_usm_distribution_target ?= { set_variable = { name = nesnd_c2_usm_distribution_scholars_franchise_provider value = prev } add_modifier = { name = nesnd_c2_usm_distribution_scholars_franchise_local months = 24 } }
     add_modifier = { name = nesnd_c2_usm_distribution_scholars_franchise_politics months = 12 }
+    set_variable = nesnd_c2_usm_distribution_mandate_pending
    }
   }
 nesnd_c2_usm_distribution_settle = {
   if = { limit = { nesnd_c2_usm_distribution_open = yes has_variable = nesnd_c2_usm_distribution_active nesnd_c2_usm_distribution_months >= 3 NOT = { has_variable = nesnd_c2_usm_distribution_rewarded } }
+   if = {
+    limit = { has_variable = nesnd_c2_usm_distribution_mandate_pending }
+    if = {
+     limit = { has_variable = nesnd_c2_usm_distribution_choice }
+     if = { limit = { var:nesnd_c2_usm_distribution_choice = 1 } nesnd_usm_mandate_project_shift = { AMOUNT = 5 } }
+     else_if = { limit = { OR = { var:nesnd_c2_usm_distribution_choice = 2 var:nesnd_c2_usm_distribution_choice = 3 } } nesnd_usm_mandate_project_shift = { AMOUNT = -5 } }
+    }
+    remove_variable = nesnd_c2_usm_distribution_mandate_pending
+   }
    set_variable = nesnd_c2_usm_distribution_done set_variable = nesnd_c2_usm_distribution_rewarded remove_variable = nesnd_c2_usm_distribution_active
    trigger_event = { id = nesnd_civic_routes.1 popup = yes }
   }
@@ -541,8 +623,10 @@ nesnd_c2_usm_distribution_settle = {
  }
  nesnd_c2_usm_distribution_retarget = {
   if = { limit = { nesnd_c2_usm_distribution_open = yes has_variable = nesnd_c2_usm_distribution_active NOT = { has_modifier = nesnd_c2_usm_distribution_expense } }
+   remove_variable = nesnd_c2_usm_distribution_mandate_pending
    nesnd_c2_usm_distribution_clear_local = yes remove_variable = nesnd_c2_usm_distribution_active remove_variable = nesnd_c2_usm_distribution_target remove_variable = nesnd_c2_usm_distribution_baseline remove_variable = nesnd_c2_usm_distribution_choice
    set_variable = { name = nesnd_c2_usm_distribution_months value = 0 }
+   remove_variable = nesnd_c2_usm_distribution_partner
    remove_variable = nesnd_c2_usm_distribution_commercial_empire_target remove_variable = nesnd_c2_usm_distribution_provincial_balance_target remove_variable = nesnd_c2_usm_distribution_scholars_franchise_target
    nesnd_c2_prepare_targets = yes
   }
@@ -755,7 +839,7 @@ if = { limit = { nesnd_c2_usm_industry_open = yes NOT = { has_variable = nesnd_c
    }
   }
 if = { limit = { nesnd_c2_usm_industry_open = yes NOT = { has_variable = nesnd_c2_usm_industry_active } }
-   if = { limit = { exists = var:nesnd_c2_usm_industry_inland_industry_target } if = { limit = { var:nesnd_c2_usm_industry_inland_industry_target = { NOT = { owner = prev } } } remove_variable = nesnd_c2_usm_industry_inland_industry_target } }
+   if = { limit = { exists = var:nesnd_c2_usm_industry_inland_industry_target } if = { limit = { var:nesnd_c2_usm_industry_inland_industry_target = { OR = { NOT = { owner = prev } NOT = { nesnd_c2_usm_industry_inland_industry_candidate = yes } } } } remove_variable = nesnd_c2_usm_industry_inland_industry_target } }
    if = { limit = { NOT = { exists = var:nesnd_c2_usm_industry_inland_industry_target } }
     random_scope_state = { limit = { nesnd_c2_usm_industry_inland_industry_candidate = yes any_scope_building = { OR = { is_building_type = building_tooling_workshop is_building_type = building_food_industry is_building_type = building_iron_mine is_building_type = building_coal_mine } level >= 1 } } save_scope_as = c2_project_target }
     if = { limit = { NOT = { exists = scope:c2_project_target } } random_scope_state = { limit = { nesnd_c2_usm_industry_inland_industry_candidate = yes } save_scope_as = c2_project_target } }
@@ -773,11 +857,28 @@ if = { limit = { nesnd_c2_usm_distribution_open = yes NOT = { has_variable = nes
    }
   }
 if = { limit = { nesnd_c2_usm_distribution_open = yes NOT = { has_variable = nesnd_c2_usm_distribution_active } }
-   if = { limit = { exists = var:nesnd_c2_usm_distribution_provincial_balance_target } if = { limit = { var:nesnd_c2_usm_distribution_provincial_balance_target = { NOT = { owner = prev } } } remove_variable = nesnd_c2_usm_distribution_provincial_balance_target } }
+   if = { limit = { exists = var:nesnd_c2_usm_distribution_provincial_balance_target } if = { limit = { var:nesnd_c2_usm_distribution_provincial_balance_target = { NOT = { AND = { owner = prev nesnd_c2_usm_distribution_provincial_balance_candidate = yes } } } } remove_variable = nesnd_c2_usm_distribution_provincial_balance_target } }
    if = { limit = { NOT = { exists = var:nesnd_c2_usm_distribution_provincial_balance_target } }
     random_scope_state = { limit = { nesnd_c2_usm_distribution_provincial_balance_candidate = yes any_scope_building = { OR = { is_building_type = building_government_administration } level >= 1 } } save_scope_as = c2_project_target }
     if = { limit = { NOT = { exists = scope:c2_project_target } } random_scope_state = { limit = { nesnd_c2_usm_distribution_provincial_balance_candidate = yes } save_scope_as = c2_project_target } }
     if = { limit = { exists = scope:c2_project_target } set_variable = { name = nesnd_c2_usm_distribution_provincial_balance_target value = scope:c2_project_target } }
+    clear_saved_scope = c2_project_target
+   }
+   if = {
+    limit = { exists = var:nesnd_c2_usm_distribution_partner NOT = { nesnd_c2_usm_distribution_provincial_balance_pair_valid = yes } }
+    remove_variable = nesnd_c2_usm_distribution_partner
+   }
+   if = {
+    limit = { exists = var:nesnd_c2_usm_distribution_provincial_balance_target NOT = { exists = var:nesnd_c2_usm_distribution_partner } }
+    random_scope_state = {
+     limit = { nesnd_c2_usm_distribution_provincial_balance_partner_candidate = yes any_scope_building = { is_building_type = building_government_administration level >= 1 } }
+     save_scope_as = c2_project_target
+    }
+    if = {
+     limit = { NOT = { exists = scope:c2_project_target } }
+     random_scope_state = { limit = { nesnd_c2_usm_distribution_provincial_balance_partner_candidate = yes } save_scope_as = c2_project_target }
+    }
+    if = { limit = { exists = scope:c2_project_target } set_variable = { name = nesnd_c2_usm_distribution_partner value = scope:c2_project_target } }
     clear_saved_scope = c2_project_target
    }
   }
@@ -805,12 +906,37 @@ nesnd_c2_refresh_usm_outcome = {
   }
  }
 }
+# Country scope, once per monthly pulse and before either project can settle.
+nesnd_c2_usm_tick_project_cooldown = {
+ if = {
+  limit = { has_variable = $COOLDOWN$ }
+  change_variable = { name = $COOLDOWN$ add = -1 }
+  if = { limit = { var:$COOLDOWN$ <= 0 } remove_variable = $COOLDOWN$ }
+ }
+}
+
+nesnd_c2_usm_reopen_project = {
+ if = {
+  limit = { $OPEN$ = yes NOT = { has_journal_entry = $JOURNAL$ } }
+  # An absent entry cannot consume its previous result. New rounds start unclaimed.
+  remove_variable = $WINNER$
+  add_journal_entry = { type = $JOURNAL$ }
+ }
+}
+
 nesnd_c2_monthly = {
  if = { limit = { nesnd_hus_civic_country = yes has_law_or_variant = law_type:law_slavery_banned OR = { has_law_or_variant = law_type:law_right_of_assembly has_law_or_variant = law_type:law_protected_speech } NOT = { has_variable = nesnd_c2_hus_emancipation_observed } }
   set_variable = nesnd_c2_hus_emancipation_observed trigger_event = { id = nesnd_civic_routes.30 popup = yes }
  }
  nesnd_c2_scholarly_maintenance = yes
- nesnd_c2_migrate_legacy = yes if = { limit = { NOT = { has_variable = nesnd_c2_monthly_lock } } set_variable = { name = nesnd_c2_monthly_lock days = 1 } nesnd_c2_refresh_usm_outcome = yes nesnd_c2_prepare_targets = yes nesnd_c2_italy_foundations_monthly = yes nesnd_c2_sync_italy_foundations = yes nesnd_c2_italy_common_budget_monthly = yes nesnd_c2_sync_italy_common_budget = yes nesnd_c2_hus_transport_monthly = yes nesnd_c2_sync_hus_transport = yes nesnd_c2_hus_frontier_monthly = yes nesnd_c2_sync_hus_frontier = yes nesnd_c2_hus_citizenship_monthly = yes nesnd_c2_sync_hus_citizenship = yes nesnd_c2_hus_oil_monthly = yes nesnd_c2_sync_hus_oil = yes nesnd_c2_usm_constitution_monthly = yes nesnd_c2_sync_usm_constitution = yes nesnd_c2_usm_schools_monthly = yes nesnd_c2_sync_usm_schools = yes nesnd_c2_usm_industry_monthly = yes nesnd_c2_sync_usm_industry = yes nesnd_c2_usm_distribution_monthly = yes nesnd_c2_sync_usm_distribution = yes nesnd_c2_italian_maintenance = yes nesnd_c2_character_monthly = yes } }
+ nesnd_c2_migrate_legacy = yes if = { limit = { NOT = { has_variable = nesnd_c2_monthly_lock } } set_variable = { name = nesnd_c2_monthly_lock days = 1 } nesnd_c2_refresh_usm_outcome = yes
+ nesnd_c2_usm_tick_project_cooldown = { COOLDOWN = nesnd_c2_usm_schools_cooldown }
+ nesnd_c2_usm_tick_project_cooldown = { COOLDOWN = nesnd_c2_usm_industry_cooldown }
+ nesnd_c2_usm_remember_completed_plan = { DONE = nesnd_c2_usm_schools_done CHOICE = nesnd_c2_usm_schools_choice LAST = nesnd_c2_usm_schools_last_choice ACTIVE = nesnd_c2_usm_schools_active }
+ nesnd_c2_usm_reopen_project = { OPEN = nesnd_usm_civic_projects_unlocked JOURNAL = nesnd_c2_usm_schools WINNER = nesnd_c2_usm_schools_round_winner }
+ nesnd_c2_usm_remember_completed_plan = { DONE = nesnd_c2_usm_industry_done CHOICE = nesnd_c2_usm_industry_choice LAST = nesnd_c2_usm_industry_last_choice ACTIVE = nesnd_c2_usm_industry_active }
+ nesnd_c2_usm_reopen_project = { OPEN = nesnd_usm_civic_projects_unlocked JOURNAL = nesnd_c2_usm_industry WINNER = nesnd_c2_usm_industry_round_winner }
+ nesnd_c2_prepare_targets = yes nesnd_c2_italy_foundations_monthly = yes nesnd_c2_sync_italy_foundations = yes nesnd_c2_italy_common_budget_monthly = yes nesnd_c2_sync_italy_common_budget = yes nesnd_c2_hus_transport_monthly = yes nesnd_c2_sync_hus_transport = yes nesnd_c2_hus_frontier_monthly = yes nesnd_c2_sync_hus_frontier = yes nesnd_c2_hus_citizenship_monthly = yes nesnd_c2_sync_hus_citizenship = yes nesnd_c2_hus_oil_monthly = yes nesnd_c2_sync_hus_oil = yes nesnd_c2_usm_constitution_monthly = yes nesnd_c2_sync_usm_constitution = yes nesnd_c2_usm_schools_monthly = yes nesnd_c2_sync_usm_schools = yes nesnd_c2_usm_industry_monthly = yes nesnd_c2_sync_usm_industry = yes nesnd_c2_usm_distribution_monthly = yes nesnd_c2_sync_usm_distribution = yes nesnd_c2_italian_maintenance = yes nesnd_c2_duan_monthly = yes } }
 
 nesnd_c2_sync_italy_foundations = { if = { limit = { has_journal_entry = nesnd_c2_italy_foundations } je:nesnd_c2_italy_foundations = { set_bar_progress = { name = nesnd_c2_italy_foundations_bar value = owner.nesnd_c2_italy_foundations_months } } } }
 
@@ -842,7 +968,20 @@ nesnd_c2_sync_usm_industry = { if = { limit = { has_journal_entry = nesnd_c2_usm
 
 nesnd_c2_sync_usm_distribution = { if = { limit = { has_journal_entry = nesnd_c2_usm_distribution } je:nesnd_c2_usm_distribution = { set_bar_progress = { name = nesnd_c2_usm_distribution_bar value = owner.nesnd_c2_usm_distribution_months } } } }
 
-nesnd_c2_cleanup_country = { nesnd_c2_cleanup_person_backing = yes nesnd_c2_italian_abandon = yes remove_variable = nesnd_c2_scholar_clock remove_variable = nesnd_c2_duan_exchange nesnd_c2_usm_distribution_clear_local = yes nesnd_c2_usm_industry_clear_local = yes nesnd_c2_usm_schools_clear_local = yes nesnd_c2_usm_constitution_clear_local = yes nesnd_c2_hus_oil_clear_local = yes nesnd_c2_hus_citizenship_clear_local = yes nesnd_c2_hus_frontier_clear_local = yes nesnd_c2_hus_transport_clear_local = yes nesnd_c2_italy_common_budget_clear_local = yes nesnd_c2_italy_foundations_clear_local = yes if = { limit = { has_modifier = nesnd_c2_italy_foundations_expense } remove_modifier = nesnd_c2_italy_foundations_expense } remove_variable = nesnd_c2_italy_foundations_active set_variable = { name = nesnd_c2_italy_foundations_months value = 0 } if = { limit = { has_modifier = nesnd_c2_italy_foundations_public_works_politics } remove_modifier = nesnd_c2_italy_foundations_public_works_politics } if = { limit = { has_modifier = nesnd_c2_italy_foundations_commercial_credit_politics } remove_modifier = nesnd_c2_italy_foundations_commercial_credit_politics } if = { limit = { has_modifier = nesnd_c2_italy_foundations_local_partnerships_politics } remove_modifier = nesnd_c2_italy_foundations_local_partnerships_politics } if = { limit = { has_modifier = nesnd_c2_italy_common_budget_expense } remove_modifier = nesnd_c2_italy_common_budget_expense } remove_variable = nesnd_c2_italy_common_budget_active set_variable = { name = nesnd_c2_italy_common_budget_months value = 0 } if = { limit = { has_modifier = nesnd_c2_italy_common_budget_fiscal_union_politics } remove_modifier = nesnd_c2_italy_common_budget_fiscal_union_politics } if = { limit = { has_modifier = nesnd_c2_italy_common_budget_federal_councils_politics } remove_modifier = nesnd_c2_italy_common_budget_federal_councils_politics } if = { limit = { has_modifier = nesnd_c2_italy_common_budget_military_accounts_politics } remove_modifier = nesnd_c2_italy_common_budget_military_accounts_politics } if = { limit = { has_modifier = nesnd_c2_hus_transport_expense } remove_modifier = nesnd_c2_hus_transport_expense } remove_variable = nesnd_c2_hus_transport_active set_variable = { name = nesnd_c2_hus_transport_months value = 0 } if = { limit = { has_modifier = nesnd_c2_hus_transport_chartered_contractors_politics } remove_modifier = nesnd_c2_hus_transport_chartered_contractors_politics } if = { limit = { has_modifier = nesnd_c2_hus_transport_open_tenders_politics } remove_modifier = nesnd_c2_hus_transport_open_tenders_politics } if = { limit = { has_modifier = nesnd_c2_hus_transport_local_transport_politics } remove_modifier = nesnd_c2_hus_transport_local_transport_politics } if = { limit = { has_modifier = nesnd_c2_hus_frontier_expense } remove_modifier = nesnd_c2_hus_frontier_expense } remove_variable = nesnd_c2_hus_frontier_active set_variable = { name = nesnd_c2_hus_frontier_months value = 0 } if = { limit = { has_modifier = nesnd_c2_hus_frontier_pasture_passage_politics } remove_modifier = nesnd_c2_hus_frontier_pasture_passage_politics } if = { limit = { has_modifier = nesnd_c2_hus_frontier_land_compensation_politics } remove_modifier = nesnd_c2_hus_frontier_land_compensation_politics } if = { limit = { has_modifier = nesnd_c2_hus_frontier_frontier_garrisons_politics } remove_modifier = nesnd_c2_hus_frontier_frontier_garrisons_politics } if = { limit = { has_modifier = nesnd_c2_hus_citizenship_expense } remove_modifier = nesnd_c2_hus_citizenship_expense } remove_variable = nesnd_c2_hus_citizenship_active set_variable = { name = nesnd_c2_hus_citizenship_months value = 0 } if = { limit = { has_modifier = nesnd_c2_hus_citizenship_labour_schools_politics } remove_modifier = nesnd_c2_hus_citizenship_labour_schools_politics } if = { limit = { has_modifier = nesnd_c2_hus_citizenship_public_accounts_politics } remove_modifier = nesnd_c2_hus_citizenship_public_accounts_politics } if = { limit = { has_modifier = nesnd_c2_hus_oil_expense } remove_modifier = nesnd_c2_hus_oil_expense } remove_variable = nesnd_c2_hus_oil_active set_variable = { name = nesnd_c2_hus_oil_months value = 0 } if = { limit = { has_modifier = nesnd_c2_hus_oil_oil_concessions_politics } remove_modifier = nesnd_c2_hus_oil_oil_concessions_politics } if = { limit = { has_modifier = nesnd_c2_hus_oil_oil_royalties_politics } remove_modifier = nesnd_c2_hus_oil_oil_royalties_politics } if = { limit = { has_modifier = nesnd_c2_hus_oil_oil_oversight_politics } remove_modifier = nesnd_c2_hus_oil_oil_oversight_politics } if = { limit = { has_modifier = nesnd_c2_usm_constitution_expense } remove_modifier = nesnd_c2_usm_constitution_expense } remove_variable = nesnd_c2_usm_constitution_active set_variable = { name = nesnd_c2_usm_constitution_months value = 0 } if = { limit = { has_modifier = nesnd_c2_usm_constitution_classical_franchise_politics } remove_modifier = nesnd_c2_usm_constitution_classical_franchise_politics } if = { limit = { has_modifier = nesnd_c2_usm_constitution_practical_franchise_politics } remove_modifier = nesnd_c2_usm_constitution_practical_franchise_politics } if = { limit = { has_modifier = nesnd_c2_usm_constitution_local_franchise_politics } remove_modifier = nesnd_c2_usm_constitution_local_franchise_politics } if = { limit = { has_modifier = nesnd_c2_usm_schools_expense } remove_modifier = nesnd_c2_usm_schools_expense } remove_variable = nesnd_c2_usm_schools_active set_variable = { name = nesnd_c2_usm_schools_months value = 0 } if = { limit = { has_modifier = nesnd_c2_usm_schools_practical_schools_politics } remove_modifier = nesnd_c2_usm_schools_practical_schools_politics } if = { limit = { has_modifier = nesnd_c2_usm_schools_provincial_schools_politics } remove_modifier = nesnd_c2_usm_schools_provincial_schools_politics } if = { limit = { has_modifier = nesnd_c2_usm_industry_expense } remove_modifier = nesnd_c2_usm_industry_expense } remove_variable = nesnd_c2_usm_industry_active set_variable = { name = nesnd_c2_usm_industry_months value = 0 } if = { limit = { has_modifier = nesnd_c2_usm_industry_coastal_industry_politics } remove_modifier = nesnd_c2_usm_industry_coastal_industry_politics } if = { limit = { has_modifier = nesnd_c2_usm_industry_inland_industry_politics } remove_modifier = nesnd_c2_usm_industry_inland_industry_politics } if = { limit = { has_modifier = nesnd_c2_usm_distribution_expense } remove_modifier = nesnd_c2_usm_distribution_expense } remove_variable = nesnd_c2_usm_distribution_active set_variable = { name = nesnd_c2_usm_distribution_months value = 0 } if = { limit = { has_modifier = nesnd_c2_usm_distribution_commercial_empire_politics } remove_modifier = nesnd_c2_usm_distribution_commercial_empire_politics } if = { limit = { has_modifier = nesnd_c2_usm_distribution_provincial_balance_politics } remove_modifier = nesnd_c2_usm_distribution_provincial_balance_politics } if = { limit = { has_modifier = nesnd_c2_usm_distribution_scholars_franchise_politics } remove_modifier = nesnd_c2_usm_distribution_scholars_franchise_politics } nesnd_c2_italian_clear_request = yes }
+nesnd_c2_cleanup_country = {
+ if = {
+  limit = { NOT = { has_variable = nesnd_c2_monthly_lock } }
+  set_variable = { name = nesnd_c2_monthly_lock days = 1 }
+  nesnd_c2_usm_tick_project_cooldown = { COOLDOWN =  nesnd_c2_usm_schools_cooldown }
+  nesnd_c2_usm_tick_project_cooldown = { COOLDOWN =  nesnd_c2_usm_industry_cooldown }
+ }
+ remove_variable = nesnd_c2_usm_constitution_mandate_pending
+ remove_variable = nesnd_c2_usm_schools_mandate_pending
+ remove_variable = nesnd_c2_usm_industry_funder
+ remove_variable = nesnd_c2_usm_schools_round_winner
+ remove_variable = nesnd_c2_usm_industry_round_winner
+ remove_variable = nesnd_c2_usm_distribution_mandate_pending
+remove_variable = nesnd_road_contractor nesnd_c2_italian_abandon = yes remove_variable = nesnd_c2_scholar_clock remove_variable = nesnd_c2_duan_exchange nesnd_c2_usm_distribution_clear_local = yes remove_variable = nesnd_c2_usm_distribution_partner nesnd_c2_usm_industry_clear_local = yes nesnd_c2_usm_schools_clear_local = yes nesnd_c2_usm_constitution_clear_local = yes nesnd_c2_hus_oil_clear_local = yes nesnd_c2_hus_citizenship_clear_local = yes nesnd_c2_hus_frontier_clear_local = yes nesnd_c2_hus_transport_clear_local = yes nesnd_c2_italy_common_budget_clear_local = yes nesnd_c2_italy_foundations_clear_local = yes if = { limit = { has_modifier = nesnd_c2_italy_foundations_expense } remove_modifier = nesnd_c2_italy_foundations_expense } remove_variable = nesnd_c2_italy_foundations_active set_variable = { name = nesnd_c2_italy_foundations_months value = 0 } if = { limit = { has_modifier = nesnd_c2_italy_foundations_public_works_politics } remove_modifier = nesnd_c2_italy_foundations_public_works_politics } if = { limit = { has_modifier = nesnd_c2_italy_foundations_commercial_credit_politics } remove_modifier = nesnd_c2_italy_foundations_commercial_credit_politics } if = { limit = { has_modifier = nesnd_c2_italy_foundations_local_partnerships_politics } remove_modifier = nesnd_c2_italy_foundations_local_partnerships_politics } if = { limit = { has_modifier = nesnd_c2_italy_common_budget_expense } remove_modifier = nesnd_c2_italy_common_budget_expense } remove_variable = nesnd_c2_italy_common_budget_active set_variable = { name = nesnd_c2_italy_common_budget_months value = 0 } if = { limit = { has_modifier = nesnd_c2_italy_common_budget_fiscal_union_politics } remove_modifier = nesnd_c2_italy_common_budget_fiscal_union_politics } if = { limit = { has_modifier = nesnd_c2_italy_common_budget_federal_councils_politics } remove_modifier = nesnd_c2_italy_common_budget_federal_councils_politics } if = { limit = { has_modifier = nesnd_c2_italy_common_budget_military_accounts_politics } remove_modifier = nesnd_c2_italy_common_budget_military_accounts_politics } if = { limit = { has_modifier = nesnd_c2_hus_transport_expense } remove_modifier = nesnd_c2_hus_transport_expense } remove_variable = nesnd_c2_hus_transport_active set_variable = { name = nesnd_c2_hus_transport_months value = 0 } if = { limit = { has_modifier = nesnd_c2_hus_transport_chartered_contractors_politics } remove_modifier = nesnd_c2_hus_transport_chartered_contractors_politics } if = { limit = { has_modifier = nesnd_c2_hus_transport_open_tenders_politics } remove_modifier = nesnd_c2_hus_transport_open_tenders_politics } if = { limit = { has_modifier = nesnd_c2_hus_transport_local_transport_politics } remove_modifier = nesnd_c2_hus_transport_local_transport_politics } if = { limit = { has_modifier = nesnd_c2_hus_frontier_expense } remove_modifier = nesnd_c2_hus_frontier_expense } remove_variable = nesnd_c2_hus_frontier_active set_variable = { name = nesnd_c2_hus_frontier_months value = 0 } if = { limit = { has_modifier = nesnd_c2_hus_frontier_pasture_passage_politics } remove_modifier = nesnd_c2_hus_frontier_pasture_passage_politics } if = { limit = { has_modifier = nesnd_c2_hus_frontier_land_compensation_politics } remove_modifier = nesnd_c2_hus_frontier_land_compensation_politics } if = { limit = { has_modifier = nesnd_c2_hus_frontier_frontier_garrisons_politics } remove_modifier = nesnd_c2_hus_frontier_frontier_garrisons_politics } if = { limit = { has_modifier = nesnd_c2_hus_citizenship_expense } remove_modifier = nesnd_c2_hus_citizenship_expense } remove_variable = nesnd_c2_hus_citizenship_active set_variable = { name = nesnd_c2_hus_citizenship_months value = 0 } if = { limit = { has_modifier = nesnd_c2_hus_citizenship_labour_schools_politics } remove_modifier = nesnd_c2_hus_citizenship_labour_schools_politics } if = { limit = { has_modifier = nesnd_c2_hus_citizenship_public_accounts_politics } remove_modifier = nesnd_c2_hus_citizenship_public_accounts_politics } if = { limit = { has_modifier = nesnd_c2_hus_oil_expense } remove_modifier = nesnd_c2_hus_oil_expense } remove_variable = nesnd_c2_hus_oil_active set_variable = { name = nesnd_c2_hus_oil_months value = 0 } if = { limit = { has_modifier = nesnd_c2_hus_oil_oil_concessions_politics } remove_modifier = nesnd_c2_hus_oil_oil_concessions_politics } if = { limit = { has_modifier = nesnd_c2_hus_oil_oil_royalties_politics } remove_modifier = nesnd_c2_hus_oil_oil_royalties_politics } if = { limit = { has_modifier = nesnd_c2_hus_oil_oil_oversight_politics } remove_modifier = nesnd_c2_hus_oil_oil_oversight_politics } if = { limit = { has_modifier = nesnd_c2_usm_constitution_expense } remove_modifier = nesnd_c2_usm_constitution_expense } remove_variable = nesnd_c2_usm_constitution_active set_variable = { name = nesnd_c2_usm_constitution_months value = 0 } if = { limit = { has_modifier = nesnd_c2_usm_constitution_classical_franchise_politics } remove_modifier = nesnd_c2_usm_constitution_classical_franchise_politics } if = { limit = { has_modifier = nesnd_c2_usm_constitution_practical_franchise_politics } remove_modifier = nesnd_c2_usm_constitution_practical_franchise_politics } if = { limit = { has_modifier = nesnd_c2_usm_constitution_local_franchise_politics } remove_modifier = nesnd_c2_usm_constitution_local_franchise_politics } if = { limit = { has_modifier = nesnd_c2_usm_schools_expense } remove_modifier = nesnd_c2_usm_schools_expense } remove_variable = nesnd_c2_usm_schools_active set_variable = { name = nesnd_c2_usm_schools_months value = 0 } if = { limit = { has_modifier = nesnd_c2_usm_schools_practical_schools_politics } remove_modifier = nesnd_c2_usm_schools_practical_schools_politics } if = { limit = { has_modifier = nesnd_c2_usm_schools_provincial_schools_politics } remove_modifier = nesnd_c2_usm_schools_provincial_schools_politics } if = { limit = { has_modifier = nesnd_c2_usm_industry_expense } remove_modifier = nesnd_c2_usm_industry_expense } remove_variable = nesnd_c2_usm_industry_active set_variable = { name = nesnd_c2_usm_industry_months value = 0 } if = { limit = { has_modifier = nesnd_c2_usm_industry_coastal_industry_politics } remove_modifier = nesnd_c2_usm_industry_coastal_industry_politics } if = { limit = { has_modifier = nesnd_c2_usm_industry_inland_industry_politics } remove_modifier = nesnd_c2_usm_industry_inland_industry_politics } if = { limit = { has_modifier = nesnd_c2_usm_distribution_expense } remove_modifier = nesnd_c2_usm_distribution_expense } remove_variable = nesnd_c2_usm_distribution_active set_variable = { name = nesnd_c2_usm_distribution_months value = 0 } if = { limit = { has_modifier = nesnd_c2_usm_distribution_commercial_empire_politics } remove_modifier = nesnd_c2_usm_distribution_commercial_empire_politics } if = { limit = { has_modifier = nesnd_c2_usm_distribution_provincial_balance_politics } remove_modifier = nesnd_c2_usm_distribution_provincial_balance_politics } if = { limit = { has_modifier = nesnd_c2_usm_distribution_scholars_franchise_politics } remove_modifier = nesnd_c2_usm_distribution_scholars_franchise_politics } nesnd_c2_italian_clear_request = yes }
 
 nesnd_c2_compact_capture_overlord = { set_variable = { name = nesnd_c2_compact_regime value = nesnd_canon_regime }
  remove_variable = nesnd_c2_compact_had_overlord remove_variable = nesnd_c2_compact_overlord
@@ -1003,7 +1142,15 @@ nesnd_c2_usm_schools_clear_local = { if = { limit = { exists = var:nesnd_c2_usm_
 
 nesnd_c2_usm_industry_clear_local = { if = { limit = { exists = var:nesnd_c2_usm_industry_target } var:nesnd_c2_usm_industry_target = { if = { limit = { exists = var:nesnd_c2_usm_industry_coastal_industry_provider } if = { limit = { var:nesnd_c2_usm_industry_coastal_industry_provider = prev } if = { limit = { has_modifier = nesnd_c2_usm_industry_coastal_industry_local } remove_modifier = nesnd_c2_usm_industry_coastal_industry_local } remove_variable = nesnd_c2_usm_industry_coastal_industry_provider } } } } if = { limit = { exists = var:nesnd_c2_usm_industry_target } var:nesnd_c2_usm_industry_target = { if = { limit = { exists = var:nesnd_c2_usm_industry_inland_industry_provider } if = { limit = { var:nesnd_c2_usm_industry_inland_industry_provider = prev } if = { limit = { has_modifier = nesnd_c2_usm_industry_inland_industry_local } remove_modifier = nesnd_c2_usm_industry_inland_industry_local } remove_variable = nesnd_c2_usm_industry_inland_industry_provider } } } } }
 
-nesnd_c2_usm_distribution_clear_local = { if = { limit = { exists = var:nesnd_c2_usm_distribution_target } var:nesnd_c2_usm_distribution_target = { if = { limit = { exists = var:nesnd_c2_usm_distribution_commercial_empire_provider } if = { limit = { var:nesnd_c2_usm_distribution_commercial_empire_provider = prev } if = { limit = { has_modifier = nesnd_c2_usm_distribution_commercial_empire_local } remove_modifier = nesnd_c2_usm_distribution_commercial_empire_local } remove_variable = nesnd_c2_usm_distribution_commercial_empire_provider } } } } if = { limit = { exists = var:nesnd_c2_usm_distribution_target } var:nesnd_c2_usm_distribution_target = { if = { limit = { exists = var:nesnd_c2_usm_distribution_provincial_balance_provider } if = { limit = { var:nesnd_c2_usm_distribution_provincial_balance_provider = prev } if = { limit = { has_modifier = nesnd_c2_usm_distribution_provincial_balance_local } remove_modifier = nesnd_c2_usm_distribution_provincial_balance_local } remove_variable = nesnd_c2_usm_distribution_provincial_balance_provider } } } } if = { limit = { exists = var:nesnd_c2_usm_distribution_target } var:nesnd_c2_usm_distribution_target = { if = { limit = { exists = var:nesnd_c2_usm_distribution_scholars_franchise_provider } if = { limit = { var:nesnd_c2_usm_distribution_scholars_franchise_provider = prev } if = { limit = { has_modifier = nesnd_c2_usm_distribution_scholars_franchise_local } remove_modifier = nesnd_c2_usm_distribution_scholars_franchise_local } remove_variable = nesnd_c2_usm_distribution_scholars_franchise_provider } } } } }
+nesnd_c2_usm_distribution_clear_local = { 
+ var:nesnd_c2_usm_distribution_partner ?= {
+  if = {
+   limit = { exists = var:nesnd_c2_usm_distribution_provincial_balance_provider var:nesnd_c2_usm_distribution_provincial_balance_provider ?= prev }
+   if = { limit = { has_modifier = nesnd_c2_usm_distribution_provincial_balance_local } remove_modifier = nesnd_c2_usm_distribution_provincial_balance_local }
+   remove_variable = nesnd_c2_usm_distribution_provincial_balance_provider
+  }
+ }
+if = { limit = { exists = var:nesnd_c2_usm_distribution_target } var:nesnd_c2_usm_distribution_target = { if = { limit = { exists = var:nesnd_c2_usm_distribution_commercial_empire_provider } if = { limit = { var:nesnd_c2_usm_distribution_commercial_empire_provider = prev } if = { limit = { has_modifier = nesnd_c2_usm_distribution_commercial_empire_local } remove_modifier = nesnd_c2_usm_distribution_commercial_empire_local } remove_variable = nesnd_c2_usm_distribution_commercial_empire_provider } } } } if = { limit = { exists = var:nesnd_c2_usm_distribution_target } var:nesnd_c2_usm_distribution_target = { if = { limit = { exists = var:nesnd_c2_usm_distribution_provincial_balance_provider } if = { limit = { var:nesnd_c2_usm_distribution_provincial_balance_provider = prev } if = { limit = { has_modifier = nesnd_c2_usm_distribution_provincial_balance_local } remove_modifier = nesnd_c2_usm_distribution_provincial_balance_local } remove_variable = nesnd_c2_usm_distribution_provincial_balance_provider } } } } if = { limit = { exists = var:nesnd_c2_usm_distribution_target } var:nesnd_c2_usm_distribution_target = { if = { limit = { exists = var:nesnd_c2_usm_distribution_scholars_franchise_provider } if = { limit = { var:nesnd_c2_usm_distribution_scholars_franchise_provider = prev } if = { limit = { has_modifier = nesnd_c2_usm_distribution_scholars_franchise_local } remove_modifier = nesnd_c2_usm_distribution_scholars_franchise_local } remove_variable = nesnd_c2_usm_distribution_scholars_franchise_provider } } } } }
 
 nesnd_c2_request_scholarly_exchange = {
  if = { limit = { exists = c:SIH }
@@ -1012,7 +1159,13 @@ nesnd_c2_request_scholarly_exchange = {
    change_variable = { name = nesnd_c2_scholar_serial add = 1 }
    remove_variable = nesnd_c2_scholar_closed
    set_variable = { name = nesnd_c2_scholar_clock days = 90 }
-   save_scope_as = c2_scholar_sender c:SIH = { save_scope_as = c2_scholar_host }
+   save_scope_as = c2_scholar_sender
+   random_scope_state = { limit = { nesnd_c2_academy_state = yes } save_scope_as = c2_sender_school }
+   c:SIH = {
+       save_scope_as = c2_scholar_host
+       random_scope_state = { limit = { nesnd_c2_sichuan_academy = yes } save_scope_as = c2_host_school }
+       random_scope_character = { limit = { nesnd_c2_duan_politician = yes } save_scope_as = c2_duan }
+   }
    save_scope_value_as = { name = c2_scholar_serial value = var:nesnd_c2_scholar_serial }
    c:SIH = { trigger_event = { id = nesnd_civic_routes.40 days = 1 popup = yes } }
   }
@@ -1021,6 +1174,8 @@ nesnd_c2_request_scholarly_exchange = {
 }
 nesnd_c2_scholarly_accept = {
  if = { limit = { nesnd_c2_scholarly_pair = yes }
+  scope:c2_sender_school = { add_modifier = { name = nesnd_civic_academy_exchange months = 24 } }
+  scope:c2_host_school = { add_modifier = { name = nesnd_civic_academy_exchange months = 24 } }
   scope:c2_scholar_sender = { remove_variable = nesnd_c2_scholar_clock set_variable = nesnd_c2_scholar_closed set_variable = { name = nesnd_c2_scholar_cooldown months = 12 } set_variable = { name = nesnd_c2_duan_exchange months = 24 } trigger_event = { id = nesnd_civic_routes.41 popup = yes } }
  }
 }
@@ -1054,23 +1209,108 @@ nesnd_c2_italian_abandon = {
  }
 }
 
-nesnd_c2_cleanup_person_backing = {
- remove_variable = nesnd_c2_person_ita_valdieri_backing if = { limit = { has_modifier = nesnd_c2_person_ita_valdieri_support } remove_modifier = nesnd_c2_person_ita_valdieri_support }
- remove_variable = nesnd_c2_person_ita_bellandi_backing if = { limit = { has_modifier = nesnd_c2_person_ita_bellandi_support } remove_modifier = nesnd_c2_person_ita_bellandi_support }
- remove_variable = nesnd_c2_person_ita_rusciani_backing if = { limit = { has_modifier = nesnd_c2_person_ita_rusciani_support } remove_modifier = nesnd_c2_person_ita_rusciani_support }
- remove_variable = nesnd_c2_person_ita_sereni_backing if = { limit = { has_modifier = nesnd_c2_person_ita_sereni_support } remove_modifier = nesnd_c2_person_ita_sereni_support }
- remove_variable = nesnd_c2_person_ita_vitali_backing if = { limit = { has_modifier = nesnd_c2_person_ita_vitali_support } remove_modifier = nesnd_c2_person_ita_vitali_support }
- remove_variable = nesnd_c2_person_ita_martelli_backing if = { limit = { has_modifier = nesnd_c2_person_ita_martelli_support } remove_modifier = nesnd_c2_person_ita_martelli_support }
- remove_variable = nesnd_c2_person_hus_tong_backing if = { limit = { has_modifier = nesnd_c2_person_hus_tong_support } remove_modifier = nesnd_c2_person_hus_tong_support }
- remove_variable = nesnd_c2_person_hus_shen_backing if = { limit = { has_modifier = nesnd_c2_person_hus_shen_support } remove_modifier = nesnd_c2_person_hus_shen_support }
- remove_variable = nesnd_c2_person_hus_bayant_backing if = { limit = { has_modifier = nesnd_c2_person_hus_bayant_support } remove_modifier = nesnd_c2_person_hus_bayant_support }
- remove_variable = nesnd_c2_person_hus_lin_backing if = { limit = { has_modifier = nesnd_c2_person_hus_lin_support } remove_modifier = nesnd_c2_person_hus_lin_support }
- remove_variable = nesnd_c2_person_hus_lu_backing if = { limit = { has_modifier = nesnd_c2_person_hus_lu_support } remove_modifier = nesnd_c2_person_hus_lu_support }
- remove_variable = nesnd_c2_person_hus_guan_backing if = { limit = { has_modifier = nesnd_c2_person_hus_guan_support } remove_modifier = nesnd_c2_person_hus_guan_support }
- remove_variable = nesnd_c2_person_usm_ji_backing if = { limit = { has_modifier = nesnd_c2_person_usm_ji_support } remove_modifier = nesnd_c2_person_usm_ji_support }
- remove_variable = nesnd_c2_person_usm_duan_backing if = { limit = { has_modifier = nesnd_c2_person_usm_duan_support } remove_modifier = nesnd_c2_person_usm_duan_support }
- remove_variable = nesnd_c2_person_usm_xu_backing if = { limit = { has_modifier = nesnd_c2_person_usm_xu_support } remove_modifier = nesnd_c2_person_usm_xu_support }
- remove_variable = nesnd_c2_person_usm_luo_backing if = { limit = { has_modifier = nesnd_c2_person_usm_luo_support } remove_modifier = nesnd_c2_person_usm_luo_support }
- remove_variable = nesnd_c2_person_usm_han_backing if = { limit = { has_modifier = nesnd_c2_person_usm_han_support } remove_modifier = nesnd_c2_person_usm_han_support }
- remove_variable = nesnd_c2_person_usm_jiang_backing if = { limit = { has_modifier = nesnd_c2_person_usm_jiang_support } remove_modifier = nesnd_c2_person_usm_jiang_support }
+# Journal-entry scope. Keep the bar in an existing journal when the rules change.
+nesnd_usm_mandate_initialize = {
+    if = {
+        limit = { NOT = { has_variable = nesnd_usm_mandate_initialized } }
+        set_bar_progress = { name = nesnd_usm_mandate_bar value = 50 }
+        set_variable = nesnd_usm_mandate_initialized
+    }
+}
+
+# Journal scope. A western settlement can predate the civic agenda.
+nesnd_usm_mandate_credit_west = {
+    if = {
+        limit = {
+            owner = {
+                nesnd_usm_civic_country = yes
+                NOT = { has_variable = nesnd_usm_mandate_victory }
+                has_variable = nesnd_usm_western_succeeded
+                NOT = { has_variable = nesnd_usm_western_mandate_credited }
+            }
+        }
+        owner = { set_variable = nesnd_usm_western_mandate_credited }
+        add_progress = { name = nesnd_usm_mandate_bar value = 10 }
+        nesnd_usm_mandate_refresh = yes
+    }
+}
+
+# Country scope. Only a completed programme changes the balance.
+nesnd_usm_mandate_project_shift = {
+    if = {
+        limit = { nesnd_usm_civic_country = yes NOT = { has_variable = nesnd_usm_mandate_victory } }
+        if = {
+            limit = { NOT = { has_journal_entry = nesnd_c2_usm_agenda } }
+            add_journal_entry = { type = nesnd_c2_usm_agenda }
+        }
+        je:nesnd_c2_usm_agenda ?= {
+            nesnd_usm_mandate_initialize = yes
+            add_progress = { name = nesnd_usm_mandate_bar value = $AMOUNT$ }
+            nesnd_usm_mandate_refresh = yes
+        }
+    }
+}
+
+nesnd_usm_mandate_clear_modifiers = {
+    if = { limit = { has_modifier = nesnd_usm_mandate_central_1 } remove_modifier = nesnd_usm_mandate_central_1 }
+    if = { limit = { has_modifier = nesnd_usm_mandate_central_2 } remove_modifier = nesnd_usm_mandate_central_2 }
+    if = { limit = { has_modifier = nesnd_usm_mandate_provincial_1 } remove_modifier = nesnd_usm_mandate_provincial_1 }
+    if = { limit = { has_modifier = nesnd_usm_mandate_provincial_2 } remove_modifier = nesnd_usm_mandate_provincial_2 }
+}
+
+nesnd_usm_mandate_apply_tier = {
+    if = {
+        limit = { NOT = { has_modifier = $TIER$ } }
+        nesnd_usm_mandate_clear_modifiers = yes
+        add_modifier = { name = $TIER$ }
+    }
+}
+
+# Journal-entry scope. AI governments use the same orders as the player.
+nesnd_usm_mandate_ai_policy = {
+    if = {
+        limit = { owner = { is_ai = yes } }
+        owner = {
+            if = {
+                limit = { has_variable = nesnd_usm_mandate_provincial }
+                remove_variable = nesnd_usm_mandate_provincial
+            }
+        }
+        if = {
+            limit = {
+                "scripted_bar_progress(nesnd_usm_mandate_bar)" <= 60
+                owner = { NOT = { has_variable = nesnd_usm_mandate_central } }
+            }
+            owner = { set_variable = nesnd_usm_mandate_central }
+        }
+        else_if = {
+            limit = {
+                "scripted_bar_progress(nesnd_usm_mandate_bar)" >= 70
+                owner = { has_variable = nesnd_usm_mandate_central }
+            }
+            owner = { remove_variable = nesnd_usm_mandate_central }
+        }
+    }
+}
+
+# Journal-entry scope. Apply the tier after the score has changed.
+nesnd_usm_mandate_refresh = {
+    nesnd_usm_mandate_ai_policy = yes
+    if = {
+        limit = { "scripted_bar_progress(nesnd_usm_mandate_bar)" >= 75 }
+        owner = { nesnd_usm_mandate_apply_tier = { TIER = nesnd_usm_mandate_central_2 } }
+    }
+    else_if = {
+        limit = { "scripted_bar_progress(nesnd_usm_mandate_bar)" >= 60 }
+        owner = { nesnd_usm_mandate_apply_tier = { TIER = nesnd_usm_mandate_central_1 } }
+    }
+    else_if = {
+        limit = { "scripted_bar_progress(nesnd_usm_mandate_bar)" <= 25 }
+        owner = { nesnd_usm_mandate_apply_tier = { TIER = nesnd_usm_mandate_provincial_2 } }
+    }
+    else_if = {
+        limit = { "scripted_bar_progress(nesnd_usm_mandate_bar)" <= 40 }
+        owner = { nesnd_usm_mandate_apply_tier = { TIER = nesnd_usm_mandate_provincial_1 } }
+    }
+    else = { owner = { nesnd_usm_mandate_clear_modifiers = yes } }
 }

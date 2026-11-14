@@ -52,6 +52,7 @@ description: 为 Neo-Era Southern and Northern Dynasties（NESND）维多利亚3
 | 主题 | 做法（references/） | 查表（lookup/） |
 |---|---|---|
 | 日志、事件、按钮、进度条 | journal-state、journal-display、script-safety | journal-ui、engine-syntax |
+| 文化团结度日志（团结条 + 人口文化转化）：新建或修改时读 | [cohesion-journal](references/cohesion-journal.md) | — |
 | 语法、作用域、覆盖原版 | script-safety | engine-syntax、engine-facts |
 | 数值、成本、奖励节奏 | numeric-scale-contract | numeric-facts |
 | 政治目标、IG、合法性、党派 | political-design-and-difficulty | engine-facts §政治 |

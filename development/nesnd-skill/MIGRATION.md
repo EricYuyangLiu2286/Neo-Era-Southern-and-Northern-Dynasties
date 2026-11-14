@@ -215,6 +215,10 @@
 | u:91fa3075 | SKILL.md §6 交付 | 删除 | 重复；四件事在 verification.md §3，“然后更新 STATUS.md”在新 SKILL.md §6 |
 | u:ac167ed1 | SKILL.md §7 维护 | 删除 | 重复；同步规则在 skill-maintenance.md §同步 |
 | u:5eeca787 | nesnd-player-writing SKILL.md §3 末句 | 改写 | 并入新 SKILL.md 路由表“找旧素材”一行 |
+| u:39168817 | lookup/engine-facts.md §按钮 第一段 | 合并（2026-11-12） | 与下一段讲同一件事，合成一段放回原位，保留各自独有的出处与验证方法 |
+| u:4a0becd1 | lookup/engine-facts.md §按钮 第二段 | 合并（2026-11-12） | 同上；“事件 modifier 内动态 add 不证明外层接受动态值”“两份 AST 核等价”两句保留 |
+| u:ce2381f3 | references/journal-display.md §1“公开条件逐层展开” | 改写（2026-11-12） | 末句“any_* 中的国家身份比较”展开为同文件新小节“`any_*` 里随遍历对象变化的比较”，原处改为一句指引 |
+| u:ac89d69c | references/journal-display.md §4 激活一段 | 改写（2026-11-12） | 纠正“add_journal_entry 绕过 possible”的说法：1.15.1 实测 `possible = { always = no }` 时 add 被拒，补正确写法 |
 
 ## 4. 顺带修正的问题
 
@@ -249,3 +253,9 @@
 ```
 
 2026-11-11 运行。kept 为原样保留，edited 为小改后保留，documented 为第 3 节所列。
+
+2026-11-12 补充经验后再次运行（备份 `WORK/backups/pre-change-skill-lessons-20261112-20261112T223738Z/`）。脚本改为同时跳过旧目录里的 `MIGRATION.md`，它是去向记录本身。
+
+```
+{"kept": 730, "edited": 0, "documented": 4, "missing": 0}
+```

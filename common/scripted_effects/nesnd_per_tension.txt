@@ -5,15 +5,17 @@
 # 唐人统治的开局设置：唐人等级制与唐律成文。
 nesnd_per_tang_setup = {
     if = { limit = { nesnd_per_tang_regime = yes }
-        # 开局只设一次「唐律成文」：法律组启用时引擎会先自动给一条。
-        if = { limit = { NOT = { has_variable = nesnd_per_tang_law_started } }
-            set_variable = nesnd_per_tang_law_started
-            if = { limit = { NOT = { has_law = law_type:law_nesnd_per_tang_codified } } activate_law = law_type:law_nesnd_per_tang_codified }
+        if = { limit = { NOT = { has_law = law_type:law_nesnd_per_hierarchy_abolished } }
+            # 开局只设一次「唐律成文」：法律组启用时引擎会先自动给一条。
+            if = { limit = { NOT = { has_variable = nesnd_per_tang_law_started } }
+                set_variable = nesnd_per_tang_law_started
+                if = { limit = { NOT = { has_law = law_type:law_nesnd_per_tang_codified } } activate_law = law_type:law_nesnd_per_tang_codified }
+            }
+            else_if = { limit = { game_date < 1836.3.1 NOT = { has_law = law_type:law_nesnd_per_tang_codified } }
+                activate_law = law_type:law_nesnd_per_tang_codified
+            }
+            if = { limit = { NOT = { has_social_hierarchy = nesnd_per_tang_hierarchy } } set_social_hierarchy = nesnd_per_tang_hierarchy }
         }
-        else_if = { limit = { game_date < 1836.3.1 NOT = { has_law = law_type:law_nesnd_per_tang_codified } }
-            activate_law = law_type:law_nesnd_per_tang_codified
-        }
-        if = { limit = { NOT = { has_social_hierarchy = nesnd_per_tang_hierarchy } } set_social_hierarchy = nesnd_per_tang_hierarchy }
         # 第三教开局二选一（佛门或天命说）：开局问一次；中途接手或久未作答的按佛门。
         if = { limit = { NOT = { has_variable = nesnd_per_third_chosen } }
             if = { limit = { NOT = { has_variable = nesnd_per_third_asked } game_date < 1836.3.1 }
@@ -23,6 +25,25 @@ nesnd_per_tang_setup = {
             else_if = { limit = { OR = { NOT = { has_variable = nesnd_per_third_asked } game_date >= 1836.6.1 } }
                 set_variable = nesnd_per_third_chosen
             }
+        }
+    }
+    else_if = {
+        limit = {
+            nesnd_per_country = yes
+            OR = { has_variable = nesnd_per_tang_law_started has_variable = nesnd_per_persian_rule nesnd_per_has_tang_law = yes }
+            NOT = { has_law = law_type:law_nesnd_per_hierarchy_abolished }
+        }
+        if = { limit = {
+            OR = {
+                is_enacting_law = law_type:law_nesnd_per_tang_strict
+                is_enacting_law = law_type:law_nesnd_per_tang_codified
+                is_enacting_law = law_type:law_nesnd_per_tang_lenient
+                is_enacting_law = law_type:law_nesnd_per_hierarchy_abolished
+            }
+        } cancel_enactment = yes }
+        activate_law = law_type:law_nesnd_per_hierarchy_abolished
+        if = { limit = { is_player = yes has_law = law_type:law_nesnd_per_hierarchy_abolished NOT = { has_variable = nesnd_per_persian_rule } }
+            trigger_event = { id = nesnd_hierarchy_abolition.2 popup = yes }
         }
     }
 }

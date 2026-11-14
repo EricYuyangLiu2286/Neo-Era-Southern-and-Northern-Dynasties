@@ -63,17 +63,44 @@ nesnd_small_restore_geography = {
         else = { set_variable = nesnd_small_generic_regions nesnd_small_refresh_candidates = yes }
     }
 }
+nesnd_small_grant_development_modifier = {
+    if = {
+        limit = { NOT = { nesnd_small_southern_identity = yes } }
+        add_modifier = { name = $OTHER$ months = $MONTHS$ }
+    }
+    else_if = {
+        limit = { has_variable = nesnd_small_regional }
+        every_scope_state = {
+            limit = { OR = { nesnd_small_group_one = yes nesnd_small_group_two = yes } }
+            add_modifier = { name = $REGIONAL$ months = $MONTHS$ }
+        }
+    }
+    else = { add_modifier = { name = $COMPACT$ months = $MONTHS$ } }
+}
+
 nesnd_small_economy_reward = {
     set_variable = nesnd_small_economy_done
     if = { limit = { NOT = { has_variable = nesnd_small_economy_rewarded } }
-        set_variable = nesnd_small_economy_rewarded add_modifier = { name = nesnd_small_livelihood months = 36 }
+        set_variable = nesnd_small_economy_rewarded
+        nesnd_small_grant_development_modifier = {
+            OTHER = nesnd_small_livelihood
+            COMPACT = nesnd_southern_workshops
+            REGIONAL = nesnd_southern_market_roads
+            MONTHS = 36
+        }
         trigger_event = { id = nesnd_small_states.2 popup = yes }
     }
 }
 nesnd_small_governance_reward = {
     set_variable = nesnd_small_governance_done
     if = { limit = { NOT = { has_variable = nesnd_small_governance_rewarded } }
-        set_variable = nesnd_small_governance_rewarded add_modifier = { name = nesnd_small_learning months = 60 }
+        set_variable = nesnd_small_governance_rewarded
+        nesnd_small_grant_development_modifier = {
+            OTHER = nesnd_small_learning
+            COMPACT = nesnd_southern_local_offices
+            REGIONAL = nesnd_southern_local_offices
+            MONTHS = 60
+        }
         trigger_event = { id = nesnd_small_states.3 popup = yes }
     }
 }

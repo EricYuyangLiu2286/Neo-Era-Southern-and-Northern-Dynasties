@@ -1,0 +1,46 @@
+﻿# Generic "Unify the South". Opened for any southern regime marked nesnd_south_unifier once the Jingnan War is over:
+# every victorious settlement (nesnd_commit_rebel_settlement), Wu after a status quo (usm_civilwar.9),
+# the Ming Federation (nesnd_celestial_collapse.3) and the Ming rebuilt by decision (nesnd_restore_ming).
+# It does not open while the holdout, after-truce or reconciliation journals handle the country.
+nesnd_unify_south = {
+    icon = "gfx/interface/icons/politics_icons/revolution.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    transferable = no
+    is_shown_when_inactive = { nesnd_unify_south_eligible = yes }
+    possible = { nesnd_unify_south_eligible = yes }
+    scripted_progress_bar = nesnd_unify_south_bar
+    immediate = {
+        # Claim every target state region not yet in the realm.
+        every_state = {
+            limit = {
+                nesnd_unify_south_state = yes
+                NOT = { owner = root }
+                NOT = { owner ?= { is_subject_of = root } }
+            }
+            state_region = { add_claim = root }
+        }
+        scope:journal_entry ?= { set_bar_progress = { name = nesnd_unify_south_bar value = owner.nesnd_unify_south_held } }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = { custom_tooltip = { text = nesnd_unify_south_goal_tt nesnd_unify_south_held >= 26 } }
+        effect = {
+            set_variable = nesnd_south_unified_done
+            trigger_event = { id = nesnd_sih_jingnan.20 popup = yes }
+        }
+        event_outcome_desc = { desc = nesnd_unify_south_reward_tt }
+    }
+    # Failure is the fall of the country itself.
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { OR = { is_country_alive = no is_subject = yes } }
+    }
+    weight = 1000
+    should_be_pinned_by_default_uninvolved_or_context = yes
+}

@@ -16,6 +16,7 @@
 | `docs_lookup.py` | 查 script_docs 导出（trigger、effect、event target、on_action、modifier、custom loc、data type） | 不确定接口名、作用域或参数时 | `python scripts/docs_lookup.py <名称> --kind trigger` |
 | `toolkit_check.py` | 用 Paradox Modding Toolkit 的语言服务器检查指定文件，带“多一个右括号”的反例对照 | 改完脚本或本地化后 | `python scripts/toolkit_check.py --out <报告目录> <MOD 相对路径>…` |
 | `tiger_delta.py` | 对改动前备份和当前 MOD 各跑一次 vic3-tiger，只列改动文件新增的报错 | 交付前 | `python scripts/tiger_delta.py --before <备份>/mod --out <报告目录>` |
+| `static_lints.py` | 扫缺 UTF-8 BOM、可见结局缺 `color`、会生成说明的条件里随遍历对象变化的 `any_*` 比较。第三项是文本扫描，结果是风险清单，只有界面真的显示该条件时才会报错 | 交付前；读到相关加载或刷屏报错时 | `python scripts/static_lints.py [--checks bom,color,anyeq] [--out <报告.json>]` |
 | `script_xcheck.py` | 按 1.15 script_docs 交叉检查一组文件：未知 trigger/effect、条件与效果混用、作用域不符、变量只写不读、引用未定义 | 一个新系统写完时 | `python scripts/script_xcheck.py "common/**/nesnd_sha_*.txt" "events/nesnd_sha_*.txt"` |
 | `vanilla_overrides.py` | 比对主 MOD 与原版同路径文件，重写 [vanilla-overrides.md](../lookup/vanilla-overrides.md) 与基线 JSON | 版本更新；新增或撤回同路径覆盖 | `python scripts/vanilla_overrides.py --out <WORK/reports/…>` |
 | `pop_rewrite.py` | 按 JSON 计划改 `history/pops`：替换某文化人数、追加人口，逐州断言总量 | 人口重配、拆州后补人口 | `python scripts/pop_rewrite.py <plan.json>`（只预览）；确认后加 `--write` |
@@ -27,7 +28,7 @@
 | 工具 | 位置 | 用途 |
 |---|---|---|
 | V3-content-tree（v3tree） | `D:\Users\Eric Liu\OneDrive\Documents\Modings\V3-content-tree` | 内容树：`index`、`near`、`new/expand/render`，见 [content-tree.md](content-tree.md) |
-| Paradox Modding Toolkit | VS Code 扩展 `jdeffner.px-toolkit`（语言服务器 `dist/server.js`） | 解析、作用域、本地化诊断；`toolkit_check.py` 自动找最新版本 |
+| Paradox Modding Toolkit | VS Code 扩展 `jdeffner.px-toolkit`（语言服务器 `dist/server.js`） | 解析、作用域、本地化诊断；`toolkit_check.py` 自动找最新版本。`common/on_actions/` 下的文件会报 `wrong-on-action-folder`，这是 CK3 规则（要求单数 `on_action/`），维多利亚 3 原版就在 `common/on_actions/`，属误报 |
 | vic3-tiger 1.19.0 | `WORK/tools/tiger-1.19.0/vic3-tiger.exe` | 静态检查；规则可能落后于新版本 |
 | Rakaly 0.8.22 | `WORK/tools/rakaly-0.8.22/` | 解码存档副本（先复制到工作台） |
 | 存档结构导出 | `WORK/tools/save_structure.py` | 逐州职业、配员、基础设施、建筑账项 |

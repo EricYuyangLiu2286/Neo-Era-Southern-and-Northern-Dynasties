@@ -1,0 +1,96 @@
+﻿# 莱茵问题（普鲁士一系）
+
+nesnd_rhine_shelter_exiles = {
+	name = "nesnd_rhine_shelter_exiles"
+	desc = "nesnd_rhine_shelter_exiles_desc"
+
+	visible = {
+		exists = c:FRM
+	}
+
+	possible = {
+		is_subject = no
+		custom_tooltip = {
+			text = nesnd_rhine_parliament_open_tt
+			c:FRM ?= { has_journal_entry = nesnd_frm_parliament }
+		}
+		custom_tooltip = {
+			text = nesnd_rhine_exiles_cooldown_tt
+			NOT = { has_variable = nesnd_rhine_exiles_cooldown }
+		}
+	}
+
+	effect = {
+		set_variable = { name = nesnd_rhine_exiles_cooldown years = 3 }
+		trigger_event = { id = nesnd_rhine.3 popup = yes }
+	}
+
+	ai_chance = {
+		value = 10
+	}
+}
+
+nesnd_rhine_mobilize = {
+	name = "nesnd_rhine_mobilize"
+	desc = "nesnd_rhine_mobilize_desc"
+
+	visible = {
+		always = yes
+	}
+
+	possible = {
+		is_subject = no
+		custom_tooltip = {
+			text = nesnd_rhine_window_tt
+			OR = {
+				nesnd_rhine_france_distracted = yes
+				nesnd_rhine_parliament_nationalist = yes
+			}
+		}
+		custom_tooltip = {
+			text = nesnd_rhine_mobilize_cooldown_tt
+			NOT = { has_variable = nesnd_rhine_mobilize_cooldown }
+		}
+	}
+
+	effect = {
+		set_variable = { name = nesnd_rhine_mobilize_cooldown years = 5 }
+		add_modifier = { name = nesnd_rhine_war_footing months = 12 }
+	}
+
+	ai_chance = {
+		value = 20
+	}
+}
+
+# 莱茵联邦议会（法兰克福）
+
+nesnd_frm_request_garrison = {
+	name = "nesnd_frm_request_garrison"
+	desc = "nesnd_frm_request_garrison_desc"
+
+	visible = {
+		exists = c:FRA
+	}
+
+	possible = {
+		is_subject_of = c:FRA
+		custom_tooltip = {
+			text = nesnd_frm_garrison_cooldown_tt
+			NOT = { has_variable = nesnd_frm_garrison_cooldown }
+		}
+	}
+
+	effect = {
+		set_variable = { name = nesnd_frm_garrison_cooldown years = 2 }
+		je:nesnd_frm_parliament ?= {
+			add_progress = { value = -15 name = nesnd_frm_leaning }
+		}
+		add_modifier = { name = nesnd_frm_french_garrison months = 24 }
+		change_relations = { country = c:FRA value = 10 }
+	}
+
+	ai_chance = {
+		value = 5
+	}
+}

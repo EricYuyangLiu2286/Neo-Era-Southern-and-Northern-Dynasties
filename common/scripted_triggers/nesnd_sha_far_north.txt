@@ -11,6 +11,24 @@ nesnd_sha_gold_open = {
 nesnd_sha_russian_borderland = {
     OR = { state_region = s:STATE_IRKUTSK state_region = s:STATE_UPPER_YENISEYSK }
 }
+# Country scope: an uprising country that rose in the borderland, whatever its people.
+# The Liaodong check keeps the original case when the new country holds no borderland state yet.
+nesnd_sha_borderland_uprising = {
+    OR = {
+        any_scope_state = { nesnd_sha_russian_borderland = yes }
+        country_has_primary_culture = cu:ce_liaodong
+    }
+}
+# Political movement scope: a Russian minority movement of a people living in the borderland.
+nesnd_sha_borderland_movement = {
+    is_political_movement_type = movement_cultural_minority
+    owner ?= c:RUS
+    culture ?= {
+        NOT = { this = cu:russian }
+        save_temporary_scope_as = nesnd_sha_movement_culture
+    }
+    c:RUS ?= { any_scope_state = { nesnd_sha_russian_borderland = yes any_scope_pop = { culture = scope:nesnd_sha_movement_culture } } }
+}
 nesnd_sha_northern_state = {
     OR = {
         state_region = s:STATE_KOLYMA

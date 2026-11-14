@@ -80,6 +80,8 @@ def main():
         for p in sorted((a.old / s).rglob('*')):
             if not p.is_file() or '__pycache__' in p.parts:
                 continue
+            if p.name == 'MIGRATION.md':  # the change log itself, never a rule to carry over
+                continue
             rel = p.relative_to(a.old).as_posix()
             if p.suffix != '.md':
                 if hashlib.sha256(p.read_bytes()).hexdigest() not in new_hashes and rel.split('/')[1] != 'scripts':

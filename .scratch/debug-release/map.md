@@ -267,3 +267,8 @@ Updated: 2026-11-01
 - [88 西秦比例代表制改为地产投票](issues/88-qe1-pr-to-landed.md)：迁移遗留的比例代表制删除，“改立共和”改授地产投票；游戏外检查通过，待作者复测。
 - [89 西秦“席堂与席院”法律](issues/89-qe1-xitang-xiyuan-law.md)：作者构想记录，暂不实施。
 - [90 科举投票制](issues/90-keju-voting.md)：四国开局法律、两条修正案、儒林意识形态及民族之春变量清理已完成游戏外检查，待作者新开局复测。
+- [91 重组日本诸藩的战争结算](issues/91-japan-war-goal.md)已修复首都占领计时与吴方盟军占领资格，待作者复测占领、投降两路。
+- [92 「伪朝禅代」南下选项](issues/92-cne-intervention-option.md)已加入属国禁选原因和内战可能不发生的提示，待界面复测。
+- [93 日本三家分封各路线](issues/93-japan-partition-weight.md)已调整靖难选边、恢复保护国、发国书、直接分封与两种东征路径的 AI 权重。
+- [94 南方残余势力条件的报错刷屏](issues/94-holdouts-tooltip-flood.md)：`nesnd_south_unresolved_holdouts` 包上 custom_tooltip，内战事件日期改用当前日期。游戏外检查通过，待作者新开局复测。外国干预日志改为按跟进旗标自动激活，待复测。
+- [95 四类加载报错](issues/95-loading-errors.md)已核对波斯规则、补齐文化修正并合并法国失效结局。东亚服装重名来自 EACR 与原版，待作者复测。

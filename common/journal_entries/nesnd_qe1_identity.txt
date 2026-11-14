@@ -3,8 +3,8 @@
 	group = je_group_historical_content
 	activation_description = { always = yes }
 	can_revolution_inherit = yes
-	is_shown_when_inactive = { nesnd_qe1_unity_eligible = yes }
-	possible = { nesnd_qe1_unity_eligible = yes }
+	is_shown_when_inactive = { nesnd_qe1_unity_eligible = yes hidden_trigger = { nesnd_cohesion_open = yes } }
+	possible = { nesnd_qe1_unity_eligible = yes nesnd_cohesion_open = yes }
 	should_be_pinned_by_default_uninvolved_or_context = yes
 	weight = 1000
 
@@ -13,11 +13,28 @@
 	scripted_button = nesnd_unity_material_subsidy
 	scripted_button = nesnd_unity_political_subsidy
 	outcome = {
+		header = nesnd_journal_closures_header
+		effect_header = nesnd_journal_closures_effect_header
+		color = "blue_negative"
+		conclusion_desc = nesnd_cohesion_fixed_by_ideas_conclusion
+		trigger = { nesnd_cohesion_fixed_by_ideas = yes }
+		effect = { nesnd_qe1_clear_forecast = yes nesnd_unity_stop_subsidies = yes hidden_effect = { set_variable = nesnd_cohesion_fixed } }
+	}
+	outcome = {
+		header = nesnd_journal_closures_header
+		effect_header = nesnd_journal_closures_effect_header
+		color = "blue_negative"
+		conclusion_desc = nesnd_cohesion_fixed_by_ideology_conclusion
+		trigger = { nesnd_cohesion_fixed_by_ideology = yes }
+		effect = { nesnd_qe1_clear_forecast = yes nesnd_unity_stop_subsidies = yes hidden_effect = { set_variable = nesnd_cohesion_fixed } }
+	}
+	outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
         conclusion_desc = nesnd_journal_closures_qin_unity_conclusion
         trigger = { custom_tooltip = { text = nesnd_journal_closures_qin_unity_tt NOT = { nesnd_qe1_unity_eligible = yes } } }
-        effect = { nesnd_qe1_clear_forecast = yes }
+        effect = { nesnd_qe1_clear_forecast = yes nesnd_unity_stop_subsidies = yes }
     }
 	on_monthly_pulse = { effect = { nesnd_qe1_unity_monthly = yes } }
 	status_desc = {
@@ -38,10 +55,15 @@
 			}
 			desc = nesnd_qe1_unity_hope
 		}
+		# Next conversion: the same saved plan that nesnd_qe1_unity_monthly executes.
 		first_valid = {
 			triggered_desc = {
-				trigger = { nesnd_qe1_forecast_state_valid = yes }
+				trigger = { nesnd_qe1_forecast_state_valid = yes exists = var:nesnd_qe1_next_culture exists = var:nesnd_qe1_next_religion }
 				desc = nesnd_qe1_forecast_state
+			}
+			triggered_desc = {
+				trigger = { nesnd_qe1_forecast_state_valid = yes }
+				desc = nesnd_qe1_forecast_state_undrawn
 			}
 			triggered_desc = {
 				trigger = {
@@ -50,6 +72,27 @@
 					trigger_else = { always = no }
 				}
 				desc = nesnd_qe1_forecast_all
+			}
+			triggered_desc = {
+				trigger = {
+					nesnd_qe1_unity_live = yes
+					trigger_if = { limit = { has_variable = nesnd_qe1_unity } var:nesnd_qe1_unity < 50 }
+					trigger_else = { always = no }
+					any_scope_state = { nesnd_qe1_decay_state = yes }
+				}
+				desc = nesnd_qe1_forecast_missed
+			}
+			triggered_desc = {
+				trigger = {
+					nesnd_qe1_unity_live = yes
+					trigger_if = { limit = { has_variable = nesnd_qe1_unity } OR = { var:nesnd_qe1_unity < 50 var:nesnd_qe1_unity > 75 } }
+					trigger_else = { always = no }
+				}
+				desc = nesnd_qe1_forecast_no_state
+			}
+			triggered_desc = {
+				trigger = { nesnd_qe1_unity_live = yes has_variable = nesnd_qe1_unity }
+				desc = nesnd_qe1_forecast_mid
 			}
 			desc = nesnd_qe1_forecast_none
 		}

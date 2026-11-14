@@ -1,0 +1,44 @@
+﻿# Country scope. Shu is fighting the Jingnan War and has not yet answered who governs.
+nesnd_sih_regime_open = {
+    c:SIH ?= this
+    is_country_alive = yes
+    has_journal_entry = nesnd_shu_army_journal
+    NOT = { has_variable = nesnd_sih_regime }
+    NOT = { has_variable = nesnd_sih_regime_pending }
+}
+
+# Country scope. Shu is losing ground: an enemy holds one of its states, a quarter of it is occupied,
+# or Chu or Huai has already been annexed. The Shu army journal fires the regime choice on the same week.
+nesnd_sih_regime_due = {
+    nesnd_sih_regime_open = yes
+    OR = {
+        any_scope_state = {
+            exists = controller
+            NOT = { controller = owner }
+            owner = { has_war_with = prev.controller }
+        }
+        enemy_occupation >= 0.25
+        has_global_variable = nesnd_jingnan_rebel_fell
+    }
+}
+
+# Country scope. Shu already serves a foreign patron, so Wei Jian takes power with its backing.
+nesnd_sih_foreign_backed = {
+    is_subject = yes
+    NOT = { is_subject_of = c:USM }
+    nesnd_sih_wei_available = yes
+}
+
+# Country scope.
+nesnd_sih_wei_available = {
+    any_scope_character = { has_template = USM_wei_jian is_character_alive = yes }
+}
+
+# Country scope. The capital-defeat check waits while Shu is choosing and for six months after.
+nesnd_sih_defeat_paused = {
+    OR = {
+        has_variable = nesnd_sih_regime_pending
+        has_variable = nesnd_sih_grace
+        nesnd_sih_regime_due = yes
+    }
+}

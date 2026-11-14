@@ -11,6 +11,9 @@
 ## Decisions-so-far
 
 - 2026-11-11 方案稿：[spec.md](spec.md)。作者答复八条后实施，见 [01 实施](issues/01-implement.md)（游戏外检查通过，待作者新开局复测）。
+- 2026-11-12 [02 无买卖双方时进度停滞](issues/02-stall-without-pair.md)：进度条与订单搜索改为只在有买卖双方时运行。AI 兴趣基础值改为 40，至多三单同时在途，各有一条进度条。
+
+- 2026-11-13 [03 成交与三个月的买卖约期](issues/03-settlement-and-mode-lock.md)：两条航线按原单结算，AI 保留选择，两语改称批次。游戏外检查通过，待观察者局复测。
 
 ## Not yet specified
 

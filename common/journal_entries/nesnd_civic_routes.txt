@@ -165,56 +165,138 @@ nesnd_c2_usm_constitution = {
   scripted_button = nesnd_c2_usm_constitution_classical_franchise scripted_button = nesnd_c2_usm_constitution_practical_franchise scripted_button = nesnd_c2_usm_constitution_local_franchise scripted_button = nesnd_c2_usm_constitution_retarget
   scripted_progress_bar = nesnd_c2_usm_constitution_bar
   outcome = {
-    header = je_standard_completion_header
-    effect_header = je_standard_on_completion_header
-    color = "gold_positive"
-    conclusion_desc = je_standard_completion_conclusion_desc
-    trigger = { custom_tooltip = { text = nesnd_ui_c2_three_months_tt has_variable = nesnd_c2_usm_constitution_done } }
+      header = nesnd_usm_outcome_central
+      effect_header = je_standard_on_completion_header
+      color = "gold_positive"
+      conclusion_desc = nesnd_usm_constitution_central_conclusion
+      event_outcome_desc = { desc = nesnd_usm_central_reform_tt }
+      trigger = {
+          hidden_trigger = { nesnd_usm_civic_country = yes }
+          custom_tooltip = { text = nesnd_usm_constitution_central_tt has_variable = nesnd_c2_usm_constitution_done has_variable = nesnd_c2_usm_constitution_choice OR = { var:nesnd_c2_usm_constitution_choice ?= 1 var:nesnd_c2_usm_constitution_choice ?= 2 } }
+      }
   }
   outcome = {
-    flags = { hidden invalid_outcome }
-    conclusion_desc = je_standard_failure_conclusion_desc
-    trigger = { NOT = { nesnd_c2_country_live = yes } }
+      header = nesnd_usm_outcome_provincial
+      effect_header = je_standard_on_completion_header
+      color = "gold_positive"
+      conclusion_desc = nesnd_usm_constitution_provincial_conclusion
+      event_outcome_desc = { desc = nesnd_usm_provincial_reform_tt }
+      trigger = {
+          hidden_trigger = { nesnd_usm_civic_country = yes }
+          custom_tooltip = { text = nesnd_usm_constitution_provincial_tt has_variable = nesnd_c2_usm_constitution_done has_variable = nesnd_c2_usm_constitution_choice var:nesnd_c2_usm_constitution_choice ?= 3 }
+      }
+  }
+  outcome = {
+      flags = { hidden invalid_outcome }
+      conclusion_desc = nesnd_journal_closures_usm_agenda_conclusion
+      trigger = { OR = { NOT = { nesnd_usm_civic_country = yes } AND = { has_variable = nesnd_c2_usm_constitution_done NOT = { has_variable = nesnd_c2_usm_constitution_choice } } } }
   }
  }
 nesnd_c2_usm_schools = {
   group = je_group_historical_content
-  activation_description = { always = yes } icon = "gfx/interface/icons/event_icons/event_industry.dds"
+  activation_description = { custom_tooltip = { text = nesnd_ui_c2_usm_constitution_completed_tt has_variable = nesnd_c2_usm_constitution_done } } icon = "gfx/interface/icons/event_icons/event_industry.dds"
   should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 900
-  is_shown_when_inactive = { nesnd_c2_usm_schools_open = yes custom_tooltip = { text = nesnd_ui_c2_plan_chosen_tt has_variable = nesnd_c2_usm_schools_active } } possible = { nesnd_c2_usm_schools_open = yes custom_tooltip = { text = nesnd_ui_c2_plan_chosen_tt has_variable = nesnd_c2_usm_schools_active } }
+  is_shown_when_inactive = { nesnd_usm_civic_projects_unlocked = yes }
+  possible = { nesnd_usm_civic_projects_unlocked = yes NOT = { has_variable = nesnd_c2_usm_schools_round_winner } }
   scripted_button = nesnd_c2_usm_schools_practical_schools scripted_button = nesnd_c2_usm_schools_provincial_schools scripted_button = nesnd_c2_usm_schools_retarget
+  immediate = { if = { limit = { NOT = { has_variable = nesnd_c2_usm_schools_active } } set_variable = { name = nesnd_c2_usm_schools_months value = 0 } } }
   scripted_progress_bar = nesnd_c2_usm_schools_bar
+  status_desc = { first_valid = {
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_schools_cooldown } desc = nesnd_c2_usm_schools_cooldown_tt }
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_schools_active nesnd_c2_usm_schools_target_valid = yes } desc = nesnd_usm_schools_in_progress }
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_schools_active has_modifier = nesnd_c2_usm_schools_expense } desc = nesnd_usm_project_site_lost_locked }
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_schools_active } desc = nesnd_usm_project_site_lost_ready }
+      desc = nesnd_usm_schools_choose
+  } }
   outcome = {
-    header = je_standard_completion_header
-    effect_header = je_standard_on_completion_header
-    color = "gold_positive"
-    conclusion_desc = je_standard_completion_conclusion_desc
-    trigger = { custom_tooltip = { text = nesnd_ui_c2_three_months_tt has_variable = nesnd_c2_usm_schools_done } }
+      header = nesnd_usm_outcome_central
+      effect_header = je_standard_on_completion_header
+      color = "gold_positive"
+      conclusion_desc = nesnd_usm_schools_central_conclusion
+      event_outcome_desc = { first_valid = {
+          triggered_desc = { trigger = { NOT = { has_variable = nesnd_usm_mandate_victory } OR = { NOT = { has_variable = nesnd_c2_usm_schools_active } has_variable = nesnd_c2_usm_schools_mandate_pending } } desc = nesnd_usm_schools_central_full_award_tt }
+          desc = nesnd_usm_schools_award_tt
+      } }
+      trigger = {
+          hidden_trigger = { nesnd_usm_civic_country = yes }
+          custom_tooltip = { text = nesnd_usm_schools_central_tt has_variable = nesnd_c2_usm_schools_round_winner var:nesnd_c2_usm_schools_round_winner ?= 1 }
+      }
+      effect = { hidden_effect = { remove_variable = nesnd_c2_usm_schools_round_winner } }
   }
   outcome = {
-    flags = { hidden invalid_outcome }
-    conclusion_desc = je_standard_failure_conclusion_desc
-    trigger = { NOT = { nesnd_c2_country_live = yes } }
+      header = nesnd_usm_outcome_provincial
+      effect_header = je_standard_on_completion_header
+      color = "gold_positive"
+      conclusion_desc = nesnd_usm_schools_provincial_conclusion
+      event_outcome_desc = { first_valid = {
+          triggered_desc = { trigger = { NOT = { has_variable = nesnd_usm_mandate_victory } OR = { NOT = { has_variable = nesnd_c2_usm_schools_active } has_variable = nesnd_c2_usm_schools_mandate_pending } } desc = nesnd_usm_schools_provincial_full_award_tt }
+          desc = nesnd_usm_schools_award_tt
+      } }
+      trigger = {
+          hidden_trigger = { nesnd_usm_civic_country = yes }
+          custom_tooltip = { text = nesnd_usm_schools_provincial_tt has_variable = nesnd_c2_usm_schools_round_winner var:nesnd_c2_usm_schools_round_winner ?= 2 }
+      }
+      effect = { hidden_effect = { remove_variable = nesnd_c2_usm_schools_round_winner } }
+  }
+  outcome = {
+      flags = { hidden invalid_outcome }
+      conclusion_desc = nesnd_journal_closures_usm_agenda_conclusion
+      trigger = { NOT = { nesnd_usm_civic_country = yes } }
   }
  }
 nesnd_c2_usm_industry = {
   group = je_group_historical_content
-  activation_description = { always = yes } icon = "gfx/interface/icons/event_icons/event_industry.dds"
+  activation_description = { custom_tooltip = { text = nesnd_ui_c2_usm_constitution_completed_tt has_variable = nesnd_c2_usm_constitution_done } } icon = "gfx/interface/icons/event_icons/event_industry.dds"
   should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 900
-  is_shown_when_inactive = { nesnd_c2_usm_industry_open = yes custom_tooltip = { text = nesnd_ui_c2_plan_chosen_tt has_variable = nesnd_c2_usm_industry_active } } possible = { nesnd_c2_usm_industry_open = yes custom_tooltip = { text = nesnd_ui_c2_plan_chosen_tt has_variable = nesnd_c2_usm_industry_active } }
-  scripted_button = nesnd_c2_usm_industry_coastal_industry scripted_button = nesnd_c2_usm_industry_inland_industry scripted_button = nesnd_c2_usm_industry_retarget
+  is_shown_when_inactive = { nesnd_usm_civic_projects_unlocked = yes }
+  possible = { nesnd_usm_civic_projects_unlocked = yes NOT = { has_variable = nesnd_c2_usm_industry_round_winner } }
+  scripted_button = nesnd_c2_usm_industry_coastal_industry scripted_button = nesnd_c2_usm_industry_inland_industry scripted_button = nesnd_c2_usm_industry_provincial_coastal_industry
+  scripted_button = nesnd_c2_usm_industry_provincial_inland_industry
+  scripted_button = nesnd_c2_usm_industry_retarget
+  immediate = { if = { limit = { NOT = { has_variable = nesnd_c2_usm_industry_active } } set_variable = { name = nesnd_c2_usm_industry_months value = 0 } } }
   scripted_progress_bar = nesnd_c2_usm_industry_bar
+  status_desc = { first_valid = {
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_industry_cooldown } desc = nesnd_c2_usm_industry_cooldown_tt }
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_industry_active nesnd_c2_usm_industry_target_valid = yes NOT = { has_variable = nesnd_c2_usm_industry_funder } } desc = nesnd_usm_industry_funder_needed }
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_industry_active nesnd_c2_usm_industry_target_valid = yes } desc = nesnd_usm_industry_in_progress }
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_industry_active has_modifier = nesnd_c2_usm_industry_expense } desc = nesnd_usm_project_site_lost_locked }
+      triggered_desc = { trigger = { has_variable = nesnd_c2_usm_industry_active } desc = nesnd_usm_project_site_lost_ready }
+      desc = nesnd_usm_industry_choose
+  } }
   outcome = {
-    header = je_standard_completion_header
-    effect_header = je_standard_on_completion_header
-    color = "gold_positive"
-    conclusion_desc = je_standard_completion_conclusion_desc
-    trigger = { custom_tooltip = { text = nesnd_ui_c2_three_months_tt has_variable = nesnd_c2_usm_industry_done } }
+      header = nesnd_usm_outcome_central
+      effect_header = je_standard_on_completion_header
+      color = "gold_positive"
+      conclusion_desc = nesnd_usm_industry_central_conclusion
+      event_outcome_desc = { first_valid = {
+          triggered_desc = { trigger = { NOT = { has_variable = nesnd_usm_mandate_victory } } desc = nesnd_usm_industry_central_full_award_tt }
+          desc = nesnd_usm_industry_award_tt
+      } }
+      trigger = {
+          hidden_trigger = { nesnd_usm_civic_country = yes }
+          custom_tooltip = { text = nesnd_usm_industry_central_tt has_variable = nesnd_c2_usm_industry_round_winner var:nesnd_c2_usm_industry_round_winner ?= 1 }
+      }
+      effect = { hidden_effect = { remove_variable = nesnd_c2_usm_industry_round_winner } }
   }
   outcome = {
-    flags = { hidden invalid_outcome }
-    conclusion_desc = je_standard_failure_conclusion_desc
-    trigger = { NOT = { nesnd_c2_country_live = yes } }
+      header = nesnd_usm_outcome_provincial
+      effect_header = je_standard_on_completion_header
+      color = "gold_positive"
+      conclusion_desc = nesnd_usm_industry_provincial_conclusion
+      event_outcome_desc = { first_valid = {
+          triggered_desc = { trigger = { NOT = { has_variable = nesnd_usm_mandate_victory } } desc = nesnd_usm_industry_provincial_full_award_tt }
+          desc = nesnd_usm_industry_award_tt
+      } }
+      trigger = {
+          hidden_trigger = { nesnd_usm_civic_country = yes }
+          custom_tooltip = { text = nesnd_usm_industry_provincial_tt has_variable = nesnd_c2_usm_industry_round_winner var:nesnd_c2_usm_industry_round_winner ?= 2 }
+      }
+      effect = { hidden_effect = { remove_variable = nesnd_c2_usm_industry_round_winner } }
+  }
+  outcome = {
+      flags = { hidden invalid_outcome }
+      conclusion_desc = nesnd_journal_closures_usm_agenda_conclusion
+      trigger = { NOT = { nesnd_usm_civic_country = yes } }
   }
  }
 nesnd_c2_usm_distribution = {
@@ -224,17 +306,53 @@ nesnd_c2_usm_distribution = {
   is_shown_when_inactive = { nesnd_c2_usm_distribution_open = yes custom_tooltip = { text = nesnd_ui_c2_plan_chosen_tt has_variable = nesnd_c2_usm_distribution_active } } possible = { nesnd_c2_usm_distribution_open = yes custom_tooltip = { text = nesnd_ui_c2_plan_chosen_tt has_variable = nesnd_c2_usm_distribution_active } }
   scripted_button = nesnd_c2_usm_distribution_commercial_empire scripted_button = nesnd_c2_usm_distribution_provincial_balance scripted_button = nesnd_c2_usm_distribution_scholars_franchise scripted_button = nesnd_c2_usm_distribution_retarget
   scripted_progress_bar = nesnd_c2_usm_distribution_bar
-  outcome = {
-    header = je_standard_completion_header
-    effect_header = je_standard_on_completion_header
-    color = "gold_positive"
-    conclusion_desc = je_standard_completion_conclusion_desc
-    trigger = { custom_tooltip = { text = nesnd_ui_c2_three_months_tt has_variable = nesnd_c2_usm_distribution_done } }
+  status_desc = {
+    first_valid = {
+      triggered_desc = {
+        trigger = {
+          has_variable = nesnd_c2_usm_distribution_mandate_pending
+          var:nesnd_c2_usm_distribution_choice ?= 2
+          nesnd_c2_usm_distribution_provincial_balance_pair_valid = yes
+        }
+        desc = nesnd_usm_grant_both_states
+      }
+      triggered_desc = {
+        trigger = { has_variable = nesnd_c2_usm_distribution_mandate_pending var:nesnd_c2_usm_distribution_choice ?= 2 }
+        desc = nesnd_usm_grant_pair_lost
+      }
+      triggered_desc = {
+        trigger = { exists = var:nesnd_c2_usm_distribution_target }
+        desc = nesnd_usm_grant_one_state
+      }
+      desc = nesnd_usm_grant_no_state
+    }
   }
   outcome = {
-    flags = { hidden invalid_outcome }
-    conclusion_desc = je_standard_failure_conclusion_desc
-    trigger = { NOT = { nesnd_c2_country_live = yes } }
+      header = nesnd_usm_outcome_central
+      effect_header = je_standard_on_completion_header
+      color = "gold_positive"
+      conclusion_desc = nesnd_usm_distribution_central_conclusion
+      event_outcome_desc = { desc = nesnd_usm_central_reform_tt }
+      trigger = {
+          hidden_trigger = { nesnd_usm_civic_country = yes }
+          custom_tooltip = { text = nesnd_usm_distribution_central_tt has_variable = nesnd_c2_usm_distribution_done has_variable = nesnd_c2_usm_distribution_choice var:nesnd_c2_usm_distribution_choice ?= 1 }
+      }
+  }
+  outcome = {
+      header = nesnd_usm_outcome_provincial
+      effect_header = je_standard_on_completion_header
+      color = "gold_positive"
+      conclusion_desc = nesnd_usm_distribution_provincial_conclusion
+      event_outcome_desc = { desc = nesnd_usm_provincial_reform_tt }
+      trigger = {
+          hidden_trigger = { nesnd_usm_civic_country = yes }
+          custom_tooltip = { text = nesnd_usm_distribution_provincial_tt has_variable = nesnd_c2_usm_distribution_done has_variable = nesnd_c2_usm_distribution_choice OR = { var:nesnd_c2_usm_distribution_choice ?= 2 var:nesnd_c2_usm_distribution_choice ?= 3 } }
+      }
+  }
+  outcome = {
+      flags = { hidden invalid_outcome }
+      conclusion_desc = nesnd_journal_closures_usm_agenda_conclusion
+      trigger = { OR = { NOT = { nesnd_usm_civic_country = yes } AND = { has_variable = nesnd_c2_usm_distribution_done NOT = { has_variable = nesnd_c2_usm_distribution_choice } } } }
   }
  }
 
@@ -275,6 +393,11 @@ nesnd_c2_hus_agenda = {
     scripted_button = nesnd_hus_register_manchu
     scripted_button = nesnd_hus_register_native
     on_monthly_pulse = { effect = { nesnd_hus_registration_settle = yes } }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_hus_registration_closed
+        trigger = { has_law = law_type:law_nesnd_hus_hierarchy_abolished }
+    }
     status_desc = { first_valid = {
         triggered_desc = { trigger = { has_variable = nesnd_hus_migration_conflict } desc = nesnd_hus_registration_conflict }
         triggered_desc = { trigger = { nesnd_hus_registration_enacted_correctly = yes } desc = nesnd_hus_registration_completed }
@@ -305,7 +428,41 @@ nesnd_c2_hus_agenda = {
     }
 }
 
-nesnd_c2_usm_agenda = { scripted_button = nesnd_c2_scholarly_exchange status_desc = { first_valid = {
+nesnd_c2_usm_agenda = {
+    scripted_progress_bar = nesnd_usm_mandate_bar
+    scripted_button = nesnd_usm_mandate_central
+    scripted_button = nesnd_usm_mandate_provincial
+    immediate = {
+        scope:journal_entry ?= {
+            nesnd_usm_mandate_initialize = yes
+            nesnd_usm_mandate_ai_policy = yes
+            nesnd_usm_mandate_credit_west = yes
+        }
+    }
+    on_monthly_pulse = {
+        effect = {
+            scope:journal_entry ?= {
+                nesnd_usm_mandate_initialize = yes
+                nesnd_usm_mandate_ai_policy = yes
+                nesnd_usm_mandate_credit_west = yes
+                if = {
+                    limit = { OR = { month = 0 month = 3 month = 6 month = 9 } }
+                    add_progress = { name = nesnd_usm_mandate_bar value = nesnd_usm_mandate_step }
+                }
+                nesnd_usm_mandate_refresh = yes
+            }
+        }
+    }
+    scripted_button = nesnd_c2_scholarly_exchange status_desc = { first_valid = {
+ triggered_desc = {
+     trigger = {
+         has_variable = nesnd_c2_usm_constitution_done
+         has_variable = nesnd_c2_usm_schools_done
+         has_variable = nesnd_c2_usm_industry_done
+         has_variable = nesnd_c2_usm_distribution_done
+     }
+     desc = nesnd_usm_mandate_programme_results
+ }
  triggered_desc = { trigger = { nesnd_c2_usm_political_open = no } desc = nesnd_c2_usm_paused }
  triggered_desc = { trigger = { trigger_if = { limit = { has_variable = nesnd_c2_western_outcome } var:nesnd_c2_western_outcome = 1 } trigger_else = { always = no } } desc = nesnd_c2_usm_west_open }
  triggered_desc = { trigger = { trigger_if = { limit = { has_variable = nesnd_c2_western_outcome } var:nesnd_c2_western_outcome = 2 } trigger_else = { always = no } } desc = nesnd_c2_usm_west_success }
@@ -314,12 +471,71 @@ nesnd_c2_usm_agenda = { scripted_button = nesnd_c2_scholarly_exchange status_des
  triggered_desc = { trigger = { trigger_if = { limit = { has_variable = nesnd_c2_usm_outcome } var:nesnd_c2_usm_outcome = 2 } trigger_else = { always = no } } desc = nesnd_c2_usm_wuu }
  desc = nesnd_c2_usm_ming
  } } group = je_group_historical_content
-    activation_description = { always = yes } icon = "gfx/interface/icons/event_icons/event_newspaper.dds" should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1000 is_shown_when_inactive = { nesnd_usm_civic_country = yes } possible = { nesnd_usm_civic_country = yes } scripted_button = nesnd_c2_usm_constitution_classical_franchise scripted_button = nesnd_c2_usm_constitution_practical_franchise scripted_button = nesnd_c2_usm_constitution_local_franchise scripted_button = nesnd_c2_usm_schools_practical_schools scripted_button = nesnd_c2_usm_schools_provincial_schools scripted_button = nesnd_c2_usm_industry_coastal_industry scripted_button = nesnd_c2_usm_industry_inland_industry scripted_button = nesnd_c2_usm_distribution_commercial_empire scripted_button = nesnd_c2_usm_distribution_provincial_balance scripted_button = nesnd_c2_usm_distribution_scholars_franchise outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        color = "blue_negative"
+    activation_description = { always = yes } icon = "gfx/interface/icons/event_icons/event_newspaper.dds" should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1000 is_shown_when_inactive = { nesnd_usm_civic_country = yes NOT = { has_variable = nesnd_usm_mandate_victory } } possible = { nesnd_usm_civic_country = yes NOT = { has_variable = nesnd_usm_mandate_victory } } scripted_button = nesnd_c2_usm_constitution_classical_franchise scripted_button = nesnd_c2_usm_constitution_practical_franchise scripted_button = nesnd_c2_usm_constitution_local_franchise scripted_button = nesnd_c2_usm_schools_practical_schools scripted_button = nesnd_c2_usm_schools_provincial_schools scripted_button = nesnd_c2_usm_industry_coastal_industry scripted_button = nesnd_c2_usm_industry_inland_industry scripted_button = nesnd_c2_usm_industry_provincial_coastal_industry scripted_button = nesnd_c2_usm_industry_provincial_inland_industry scripted_button = nesnd_c2_usm_distribution_commercial_empire scripted_button = nesnd_c2_usm_distribution_provincial_balance scripted_button = nesnd_c2_usm_distribution_scholars_franchise outcome = {
+        header = nesnd_usm_outcome_central
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_usm_agenda_central_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_usm_civic_country = yes NOT = { has_variable = nesnd_usm_mandate_victory } }
+            custom_tooltip = { text = nesnd_usm_agenda_reforms_tt
+                has_variable = nesnd_c2_usm_constitution_done
+                has_variable = nesnd_c2_usm_schools_done
+                has_variable = nesnd_c2_usm_industry_done
+                has_variable = nesnd_c2_usm_distribution_done
+            }
+            custom_tooltip = { text = nesnd_usm_agenda_central_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_usm_mandate_bar)" >= nesnd_usm_mandate_central_victory_threshold }
+            }
+        }
+        effect = {
+            custom_tooltip = nesnd_usm_agenda_central_result_tt
+            hidden_effect = {
+                set_variable = { name = nesnd_usm_mandate_victory value = 1 }
+                nesnd_usm_mandate_apply_tier = { TIER = nesnd_usm_mandate_central_2 }
+                if = { limit = { has_variable = nesnd_usm_mandate_central } remove_variable = nesnd_usm_mandate_central }
+                if = { limit = { has_variable = nesnd_usm_mandate_provincial } remove_variable = nesnd_usm_mandate_provincial }
+            }
+        }
+    }
+    outcome = {
+        header = nesnd_usm_outcome_provincial
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_usm_agenda_provincial_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_usm_civic_country = yes NOT = { has_variable = nesnd_usm_mandate_victory } }
+            custom_tooltip = { text = nesnd_usm_agenda_reforms_tt
+                has_variable = nesnd_c2_usm_constitution_done
+                has_variable = nesnd_c2_usm_schools_done
+                has_variable = nesnd_c2_usm_industry_done
+                has_variable = nesnd_c2_usm_distribution_done
+            }
+            custom_tooltip = { text = nesnd_usm_agenda_provincial_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_usm_mandate_bar)" <= nesnd_usm_mandate_provincial_victory_threshold }
+            }
+        }
+        effect = {
+            custom_tooltip = nesnd_usm_agenda_provincial_result_tt
+            hidden_effect = {
+                set_variable = { name = nesnd_usm_mandate_victory value = 2 }
+                nesnd_usm_mandate_apply_tier = { TIER = nesnd_usm_mandate_provincial_2 }
+                if = { limit = { has_variable = nesnd_usm_mandate_central } remove_variable = nesnd_usm_mandate_central }
+                if = { limit = { has_variable = nesnd_usm_mandate_provincial } remove_variable = nesnd_usm_mandate_provincial }
+            }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_journal_closures_usm_agenda_conclusion
         trigger = { custom_tooltip = { text = nesnd_journal_closures_usm_agenda_tt NOT = { nesnd_usm_civic_country = yes } } }
+        effect = {
+            hidden_effect = {
+                nesnd_usm_mandate_clear_modifiers = yes
+                if = { limit = { has_variable = nesnd_usm_mandate_central } remove_variable = nesnd_usm_mandate_central }
+                if = { limit = { has_variable = nesnd_usm_mandate_provincial } remove_variable = nesnd_usm_mandate_provincial }
+            }
+        }
     } }
 
 nesnd_italy_foundations = { group = je_group_historical_content

@@ -6,6 +6,10 @@
 
 ## Notes
 
+- [1.15.1 登莱全链可达性、外交接受分与成功率](issues/15-reachability.md)。
+- 2026-11-12 [16 远北：俄属边地任何民族的起事都推进剧情](issues/16-borderland-risings.md)，游戏外检查通过，待新开局复测。
+- 2026-11-12 [17 远北人口按东西渐变重算](issues/17-far-north-pops-gradient.md)：俄属乌拉尔以东 9 州，东段辽东、西段西北为最大族群，鄂毕、苏尔古特为女真。游戏外检查通过，待新开局复测。
+
 - 定稿见 [spec-v3.md](spec-v3.md) 和 [numbers-v1.md](numbers-v1.md)。第 1 批[雪国共和与迁都](issues/02-snow-republic.md)改用[历史入口](issues/03-opening-and-presidents.md)后，作者截图已确认通商局日志显示。当前待测为[首批文字修订](issues/04-snow-republic-prose.md)、[第 2 批两线与北海公司](issues/05-far-north-and-gold.md)、两位周公的选举保护及[第 3 批复燕与镇压善后](issues/07-restore-eastern-yan.md)。
 - [勘金地点提示与《八州约书》后续文案](issues/08-survey-and-yan-prose.md)已按作者截图与手稿修订。
 - [第 4 批：渡海与齐鲁之约](issues/09-shandong.md)已接入复燕各结局。

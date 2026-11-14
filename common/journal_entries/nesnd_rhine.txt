@@ -1,0 +1,263 @@
+﻿# 莱茵问题（普鲁士一系）与莱茵联邦议会（法兰克福）。
+# 设定出处：《北明ppet》s23 p14、p24；s24 p7、p10、p25、p28；s25 p8、p18。
+
+nesnd_prussian_rhine = {
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+
+	group = je_group_historical_content
+
+	activation_description = {
+		always = yes
+	}
+
+	is_shown_when_inactive = {
+		nesnd_prussian_identity = yes
+		hidden_trigger = { NOT = { has_variable = nesnd_prussian_rhine_settled } }
+		game_date < 1880.1.1
+	}
+
+	possible = {
+		nesnd_prussian_identity = yes
+		custom_tooltip = {
+			text = nesnd_rhine_after_coalition_tt
+			has_variable = nesnd_prussian_coalition_done
+		}
+		hidden_trigger = { NOT = { has_variable = nesnd_prussian_rhine_settled } }
+		game_date < 1880.1.1
+	}
+
+	immediate = {
+		c:FRM ?= { save_scope_as = nesnd_rhine_frm }
+		c:FRA ?= { save_scope_as = nesnd_rhine_fra }
+	}
+
+	scripted_button = nesnd_rhine_shelter_exiles
+	scripted_button = nesnd_rhine_mobilize
+
+	on_monthly_pulse = {
+		effect = {
+			c:FRM ?= { save_scope_as = nesnd_rhine_frm }
+			c:FRA ?= { save_scope_as = nesnd_rhine_fra }
+		}
+		random_events = {
+			100 = 0
+			3 = nesnd_rhine.11
+			3 = nesnd_rhine.12
+			3 = nesnd_rhine.13
+		}
+	}
+
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = nesnd_rhine_success_tt
+				OR = {
+					c:GER ?= this
+					calc_true_if = {
+						amount >= 3
+						s:STATE_RHINELAND = { NOT = { any_scope_state = { NOT = { owner = { OR = { this = root is_subject_of = root } } } } } }
+						s:STATE_NORTH_RHINE = { NOT = { any_scope_state = { NOT = { owner = { OR = { this = root is_subject_of = root } } } } } }
+						s:STATE_RUHR = { NOT = { any_scope_state = { NOT = { owner = { OR = { this = root is_subject_of = root } } } } } }
+						s:STATE_WESTPHALIA = { NOT = { any_scope_state = { NOT = { owner = { OR = { this = root is_subject_of = root } } } } } }
+					}
+				}
+			}
+		}
+		effect = {
+			set_variable = nesnd_prussian_rhine_settled
+			add_modifier = { name = nesnd_prussian_rhine_settlement months = 60 }
+			trigger_event = { id = nesnd_rhine.1 popup = yes }
+		}
+	}
+
+	outcome = {
+		header = je_standard_failure_header
+		effect_header = je_standard_on_failure_header
+		color = "blue_negative"
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = nesnd_rhine_deadline_tt
+				game_date >= 1880.1.1
+			}
+		}
+		effect = {
+			set_variable = nesnd_prussian_rhine_settled
+			trigger_event = { id = nesnd_rhine.2 popup = yes }
+		}
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = nesnd_prussian_identity_lost_tt
+				NOT = { nesnd_prussian_identity = yes }
+			}
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = nesnd_rhine_status_france_distracted
+				trigger = { nesnd_rhine_france_distracted = yes }
+			}
+			triggered_desc = {
+				desc = nesnd_rhine_status_parliament
+				trigger = { nesnd_rhine_parliament_nationalist = yes }
+			}
+			triggered_desc = {
+				desc = nesnd_rhine_status_waiting
+			}
+		}
+	}
+
+	weight = 850
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	can_revolution_inherit = no
+}
+
+nesnd_frm_parliament = {
+	icon = "gfx/interface/icons/event_icons/event_election.dds"
+
+	group = je_group_historical_content
+
+	activation_description = {
+		always = yes
+	}
+
+	is_shown_when_inactive = {
+		custom_tooltip = {
+			text = nesnd_frm_identity_tt
+			has_variable = ce_confederate_of_rhein_country
+		}
+		hidden_trigger = { NOT = { has_variable = nesnd_frm_parliament_done } }
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = nesnd_frm_identity_tt
+			has_variable = ce_confederate_of_rhein_country
+		}
+		hidden_trigger = { NOT = { has_variable = nesnd_frm_parliament_done } }
+	}
+
+	immediate = {
+		c:FRA ?= { save_scope_as = nesnd_rhine_fra }
+	}
+
+	scripted_progress_bar = nesnd_frm_leaning
+
+	scripted_button = nesnd_frm_request_garrison
+
+	on_monthly_pulse = {
+		effect = {
+			c:FRA ?= { save_scope_as = nesnd_rhine_fra }
+			if = {
+				limit = {
+					game_date >= 1843.1.1
+					NOT = { has_variable = nesnd_frm_jahrbucher_decided }
+				}
+				set_variable = nesnd_frm_jahrbucher_decided
+				trigger_event = { id = nesnd_rhine.21 popup = yes }
+			}
+			else_if = {
+				limit = {
+					game_date >= 1848.1.1
+					has_variable = nesnd_frm_jahrbucher_allowed
+					NOT = { has_variable = nesnd_frm_marx_decided }
+				}
+				set_variable = nesnd_frm_marx_decided
+				trigger_event = { id = nesnd_rhine.22 popup = yes }
+			}
+			else_if = {
+				limit = {
+					game_date >= 1890.1.1
+					NOT = { has_variable = nesnd_frm_commune_decided }
+					any_scope_state = { turmoil >= 0.2 }
+				}
+				set_variable = nesnd_frm_commune_decided
+				trigger_event = { id = nesnd_rhine.24 popup = yes }
+			}
+		}
+	}
+
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = nesnd_frm_nationalist_tt
+				je:nesnd_frm_parliament ?= {
+					"scripted_bar_progress(nesnd_frm_leaning)" >= 90
+				}
+			}
+		}
+		effect = {
+			set_variable = nesnd_frm_parliament_done
+			set_variable = nesnd_frm_nationalist_parliament
+			trigger_event = { id = nesnd_rhine.23 popup = yes }
+		}
+	}
+
+	outcome = {
+		header = je_standard_failure_header
+		effect_header = je_standard_on_failure_header
+		color = "blue_negative"
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = nesnd_frm_deadline_tt
+				game_date >= 1900.1.1
+			}
+		}
+		effect = {
+			set_variable = nesnd_frm_parliament_done
+		}
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = nesnd_frm_identity_lost_tt
+				NOT = { has_variable = ce_confederate_of_rhein_country }
+			}
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = nesnd_frm_status_nationalist
+				trigger = {
+					je:nesnd_frm_parliament ?= { "scripted_bar_progress(nesnd_frm_leaning)" >= 70 }
+				}
+			}
+			triggered_desc = {
+				desc = nesnd_frm_status_french
+				trigger = {
+					je:nesnd_frm_parliament ?= { "scripted_bar_progress(nesnd_frm_leaning)" <= 20 }
+				}
+			}
+			triggered_desc = {
+				desc = nesnd_frm_status_divided
+			}
+		}
+	}
+
+	weight = 800
+
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	can_revolution_inherit = no
+}

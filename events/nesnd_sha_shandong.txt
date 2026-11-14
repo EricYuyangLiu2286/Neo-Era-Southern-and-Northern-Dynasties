@@ -155,29 +155,31 @@ nesnd_sha_qi.9 = {
     placement = root
     title = nesnd_sha_qi.9.t
     desc = nesnd_sha_qi.9.d
+    flavor = nesnd_sha_qi.9.f
     duration = 3
     event_image = { video = "unspecific_signed_contract" }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-    trigger = { exists = c:SHA c:SHA = { has_variable = nesnd_sha_dengzhou_pending var:nesnd_sha_shandong_sister ?= root } }
+    trigger = { nesnd_sha_can_answer_dengzhou = yes }
+    cancellation_trigger = { nesnd_sha_can_answer_dengzhou = no }
     immediate = { c:SHA = { save_scope_as = nesnd_sha_qi_petitioner } }
     option = {
         name = nesnd_sha_qi.9.a
-        trigger = { p:xAC24A6.state ?= { owner = root controls_treaty_port_province = yes is_treaty_port = no } }
+        trigger = { nesnd_sha_can_answer_dengzhou = yes }
         ai_chance = {
             base = 70
             modifier = { trigger = { "relations(c:SHA)" >= relations_threshold:friendly } add = 20 }
         }
         p:xAC24A6.state = { cede_treaty_port = c:SHA }
-        change_relations = { country = c:SHA value = 20 }
-        hidden_effect = {
-            c:SHA = {
-                remove_variable = nesnd_sha_dengzhou_pending
-                set_variable = nesnd_sha_dengzhou_granted
-            }
+        if = {
+            limit = { p:xAC24A6.state.owner ?= c:SHA }
+            change_relations = { country = c:SHA value = 20 }
+            hidden_effect = { c:SHA = { set_variable = nesnd_sha_dengzhou_granted } }
         }
+        hidden_effect = { c:SHA = { remove_variable = nesnd_sha_dengzhou_pending } }
     }
     option = {
         name = nesnd_sha_qi.9.b
+        trigger = { nesnd_sha_can_answer_dengzhou = yes }
         default_option = yes
         ai_chance = { base = 30 }
         change_relations = { country = c:SHA value = -20 }

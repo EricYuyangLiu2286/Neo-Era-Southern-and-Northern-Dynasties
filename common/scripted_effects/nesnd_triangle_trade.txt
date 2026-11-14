@@ -1,8 +1,9 @@
 ﻿# 北洋 / 西洋三角贸易。KEY = north 或 west。
 # 全局变量：
-#   nesnd_<KEY>_trade_rate_law / _rate_navy   进度条每月来源（进度条 nesnd_<KEY>_trade_bar 自行累加）
-#   nesnd_<KEY>_trade_pop / _source / _dest / _amount  当前订单
-#   nesnd_<KEY>_trade_last        上一单：1 成交，2 无可用成交单，3 目标州不能蓄奴
+#   nesnd_<KEY>_trade_pop_N / _source_N / _dest_N / _amount_N  在途的第 N 单（N = 1–3）
+#   nesnd_<KEY>_trade_speed_N     第 N 单的运输效率（排单时随机 3 / 5 / 7 / 9 / 10）
+#   nesnd_<KEY>_trade_seller_speed_N / _buyer_speed_N  卖方、买方奴隶制法律带来的速度（每月重算）
+#   nesnd_<KEY>_trade_last        最近一次结算结果，失败码见 nesnd_triangle_settle
 #   nesnd_<KEY>_trade_last_moved / _last_dead  上一单运抵人数 / 途中死亡人数
 #   nesnd_<KEY>_trade_ended       日志失效（永久）
 
@@ -13,21 +14,26 @@ nesnd_triangle_set_mode = {
 	remove_variable = nesnd_$KEY$_trade_buying
 	remove_variable = nesnd_$KEY$_trade_selling
 	set_variable = nesnd_$KEY$_trade_$MODE$
+	add_modifier = { name = nesnd_$KEY$_trade_mode_lock months = 3 }
 }
 
 nesnd_triangle_clear_mode = {
+	if = {
+		limit = { has_modifier = nesnd_$KEY$_trade_mode_lock }
+		remove_modifier = nesnd_$KEY$_trade_mode_lock
+	}
 	remove_variable = nesnd_$KEY$_trade_buying
 	remove_variable = nesnd_$KEY$_trade_selling
 }
 
-# 每年为 AI 重设一次模式。双向国取兴趣较高的一边。
+# AI 每年比较买卖意愿。方向未变或未通过转向抽签时保留原选择。
 nesnd_triangle_ai = {
 	every_country = {
 		limit = {
 			is_ai = yes
-			nesnd_triangle_region_country = { KEY = $KEY$ }
+			nesnd_triangle_can_participate = { KEY = $KEY$ }
+			NOT = { has_modifier = nesnd_$KEY$_trade_mode_lock }
 		}
-		nesnd_triangle_clear_mode = { KEY = $KEY$ }
 		set_local_variable = { name = nesnd_ta_buy value = 0 }
 		set_local_variable = { name = nesnd_ta_sell value = 0 }
 		if = {
@@ -43,22 +49,29 @@ nesnd_triangle_ai = {
 				local_var:nesnd_ta_buy > 0
 				local_var:nesnd_ta_buy >= local_var:nesnd_ta_sell
 			}
-			random = {
-				chance = local_var:nesnd_ta_buy
-				nesnd_triangle_set_mode = { KEY = $KEY$ MODE = buying }
+			if = {
+				limit = { NOT = { has_variable = nesnd_$KEY$_trade_buying } }
+				random = {
+					chance = local_var:nesnd_ta_buy
+					nesnd_triangle_set_mode = { KEY = $KEY$ MODE = buying }
+				}
 			}
 		}
 		else_if = {
 			limit = { local_var:nesnd_ta_sell > 0 }
-			random = {
-				chance = local_var:nesnd_ta_sell
-				nesnd_triangle_set_mode = { KEY = $KEY$ MODE = selling }
+			if = {
+				limit = { NOT = { has_variable = nesnd_$KEY$_trade_selling } }
+				random = {
+					chance = local_var:nesnd_ta_sell
+					nesnd_triangle_set_mode = { KEY = $KEY$ MODE = selling }
+				}
 			}
 		}
+		else = { nesnd_triangle_clear_mode = { KEY = $KEY$ } }
 	}
 }
 
-# ---------- 月结：资格、增速、失效 ----------
+# ---------- 月结：资格、失效 ----------
 
 nesnd_triangle_mark = {
 	every_country = {
@@ -99,47 +112,21 @@ nesnd_triangle_mark = {
 	# 资格 c、d：有港口，或有满足其他条件、有港口且未交战的邻国；未禁奴。
 	every_country = {
 		limit = {
-			has_variable = nesnd_$KEY$_trade_member
-			NOT = { has_law_or_variant = law_type:law_slavery_banned }
-			OR = {
-				has_port_country = yes
-				any_country = {
-					has_variable = nesnd_$KEY$_trade_member
-					NOT = { has_law_or_variant = law_type:law_slavery_banned }
-					has_port_country = yes
-					is_adjacent_to_country = prev
-					NOT = { has_war_with = prev }
-				}
-			}
+			nesnd_triangle_can_participate = { KEY = $KEY$ }
 		}
 		set_variable = nesnd_$KEY$_trade_participant
 	}
-	# 增速：基础 1；每个实行奴隶贸易或殖民地奴隶制的参与国 +1；任一参与国实行商业海军 +3。
-	set_global_variable = {
-		name = nesnd_$KEY$_trade_rate_law
-		value = {
-			value = 0
-			every_country = {
-				limit = {
-					has_variable = nesnd_$KEY$_trade_participant
-					OR = {
-						has_law_or_variant = law_type:law_slave_trade
-						has_law_or_variant = law_type:law_colonial_slavery
-					}
-				}
-				add = 1
-			}
-		}
-	}
-	set_global_variable = { name = nesnd_$KEY$_trade_rate_navy value = 0 }
-	if = {
+	# 等资格重算完再清理，保留仍然合格国家的选择和锁定期。
+	every_country = {
 		limit = {
-			any_country = {
-				has_variable = nesnd_$KEY$_trade_participant
-				has_law_or_variant = law_type:law_merchant_navy
+			OR = { has_variable = nesnd_$KEY$_trade_buying has_variable = nesnd_$KEY$_trade_selling }
+			OR = {
+				NOT = { has_variable = nesnd_$KEY$_trade_participant }
+				AND = { has_variable = nesnd_$KEY$_trade_buying nesnd_$KEY$_triangle_can_buy = no }
+				AND = { has_variable = nesnd_$KEY$_trade_selling nesnd_$KEY$_triangle_can_sell = no }
 			}
 		}
-		set_global_variable = { name = nesnd_$KEY$_trade_rate_navy value = 3 }
+		nesnd_triangle_clear_mode = { KEY = $KEY$ }
 	}
 	# 失效：满足 a、b、e 的国家全都已禁奴、已研究人权或没有港口。
 	if = {
@@ -158,23 +145,38 @@ nesnd_triangle_mark = {
 }
 
 # ---------- 订单 ----------
+# 至多三单同时在途，槽位 SLOT = 1、2、3，各有一条进度条 nesnd_<KEY>_trade_bar_<SLOT>。
+# 同一对买卖国可以占多单，但同一个 pop 只能进一单。
 
-nesnd_triangle_clear_order = {
-	remove_global_variable = nesnd_$KEY$_trade_pop
-	remove_global_variable = nesnd_$KEY$_trade_source
-	remove_global_variable = nesnd_$KEY$_trade_dest
-	remove_global_variable = nesnd_$KEY$_trade_amount
+nesnd_triangle_clear_slot = {
+	remove_global_variable = nesnd_$KEY$_trade_seller_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_buyer_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_culture_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_religion_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_pop_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_source_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_dest_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_amount_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_speed_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_seller_speed_$SLOT$
+	remove_global_variable = nesnd_$KEY$_trade_buyer_speed_$SLOT$
 }
 
-# 一次只搬一个 pop：该 pop 的十分之一，以迁出州人口的 1% 与 20,000 人封顶。
+nesnd_triangle_clear_order = {
+	nesnd_triangle_clear_slot = { KEY = $KEY$ SLOT = 1 }
+	nesnd_triangle_clear_slot = { KEY = $KEY$ SLOT = 2 }
+	nesnd_triangle_clear_slot = { KEY = $KEY$ SLOT = 3 }
+}
+
+# 一单只搬一个 pop：该 pop 的十分之一，以迁出州人口的 1% 与 20,000 人封顶。
 nesnd_triangle_set_amount = {
 	set_global_variable = {
-		name = nesnd_$KEY$_trade_amount
+		name = nesnd_$KEY$_trade_amount_$SLOT$
 		value = {
-			value = global_var:nesnd_$KEY$_trade_pop.total_size
+			value = global_var:nesnd_$KEY$_trade_pop_$SLOT$.total_size
 			multiply = 0.1
 			max = {
-				value = global_var:nesnd_$KEY$_trade_source.state_population
+				value = global_var:nesnd_$KEY$_trade_source_$SLOT$.state_population
 				multiply = 0.01
 			}
 			max = 20000
@@ -183,12 +185,22 @@ nesnd_triangle_set_amount = {
 	}
 }
 
-# 先列出卖方愿卖的人口，再随机抽取至多 10 次，为抽中的人口找买方与目标州。
-nesnd_triangle_pick_order = {
-	nesnd_triangle_clear_order = { KEY = $KEY$ }
+# 买卖双方奴隶制法律带来的速度，每月按现行法律重算。
+nesnd_triangle_refresh_speed = {
+	global_var:nesnd_$KEY$_trade_seller_$SLOT$ ?= {
+		set_global_variable = { name = nesnd_$KEY$_trade_seller_speed_$SLOT$ value = nesnd_triangle_law_speed }
+	}
+	global_var:nesnd_$KEY$_trade_buyer_$SLOT$ ?= {
+		set_global_variable = { name = nesnd_$KEY$_trade_buyer_speed_$SLOT$ value = nesnd_triangle_law_speed }
+	}
+}
+
+# 卖方愿卖的人口清单（临时列表 nesnd_tp_offers），只在同一次效果里有效。
+nesnd_triangle_build_offers = {
 	every_country = {
 		limit = {
-			has_variable = nesnd_$KEY$_trade_participant
+			nesnd_triangle_can_participate = { KEY = $KEY$ }
+			nesnd_$KEY$_triangle_can_sell = yes
 			has_variable = nesnd_$KEY$_trade_selling
 		}
 		save_temporary_scope_as = nesnd_tp_seller
@@ -209,12 +221,32 @@ nesnd_triangle_pick_order = {
 			}
 		}
 	}
+}
+
+# 从清单里随机抽取至多 10 次，为抽中的人口找买方与目标州。已在其他槽位的 pop 不再抽。
+# 排上后随机定下运输效率 3 / 5 / 7 / 9 / 10。
+nesnd_triangle_pick_slot = {
+	nesnd_triangle_clear_slot = { KEY = $KEY$ SLOT = $SLOT$ }
 	while = {
 		count = 10
 		if = {
-			limit = { NOT = { exists = global_var:nesnd_$KEY$_trade_dest } }
+			limit = { NOT = { exists = global_var:nesnd_$KEY$_trade_dest_$SLOT$ } }
 			random_in_list = {
 				list = nesnd_tp_offers
+				limit = {
+					trigger_if = {
+						limit = { exists = global_var:nesnd_$KEY$_trade_pop_1 }
+						NOT = { this = global_var:nesnd_$KEY$_trade_pop_1 }
+					}
+					trigger_if = {
+						limit = { exists = global_var:nesnd_$KEY$_trade_pop_2 }
+						NOT = { this = global_var:nesnd_$KEY$_trade_pop_2 }
+					}
+					trigger_if = {
+						limit = { exists = global_var:nesnd_$KEY$_trade_pop_3 }
+						NOT = { this = global_var:nesnd_$KEY$_trade_pop_3 }
+					}
+				}
 				owner = { save_temporary_scope_as = nesnd_tp_seller }
 				culture = { save_temporary_scope_as = nesnd_tp_culture }
 				religion = { save_temporary_scope_as = nesnd_tp_religion }
@@ -224,8 +256,7 @@ nesnd_triangle_pick_order = {
 							nesnd_triangle_buyer = { KEY = $KEY$ SELLER = scope:nesnd_tp_seller CULT = scope:nesnd_tp_culture REL = scope:nesnd_tp_religion }
 						}
 					}
-					set_global_variable = { name = nesnd_$KEY$_trade_pop value = this }
-					state = { set_global_variable = { name = nesnd_$KEY$_trade_source value = this } }
+					save_temporary_scope_as = nesnd_tp_pop
 					random_country = {
 						limit = {
 							nesnd_triangle_buyer = { KEY = $KEY$ SELLER = scope:nesnd_tp_seller CULT = scope:nesnd_tp_culture REL = scope:nesnd_tp_religion }
@@ -234,7 +265,13 @@ nesnd_triangle_pick_order = {
 							limit = {
 								nesnd_triangle_destination = { KEY = $KEY$ CULT = scope:nesnd_tp_culture REL = scope:nesnd_tp_religion }
 							}
-							set_global_variable = { name = nesnd_$KEY$_trade_dest value = this }
+							set_global_variable = { name = nesnd_$KEY$_trade_pop_$SLOT$ value = scope:nesnd_tp_pop }
+							set_global_variable = { name = nesnd_$KEY$_trade_source_$SLOT$ value = scope:nesnd_tp_pop.state }
+							set_global_variable = { name = nesnd_$KEY$_trade_seller_$SLOT$ value = scope:nesnd_tp_seller }
+							set_global_variable = { name = nesnd_$KEY$_trade_buyer_$SLOT$ value = owner }
+							set_global_variable = { name = nesnd_$KEY$_trade_culture_$SLOT$ value = scope:nesnd_tp_culture }
+							set_global_variable = { name = nesnd_$KEY$_trade_religion_$SLOT$ value = scope:nesnd_tp_religion }
+							set_global_variable = { name = nesnd_$KEY$_trade_dest_$SLOT$ value = this }
 						}
 					}
 				}
@@ -242,11 +279,48 @@ nesnd_triangle_pick_order = {
 		}
 	}
 	if = {
-		limit = { exists = global_var:nesnd_$KEY$_trade_dest }
-		nesnd_triangle_set_amount = { KEY = $KEY$ }
+		limit = { exists = global_var:nesnd_$KEY$_trade_dest_$SLOT$ }
+		nesnd_triangle_set_amount = { KEY = $KEY$ SLOT = $SLOT$ }
+		random_list = {
+			20 = { set_global_variable = { name = nesnd_$KEY$_trade_speed_$SLOT$ value = 3 } }
+			20 = { set_global_variable = { name = nesnd_$KEY$_trade_speed_$SLOT$ value = 5 } }
+			20 = { set_global_variable = { name = nesnd_$KEY$_trade_speed_$SLOT$ value = 7 } }
+			20 = { set_global_variable = { name = nesnd_$KEY$_trade_speed_$SLOT$ value = 9 } }
+			20 = { set_global_variable = { name = nesnd_$KEY$_trade_speed_$SLOT$ value = 10 } }
+		}
+		nesnd_triangle_refresh_speed = { KEY = $KEY$ SLOT = $SLOT$ }
 	}
 	else = {
-		nesnd_triangle_clear_order = { KEY = $KEY$ }
+		nesnd_triangle_clear_slot = { KEY = $KEY$ SLOT = $SLOT$ }
+	}
+}
+
+# 为空着的槽位排单。参与国里同时有买方和卖方时才列人口，否则不遍历。
+nesnd_triangle_fill_slots = {
+	if = {
+		limit = {
+			NOT = { has_global_variable = nesnd_$KEY$_trade_ended }
+			OR = {
+				NOT = { has_global_variable = nesnd_$KEY$_trade_amount_1 }
+				NOT = { has_global_variable = nesnd_$KEY$_trade_amount_2 }
+				NOT = { has_global_variable = nesnd_$KEY$_trade_amount_3 }
+			}
+			any_country = { has_variable = nesnd_$KEY$_trade_participant has_variable = nesnd_$KEY$_trade_buying }
+			any_country = { has_variable = nesnd_$KEY$_trade_participant has_variable = nesnd_$KEY$_trade_selling }
+		}
+		nesnd_triangle_build_offers = { KEY = $KEY$ }
+		if = {
+			limit = { NOT = { has_global_variable = nesnd_$KEY$_trade_amount_1 } }
+			nesnd_triangle_pick_slot = { KEY = $KEY$ SLOT = 1 }
+		}
+		if = {
+			limit = { NOT = { has_global_variable = nesnd_$KEY$_trade_amount_2 } }
+			nesnd_triangle_pick_slot = { KEY = $KEY$ SLOT = 2 }
+		}
+		if = {
+			limit = { NOT = { has_global_variable = nesnd_$KEY$_trade_amount_3 } }
+			nesnd_triangle_pick_slot = { KEY = $KEY$ SLOT = 3 }
+		}
 	}
 }
 
@@ -269,19 +343,20 @@ nesnd_triangle_count_arrivals = {
 # 迁入者与目标州原有奴隶合并也无妨，故按前后人数核对。
 # 死亡率随机取 0 / 25% / 50% / 75%，在目标州该文化宗教的奴隶中扣除。
 nesnd_triangle_trade = {
-	nesnd_triangle_set_amount = { KEY = $KEY$ }
-	set_local_variable = { name = nesnd_tt_requested value = global_var:nesnd_$KEY$_trade_amount }
-	random_list = {
-		25 = { set_local_variable = { name = nesnd_tt_death_rate value = 0 } }
-		25 = { set_local_variable = { name = nesnd_tt_death_rate value = 0.25 } }
-		25 = { set_local_variable = { name = nesnd_tt_death_rate value = 0.5 } }
-		25 = { set_local_variable = { name = nesnd_tt_death_rate value = 0.75 } }
+	set_local_variable = { name = nesnd_tt_requested value = global_var:nesnd_$KEY$_trade_amount_$SLOT$ }
+	set_local_variable = {
+		name = nesnd_tt_death_rate
+		value = { integer_range = { min = 0 max = 3 } multiply = 0.25 }
 	}
 	nesnd_triangle_count_arrivals = { COUNT = nesnd_tt_before }
 	if = {
 		limit = { local_var:nesnd_tt_requested >= 1 }
 		scope:nesnd_tt_pop = {
-			move_partial_pop = { state = scope:nesnd_tt_dest population = local_var:nesnd_tt_requested }
+			if = {
+				limit = { total_size = local_var:nesnd_tt_requested }
+				move_pop = scope:nesnd_tt_dest
+			}
+			else = { move_partial_pop = { state = scope:nesnd_tt_dest population = local_var:nesnd_tt_requested } }
 		}
 		scope:nesnd_tt_dest = {
 			every_scope_pop = {
@@ -349,46 +424,132 @@ nesnd_triangle_trade = {
 			trigger_event = { id = nesnd_triangle_trade.2 }
 		}
 	}
+	else = { set_global_variable = { name = nesnd_$KEY$_trade_last value = 19 } }
 }
 
-# 由日志周脉冲在 journal_entry 作用域调用（进度满 100 时），结算后清零进度条。
+# 由日志周脉冲在 journal_entry 作用域调用（第 SLOT 条进度满 100 时）。
+# 按排单时的对象逐项复核，先检查可解析的对象，再读取归属与政策。
 nesnd_triangle_settle = {
-	set_global_variable = { name = nesnd_$KEY$_trade_last value = 2 }
 	if = {
-		limit = {
-			exists = global_var:nesnd_$KEY$_trade_pop
-			exists = global_var:nesnd_$KEY$_trade_source
-			exists = global_var:nesnd_$KEY$_trade_dest
-		}
-		global_var:nesnd_$KEY$_trade_pop = {
-			save_scope_as = nesnd_tt_pop
-			culture = { save_scope_as = nesnd_tt_culture }
-			religion = { save_scope_as = nesnd_tt_religion }
-		}
-		global_var:nesnd_$KEY$_trade_source = {
-			save_scope_as = nesnd_tt_source
-			owner = { save_scope_as = nesnd_tt_seller }
-		}
-		global_var:nesnd_$KEY$_trade_dest = {
-			save_scope_as = nesnd_tt_dest
-			owner = { save_scope_as = nesnd_tt_buyer }
-		}
-		if = {
-			limit = { scope:nesnd_tt_dest = { nesnd_triangle_state_takes_slaves = no } }
-			set_global_variable = { name = nesnd_$KEY$_trade_last value = 3 }
-		}
-		else_if = {
-			limit = { nesnd_triangle_order_valid = { KEY = $KEY$ } }
-			nesnd_triangle_trade = { KEY = $KEY$ }
-		}
+		limit = { NOT = { exists = global_var:nesnd_$KEY$_trade_pop_$SLOT$ } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 4 }
 	}
-	# 失败时保留原订单的买卖双方供正文显示。
-	if = {
-		limit = { global_var:nesnd_$KEY$_trade_last = 3 }
-		set_global_variable = { name = nesnd_$KEY$_trade_failed_dest value = global_var:nesnd_$KEY$_trade_dest }
+	else_if = {
+		limit = { NOT = { exists = global_var:nesnd_$KEY$_trade_source_$SLOT$.owner } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 5 }
 	}
-	set_bar_progress = { name = nesnd_$KEY$_trade_bar value = 0 }
-	nesnd_triangle_pick_order = { KEY = $KEY$ }
+	else_if = {
+		limit = { NOT = { exists = global_var:nesnd_$KEY$_trade_dest_$SLOT$.owner } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 6 }
+	}
+	else_if = {
+		limit = { NOT = { exists = global_var:nesnd_$KEY$_trade_seller_$SLOT$ } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 7 }
+	}
+	else_if = {
+		limit = { NOT = { exists = global_var:nesnd_$KEY$_trade_buyer_$SLOT$ } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 8 }
+	}
+	else_if = {
+		limit = { NOT = { global_var:nesnd_$KEY$_trade_source_$SLOT$ = { owner = global_var:nesnd_$KEY$_trade_seller_$SLOT$ } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 9 }
+	}
+	else_if = {
+		limit = { NOT = { global_var:nesnd_$KEY$_trade_dest_$SLOT$ = { owner = global_var:nesnd_$KEY$_trade_buyer_$SLOT$ } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 10 }
+	}
+	else_if = {
+		limit = { NOT = { global_var:nesnd_$KEY$_trade_pop_$SLOT$ = { state = global_var:nesnd_$KEY$_trade_source_$SLOT$ } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 11 }
+	}
+	else_if = {
+		limit = { NAND = { exists = global_var:nesnd_$KEY$_trade_culture_$SLOT$ exists = global_var:nesnd_$KEY$_trade_religion_$SLOT$ } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 20 }
+	}
+	else_if = {
+		limit = { NOT = { global_var:nesnd_$KEY$_trade_pop_$SLOT$ = { culture = global_var:nesnd_$KEY$_trade_culture_$SLOT$ religion = global_var:nesnd_$KEY$_trade_religion_$SLOT$ } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 20 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_seller_$SLOT$ = { has_law_or_variant = law_type:law_slavery_banned } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 21 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_buyer_$SLOT$ = { has_law_or_variant = law_type:law_slavery_banned } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 22 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_dest_$SLOT$ = { nesnd_triangle_state_takes_slaves = no } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 3 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_seller_$SLOT$ = { NOT = { nesnd_triangle_can_participate = { KEY = $KEY$ } } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 12 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_buyer_$SLOT$ = { NOT = { nesnd_triangle_can_participate = { KEY = $KEY$ } } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 13 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_seller_$SLOT$ = { NOT = { has_variable = nesnd_$KEY$_trade_selling } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 14 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_buyer_$SLOT$ = { NOT = { has_variable = nesnd_$KEY$_trade_buying } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 15 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_buyer_$SLOT$ = { has_war_with = global_var:nesnd_$KEY$_trade_seller_$SLOT$ } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 16 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_dest_$SLOT$ = { nesnd_triangle_has_free_residents = { CULT = global_var:nesnd_$KEY$_trade_culture_$SLOT$ REL = global_var:nesnd_$KEY$_trade_religion_$SLOT$ } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 17 }
+	}
+	else_if = {
+		limit = { NOT = { has_global_variable = nesnd_$KEY$_trade_amount_$SLOT$ } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 18 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_amount_$SLOT$ < 1 }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 18 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_pop_$SLOT$ = { total_size < global_var:nesnd_$KEY$_trade_amount_$SLOT$ } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 18 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_seller_$SLOT$ = { nesnd_$KEY$_triangle_can_sell = no } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 23 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_buyer_$SLOT$ = { nesnd_$KEY$_triangle_can_buy = no } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 24 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_seller_$SLOT$ = { NOT = { nesnd_$KEY$_triangle_accepts_culture = { CULT = global_var:nesnd_$KEY$_trade_culture_$SLOT$ } } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 25 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_buyer_$SLOT$ = { NOT = { nesnd_$KEY$_triangle_accepts_culture = { CULT = global_var:nesnd_$KEY$_trade_culture_$SLOT$ } } } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 26 }
+	}
+	else_if = {
+		limit = { global_var:nesnd_$KEY$_trade_pop_$SLOT$ = { nesnd_$KEY$_triangle_seller_pop = no } }
+		set_global_variable = { name = nesnd_$KEY$_trade_last value = 27 }
+	}
+	else = {
+		global_var:nesnd_$KEY$_trade_pop_$SLOT$ = { save_scope_as = nesnd_tt_pop }
+		global_var:nesnd_$KEY$_trade_source_$SLOT$ = { save_scope_as = nesnd_tt_source }
+		global_var:nesnd_$KEY$_trade_dest_$SLOT$ = { save_scope_as = nesnd_tt_dest }
+		global_var:nesnd_$KEY$_trade_seller_$SLOT$ = { save_scope_as = nesnd_tt_seller }
+		global_var:nesnd_$KEY$_trade_buyer_$SLOT$ = { save_scope_as = nesnd_tt_buyer }
+		global_var:nesnd_$KEY$_trade_culture_$SLOT$ = { save_scope_as = nesnd_tt_culture }
+		global_var:nesnd_$KEY$_trade_religion_$SLOT$ = { save_scope_as = nesnd_tt_religion }
+		nesnd_triangle_trade = { KEY = $KEY$ SLOT = $SLOT$ }
+	}
+	set_bar_progress = { name = nesnd_$KEY$_trade_bar_$SLOT$ value = 0 }
+	nesnd_triangle_clear_slot = { KEY = $KEY$ SLOT = $SLOT$ }
 }
 
 # ---------- 日志脉冲（journal_entry 作用域） ----------
@@ -414,9 +575,18 @@ nesnd_triangle_month = {
 			nesnd_triangle_ai = { KEY = $KEY$ }
 		}
 		if = {
-			limit = { NOT = { exists = global_var:nesnd_$KEY$_trade_dest } }
-			nesnd_triangle_pick_order = { KEY = $KEY$ }
+			limit = { exists = global_var:nesnd_$KEY$_trade_dest_1 }
+			nesnd_triangle_refresh_speed = { KEY = $KEY$ SLOT = 1 }
 		}
+		if = {
+			limit = { exists = global_var:nesnd_$KEY$_trade_dest_2 }
+			nesnd_triangle_refresh_speed = { KEY = $KEY$ SLOT = 2 }
+		}
+		if = {
+			limit = { exists = global_var:nesnd_$KEY$_trade_dest_3 }
+			nesnd_triangle_refresh_speed = { KEY = $KEY$ SLOT = 3 }
+		}
+		nesnd_triangle_fill_slots = { KEY = $KEY$ }
 	}
 }
 
@@ -441,11 +611,8 @@ nesnd_triangle_end = {
 		nesnd_triangle_clear_mode = { KEY = $KEY$ }
 	}
 	nesnd_triangle_clear_order = { KEY = $KEY$ }
-	remove_global_variable = nesnd_$KEY$_trade_rate_law
-	remove_global_variable = nesnd_$KEY$_trade_rate_navy
 	remove_global_variable = nesnd_$KEY$_trade_last
 	remove_global_variable = nesnd_$KEY$_trade_last_moved
 	remove_global_variable = nesnd_$KEY$_trade_last_dead
-	remove_global_variable = nesnd_$KEY$_trade_failed_dest
 	remove_global_variable = nesnd_$KEY$_trade_ai_seeded
 }

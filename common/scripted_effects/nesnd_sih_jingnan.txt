@@ -1,0 +1,171 @@
+﻿# Shu (SIH) in the Second Jingnan War: regime choice, surrender and the rally that follows a decision to fight on.
+
+# Country scope (Shu). Shared by Xiao Huli's stand, Wei Jian's seizure and the foreign-backed seizure:
+# six months before the capital-defeat check resumes, one occupied state returned, twenty battalions raised there.
+nesnd_sih_rally = {
+    remove_variable = nesnd_sih_regime_pending
+    set_variable = { name = nesnd_sih_grace months = 6 }
+    clear_saved_scope = nesnd_sih_rally_state
+    clear_saved_scope = nesnd_sih_rally_occupier
+    # Chengdu first, then any other occupied state. A state is returned only if its occupier owns nothing else
+    # in that state region, so the round trip below cannot merge the occupier's own land into Shu.
+    every_scope_state = {
+        limit = { exists = controller NOT = { controller = owner } }
+        controller = { save_temporary_scope_as = nesnd_sih_candidate_occupier }
+        if = {
+            limit = { state_region = { NOT = { any_scope_state = { owner = scope:nesnd_sih_candidate_occupier } } } }
+            add_to_temporary_list = nesnd_sih_rally_candidates
+        }
+    }
+    if = {
+        limit = { any_in_list = { list = nesnd_sih_rally_candidates state_region = s:STATE_SICHUAN } }
+        random_in_list = { list = nesnd_sih_rally_candidates limit = { state_region = s:STATE_SICHUAN } save_scope_as = nesnd_sih_rally_state }
+    }
+    else_if = {
+        limit = { any_in_list = { list = nesnd_sih_rally_candidates } }
+        random_in_list = { list = nesnd_sih_rally_candidates save_scope_as = nesnd_sih_rally_state }
+    }
+    if = {
+        limit = { exists = scope:nesnd_sih_rally_state }
+        scope:nesnd_sih_rally_state = {
+            controller = { save_scope_as = nesnd_sih_rally_occupier }
+            # No effect sets a controller. Ownership passes to the occupier and straight back, and control returns with it.
+            set_state_owner = scope:nesnd_sih_rally_occupier
+            set_state_owner = root
+            set_state_type = incorporated
+        }
+    }
+    else_if = {
+        limit = { any_scope_state = { state_region = s:STATE_SICHUAN } }
+        random_scope_state = { limit = { state_region = s:STATE_SICHUAN } save_scope_as = nesnd_sih_rally_state }
+    }
+    else = {
+        capital ?= { save_scope_as = nesnd_sih_rally_state }
+    }
+    if = {
+        limit = { exists = scope:nesnd_sih_rally_state scope:nesnd_sih_rally_state = { owner = root } }
+        create_military_formation = {
+            type = army
+            hq_region = scope:nesnd_sih_rally_state.region
+            combat_unit = {
+                type = unit_type:combat_unit_type_line_infantry
+                service_type = regular
+                state_region = scope:nesnd_sih_rally_state.state_region
+                count = 20
+            }
+        }
+    }
+}
+
+# Country scope (Shu). Liu Zhongming and Xiao Huli carry on the war. The option adds nesnd_sih_xiao_holds itself.
+nesnd_sih_xiao_stands = {
+    set_variable = { name = nesnd_sih_regime value = 1 }
+    nesnd_sih_rally = yes
+}
+
+# Country scope (Shu). Wei Jian takes the throne. The sitting ruler sails out of Chengdu into exile.
+# The option adds nesnd_sih_wei_rules itself.
+nesnd_sih_wei_seizes = {
+    clear_saved_scope = nesnd_sih_wei
+    clear_saved_scope = nesnd_sih_fled_ruler
+    random_scope_character = {
+        limit = { has_template = USM_wei_jian is_character_alive = yes }
+        save_scope_as = nesnd_sih_wei
+    }
+    if = {
+        limit = { exists = scope:nesnd_sih_wei }
+        ruler ?= {
+            if = { limit = { NOT = { this = scope:nesnd_sih_wei } } save_scope_as = nesnd_sih_fled_ruler }
+        }
+        scope:nesnd_sih_wei = { set_character_as_ruler = yes }
+        scope:nesnd_sih_fled_ruler ?= {
+            if = {
+                limit = { is_character_alive = yes is_ruler_of_own_country = no }
+                exile_character_with_role_cleanup = yes
+            }
+        }
+        set_variable = { name = nesnd_sih_regime value = 3 }
+        nesnd_sih_rally = yes
+    }
+}
+
+# Country scope (Shu), called before nesnd_commit_rebel_settlement when Shu restores the Ming.
+# Shu's former ruler (Liu Zhongming or Wei Jian) leads his own interest group as a noble, as in nesnd_celestial_collapse.3.
+nesnd_sih_former_ruler_to_ig = {
+    if = {
+        limit = {
+            c:SIH ?= this
+            exists = var:nesnd_ming_local_ruler_ref
+            var:nesnd_ming_local_ruler_ref = { is_character_alive = yes is_ruler_of_own_country = no owner ?= root }
+        }
+        var:nesnd_ming_local_ruler_ref = {
+            save_scope_as = nesnd_sih_former_ruler
+            interest_group ?= {
+                leader ?= {
+                    if = {
+                        limit = { NOT = { this = scope:nesnd_sih_former_ruler } }
+                        remove_as_interest_group_leader = yes
+                        if = { limit = { NOT = { has_role = character_role_politician } } add_character_role = character_role_politician }
+                        set_is_noble = yes
+                    }
+                }
+            }
+            if = { limit = { NOT = { has_role = character_role_politician } } add_character_role = character_role_politician }
+            set_as_interest_group_leader = yes
+            set_is_noble = yes
+        }
+    }
+}
+
+# Country scope (Shu). Each officer flees (65), dies (30) or stays and submits with the court (5).
+# The fate is kept on Shu for the notice event: 1 fled, 2 killed, 3 stayed.
+nesnd_sih_scatter_officer = {
+    clear_saved_scope = nesnd_sih_scattered
+    random_scope_character = {
+        limit = { has_template = $TEMPLATE$ is_character_alive = yes }
+        save_scope_as = nesnd_sih_scattered
+    }
+    if = {
+        limit = { exists = scope:nesnd_sih_scattered }
+        random_list = {
+            65 = {
+                set_variable = { name = nesnd_sih_fate_$KEY$ value = 1 }
+                scope:nesnd_sih_scattered = { exile_character_with_role_cleanup = yes }
+            }
+            30 = {
+                set_variable = { name = nesnd_sih_fate_$KEY$ value = 2 }
+                scope:nesnd_sih_scattered = { kill_character = yes }
+            }
+            5 = {
+                set_variable = { name = nesnd_sih_fate_$KEY$ value = 3 }
+            }
+        }
+    }
+}
+
+# Country scope (Shu). Liu Zhongming submits: every state but Chengdu goes to Wu as an incorporated state,
+# Shu becomes Wu's dominion and leaves the rebel side.
+nesnd_sih_surrender = {
+    clear_saved_scope = nesnd_sih_new_overlord
+    c:USM ?= { if = { limit = { is_country_alive = yes } save_scope_as = nesnd_sih_new_overlord } }
+    if = {
+        limit = { exists = scope:nesnd_sih_new_overlord any_scope_state = { state_region = s:STATE_SICHUAN } }
+        remove_variable = nesnd_sih_regime_pending
+        set_variable = { name = nesnd_sih_regime value = 2 }
+        set_variable = nesnd_sih_surrendered
+        every_scope_state = {
+            limit = { NOT = { state_region = s:STATE_SICHUAN } }
+            set_state_owner = scope:nesnd_sih_new_overlord
+            set_state_type = incorporated
+        }
+        remove_variable = usm_opposition_country
+        remove_variable = usm_opposition_country_leader_var
+        remove_variable = nesnd_restoration_side
+        remove_variable = ce_usm_republican_revolution_tag
+        set_variable = { name = nesnd_south_stance value = 2 }
+        scope:nesnd_sih_new_overlord = { create_diplomatic_pact = { country = root type = dominion } }
+        nesnd_sih_scatter_officer = { TEMPLATE = USM_wei_jian KEY = wei_jian }
+        nesnd_sih_scatter_officer = { TEMPLATE = USM_xiao_huli KEY = xiao_huli }
+        nesnd_sih_scatter_officer = { TEMPLATE = USM_xiao_xinghua KEY = xiao_xinghua }
+    }
+}

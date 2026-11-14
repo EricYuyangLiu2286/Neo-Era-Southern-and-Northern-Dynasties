@@ -1,0 +1,73 @@
+﻿# The 26 state regions of "Unify the South": mainland and Taiwan states held in 1836 by the Ming federation (USM)
+# and its Shu, Chu and Huai domains. Tonkin, Songjiang, northern Anhui, Hanzhong and overseas states are excluded.
+
+# State scope.
+nesnd_unify_south_state = {
+    OR = {
+        state_region = s:STATE_SICHUAN
+        state_region = s:STATE_CHONGQING
+        state_region = s:STATE_CHUANNAN
+        state_region = s:STATE_ZITONG
+        state_region = s:STATE_GUIZHOU
+        state_region = s:STATE_YUNNAN
+        state_region = s:STATE_EASTERN_HUBEI
+        state_region = s:STATE_WESTERN_HUBEI
+        state_region = s:STATE_XIANGYANG
+        state_region = s:STATE_HUNAN
+        state_region = s:STATE_GUANGXI
+        state_region = s:STATE_GUILIN
+        state_region = s:STATE_GUANGDONG
+        state_region = s:STATE_GAOLIANG
+        state_region = s:STATE_SHAOZHOU
+        state_region = s:STATE_HAINAN
+        state_region = s:STATE_FORMOSA
+        state_region = s:STATE_FUJIAN
+        state_region = s:STATE_NORTHERN_FUJIAN
+        state_region = s:STATE_GANZHOU
+        state_region = s:STATE_JIANGXI
+        state_region = s:STATE_ZHEJIANG
+        state_region = s:STATE_SUZHOU
+        state_region = s:STATE_JIANGSU
+        state_region = s:STATE_NANJING
+        state_region = s:STATE_SOUTHERN_ANHUI
+    }
+}
+
+# Country scope. The south is at a standstill after the Jingnan War, outside the stalemates the existing journals already handle.
+nesnd_unify_south_stalemate = {
+    OR = { has_global_variable = nesnd_south_settled has_global_variable = usm_civilwar_status_quo }
+    NOR = {
+        has_journal_entry = nesnd_south_holdout_campaign
+        has_journal_entry = nesnd_ming_after_truce
+        has_journal_entry = nesnd_south_reconciliation
+    }
+    nesnd_unify_south_held < 26
+}
+
+# Country scope. A southern regime that took part in the settlement or rebuilt the Ming.
+nesnd_unify_south_eligible = {
+    is_country_alive = yes
+    is_subject = no
+    has_variable = nesnd_south_unifier
+    NOT = { has_variable = nesnd_south_unified_done }
+    OR = { has_global_variable = nesnd_south_settled has_global_variable = usm_civilwar_status_quo }
+    NOR = {
+        has_journal_entry = nesnd_south_holdout_campaign
+        has_journal_entry = nesnd_ming_after_truce
+        has_journal_entry = nesnd_south_reconciliation
+    }
+}
+
+# Country scope. "Rebuild the Ming" decision: a loyalist strong enough in the south while no Ming court and no Wu throne stand.
+nesnd_restore_ming_possible = {
+    nesnd_ming_federation_loyalist = yes
+    is_subject = no
+    NOT = { has_variable = nesnd_ming_federation_founded }
+    NOT = { any_country = { has_variable = nesnd_ming_court } }
+    NOT = { c:USM ?= { is_country_alive = yes has_variable = tag_WUU_var } }
+    nesnd_unify_south_stalemate = yes
+    OR = {
+        owns_entire_state_region = STATE_NANJING
+        nesnd_unify_south_owned >= 8
+    }
+}

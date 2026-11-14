@@ -33,7 +33,25 @@ nesnd_japan_partition_possible = {
                     owns_entire_state_region = STATE_CHUGOKU
                     NOT = { any_scope_state = {
                         nesnd_eastern_archipelago_state = yes
-                        NOR = { controller = owner controller = c:USM }
+                        NOR = {
+                            controller = owner
+                            controller = c:USM
+                            # During enforcement, occupation by Wu's side counts just as it does for the objective.
+                            trigger_if = {
+                                limit = { exists = controller exists = scope:diplomatic_play.war exists = scope:target_country }
+                                scope:target_country = c:JAP
+                                scope:diplomatic_play.war = {
+                                    is_war_participant = c:USM
+                                    is_war_participant = prev.controller
+                                    trigger_if = {
+                                        limit = { is_on_defending_side = c:USM }
+                                        is_on_defending_side = prev.controller
+                                    }
+                                    trigger_else = { NOT = { is_on_defending_side = prev.controller } }
+                                }
+                            }
+                            trigger_else = { always = no }
+                        }
                     } }
                 }
             }

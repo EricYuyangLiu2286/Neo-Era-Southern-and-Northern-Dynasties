@@ -193,18 +193,37 @@ nesnd_triangle_state_takes_slaves = {
 nesnd_triangle_destination = {
 	nesnd_triangle_trade_state = { KEY = $KEY$ }
 	nesnd_triangle_state_takes_slaves = yes
-	NOT = {
-		any_scope_pop = {
-			culture = $CULT$
-			religion = $REL$
-			NOT = { is_pop_type = slaves }
+	NOT = { nesnd_triangle_has_free_residents = { CULT = $CULT$ REL = $REL$ } }
+}
+
+nesnd_triangle_has_free_residents = {
+	any_scope_pop = {
+		culture = $CULT$
+		religion = $REL$
+		NOT = { is_pop_type = slaves }
+	}
+}
+
+nesnd_triangle_can_participate = {
+	nesnd_triangle_region_country = { KEY = $KEY$ }
+	has_variable = nesnd_$KEY$_trade_member
+	NOT = { has_law_or_variant = law_type:law_slavery_banned }
+	OR = {
+		has_port_country = yes
+		any_country = {
+			has_variable = nesnd_$KEY$_trade_member
+			NOT = { has_law_or_variant = law_type:law_slavery_banned }
+			has_port_country = yes
+			is_adjacent_to_country = prev
+			NOT = { has_war_with = prev }
 		}
 	}
 }
 
 # 国家作用域：可作为这一单的买方。SELLER 为卖方。
 nesnd_triangle_buyer = {
-	has_variable = nesnd_$KEY$_trade_participant
+	nesnd_triangle_can_participate = { KEY = $KEY$ }
+	nesnd_$KEY$_triangle_can_buy = yes
 	has_variable = nesnd_$KEY$_trade_buying
 	NOT = { this = $SELLER$ }
 	NOT = { has_war_with = $SELLER$ }
@@ -212,22 +231,17 @@ nesnd_triangle_buyer = {
 	any_scope_state = { nesnd_triangle_destination = { KEY = $KEY$ CULT = $CULT$ REL = $REL$ } }
 }
 
-# 结算时核对订单。需先存 scope:nesnd_tt_pop / _seller / _buyer / _dest / _culture / _religion。
-nesnd_triangle_order_valid = {
-	scope:nesnd_tt_pop = {
-		state = global_var:nesnd_$KEY$_trade_source
-		nesnd_triangle_poor_pop = yes
-		nesnd_$KEY$_triangle_seller_pop = yes
+# 只在锁定期间生成倒计时提示，避免对没有该修正的国家读取期限。
+nesnd_triangle_mode_available = {
+	custom_tooltip = {
+		text = nesnd_triangle_eligible_tt
+		nesnd_triangle_can_participate = { KEY = $KEY$ }
 	}
-	scope:nesnd_tt_seller = {
-		has_variable = nesnd_$KEY$_trade_participant
-		has_variable = nesnd_$KEY$_trade_selling
-		nesnd_$KEY$_triangle_accepts_culture = { CULT = scope:nesnd_tt_culture }
-	}
-	scope:nesnd_tt_buyer = {
-		nesnd_triangle_buyer = { KEY = $KEY$ SELLER = scope:nesnd_tt_seller CULT = scope:nesnd_tt_culture REL = scope:nesnd_tt_religion }
-	}
-	scope:nesnd_tt_dest = {
-		nesnd_triangle_destination = { KEY = $KEY$ CULT = scope:nesnd_tt_culture REL = scope:nesnd_tt_religion }
+	trigger_if = {
+		limit = { has_modifier = nesnd_$KEY$_trade_mode_lock }
+		custom_tooltip = {
+			text = nesnd_$KEY$_trade_mode_locked_tt
+			always = no
+		}
 	}
 }
