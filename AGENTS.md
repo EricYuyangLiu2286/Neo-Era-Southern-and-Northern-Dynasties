@@ -2,7 +2,7 @@
 
 > **开工前检查：每次开始任何工作之前，先做这一步。**
 >
-> 1. 运行 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-workbench/tools/source_deploy/deploy.bat check`；或者直接读取 MOD 文件夹和源目录最外层的 `nesnd_deploy_version.txt`，以及源目录 `update_record.json` 的最后一条记录。
+> 1. 运行 `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-source/deploy.bat check`；或者直接读取 MOD 文件夹和源目录最外层的 `nesnd_deploy_version.txt`，以及源目录 `update_record.json` 的最后一条记录。
 > 2. 三个版本号必须一致。
 > 3. 不一致时，立即停止一切工作。查阅 `update_record.json`，判断是否有奇怪的误差（例如 MOD 文件夹被直接修改、部署中断、时间顺序异常），向用户发出警告，等用户指示后才能继续。不要自行运行 `deploy.bat force`，也不要手工改版本号或记录。
 

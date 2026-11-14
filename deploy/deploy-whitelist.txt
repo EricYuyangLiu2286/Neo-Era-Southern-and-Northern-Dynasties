@@ -1,0 +1,59 @@
+# NESND 部署白名单（deploy.ps1 逐行读取）
+#
+# 唯一标准：游戏或启动器在运行、加载本 MOD 时会不会读取这个文件。会读取的部署，其余一律不部署。
+# 判断不了的写成 doubt：不部署，预览和报告里单独列出。
+#
+# 每行一条：<种类> <路径模式>        行内 # 之后为注释
+#   include  部署匹配的文件
+#   exclude  即使被 include 匹配也不部署（已确认游戏不读取）
+#   doubt    存疑：不部署，单独列出
+# 判定顺序：doubt > exclude > include；三者都不匹配的文件不部署。
+# 路径相对源目录，用 /；* 不跨目录，** 跨任意层目录，? 匹配一个字符；不分大小写。
+# 只写已逐个确认过的扩展名。新增一种文件类型时，先确认游戏会读取，再加一行 include。
+
+# 启动器读取：描述文件与 metadata.json 中 "picture" 指向的封面
+include .metadata/metadata.json
+include thumbnail.png
+
+# 脚本数据库：common 下各数据库目录只加载 .txt
+include common/**/*.txt
+# 事件（含子目录）
+include events/**/*.txt
+# 界面
+include gui/**/*.gui
+# 地图数据（state_regions 等）
+include map_data/**/*.txt
+
+# 本地化：只加载文件名以 _l_<语言>.yml 结尾的文件
+include localization/**/*_l_english.yml
+include localization/**/*_l_simp_chinese.yml
+include localization/**/*_l_braz_por.yml
+include localization/**/*_l_french.yml
+include localization/**/*_l_german.yml
+include localization/**/*_l_japanese.yml
+include localization/**/*_l_korean.yml
+include localization/**/*_l_polish.yml
+include localization/**/*_l_russian.yml
+include localization/**/*_l_spanish.yml
+include localization/**/*_l_turkish.yml
+
+# 美术与地图资源：贴图按引用路径读取；gfx/loadingscreens 下的 .dds 全部自动读取
+include gfx/**/*.dds
+include gfx/**/*.tga
+include gfx/**/*.png
+# gfx 下的脚本：portrait_modifiers、map_object_data 定位点、spline 车辆图形
+include gfx/**/*.txt
+# 主菜单视频（common/themes 引用）
+include gfx/**/*.bik
+# 交通网（覆盖原版同路径文件）
+include gfx/**/*.splnet
+
+# 已确认不读取（这些本来就不被 include 匹配，写在这里只为让判定理由留档）
+# common/**/*.md   原版说明文档的副本，引擎只加载 .txt
+# common/**/*.bak  备份
+exclude common/**/*.md
+exclude common/**/*.bak
+
+# 存疑：贴图只在被引用时读取；以下文件没有任何脚本、界面或原版文件引用
+doubt gfx/coat_of_arms/textured_emblems/V2/*.tga        # 作者原作中的 8 个 V2 徽记，ce_countries.txt 未引用
+doubt gfx/coat_of_arms/colored_emblems/_template.dds    # 徽记模板，未被引用，原版无同名文件

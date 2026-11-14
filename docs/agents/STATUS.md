@@ -16,7 +16,7 @@
 |---|---|---|
 | 源目录 | `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-source` | MOD 全部内容与 Git，唯一工作位置 |
 | MOD 文件夹 | `D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/mod/Neo-Era Southern and Northern Dynasties` | 部署产物，游戏加载目录；不得直接修改 |
-| 部署脚本 | `…/Victoria 3/nesnd-workbench/tools/source_deploy/deploy.bat` | 部署、预览、检查；记录在源目录 `update_record.json` |
+| 部署脚本 | 源目录 `deploy.bat`（实现与白名单在 `deploy/`） | 部署、预览、检查；记录在源目录 `update_record.json` |
 | 远端 | `github.com/EricYuyangLiu2286/Neo-Era-Southern-and-Northern-Dynasties` | 代理用分支，作者合并 |
 | 工作台 | `…/Victoria 3/nesnd-workbench` | 工具、备份、报告、原版基线 |
 | 技能 | `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3`、`nesnd-player-writing` | 仓库副本在 `development/` |
