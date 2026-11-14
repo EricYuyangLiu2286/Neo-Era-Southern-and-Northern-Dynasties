@@ -47,6 +47,27 @@ nesnd_power_deviation = {
 	}
 }
 
+# 空缺时暂停平衡修正。两个人同属最大集团时，两项集团支持度在日志中抵消。
+nesnd_power_contested_deviation = {
+	value = 0
+	if = {
+		limit = { exists = var:nesnd_power_holder_ig OR = { nesnd_power_case_a = yes nesnd_power_case_b = yes } }
+		value = nesnd_power_deviation
+	}
+}
+
+# 将每一侧分成三等档。先取绝对值再向上取整，两端对称。
+nesnd_power_balance_approval = {
+	value = nesnd_power_contested_deviation
+	if = {
+		limit = { nesnd_power_contested_deviation < 0 }
+		multiply = -3
+		ceiling = yes
+		multiply = -1
+	}
+	else = { multiply = 3 ceiling = yes }
+}
+
 # 按 GDP 计的一次性国库收付（宫廷事件用）。
 nesnd_power_treasury_small = { value = gdp multiply = 0.02 min = 5000 }
 nesnd_power_treasury_small_neg = { value = nesnd_power_treasury_small multiply = -1 }

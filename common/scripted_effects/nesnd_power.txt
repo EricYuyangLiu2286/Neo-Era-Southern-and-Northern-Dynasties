@@ -179,7 +179,6 @@ nesnd_power_refresh = {
 		}
 		else = { remove_variable = nesnd_power_relation }
 		nesnd_power_sync_portraits = yes
-		nesnd_power_set_approval = yes
 		nesnd_power_sync_bars = yes
 	}
 }
@@ -209,35 +208,6 @@ nesnd_power_sync_portraits = {
 	else_if = {
 		limit = { has_variable_list = nesnd_power_leader_portrait }
 		clear_variable_list = nesnd_power_leader_portrait
-	}
-}
-
-# 平衡点带来的赞同度（满偏离时）：
-#   情形 A：偏向当权者 → 当权者集团 +2、最大集团 −3；偏向对方 → 当权者集团 −3、最大集团 +2。
-#   情形 B：偏向当权者 → 当权者集团 +2、其余集团 −1；偏向对方 → 当权者集团 −3、其余集团 +1。
-nesnd_power_set_approval = {
-	set_variable = { name = nesnd_power_appr_holder value = 0 }
-	set_variable = { name = nesnd_power_appr_top value = 0 }
-	set_variable = { name = nesnd_power_appr_all value = 0 }
-	if = {
-		limit = { nesnd_power_case_a = yes nesnd_power_deviation >= 0 }
-		set_variable = { name = nesnd_power_appr_holder value = { value = nesnd_power_deviation multiply = 2 } }
-		set_variable = { name = nesnd_power_appr_top value = { value = nesnd_power_deviation multiply = -3 } }
-	}
-	else_if = {
-		limit = { nesnd_power_case_a = yes }
-		set_variable = { name = nesnd_power_appr_holder value = { value = nesnd_power_deviation multiply = 3 } }
-		set_variable = { name = nesnd_power_appr_top value = { value = nesnd_power_deviation multiply = -2 } }
-	}
-	else_if = {
-		limit = { nesnd_power_case_b = yes nesnd_power_deviation >= 0 }
-		set_variable = { name = nesnd_power_appr_holder value = { value = nesnd_power_deviation multiply = 3 } }
-		set_variable = { name = nesnd_power_appr_all value = { value = nesnd_power_deviation multiply = -1 } }
-	}
-	else_if = {
-		limit = { nesnd_power_case_b = yes }
-		set_variable = { name = nesnd_power_appr_holder value = { value = nesnd_power_deviation multiply = 4 } }
-		set_variable = { name = nesnd_power_appr_all value = { value = nesnd_power_deviation multiply = -1 } }
 	}
 }
 
@@ -279,7 +249,6 @@ nesnd_power_month = {
 			limit = { nesnd_power_has_holder = yes }
 			change_variable = { name = nesnd_power_tenure add = 1 }
 		}
-		nesnd_power_set_approval = yes
 		if = {
 			limit = { nesnd_power_i >= 100 }
 			set_variable = { name = nesnd_power_intrigue value = 0 }
@@ -296,7 +265,7 @@ nesnd_power_add = {
 		change_variable = { name = nesnd_power_$BAR$ add = $AMT$ }
 		clamp_variable = { name = nesnd_power_$BAR$ min = 0 max = 100 }
 	}
-	hidden_effect = { nesnd_power_set_approval = yes nesnd_power_sync_bars = yes }
+	hidden_effect = { nesnd_power_sync_bars = yes }
 }
 nesnd_power_sub = {
 	custom_tooltip = {
@@ -304,7 +273,7 @@ nesnd_power_sub = {
 		change_variable = { name = nesnd_power_$BAR$ subtract = $AMT$ }
 		clamp_variable = { name = nesnd_power_$BAR$ min = 0 max = 100 }
 	}
-	hidden_effect = { nesnd_power_set_approval = yes nesnd_power_sync_bars = yes }
+	hidden_effect = { nesnd_power_sync_bars = yes }
 }
 # 平衡点向中点移动 AMT，不越过中点。
 nesnd_power_center = {
@@ -321,14 +290,14 @@ nesnd_power_center = {
 			if = { limit = { nesnd_power_b > 50 } set_variable = { name = nesnd_power_balance value = 50 } }
 		}
 	}
-	hidden_effect = { nesnd_power_set_approval = yes nesnd_power_sync_bars = yes }
+	hidden_effect = { nesnd_power_sync_bars = yes }
 }
 nesnd_power_reset_balance = {
 	custom_tooltip = {
 		text = nesnd_power_reset_balance_tt
 		set_variable = { name = nesnd_power_balance value = 50 }
 	}
-	hidden_effect = { nesnd_power_set_approval = yes nesnd_power_sync_bars = yes }
+	hidden_effect = { nesnd_power_sync_bars = yes }
 }
 nesnd_power_pay = {
 	custom_tooltip = {
