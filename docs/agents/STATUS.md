@@ -7,7 +7,7 @@
 ## 基线
 
 - 游戏：Victoria 3 **1.15.1 Ivan-Chai / Steam build 26591675**。上一基线 1.15.0 / 26453692。[原版覆盖迁移](../../.scratch/migration-1151/issues/02-merge.md)已完成游戏外检查，待作者复测法律生效、分州铜矿及开局历史。
-- Git：分支 `fix/tooltip-concepts-observer-buttons`（2026-11-14）已与主 MOD 逐文件同步，待作者合并入 main；同步工具 `nesnd-workbench/tools/sync_main_mod_to_repo.py`。Git main：2026-11-10 与主 MOD 逐文件同步，主 MOD 的新增、改动与删除均已提交。只在 Git 中的 `development/` 旧参考与 `README.md` 照旧保留。其余分支为历史记录，未合入的内容以主 MOD 为准。
+- Git：2026-11-14 主 MOD 已逐文件同步到 Git 并合入 main（`77b8509`），分支 `fix/tooltip-concepts-observer-buttons` 与 main 相同。同步工具 `nesnd-workbench/tools/sync_main_mod_to_repo.py` 以主 MOD 为准，会删除主 MOD 中没有的文件，发布时移出代理文件期间不要运行。只在 Git 中的 `development/` 旧参考与 `README.md` 照旧保留。
 - metadata 版本 0.2.0，声明支持 1.15.1。
 
 ## 位置
