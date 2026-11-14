@@ -7,7 +7,7 @@
 ## 基线
 
 - 游戏：Victoria 3 **1.15.1 Ivan-Chai / Steam build 26591675**。上一基线 1.15.0 / 26453692。[原版覆盖迁移](../../.scratch/migration-1151/issues/02-merge.md)已完成游戏外检查，待作者复测法律生效、分州铜矿及开局历史。
-- Git main：2026-11-10 与主 MOD 逐文件同步，主 MOD 的新增、改动与删除均已提交。只在 Git 中的 `development/` 旧参考与 `README.md` 照旧保留。其余分支为历史记录，未合入的内容以主 MOD 为准。
+- Git：分支 `fix/tooltip-concepts-observer-buttons`（2026-11-14）已与主 MOD 逐文件同步，待作者合并入 main；同步工具 `nesnd-workbench/tools/sync_main_mod_to_repo.py`。Git main：2026-11-10 与主 MOD 逐文件同步，主 MOD 的新增、改动与删除均已提交。只在 Git 中的 `development/` 旧参考与 `README.md` 照旧保留。其余分支为历史记录，未合入的内容以主 MOD 为准。
 - metadata 版本 0.2.0，声明支持 1.15.1。
 
 ## 位置
@@ -23,6 +23,8 @@
 | 作者原作 | Git tag `original-20261030`（`f18b6c4`） | 风格与设计的样本 |
 
 ## 未完成
+
+2026-11-14 [地权革命悬停丢失与全 MOD 无效概念链接](../../.scratch/debug-release/issues/96-invalid-concepts.md)已完成游戏外检查，待复测；同批给三角贸易按钮加了观察者模式下的空 root 守卫，待观察者模式实测。
 
 [四类加载报错](../../.scratch/debug-release/issues/95-loading-errors.md)已完成游戏外检查。待新开局复测波斯规则、法国失效分支和两种中美洲文化修正。东亚服装重名来自原版与 EACR。
 
