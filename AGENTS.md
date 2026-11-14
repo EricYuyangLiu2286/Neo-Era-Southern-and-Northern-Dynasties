@@ -16,9 +16,20 @@
 
 ## 入口
 
-1. 读技能 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`（仓库副本：`development/nesnd-skill/SKILL.md`）。写玩家文字时另读 `nesnd-player-writing`。
-2. 读 `docs/agents/STATUS.md`：当前基线、未完成事项、各目录位置。
-3. 在 Codex 中开子代理前，读 `docs/agents/gpt_subagent_usage.md`：何时用、各类任务的模型与强度（上限 `gpt-6-astra` / high，不用 Luna）。
+1. 读共用技能 `C:/Users/Eric Liu/.codex/skills/nesnd-victoria3/SKILL.md`（仓库副本：`development/nesnd-skill/SKILL.md`）。
+2. 按任务类型再读对应技能的 `SKILL.md`（都在 `C:/Users/Eric Liu/.codex/skills/` 下），照它列的必读文件做：
+
+   | 任务 | 技能 |
+   |---|---|
+   | 修复报错、崩溃、玩法缺陷 | `nesnd-fix` |
+   | 新建或扩写内容 | `nesnd-new-content` |
+   | 玩家文字 | `nesnd-player-writing` |
+   | 游戏版本迁移 | `nesnd-migration` |
+   | 工具、部署脚本、技能维护 | `nesnd-tools` |
+   | 只分析、出报告 | `nesnd-analysis` |
+
+3. 读 `docs/agents/STATUS.md`：当前基线、未完成事项、各目录位置。
+4. 在 Codex 中开子代理前，读 `docs/agents/gpt_subagent_usage.md`：何时用、各类任务的模型与强度（上限 `gpt-6-astra` / high，不用 Luna）。
 
 维多利亚3本体、所有创意工坊 MOD、旧项目与文案/翻译资料均只读。工坊 MOD 只用于查兼容接口，不学习、不复制其他作者的设计与代码。
 
