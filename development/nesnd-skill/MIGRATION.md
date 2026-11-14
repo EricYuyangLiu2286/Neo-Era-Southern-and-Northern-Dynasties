@@ -215,6 +215,11 @@
 | u:91fa3075 | SKILL.md §6 交付 | 删除 | 重复；四件事在 verification.md §3，“然后更新 STATUS.md”在新 SKILL.md §6 |
 | u:ac167ed1 | SKILL.md §7 维护 | 删除 | 重复；同步规则在 skill-maintenance.md §同步 |
 | u:5eeca787 | nesnd-player-writing SKILL.md §3 末句 | 改写 | 并入新 SKILL.md 路由表“找旧素材”一行 |
+| u:7935d76e | references/character-design.md §二“用于” | 改写（2026-11-14） | 删去工坊 MOD 列宁一例（作者决定技能只引原版和 NESND），补“煽动者后来当君主接第八节”；现在 character-office.md §二 |
+| u:7b7b474f | references/character-design.md §五“用于” | 改写（2026-11-14） | 删去工坊 MOD 银行经理一例，改为周学熙一句；现在 character-office.md §五 |
+| u:30567507 | references/character-design.md §六“用于” | 改写（2026-11-14） | 工坊 MOD 居里一例换成原版沙皇宠臣议程（08_tsarpoints.txt:2678）；现在 character-office.md §六 |
+| u:25ec218f | references/character-design.md 检查清单末条 | 改写（2026-11-14） | 命令出处由研究目录改为 tools.md（person 命令已写入），补变量列表节点的核对提示 |
+| u:1291c06a | references/regional-history-and-survival.md §人物 第一段 | 改写（2026-11-14） | “人物死亡后组织延续”一句与 character-design.md 重复，改为一句指向；“唯一身份跨国复用”同理删去，规则在 character-office.md §四 |
 
 ## 4. 顺带修正的问题
 
@@ -249,3 +254,9 @@
 ```
 
 2026-11-11 运行。kept 为原样保留，edited 为小改后保留，documented 为第 3 节所列。
+
+2026-11-14 拆分人物设计参考（备份 `WORK/backups/pre-change-character-design-split-20261114T182616Z/`）。
+
+```
+{"kept": 1016, "edited": 3, "documented": 5, "missing": 0}
+```
