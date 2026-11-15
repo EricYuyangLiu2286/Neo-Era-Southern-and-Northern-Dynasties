@@ -1230,6 +1230,7 @@ flavorCNE.14 = { # 木沐子离开
 			set_variable = nesnd_story_mu_author
 			transfer_character = scope:mu_muzi_new_home
 		}
+		hidden_effect = { set_global_variable = nesnd_mu_went_east }
 		
 		random_scope_character = {
 			limit = { has_template = CNE_fei_xiyi }
@@ -1298,7 +1299,7 @@ flavorCNE.15 = { #
 	trigger = {
 		# triggered by another event	
 		any_scope_character = {
-			has_template = CNE_mu_muzi
+			nesnd_is_mu_muzi = yes
 		}
 		game_date >= 1871.5.15
 		NOT = {
@@ -1310,9 +1311,27 @@ flavorCNE.15 = { #
 		hidden_effect = {
 			set_global_variable = bm_the_book_has_written
 			random_scope_character = {
-				limit = { has_template = CNE_mu_muzi }
+				limit = { nesnd_is_mu_muzi = yes }
 				save_scope_as = mu_muzi_scope
                 set_variable = { name = nesnd_story_event_pending months = 3 }
+			}
+			# The book also reaches the other side: CNE if she is abroad, else a holder of California.
+			if = {
+				limit = {
+					NOT = { c:CNE ?= root }
+					c:CNE ?= { is_country_alive = yes }
+				}
+				c:CNE = { trigger_event = { id = flavorCNE.16 popup = yes } }
+			}
+			else_if = {
+				limit = { c:CNE ?= root }
+				random_country = {
+					limit = {
+						NOT = { this = root }
+						any_scope_state = { state_region = s:STATE_CALIFORNIA }
+					}
+					trigger_event = { id = flavorCNE.16 popup = yes }
+				}
 			}
 		}
 	}
@@ -1334,4 +1353,32 @@ flavorCNE.15 = { #
     after = {
         scope:mu_muzi_scope ?= { remove_variable = nesnd_story_event_pending remove_variable = nesnd_story_mu_author }
     }
+}
+
+flavorCNE.16 = { # 《北明战国世》出版（她不在的一方）
+	type = country_event
+	placement = root
+	title = flavorCNE.15.t
+	desc = flavorCNE.15.d
+	flavor = flavorCNE.15.f
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/event_ce_mordern_chinese_2.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	trigger = {
+		# triggered by flavorCNE.15
+		NOT = { has_modifier = bm_the_book }
+	}
+
+	option = {
+		name = flavorCNE.15.1
+		add_modifier = {
+			name = bm_the_book
+			months = 120
+		}
+	}
 }

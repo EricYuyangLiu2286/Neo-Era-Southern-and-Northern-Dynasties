@@ -1,0 +1,133 @@
+﻿# 「统治者与内阁」(nesnd_premier_journal) 的判定。Root = country，另注明者除外。
+# 与「宫廷力量」「执政者与派系」互斥：帝国级、非俄罗斯、未处于剧情让位时，
+# 共和 → 执政者与派系；非共和且可任命宠臣 → 宫廷力量；非共和且不能任命宠臣 → 本日志。
+# 复用 scripted_triggers/nesnd_power.txt 的 nesnd_power_empire_tier、nesnd_power_republic_law、nesnd_power_story_excluded（只读）。
+
+nesnd_premier_eligible = {
+	custom_tooltip = { text = nesnd_power_cond_not_rus NOT = { c:RUS ?= this } }
+	nesnd_power_empire_tier = yes
+	custom_tooltip = { text = nesnd_palace_cond_not_republic nesnd_power_republic_law = no }
+	custom_tooltip = { text = nesnd_premier_cond_no_favorites can_have_favorites = no }
+	custom_tooltip = { text = nesnd_power_cond_not_story nesnd_power_story_excluded = no }
+}
+
+# 未激活时是否显示：与 nesnd_palace_shown 正好以 can_have_favorites 二分，同一国家只显示其中一个。
+nesnd_premier_shown = {
+	NOT = { c:RUS ?= this }
+	OR = { country_tier = empire country_tier = hegemony }
+	nesnd_power_republic_law = no
+	can_have_favorites = no
+}
+
+# 有在世的首相。
+nesnd_premier_has_pm = {
+	exists = var:nesnd_premier_pm
+	var:nesnd_premier_pm ?= { is_character_alive = yes }
+}
+
+# 有最大在野集团（存在不在政府中的集团）：首相集团对最大在野集团。
+nesnd_premier_mode_rival = {
+	var:nesnd_premier_mode ?= 1
+	exists = var:nesnd_premier_rival_ig
+}
+# 所有集团都在政府中：首相对其余各派。
+nesnd_premier_mode_all = {
+	nesnd_premier_has_pm = yes
+	NOT = { nesnd_premier_mode_rival = yes }
+}
+
+# Character scope。可以出任首相的人：在世、不在流亡中、是集团领袖、不是统治者。
+nesnd_premier_candidate = {
+	is_character_alive = yes
+	is_in_exile_pool = no
+	is_interest_group_leader = yes
+	is_ruler_of_own_country = no
+}
+
+# 现任首相仍然有效：在世、仍属本国、仍是集团领袖，所在集团仍在政府中。
+# 用 prev 比较所属国，不用 root：本判定也在 on_action 中调用，那时 root 是人物或利益集团。
+nesnd_premier_pm_valid = {
+	exists = var:nesnd_premier_pm
+	var:nesnd_premier_pm ?= {
+		nesnd_premier_candidate = yes
+		owner ?= { var:nesnd_premier_pm ?= prev }
+		interest_group ?= { is_in_government = yes }
+	}
+}
+
+# 首相所属集团单独组阁。
+nesnd_premier_single_party = {
+	exists = var:nesnd_premier_pm_ig
+	NOT = {
+		any_interest_group = {
+			is_in_government = yes
+			NOT = { prev.var:nesnd_premier_pm_ig ?= this }
+		}
+	}
+}
+
+# 平衡点 ≥ 90：首相一方压倒对方；≤ 10：对方压倒首相。
+nesnd_premier_pm_dominant = { nesnd_premier_has_pm = yes nesnd_premier_b >= 90 }
+nesnd_premier_rival_dominant = { nesnd_premier_has_pm = yes nesnd_premier_b <= 10 }
+
+# 反对派领袖可被事件或按钮移除：存在、可被移除（共用 nesnd_power_character_removable），且不是统治者。
+nesnd_premier_rival_removable = {
+	nesnd_premier_mode_rival = yes
+	exists = var:nesnd_premier_rival
+	var:nesnd_premier_rival ?= {
+		nesnd_power_character_removable = yes
+		is_ruler_of_own_country = no
+	}
+}
+nesnd_premier_pm_removable = {
+	nesnd_premier_has_pm = yes
+	var:nesnd_premier_pm ?= {
+		nesnd_power_character_removable = yes
+		is_ruler_of_own_country = no
+	}
+}
+
+# 首相所在集团之外，政府中另有可以出任首相的人（不信任案、罢免首相时用）。
+# 用于事件选项的 trigger，会生成悬停说明：比较遍历对象的部分包在 custom_tooltip 里。
+nesnd_premier_has_other_candidate = {
+	custom_tooltip = {
+		text = nesnd_premier_cond_other_candidate
+		any_interest_group = {
+			is_in_government = yes
+			NOT = { prev.var:nesnd_premier_pm_ig ?= this }
+			leader ?= { nesnd_premier_candidate = yes }
+		}
+	}
+}
+
+# 政潮事件的抽取条件（事件 trigger 与抽取表共用）。
+nesnd_premier_ev_partners_ok = {
+	nesnd_premier_has_pm = yes
+	any_interest_group = {
+		is_in_government = yes
+		NOT = { prev.var:nesnd_premier_pm_ig ?= this }
+	}
+}
+nesnd_premier_ev_budget_ok = { nesnd_premier_has_pm = yes OR = { taking_loans = yes in_default = yes } }
+nesnd_premier_ev_retire_ok = { nesnd_premier_pm_removable = yes nesnd_premier_ten >= 60 }
+nesnd_premier_ev_byelection_ok = { nesnd_premier_has_pm = yes country_has_voting_franchise = yes }
+nesnd_premier_ev_backbench_ok = { nesnd_premier_has_pm = yes var:nesnd_premier_pm_ig ?= { ig_approval < 0 } }
+nesnd_premier_ev_ruler_ok = { nesnd_premier_has_pm = yes exists = ruler }
+nesnd_premier_ev_civil_list_ok = { nesnd_premier_ev_ruler_ok = yes country_has_monarchy_law = yes }
+nesnd_premier_ev_petition_ok = {
+	nesnd_premier_has_pm = yes
+	OR = {
+		any_scope_state = { turmoil >= 0.15 }
+		any_interest_group = { ig_approval <= -5 }
+	}
+}
+nesnd_premier_ev_army_ok = {
+	nesnd_premier_has_pm = yes
+	exists = ig:ig_armed_forces
+	ig:ig_armed_forces = { ig_clout >= 0.1 }
+	NOT = { var:nesnd_premier_pm_ig ?= ig:ig_armed_forces }
+}
+nesnd_premier_ev_no_confidence_ok = { nesnd_premier_rival_dominant = yes }
+nesnd_premier_ev_overreach_ok = { nesnd_premier_pm_dominant = yes exists = ruler }
+nesnd_premier_ev_attack_ok = { nesnd_premier_rival_dominant = yes nesnd_premier_pm_removable = yes }
+nesnd_premier_ev_rival_falls_ok = { nesnd_premier_pm_dominant = yes nesnd_premier_rival_removable = yes }

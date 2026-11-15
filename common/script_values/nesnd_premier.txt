@@ -1,0 +1,56 @@
+﻿# 「统治者与内阁」的数值。Root = country。月度增减见 nesnd_premier_generated.txt（生成文件）。
+
+# 安全读数：变量未设时取默认值，避免条件比较报错。
+nesnd_premier_b = { value = 50 if = { limit = { has_variable = nesnd_premier_balance } value = var:nesnd_premier_balance } }
+nesnd_premier_i = { value = 0 if = { limit = { has_variable = nesnd_premier_intrigue } value = var:nesnd_premier_intrigue } }
+nesnd_premier_ten = { value = 0 if = { limit = { has_variable = nesnd_premier_tenure } value = var:nesnd_premier_tenure } }
+# 首相人气：每月与换首相时写入的值。没有首相时为 0。
+nesnd_premier_pop_v = { value = 0 if = { limit = { has_variable = nesnd_premier_pop } value = var:nesnd_premier_pop } }
+
+# 按钮费用（首相人气，以 2.5 年的人物修正支付，见 static_modifiers/nesnd_premier.txt）。只作卡片显示。
+nesnd_premier_cost_regular = 10
+nesnd_premier_cost_large = 20
+nesnd_premier_cost_free = 0
+
+# 最大在野集团的影响力是首相集团的几倍。
+nesnd_premier_clout_ratio = {
+	value = 1
+	if = {
+		limit = { exists = var:nesnd_premier_rival_ig exists = var:nesnd_premier_pm_ig }
+		value = var:nesnd_premier_rival_ig.ig_clout
+		divide = { value = var:nesnd_premier_pm_ig.ig_clout min = 0.01 }
+	}
+}
+
+# 平衡点偏离中点的程度，带符号：正数偏向首相一方。没有首相时为 0（平衡修正暂停）。-1 至 1。
+nesnd_premier_contested_deviation = {
+	value = 0
+	if = {
+		limit = { nesnd_premier_has_pm = yes has_variable = nesnd_premier_balance }
+		value = var:nesnd_premier_balance
+		subtract = 50
+		divide = 50
+	}
+}
+
+# 每一侧分三档（±1 至 ±3），与「宫廷力量」的 nesnd_power_balance_approval 相同。
+nesnd_premier_balance_approval = {
+	value = nesnd_premier_contested_deviation
+	if = {
+		limit = { nesnd_premier_contested_deviation < 0 }
+		multiply = -3
+		ceiling = yes
+		multiply = -1
+	}
+	else = { multiply = 3 ceiling = yes }
+}
+
+# 调查、查办反对派领袖的成功率（%），取决于首相人气。
+nesnd_premier_arrest_chance = {
+	value = 45
+	if = { limit = { nesnd_premier_has_pm = yes nesnd_premier_pop_v >= 50 } add = 15 }
+	else_if = { limit = { nesnd_premier_has_pm = yes nesnd_premier_pop_v >= 20 } add = 5 }
+	else_if = { limit = { nesnd_premier_has_pm = yes nesnd_premier_pop_v <= -50 } subtract = 20 }
+	else_if = { limit = { nesnd_premier_has_pm = yes nesnd_premier_pop_v <= -20 } subtract = 10 }
+}
+nesnd_premier_arrest_fail = { value = 100 subtract = nesnd_premier_arrest_chance }

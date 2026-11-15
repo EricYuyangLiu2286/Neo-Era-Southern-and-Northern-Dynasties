@@ -25,11 +25,21 @@
 
 ## 未完成
 
+2026-11-15 [新日志「统治者与内阁」](../../.scratch/premier/issues/01-implement.md)：给不能任命宠臣的非共和帝国（多为立宪君主国）。首相由角色互动任命，按人气缩放立法速度与合法性。平衡是首相集团对最大在野集团，所有集团都入阁时改为对其余各派。政府改组后首相集团出阁时，由政府内最大集团的领袖接任。与「宫廷力量」「执政者与派系」互斥，只改了 `nesnd_palace_shown` 一行。游戏外检查通过，已部署 `c3e2f208`（人气条为摇摆条，按钮扣人气当场刷新），待作者复测（英国）。
+
+2026-11-14 [公民工程日志 `war` 无效对象报错](../../.scratch/debug-release/issues/102-civic-theatre-war-link.md)：战区和平检查先判断 `is_at_war`，`war` 链接先判断存在，判定结果不变。`TRIGGER_MARKET_ACCESS_GREATER_OR_EQUAL_THIRD` 是原版本地化缺陷，未改。游戏外检查通过，已部署 `0fc4bf0b`，待作者复测。
+
+2026-11-14 [「资助燕人会党」改为随机一处 +3% 激进派](../../.scratch/debug-release/issues/103-yan-subsidy-effect.md)：查明时关系 −30，提示同步。游戏外检查通过，已部署 `0fc4bf0b`，可读档复测。部署脚本改为游戏运行时只提示不停止。
+
+2026-11-14 [「资助燕人会党」通知中华帝国，东北七州迁入吸引力 +5%](../../.scratch/debug-release/issues/104-yan-unrest-event-dongbei-trait.md)：未被查明时中华帝国收到【不满在东北积蓄】，激进派改由该事件添加，被查明时只降关系。新州特性「东北垦荒」。游戏外检查通过，已部署 `9fe20a4e`，需新开局复测。
+
+2026-11-14 [联合州事权目标 `has_law_or_variant` 报错](../../.scratch/debug-release/issues/105-keju-law-variant-check.md)：科举投票改用 `has_law` 检查。游戏外检查通过，已部署 `9fe20a4e`，可读档复测。
+
 2026-11-14 [error.log 中本 MOD 的报错](../../.scratch/debug-release/issues/101-error-log-20261114.md)：登莱复燕与起事预警的状态行改用 ROOT，燕旗增减项改静态文字，修正 `concept_law` 链接，波斯远西日志改为自动激活。游戏外检查通过，已部署 `e3a55317`，待作者重启后看新日志并复测远西日志。
 
 2026-11-14 [登莱「接济北朝共和党人」无限叠加激进](../../.scratch/debug-release/issues/100-sha-radicals-flood.md)：每次拨款改为两次各 5%，经费期满后冷却 6 个月，登莱为北朝附庸或盟友时禁用，AI 登莱在「渡海」中对北朝关系保持 −100。条款显示每周经费。游戏外检查通过，可读档复测。
 
-2026-11-14 [原创中期人物审核](../../.scratch/midgame-characters/issues/01-duan-muzi-audit.md)：段敬川 .14／.200 不再因月检而连弹、重复扣款；牧沐子「沐子东渡」要求她仍在 CNE、且有别国持有加州。待答保护由 3 天改为 3 个月。游戏外检查通过，待作者复测。另有 4 项牧沐子剧情的设计问题，以及 9 条中期丰富建议，待作者决定。
+2026-11-14 [原创中期人物审核](../../.scratch/midgame-characters/issues/01-duan-muzi-audit.md)：段敬川 .14／.200 不再因月检而连弹、重复扣款；牧沐子「沐子东渡」要求她仍在 CNE、且有别国持有加州。待答保护由 3 天改为 3 个月。第二轮按作者决定：出书时她所在国和另一方（CNE 或加州持有国）都得到奖励；1872 年前不死；1871 年后若已死亡或被流放，则重建或找回。游戏外检查通过，第二轮未部署，待作者复测。9 条中期丰富建议待作者决定。
 
 2026-11-14 [AI 触发器改为按键 REPLACE](../../.scratch/ai-behavior/issues/01-ai-triggers-replace.md)：删去整文件覆盖的 `00_ai_triggers.txt`，新增 `ce_ai_triggers.txt`，只替换与原版不同的 4 个触发器。游戏外逐键比对与原覆盖一致，待新开局看 error.log。默认 AI 策略仍整文件覆盖。同日技能新增 AI 倾向参考 `references/ai-behavior.md`。
 

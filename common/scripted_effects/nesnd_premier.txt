@@ -1,0 +1,422 @@
+﻿# 「统治者与内阁」的效果。调用时的作用域都是本国，但 root 不一定是国家（角色互动中 root 是人物，
+# on_action 中 root 是人物或利益集团），所以本文件不用 root，需要回指本国时先 save_scope_as。
+# 国家变量：
+#   nesnd_premier_pm / _pm_ig        首相及其集团（pm_ig 在首相失效后保留，用于判定接任还是改组）
+#   nesnd_premier_rival_ig / _rival  最大在野集团及其领袖；_mode 1 = 有在野集团，2 = 所有集团都在政府中
+#   nesnd_premier_pop / _balance / _intrigue  三条进度条的数值（唯一来源）
+#   nesnd_premier_tenure（月）、nesnd_premier_had_pm（曾有首相）、nesnd_premier_old_ig（改组前的首相集团，供通知事件用）
+# 共用变量 nesnd_power_regime 写为 3，「宫廷力量」「执政者与派系」转回时按其原有的“切换政体”规则结算。
+
+# 日志激活（首次、或不再适用后重新适用）时调用。
+nesnd_premier_begin = {
+	hidden_effect = {
+		if = {
+			# 首次开启，或期间换过另一个日志：两条数值从中点和零开始，旧的首相记录作废。
+			limit = { NOT = { var:nesnd_power_regime ?= 3 } }
+			set_variable = { name = nesnd_premier_balance value = 50 }
+			set_variable = { name = nesnd_premier_intrigue value = 0 }
+			remove_variable = nesnd_premier_pm
+			remove_variable = nesnd_premier_pm_ig
+			remove_variable = nesnd_premier_had_pm
+			remove_variable = nesnd_premier_rival_ig
+			remove_variable = nesnd_premier_rival
+			remove_variable = nesnd_premier_mode
+			remove_variable = nesnd_premier_tenure
+		}
+		if = { limit = { NOT = { has_variable = nesnd_premier_balance } } set_variable = { name = nesnd_premier_balance value = 50 } }
+		if = { limit = { NOT = { has_variable = nesnd_premier_intrigue } } set_variable = { name = nesnd_premier_intrigue value = 0 } }
+		if = { limit = { NOT = { has_variable = nesnd_premier_pop } } set_variable = { name = nesnd_premier_pop value = 0 } }
+		set_variable = { name = nesnd_power_regime value = 3 }
+		nesnd_premier_refresh = yes
+	}
+}
+
+# 首相人气写入国家变量。没有首相时为 0。
+nesnd_premier_set_pop = {
+	if = {
+		limit = { nesnd_premier_has_pm = yes }
+		set_variable = { name = nesnd_premier_pop value = var:nesnd_premier_pm.popularity }
+	}
+	else = {
+		set_variable = { name = nesnd_premier_pop value = 0 }
+	}
+}
+
+# 平衡点偏离中点的部分减半（首相集团、最大在野集团更替，或在两种对峙之间切换时）。
+nesnd_premier_halve_balance = {
+	if = {
+		limit = { has_variable = nesnd_premier_balance }
+		set_variable = { name = nesnd_premier_balance value = { value = var:nesnd_premier_balance subtract = 50 divide = 2 add = 50 } }
+	}
+}
+
+# 让 scope:nesnd_premier_new_pm 出任首相。首相集团换了时平衡偏离减半。
+nesnd_premier_install = {
+	if = {
+		limit = {
+			has_variable = nesnd_premier_had_pm
+			exists = var:nesnd_premier_pm_ig
+			NOT = { var:nesnd_premier_pm_ig ?= scope:nesnd_premier_new_pm.interest_group }
+		}
+		nesnd_premier_halve_balance = yes
+	}
+	set_variable = { name = nesnd_premier_pm value = scope:nesnd_premier_new_pm }
+	set_variable = { name = nesnd_premier_pm_ig value = scope:nesnd_premier_new_pm.interest_group }
+	set_variable = nesnd_premier_had_pm
+	set_variable = { name = nesnd_premier_tenure value = 0 }
+	nesnd_premier_set_pop = yes
+}
+
+# 每周，以及政府改组、集团退出政府、选举结束、角色互动之后：校验首相，必要时补任；认定最大在野集团；同步头像与进度条。
+nesnd_premier_refresh = {
+	hidden_effect = {
+		if = { limit = { exists = scope:nesnd_premier_new_pm } clear_saved_scope = nesnd_premier_new_pm }
+		if = { limit = { exists = scope:nesnd_premier_new_rival_ig } clear_saved_scope = nesnd_premier_new_rival_ig }
+		if = { limit = { exists = scope:nesnd_premier_new_rival } clear_saved_scope = nesnd_premier_new_rival }
+
+		# 1. 现任首相失效。本人仍可任职、只是所在集团已离开政府时，记为改组（2）。
+		#    死亡、流亡、离国、失去领袖身份或成为统治者，记为接任。
+		if = {
+			limit = { exists = var:nesnd_premier_pm NOT = { nesnd_premier_pm_valid = yes } }
+			if = {
+				limit = {
+					var:nesnd_premier_pm ?= {
+						nesnd_premier_candidate = yes
+						owner ?= { var:nesnd_premier_pm ?= prev }
+						interest_group ?= { is_in_government = no }
+					}
+				}
+				set_variable = { name = nesnd_premier_change value = 2 }
+			}
+			remove_variable = nesnd_premier_pm
+		}
+
+		# 2. 空缺时补任：接任由本集团的新领袖担任（本集团仍在政府中），否则由政府内最大集团的领袖出任。
+		if = {
+			limit = { NOT = { exists = var:nesnd_premier_pm } }
+			if = {
+				limit = {
+					NOT = { var:nesnd_premier_change ?= 2 }
+					var:nesnd_premier_pm_ig ?= { is_in_government = yes leader ?= { nesnd_premier_candidate = yes } }
+				}
+				var:nesnd_premier_pm_ig ?= { leader ?= { save_scope_as = nesnd_premier_new_pm } }
+			}
+			else_if = {
+				# 本集团仍在政府中，只是新领袖还没产生（首相刚去世或退休）：等下一次刷新。
+				limit = {
+					NOT = { var:nesnd_premier_change ?= 2 }
+					has_variable = nesnd_premier_had_pm
+					var:nesnd_premier_pm_ig ?= {
+						is_in_government = yes
+						NOT = { leader ?= { is_character_alive = yes } }
+					}
+				}
+				set_variable = { name = nesnd_premier_pop value = 0 }
+			}
+			else = {
+				# 本集团已不在政府中：改组。本集团仍在政府中、但领袖不能出任（统治者或流亡）：按接任处理。
+				if = {
+					limit = {
+						has_variable = nesnd_premier_had_pm
+						NOT = { var:nesnd_premier_pm_ig ?= { is_in_government = yes } }
+					}
+					set_variable = { name = nesnd_premier_change value = 2 }
+				}
+				ordered_interest_group = {
+					limit = { is_in_government = yes leader ?= { nesnd_premier_candidate = yes } }
+					order_by = ig_clout
+					position = 0
+					leader ?= { save_scope_as = nesnd_premier_new_pm }
+				}
+			}
+			if = {
+				limit = { exists = scope:nesnd_premier_new_pm }
+				if = {
+					limit = { has_variable = nesnd_premier_had_pm }
+					if = {
+						limit = { var:nesnd_premier_change ?= 2 }
+						if = {
+							limit = { exists = var:nesnd_premier_pm_ig }
+							set_variable = { name = nesnd_premier_old_ig value = var:nesnd_premier_pm_ig }
+						}
+						else = { remove_variable = nesnd_premier_old_ig }
+						change_variable = { name = nesnd_premier_intrigue add = 15 }
+						set_variable = nesnd_premier_notify_reshuffle
+					}
+					else = {
+						change_variable = { name = nesnd_premier_intrigue add = 5 }
+					}
+					clamp_variable = { name = nesnd_premier_intrigue min = 0 max = 100 }
+				}
+				nesnd_premier_install = yes
+				if = {
+					limit = { has_variable = nesnd_premier_notify_reshuffle }
+					remove_variable = nesnd_premier_notify_reshuffle
+					trigger_event = { id = nesnd_premier.1 popup = yes }
+				}
+			}
+			else = {
+				set_variable = { name = nesnd_premier_pop value = 0 }
+			}
+			remove_variable = nesnd_premier_change
+		}
+
+		# 3. 首相所属集团（同一人可能被调到别的集团）。
+		if = {
+			limit = { nesnd_premier_has_pm = yes var:nesnd_premier_pm ?= { exists = interest_group } }
+			set_variable = { name = nesnd_premier_pm_ig value = var:nesnd_premier_pm.interest_group }
+		}
+
+		# 4. 最大在野集团。所有集团都在政府中时，改为首相对其余各派。对峙的一方换了，平衡偏离减半。
+		ordered_interest_group = {
+			limit = { is_in_government = no }
+			order_by = ig_clout
+			position = 0
+			save_scope_as = nesnd_premier_new_rival_ig
+		}
+		if = {
+			limit = { exists = scope:nesnd_premier_new_rival_ig }
+			if = {
+				limit = {
+					has_variable = nesnd_premier_mode
+					NOT = { var:nesnd_premier_rival_ig ?= scope:nesnd_premier_new_rival_ig }
+				}
+				nesnd_premier_halve_balance = yes
+			}
+			set_variable = { name = nesnd_premier_mode value = 1 }
+			set_variable = { name = nesnd_premier_rival_ig value = scope:nesnd_premier_new_rival_ig }
+			scope:nesnd_premier_new_rival_ig = { leader ?= { save_scope_as = nesnd_premier_new_rival } }
+			if = {
+				limit = { exists = scope:nesnd_premier_new_rival }
+				set_variable = { name = nesnd_premier_rival value = scope:nesnd_premier_new_rival }
+			}
+			else = { remove_variable = nesnd_premier_rival }
+		}
+		else = {
+			if = { limit = { var:nesnd_premier_mode ?= 1 } nesnd_premier_halve_balance = yes }
+			set_variable = { name = nesnd_premier_mode value = 2 }
+			remove_variable = nesnd_premier_rival_ig
+			remove_variable = nesnd_premier_rival
+		}
+
+		nesnd_premier_set_pop = yes
+		nesnd_premier_sync_portraits = yes
+		nesnd_premier_sync_bars = yes
+	}
+}
+
+# 首相去世（on_character_death）：立即撤下，界面与修正不再显示此人。下一次每周刷新由本集团的新领袖接任。
+nesnd_premier_pm_lost = {
+	hidden_effect = {
+		remove_variable = nesnd_premier_pm
+		set_variable = { name = nesnd_premier_pop value = 0 }
+		if = { limit = { has_variable_list = nesnd_premier_pm_portrait } clear_variable_list = nesnd_premier_pm_portrait }
+		nesnd_premier_sync_bars = yes
+	}
+}
+
+# 头像列表只保存在世的现任人物；列表为空时界面不生成头像（仿 nesnd_power_sync_portraits）。
+nesnd_premier_sync_portraits = {
+	if = {
+		limit = { nesnd_premier_has_pm = yes }
+		if = {
+			limit = { NOT = { is_target_in_variable_list = { name = nesnd_premier_pm_portrait target = var:nesnd_premier_pm } } }
+			clear_variable_list = nesnd_premier_pm_portrait
+			add_to_variable_list = { name = nesnd_premier_pm_portrait target = var:nesnd_premier_pm }
+		}
+	}
+	else_if = {
+		limit = { has_variable_list = nesnd_premier_pm_portrait }
+		clear_variable_list = nesnd_premier_pm_portrait
+	}
+	if = { limit = { exists = scope:nesnd_premier_ruler_now } clear_saved_scope = nesnd_premier_ruler_now }
+	ruler ?= {
+		if = { limit = { is_character_alive = yes } save_scope_as = nesnd_premier_ruler_now }
+	}
+	if = {
+		limit = { exists = scope:nesnd_premier_ruler_now }
+		if = {
+			limit = { NOT = { is_target_in_variable_list = { name = nesnd_premier_ruler_portrait target = scope:nesnd_premier_ruler_now } } }
+			clear_variable_list = nesnd_premier_ruler_portrait
+			add_to_variable_list = { name = nesnd_premier_ruler_portrait target = scope:nesnd_premier_ruler_now }
+		}
+	}
+	else_if = {
+		limit = { has_variable_list = nesnd_premier_ruler_portrait }
+		clear_variable_list = nesnd_premier_ruler_portrait
+	}
+}
+
+nesnd_premier_sync_bars = {
+	if = {
+		limit = {
+			has_journal_entry = nesnd_premier_journal
+			has_variable = nesnd_premier_pop
+			has_variable = nesnd_premier_balance
+			has_variable = nesnd_premier_intrigue
+		}
+		save_scope_as = nesnd_premier_country
+		je:nesnd_premier_journal = {
+			set_bar_progress = { name = nesnd_premier_pop_bar value = scope:nesnd_premier_country.var:nesnd_premier_pop }
+			set_bar_progress = { name = nesnd_premier_balance_bar value = scope:nesnd_premier_country.var:nesnd_premier_balance }
+			set_bar_progress = { name = nesnd_premier_intrigue_bar value = scope:nesnd_premier_country.var:nesnd_premier_intrigue }
+		}
+	}
+}
+
+# 每月（日志月脉冲，root = 本国）：写入首相人气，按进度条明细的同一组条目结算平衡与政潮，政潮满时抽一件事件。
+nesnd_premier_month = {
+	hidden_effect = {
+		nesnd_premier_set_pop = yes
+		set_variable = { name = nesnd_premier_d_balance value = nesnd_premier_balance_monthly }
+		set_variable = { name = nesnd_premier_d_intrigue value = nesnd_premier_intrigue_monthly }
+		change_variable = { name = nesnd_premier_balance add = var:nesnd_premier_d_balance }
+		change_variable = { name = nesnd_premier_intrigue add = var:nesnd_premier_d_intrigue }
+		clamp_variable = { name = nesnd_premier_balance min = 0 max = 100 }
+		clamp_variable = { name = nesnd_premier_intrigue min = 0 max = 100 }
+		remove_variable = nesnd_premier_d_balance
+		remove_variable = nesnd_premier_d_intrigue
+		if = {
+			limit = { nesnd_premier_has_pm = yes }
+			change_variable = { name = nesnd_premier_tenure add = 1 }
+		}
+		if = {
+			limit = { nesnd_premier_i >= 100 }
+			set_variable = { name = nesnd_premier_intrigue value = 0 }
+			nesnd_premier_fire_event = yes
+		}
+		nesnd_premier_sync_bars = yes
+	}
+}
+
+# 按钮与事件改动数值（提示文字只用固定的条名，不依赖 ROOT，角色互动中也能正确显示）。
+# BAR = balance（正数偏向首相一方）| intrigue。
+nesnd_premier_add = {
+	custom_tooltip = {
+		text = nesnd_premier_$BAR$_add_$AMT$_tt
+		change_variable = { name = nesnd_premier_$BAR$ add = $AMT$ }
+		clamp_variable = { name = nesnd_premier_$BAR$ min = 0 max = 100 }
+	}
+	hidden_effect = { nesnd_premier_sync_bars = yes }
+}
+nesnd_premier_sub = {
+	custom_tooltip = {
+		text = nesnd_premier_$BAR$_sub_$AMT$_tt
+		change_variable = { name = nesnd_premier_$BAR$ subtract = $AMT$ }
+		clamp_variable = { name = nesnd_premier_$BAR$ min = 0 max = 100 }
+	}
+	hidden_effect = { nesnd_premier_sync_bars = yes }
+}
+# 平衡点向中点移动 AMT，不越过中点。
+nesnd_premier_center = {
+	custom_tooltip = {
+		text = nesnd_premier_center_$AMT$_tt
+		if = {
+			limit = { nesnd_premier_b > 50 }
+			change_variable = { name = nesnd_premier_balance subtract = $AMT$ }
+			if = { limit = { nesnd_premier_b < 50 } set_variable = { name = nesnd_premier_balance value = 50 } }
+		}
+		else_if = {
+			limit = { nesnd_premier_b < 50 }
+			change_variable = { name = nesnd_premier_balance add = $AMT$ }
+			if = { limit = { nesnd_premier_b > 50 } set_variable = { name = nesnd_premier_balance value = 50 } }
+		}
+	}
+	hidden_effect = { nesnd_premier_sync_bars = yes }
+}
+nesnd_premier_reset_balance = {
+	custom_tooltip = {
+		text = nesnd_premier_reset_balance_tt
+		set_variable = { name = nesnd_premier_balance value = 50 }
+	}
+	hidden_effect = { nesnd_premier_sync_bars = yes }
+}
+nesnd_premier_clear_intrigue = {
+	custom_tooltip = {
+		text = nesnd_premier_clear_intrigue_tt
+		set_variable = { name = nesnd_premier_intrigue value = 0 }
+	}
+	hidden_effect = { nesnd_premier_sync_bars = yes }
+}
+
+# 按钮费用：给首相加对应的人物修正（2.5 年）。引擎在下一个结算日才重算人气，
+# 人气条当场按修正值写入，见 nesnd_premier_predict_pop。
+nesnd_premier_pay = {
+	var:nesnd_premier_pm ?= { add_modifier = { name = nesnd_premier_cost_$BTN$ days = short_modifier_time } }
+	hidden_effect = { nesnd_premier_predict_pop = { DELTA = $DELTA$ } }
+}
+# 事件给首相的人气增减（2.5 年）。MOD = acclaim | disgrace | speech，DELTA 为该修正的人气值。
+nesnd_premier_pm_modifier = {
+	var:nesnd_premier_pm ?= { add_modifier = { name = nesnd_premier_$MOD$ days = short_modifier_time } }
+	hidden_effect = { nesnd_premier_predict_pop = { DELTA = $DELTA$ } }
+}
+# 点击当场：引擎下一个结算日才重算人物人气，所以按“现值 + 修正值”写入人气条。每周刷新与月脉冲再读引擎的实际人气。
+nesnd_premier_predict_pop = {
+	if = {
+		limit = { nesnd_premier_has_pm = yes }
+		set_variable = { name = nesnd_premier_pop value = var:nesnd_premier_pm.popularity }
+		change_variable = { name = nesnd_premier_pop add = $DELTA$ }
+		clamp_variable = { name = nesnd_premier_pop min = -100 max = 100 }
+		nesnd_premier_sync_bars = yes
+	}
+}
+
+# 由首相集团之外、政府内影响力最大的集团的领袖出任首相（不信任案、罢免首相）。
+nesnd_premier_appoint_other = {
+	if = {
+		limit = { nesnd_premier_has_other_candidate = yes }
+		custom_tooltip = nesnd_premier_appoint_other_tt
+		hidden_effect = {
+			if = { limit = { exists = scope:nesnd_premier_new_pm } clear_saved_scope = nesnd_premier_new_pm }
+			ordered_interest_group = {
+				limit = {
+					is_in_government = yes
+					NOT = { prev.var:nesnd_premier_pm_ig ?= this }
+					leader ?= { nesnd_premier_candidate = yes }
+				}
+				order_by = ig_clout
+				position = 0
+				leader ?= { save_scope_as = nesnd_premier_new_pm }
+			}
+			if = {
+				limit = { exists = scope:nesnd_premier_new_pm }
+				nesnd_premier_install = yes
+				nesnd_premier_refresh = yes
+			}
+		}
+	}
+}
+
+# 事件用的保存对象。
+nesnd_premier_save_scopes = {
+	var:nesnd_premier_pm ?= { if = { limit = { is_character_alive = yes } save_scope_as = nesnd_premier_pm_scope } }
+	var:nesnd_premier_pm_ig ?= { save_scope_as = nesnd_premier_pm_ig_scope }
+	var:nesnd_premier_rival ?= { if = { limit = { is_character_alive = yes } save_scope_as = nesnd_premier_rival_scope } }
+	var:nesnd_premier_rival_ig ?= { save_scope_as = nesnd_premier_rival_ig_scope }
+	ruler ?= { save_scope_as = nesnd_premier_ruler_scope }
+}
+
+# 政潮满时抽取一件。极端事件（权重 15）只在平衡点超出 10–90 时可抽到。没有首相时不出事件。
+nesnd_premier_fire_event = {
+	if = {
+		limit = { nesnd_premier_has_pm = yes }
+		random_list = {
+			10 = { trigger_event = { id = nesnd_premier.11 popup = yes } }
+			8 = { trigger = { nesnd_premier_ev_ruler_ok = yes } trigger_event = { id = nesnd_premier.12 popup = yes } }
+			10 = { trigger_event = { id = nesnd_premier.13 popup = yes } }
+			8 = { trigger_event = { id = nesnd_premier.14 popup = yes } }
+			8 = { trigger = { nesnd_premier_ev_partners_ok = yes } trigger_event = { id = nesnd_premier.15 popup = yes } }
+			8 = { trigger = { nesnd_premier_ev_budget_ok = yes } trigger_event = { id = nesnd_premier.16 popup = yes } }
+			6 = { trigger = { nesnd_premier_ev_retire_ok = yes } trigger_event = { id = nesnd_premier.17 popup = yes } }
+			8 = { trigger = { nesnd_premier_ev_byelection_ok = yes } trigger_event = { id = nesnd_premier.18 popup = yes } }
+			8 = { trigger = { nesnd_premier_ev_backbench_ok = yes } trigger_event = { id = nesnd_premier.19 popup = yes } }
+			6 = { trigger = { nesnd_premier_ev_civil_list_ok = yes } trigger_event = { id = nesnd_premier.20 popup = yes } }
+			8 = { trigger = { nesnd_premier_ev_petition_ok = yes } trigger_event = { id = nesnd_premier.31 popup = yes } }
+			8 = { trigger = { nesnd_premier_ev_army_ok = yes } trigger_event = { id = nesnd_premier.32 popup = yes } }
+			15 = { trigger = { nesnd_premier_ev_no_confidence_ok = yes } trigger_event = { id = nesnd_premier.21 popup = yes } }
+			15 = { trigger = { nesnd_premier_ev_overreach_ok = yes } trigger_event = { id = nesnd_premier.22 popup = yes } }
+			15 = { trigger = { nesnd_premier_ev_attack_ok = yes } trigger_event = { id = nesnd_premier.23 popup = yes } }
+			15 = { trigger = { nesnd_premier_ev_rival_falls_ok = yes } trigger_event = { id = nesnd_premier.24 popup = yes } }
+		}
+	}
+}

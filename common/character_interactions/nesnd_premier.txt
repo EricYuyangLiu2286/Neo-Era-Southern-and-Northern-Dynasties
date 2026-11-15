@@ -1,0 +1,69 @@
+﻿# 「统治者与内阁」：任命首相。仿原版 02_favorite_interactions.txt 的 appoint_favorite。
+# Root = 被任命的人物，scope:actor = 本国。人选须是政府内某个利益集团的领袖，不必是最大集团的领袖。
+
+nesnd_premier_appoint = {
+	icon = "gfx/interface/icons/character_role_icons/politician.dds"
+	clicksound = "event:/SFX/UI/Military/command_grant"
+
+	potential = {
+		owner ?= scope:actor
+		scope:actor ?= {
+			has_journal_entry = nesnd_premier_journal
+			NOT = { var:nesnd_premier_pm ?= prev }
+		}
+		is_interest_group_leader = yes
+		is_ruler_of_own_country = no
+	}
+
+	show_requirements = yes
+
+	possible = {
+		custom_tooltip = {
+			text = nesnd_premier_cond_ig_in_gov
+			interest_group ?= { is_in_government = yes }
+		}
+		custom_tooltip = {
+			text = nesnd_premier_cond_not_exiled
+			is_in_exile_pool = no
+		}
+	}
+
+	effect = {
+		save_scope_as = nesnd_premier_new_pm
+		custom_tooltip = nesnd_premier_appoint_tt
+		scope:actor = {
+			# 换了集团：原首相所属集团不满，政潮上升。
+			if = {
+				limit = {
+					nesnd_premier_has_pm = yes
+					exists = var:nesnd_premier_pm_ig
+					NOT = { var:nesnd_premier_pm_ig ?= scope:nesnd_premier_new_pm.interest_group }
+				}
+				var:nesnd_premier_pm_ig ?= { add_modifier = { name = nesnd_power_humbled days = short_modifier_time } }
+				nesnd_premier_add = { BAR = intrigue AMT = 10 }
+			}
+			hidden_effect = {
+				nesnd_premier_install = yes
+				nesnd_premier_refresh = yes
+			}
+		}
+	}
+
+	cooldown = { days = 365 }
+
+	# AI 平时不换首相（首相失效时由日志自动补任），只在首相声望扫地、而此人明显更得人心时才换。
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				scope:actor ?= {
+					nesnd_premier_has_pm = yes
+					nesnd_premier_pop_v <= -40
+				}
+				interest_group ?= { is_in_government = yes }
+				popularity >= 20
+			}
+			add = 30
+		}
+	}
+}

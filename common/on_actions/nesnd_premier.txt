@@ -1,0 +1,58 @@
+﻿# 「统治者与内阁」：政府改组时立即校验首相。首相所在集团不在政府中时，由政府内最大集团的领袖出任（议会改组）。
+# 日志的每周刷新兜底（选举后组阁是否经过下列 on_action 未查证）。
+
+# Root = country
+on_government_reformed = {
+	on_actions = { nesnd_premier_government_reformed }
+}
+nesnd_premier_government_reformed = {
+	effect = {
+		if = {
+			limit = { has_journal_entry = nesnd_premier_journal }
+			nesnd_premier_refresh = yes
+		}
+	}
+}
+
+# Root = country
+on_election_campaign_end = {
+	on_actions = { nesnd_premier_election_end }
+}
+nesnd_premier_election_end = {
+	effect = {
+		if = {
+			limit = { has_journal_entry = nesnd_premier_journal }
+			nesnd_premier_refresh = yes
+		}
+	}
+}
+
+# Root = interest group
+on_ig_resigned_government = {
+	on_actions = { nesnd_premier_ig_resigned }
+}
+nesnd_premier_ig_resigned = {
+	effect = {
+		owner ?= {
+			if = {
+				limit = { has_journal_entry = nesnd_premier_journal }
+				nesnd_premier_refresh = yes
+			}
+		}
+	}
+}
+
+# Root = character。首相去世时立即撤下，下一次每周刷新由本集团的新领袖接任。
+on_character_death = {
+	on_actions = { nesnd_premier_character_death }
+}
+nesnd_premier_character_death = {
+	effect = {
+		owner ?= {
+			if = {
+				limit = { var:nesnd_premier_pm ?= prev }
+				nesnd_premier_pm_lost = yes
+			}
+		}
+	}
+}

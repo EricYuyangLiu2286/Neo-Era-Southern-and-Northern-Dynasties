@@ -1,0 +1,77 @@
+﻿# Mu Muzi and the book chain (flavorCNE.12-.16).
+
+# Character scope. Immortal until 1872 so she lives to publish (1871.5.15).
+nesnd_mu_muzi_set_immortality = {
+    if = {
+        limit = { game_date < 1872.1.1 is_immortal = no }
+        set_character_immortal = yes
+    }
+    else_if = {
+        limit = { game_date >= 1872.1.1 is_immortal = yes }
+        set_character_immortal = no
+    }
+}
+
+# Any scope, yearly. The first country to pulse each year does the whole world.
+nesnd_mu_muzi_yearly = {
+    if = {
+        limit = {
+            game_date < 1873.6.1
+            NOT = { has_global_variable = nesnd_mu_muzi_checked }
+        }
+        set_global_variable = { name = nesnd_mu_muzi_checked days = 300 }
+        every_country = {
+            limit = { any_scope_character = { nesnd_is_mu_muzi = yes } }
+            every_scope_character = {
+                limit = { nesnd_is_mu_muzi = yes }
+                nesnd_mu_muzi_set_immortality = yes
+            }
+        }
+        every_character_in_exile_pool = {
+            limit = { nesnd_is_mu_muzi = yes }
+            nesnd_mu_muzi_set_immortality = yes
+        }
+    }
+}
+
+# Country scope, monthly. When the book is due and she is in no country, bring her
+# to the country she belongs to: out of the exile pool, or a stand-in if she is dead.
+# While she sits in the void some other event holds her; wait for it to return her.
+nesnd_mu_muzi_monthly = {
+    if = {
+        limit = {
+            game_date >= 1871.5.15
+            NOT = { has_global_variable = bm_the_book_has_written }
+            NOT = { has_global_variable = nesnd_mu_muzi_recalled }
+            nesnd_mu_book_home = yes
+            NOT = { any_country = { any_scope_character = { nesnd_is_mu_muzi = yes } } }
+            NOT = { any_character_in_void = { nesnd_is_mu_muzi = yes } }
+        }
+        set_global_variable = { name = nesnd_mu_muzi_recalled days = 60 }
+        save_scope_as = mu_book_home
+        if = {
+            limit = { any_character_in_exile_pool = { nesnd_is_mu_muzi = yes } }
+            random_character_in_exile_pool = {
+                limit = { nesnd_is_mu_muzi = yes }
+                transfer_character = scope:mu_book_home
+            }
+        }
+        else = {
+            create_character = {
+                first_name = "Muzi"
+                last_name = "Mu"
+                female = yes
+                age = 56
+                culture = cu:ce_laoqin
+                interest_group = ig_rural_folk
+                ideology = ideology_modernizer_leader
+                traits = {
+                    brave
+                    basic_political_operator
+                    inspirational_orator
+                }
+                on_created = { set_variable = nesnd_mu_muzi_stand_in }
+            }
+        }
+    }
+}

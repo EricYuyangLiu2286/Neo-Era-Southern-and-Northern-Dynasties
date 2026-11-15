@@ -246,7 +246,7 @@ function Invoke-Check {
 function Invoke-Preview {
     Say '== 预览（不改动任何文件）' Cyan
     $p = @(Test-Processes)
-    if ($p.Count) { Say ("a. 游戏或启动器正在运行：{0}。实际部署会在这一步停止。" -f (($p | ForEach-Object { "$($_.ProcessName)($($_.Id))" }) -join '、')) Yellow }
+    if ($p.Count) { Say ("a. 游戏或启动器正在运行：{0}。实际部署会提示后继续。" -f (($p | ForEach-Object { "$($_.ProcessName)($($_.Id))" }) -join '、')) Yellow }
     else { Say 'a. 游戏和启动器均已关闭。' Green }
     $sp = @(Test-Source); if ($sp.Count) { $sp | ForEach-Object { Say "b. $_" Red } } else { Say 'b. 源目录检查通过。' Green }
     $tp = @(Test-Target); if ($tp.Count) { $tp | ForEach-Object { Say "c. $_" Red } } else { Say "c. 目标路径核对通过：$TARGET" Green }
@@ -282,8 +282,9 @@ function Invoke-Deploy([bool]$Force) {
     Say "== 部署$(if ($Force) { '（force）' })  $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" Cyan
     $script:Step = 'a'
     $p = @(Test-Processes)
-    if ($p.Count) { Stop-Here ("游戏或启动器仍在运行：{0}。请先关闭。" -f (($p | ForEach-Object { "$($_.ProcessName)($($_.Id))" }) -join '、')) }
-    Say 'a. 游戏和启动器均已关闭。' Green
+    # The author confirmed on 2026-11-14 that deploying under a running game does not crash it; warn only.
+    if ($p.Count) { Say ("a. 游戏或启动器正在运行：{0}。继续部署，新内容在下次启动游戏时生效。" -f (($p | ForEach-Object { "$($_.ProcessName)($($_.Id))" }) -join '、')) Yellow }
+    else { Say 'a. 游戏和启动器均已关闭。' Green }
 
     $script:Step = 'b'
     $sp = @(Test-Source); if ($sp.Count) { Stop-Here ($sp -join '；') }

@@ -1,0 +1,216 @@
+﻿# 「统治者与内阁」的按钮（诏令卡片，界面见 gui/journal_entry_widgets/nesnd_premier.gui）。Root = country。
+# 费用以首相人气支付：每个按钮给首相加一个 2.5 年的人物修正（nesnd_premier_cost_*），cost 字段只作卡片显示。
+# 冷却均不短于 2.5 年，同一按钮的费用修正不会叠加。
+
+nesnd_premier_btn_law = {
+	name = nesnd_premier_btn_law
+	desc = nesnd_premier_btn_law_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_law.dds"
+	cost = nesnd_premier_cost_large
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_premier_cond_has_pm nesnd_premier_has_pm = yes }
+		enacting_any_law = yes
+		trigger_if = {
+			limit = { enacting_any_law = yes nesnd_premier_has_pm = yes }
+			custom_tooltip = {
+				text = nesnd_premier_cond_pm_backs_law
+				var:nesnd_premier_pm ?= { law_enactment_stance = { law = owner.currently_enacting_law.type value > neutral } }
+			}
+		}
+	}
+	effect = {
+		nesnd_premier_pay = { BTN = law DELTA = -20 }
+		add_enactment_phase = 1
+		nesnd_premier_add = { BAR = balance AMT = 8 }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_premier_pop_v >= 0 } add = 60 }
+	}
+}
+
+nesnd_premier_btn_reward = {
+	name = nesnd_premier_btn_reward
+	desc = nesnd_premier_btn_reward_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_reward.dds"
+	cost = nesnd_premier_cost_regular
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_premier_cond_has_pm nesnd_premier_has_pm = yes }
+	}
+	effect = {
+		nesnd_premier_pay = { BTN = reward DELTA = -10 }
+		var:nesnd_premier_pm_ig ?= { add_modifier = { name = nesnd_power_reward days = normal_modifier_time } }
+		nesnd_premier_add = { BAR = balance AMT = 10 }
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = { nesnd_premier_pop_v >= 0 nesnd_premier_b < 65 }
+			add = 5
+			if = { limit = { var:nesnd_premier_pm_ig ?= { ig_approval < 0 } } add = 20 }
+		}
+	}
+}
+
+nesnd_premier_btn_placate = {
+	name = nesnd_premier_btn_placate
+	desc = nesnd_premier_btn_placate_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_placate.dds"
+	cost = nesnd_premier_cost_regular
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_premier_cond_has_pm nesnd_premier_has_pm = yes }
+	}
+	effect = {
+		nesnd_premier_pay = { BTN = placate DELTA = -10 }
+		if = {
+			limit = { nesnd_premier_mode_rival = yes }
+			var:nesnd_premier_rival_ig ?= { add_modifier = { name = nesnd_power_placated days = normal_modifier_time } }
+		}
+		else = {
+			save_scope_as = nesnd_premier_country
+			every_interest_group = {
+				limit = { NOT = { scope:nesnd_premier_country.var:nesnd_premier_pm_ig ?= this } ig_clout >= 0.05 }
+				add_modifier = { name = nesnd_power_placated_small days = normal_modifier_time }
+			}
+		}
+		nesnd_premier_center = { AMT = 15 }
+	}
+	ai_chance = {
+		value = 0
+		if = {
+			limit = { nesnd_premier_pop_v >= 0 }
+			add = 5
+			if = { limit = { OR = { nesnd_premier_b >= 70 nesnd_premier_b <= 30 } } add = 35 }
+		}
+	}
+}
+
+nesnd_premier_btn_speech = {
+	name = nesnd_premier_btn_speech
+	desc = nesnd_premier_btn_speech_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_mobilize.dds"
+	cost = nesnd_premier_cost_free
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_premier_cond_has_pm nesnd_premier_has_pm = yes }
+	}
+	effect = {
+		nesnd_premier_pm_modifier = { MOD = speech DELTA = 15 }
+		nesnd_premier_add = { BAR = intrigue AMT = 10 }
+		add_radicals = { value = small_radicals strata = lower }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_premier_pop_v < 0 nesnd_premier_i < 60 } add = 20 }
+	}
+}
+
+nesnd_premier_btn_restrain = {
+	name = nesnd_premier_btn_restrain
+	desc = nesnd_premier_btn_restrain_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_restrain.dds"
+	cost = nesnd_premier_cost_regular
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_premier_cond_has_pm nesnd_premier_has_pm = yes }
+	}
+	effect = {
+		nesnd_premier_pay = { BTN = restrain DELTA = -10 }
+		add_modifier = { name = nesnd_power_restraint days = short_modifier_time }
+		nesnd_premier_sub = { BAR = intrigue AMT = 20 }
+		# 统治者越得人心，越能把平衡拉回中点。
+		if = {
+			limit = { ruler ?= { popularity >= 20 } }
+			nesnd_premier_center = { AMT = 15 }
+		}
+		else_if = {
+			limit = { ruler ?= { popularity <= -20 } }
+			nesnd_premier_center = { AMT = 5 }
+		}
+		else = {
+			nesnd_premier_center = { AMT = 10 }
+		}
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_premier_i >= 60 } add = 20 }
+	}
+}
+
+nesnd_premier_btn_calm = {
+	name = nesnd_premier_btn_calm
+	desc = nesnd_premier_btn_calm_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_calm.dds"
+	cost = nesnd_premier_cost_regular
+	cooldown = { days = short_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_premier_cond_has_pm nesnd_premier_has_pm = yes }
+		custom_tooltip = { text = nesnd_premier_cond_intrigue_30 nesnd_premier_i >= 30 }
+	}
+	effect = {
+		nesnd_premier_pay = { BTN = calm DELTA = -10 }
+		nesnd_premier_sub = { BAR = intrigue AMT = 40 }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_premier_i >= 70 } add = 15 }
+	}
+}
+
+nesnd_premier_btn_investigate = {
+	name = nesnd_premier_btn_investigate
+	desc = nesnd_premier_btn_investigate_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_investigate.dds"
+	cost = nesnd_premier_cost_large
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_premier_cond_has_pm nesnd_premier_has_pm = yes }
+		custom_tooltip = { text = nesnd_premier_cond_mode_rival nesnd_premier_mode_rival = yes }
+		custom_tooltip = { text = nesnd_premier_cond_balance_le_20 nesnd_premier_b <= 20 }
+		custom_tooltip = { text = nesnd_premier_cond_rival_removable nesnd_premier_rival_removable = yes }
+	}
+	effect = {
+		nesnd_premier_pay = { BTN = investigate DELTA = -20 }
+		custom_tooltip = nesnd_premier_btn_investigate_tt
+		hidden_effect = { trigger_event = { id = nesnd_premier.26 popup = yes } }
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_premier_pop_v >= 0 } add = 5 }
+	}
+}
+
+nesnd_premier_btn_dissolve = {
+	name = nesnd_premier_btn_dissolve
+	desc = nesnd_premier_btn_dissolve_desc
+	icon = "gfx/interface/illustrations/journal/nesnd_power/nesnd_power_card_cabinet_share.dds"
+	cost = nesnd_premier_cost_large
+	cooldown = { days = normal_modifier_time }
+	visible = { always = yes }
+	possible = {
+		custom_tooltip = { text = nesnd_premier_cond_has_pm nesnd_premier_has_pm = yes }
+		custom_tooltip = { text = nesnd_premier_cond_franchise country_has_voting_franchise = yes }
+		custom_tooltip = { text = nesnd_premier_cond_no_campaign in_election_campaign = no }
+		custom_tooltip = { text = nesnd_premier_cond_balance_extreme OR = { nesnd_premier_b <= 20 nesnd_premier_b >= 80 } }
+	}
+	effect = {
+		nesnd_premier_pay = { BTN = dissolve DELTA = -20 }
+		call_election = { months = 3 }
+		nesnd_premier_reset_balance = yes
+		nesnd_premier_clear_intrigue = yes
+	}
+	ai_chance = {
+		value = 0
+		if = { limit = { nesnd_premier_b <= 15 } add = 10 }
+	}
+}
