@@ -25,6 +25,8 @@
 
 ## 未完成
 
+2026-11-18 [自建国家的本国公司](../../.scratch/national-companies/issues/01-design.md)：19 家公司、4 个特许事件、1 个日志、7 名经理、4 种名贵商品，部署 `a6699181`，STATIC_PASS，未实机验证。图标暂用原版，画图提示词在工作台 `reports/2026-11-18-national-companies/codex-icon-prompt.md`。
+
 2026-11-15 [新日志「统治者与内阁」](../../.scratch/premier/issues/01-implement.md)：给不能任命宠臣的非共和帝国（多为立宪君主国）。首相由角色互动任命，按人气缩放立法速度与合法性。平衡是首相集团对最大在野集团，所有集团都入阁时改为对其余各派。政府改组后首相集团出阁时，由政府内最大集团的领袖接任。与「宫廷力量」「执政者与派系」互斥，只改了 `nesnd_palace_shown` 一行。游戏外检查通过，已部署 `c3e2f208`（人气条为摇摆条，按钮扣人气当场刷新），待作者复测（英国）。
 
 2026-11-14 [公民工程日志 `war` 无效对象报错](../../.scratch/debug-release/issues/102-civic-theatre-war-link.md)：战区和平检查先判断 `is_at_war`，`war` 链接先判断存在，判定结果不变。`TRIGGER_MARKET_ACCESS_GREATER_OR_EQUAL_THIRD` 是原版本地化缺陷，未改。游戏外检查通过，已部署 `0fc4bf0b`，待作者复测。

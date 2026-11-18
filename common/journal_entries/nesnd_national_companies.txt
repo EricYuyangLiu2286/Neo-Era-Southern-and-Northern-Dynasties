@@ -1,0 +1,56 @@
+﻿# Transcontinental railway from the west coast. Opens company_nesnd_zongguanxian.
+# Same five railway states as the vanilla je_trans_continental_railway, which needs New York and so never reaches Dongzhou.
+nesnd_co_transcontinental = {
+	group = je_group_historical_content
+	icon = "gfx/interface/icons/event_icons/event_industry.dds"
+
+	is_shown_when_inactive = {
+		NOT = { has_variable = nesnd_co_zongguan_chartered }
+		any_scope_state = { state_region = s:STATE_CALIFORNIA }
+		any_scope_state = { state_region = s:STATE_UTAH }
+	}
+
+	possible = {
+		hidden_trigger = {
+			NOT = { has_variable = nesnd_co_zongguan_chartered }
+			NOT = { has_journal_entry = je_trans_continental_railway }
+		}
+		has_technology_researched = railways
+		any_scope_state = { state_region = s:STATE_CALIFORNIA is_incorporated = yes }
+		any_scope_state = { state_region = s:STATE_UTAH is_incorporated = yes }
+		any_scope_state = { state_region = s:STATE_NEBRASKA }
+	}
+
+	can_revolution_inherit = yes
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	weight = 50
+
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		conclusion_desc = nesnd_co_transcontinental_conclusion
+		color = "gold_positive"
+		trigger = {
+			any_scope_state = { state_region = s:STATE_NEBRASKA has_building = building_railway }
+			any_scope_state = { state_region = s:STATE_WYOMING has_building = building_railway }
+			any_scope_state = { state_region = s:STATE_UTAH has_building = building_railway }
+			any_scope_state = { state_region = s:STATE_NEVADA has_building = building_railway }
+			any_scope_state = { state_region = s:STATE_CALIFORNIA has_building = building_railway }
+		}
+		effect = {
+			set_variable = nesnd_co_zongguan_chartered
+			custom_tooltip = nesnd_co_zongguan_open_tt
+		}
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				NOT = { any_scope_state = { state_region = s:STATE_CALIFORNIA } }
+				NOT = { any_scope_state = { state_region = s:STATE_UTAH } }
+			}
+		}
+	}
+}
