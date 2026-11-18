@@ -1,0 +1,143 @@
+﻿# Diplomatic-play scope. GAME dp_revolution/dp_secession both define the
+# initiator as the uprising country. Keep per-conflict data on this play.
+nesnd_poland_civil_register = {
+	if = {
+		limit = {
+			exists = c:KRA
+			NOT = { has_global_variable = ce_poland_problem_end }
+			NOT = { has_variable = nesnd_poland_civil_record }
+			OR = { is_diplomatic_play_type = dp_revolution is_diplomatic_play_type = dp_secession }
+			target = { OR = { this = c:RUS this = c:PRU this = c:AUS this = c:FRA } }
+			OR = {
+				target = c:FRA
+				AND = { is_diplomatic_play_type = dp_secession initiator = { country_has_primary_culture = cu:polish } }
+				AND = { is_diplomatic_play_type = dp_revolution initiator = { OR = {
+							var:civil_war_type_var ?= movement_type:movement_liberal
+							var:civil_war_type_var ?= movement_type:movement_radical
+							var:civil_war_type_var ?= movement_type:movement_socialist
+							var:civil_war_type_var ?= movement_type:movement_labor
+							var:civil_war_type_var ?= movement_type:movement_communist
+				} } }
+			}
+		}
+		set_variable = nesnd_poland_civil_record
+		set_variable = { name = nesnd_poland_civil_origin value = target }
+		set_variable = { name = nesnd_poland_civil_rebels value = initiator }
+		set_variable = { name = nesnd_poland_civil_choice value = flag:neutral }
+		save_scope_as = nesnd_poland_conflict
+		target = { save_scope_as = nesnd_poland_government }
+		initiator = { save_scope_as = nesnd_poland_rebels }
+		if = { limit = { target = c:FRA }
+			set_variable = { name = nesnd_poland_civil_kind value = flag:france }
+			c:KRA = { trigger_event = { id = nesnd_poland_civil.3 popup = yes } }
+		} else_if = { limit = { is_diplomatic_play_type = dp_secession }
+			set_variable = { name = nesnd_poland_civil_kind value = flag:secession }
+			c:KRA = { trigger_event = { id = nesnd_poland_civil.1 popup = yes } }
+		} else = {
+			set_variable = { name = nesnd_poland_civil_kind value = flag:revolution }
+			c:KRA = { trigger_event = { id = nesnd_poland_civil.2 popup = yes } }
+		}
+	}
+}
+# on_wargoal_enforced documents actor=enforcer, target=defeated country,
+# diplomatic_play=the relevant play. Both civil-war types prohibit added goals.
+# Restrict to the exact two recorded parties, ignoring third-party settlements.
+nesnd_poland_civil_enforced = {
+	scope:diplomatic_play ?= {
+		if = { limit = {
+				has_variable = nesnd_poland_civil_record
+				NOT = { has_variable = nesnd_poland_civil_settled }
+				NOT = { has_global_variable = ce_poland_problem_end }
+				OR = {
+					AND = { var:nesnd_poland_civil_origin = scope:actor var:nesnd_poland_civil_rebels = scope:target }
+					AND = { var:nesnd_poland_civil_rebels = scope:actor var:nesnd_poland_civil_origin = scope:target }
+				}
+			}
+			set_variable = nesnd_poland_civil_settled
+			# Claude audit 2026-11-17: removed civil_end_month/year, civil_winner and
+			# last_civil_win_month/year. Nothing reads them (error.log "set but is never used").
+			scope:actor = {
+				save_scope_as = nesnd_poland_winner
+			}
+			if = { limit = { var:nesnd_poland_civil_kind = flag:france exists = c:KRA }
+				if = { limit = { OR = {
+							AND = { var:nesnd_poland_civil_choice = flag:rebels var:nesnd_poland_civil_rebels = scope:actor }
+							AND = { var:nesnd_poland_civil_choice = flag:government var:nesnd_poland_civil_origin = scope:actor }
+					} }
+					set_global_variable = { name = nesnd_poland_france_civil_offset value = 20 }
+				} else_if = { limit = { NOT = { var:nesnd_poland_civil_choice = flag:neutral } }
+					set_global_variable = { name = nesnd_poland_france_civil_offset value = -20 }
+				}
+				c:KRA = { trigger_event = { id = nesnd_poland_civil.7 popup = yes } }
+			} else_if = { limit = { var:nesnd_poland_civil_kind = flag:secession }
+				if = { limit = { var:nesnd_poland_civil_rebels = scope:actor exists = c:KRA }
+					if = { limit = { var:nesnd_poland_civil_choice = flag:rebels }
+						scope:actor = {
+							set_variable = nesnd_poland_union_candidate
+						}
+					}
+				} else = {
+					scope:actor = { set_variable = nesnd_poland_suppressed_rising nesnd_polish_exile_defeat = yes }
+				}
+			} else = {
+				if = { limit = { var:nesnd_poland_civil_rebels = scope:actor var:nesnd_poland_civil_choice = flag:rebels exists = c:KRA }
+					scope:actor = { trigger_event = { id = nesnd_poland_civil.5 days = 1 popup = yes } }
+				} else_if = { limit = { var:nesnd_poland_civil_origin = scope:actor var:nesnd_poland_civil_choice = flag:government exists = c:KRA }
+					c:KRA = {
+						change_relations = { country = scope:nesnd_poland_winner value = 20 }
+						scope:nesnd_poland_winner = { if = { limit = { c:RUS ?= this has_journal_entry = je_tsarpoints_master } je_tsarpoints_add_med = yes } }
+						custom_tooltip = { text = nesnd_bar_consensus_p5_tt je:je_ce_the_polish_problem ?= { add_progress = { name = nesnd_poland_consensus_bar value = 5 } } }
+						trigger_event = { id = nesnd_poland_civil.6 popup = yes }
+					}
+				}
+			}
+		}
+	}
+}
+# KRA country scope. Native arms-cost modifier represents covert wartime supply.
+# Civil-war progress belongs to the prewar movement and is deliberately not used here.
+nesnd_poland_supply_rebels = {
+	scope:nesnd_poland_conflict = { set_variable = { name = nesnd_poland_civil_choice value = flag:rebels } }
+	scope:nesnd_poland_rebels = {
+		add_modifier = { name = nesnd_poland_covert_arms months = 12 }
+	}
+	custom_tooltip = nesnd_poland_arms_cost_tt
+	add_treasury = { value = fixed_income multiply = -3 }
+	scope:nesnd_poland_government = { set_variable = { name = nesnd_poland_covert_network years = 3 } }
+	custom_tooltip = { text = nesnd_bar_rw_p10_tt je:je_ce_polish_reconquest ?= { add_progress = { name = nesnd_poland_red_white_bar value = 10 } } }
+}
+# Call once from root JE monthly effect (not a second autonomous monthly writer).
+nesnd_poland_civil_month = {
+	if = { limit = { exists = c:KRA NOT = { has_global_variable = ce_poland_problem_end } }
+		every_country = {
+			limit = {
+				OR = { c:POL ?= this has_variable = nesnd_poland_union_candidate }
+				is_subject = no is_at_war = no is_secessionist = no is_revolutionary = no
+				NOT = { has_variable = nesnd_poland_union_asked }
+			}
+			trigger_event = { id = nesnd_poland_civil.4 popup = yes }
+		}
+	}
+}
+# Annual pulse, with one 20% roll for each network, not monthly 20% rolls.
+nesnd_poland_conspiracy_year = {
+	if = { limit = { exists = c:KRA NOT = { has_global_variable = ce_poland_problem_end } }
+		every_country = { limit = { has_variable = nesnd_poland_covert_network }
+			random = { chance = 20
+				save_scope_as = nesnd_poland_conspiracy_target
+				set_variable = nesnd_poland_sanctions_claim
+				remove_variable = nesnd_poland_covert_network
+				c:KRA = { trigger_event = { id = nesnd_poland_civil.12 popup = yes } }
+			}
+		}
+	}
+}
+
+# Arms modifiers expire naturally; outstanding events guard the root end flag.
+nesnd_poland_civil_cleanup = {
+	every_country = {
+		limit = { OR = { custom_tooltip = { text = nesnd_ui_poland_covert_network_tt has_variable = nesnd_poland_covert_network } custom_tooltip = { text = nesnd_ui_poland_civil_ultimatum_target_tt has_variable = nesnd_poland_civil_ultimatum_target } } }
+		remove_variable = nesnd_poland_covert_network
+		remove_variable = nesnd_poland_civil_ultimatum_target
+	}
+}

@@ -1,0 +1,52 @@
+﻿nesnd_congress_request_btn = {
+	name = nesnd_congress_request_btn
+	desc = nesnd_congress_request_btn_desc
+	visible = { nesnd_poland_active = yes nesnd_congress_member = yes }
+	# Claude audit 2026-11-17: named conditions instead of raw variable lines.
+	possible = {
+		custom_tooltip = { text = nesnd_congress_not_sitting_tt NOT = { has_global_variable = nesnd_congress_round } }
+		custom_tooltip = { text = nesnd_congress_request_ready_tt NOT = { has_variable = nesnd_congress_request_cooldown } }
+	}
+	cooldown = { days = 7 }
+	effect = {
+		custom_tooltip = nesnd_congress_request_effect_tt
+		nesnd_congress_request_sitting = yes
+	}
+	ai_chance = { value = 1 }
+}
+
+nesnd_congress_submit_btn = {
+	name = nesnd_congress_submit_btn
+	desc = nesnd_congress_submit_btn_desc
+	visible = {
+		c:KRA ?= this
+		NOT = { has_global_variable = ce_poland_problem_end }
+	}
+	# Claude audit 2026-11-17: the three conditions were four "country has no variable" lines and the
+	# effect only named the event. The event lists the proposals and each one says what it submits.
+	possible = {
+		nesnd_congress_can_propose = yes
+	}
+	cooldown = { days = 7 }
+	effect = {
+		custom_tooltip = nesnd_congress_submit_effect_tt
+		trigger_event = { id = nesnd_congress.3 popup = yes }
+	}
+	ai_chance = { value = 5 }
+}
+
+nesnd_congress_sanctions_btn = {
+	name = nesnd_congress_sanctions_btn
+	desc = nesnd_congress_sanctions_btn_desc
+	visible = { nesnd_poland_active = yes has_variable = nesnd_poland_sanctions_claim }
+	possible = {
+		exists = c:KRA
+		nesnd_congress_can_propose = yes
+	}
+	cooldown = { days = 7 }
+	effect = {
+		custom_tooltip = nesnd_congress_submit_sanctions_tt
+		nesnd_congress_submit = { KIND = 4 TARGET = c:KRA DEFEATED = no }
+	}
+	ai_chance = { value = 50 }
+}

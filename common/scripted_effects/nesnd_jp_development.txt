@@ -1,21 +1,21 @@
 ﻿nesnd_jp_initialize = {
     if = {
-        limit = { OR = { has_variable = heir_heikatsu_spawned any_character = { nesnd_jp_is_heikatsu = yes } } }
+        limit = { OR = { hidden_trigger = { has_variable = heir_heikatsu_spawned } any_character = { nesnd_jp_is_heikatsu = yes } } }
         set_global_variable = nesnd_jp_heikatsu_ever_created
     }
 
     if = { limit = { nesnd_jp_country = yes }
         set_variable = nesnd_jp_managed
-        if = { limit = { NOT = { has_variable = nesnd_jp_statistics_ready } NOT = { has_variable = nesnd_jp_statistics_pending } }
+        if = { limit = { custom_tooltip = { text = nesnd_ui_not_jp_statistics_ready_tt NOT = { has_variable = nesnd_jp_statistics_ready } } hidden_trigger = { NOT = { has_variable = nesnd_jp_statistics_pending } } }
             set_variable = { name = nesnd_jp_statistics_pending days = 3 }
             trigger_event = { id = nesnd_jp_court.3 days = 2 }
         }
-        if = { limit = { NOT = { has_variable = nesnd_jp_schema } }
+        if = { limit = { hidden_trigger = { NOT = { has_variable = nesnd_jp_schema } } }
             set_variable = { name = nesnd_jp_schema value = 1 }
-            if = { limit = { c:JAP ?= this any_scope_state = { has_variable = nesnd_jp_political_receipt_JAP } } set_variable = nesnd_jp_political_done }
-            if = { limit = { c:JTK ?= this any_scope_state = { has_variable = nesnd_jp_political_receipt_JTK } } set_variable = nesnd_jp_political_done }
-            if = { limit = { c:JIM ?= this any_scope_state = { has_variable = nesnd_jp_political_receipt_JIM } } set_variable = nesnd_jp_political_done }
-            if = { limit = { NOT = { has_variable = nesnd_jp_cohesion } } set_variable = { name = nesnd_jp_cohesion value = 70 } }
+            if = { limit = { c:JAP ?= this any_scope_state = { hidden_trigger = { has_variable = nesnd_jp_political_receipt_JAP } } } set_variable = nesnd_jp_political_done }
+            if = { limit = { c:JTK ?= this any_scope_state = { hidden_trigger = { has_variable = nesnd_jp_political_receipt_JTK } } } set_variable = nesnd_jp_political_done }
+            if = { limit = { c:JIM ?= this any_scope_state = { hidden_trigger = { has_variable = nesnd_jp_political_receipt_JIM } } } set_variable = nesnd_jp_political_done }
+            if = { limit = { hidden_trigger = { NOT = { has_variable = nesnd_jp_cohesion } } } set_variable = { name = nesnd_jp_cohesion value = 70 } }
             set_variable = { name = nesnd_jp_war_months value = 0 }
             set_variable = { name = nesnd_jp_sol_previous value = average_sol }
             set_variable = { name = nesnd_jp_sol_change value = 0 }
@@ -33,6 +33,21 @@ nesnd_jp_sync_cohesion = {
         je:nesnd_jp_cohesion = { set_bar_progress = { name = nesnd_jp_cohesion_bar value = scope:jp_bar_owner.nesnd_jp_cohesion_value } }
     }
 }
+# 国民团结高于 50 时各融合度人口的激进化减缓，低于 50 时加快。档位变化时才重挂修正。
+nesnd_jp_clear_unity_mood = {
+    if = { limit = { has_modifier = nesnd_jp_unity_concord } remove_modifier = nesnd_jp_unity_concord }
+    if = { limit = { has_modifier = nesnd_jp_unity_discord } remove_modifier = nesnd_jp_unity_discord }
+    if = { limit = { hidden_trigger = { has_variable = nesnd_jp_mood_step } } remove_variable = nesnd_jp_mood_step }
+}
+nesnd_jp_update_unity_mood = {
+    if = {
+        limit = { OR = { NOT = { has_variable = nesnd_jp_mood_step } NOT = { var:nesnd_jp_mood_step = nesnd_jp_mood_step_value } } }
+        nesnd_jp_clear_unity_mood = yes
+        set_variable = { name = nesnd_jp_mood_step value = nesnd_jp_mood_step_value }
+        if = { limit = { var:nesnd_jp_mood_step > 0 } add_modifier = { name = nesnd_jp_unity_concord multiplier = { value = var:nesnd_jp_mood_step divide = 10 } } }
+        else_if = { limit = { var:nesnd_jp_mood_step < 0 } add_modifier = { name = nesnd_jp_unity_discord multiplier = { value = var:nesnd_jp_mood_step divide = -10 } } }
+    }
+}
 nesnd_jp_cohesion_monthly = {
     if = { limit = { nesnd_jp_cohesion_live = yes has_variable = nesnd_jp_statistics_ready }
         nesnd_jp_initialize = yes
@@ -42,6 +57,7 @@ nesnd_jp_cohesion_monthly = {
         else = { set_variable = { name = nesnd_jp_war_months value = 0 } }
         change_variable = { name = nesnd_jp_cohesion add = nesnd_jp_cohesion_delta }
         clamp_variable = { name = nesnd_jp_cohesion min = 0 max = 100 }
+        nesnd_jp_update_unity_mood = yes
         if = { limit = { var:nesnd_jp_cohesion < 25 }
             if = { limit = { NOT = { has_modifier = nesnd_jp_divided_councils } } add_modifier = { name = nesnd_jp_divided_councils } }
         } else = { if = { limit = { has_modifier = nesnd_jp_divided_councils } remove_modifier = nesnd_jp_divided_councils } }
@@ -55,20 +71,20 @@ nesnd_jp_cohesion_monthly = {
 # Mode 0 is also a completed draw. Loading a save or refreshing the other
 # Japanese journals must not replace a quiet month with another draw.
 nesnd_jp_reset_culture_plan = {
-    if = { limit = { has_variable = nesnd_jp_next_mode } remove_variable = nesnd_jp_next_mode }
-    if = { limit = { has_variable = nesnd_jp_next_realm } remove_variable = nesnd_jp_next_realm }
-    if = { limit = { has_variable = nesnd_jp_next_state } remove_variable = nesnd_jp_next_state }
-    if = { limit = { has_variable = nesnd_jp_next_target } remove_variable = nesnd_jp_next_target }
-    if = { limit = { has_variable = nesnd_jp_next_pop } remove_variable = nesnd_jp_next_pop }
-    if = { limit = { has_variable = nesnd_jp_next_source_culture } remove_variable = nesnd_jp_next_source_culture }
+    if = { limit = { hidden_trigger = { has_variable = nesnd_jp_next_mode } } remove_variable = nesnd_jp_next_mode }
+    if = { limit = { hidden_trigger = { has_variable = nesnd_jp_next_realm } } remove_variable = nesnd_jp_next_realm }
+    if = { limit = { hidden_trigger = { has_variable = nesnd_jp_next_state } } remove_variable = nesnd_jp_next_state }
+    if = { limit = { hidden_trigger = { has_variable = nesnd_jp_next_target } } remove_variable = nesnd_jp_next_target }
+    if = { limit = { hidden_trigger = { has_variable = nesnd_jp_next_pop } } remove_variable = nesnd_jp_next_pop }
+    if = { limit = { hidden_trigger = { has_variable = nesnd_jp_next_source_culture } } remove_variable = nesnd_jp_next_source_culture }
 }
 
 nesnd_jp_prepare_culture_plan = {
     if = {
         limit = {
             nesnd_jp_cohesion_live = yes
-            has_variable = nesnd_jp_statistics_ready
-            NOT = { has_variable = nesnd_jp_next_mode }
+            custom_tooltip = { text = nesnd_ui_jp_statistics_ready_tt has_variable = nesnd_jp_statistics_ready }
+            hidden_trigger = { NOT = { has_variable = nesnd_jp_next_mode } }
         }
         set_variable = { name = nesnd_jp_next_mode value = 0 }
         set_variable = { name = nesnd_jp_next_realm value = country_definition }

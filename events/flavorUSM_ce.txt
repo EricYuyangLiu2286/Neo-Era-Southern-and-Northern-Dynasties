@@ -114,9 +114,9 @@ flavorUSM.2 = {
 				limit = {
 					any_scope_state = {
 						OR = {
-							state_region = s:STATE_WESTERN_HUBEI
+							OR = { state_region = s:STATE_WESTERN_HUBEI state_region = s:STATE_JINGNAN }
 							state_region = s:STATE_XIANGYANG
-							state_region = s:STATE_EASTERN_HUBEI
+							OR = { state_region = s:STATE_EASTERN_HUBEI state_region = s:STATE_HUANGZHOU }
 							state_region = s:STATE_HUNAN
 							
 						}
@@ -125,9 +125,9 @@ flavorUSM.2 = {
 				random_scope_state = {
 					limit = {
 						OR = {
-							state_region = s:STATE_WESTERN_HUBEI
+							OR = { state_region = s:STATE_WESTERN_HUBEI state_region = s:STATE_JINGNAN }
 							state_region = s:STATE_XIANGYANG
-							state_region = s:STATE_EASTERN_HUBEI
+							OR = { state_region = s:STATE_EASTERN_HUBEI state_region = s:STATE_HUANGZHOU }
 							state_region = s:STATE_HUNAN
 						}
 					}
@@ -300,9 +300,9 @@ flavorUSM.3 = {
 				limit = {
 					any_scope_state = {
 						OR = {
-							state_region = s:STATE_WESTERN_HUBEI
+							OR = { state_region = s:STATE_WESTERN_HUBEI state_region = s:STATE_JINGNAN }
 							state_region = s:STATE_XIANGYANG
-							state_region = s:STATE_EASTERN_HUBEI
+							OR = { state_region = s:STATE_EASTERN_HUBEI state_region = s:STATE_HUANGZHOU }
 							state_region = s:STATE_HUNAN
 							
 						}
@@ -311,9 +311,9 @@ flavorUSM.3 = {
 				random_scope_state = {
 					limit = {
 						OR = {
-							state_region = s:STATE_WESTERN_HUBEI
+							OR = { state_region = s:STATE_WESTERN_HUBEI state_region = s:STATE_JINGNAN }
 							state_region = s:STATE_XIANGYANG
-							state_region = s:STATE_EASTERN_HUBEI
+							OR = { state_region = s:STATE_EASTERN_HUBEI state_region = s:STATE_HUANGZHOU }
 							state_region = s:STATE_HUNAN
 						}
 					}
@@ -433,281 +433,12 @@ flavorUSM.3 = {
 flavorUSM.4 = {
 	type = country_event
 	hidden = yes
+	# Kept for its callers (the court-in-exile events). The succession itself is nesnd_south_accession.
 	immediate = {
-		if = {
-			limit = {
-				c:USM ?= this
-				NOT = {
-					has_variable = tag_WUU_var
-				}
-				NOT = {
-					has_global_variable = nesnd_south_settled
-				}
-				NOT = {
-					has_variable = nesnd_accession_pending
-				}
-				NOT = {
-					has_variable = nesnd_accession_executed
-				}
-				NOT = {
-					has_variable = nesnd_accession_deferred
-				}
-			}
-			nesnd_ming_prepare_accession = yes
-			if = {
-				limit = {
-					nesnd_ming_accession_can_execute = yes
-				}
-				set_variable = nesnd_accession_pending
-				trigger_event = {
-					id = flavorUSM.400
-					popup = yes
-				}
-			}
-			else_if = {
-				limit = {
-					is_player = yes
-					nesnd_board_stance_value = 1
-				}
-				trigger_event = {
-					id = nesnd_ming_court.9
-					popup = yes
-				}
-			}
+		if = { limit = { c:USM ?= this NOT = { has_variable = tag_WUU_var } NOT = { has_global_variable = nesnd_south_settled } }
+			nesnd_south_lock = yes
 		}
 	}
-}
-
-flavorUSM.400 = {
-	type = country_event
-	placement = root
-	duration = 3
-	title = flavorUSM.4.t
-	desc = flavorUSM.4.d
-	event_image = {
-		video = "gfx/event_pictures/unspecific_politicians_arguing.bk2"
-	}
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	trigger = {
-		c:USM ?= this
-		NOT = {
-			has_variable = tag_WUU_var
-		}
-		NOT = {
-			has_global_variable = nesnd_south_settled
-		}
-	}
-	immediate = {
-		if = {
-			limit = {
-				nesnd_ming_accession_can_execute = yes
-				has_variable = nesnd_accession_pending
-			}
-			set_variable = nesnd_accession_executed
-			remove_variable = nesnd_accession_pending
-			if = {
-				limit = {
-					any_country = {
-						any_scope_character = {
-							has_template = USM_zheng_Ju
-							OR = {
-								owner = root
-								is_ruler_of_own_country = no
-							}
-							is_character_alive = yes
-						}
-					}
-				}
-				random_country = {
-					limit = {
-						any_scope_character = {
-							has_template = USM_zheng_Ju
-							OR = {
-								owner = root
-								is_ruler_of_own_country = no
-							}
-							is_character_alive = yes
-						}
-					}
-					random_scope_character = {
-						limit = {
-							has_template = USM_zheng_Ju
-							OR = {
-								owner = root
-								is_ruler_of_own_country = no
-							}
-							is_character_alive = yes
-						}
-						transfer_character = root
-						save_scope_as = nesnd_wu_ruler
-					}
-				}
-			}
-			else_if = {
-				limit = {
-					NOT = {
-						has_global_variable = nesnd_born_usm_zheng_ju
-					}
-					year < 1890
-				}
-				create_character = {
-					template = USM_zheng_Ju
-					save_scope_as = nesnd_wu_ruler
-				}
-			}
-			if = {
-				limit = {
-					exists = scope:nesnd_wu_ruler
-				}
-				scope:nesnd_wu_ruler = {
-					set_character_as_ruler = yes
-				}
-			}
-			else = {
-				create_character = {
-					last_name = "ce_Zheng"
-					first_name = "name_yuan"
-					age = 35
-					culture = cu:ce_wuu
-					interest_group = ig_industrialists
-					ideology = ideology_reformer
-					ruler = yes
-				}
-			}
-			set_variable = tag_WUU_var
- nesnd_ming_mark_retained_royals = yes
-
-			set_variable = ce_usm_conflict_evoked
-			remove_variable = flavor_USM_crisis_intro
-			set_variable = ce_usm_civilwar_journal_trigger
-			set_variable = {
-				name = usm_opposition_country_choice
-				value = 0
-			}
-			set_variable = {
-				name = usm_opposition_country_count
-				value = 0
-			}
-			set_variable = {
-				name = usm_subject_country_count
-				value = 0
-			}
-			set_variable = {
-				name = usm_opposition_country_choice_tt_var
-				value = 0
-			}
-			c:SIH ?= {
-				if = {
-					limit = {
-						is_subject_of = root
-					}
-					set_variable = nesnd_invited_south
-					trigger_event = {
-						id = usm_civilwar.1
-						days = 7
-						popup = yes
-					}
-				}
-			}
-			c:HNA ?= {
-				if = {
-					limit = {
-						is_subject_of = root
-					}
-					set_variable = nesnd_invited_south
-					trigger_event = {
-						id = usm_civilwar.1
-						days = 7
-						popup = yes
-					}
-				}
-			}
-			c:GNG ?= {
-				if = {
-					limit = {
-						is_subject_of = root
-					}
-					set_variable = nesnd_invited_south
-					trigger_event = {
-						id = usm_civilwar.1
-						days = 7
-						popup = yes
-					}
-				}
-			}
-			c:PHI ?= {
-				if = {
-					limit = {
-						is_subject_of = root
-					}
-					set_variable = nesnd_invited_south
-					trigger_event = {
-						id = usm_civilwar.1
-						days = 7
-						popup = yes
-					}
-				}
-			}
-			c:DEI ?= {
-				if = {
-					limit = {
-						is_subject_of = root
-					}
-					set_variable = nesnd_invited_south
-					trigger_event = {
-						id = usm_civilwar.1
-						days = 7
-						popup = yes
-					}
-				}
-			}
-			c:YN1 ?= {
-				if = {
-					limit = {
-						is_subject_of = root
-					}
-					set_variable = nesnd_invited_south
-					trigger_event = {
-						id = usm_civilwar.1
-						days = 7
-						popup = yes
-					}
-				}
-			}
-			c:JAP ?= {
-				trigger_event = {
-					id = usm_civilwar.23
-					days = 7
-					popup = yes
-				}
-			}
-			add_journal_entry = {
-				type = ce_usm_civilwar_journal
-			}
-			nesnd_notify_foreign_countries = yes
-		}
-		else = {
-			remove_variable = nesnd_accession_pending
-			if = {
-				limit = {
-					is_player = yes
-					nesnd_board_stance_value = 1
-				}
-				trigger_event = {
-					id = nesnd_ming_court.9
-					popup = yes
-				}
-			}
-		}
-	}
-	option = {
-		name = flavorUSM.4.1
-		default_option = yes
-		ai_chance = {
-			base = 100
-		}
-	}
-	flavor = flavorUSM.4.f
 }
 
 flavorUSM.5 = {
@@ -753,6 +484,7 @@ flavorUSM.5 = {
 				kill_character = yes
 			}
 			set_variable = kill_character_chendongyang
+			nesnd_south_add_pressure = { AMT = 25 }
 			remove_variable = nesnd_chen_case_pending_death
 			nesnd_chen_after_death = yes
 		}
@@ -833,21 +565,16 @@ flavorUSM.6 = {
 		c:USM ?= this
 		has_variable = usm_conflicts_within_tracker
 		has_variable = started_with_chendongyang
-		NOT = {
-			any_character = {
-				has_template = USM_chen_dongyang
-				is_character_alive = yes
-			}
-		}
+		has_global_variable = nesnd_chen_dead
 		game_date <= 1862.1.1
 	}
 	immediate = {
+		# A death outside the First Minister's case adds no pressure (author 2026-11-17); only the case in April 1838 does.
 		nesnd_chen_after_death = yes
 	}
 	option = {
 		name = flavorUSM.6.1
 		default_option = yes
-		custom_tooltip = increase_usm_conflicts_25
 		add_loyalists = {
 			value = medium_radicals
 			interest_group = scope:ce_rural_folk_ig
@@ -911,7 +638,7 @@ flavorUSM.7 = {
     is_country_alive = yes
     has_variable = nesnd_diaojin_pending
     NOT = { has_global_variable = nesnd_diaojin_arrived }
-    NOT = { any_character = { has_template = USM_chen_dongyang is_character_alive = yes } }
+    has_global_variable = nesnd_chen_dead
 }
 
 	immediate = {
@@ -1005,7 +732,7 @@ flavorUSM.8 = {
 		default_option = yes
 		if = {
 			limit = {
-				has_variable = flavorming_usm_91
+				hidden_trigger = { has_variable = flavorming_usm_91 }
 			}
 			show_as_tooltip = {
 				ROOT ?= {
@@ -1176,7 +903,7 @@ flavorUSM.9 = {
 		default_option = yes
 		if = {
 			limit = {
-				has_variable = flavorming_usm_91
+				hidden_trigger = { has_variable = flavorming_usm_91 }
 			}
 			show_as_tooltip = {
 				ROOT ?= {
@@ -1348,7 +1075,7 @@ flavorUSM.10 = {
 		default_option = yes
 		if = {
 			limit = {
-				has_variable = flavorming_usm_91
+				hidden_trigger = { has_variable = flavorming_usm_91 }
 			}
 			show_as_tooltip = {
 				ROOT ?= {

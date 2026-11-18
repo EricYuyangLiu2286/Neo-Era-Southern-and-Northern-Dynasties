@@ -1,0 +1,310 @@
+﻿REPLACE:je_tp_tsar_gendarme_of_europe = { # Nicholas I
+	icon = "gfx/interface/icons/event_icons/event_imperial_eagle.dds"
+
+	group = je_group_tsarpoints
+	dlc = dlc019
+
+	possible = {
+		always = no
+	}
+
+	activation_description = {
+		always = yes
+	}
+
+	scripted_button = je_tp_tsar_gendarme_of_europe_button_1
+	scripted_button = je_tp_tsar_gendarme_of_europe_button_2
+	scripted_button = je_tp_tsar_gendarme_of_europe_button_3
+	scripted_button = je_tp_tsar_gendarme_of_europe_button_4
+
+	immediate = {
+		je_tsarpoints_define_as_agenda_tsar = yes
+		je_tsarpoints_goal_fail_var = yes
+		ruler = {
+			save_scope_as = nicholas_i_scope
+		}
+		set_variable = { name = je_tp_tsar_gendarme_of_europe_button_2_cached_rev_prestige_ratio value = 0 }
+	}
+
+	on_monthly_pulse = {
+		random_events = {
+			200 = 0
+			10 = russia_misc_events.1
+		}
+	}
+
+	on_weekly_pulse = {
+		effect = {
+			if = {
+				limit = {
+					OR = {
+						has_global_variable = peoples_springtime_happening
+						has_global_variable = peoples_springtime_happened
+					}
+				}
+				set_variable = {
+					name = je_tp_tsar_gendarme_of_europe_button_2_cached_total_prestige
+					value = springtime_total_europe_prestige
+				}
+				set_variable = {
+					name = je_tp_tsar_gendarme_of_europe_button_2_cached_rev_prestige
+					value = springtime_total_europe_revolutionary_prestige
+				}
+				if = {
+					limit = {
+						var:je_tp_tsar_gendarme_of_europe_button_2_cached_total_prestige > 0
+					}
+					set_variable = {
+						name = je_tp_tsar_gendarme_of_europe_button_2_cached_rev_prestige_ratio
+						value = {
+							add = var:je_tp_tsar_gendarme_of_europe_button_2_cached_rev_prestige
+							divide = var:je_tp_tsar_gendarme_of_europe_button_2_cached_total_prestige
+						}
+					}
+				}
+			}
+		}
+	}
+
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			calc_true_if = {
+				amount >= 3
+				custom_tooltip = {
+					text = je_tp_tsar_gendarme_of_europe_button_1_complete_tt
+					has_variable = je_tp_tsar_gendarme_of_europe_button_1_complete
+				}
+				custom_tooltip = {
+					text = je_tp_tsar_gendarme_of_europe_button_2_complete_tt
+					has_variable = je_tp_tsar_gendarme_of_europe_button_2_complete
+				}
+				custom_tooltip = {
+					text = je_tp_tsar_gendarme_of_europe_button_3_complete_tt
+					has_variable = je_tp_tsar_gendarme_of_europe_button_3_complete
+				}
+				custom_tooltip = {
+					text = je_tp_tsar_gendarme_of_europe_button_4_complete_tt
+					has_variable = je_tp_tsar_gendarme_of_europe_button_4_complete
+				}
+			}
+		}
+		effect = {
+			je_tsarpoints_add_med = yes
+			je_tsarpoints_mark_je_completed = yes
+			je_tsarpoints_cleanup_gendarme_of_europe_variables = yes
+		}
+	}
+
+	outcome = {
+		header = je_standard_failure_header
+		effect_header = je_standard_on_failure_header
+		color = "blue_negative"
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				NOT = { has_journal_entry = je_tsarpoints_master }
+				je_tsarpoints_ruler_check = yes
+				NOT = {
+					has_law_or_variant = law_type:law_autocracy
+				}
+				NOT = {
+					has_law_or_variant = law_type:law_state_religion
+				}
+			}
+		}
+		effect = {
+			if = {
+				limit = {
+					scope:journal_entry ?= {
+						scripted_bar_progress = {
+							name = je_tp_tsar_gendarme_of_europe_progress_bar
+							value > 0
+						}
+					}
+				}
+				je_tsarpoints_add_partial = {
+					PROGRESS_BAR = je_tp_tsar_gendarme_of_europe_progress_bar
+					PROGRESS_BAR_MAX = 3
+					REWARD = tsarpoints_value_med
+				}
+			}
+			else = {
+				je_tsarpoints_subtract_low = yes
+			}
+			je_tsarpoints_cleanup_gendarme_of_europe_variables = yes
+		}
+	}
+
+	map_color = {
+		if = {
+			limit = {
+				je_tp_gendarme_of_europe_state_owned_by_revolutionary_country = yes
+			}
+			value = "springtime_revolutionary_red" # Intended
+		}
+		else_if = {
+			limit = {
+				je_tp_gendarme_of_europe_state_owned_by_allied_monarchy = yes
+			}
+			value = "emperor_and_autocrat_golden_yellow"
+		}
+		else_if = {
+			limit = {
+				is_in_geographic_region = geographic_region_diocese_of_kamchatka
+				je_tp_gendarme_of_europe_state_is_sufficiently_orthodox = yes
+			}
+			value = "emperor_and_autocrat_orthodox_purple"
+		}
+	}
+
+	map_color_second = {
+		if = { # Similar to Springtime mapmode, but limited to Europe
+			limit = {
+				OR = {
+					custom_tooltip = { text = nesnd_ui_peoples_springtime_happening_tt has_global_variable = peoples_springtime_happening }
+					custom_tooltip = { text = nesnd_ui_peoples_springtime_happened_tt has_global_variable = peoples_springtime_happened }
+				}
+				is_in_revolt = yes
+				je_tp_gendarme_of_europe_state_owned_by_revolutionary_country = no
+				owner = {
+					is_in_geographic_region = geographic_region_europe
+					any_civil_war = {
+						political_movement ?= {
+							OR = {
+								movement_is_liberal = yes
+								movement_is_socialist = yes
+							}
+						}
+					}
+				}
+			}
+			value = "springtime_revolutionary_red"
+		}
+		else_if = {
+			limit = {
+				custom_tooltip = { text = nesnd_ui_not_peoples_springtime_happening_tt NOT = {
+					has_global_variable = peoples_springtime_happening
+				} }
+				je_tp_gendarme_of_europe_state_owned_by_great_power_monarchy = yes
+				je_tp_gendarme_of_europe_state_owned_by_allied_monarchy = no
+			}
+			value = "emperor_and_autocrat_golden_yellow"
+		}
+		else_if = {
+			limit = {
+				is_in_geographic_region = geographic_region_diocese_of_kamchatka
+				je_tp_gendarme_of_europe_state_is_sufficiently_orthodox = no
+			}
+			value = "emperor_and_autocrat_orthodox_purple"
+		}
+	}
+
+	map_tooltip = {
+		if = {
+			limit = {
+				je_tp_gendarme_of_europe_state_owned_by_revolutionary_country = yes
+			}
+			owner = {
+				custom_tooltip_no_bullet = je_tp_gendarme_of_europe_map_revolutionary_tt
+			}
+		}
+		else_if = {
+			limit = {
+				je_tp_gendarme_of_europe_state_owned_by_allied_monarchy = yes
+			}
+			owner = {
+				custom_tooltip_no_bullet = je_tp_gendarme_of_europe_map_allied_monarchy_tt
+			}
+		}
+		else_if = {
+			limit = {
+				je_tp_gendarme_of_europe_state_owned_by_great_power_monarchy = yes
+			}
+			owner = {
+				custom_tooltip_no_bullet = je_tp_gendarme_of_europe_map_eligible_monarchy_tt
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					custom_tooltip = { text = nesnd_ui_peoples_springtime_happening_tt has_global_variable = peoples_springtime_happening }
+					custom_tooltip = { text = nesnd_ui_peoples_springtime_happened_tt has_global_variable = peoples_springtime_happened }
+				}
+				is_in_revolt = yes
+				owner = {
+					is_in_geographic_region = geographic_region_europe
+					any_civil_war = {
+						political_movement ?= {
+							OR = {
+								movement_is_liberal = yes
+								movement_is_socialist = yes
+							}
+						}
+					}
+				}
+			}
+			custom_tooltip_no_bullet = je_tp_gendarme_of_europe_map_springtime_revolt_tt
+		}
+		if = {
+			limit = {
+				is_in_geographic_region = geographic_region_diocese_of_kamchatka
+			}
+			if = {
+				limit = {
+					je_tp_gendarme_of_europe_state_is_sufficiently_orthodox = yes
+				}
+				custom_tooltip_no_bullet = je_tp_gendarme_of_europe_map_orthodox_tt
+			}
+			else = {
+				custom_tooltip_no_bullet = je_tp_gendarme_of_europe_map_not_orthodox_tt
+			}
+		}
+		if = {
+			limit = {
+				owner ?= {
+					has_journal_entry = je_red_summer
+				}
+			}
+			owner ?= {
+				custom_tooltip_no_bullet = "springtime_map_red_summer_status"
+				if = {
+					limit = {
+						has_diplomats_expelled = ROOT
+					}
+					custom_tooltip_no_bullet = "springtime_map_red_summer_status_rus_3_tt"
+				}
+				else_if = {
+					limit = {
+						hidden_trigger = { has_variable = tp_counter_revolution_ukaz_var }
+					}
+					custom_tooltip_no_bullet = "springtime_map_red_summer_status_rus_2_tt"
+				}
+				else = {
+					custom_tooltip_no_bullet = "springtime_map_red_summer_status_rus_tt"
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				owner = {
+					OR = {
+						custom_tooltip = { text = nesnd_ui_peoples_springtime_liberal_victory_tt has_variable = peoples_springtime_liberal_victory }
+						custom_tooltip = { text = nesnd_ui_peoples_springtime_radical_victory_tt has_variable = peoples_springtime_radical_victory }
+					}
+				}
+			}
+			owner ?= {
+				custom_tooltip_no_bullet = "springtime_map_red_summer_concluded_liberal"
+			}
+		}
+	}
+
+	scripted_progress_bar = je_tp_tsar_gendarme_of_europe_progress_bar
+	should_be_pinned_by_default_uninvolved_or_context = yes
+
+	weight = 1000
+}

@@ -1,0 +1,57 @@
+﻿# Wu holds Japan outside the eastern question's own endings: annexed (subject annexation, conquest,
+# the expedition journal), or bound as a subject tighter than the opening tribute.
+# Annexed: nesnd_japan_recovery.1 -> nesnd_japan_recovery_commit -> nesnd_partition_japan.
+# Subject: nesnd_japan_enfeoff_subject -> nesnd_partition_japan.
+nesnd_usm_enfeoff_japan = {
+    is_shown = {
+        c:USM ?= this
+        has_variable = tag_WUU_var
+        NOT = { has_global_variable = nesnd_japan_partitioned }
+        NOT = { has_variable = nesnd_japan_recovery_pending }
+        NOT = { c:JTK ?= { is_country_alive = yes } }
+        NOT = { c:JIM ?= { is_country_alive = yes } }
+        OR = {
+            nesnd_japan_held_as_subject = yes
+            AND = {
+                NOT = { c:JAP ?= { is_country_alive = yes } }
+                any_scope_state = {
+                    OR = { state_region = s:STATE_KANTO state_region = s:STATE_KYOTO state_region = s:STATE_CHUGOKU }
+                }
+            }
+        }
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_usm_enfeoff_japan_south_tt
+            nesnd_japan_south_war_over = yes
+        }
+        trigger_if = {
+            limit = { nesnd_japan_held_as_subject = yes }
+            custom_tooltip = {
+                text = nesnd_usm_enfeoff_japan_subject_tt
+                nesnd_japan_subject_seats_whole = yes
+            }
+        }
+        trigger_else = {
+            custom_tooltip = {
+                text = nesnd_usm_enfeoff_japan_seats_tt
+                nesnd_japan_recovery_anchor_states = yes
+            }
+        }
+    }
+    when_taken = {
+        custom_tooltip = nesnd_usm_enfeoff_japan_effect_tt
+        hidden_effect = {
+            if = {
+                limit = { nesnd_japan_held_as_subject = yes }
+                nesnd_japan_enfeoff_subject = yes
+            }
+            else = {
+                set_variable = nesnd_japan_recovery_pending
+                nesnd_japan_recovery_request = yes
+            }
+        }
+    }
+    # The AI should divide the islands as soon as it holds them.
+    ai_chance = { value = 100 }
+}

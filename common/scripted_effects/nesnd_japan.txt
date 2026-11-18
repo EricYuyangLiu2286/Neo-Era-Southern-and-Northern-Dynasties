@@ -6,242 +6,9 @@ nesnd_partition_japan = {
             c:JAP ?= this
             nesnd_japan_partition_possible = yes
         }
-        nesnd_jp_new_realm = yes
-        clear_saved_scope = nesnd_partition_tokugawa_incumbent
-        clear_saved_scope = nesnd_partition_yamato_incumbent
-        if = { limit = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_tokugawa } } }
-            ruler = { save_scope_as = nesnd_partition_tokugawa_incumbent }
-        }
-        else_if = { limit = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_yamato } } }
-            ruler = { save_scope_as = nesnd_partition_yamato_incumbent }
-        }
-        clear_saved_scope = nesnd_tokugawa_successor
-        clear_saved_scope = nesnd_japanese_emperor
-        if = {
-            limit = {
-                any_scope_character = {
-                    has_template = JAP_ieyoshi_tokugawa
-                    is_character_alive = yes
-                    is_ruler_of_own_country = no
-                }
-            }
-            random_scope_character = {
-                limit = {
-                    has_template = JAP_ieyoshi_tokugawa
-                    is_character_alive = yes
-                    is_ruler_of_own_country = no
-                }
-                save_scope_as = nesnd_tokugawa_successor
-            }
-        }
-        else_if = {
-            limit = {
-                any_scope_character = {
-                    nesnd_character_of_dynasty = { HOUSE = house_tokugawa }
-                    is_character_alive = yes
-                    is_ruler_of_own_country = no
-                }
-            }
-            random_scope_character = {
-                limit = {
-                    nesnd_character_of_dynasty = { HOUSE = house_tokugawa }
-                    is_character_alive = yes
-                    is_ruler_of_own_country = no
-                }
-                save_scope_as = nesnd_tokugawa_successor
-            }
-        }
-        if = {
-            limit = {
-                trigger_if = {
-                    limit = { exists = var:emperor_var }
-                    var:emperor_var = {
-                        is_character_alive = yes
-                        owner = c:JAP
-                        is_ruler_of_own_country = no
-                    }
-                }
-                trigger_else = { always = no }
-            }
-            var:emperor_var = {
-                save_scope_as = nesnd_japanese_emperor
-            }
-        }
-        else_if = {
-            limit = {
-                any_scope_character = {
-                    nesnd_character_of_dynasty = { HOUSE = house_yamato }
-                    is_character_alive = yes
-                    is_ruler_of_own_country = no
-                }
-            }
-            random_scope_character = {
-                limit = {
-                    nesnd_character_of_dynasty = { HOUSE = house_yamato }
-                    is_character_alive = yes
-                    is_ruler_of_own_country = no
-                }
-                save_scope_as = nesnd_japanese_emperor
-            }
-        }
-        if = {
-            limit = {
-                NOT = {
-                    c:JTK ?= {
-                        is_country_alive = yes
-                    }
-                }
-            }
-            create_country = {
-                tag = JTK
-                origin = c:JAP
-                state = s:STATE_KANTO.region_state:JAP
-                on_created = {
-                    nesnd_jp_new_realm = yes
-                    if = {
-                        limit = {
-                            c:JAP ?= {
-                                has_variable = nesnd_japan_recovery_created
-                            }
-                        }
-                        set_variable = nesnd_japan_recovery_created
-                    }
-                    remove_variable = nesnd_japan_unity_entered
-                    remove_variable = nesnd_japan_unified
-                    remove_variable = emperor_var
-                    activate_law = law_type:law_monarchy
-                    activate_law = law_type:law_autocracy
-                    set_capital = STATE_KANTO
-                    if = {
-                        limit = { NOT = { exists = scope:nesnd_partition_tokugawa_incumbent } }
-                        if = {
-                            limit = {
-                                exists = scope:nesnd_tokugawa_successor
-                                scope:nesnd_tokugawa_successor = {
-                                    is_character_alive = yes
-                                    OR = {
-                                        AND = {
-                                            owner = c:JAP
-                                            is_ruler_of_own_country = no
-                                        }
-                                        owner = c:JTK
-                                    }
-                                }
-                            }
-                            scope:nesnd_tokugawa_successor = {
-                                if = {
-                                    limit = {
-                                        NOT = {
-                                            owner = c:JTK
-                                        }
-                                    }
-                                    transfer_character = c:JTK
-                                }
-                                set_character_as_ruler = yes
-                            }
-                        }
-                        else = {
-                            create_character = {
-                                first_name = "nesnd_japan_tokugawa_successor_name"
-                                last_name = "Tokugawa"
-                                culture = cu:japanese
-                                age = 30
-                                ruler = yes
-                                interest_group = ig_landowners
-                                ideology = ideology_moderate
-                                on_created = {
-                                    set_variable = house_tokugawa set_variable = { name = dynasty_var value = flag:house_tokugawa } set_variable = { name = dynasty_var value = flag:house_tokugawa }
-                                }
-                            }
-                        }
-                    }
-                    set_variable = nesnd_japan_partition_state
-                }
-            }
-        }
-        if = {
-            limit = {
-                NOT = {
-                    c:JIM ?= {
-                        is_country_alive = yes
-                    }
-                }
-            }
-            create_country = {
-                tag = JIM
-                origin = c:JAP
-                state = s:STATE_KYOTO.region_state:JAP
-                on_created = {
-                    nesnd_jp_new_realm = yes
-                    set_variable = nesnd_jp_managed
-                    add_primary_culture = cu:ce_wuu
-                    if = {
-                        limit = {
-                            c:JAP ?= {
-                                has_variable = nesnd_japan_recovery_created
-                            }
-                        }
-                        set_variable = nesnd_japan_recovery_created
-                    }
-                    remove_variable = nesnd_japan_unity_entered
-                    remove_variable = nesnd_japan_unified
-                    activate_law = law_type:law_monarchy
-                    activate_law = law_type:law_autocracy
-                    set_capital = STATE_KYOTO
-                    if = {
-                        limit = { NOT = { exists = scope:nesnd_partition_yamato_incumbent } }
-                        if = {
-                            limit = {
-                                exists = scope:nesnd_japanese_emperor
-                                scope:nesnd_japanese_emperor = {
-                                    is_character_alive = yes
-                                    OR = {
-                                        AND = {
-                                            owner = c:JAP
-                                            is_ruler_of_own_country = no
-                                        }
-                                        owner = c:JIM
-                                    }
-                                }
-                            }
-                            scope:nesnd_japanese_emperor = {
-                                if = {
-                                    limit = {
-                                        NOT = {
-                                            owner = c:JIM
-                                        }
-                                    }
-                                    transfer_character = c:JIM
-                                }
-                                set_character_as_ruler = yes
-                            }
-                        }
-                        else = {
-                            create_character = {
-                                first_name = "nesnd_japan_yamato_successor_name"
-                                last_name = "Yamato"
-                                culture = cu:japanese
-                                age = 30
-                                ruler = yes
-                                interest_group = ig_landowners
-                                ideology = ideology_moderate
-                                on_created = {
-                                    set_variable = house_yamato set_variable = { name = dynasty_var value = flag:house_yamato } set_variable = { name = dynasty_var value = flag:house_yamato }
-                                }
-                            }
-                        }
-                        ruler = {
-                            save_scope_as = nesnd_japan_current_emperor
-                        }
-                        set_variable = {
-                            name = emperor_var
-                            value = scope:nesnd_japan_current_emperor
-                        }
-                    }
-                    set_variable = nesnd_japan_partition_state
-                }
-            }
-        }
+        nesnd_partition_japan_prepare = yes
+        nesnd_partition_japan_create_tokugawa = yes
+        nesnd_partition_japan_create_yamato = yes
         if = {
             limit = {
                 c:JTK ?= {
@@ -251,263 +18,535 @@ nesnd_partition_japan = {
                     is_country_alive = yes
                 }
             }
-            if = { limit = { c:USM = { has_variable = nesnd_eastern_submission_accepted } NOT = { has_law = law_type:law_monarchy } }
+            if = { limit = { c:USM = { custom_tooltip = { text = nesnd_ui_eastern_submission_accepted_tt has_variable = nesnd_eastern_submission_accepted } } NOT = { has_law = law_type:law_monarchy } }
                 activate_law = law_type:law_monarchy
             }
             if = { limit = { OR = {
                     exists = scope:nesnd_partition_tokugawa_incumbent
                     exists = scope:nesnd_partition_yamato_incumbent
-                    AND = { c:USM = { has_variable = nesnd_eastern_submission_accepted } NOT = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_toyotomi } } } }
+                    AND = { c:USM = { custom_tooltip = { text = nesnd_ui_eastern_submission_accepted_tt has_variable = nesnd_eastern_submission_accepted } } NOT = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_toyotomi } } } }
                 } }
                 nesnd_japan_seat_partition_incumbent = yes
             }
-            s:STATE_KANTO = {
-                every_scope_state = {
+            nesnd_partition_japan_give_tokugawa = yes
+            nesnd_partition_japan_give_yamato = yes
+            nesnd_partition_japan_give_wu = yes
+            nesnd_partition_japan_toyotomi_remnant = yes
+            nesnd_partition_japan_protect = yes
+            nesnd_partition_japan_finalize = yes
+        }
+    }
+}
+
+# The pieces below run in JAP. nesnd_partition_japan runs them all at once; the war goal
+# wg_nesnd_japan_reorganization runs each realm on its own region (author, 2026-11-18).
+# Resets the realm plans and saves the incumbent and the successors the new courts take.
+nesnd_partition_japan_prepare = {
+    nesnd_jp_new_realm = yes
+    clear_saved_scope = nesnd_partition_tokugawa_incumbent
+    clear_saved_scope = nesnd_partition_yamato_incumbent
+    if = { limit = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_tokugawa } } }
+        ruler = { save_scope_as = nesnd_partition_tokugawa_incumbent }
+    }
+    else_if = { limit = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_yamato } } }
+        ruler = { save_scope_as = nesnd_partition_yamato_incumbent }
+    }
+    clear_saved_scope = nesnd_tokugawa_successor
+    clear_saved_scope = nesnd_japanese_emperor
+    if = {
+        limit = {
+            any_scope_character = {
+                has_template = JAP_ieyoshi_tokugawa
+                is_character_alive = yes
+                is_ruler_of_own_country = no
+            }
+        }
+        random_scope_character = {
+            limit = {
+                has_template = JAP_ieyoshi_tokugawa
+                is_character_alive = yes
+                is_ruler_of_own_country = no
+            }
+            save_scope_as = nesnd_tokugawa_successor
+        }
+    }
+    else_if = {
+        limit = {
+            any_scope_character = {
+                nesnd_character_of_dynasty = { HOUSE = house_tokugawa }
+                is_character_alive = yes
+                is_ruler_of_own_country = no
+            }
+        }
+        random_scope_character = {
+            limit = {
+                nesnd_character_of_dynasty = { HOUSE = house_tokugawa }
+                is_character_alive = yes
+                is_ruler_of_own_country = no
+            }
+            save_scope_as = nesnd_tokugawa_successor
+        }
+    }
+    if = {
+        limit = {
+            trigger_if = {
+                limit = { hidden_trigger = { exists = var:emperor_var } }
+                var:emperor_var = {
+                    is_character_alive = yes
+                    owner = c:JAP
+                    is_ruler_of_own_country = no
+                }
+            }
+            trigger_else = { always = no }
+        }
+        var:emperor_var = {
+            save_scope_as = nesnd_japanese_emperor
+        }
+    }
+    else_if = {
+        limit = {
+            any_scope_character = {
+                nesnd_character_of_dynasty = { HOUSE = house_yamato }
+                is_character_alive = yes
+                is_ruler_of_own_country = no
+            }
+        }
+        random_scope_character = {
+            limit = {
+                nesnd_character_of_dynasty = { HOUSE = house_yamato }
+                is_character_alive = yes
+                is_ruler_of_own_country = no
+            }
+            save_scope_as = nesnd_japanese_emperor
+        }
+    }
+}
+# Fu (JTK), seated at Kanto. JAP must own a Kanto state.
+nesnd_partition_japan_create_tokugawa = {
+    if = {
+        limit = {
+            NOT = {
+                c:JTK ?= {
+                    is_country_alive = yes
+                }
+            }
+        }
+        create_country = {
+            tag = JTK
+            origin = c:JAP
+            state = s:STATE_KANTO.region_state:JAP
+            on_created = {
+                nesnd_jp_new_realm = yes
+                if = {
                     limit = {
-                        owner = c:JAP
-                        OR = {
-                            NOT = {
-                                c:JAP ?= {
-                                    has_variable = nesnd_japan_recovery_created
-                                }
-                            }
-                            controller = owner
+                        c:JAP ?= {
+                            custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
                         }
                     }
-                    set_state_owner = c:JTK
+                    set_variable = nesnd_japan_recovery_created
                 }
-            }
-            s:STATE_KYOTO = {
-                every_scope_state = {
-                    limit = {
-                        owner = c:JAP
-                        OR = {
-                            NOT = {
-                                c:JAP ?= {
-                                    has_variable = nesnd_japan_recovery_created
-                                }
-                            }
-                            controller = owner
-                        }
-                    }
-                    set_state_owner = c:JIM
-                }
-            }
-            if = {
-                limit = {
-                    OR = {
-                        NOT = {
-                            c:JAP ?= {
-                                has_variable = nesnd_japan_recovery_created
-                            }
-                        }
-                        p:xB03EF0 = {
-                            state = {
-                                owner = c:JAP
-                                controller = owner
-                            }
-                        }
-                    }
-                }
-                transfer_province = {
-                    GIVER = c:JAP
-                    TAKER = c:JIM
-                    PROVINCE = xB03EF0
-                }
-            }
-            s:STATE_TOHOKU = {
-                every_scope_state = {
-                    limit = {
-                        owner = c:JAP
-                        OR = {
-                            NOT = {
-                                c:JAP ?= {
-                                    has_variable = nesnd_japan_recovery_created
-                                }
-                            }
-                            controller = owner
-                        }
-                    }
-                    set_state_owner = c:JTK
-                }
-            }
-            s:STATE_TOKAI = {
-                every_scope_state = {
-                    limit = {
-                        owner = c:JAP
-                        OR = {
-                            NOT = {
-                                c:JAP ?= {
-                                    has_variable = nesnd_japan_recovery_created
-                                }
-                            }
-                            controller = owner
-                        }
-                    }
-                    set_state_owner = c:JTK
-                }
-            }
-            s:STATE_HOKUSHINETSU = {
-                every_scope_state = {
-                    limit = {
-                        owner = c:JAP
-                        OR = {
-                            NOT = {
-                                c:JAP ?= {
-                                    has_variable = nesnd_japan_recovery_created
-                                }
-                            }
-                            controller = owner
-                        }
-                    }
-                    set_state_owner = c:JTK
-                }
-            }
-            s:STATE_HOKKAIDO = {
-                every_scope_state = {
-                    limit = {
-                        owner = c:JAP
-                        OR = {
-                            NOT = {
-                                c:JAP ?= {
-                                    has_variable = nesnd_japan_recovery_created
-                                }
-                            }
-                            controller = owner
-                        }
-                    }
-                    set_state_owner = c:JTK
-                }
-            }
-            s:STATE_KYUSHU = {
-                every_scope_state = {
-                    limit = {
-                        owner = c:JAP
-                        OR = {
-                            NOT = {
-                                c:JAP ?= {
-                                    has_variable = nesnd_japan_recovery_created
-                                }
-                            }
-                            controller = owner
-                        }
-                    }
-                    set_state_owner = c:USM
-                }
-            }
-            s:STATE_SHIKOKU = {
-                every_scope_state = {
-                    limit = {
-                        owner = c:JAP
-                        OR = {
-                            NOT = {
-                                c:JAP ?= {
-                                    has_variable = nesnd_japan_recovery_created
-                                }
-                            }
-                            controller = owner
-                        }
-                    }
-                    set_state_owner = c:USM
-                }
-            }
-            if = {
-                limit = {
-                    NOT = {
-                        has_variable = nesnd_japan_partition_state
-                    }
-                }
-                set_capital = STATE_CHUGOKU
-                activate_law = law_type:law_autocracy
+                remove_variable = nesnd_japan_unity_entered
+                remove_variable = nesnd_japan_unified
                 remove_variable = emperor_var
-                set_variable = nesnd_toyotomi_remnant
+                activate_law = law_type:law_monarchy
+                activate_law = law_type:law_autocracy
+                set_capital = STATE_KANTO
+                if = {
+                    limit = { NOT = { exists = scope:nesnd_partition_tokugawa_incumbent } }
+                    if = {
+                        limit = {
+                            exists = scope:nesnd_tokugawa_successor
+                            scope:nesnd_tokugawa_successor = {
+                                is_character_alive = yes
+                                OR = {
+                                    AND = {
+                                        owner = c:JAP
+                                        is_ruler_of_own_country = no
+                                    }
+                                    owner = c:JTK
+                                }
+                            }
+                        }
+                        scope:nesnd_tokugawa_successor = {
+                            if = {
+                                limit = {
+                                    NOT = {
+                                        owner = c:JTK
+                                    }
+                                }
+                                transfer_character = c:JTK
+                            }
+                            set_character_as_ruler = yes
+                        }
+                    }
+                    else = {
+                        create_character = {
+                            first_name = "nesnd_japan_tokugawa_successor_name"
+                            last_name = "Tokugawa"
+                            culture = cu:japanese
+                            age = 30
+                            ruler = yes
+                            interest_group = ig_landowners
+                            ideology = ideology_moderate
+                            on_created = {
+                                set_variable = house_tokugawa set_variable = { name = dynasty_var value = flag:house_tokugawa } set_variable = { name = dynasty_var value = flag:house_tokugawa }
+                            }
+                        }
+                    }
+                }
                 set_variable = nesnd_japan_partition_state
             }
-            c:USM = {
+        }
+    }
+}
+# Wa (JIM), seated at Kyoto. JAP must own a Kyoto state.
+nesnd_partition_japan_create_yamato = {
+    if = {
+        limit = {
+            NOT = {
+                c:JIM ?= {
+                    is_country_alive = yes
+                }
+            }
+        }
+        create_country = {
+            tag = JIM
+            origin = c:JAP
+            state = s:STATE_KYOTO.region_state:JAP
+            on_created = {
+                nesnd_jp_new_realm = yes
+                set_variable = nesnd_jp_managed
+                add_primary_culture = cu:ce_wuu
                 if = {
                     limit = {
-                        c:JTK = {
-                            is_subject = no
+                        c:JAP ?= {
+                            custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
                         }
                     }
-                    create_diplomatic_pact = {
-                        country = c:JTK
-                        type = protectorate
+                    set_variable = nesnd_japan_recovery_created
+                }
+                remove_variable = nesnd_japan_unity_entered
+                remove_variable = nesnd_japan_unified
+                activate_law = law_type:law_monarchy
+                activate_law = law_type:law_autocracy
+                set_capital = STATE_KYOTO
+                if = {
+                    limit = { NOT = { exists = scope:nesnd_partition_yamato_incumbent } }
+                    if = {
+                        limit = {
+                            exists = scope:nesnd_japanese_emperor
+                            scope:nesnd_japanese_emperor = {
+                                is_character_alive = yes
+                                OR = {
+                                    AND = {
+                                        owner = c:JAP
+                                        is_ruler_of_own_country = no
+                                    }
+                                    owner = c:JIM
+                                }
+                            }
+                        }
+                        scope:nesnd_japanese_emperor = {
+                            if = {
+                                limit = {
+                                    NOT = {
+                                        owner = c:JIM
+                                    }
+                                }
+                                transfer_character = c:JIM
+                            }
+                            set_character_as_ruler = yes
+                        }
+                    }
+                    else = {
+                        create_character = {
+                            first_name = "nesnd_japan_yamato_successor_name"
+                            last_name = "Yamato"
+                            culture = cu:japanese
+                            age = 30
+                            ruler = yes
+                            interest_group = ig_landowners
+                            ideology = ideology_moderate
+                            on_created = {
+                                set_variable = house_yamato set_variable = { name = dynasty_var value = flag:house_yamato } set_variable = { name = dynasty_var value = flag:house_yamato }
+                            }
+                        }
+                    }
+                    ruler = {
+                        save_scope_as = nesnd_japan_current_emperor
+                    }
+                    set_variable = {
+                        name = emperor_var
+                        value = scope:nesnd_japan_current_emperor
                     }
                 }
-                if = {
-                    limit = {
-                        c:JIM = {
-                            is_subject = no
+                set_variable = nesnd_japan_partition_state
+            }
+        }
+    }
+}
+nesnd_partition_japan_give_tokugawa = {
+    if = { limit = { c:JTK ?= { is_country_alive = yes } }
+        s:STATE_KANTO = {
+            every_scope_state = {
+                limit = {
+                    owner = c:JAP
+                    OR = {
+                        NOT = {
+                            c:JAP ?= {
+                                custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            }
                         }
-                    }
-                    create_diplomatic_pact = {
-                        country = c:JIM
-                        type = protectorate
+                        controller = owner
                     }
                 }
-                if = {
-                    limit = {
-                        c:JAP = {
-                            is_subject = no
+                set_state_owner = c:JTK
+            }
+        }
+        s:STATE_TOHOKU = {
+            every_scope_state = {
+                limit = {
+                    owner = c:JAP
+                    OR = {
+                        NOT = {
+                            c:JAP ?= {
+                                custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            }
+                        }
+                        controller = owner
+                    }
+                }
+                set_state_owner = c:JTK
+            }
+        }
+        s:STATE_TOKAI = {
+            every_scope_state = {
+                limit = {
+                    owner = c:JAP
+                    OR = {
+                        NOT = {
+                            c:JAP ?= {
+                                custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            }
+                        }
+                        controller = owner
+                    }
+                }
+                set_state_owner = c:JTK
+            }
+        }
+        s:STATE_HOKUSHINETSU = {
+            every_scope_state = {
+                limit = {
+                    owner = c:JAP
+                    OR = {
+                        NOT = {
+                            c:JAP ?= {
+                                custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            }
+                        }
+                        controller = owner
+                    }
+                }
+                set_state_owner = c:JTK
+            }
+        }
+        s:STATE_HOKKAIDO = {
+            every_scope_state = {
+                limit = {
+                    owner = c:JAP
+                    OR = {
+                        NOT = {
+                            c:JAP ?= {
+                                custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            }
+                        }
+                        controller = owner
+                    }
+                }
+                set_state_owner = c:JTK
+            }
+        }
+    }
+}
+nesnd_partition_japan_give_yamato = {
+    if = { limit = { c:JIM ?= { is_country_alive = yes } }
+        s:STATE_KYOTO = {
+            every_scope_state = {
+                limit = {
+                    owner = c:JAP
+                    OR = {
+                        NOT = {
+                            c:JAP ?= {
+                                custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            }
+                        }
+                        controller = owner
+                    }
+                }
+                set_state_owner = c:JIM
+            }
+        }
+        if = {
+            limit = {
+                OR = {
+                    NOT = {
+                        c:JAP ?= {
+                            custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
                         }
                     }
-                    create_diplomatic_pact = {
-                        country = c:JAP
-                        type = protectorate
+                    p:xB03EF0 = {
+                        state = {
+                            owner = c:JAP
+                            controller = owner
+                        }
                     }
                 }
             }
-            if = {
-                limit = {
-                    OR = {
-                        NOT = {
-                            has_variable = nesnd_japan_recovery_created
-                        }
-                        AND = {
-                            c:JAP ?= {
-                                is_country_alive = yes
-                                is_subject_of = c:USM
-                            }
-                            c:JTK ?= {
-                                is_country_alive = yes
-                                is_subject_of = c:USM
-                            }
-                            c:JIM ?= {
-                                is_country_alive = yes
-                                is_subject_of = c:USM
-                            }
-                            nesnd_japan_recovery_allocated = yes
+            transfer_province = {
+                GIVER = c:JAP
+                TAKER = c:JIM
+                PROVINCE = xB03EF0
+            }
+        }
+    }
+}
+# Kyushu and Shikoku go under direct Wu rule.
+nesnd_partition_japan_give_wu = {
+    s:STATE_KYUSHU = {
+        every_scope_state = {
+            limit = {
+                owner = c:JAP
+                OR = {
+                    NOT = {
+                        c:JAP ?= {
+                            custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
                         }
                     }
+                    controller = owner
                 }
-                set_global_variable = nesnd_japan_partitioned
-                c:JAP = { trigger_event = { id = usm_civilwar.22 days = 1 popup = yes } }
-                nesnd_japan_grant_partition_claims = yes
-                set_global_variable = nesnd_japan_dossier_closed
-                c:USM = { nesnd_japan_lin_try_appoint = yes }
-                trigger_event = {
-                    id = nesnd_japan.3
-                    popup = yes
-                }
-                c:JTK = {
-                    trigger_event = {
-                        id = nesnd_japan.3
-                        popup = yes
+            }
+            set_state_owner = c:USM
+        }
+    }
+    s:STATE_SHIKOKU = {
+        every_scope_state = {
+            limit = {
+                owner = c:JAP
+                OR = {
+                    NOT = {
+                        c:JAP ?= {
+                            custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                        }
                     }
+                    controller = owner
                 }
-                c:JIM = {
-                    trigger_event = {
-                        id = nesnd_japan.3
-                        popup = yes
+            }
+            set_state_owner = c:USM
+        }
+    }
+}
+# The Toyotomi keep JAP, seated at Chugoku.
+nesnd_partition_japan_toyotomi_remnant = {
+    if = {
+        limit = {
+            custom_tooltip = { text = nesnd_ui_not_japan_partition_state_tt NOT = {
+                has_variable = nesnd_japan_partition_state
+            } }
+        }
+        set_capital = STATE_CHUGOKU
+        activate_law = law_type:law_autocracy
+        remove_variable = emperor_var
+        set_variable = nesnd_toyotomi_remnant
+        set_variable = nesnd_japan_partition_state
+    }
+}
+nesnd_partition_japan_protect = {
+    c:USM = {
+        if = {
+            limit = {
+                c:JTK ?= {
+                    is_subject = no
+                }
+            }
+            create_diplomatic_pact = {
+                country = c:JTK
+                type = protectorate
+            }
+        }
+        if = {
+            limit = {
+                c:JIM ?= {
+                    is_subject = no
+                }
+            }
+            create_diplomatic_pact = {
+                country = c:JIM
+                type = protectorate
+            }
+        }
+        if = {
+            limit = {
+                c:JAP ?= {
+                    is_subject = no
+                }
+            }
+            create_diplomatic_pact = {
+                country = c:JAP
+                type = protectorate
+            }
+        }
+    }
+}
+nesnd_partition_japan_finalize = {
+    if = {
+        limit = {
+            OR = {
+                custom_tooltip = { text = nesnd_ui_not_japan_recovery_created_tt NOT = {
+                    has_variable = nesnd_japan_recovery_created
+                } }
+                AND = {
+                    c:JAP ?= {
+                        is_country_alive = yes
+                        is_subject_of = c:USM
                     }
-                }
-                c:USM = {
-                    trigger_event = {
-                        id = nesnd_japan.3
-                        popup = yes
+                    c:JTK ?= {
+                        is_country_alive = yes
+                        is_subject_of = c:USM
                     }
+                    c:JIM ?= {
+                        is_country_alive = yes
+                        is_subject_of = c:USM
+                    }
+                    nesnd_japan_recovery_allocated = yes
                 }
+            }
+        }
+        set_global_variable = nesnd_japan_partitioned
+        c:JAP = { trigger_event = { id = usm_civilwar.22 days = 1 popup = yes } }
+        nesnd_japan_grant_partition_claims = yes
+        set_global_variable = nesnd_japan_dossier_closed
+        c:USM = { nesnd_japan_lin_try_appoint = yes }
+        trigger_event = {
+            id = nesnd_japan.3
+            popup = yes
+        }
+        c:JTK ?= {
+            trigger_event = {
+                id = nesnd_japan.3
+                popup = yes
+            }
+        }
+        c:JIM ?= {
+            trigger_event = {
+                id = nesnd_japan.3
+                popup = yes
+            }
+        }
+        c:USM = {
+            trigger_event = {
+                id = nesnd_japan.3
+                popup = yes
             }
         }
     }
@@ -563,7 +602,7 @@ nesnd_japan_seat_partition_incumbent = {
 }
 nesnd_japan_grant_partition_claims = {
     if = {
-        limit = { has_global_variable = nesnd_japan_partitioned NOT = { has_global_variable = nesnd_japan_partition_claims_considered } }
+        limit = { custom_tooltip = { text = nesnd_ui_japan_partitioned_tt has_global_variable = nesnd_japan_partitioned } hidden_trigger = { NOT = { has_global_variable = nesnd_japan_partition_claims_considered } } }
         set_global_variable = nesnd_japan_partition_claims_considered
         if = { limit = { exists = c:JAP exists = c:JTK exists = c:JIM }
             if = { limit = { c:JTK = { owns_entire_state_region = STATE_KANTO } }
@@ -640,7 +679,7 @@ nesnd_japan_create_eastern_intervention = {
     create_diplomatic_play = {
         escalation = 80
         name = dp_nesnd_eastern_intervention target_country = c:JAP type = dp_nesnd_eastern_intervention
-        add_war_goal = { holder = c:USM target_country = c:JAP type = wg_nesnd_japan_reorganization primary_demand = yes }
+        # The play type adds Wu's wg_nesnd_japan_reorganization itself; a second add made two (save of 1839.4.1).
         add_war_goal = { holder = c:JAP target_country = c:USM type = humiliation primary_demand = yes }
     }
     if = { limit = { nesnd_japan_matching_intervention = yes }
@@ -704,7 +743,7 @@ nesnd_japan_launch_intervention = {
 
 # Wu scope. Close the case before partition creates any subject pacts of its own.
 nesnd_eastern_settle_submission = {
-    if = { limit = { NOT = { has_global_variable = nesnd_japan_dossier_closed } }
+    if = { limit = { custom_tooltip = { text = nesnd_ui_not_japan_dossier_closed_tt NOT = { has_global_variable = nesnd_japan_dossier_closed } } }
         set_variable = nesnd_eastern_submission_accepted
         set_global_variable = nesnd_japan_dossier_closed
         c:JAP = { nesnd_partition_japan = yes }
@@ -715,8 +754,8 @@ nesnd_eastern_settle_submission = {
 nesnd_japan_eastern_failure = {
     if = {
         limit = {
-            has_variable = tag_WUU_var
-            NOT = { has_global_variable = nesnd_japan_dossier_closed }
+            custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var }
+            custom_tooltip = { text = nesnd_ui_not_japan_dossier_closed_tt NOT = { has_global_variable = nesnd_japan_dossier_closed } }
             nesnd_eastern_target_valid = yes
         }
         save_scope_as = eastern_wu
@@ -759,4 +798,93 @@ nesnd_japan_eastern_failure = {
         }
         trigger_event = { id = nesnd_japan.6 popup = yes }
     }
+}
+
+# Wu scope, from the enfeoffment decision. Japan is already a Wu subject, so the settlement needs no war.
+# Wu first returns what it holds on Honshu and Hokkaido; the partition then moves Kyushu and Shikoku to Wu.
+nesnd_japan_enfeoff_subject = {
+    if = {
+        limit = {
+            c:USM ?= this
+            has_variable = tag_WUU_var
+            nesnd_japan_held_as_subject = yes
+            NOT = { has_global_variable = nesnd_japan_partitioned }
+        }
+        set_variable = nesnd_eastern_submission_accepted
+        set_global_variable = nesnd_japan_dossier_closed
+        every_scope_state = {
+            limit = {
+                controller = owner
+                nesnd_eastern_archipelago_state = yes
+                NOR = { state_region = s:STATE_KYUSHU state_region = s:STATE_SHIKOKU }
+            }
+            set_state_owner = c:JAP
+        }
+        # If a seat is occupied, nesnd_eastern_pending_partition retries every month.
+        c:JAP = { nesnd_partition_japan = yes }
+    }
+}
+
+# Wu scope, from the expedition journal once its bar is full. The war allows no negotiated peace.
+nesnd_eastern_expedition_open = {
+    if = {
+        limit = { nesnd_eastern_expedition_ready = yes }
+        clear_saved_scope = nesnd_expedition_play
+        clear_saved_scope = nesnd_expedition_first_claim
+        remove_variable = nesnd_expedition_broke_tribute
+        if = { limit = { c:JAP = { is_direct_subject_of = c:USM } }
+            set_variable = nesnd_expedition_broke_tribute
+            c:JAP = { make_independent = yes }
+        }
+        if = { limit = { c:JAP = { is_subject = no } any_scope_state = { nesnd_eastern_expedition_foothold = yes } }
+            # return_state is only valid for land the holder claims.
+            every_scope_state = {
+                limit = { nesnd_eastern_archipelago_state = yes }
+                state_region = { add_claim = c:JAP }
+            }
+            random_scope_state = {
+                limit = { nesnd_eastern_expedition_foothold = yes }
+                save_scope_as = nesnd_expedition_first_claim
+            }
+            create_diplomatic_play = {
+                name = dp_nesnd_eastern_expedition target_country = c:JAP type = dp_nesnd_eastern_expedition
+                add_war_goal = { holder = c:JAP type = return_state target_state = scope:nesnd_expedition_first_claim primary_demand = yes }
+            }
+            if = { limit = { nesnd_eastern_expedition_war_running = yes }
+                random_diplomatic_play = {
+                    limit = { is_diplomatic_play_type = dp_nesnd_eastern_expedition initiator_is = c:USM }
+                    save_scope_as = nesnd_expedition_play
+                }
+            }
+        }
+        if = { limit = { exists = scope:nesnd_expedition_play }
+            every_scope_state = {
+                limit = {
+                    nesnd_eastern_archipelago_state = yes
+                    NOT = { this = scope:nesnd_expedition_first_claim }
+                }
+                save_scope_as = nesnd_expedition_claim
+                scope:nesnd_expedition_play = {
+                    add_war_goal = { holder = c:JAP type = return_state target_state = scope:nesnd_expedition_claim }
+                }
+            }
+            # A war of annexation ends the negotiation. Mark the land Japan still holds so a later enfeoffment returns all of it.
+            set_global_variable = nesnd_japan_dossier_closed
+            nesnd_japan_capture_territory = yes
+            scope:nesnd_expedition_play = { set_war = yes }
+        }
+        else_if = { limit = { has_variable = nesnd_expedition_broke_tribute c:JAP = { is_subject = no } }
+            create_diplomatic_pact = { country = c:JAP type = tributary }
+        }
+        remove_variable = nesnd_expedition_broke_tribute
+        clear_saved_scope = nesnd_expedition_play
+        clear_saved_scope = nesnd_expedition_first_claim
+        clear_saved_scope = nesnd_expedition_claim
+    }
+}
+
+# Wu scope. After the expedition Japan is gone; its claims on the islands Wu keeps go with it.
+nesnd_eastern_expedition_concluded = {
+    s:STATE_KYUSHU = { remove_claim = c:JAP }
+    s:STATE_SHIKOKU = { remove_claim = c:JAP }
 }

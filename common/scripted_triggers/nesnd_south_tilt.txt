@@ -1,0 +1,35 @@
+﻿# Political balance of the Wu subjects. -100 loyal to Ming (against Wu) ... +100 loyal to Wu.
+# Country scope unless noted. nesnd_tilt_value mirrors the journal bar once a month.
+nesnd_tilt_member = { custom_tooltip = { text = nesnd_ui_tilt_enrolled_tt has_variable = nesnd_tilt_enrolled } is_country_alive = yes }
+nesnd_tilt_zone_ming = { nesnd_tilt_now <= -12 }
+nesnd_tilt_zone_wu = { nesnd_tilt_now >= 12 }
+nesnd_tilt_zone_neutral = { nesnd_tilt_now > -12 nesnd_tilt_now < 12 }
+nesnd_tilt_mainland = { OR = { c:SIH ?= this c:HNA ?= this c:GNG ?= this } }
+# Subjects governed through Chinese institutions (provinces, commissions): they get the fiscal, garrison and
+# examination events. The kingdoms and sultanates get only the envoy and the disaster event.
+nesnd_tilt_chinese_admin = { OR = { nesnd_tilt_mainland = yes c:PHI ?= this c:YN1 ?= this c:DEI ?= this } }
+# Shu, Chu or Huai should arm (AI): while the succession dispute is open and it leans to the Ming house, or while it is
+# at war with Wu. Not in default. Read by ai_strategy_nesnd_south_muster (barracks weight, army size ×2).
+nesnd_south_muster_ai = {
+    nesnd_tilt_mainland = yes
+    NOT = { in_default = yes }
+    OR = {
+        AND = {
+            nesnd_tilt_member = yes
+            nesnd_tilt_zone_ming = yes
+            NOT = { has_global_variable = usm_civilwar_occured }
+            c:USM ?= { has_variable = nesnd_tilt_month NOT = { has_variable = nesnd_south_resolved } }
+        }
+        trigger_if = { limit = { exists = c:USM } has_war_with = c:USM }
+        trigger_else = { always = no }
+    }
+}
+# The player or AI court sides with the Ming house (1) or with the Zheng (2).
+nesnd_tilt_court_ming = { c:USM ?= { nesnd_board_stance_value = 1 } }
+# Wu scope. Nobody is left to raise the banner: no province has risen, and none of Shu, Chu and Huai is still a subject.
+nesnd_tilt_no_rebel_left = {
+    NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country } }
+    NOT = { any_country = { nesnd_tilt_member = yes nesnd_tilt_mainland = yes is_subject_of = c:USM } }
+}
+nesnd_tilt_group_indo = { nesnd_tilt_member = yes OR = { c:BUR ?= this c:DAI ?= this c:SIA ?= this c:CHP ?= this c:CMI ?= this c:LUA ?= this c:CAM ?= this } }
+nesnd_tilt_group_nus = { nesnd_tilt_member = yes OR = { c:BRU ?= this c:BLG ?= this c:LAN ?= this c:JMB ?= this c:SAK ?= this c:ACE ?= this c:SRK ?= this c:YOG ?= this c:BAL ?= this c:BNJ ?= this c:KTI ?= this } }

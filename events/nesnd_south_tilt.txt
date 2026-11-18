@@ -1,0 +1,616 @@
+﻿namespace = nesnd_south_tilt
+
+# Every enrolled subject, when the pressure is full. Options appear by the zone of its balance.
+nesnd_south_tilt.100 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.100.t
+    # The balance has already decided where the country stands; the text says so instead of asking.
+    desc = {
+        desc = nesnd_south_tilt.100.d
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_tilt_zone_ming = yes } desc = nesnd_south_tilt.100.d_ming }
+            triggered_desc = { trigger = { nesnd_tilt_zone_wu = yes } desc = nesnd_south_tilt.100.d_wu }
+            desc = nesnd_south_tilt.100.d_neutral
+        }
+    }
+    flavor = nesnd_south_tilt.100.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { nesnd_tilt_member = yes NOT = { has_variable = nesnd_fate } }
+    option = {
+        name = nesnd_south_tilt.100.a
+        default_option = yes
+        trigger = { nesnd_tilt_zone_ming = yes nesnd_tilt_mainland = yes custom_tooltip = { text = nesnd_ui_not_south_peace_forced_tt NOT = { has_global_variable = nesnd_south_peace_forced } } }
+        set_variable = { name = nesnd_fate value = 1 } set_variable = usm_opposition_country nesnd_south_mark_opposition = yes
+        ai_chance = { base = 600 modifier = { trigger = { c:HNA ?= this } add = 338 } modifier = { trigger = { c:GNG ?= this } add = 88 } }
+    }
+    option = {
+        name = nesnd_south_tilt.100.b
+        trigger = { nesnd_tilt_zone_ming = yes OR = { c:SIH ?= this c:GNG ?= this } custom_tooltip = { text = nesnd_ui_not_ming_court_tt NOT = { has_variable = nesnd_ming_court } } custom_tooltip = { text = nesnd_ui_not_south_peace_forced_tt NOT = { has_global_variable = nesnd_south_peace_forced } } }
+        set_variable = { name = nesnd_fate value = 2 } set_variable = usm_opposition_country nesnd_south_mark_opposition = yes
+        ai_chance = { base = 300 }
+    }
+    option = {
+        name = nesnd_south_tilt.100.c_cne
+        trigger = { nesnd_tilt_zone_ming = yes OR = { c:SIH ?= this c:HNA ?= this } c:CNE ?= { is_country_alive = yes NOT = { has_war_with = root } } }
+        set_variable = { name = nesnd_fate value = 3 } set_variable = { name = nesnd_fate_patron value = c:CNE }
+        ai_chance = { base = 50 }
+    }
+    option = {
+        name = nesnd_south_tilt.100.c_qe1
+        trigger = { nesnd_tilt_zone_ming = yes c:SIH ?= this c:QE1 ?= { is_country_alive = yes NOT = { has_war_with = root } } }
+        set_variable = { name = nesnd_fate value = 3 } set_variable = { name = nesnd_fate_patron value = c:QE1 }
+        ai_chance = { base = 40 }
+    }
+    option = {
+        name = nesnd_south_tilt.100.c_hus
+        trigger = { nesnd_tilt_zone_ming = yes OR = { c:PHI ?= this c:YN1 ?= this } c:HUS ?= { is_country_alive = yes NOT = { has_war_with = root } } }
+        set_variable = { name = nesnd_fate value = 3 } set_variable = { name = nesnd_fate_patron value = c:HUS }
+        ai_chance = { base = 25 }
+    }
+    option = {
+        name = nesnd_south_tilt.100.i
+        default_option = yes
+        trigger = { nesnd_tilt_zone_ming = yes NOT = { nesnd_tilt_mainland = yes } }
+        set_variable = { name = nesnd_fate value = 4 }
+        ai_chance = { base = 75 }
+    }
+    option = {
+        name = nesnd_south_tilt.100.g
+        trigger = { nesnd_tilt_zone_ming = yes nesnd_tilt_mainland = yes }
+        set_variable = { name = nesnd_fate value = 7 }
+        ai_chance = { base = 12 modifier = { trigger = { has_global_variable = nesnd_south_peace_forced } add = 288 } }
+    }
+    option = {
+        name = nesnd_south_tilt.100.h
+        trigger = { nesnd_tilt_zone_ming = yes custom_tooltip = { text = nesnd_ui_south_peace_forced_tt has_global_variable = nesnd_south_peace_forced } }
+        set_variable = { name = nesnd_fate value = 5 }
+        ai_chance = { base = 600 }
+    }
+    option = {
+        name = nesnd_south_tilt.100.e
+        default_option = yes
+        trigger = { nesnd_tilt_zone_neutral = yes }
+        set_variable = { name = nesnd_fate value = 5 }
+        ai_chance = { base = 100 }
+    }
+    option = {
+        name = nesnd_south_tilt.100.w
+        default_option = yes
+        trigger = { nesnd_tilt_zone_wu = yes }
+        set_variable = { name = nesnd_fate value = 6 }
+        ai_chance = { base = 100 }
+    }
+    # The war-side scripts still look for these two marks of a subject that was asked and has answered.
+    after = { set_variable = nesnd_invited_south set_variable = nesnd_south_answered }
+}
+
+# Wu, hidden: settle the outcome.
+nesnd_south_tilt.101 = {
+    type = country_event
+    hidden = yes
+    immediate = { nesnd_south_resolve = yes }
+}
+
+# Wu: notice of the succession. The same text serves the war and the peaceful founding.
+nesnd_south_tilt.110 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.110.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_south_peaceful } desc = nesnd_south_tilt.110.d_peace }
+            desc = nesnd_south_tilt.110.d
+        }
+    }
+    flavor = nesnd_south_tilt.110.f
+    duration = 3
+    event_image = { texture = "gfx/event_pictures/event_ce_mordern_chinese_3.dds" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    option = {
+        name = nesnd_south_tilt.110.a
+        default_option = yes
+        if = { limit = { custom_tooltip = { text = nesnd_ui_south_peace_secession_tt has_variable = nesnd_south_peace_secession } } custom_tooltip = nesnd_south_peace_secession_tt }
+    }
+}
+
+# Wu: the Ming house prevails without a war.
+nesnd_south_tilt.111 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.111.t
+    desc = nesnd_south_tilt.111.d
+    flavor = nesnd_south_tilt.111.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    option = {
+        name = nesnd_south_tilt.111.a
+        default_option = yes
+        custom_tooltip = nesnd_south_tilt.111.tt
+        if = { limit = { custom_tooltip = { text = nesnd_ui_south_peace_secession_tt has_variable = nesnd_south_peace_secession } } custom_tooltip = nesnd_south_peace_secession_tt }
+    }
+}
+
+# A foreign power that was asked for help, when the south settled its quarrel peacefully.
+nesnd_south_tilt.120 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.120.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { c:USM ?= { has_variable = tag_WUU_var } } desc = nesnd_south_tilt.120.d_wu }
+            desc = nesnd_south_tilt.120.d_ming
+        }
+    }
+    flavor = nesnd_south_tilt.120.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    option = { name = nesnd_south_tilt.120.a default_option = yes }
+}
+
+# Chu on its own: who leads the republic of Xiangyang.
+nesnd_south_tilt.130 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.130.t
+    desc = nesnd_south_tilt.130.d
+    flavor = nesnd_south_tilt.130.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    option = {
+        name = nesnd_south_tilt.130.a
+        trigger = { c:PHI ?= { any_scope_character = { has_template = PHI_lin_zexu is_character_alive = yes } } }
+        c:PHI = {
+            random_scope_character = { limit = { has_template = PHI_lin_zexu is_character_alive = yes } save_scope_as = nesnd_chu_leader }
+            if = { limit = { scope:nesnd_chu_leader ?= { is_ruler_of_own_country = yes } }
+                create_character = { age = 45 ruler = yes interest_group = ig_landowners ideology = ideology_moderate }
+            }
+        }
+        scope:nesnd_chu_leader ?= { transfer_character = root }
+        scope:nesnd_chu_leader ?= { set_character_as_ruler = yes }
+        ai_chance = { base = 50 }
+    }
+    option = {
+        name = nesnd_south_tilt.130.b
+        default_option = yes
+        random_scope_character = {
+            limit = { has_template = USM_zhu_jiangchen is_character_alive = yes is_ruler_of_own_country = no }
+            set_character_as_ruler = yes
+        }
+        ai_chance = { base = 50 }
+    }
+}
+
+# Huai on its own: Yang Xiuqing does away with the princely house.
+nesnd_south_tilt.131 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.131.t
+    desc = nesnd_south_tilt.131.d
+    flavor = nesnd_south_tilt.131.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    immediate = { nesnd_south_huai_theocracy = yes }
+    option = { name = nesnd_south_tilt.131.a default_option = yes custom_tooltip = nesnd_south_tilt.131.tt }
+}
+
+# ---- The chain. Special events on fixed months; the generic pool fills the months in between. ----
+
+nesnd_south_tilt.1 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.1.t
+    desc = nesnd_south_tilt.1.d
+    flavor = nesnd_south_tilt.1.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this }
+    immediate = {
+        add_modifier = { name = nesnd_south_regency }
+        add_modifier = { name = nesnd_south_regency_legitimacy months = 12 }
+        set_next_election_date = 1841.1.1
+    }
+    option = {
+        name = nesnd_south_tilt.1.a
+        default_option = yes
+        ai_chance = { base = 90 }
+        custom_tooltip = nesnd_south_tilt.1.common_tt
+        custom_tooltip = nesnd_south_tilt.1.a_tt
+        hidden_effect = { every_country = { limit = { nesnd_tilt_mainland = yes } nesnd_tilt_give = { SLOT = 1 VALUE = -1 MONTHS = 6 } } c:DEI ?= { nesnd_tilt_give = { SLOT = 1 VALUE = 1 MONTHS = 6 } } set_variable = { name = nesnd_south_stance value = 2 } }
+    }
+    option = {
+        name = nesnd_south_tilt.1.b
+        ai_chance = { base = 10 }
+        custom_tooltip = nesnd_south_tilt.1.common_tt
+        custom_tooltip = nesnd_south_tilt.1.b_tt
+        hidden_effect = { c:PHI ?= { nesnd_tilt_give = { SLOT = 1 VALUE = -1 MONTHS = 6 } } c:DEI ?= { nesnd_tilt_give = { SLOT = 1 VALUE = -1 MONTHS = 6 } } set_variable = { name = nesnd_south_stance value = 1 } }
+    }
+}
+
+nesnd_south_tilt.2 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.2.t
+    desc = nesnd_south_tilt.2.d
+    flavor = nesnd_south_tilt.2.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this }
+    option = {
+        name = nesnd_south_tilt.2.a
+        default_option = yes
+        ai_chance = { base = 60 modifier = { trigger = { nesnd_board_stance_value = 1 } add = -20 } }
+        custom_tooltip = nesnd_south_tilt.2.a_tt
+        hidden_effect = { c:HNA ?= { nesnd_tilt_give = { SLOT = 2 VALUE = 1 MONTHS = 6 } } c:PHI ?= { nesnd_tilt_give = { SLOT = 2 VALUE = 1 MONTHS = 6 } } c:GNG ?= { nesnd_tilt_give = { SLOT = 2 VALUE = -2 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 2 VALUE = -2 MONTHS = 6 } }  }
+    }
+    option = {
+        name = nesnd_south_tilt.2.b
+        ai_chance = { base = 40 modifier = { trigger = { nesnd_board_stance_value = 1 } add = 20 } }
+        custom_tooltip = nesnd_south_tilt.2.b_tt
+        hidden_effect = { c:HNA ?= { nesnd_tilt_give = { SLOT = 2 VALUE = -1 MONTHS = 6 } } c:PHI ?= { nesnd_tilt_give = { SLOT = 2 VALUE = -1 MONTHS = 6 } } c:GNG ?= { nesnd_tilt_give = { SLOT = 2 VALUE = 2 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 2 VALUE = 2 MONTHS = 6 } }  }
+    }
+}
+
+nesnd_south_tilt.3 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.3.t
+    desc = nesnd_south_tilt.3.d
+    flavor = nesnd_south_tilt.3.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this }
+    immediate = {
+        add_modifier = { name = nesnd_south_redemption_levy }
+        add_treasury = nesnd_south_half_year_levy
+    }
+    option = {
+        name = nesnd_south_tilt.3.a
+        default_option = yes
+        ai_chance = { base = 50 modifier = { trigger = { nesnd_board_stance_value = 1 } add = 0 } }
+        custom_tooltip = nesnd_south_tilt.3.a_tt
+        hidden_effect = { c:PHI ?= { nesnd_tilt_give = { SLOT = 3 VALUE = -1 MONTHS = 12 } } c:DEI ?= { nesnd_tilt_give = { SLOT = 3 VALUE = -1 MONTHS = 12 } } c:PHI ?= { add_modifier = { name = nesnd_south_levied months = 12 } } c:DEI ?= { add_modifier = { name = nesnd_south_levied months = 12 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.3.b
+        ai_chance = { base = 50 modifier = { trigger = { nesnd_board_stance_value = 1 } add = 0 } }
+        custom_tooltip = nesnd_south_tilt.3.b_tt
+        hidden_effect = { every_country = { limit = { nesnd_tilt_group_nus = yes } nesnd_tilt_give = { SLOT = 3 VALUE = -1 MONTHS = 6 } } every_country = { limit = { nesnd_tilt_group_indo = yes } nesnd_tilt_give = { SLOT = 3 VALUE = -1 MONTHS = 6 } } every_country = { limit = { OR = { nesnd_tilt_group_nus = yes nesnd_tilt_group_indo = yes } } add_modifier = { name = nesnd_south_levied months = 12 } } }
+    }
+}
+
+nesnd_south_tilt.4 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.4.t
+    desc = nesnd_south_tilt.4.d
+    flavor = nesnd_south_tilt.4.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this }
+    # The lord of Wu named in the text is whoever heads the Zheng house at the time.
+    immediate = {
+        if = { limit = { any_scope_character = { has_template = USM_zheng_qin is_character_alive = yes } }
+            random_scope_character = { limit = { has_template = USM_zheng_qin is_character_alive = yes } save_scope_as = nesnd_wu_king }
+        }
+        else_if = { limit = { any_scope_character = { has_template = USM_zheng_Ju is_character_alive = yes } }
+            random_scope_character = { limit = { has_template = USM_zheng_Ju is_character_alive = yes } save_scope_as = nesnd_wu_king }
+        }
+        else = { create_character = { template = USM_zheng_Ju save_scope_as = nesnd_wu_king } }
+    }
+    option = {
+        name = nesnd_south_tilt.4.a
+        default_option = yes
+        ai_chance = { base = 45 modifier = { trigger = { nesnd_board_stance_value = 1 } add = -15 } }
+        custom_tooltip = nesnd_south_tilt.4.a_tt
+        hidden_effect = { c:HNA ?= { nesnd_tilt_give = { SLOT = 4 VALUE = 1 MONTHS = 6 } } c:PHI ?= { nesnd_tilt_give = { SLOT = 4 VALUE = 1 MONTHS = 6 } } c:YN1 ?= { nesnd_tilt_give = { SLOT = 4 VALUE = 1 MONTHS = 6 } } c:GNG ?= { nesnd_tilt_give = { SLOT = 4 VALUE = -1 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 4 VALUE = -1 MONTHS = 6 } }  }
+    }
+    option = {
+        name = nesnd_south_tilt.4.b
+        ai_chance = { base = 55 modifier = { trigger = { nesnd_board_stance_value = 1 } add = 15 } }
+        custom_tooltip = nesnd_south_tilt.4.b_tt
+        hidden_effect = { c:HNA ?= { nesnd_tilt_give = { SLOT = 4 VALUE = -1 MONTHS = 6 } } c:PHI ?= { nesnd_tilt_give = { SLOT = 4 VALUE = -1 MONTHS = 6 } } c:GNG ?= { nesnd_tilt_give = { SLOT = 4 VALUE = 1 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 4 VALUE = 1 MONTHS = 6 } }  }
+    }
+}
+
+nesnd_south_tilt.5 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.5.t
+    desc = nesnd_south_tilt.5.d
+    flavor = nesnd_south_tilt.5.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this }
+    option = {
+        name = nesnd_south_tilt.5.a
+        default_option = yes
+        ai_chance = { base = 55 modifier = { trigger = { nesnd_board_stance_value = 1 } add = -10 } }
+        custom_tooltip = nesnd_south_tilt.5.a_tt
+        hidden_effect = { every_country = { limit = { nesnd_tilt_group_indo = yes } nesnd_tilt_give = { SLOT = 5 VALUE = -1 MONTHS = 6 } }  }
+    }
+    option = {
+        name = nesnd_south_tilt.5.b
+        ai_chance = { base = 45 modifier = { trigger = { nesnd_board_stance_value = 1 } add = 10 } }
+        custom_tooltip = nesnd_south_tilt.5.b_tt
+        hidden_effect = { every_country = { limit = { nesnd_tilt_group_indo = yes } nesnd_tilt_give = { SLOT = 5 VALUE = 1 MONTHS = 6 } } c:GNG ?= { nesnd_tilt_give = { SLOT = 5 VALUE = -1 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 5 VALUE = -1 MONTHS = 6 } }  }
+    }
+}
+
+nesnd_south_tilt.6 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.6.t
+    desc = nesnd_south_tilt.6.d
+    flavor = nesnd_south_tilt.6.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this }
+    option = {
+        name = nesnd_south_tilt.6.a
+        default_option = yes
+        ai_chance = { base = 50 modifier = { trigger = { nesnd_board_stance_value = 1 } add = -15 } }
+        custom_tooltip = nesnd_south_tilt.6.a_tt
+        hidden_effect = { every_country = { limit = { nesnd_tilt_group_nus = yes } nesnd_tilt_give = { SLOT = 6 VALUE = -2 MONTHS = 6 } } c:DEI ?= { nesnd_tilt_give = { SLOT = 6 VALUE = 2 MONTHS = 6 } } c:PHI ?= { nesnd_tilt_give = { SLOT = 6 VALUE = 1 MONTHS = 6 } }  }
+    }
+    option = {
+        name = nesnd_south_tilt.6.b
+        ai_chance = { base = 50 modifier = { trigger = { nesnd_board_stance_value = 1 } add = 15 } }
+        custom_tooltip = nesnd_south_tilt.6.b_tt
+        hidden_effect = { every_country = { limit = { nesnd_tilt_group_nus = yes } nesnd_tilt_give = { SLOT = 6 VALUE = 1 MONTHS = 6 } } c:DEI ?= { nesnd_tilt_give = { SLOT = 6 VALUE = -1 MONTHS = 6 } }  }
+    }
+}
+
+nesnd_south_tilt.7 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.7.t
+    desc = nesnd_south_tilt.7.d
+    flavor = nesnd_south_tilt.7.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this }
+    option = {
+        name = nesnd_south_tilt.7.a
+        default_option = yes
+        ai_chance = { base = 40 modifier = { trigger = { nesnd_board_stance_value = 1 } add = -15 } }
+        custom_tooltip = nesnd_south_tilt.7.a_tt
+        hidden_effect = { c:GNG ?= { nesnd_tilt_give = { SLOT = 7 VALUE = -3 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 7 VALUE = -3 MONTHS = 6 } } c:HNA ?= { nesnd_tilt_give = { SLOT = 7 VALUE = -1 MONTHS = 6 } } c:PHI ?= { nesnd_tilt_give = { SLOT = 7 VALUE = -1 MONTHS = 6 } }  }
+    }
+    option = {
+        name = nesnd_south_tilt.7.b
+        ai_chance = { base = 60 modifier = { trigger = { nesnd_board_stance_value = 1 } add = 15 } }
+        custom_tooltip = nesnd_south_tilt.7.b_tt
+        hidden_effect = { c:HNA ?= { nesnd_tilt_give = { SLOT = 7 VALUE = -3 MONTHS = 6 } } c:PHI ?= { nesnd_tilt_give = { SLOT = 7 VALUE = -1 MONTHS = 6 } } c:GNG ?= { nesnd_tilt_give = { SLOT = 7 VALUE = -1 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 7 VALUE = -1 MONTHS = 6 } }  }
+    }
+}
+
+nesnd_south_tilt.9 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.9.t
+    desc = nesnd_south_tilt.9.d
+    flavor = nesnd_south_tilt.9.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this }
+    option = {
+        name = nesnd_south_tilt.9.a
+        default_option = yes
+        ai_chance = { base = 50 modifier = { trigger = { nesnd_board_stance_value = 1 } add = -10 } }
+        custom_tooltip = nesnd_south_tilt.9.a_tt
+        hidden_effect = { every_country = { limit = { nesnd_tilt_group_indo = yes } nesnd_tilt_give = { SLOT = 9 VALUE = -1 MONTHS = 6 } } every_country = { limit = { nesnd_tilt_group_nus = yes } nesnd_tilt_give = { SLOT = 9 VALUE = -1 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 9 VALUE = 1 MONTHS = 6 } } c:GNG ?= { nesnd_tilt_give = { SLOT = 9 VALUE = 1 MONTHS = 6 } }  }
+    }
+    option = {
+        name = nesnd_south_tilt.9.b
+        ai_chance = { base = 50 modifier = { trigger = { nesnd_board_stance_value = 1 } add = 10 } }
+        custom_tooltip = nesnd_south_tilt.9.b_tt
+        hidden_effect = { c:PHI ?= { nesnd_tilt_give = { SLOT = 9 VALUE = 1 MONTHS = 6 } } c:DEI ?= { nesnd_tilt_give = { SLOT = 9 VALUE = 1 MONTHS = 6 } } c:YN1 ?= { nesnd_tilt_give = { SLOT = 9 VALUE = 1 MONTHS = 6 } } every_country = { limit = { nesnd_tilt_group_indo = yes } nesnd_tilt_give = { SLOT = 9 VALUE = 1 MONTHS = 6 } } c:SIH ?= { nesnd_tilt_give = { SLOT = 9 VALUE = -1 MONTHS = 6 } } c:GNG ?= { nesnd_tilt_give = { SLOT = 9 VALUE = -1 MONTHS = 6 } }  }
+    }
+}
+
+nesnd_south_tilt.50 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.50.t
+    desc = nesnd_south_tilt.50.d
+    flavor = nesnd_south_tilt.50.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { c:USM ?= this exists = scope:nesnd_tilt_subject }
+    option = {
+        name = nesnd_south_tilt.50.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_up_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = 1 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.50.b
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_down_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = -1 } } }
+    }
+}
+
+nesnd_south_tilt.51 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.51.t
+    desc = nesnd_south_tilt.51.d
+    flavor = nesnd_south_tilt.51.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { c:USM ?= this exists = scope:nesnd_tilt_subject }
+    option = {
+        name = nesnd_south_tilt.51.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_up_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = 1 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.51.b
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_down_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = -1 } } }
+    }
+}
+
+nesnd_south_tilt.52 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.52.t
+    desc = nesnd_south_tilt.52.d
+    flavor = nesnd_south_tilt.52.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { c:USM ?= this exists = scope:nesnd_tilt_subject }
+    option = {
+        name = nesnd_south_tilt.52.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_up_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = 1 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.52.b
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_down_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = -1 } } }
+    }
+}
+
+nesnd_south_tilt.53 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.53.t
+    desc = nesnd_south_tilt.53.d
+    flavor = nesnd_south_tilt.53.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { c:USM ?= this exists = scope:nesnd_tilt_subject }
+    option = {
+        name = nesnd_south_tilt.53.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_up_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = 1 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.53.b
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_down_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = -1 } } }
+    }
+}
+
+nesnd_south_tilt.54 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.54.t
+    desc = nesnd_south_tilt.54.d
+    flavor = nesnd_south_tilt.54.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { c:USM ?= this exists = scope:nesnd_tilt_subject }
+    option = {
+        name = nesnd_south_tilt.54.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_up_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = 1 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.54.b
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_down_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = -1 } } }
+    }
+}
+
+nesnd_south_tilt.55 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.55.t
+    desc = nesnd_south_tilt.55.d
+    flavor = nesnd_south_tilt.55.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { c:USM ?= this exists = scope:nesnd_tilt_subject }
+    option = {
+        name = nesnd_south_tilt.55.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_up_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = 1 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.55.b
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_down_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = -1 } } }
+    }
+}
+
+nesnd_south_tilt.56 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.56.t
+    desc = nesnd_south_tilt.56.d
+    flavor = nesnd_south_tilt.56.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { c:USM ?= this exists = scope:nesnd_tilt_subject }
+    option = {
+        name = nesnd_south_tilt.56.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_up_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = 1 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.56.b
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_down_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = -1 } } }
+    }
+}
+
+nesnd_south_tilt.57 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_tilt.57.t
+    desc = { first_valid = {
+        triggered_desc = { trigger = { scope:nesnd_tilt_subject ?= { nesnd_tilt_chinese_admin = yes } } desc = nesnd_south_tilt.57.d }
+        desc = nesnd_south_tilt.57.d_tribute
+    } }
+    flavor = nesnd_south_tilt.57.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { c:USM ?= this exists = scope:nesnd_tilt_subject }
+    option = {
+        name = nesnd_south_tilt.57.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_up_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = 1 } } }
+    }
+    option = {
+        name = nesnd_south_tilt.57.b
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_south_tilt_generic_down_tt
+        hidden_effect = { scope:nesnd_tilt_subject = { nesnd_tilt_give_generic = { VALUE = -1 } } }
+    }
+}

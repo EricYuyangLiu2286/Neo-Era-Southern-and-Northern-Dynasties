@@ -1,0 +1,45 @@
+﻿# Any scope. The same play's participants are sampled while the war object is live.
+# Entries for departed participants survive until window close, so end-of-war goals
+# can use evidence captured before a country left. New participants are re-sampled.
+nesnd_poland_snapshot_war_sides = {
+	global_var:nesnd_poland_window_play ?= {
+		war ?= {
+			save_scope_as = nesnd_poland_snapshot_war
+			every_war_participant = {
+				save_scope_as = nesnd_poland_snapshot_member
+				set_variable = {
+					name = nesnd_poland_recorded_play
+					value = global_var:nesnd_poland_window_play
+				}
+				if = {
+					limit = {
+						scope:nesnd_poland_snapshot_war = {
+							is_on_defending_side = scope:nesnd_poland_snapshot_member
+						}
+					}
+					set_variable = {
+						name = nesnd_poland_recorded_side
+						value = 1
+					}
+				}
+				else = {
+					set_variable = {
+						name = nesnd_poland_recorded_side
+						value = 0
+					}
+				}
+			}
+		}
+	}
+}
+
+nesnd_poland_clear_war_sides = {
+	every_country = {
+		limit = {
+			custom_tooltip = { text = nesnd_ui_poland_recorded_play_tt has_variable = nesnd_poland_recorded_play }
+		}
+		remove_variable = nesnd_poland_recorded_play
+		remove_variable = nesnd_poland_recorded_side
+	}
+	remove_global_variable = nesnd_poland_war_unclassified_goal
+}

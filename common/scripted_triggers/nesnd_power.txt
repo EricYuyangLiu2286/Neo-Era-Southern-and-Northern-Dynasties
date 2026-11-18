@@ -23,7 +23,6 @@ nesnd_power_story_excluded = {
 		has_journal_entry = je_nesnd_france_court
 		has_journal_entry = ce_usm_conflicts_within
 		has_journal_entry = ce_usm_ruling_of_nanfu
-		has_journal_entry = ce_usm_civilwar_journal
 		has_journal_entry = ce_usm_suppress_rebellion
 		has_journal_entry = ce_usm_restoration_of_ming
 		has_journal_entry = ce_usm_acheive_revolution
@@ -70,9 +69,12 @@ nesnd_power_character_removable = {
 	}
 }
 
-nesnd_power_has_holder = { exists = var:nesnd_power_holder var:nesnd_power_holder ?= { is_character_alive = yes } }
-nesnd_power_case_a = { nesnd_power_has_holder = yes var:nesnd_power_case ?= 1 exists = var:nesnd_power_leader }
-nesnd_power_case_b = { nesnd_power_has_holder = yes var:nesnd_power_case ?= 2 }
+nesnd_power_has_holder = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_power_holder_tt exists = var:nesnd_power_holder } var:nesnd_power_holder ?= { is_character_alive = yes } }
+nesnd_power_case_a = { nesnd_power_has_holder = yes custom_tooltip = { text = nesnd_ui_var_nesnd_power_case_is_1_tt var:nesnd_power_case ?= 1 } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_power_leader_tt exists = var:nesnd_power_leader var:nesnd_power_leader ?= { is_character_alive = yes } } }
+nesnd_power_case_b = { nesnd_power_has_holder = yes custom_tooltip = { text = nesnd_ui_var_nesnd_power_case_is_2_tt var:nesnd_power_case ?= 2 } }
+# 情形 A 要求对手领袖在世：领袖死后到下一次每周刷新之前，nesnd_power_save_scopes 存不到他，事件正文会取不到人物。
+# 有当权者且对手一方确定（情形 A 或 B）。正文按情形分写、情形 A 正文要用对手领袖的事件都要求此条。
+nesnd_power_has_rival = { OR = { nesnd_power_case_a = yes nesnd_power_case_b = yes } }
 
 # 平衡点 ≥ 90：当权者一方压倒对方；≤ 10：对方压倒当权者。
 nesnd_power_holder_dominant = { has_variable = nesnd_power_balance nesnd_power_b >= 90 }
@@ -91,16 +93,16 @@ nesnd_power_ai_can_spare = {
 }
 
 # 宫廷事件的抽取条件（事件 trigger 与抽取表共用）。
-nesnd_palace_ev_quarrel_ok = { OR = { nesnd_power_case_a = yes nesnd_power_case_b = yes } }
-nesnd_palace_ev_counsel_ok = { nesnd_power_has_holder = yes OR = { taking_loans = yes in_default = yes } }
-nesnd_palace_ev_retire_ok = { nesnd_power_has_holder = yes nesnd_power_ten >= 60 var:nesnd_power_holder ?= { nesnd_power_character_removable = yes } }
-nesnd_palace_ev_strike_ok = { nesnd_power_has_holder = yes nesnd_power_rival_dominant = yes var:nesnd_power_holder ?= { nesnd_power_character_removable = yes } }
+nesnd_palace_ev_quarrel_ok = { nesnd_power_has_rival = yes }
+nesnd_palace_ev_counsel_ok = { nesnd_power_has_rival = yes OR = { taking_loans = yes in_default = yes } }
+nesnd_palace_ev_retire_ok = { nesnd_power_has_rival = yes nesnd_power_ten >= 60 var:nesnd_power_holder ?= { nesnd_power_character_removable = yes } }
+nesnd_palace_ev_strike_ok = { nesnd_power_has_rival = yes nesnd_power_rival_dominant = yes var:nesnd_power_holder ?= { nesnd_power_character_removable = yes } }
 nesnd_palace_ev_coerce_ok = { nesnd_power_case_b = yes nesnd_power_holder_dominant = yes NOT = { var:nesnd_power_type ?= 1 } }
 nesnd_palace_ev_purge_side_ok = { nesnd_power_case_a = yes nesnd_power_rival_dominant = yes }
 nesnd_palace_ev_night_ok = { nesnd_power_case_a = yes nesnd_power_holder_dominant = yes var:nesnd_power_leader ?= { nesnd_power_character_removable = yes } }
 
-nesnd_cabinet_ev_debate_ok = { OR = { nesnd_power_case_a = yes nesnd_power_case_b = yes } }
-nesnd_cabinet_ev_budget_ok = { nesnd_power_has_holder = yes OR = { taking_loans = yes in_default = yes } }
+nesnd_cabinet_ev_debate_ok = { nesnd_power_has_rival = yes }
+nesnd_cabinet_ev_budget_ok = { nesnd_power_has_rival = yes OR = { taking_loans = yes in_default = yes } }
 nesnd_cabinet_ev_strike_ok = { nesnd_power_has_holder = yes nesnd_power_rival_dominant = yes var:nesnd_power_holder ?= { nesnd_power_character_removable = yes } }
 nesnd_cabinet_ev_no_confidence_ok = { nesnd_power_case_a = yes nesnd_power_rival_dominant = yes }
 nesnd_cabinet_ev_strongman_ok = { nesnd_power_case_b = yes nesnd_power_holder_dominant = yes NOT = { var:nesnd_power_type ?= 1 } }

@@ -1,7 +1,7 @@
 ﻿# A2 transaction owners are country objects. A recreated TAG is never a receipt.
 nesnd_restoration_mark_resolved = {
  if = { limit = { nesnd_regional_native_actor = yes } nesnd_regional_native_mark_done = yes }
- else_if = { limit = { OR = { c:MEX ?= this c:NAH ?= this has_variable = nesnd_restoration_mexican } } set_global_variable = nesnd_mexican_restoration_resolved }
+ else_if = { limit = { OR = { c:MEX ?= this c:NAH ?= this hidden_trigger = { has_variable = nesnd_restoration_mexican } } } set_global_variable = nesnd_mexican_restoration_resolved }
  else_if = { limit = { OR = { c:PEU ?= this c:NPU ?= this c:SPU ?= this c:TWT ?= this } } set_global_variable = nesnd_andean_restoration_resolved }
  nesnd_restoration_cancel_mobilization = yes
 }
@@ -62,12 +62,12 @@ nesnd_restoration_recover_prewar_suppression = {
 nesnd_restoration_exile_people = {
  set_variable = { name = nesnd_restoration_exile_count value = 0 }
  every_scope_character = {
-  limit = { has_variable = nesnd_a2_case_character is_character_alive = yes culture = { nesnd_hus_native_culture = yes } }
+  limit = { hidden_trigger = { has_variable = nesnd_a2_case_character } is_character_alive = yes culture = { nesnd_hus_native_culture = yes } }
   nesnd_restoration_exile_one = yes
  }
  every_scope_character = {
   limit = {
-   is_character_alive = yes culture = { nesnd_hus_native_culture = yes } NOT = { has_variable = nesnd_a2_case_character }
+   is_character_alive = yes culture = { nesnd_hus_native_culture = yes } hidden_trigger = { NOT = { has_variable = nesnd_a2_case_character } }
    OR = { is_interest_group_leader = yes has_role_of_type = agitator has_role_of_type = general has_role_of_type = ruler }
   }
   nesnd_restoration_exile_one = yes
@@ -75,7 +75,7 @@ nesnd_restoration_exile_people = {
  remove_variable = nesnd_restoration_exile_count
 }
 nesnd_restoration_exile_one = {
- if = { limit = { owner = { has_variable = nesnd_restoration_exile_count var:nesnd_restoration_exile_count < 3 } }
+ if = { limit = { owner = { hidden_trigger = { has_variable = nesnd_restoration_exile_count } hidden_trigger = { var:nesnd_restoration_exile_count < 3 } } }
   owner = { change_variable = { name = nesnd_restoration_exile_count add = 1 } }
   exile_character_with_role_cleanup = yes
   if = { limit = { exists = c:HUS }
@@ -388,15 +388,15 @@ nesnd_restoration_settlement = {
     AND = { initiator = root target = scope:target_country }
     AND = { target = root initiator = scope:target_country }
    } }
-   trigger_if = { limit = { exists = var:nesnd_restoration_play } var:nesnd_restoration_play = scope:diplomatic_play }
+   trigger_if = { limit = { hidden_trigger = { exists = var:nesnd_restoration_play } } hidden_trigger = { var:nesnd_restoration_play = scope:diplomatic_play } }
    scope:target_country = { any_scope_state = { always = yes } }
   }
   trigger_else = { always = no }
-  NOR = { has_variable = nesnd_restoration_external_end has_variable = nesnd_restoration_war_terminal }
-  NOT = { has_variable = nesnd_restoration_settling } NOT = { has_variable = nesnd_restoration_settlement_done }
+  NOR = { custom_tooltip = { text = nesnd_ui_restoration_external_end_tt has_variable = nesnd_restoration_external_end } hidden_trigger = { has_variable = nesnd_restoration_war_terminal } }
+  custom_tooltip = { text = nesnd_ui_not_restoration_settling_tt NOT = { has_variable = nesnd_restoration_settling } } custom_tooltip = { text = nesnd_ui_not_restoration_settlement_done_tt NOT = { has_variable = nesnd_restoration_settlement_done } }
  }
   set_variable = nesnd_restoration_settling
-  if = { limit = { has_variable = nesnd_restoration_war_host }
+  if = { limit = { custom_tooltip = { text = nesnd_ui_restoration_war_host_tt has_variable = nesnd_restoration_war_host } }
    scope:target_country = { nesnd_restoration_exile_people = yes }
   }
   annex = scope:target_country
@@ -407,11 +407,11 @@ nesnd_restoration_settlement = {
  }
 }
 nesnd_restoration_confirm_unification = {
- if = { limit = { NOT = { has_variable = nesnd_restoration_settlement_done } }
+ if = { limit = { custom_tooltip = { text = nesnd_ui_not_restoration_settlement_done_tt NOT = { has_variable = nesnd_restoration_settlement_done } } }
   set_variable = nesnd_restoration_settlement_done
   set_variable = { name = nesnd_restoration_war_terminal value = 1 }
   nesnd_restoration_mark_resolved = yes
-  if = { limit = { has_variable = nesnd_restoration_war_host } nesnd_diaspora_register = yes }
+  if = { limit = { custom_tooltip = { text = nesnd_ui_restoration_war_host_tt has_variable = nesnd_restoration_war_host } } nesnd_diaspora_register = yes }
   else = {
    set_variable = nesnd_restoration_victory
    if = { limit = { nesnd_regional_native_actor = yes } add_modifier = { name = nesnd_regional_native_restored_rule months = 120 } }

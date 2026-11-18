@@ -86,7 +86,7 @@ nesnd_power_stance_type = {
 	else = { owner = { set_variable = { name = $VAR$ value = 2 } } }
 }
 
-# 每周：认定当权者（宠臣或统治者）、最大集团及其领袖、情形与类型；同步头像列表与平衡修正。
+# 每周：认定当权者（宠臣或统治者）、对手集团及其领袖、情形与类型；同步头像列表与平衡修正。
 nesnd_power_refresh = {
 	hidden_effect = {
 		nesnd_power_find_holder_$REGIME$ = yes
@@ -113,13 +113,33 @@ nesnd_power_refresh = {
 			remove_variable = nesnd_power_holder_ig
 		}
 
-		# position = 0 取影响力最高的一个（不写时会遍历全部，save_scope_as 留下的是最小的集团）。
+		# 对手集团（var:nesnd_power_top_ig）。position = 0 取影响力最高的一个（不写时会遍历全部，save_scope_as 留下的是最小的集团）。
+		# 当权者就是最大集团的领袖：情形 2，对手记为最大集团本身。
+		# 否则为情形 1：对手是当权者所在集团以外影响力最高的集团（当权者不属任何集团时即最大集团）。
 		ordered_interest_group = {
 			order_by = ig_clout
 			position = 0
-			save_scope_as = nesnd_power_new_top
+			save_scope_as = nesnd_power_largest
+		}
+		scope:nesnd_power_largest ?= { leader ?= { save_scope_as = nesnd_power_largest_leader } }
+		if = {
+			limit = {
+				exists = var:nesnd_power_holder
+				exists = scope:nesnd_power_largest_leader
+				var:nesnd_power_holder ?= scope:nesnd_power_largest_leader
+			}
+			scope:nesnd_power_largest = { save_scope_as = nesnd_power_new_top }
+		}
+		else = {
+			ordered_interest_group = {
+				limit = { NOT = { prev.var:nesnd_power_holder_ig ?= this } }
+				order_by = ig_clout
+				position = 0
+				save_scope_as = nesnd_power_new_top
+			}
 		}
 		scope:nesnd_power_new_top ?= { leader ?= { save_scope_as = nesnd_power_new_leader } }
+		# 对手集团或其领袖换了，平衡偏离减半（沿用原规则，比较对象改为对手集团）。没有可选的对手集团时撤去记录。
 		if = {
 			limit = { exists = scope:nesnd_power_new_top }
 			if = {
@@ -137,6 +157,7 @@ nesnd_power_refresh = {
 			}
 			set_variable = { name = nesnd_power_top_ig value = scope:nesnd_power_new_top }
 		}
+		else = { remove_variable = nesnd_power_top_ig }
 		if = {
 			limit = { exists = scope:nesnd_power_new_leader }
 			set_variable = { name = nesnd_power_leader value = scope:nesnd_power_new_leader }
@@ -164,11 +185,11 @@ nesnd_power_refresh = {
 		}
 		else = { remove_variable = nesnd_power_leader_type }
 
-		# 两人分属不同集团时，按理念差距定关系：1 相近（差距 ≤ 25），2 不一，3 相左（≥ 50）。同一集团视为相近。
+		# 情形 1 中两人分属不同集团，按两集团的理念差距定关系：1 相近（差距 ≤ 25），2 不一，3 相左（≥ 50）。
 		if = {
 			limit = { nesnd_power_case_a = yes }
 			if = {
-				limit = { OR = { var:nesnd_power_holder_ig ?= var:nesnd_power_top_ig nesnd_power_ideology_gap <= 25 } }
+				limit = { nesnd_power_ideology_gap <= 25 }
 				set_variable = { name = nesnd_power_relation value = 1 }
 			}
 			else_if = {
@@ -331,10 +352,10 @@ nesnd_power_after_removal = {
 nesnd_palace_fire_event = {
 	random_list = {
 		10 = { trigger = { nesnd_palace_ev_quarrel_ok = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 5 } } trigger_event = { id = nesnd_palace.11 popup = yes } }
-		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.12 popup = yes } }
+		10 = { trigger = { nesnd_power_has_rival = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.12 popup = yes } }
 		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.13 popup = yes } }
-		8 = { trigger_event = { id = nesnd_palace.14 popup = yes } }
-		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.15 popup = yes } }
+		8 = { trigger = { OR = { nesnd_power_has_holder = no nesnd_power_has_rival = yes } } trigger_event = { id = nesnd_palace.14 popup = yes } }
+		10 = { trigger = { nesnd_power_has_rival = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.15 popup = yes } }
 		8 = { trigger = { nesnd_palace_ev_counsel_ok = yes } trigger_event = { id = nesnd_palace.16 popup = yes } }
 		6 = { trigger = { nesnd_palace_ev_retire_ok = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_palace.17 popup = yes } }
 		15 = { trigger = { nesnd_palace_ev_strike_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_palace.21 popup = yes } }
@@ -354,12 +375,12 @@ nesnd_palace_fire_event = {
 nesnd_cabinet_fire_event = {
 	random_list = {
 		10 = { trigger = { nesnd_cabinet_ev_debate_ok = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 5 } } trigger_event = { id = nesnd_cabinet.11 popup = yes } }
-		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.12 popup = yes } }
+		10 = { trigger = { nesnd_power_has_rival = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.12 popup = yes } }
 		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.13 popup = yes } }
-		8 = { trigger_event = { id = nesnd_cabinet.14 popup = yes } }
-		10 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.15 popup = yes } }
+		8 = { trigger = { nesnd_power_has_rival = yes } trigger_event = { id = nesnd_cabinet.14 popup = yes } }
+		10 = { trigger = { nesnd_power_has_rival = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.15 popup = yes } }
 		8 = { trigger = { nesnd_cabinet_ev_budget_ok = yes } trigger_event = { id = nesnd_cabinet.16 popup = yes } }
-		6 = { trigger = { nesnd_power_has_holder = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.17 popup = yes } }
+		6 = { trigger = { nesnd_power_has_rival = yes } modifier = { if = { limit = { nesnd_power_p >= 60 } add = 10 } } trigger_event = { id = nesnd_cabinet.17 popup = yes } }
 		15 = { trigger = { nesnd_cabinet_ev_strike_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.21 popup = yes } }
 		15 = { trigger = { nesnd_cabinet_ev_no_confidence_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.22 popup = yes } }
 		15 = { trigger = { nesnd_cabinet_ev_strongman_ok = yes } modifier = { if = { limit = { var:nesnd_power_relation ?= 1 } add = -8 } } trigger_event = { id = nesnd_cabinet.23 popup = yes } }

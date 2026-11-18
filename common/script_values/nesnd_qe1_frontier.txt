@@ -1,0 +1,255 @@
+﻿# 西秦「边疆诸部」的数值。Root = country（西秦）。
+# 地区条的权威值是国家变量 nesnd_qe1_fr_afg / nesnd_qe1_fr_kaz，月脉冲结算后同步到进度条。
+
+nesnd_qe1_fr_afg_value = { value = 20 if = { limit = { has_variable = nesnd_qe1_fr_afg } value = var:nesnd_qe1_fr_afg } }
+nesnd_qe1_fr_kaz_value = { value = 10 if = { limit = { has_variable = nesnd_qe1_fr_kaz } value = var:nesnd_qe1_fr_kaz } }
+
+# 分离时倒戈州占全国的比例：本国拥有的地区州数 ÷ 全国州数。
+nesnd_qe1_fr_state_count = { value = 0 every_scope_state = { add = 1 } min = 1 }
+nesnd_qe1_fr_afg_fraction = {
+	value = 0
+	every_scope_state = { limit = { nesnd_qe1_fr_afg_region = yes is_capital = no } add = 1 }
+	divide = nesnd_qe1_fr_state_count
+	add = 0.01
+}
+nesnd_qe1_fr_kaz_fraction = {
+	value = 0
+	every_scope_state = { limit = { nesnd_qe1_fr_kaz_region = yes is_capital = no } add = 1 }
+	divide = nesnd_qe1_fr_state_count
+	add = 0.01
+}
+
+# —— 两条共有的月度来源 ——
+nesnd_qe1_fr_base_afg = { value = 0.10 }
+nesnd_qe1_fr_base_kaz = { value = 0.05 }
+# 团结度：60 以上略降，以下每低 10 点每月多 0.2。
+nesnd_qe1_fr_unity_term = {
+	value = 0
+	if = {
+		limit = { has_variable = nesnd_qe1_unity }
+		value = 60
+		subtract = var:nesnd_qe1_unity
+		multiply = 0.02
+		min = -0.1
+	}
+}
+nesnd_qe1_fr_war_term = { value = 0 if = { limit = { is_at_war = yes } value = 0.1 } }
+nesnd_qe1_fr_law_term = {
+	value = 0
+	if = { limit = { has_law_or_variant = law_type:law_multicultural } add = -0.1 }
+	if = { limit = { has_law_or_variant = law_type:law_national_supremacy } add = 0.1 }
+}
+
+# —— 阿富汗条 ——
+nesnd_qe1_fr_afg_turmoil = {
+	value = 0
+	every_scope_state = { limit = { nesnd_qe1_fr_afg_region = yes turmoil >= 0.1 } add = this.turmoil }
+	divide = { value = 0 every_scope_state = { limit = { nesnd_qe1_fr_afg_region = yes } add = 1 } min = 1 }
+	multiply = 0.8
+}
+nesnd_qe1_fr_afg_persia = {
+	value = 0
+	if = { limit = { nesnd_qe1_persian_subversion = yes } add = 0.2 }
+	else_if = { limit = { exists = c:PER c:PER = { NOT = { is_subject_of = root } } } add = 0.1 }
+}
+nesnd_qe1_fr_afg_policy = {
+	value = 0
+	if = { limit = { has_variable = nesnd_qe1_fr_afg_enfeoffed } add = -0.2 }
+	if = { limit = { has_variable = nesnd_qe1_fr_afg_garrisoned } add = -0.15 }
+	if = { limit = { has_variable = nesnd_qe1_fr_afg_quiet } add = -0.3 }
+}
+nesnd_qe1_fr_afg_delta = {
+	value = 0
+	if = {
+		limit = { nesnd_qe1_fr_afg_active = yes }
+		add = nesnd_qe1_fr_base_afg
+		add = nesnd_qe1_fr_unity_term
+		add = nesnd_qe1_fr_war_term
+		add = nesnd_qe1_fr_law_term
+		add = nesnd_qe1_fr_afg_turmoil
+		add = nesnd_qe1_fr_afg_persia
+		add = nesnd_qe1_fr_afg_shia
+		add = nesnd_qe1_fr_afg_policy
+	}
+}
+
+# —— 哈萨克条 ——
+# 草原驻军：六州中没有一州的兵营达到 5 级 +0.10；有三州以上达到 −0.10。
+nesnd_qe1_fr_kaz_garrisoned_states = {
+	value = 0
+	every_scope_state = {
+		limit = { nesnd_qe1_fr_kaz_region = yes any_scope_building = { is_building_type = building_barrack level >= 5 } }
+		add = 1
+	}
+}
+nesnd_qe1_fr_kaz_garrison = {
+	value = 0
+	if = { limit = { nesnd_qe1_fr_kaz_garrisoned_states < 1 } value = 0.1 }
+	else_if = { limit = { nesnd_qe1_fr_kaz_garrisoned_states >= 3 } value = -0.1 }
+}
+nesnd_qe1_fr_kaz_russia = {
+	value = 0
+	if = { limit = { exists = c:RUS c:RUS = { relations:root <= relations_threshold:poor } } value = 0.1 }
+}
+nesnd_qe1_fr_kaz_precedent = { value = 0 if = { limit = { has_variable = nesnd_qe1_fr_afg_lost } value = 0.15 } }
+nesnd_qe1_fr_kaz_nationalism = { value = 0 if = { limit = { has_technology_researched = nationalism } value = 0.05 } }
+nesnd_qe1_fr_kaz_policy = {
+	value = 0
+	if = { limit = { has_variable = nesnd_qe1_fr_kaz_enfeoffed } add = -0.2 }
+	if = { limit = { has_variable = nesnd_qe1_fr_kaz_garrisoned } add = -0.15 }
+	if = { limit = { has_variable = nesnd_qe1_fr_kaz_quiet } add = -0.3 }
+}
+nesnd_qe1_fr_kaz_delta = {
+	value = 0
+	if = {
+		limit = { nesnd_qe1_fr_kaz_active = yes }
+		add = nesnd_qe1_fr_base_kaz
+		add = nesnd_qe1_fr_unity_term
+		add = nesnd_qe1_fr_war_term
+		add = nesnd_qe1_fr_law_term
+		add = nesnd_qe1_fr_kaz_garrison
+		add = nesnd_qe1_fr_kaz_russia
+		add = nesnd_qe1_fr_kaz_precedent
+		add = nesnd_qe1_fr_kaz_nationalism
+		add = nesnd_qe1_fr_kaz_policy
+	}
+}
+
+# 册封头人的花费：国内生产总值的二百分之一，至少两万。
+nesnd_qe1_fr_enfeoff_cost = { value = gdp divide = 200 min = 20000 round = yes }
+
+# 「帝国的稳定」的缩放：团结度 60 以下逐步离心，60 以上逐步归心。
+nesnd_qe1_drift_scale = {
+	value = 0
+	if = { limit = { has_variable = nesnd_qe1_unity } value = 60 subtract = var:nesnd_qe1_unity divide = 60 min = 0 }
+}
+nesnd_qe1_loyal_scale = {
+	value = 0
+	if = { limit = { has_variable = nesnd_qe1_unity } value = var:nesnd_qe1_unity subtract = 60 divide = 40 min = 0 }
+}
+
+# —— 团结度的新来源（接入 nesnd_qe1_unity_delta）——
+# 边疆积怨：开局 −0.10，每五年再 −0.05，至 −0.30。
+# 两处边地中，已了结的（独立、自治）或平叛后十年内的不再计入：了结一处减半，两处都了结为 0。
+nesnd_qe1_unity_grievance = {
+	value = -0.10
+	if = { limit = { game_date >= 1841.1.1 } add = -0.05 }
+	if = { limit = { game_date >= 1846.1.1 } add = -0.05 }
+	if = { limit = { game_date >= 1851.1.1 } add = -0.05 }
+	if = { limit = { game_date >= 1856.1.1 } add = -0.05 }
+	if = { limit = { OR = { NOT = { nesnd_qe1_fr_afg_open = yes } has_variable = nesnd_qe1_fr_afg_quiet } } multiply = 0.5 }
+	if = { limit = { OR = { NOT = { nesnd_qe1_fr_kaz_open = yes } has_variable = nesnd_qe1_fr_kaz_quiet } } multiply = 0.5 }
+	if = {
+		limit = {
+			OR = { NOT = { nesnd_qe1_fr_afg_open = yes } has_variable = nesnd_qe1_fr_afg_quiet }
+			OR = { NOT = { nesnd_qe1_fr_kaz_open = yes } has_variable = nesnd_qe1_fr_kaz_quiet }
+		}
+		multiply = 0
+	}
+}
+nesnd_qe1_unity_nationalism = {
+	value = 0
+	if = { limit = { has_technology_researched = nationalism } add = -0.05 }
+	if = { limit = { has_technology_researched = pan-nationalism } add = -0.05 }
+}
+nesnd_qe1_unity_legitimacy = {
+	value = 0
+	if = { limit = { government_legitimacy < 25 } value = -0.2 }
+	else_if = { limit = { government_legitimacy >= 75 } value = 0.1 }
+}
+# 宫廷：宠臣不满现行政体、权势过半、一方压倒另一方，各 −0.05…−0.10。宠臣出身边疆民族 +0.10。
+nesnd_qe1_unity_palace = {
+	value = 0
+	if = {
+		limit = { has_journal_entry = nesnd_palace_journal nesnd_power_has_holder = yes }
+		if = { limit = { var:nesnd_power_type ?= 3 } add = -0.1 }
+		if = { limit = { has_variable = nesnd_power_power var:nesnd_power_power > 50 } add = -0.05 }
+		if = { limit = { OR = { nesnd_power_holder_dominant = yes nesnd_power_rival_dominant = yes } } add = -0.1 }
+		if = {
+			limit = { var:nesnd_power_holder = { NOT = { culture = { has_discrimination_trait = tradition_sinosphere } } } }
+			add = 0.1
+		}
+	}
+	if = { limit = { has_journal_entry = nesnd_qe1_court_journal nesnd_qe1_court_dominant = yes } add = -0.1 }
+}
+# 边疆诸部：任一条到 60 时 −0.10。一处边地已独立或自治后 +0.10（包袱卸下）。
+nesnd_qe1_unity_frontier = {
+	value = 0
+	if = { limit = { nesnd_qe1_fr_afg_active = yes nesnd_qe1_fr_afg_value >= 60 } add = -0.1 }
+	if = { limit = { nesnd_qe1_fr_kaz_active = yes nesnd_qe1_fr_kaz_value >= 60 } add = -0.1 }
+	if = { limit = { has_variable = nesnd_qe1_fr_afg_lost } add = 0.1 }
+	if = { limit = { has_variable = nesnd_qe1_fr_kaz_lost } add = 0.1 }
+}
+
+# —— 进度条明细用：地区条不在上涨时各项显示为 0 ——
+nesnd_qe1_fr_afg_shown_base = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_base_afg } }
+nesnd_qe1_fr_afg_shown_unity = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_unity_term } }
+nesnd_qe1_fr_afg_shown_war = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_war_term } }
+nesnd_qe1_fr_afg_shown_law = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_law_term } }
+nesnd_qe1_fr_afg_shown_turmoil = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_afg_turmoil } }
+nesnd_qe1_fr_afg_shown_persia = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_afg_persia } }
+nesnd_qe1_fr_afg_shown_policy = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_afg_policy } }
+nesnd_qe1_fr_kaz_shown_base = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_base_kaz } }
+nesnd_qe1_fr_kaz_shown_unity = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_unity_term } }
+nesnd_qe1_fr_kaz_shown_war = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_war_term } }
+nesnd_qe1_fr_kaz_shown_law = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_law_term } }
+nesnd_qe1_fr_kaz_shown_garrison = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_kaz_garrison } }
+nesnd_qe1_fr_kaz_shown_russia = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_kaz_russia } }
+nesnd_qe1_fr_kaz_shown_precedent = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_kaz_precedent } }
+nesnd_qe1_fr_kaz_shown_nationalism = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_kaz_nationalism } }
+nesnd_qe1_fr_kaz_shown_policy = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_kaz_policy } }
+
+# —— 老秦战意：由「边疆诸部」引出、正与西秦交战的国家，每一个 20 点 ——
+nesnd_qe1_fr_enemy_count = {
+	value = 0
+	every_country = { limit = { nesnd_qe1_fr_enemy = yes } add = 1 }
+	max = 5
+}
+nesnd_qe1_fr_resolve_value = { value = nesnd_qe1_fr_enemy_count multiply = 20 }
+
+# —— 波斯将军府「将军府的忠心」：0 亲秦，100 自立。Root = 波斯 ——
+nesnd_per_stance_value = { value = 50 if = { limit = { has_variable = nesnd_per_stance } value = var:nesnd_per_stance } }
+nesnd_per_stance_qin_weak = {
+	value = 0
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_unity var:nesnd_qe1_unity < 50 } } add = 0.2 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_unity var:nesnd_qe1_unity < 25 } } add = 0.2 }
+}
+nesnd_per_stance_risings = {
+	value = 0
+	every_country = { limit = { nesnd_qe1_fr_enemy = yes } add = 0.3 }
+	max = 0.9
+}
+nesnd_per_stance_losses = {
+	value = 0
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_afg_lost } } add = 0.3 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_kaz_lost } } add = 0.2 }
+}
+nesnd_per_stance_victories = {
+	value = 0
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_afg_quiet } } add = -0.4 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_kaz_quiet } } add = -0.3 }
+}
+nesnd_per_stance_route = {
+	value = 0
+	if = { limit = { has_variable = nesnd_per_route_covert NOT = { has_variable = nesnd_per_route_aid } } add = 0.3 }
+	else_if = { limit = { has_variable = nesnd_per_route_aid } add = -0.15 }
+}
+nesnd_per_stance_home = {
+	value = 0
+	if = { limit = { has_variable = nesnd_per_tension var:nesnd_per_tension >= 60 } add = -0.2 }
+}
+nesnd_per_stance_delta = {
+	value = nesnd_per_stance_qin_weak
+	add = nesnd_per_stance_risings
+	add = nesnd_per_stance_losses
+	add = nesnd_per_stance_victories
+	add = nesnd_per_stance_route
+	add = nesnd_per_stance_home
+}
+nesnd_qe1_fr_enfeoff_cost_double = { value = nesnd_qe1_fr_enfeoff_cost multiply = 2 }
+# 什叶派教师：波斯将军府倾向自立（忠心 60 以上）时，向阿富汗的哈扎拉人和赫拉特派出教师。
+nesnd_qe1_fr_afg_shia = {
+	value = 0
+	if = { limit = { exists = c:PER c:PER = { has_variable = nesnd_per_stance var:nesnd_per_stance >= 60 } } value = 0.05 }
+}
+nesnd_qe1_fr_afg_shown_shia = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_afg_shia } }

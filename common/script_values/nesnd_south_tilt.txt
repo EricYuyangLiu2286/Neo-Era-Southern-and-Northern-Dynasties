@@ -1,0 +1,163 @@
+﻿# Country scope: the subject that owns the balance bar.
+nesnd_tilt_now = {
+    value = 0
+    if = { limit = { has_variable = nesnd_tilt_value } value = var:nesnd_tilt_value }
+}
+nesnd_tilt_bar_now = {
+    value = 0
+    if = { limit = { has_journal_entry = nesnd_south_allegiance }
+        value = "je:nesnd_south_allegiance.scripted_bar_progress(nesnd_south_tilt_bar)"
+    }
+}
+nesnd_tilt_legacy_value = {
+    value = 0
+    if = { limit = { has_variable = nesnd_tilt_legacy } value = var:nesnd_tilt_legacy }
+    # The Indochinese states never stay far on Wu's side: once past 16 they drift back until they are neutral again.
+    if = { limit = { has_variable = nesnd_tilt_returning } add = -1 }
+    # Luzon, the Far South and the Nanyang commission live by the Wu fleet and the Wu trade: a slow pull towards Wu, one point every third month.
+    if = { limit = { OR = { c:PHI ?= this c:YN1 ?= this c:DEI ?= this } c:USM ?= { nesnd_tilt_month_mod3 = 0 } } add = 1 }
+}
+# Wu's distribution of power: wider suffrage draws the three provinces and Luzon towards Wu.
+nesnd_tilt_election_value = {
+    value = 0
+    if = { limit = { exists = c:USM OR = { nesnd_tilt_mainland = yes c:PHI ?= this } }
+        # The examination franchise is a variant of wealth voting: test it first, by its own key, or it counts as -1.
+        if = { limit = { c:USM = { has_law = law_type:law_nesnd_keju_voting } } value = 0 }
+        else_if = { limit = { c:USM = { has_law_or_variant = law_type:law_universal_suffrage } } value = 2 }
+        else_if = { limit = { c:USM = { has_law_or_variant = law_type:law_census_voting } } value = 1 }
+        else_if = { limit = { c:USM = { OR = {
+                has_law_or_variant = law_type:law_wealth_voting has_law_or_variant = law_type:law_landed_voting
+                has_law_or_variant = law_type:law_autocracy has_law_or_variant = law_type:law_oligarchy } } }
+            value = -1
+        }
+    }
+}
+nesnd_tilt_land_value = {
+    value = 0
+    if = { limit = { exists = c:USM nesnd_tilt_mainland = yes }
+        if = { limit = { c:USM = { has_law_or_variant = law_type:law_commercialized_agriculture } } value = 2 }
+        else_if = { limit = { c:USM = { has_law = law_type:law_homesteading } } value = 1 }
+        else_if = { limit = { c:USM = { OR = { has_law_or_variant = law_type:law_tenant_farmers has_law_or_variant = law_type:law_serfdom } } }
+            value = -1
+        }
+    }
+}
+# A court that stands by the Ming house hardens the three provinces against the Zheng.
+nesnd_tilt_court_value = {
+    value = 0
+    if = { limit = { nesnd_tilt_mainland = yes nesnd_tilt_court_ming = yes } value = -1 }
+}
+# Timed sources. Each event option sets one of these variables with an expiry (batches 2 and 3).
+nesnd_tilt_events_value = {
+    value = 0
+    if = { limit = { has_variable = nesnd_tilt_phi } add = var:nesnd_tilt_phi }
+    if = { limit = { has_variable = nesnd_tilt_ev_1 } add = var:nesnd_tilt_ev_1 }
+    if = { limit = { has_variable = nesnd_tilt_ev_2 } add = var:nesnd_tilt_ev_2 }
+    if = { limit = { has_variable = nesnd_tilt_ev_3 } add = var:nesnd_tilt_ev_3 }
+    if = { limit = { has_variable = nesnd_tilt_ev_4 } add = var:nesnd_tilt_ev_4 }
+    if = { limit = { has_variable = nesnd_tilt_ev_5 } add = var:nesnd_tilt_ev_5 }
+    if = { limit = { has_variable = nesnd_tilt_ev_6 } add = var:nesnd_tilt_ev_6 }
+    if = { limit = { has_variable = nesnd_tilt_ev_7 } add = var:nesnd_tilt_ev_7 }
+    if = { limit = { has_variable = nesnd_tilt_ev_8 } add = var:nesnd_tilt_ev_8 }
+    if = { limit = { has_variable = nesnd_tilt_ev_9 } add = var:nesnd_tilt_ev_9 }
+    if = { limit = { has_variable = nesnd_tilt_evg_1 } add = var:nesnd_tilt_evg_1 }
+    if = { limit = { has_variable = nesnd_tilt_evg_2 } add = var:nesnd_tilt_evg_2 }
+    if = { limit = { has_variable = nesnd_tilt_evg_3 } add = var:nesnd_tilt_evg_3 }
+    if = { limit = { has_variable = nesnd_tilt_evg_4 } add = var:nesnd_tilt_evg_4 }
+}
+nesnd_tilt_appease_value = {
+    value = 0
+    if = { limit = { has_variable = nesnd_tilt_appease } value = var:nesnd_tilt_appease }
+}
+# Envoys from the three provinces pull an overseas subject towards the middle and stop there.
+nesnd_tilt_envoy_value = {
+    value = 0
+    if = { limit = { has_variable = nesnd_tilt_envoy }
+        if = { limit = { nesnd_tilt_now > 0 } value = -1 }
+        else_if = { limit = { nesnd_tilt_now < 0 } value = 1 }
+    }
+}
+# A concession of autonomy by a court loyal to the Ming house (da_nesnd_south_concede_autonomy).
+nesnd_tilt_concession_value = {
+    value = 0
+    if = { limit = { has_variable = nesnd_tilt_concession } value = var:nesnd_tilt_concession }
+}
+nesnd_tilt_declared_value = {
+    value = 0
+    if = { limit = { has_variable = nesnd_tilt_declared } value = var:nesnd_tilt_declared }
+}
+# Country scope. What a country weighs in the contest: its army battalions, nothing else.
+# GDP (millions) and navy_size are different units and cannot be summed with battalions; Wu's ~3400 navy_size
+# alone outweighed the whole south and filled the pledge within a year (observer game 2026-11-17).
+# The navy and GDP are left out on purpose, not by oversight. Simulation: WORK/reports/2026-11-17-observer-1839b/sim/scheme_sweep2.txt
+nesnd_tilt_strength = {
+    value = army_size
+    min = 1
+}
+# Wu scope. The Zheng hold the Wu heartland whatever the court says: Wu itself always counts for the Zheng,
+# in full when the court follows them and by half when it stands by the Ming house.
+nesnd_tilt_court_strength = {
+    value = nesnd_tilt_strength
+    if = { limit = { nesnd_board_stance_value = 1 } multiply = 0.5 }
+}
+nesnd_tilt_weight_wu = {
+    value = nesnd_tilt_court_strength
+    every_country = { limit = { nesnd_tilt_member = yes nesnd_tilt_zone_wu = yes } add = nesnd_tilt_strength }
+}
+nesnd_tilt_weight_ming = {
+    value = 0
+    every_country = { limit = { nesnd_tilt_member = yes nesnd_tilt_zone_ming = yes } add = nesnd_tilt_strength }
+}
+nesnd_tilt_weight_total = {
+    value = nesnd_tilt_strength
+    every_country = { limit = { nesnd_tilt_member = yes } add = nesnd_tilt_strength }
+}
+# Each side's share of the realm's strength, 0-100, as the reform pledge counts it. Shown on the board of the southern states.
+nesnd_tilt_share_ming = { value = nesnd_tilt_weight_ming multiply = 100 divide = nesnd_tilt_weight_total }
+nesnd_tilt_share_wu = { value = nesnd_tilt_weight_wu multiply = 100 divide = nesnd_tilt_weight_total }
+# Any scope.
+nesnd_board_ming_share_value = { value = 0 if = { limit = { exists = c:USM } add = c:USM.nesnd_tilt_share_ming } }
+nesnd_board_wu_share_value = { value = 0 if = { limit = { exists = c:USM } add = c:USM.nesnd_tilt_share_wu } }
+# Reform pledge on a 0-1000 scale, whole numbers only: factor * 10 * (own side - other side) / total, by strength.
+# It falls when the other side outweighs the court's own.
+# Factor 15 when the court stands by the Ming house, 6 when it follows the Zheng. With 11 for both, the 1836 observer
+# game (court with the Zheng) filled the pledge in month 27 and Wu was founded without a war (save 1843.10.22).
+# Starting armies (save 1836.3.4): Wu 255, Shu 114, Chu 98, Huai 46 battalions.
+# Simulation: WORK/reports/2026-11-17-observer-1839b/sim/early_armies.txt
+nesnd_tilt_pledge_gain = {
+    value = nesnd_tilt_weight_wu
+    subtract = nesnd_tilt_weight_ming
+    if = { limit = { nesnd_board_stance_value = 1 } multiply = -150 }
+    else = { multiply = 60 }
+    divide = nesnd_tilt_weight_total
+    floor = yes
+}
+# Any scope. This month's change of the reform pledge, 0-100 scale, as the bars' native monthly breakdown shows it.
+# The native monthly progress runs before the journal pulse; the pulse then writes the bar absolutely, so it is shown, not
+# counted twice (references/journal-state.md). Clamped like the pledge itself.
+nesnd_south_compact_monthly_value = {
+    value = 0
+    if = {
+        limit = { c:USM ?= { has_variable = nesnd_tilt_month has_variable = nesnd_pledge_milli NOT = { has_variable = nesnd_south_resolved } } }
+        value = c:USM.var:nesnd_pledge_milli
+        add = c:USM.nesnd_tilt_pledge_gain
+        max = 1000
+        min = 0
+        subtract = c:USM.var:nesnd_pledge_milli
+        divide = 10
+    }
+}
+# Months since January 1836 and the number of events that should have happened by then: 1 + months * 24 / 42.
+nesnd_tilt_month_value = { value = 0 if = { limit = { has_variable = nesnd_tilt_month } value = var:nesnd_tilt_month } }
+nesnd_tilt_month_mod3 = { value = nesnd_tilt_month_value modulo = 3 }
+nesnd_tilt_events_done_value = { value = 0 if = { limit = { has_variable = nesnd_tilt_events_done } value = var:nesnd_tilt_events_done } }
+nesnd_tilt_events_due = {
+    value = nesnd_tilt_month_value
+    multiply = 24
+    divide = 42
+    floor = yes
+    add = 1
+    max = 24
+}
+# Half a year of tax revenue: the weekly income from taxation (tariffs, pacts and transfers excluded) times 26.
+nesnd_south_half_year_levy = { value = tax_income multiply = 26 min = 0 }

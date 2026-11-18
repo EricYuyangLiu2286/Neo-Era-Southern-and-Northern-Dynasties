@@ -7,7 +7,6 @@
 			set_variable = nesnd_qe1_barracks_snapshot_pending
 			trigger_event = { id = nesnd_qe1.90 days = 1 popup = no }
 			set_variable = { name = nesnd_qe1_unity value = 70 }
-			set_variable = { name = nesnd_qe1_uprising value = 0 }
 			set_variable = { name = nesnd_qe1_war_months value = 0 }
 			set_variable = nesnd_qe1_ruler_economic
 			if = { limit = { exists = ruler } ruler = { nesnd_qe1_assign_ruler = yes } }
@@ -35,8 +34,8 @@ nesnd_qe1_assign_ruler = {
 }
 nesnd_qe1_ensure_agenda_children = {
 	if = { limit = { nesnd_qe1_agenda_live = yes }
-		if = { limit = { NOT = { has_journal_entry = nesnd_qe1_economy_journal } } add_journal_entry = { type = nesnd_qe1_economy_journal } }
-		if = { limit = { NOT = { has_journal_entry = nesnd_qe1_army_journal } } add_journal_entry = { type = nesnd_qe1_army_journal } }
+		if = { limit = { NOT = { has_journal_entry = nesnd_qe1_economy_journal } } if = { limit = { NOR = { has_journal_entry = nesnd_qe1_economy_journal has_variable = nesnd_jeq_nesnd_qe1_economy_journal } } set_variable = { name = nesnd_jeq_nesnd_qe1_economy_journal days = 3 } add_journal_entry = { type = nesnd_qe1_economy_journal } } }
+		if = { limit = { NOT = { has_journal_entry = nesnd_qe1_army_journal } } if = { limit = { NOR = { has_journal_entry = nesnd_qe1_army_journal has_variable = nesnd_jeq_nesnd_qe1_army_journal } } set_variable = { name = nesnd_jeq_nesnd_qe1_army_journal days = 3 } add_journal_entry = { type = nesnd_qe1_army_journal } } }
 	}
 }
 nesnd_qe1_agenda_sync = {
@@ -69,7 +68,7 @@ nesnd_qe1_close_agenda = {
 	if = { limit = { has_modifier = nesnd_qe1_law_push } remove_modifier = nesnd_qe1_law_push } if = { limit = { has_modifier = nesnd_qe1_economy_push } remove_modifier = nesnd_qe1_economy_push } if = { limit = { has_modifier = nesnd_qe1_military_preparations } remove_modifier = nesnd_qe1_military_preparations }
 }
 nesnd_qe1_settle_agenda = {
-	if = { limit = { NOT = { has_variable = nesnd_qe1_agenda_done } }
+	if = { limit = { custom_tooltip = { text = nesnd_ui_not_qe1_agenda_done_tt NOT = { has_variable = nesnd_qe1_agenda_done } } }
 		if = { limit = { nesnd_qe1_economic_victory = yes }
 			add_modifier = { name = nesnd_qe1_angovernment years = 10 }
 			nesnd_qe1_start_sol_observation = yes
@@ -84,7 +83,7 @@ nesnd_qe1_settle_agenda = {
 	}
 }
 nesnd_qe1_agenda_timeout = {
-	if = { limit = { NOT = { has_variable = nesnd_qe1_agenda_done } }
+	if = { limit = { custom_tooltip = { text = nesnd_ui_not_qe1_agenda_done_tt NOT = { has_variable = nesnd_qe1_agenda_done } } }
 		if = { limit = { num_states < 4 } nesnd_qe1_close_agenda = yes }
 		else_if = { limit = { OR = { nesnd_qe1_economic_victory = yes nesnd_qe1_military_victory = yes } } nesnd_qe1_settle_agenda = yes }
 		else = {

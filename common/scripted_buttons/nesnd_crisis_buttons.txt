@@ -9,7 +9,12 @@
 nesnd_land_review = { name = nesnd_land_review desc = nesnd_land_review_desc
     visible = { always = yes }
     possible = { nesnd_reform_can_review = yes }
-    ai_chance = { value = 20 }
+    # AI: only when disorder is worth paying for (2026-11-16). Below 25 the -5 buys little and the 12-month
+    # office costs 5% bureaucracy, which can break the "bureaucracy >= 0" completion condition.
+    ai_chance = {
+        value = 0
+        if = { limit = { has_variable = cne_landreform_failure_tracker var:cne_landreform_failure_tracker >= 25 } value = 20 }
+    }
     effect = {
         custom_tooltip = nesnd_land_review_outcome_tt
         hidden_effect = { nesnd_reform_review = yes }
@@ -27,7 +32,10 @@ nesnd_land_military = { name = nesnd_land_military desc = nesnd_land_military_de
 
 nesnd_land_suspend = { name = nesnd_land_suspend desc = nesnd_land_suspend_desc
         visible = { always = yes } possible = { custom_tooltip = { text = nesnd_land_suspend_requirements  has_variable = flavorCNE_land_reform_value NOT = { has_variable = ce_CNE_land_reform_done }  } }
-        ai_chance = { value = 1 } effect = { trigger_event = { id = nesnd_crisis.32 popup = yes }
+        # AI never asks to stop a reform that can still be completed. Only when it is about to fail
+        # (nesnd_cne_ai_reform_doomed) is freezing it the cheaper exit (2026-11-16, was a flat 1).
+        ai_chance = { value = 0 if = { limit = { nesnd_cne_ai_reform_doomed = yes } value = 10 } }
+        effect = { trigger_event = { id = nesnd_crisis.32 popup = yes }
     nesnd_refresh_land_display = yes
 }
     }
@@ -36,31 +44,22 @@ nesnd_hna_academy_button = { name = nesnd_hna_academy_button desc = nesnd_hna_ac
         visible = { always = yes } possible = { custom_tooltip = { text = nesnd_hna_academy_button_requirements  NOT = { has_variable = nesnd_hna_academy_built } bureaucracy >= 0  } }
         ai_chance = { value = 35 } effect = {
  custom_tooltip = nesnd_hna_academy_button_outcome_tt
- set_variable = nesnd_hna_academy_built change_variable = { name = nesnd_hna_preparation add = 30 } add_modifier = { name = nesnd_hna_academy months = 120 } }
+ set_variable = nesnd_hna_academy_built add_modifier = { name = nesnd_hna_academy months = 120 } }
     }
 
 nesnd_hna_supply_button = { name = nesnd_hna_supply_button desc = nesnd_hna_supply_button_desc
         visible = { always = yes } possible = { custom_tooltip = { text = nesnd_hna_supply_button_requirements  NOT = { has_variable = nesnd_hna_supply_built } NOT = { has_modifier = declared_bankruptcy }  } }
         ai_chance = { value = 35 } effect = {
  custom_tooltip = nesnd_hna_supply_button_outcome_tt
- set_variable = nesnd_hna_supply_built change_variable = { name = nesnd_hna_preparation add = 30 } add_modifier = { name = nesnd_hna_supply months = 120 } }
+ set_variable = nesnd_hna_supply_built add_modifier = { name = nesnd_hna_supply months = 120 } }
     }
 
 nesnd_hna_veterans_button = { name = nesnd_hna_veterans_button desc = nesnd_hna_veterans_button_desc
         visible = { always = yes } possible = { custom_tooltip = { text = nesnd_hna_veterans_button_requirements  NOT = { has_variable = nesnd_hna_veterans_built } bureaucracy >= 0  } }
         ai_chance = { value = 35 } effect = {
  custom_tooltip = nesnd_hna_veterans_button_outcome_tt
- set_variable = nesnd_hna_veterans_built change_variable = { name = nesnd_hna_preparation add = 30 } add_modifier = { name = nesnd_hna_veterans months = 120 } }
+ set_variable = nesnd_hna_veterans_built add_modifier = { name = nesnd_hna_veterans months = 120 } }
     }
-
-nesnd_federal_compact_button = {
-    name = nesnd_south_offer_accord
-    desc = nesnd_south_offer_accord_desc
-    visible = { always = yes }
-    possible = { custom_tooltip = { text = nesnd_south_offer_available_tt nesnd_south_can_offer_accord = yes } }
-    ai_chance = { value = 0 }
-    effect = { custom_tooltip = nesnd_south_accord_offer_tt hidden_effect = { nesnd_south_offer_chosen_accord = yes } }
-}
 
 nesnd_protect_chen_button = { name = nesnd_protect_chen_button desc = nesnd_protect_chen_button_desc
  visible = { always = yes }
@@ -69,39 +68,3 @@ nesnd_protect_chen_button = { name = nesnd_protect_chen_button desc = nesnd_prot
  effect = { nesnd_chen_security_maintenance = yes set_variable = { name = nesnd_chen_panel_pending months = 1 } trigger_event = { id = nesnd_chen.1 popup = yes } }
 }
 
-nesnd_early_accession = {
-	name = nesnd_early_accession
-	desc = nesnd_early_accession_desc
-	visible = {
-		always = yes
-	}
-	possible = {
-		custom_tooltip = {
-			text = nesnd_early_accession_requirements
-			nesnd_south_pressure_value >= 70
-			NOT = {
-				has_variable = tag_WUU_var
-			}
-			NOT = {
-				has_global_variable = nesnd_south_settled
-			}
-		}
-		custom_tooltip = {
-			text = nesnd_chen_case_concluded_tt
-			nesnd_chen_case_concluded = yes
-		}
-	}
-	ai_chance = {
-		value = 0
-	}
-	effect = {
-		add_radicals = {
-			value = 0.05
-		}
-		trigger_event = {
-			id = flavorUSM.4
-			popup = yes
-		}
-		nesnd_refresh_south_display = yes
-	}
-}

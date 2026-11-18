@@ -1,0 +1,103 @@
+﻿# Diplomatic play scope. Exclude all civil-war participants, including scripted variants.
+nesnd_poland_external_play = {
+	NOR = {
+		is_diplomatic_play_type = dp_revolution
+		is_diplomatic_play_type = dp_secession
+		is_diplomatic_play_type = dp_hungarian_revolution
+	}
+	initiator = {
+		is_revolutionary = no
+		is_secessionist = no
+	}
+	target = {
+		is_revolutionary = no
+		is_secessionist = no
+	}
+}
+
+nesnd_poland_window_free = {
+	nesnd_poland_active = yes
+	NOR = {
+		has_global_variable = nesnd_poland_window
+		has_global_variable = nesnd_poland_window_cooldown
+	}
+}
+
+# War scope. France and a partitioner are opposing participants, not merely co-belligerents.
+nesnd_poland_window_war = {
+	exists = c:FRA
+	diplomatic_play = {
+		nesnd_poland_external_play = yes
+	}
+	OR = {
+		nesnd_poland_opposing_war_sides = {
+			FIRST = c:FRA
+			SECOND = c:RUS
+		}
+		nesnd_poland_opposing_war_sides = {
+			FIRST = c:FRA
+			SECOND = c:PRU
+		}
+		nesnd_poland_opposing_war_sides = {
+			FIRST = c:FRA
+			SECOND = c:AUS
+		}
+	}
+}
+
+# Claude audit 2026-11-17: shown in event options; existence checks are hidden and the war state is
+# one named line instead of raw global-variable rows.
+nesnd_poland_window_joinable = {
+	nesnd_poland_active = yes
+	hidden_trigger = { exists = c:FRA exists = global_var:nesnd_poland_window_enemy }
+	is_subject = no
+	is_at_war = no
+	is_diplomatic_play_committed_participant = no
+	custom_tooltip = {
+		text = nesnd_poland_window_war_on_tt
+		global_var:nesnd_poland_window_play ?= {
+			is_war = yes
+			nesnd_poland_external_play = yes
+			war = {
+				nesnd_poland_opposing_war_sides = {
+					FIRST = c:FRA
+					SECOND = global_var:nesnd_poland_window_enemy
+				}
+			}
+		}
+	}
+}
+
+# War scope. Exact same-war sides: both present and exactly one is defending.
+nesnd_poland_opposing_war_sides = {
+	exists = $FIRST$
+	exists = $SECOND$
+	is_war_participant = $FIRST$
+	is_war_participant = $SECOND$
+	OR = {
+		AND = {
+			is_on_defending_side = $FIRST$
+			NOT = {
+				is_on_defending_side = $SECOND$
+			}
+		}
+		AND = {
+			NOT = {
+				is_on_defending_side = $FIRST$
+			}
+			is_on_defending_side = $SECOND$
+		}
+	}
+}
+
+# War scope. Krakow has successfully joined France against the saved target.
+nesnd_poland_krakow_joined_france = {
+	nesnd_poland_opposing_war_sides = {
+		FIRST = c:KRA
+		SECOND = global_var:nesnd_poland_window_enemy
+	}
+	nesnd_poland_opposing_war_sides = {
+		FIRST = c:FRA
+		SECOND = global_var:nesnd_poland_window_enemy
+	}
+}

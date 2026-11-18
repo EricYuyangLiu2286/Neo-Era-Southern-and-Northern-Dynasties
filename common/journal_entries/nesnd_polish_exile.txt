@@ -1,0 +1,78 @@
+﻿je_nesnd_polish_exile = {
+ icon = "gfx/interface/icons/event_icons/nesnd_poland_pilgrims.dds"
+ group = je_group_global_international_situations
+ activation_description = { always = yes }
+ weight = 1500
+ can_revolution_inherit = no
+ should_be_pinned_by_default_involved = yes
+ should_be_pinned_by_default_uninvolved_or_context = no
+ is_shown_when_inactive = { always = no }
+ context = none
+ possible = { custom_tooltip = { text = nesnd_ui_polish_exile_open_tt has_global_variable = nesnd_polish_exile_open } game_date < 1900.1.1 }
+ should_be_involved = {
+  OR = { has_variable = nesnd_polish_exile_due global_var:nesnd_polish_exile_home ?= this c:FRA ?= this }
+ }
+ should_show_when_not_involved = { has_global_variable = nesnd_polish_exile_open }
+ scripted_progress_bar = nesnd_polish_exile_bar_1
+ scripted_button = ce_polish_exile_open_btn
+ scripted_button = ce_polish_exile_limited_btn
+ scripted_button = ce_polish_exile_paris_btn
+ scripted_button = ce_polish_exile_release_btn
+ scripted_button = ce_polish_exile_blockade_btn
+ # Native timeout accepts math / script values (GAME 00_ig_agendas.txt:299).
+ # This opening's frozen month-start estimate never ends early. The exact
+ # date outcome below prevents the <=30-day UI overestimate becoming gameplay.
+ timeout = global_var:nesnd_polish_exile_timeout_days
+ on_weekly_pulse = { effect = { scope:journal_entry = {
+  if = { limit = { game_date < 1900.1.1 }
+   nesnd_polish_exile_week_slot = yes
+  }
+ } } }
+ on_monthly_pulse = { effect = {
+  every_country = { limit = { has_variable = nesnd_polish_exile_due }
+   set_variable = { name = nesnd_polish_exile_due value = { value = var:nesnd_polish_exile_due max = nesnd_polish_exile_population floor = yes min = 0 } }
+  }
+  every_country = { limit = {
+   NOT = { is_involved_in_journal_entry = je_nesnd_polish_exile }
+   OR = { has_variable = nesnd_polish_exile_due global_var:nesnd_polish_exile_home ?= this c:FRA ?= this }
+  } scope:journal_entry = { add_involved_country = prev } }
+ } }
+ outcome = {
+  header = je_standard_completion_header
+  effect_header = je_standard_on_completion_header
+  color = "gold_positive"
+  conclusion_desc = nesnd_polish_exile_complete
+  trigger = { custom_tooltip = { text = nesnd_polish_exile_complete_tt
+   NOT = { any_country = { nesnd_polish_exile_source = yes } }
+  } }
+  effect = { custom_tooltip = nesnd_polish_exile_complete hidden_effect = { scope:journal_entry = { nesnd_polish_exile_close = yes } } }
+ }
+ # Claude 2026-11-18: date backstop for the timeout estimate. It borrowed the timeout header, which
+ # only has TIMELEFT data on the timeout outcome, so the panel showed raw "TIMELEFT_STRING", a red
+ # "date >= 1900.1.1" row and a second "if time runs out". Hidden per GAME journal_entries.md
+ # (flags: hidden = not shown in the panel); the visible deadline is the timeout outcome below.
+ outcome = {
+  flags = { hidden }
+  conclusion_desc = nesnd_polish_exile_timeout
+  trigger = { game_date >= 1900.1.1 }
+  effect = { custom_tooltip = nesnd_polish_exile_timeout hidden_effect = { scope:journal_entry = { nesnd_polish_exile_close = yes } } }
+ }
+ outcome = {
+  flags = { timeout }
+  header = JOURNAL_ENTRY_TIMEOUT
+  effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+  color = "blue_negative"
+  conclusion_desc = nesnd_polish_exile_timeout
+  effect = { custom_tooltip = nesnd_polish_exile_timeout hidden_effect = { scope:journal_entry = { nesnd_polish_exile_close = yes } } }
+ }
+ status_desc = {
+  first_valid = {
+   triggered_desc = { trigger = { nesnd_polish_exile_route_valid = yes } desc = nesnd_polish_exile_status_1 }
+   desc = nesnd_polish_exile_waiting
+  }
+ }
+ map_color = {
+  if = { limit = { global_var:nesnd_polish_exile_from_1 ?= this } value = "nesnd_poland_departure" }
+  else_if = { limit = { global_var:nesnd_polish_exile_to_1 ?= this } value = "nesnd_poland_arrival" }
+ }
+}

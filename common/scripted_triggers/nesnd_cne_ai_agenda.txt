@@ -1,10 +1,11 @@
-﻿# Country scope. A finite opportunity window, not an enactment command.
+﻿# Country scope. AI agenda weight while the land reform runs, not an enactment command.
+# 2026-11-16: the 96-month cap is gone. The completion outcome needs these laws for as long as the reform runs
+# (GAME common/laws/01_land_reform.txt:495 gives Portugal and Spain +1000 for the whole life of their journals).
+# Also gates ai_strategy_nesnd_cne_land_and_schools.
 nesnd_cne_ai_reform_window = {
     c:CNE ?= this
     is_ai = yes
     nesnd_reform_active = yes
-    has_variable = nesnd_land_months
-    var:nesnd_land_months <= 96
     is_at_war = no
     bureaucracy >= 0
     NOT = { has_modifier = declared_bankruptcy }
@@ -37,5 +38,27 @@ nesnd_cne_ai_agenda_needed = {
                 AND = { has_law_or_variant = law_type:law_child_labor_allowed has_technology_researched = labor_movement nesnd_cne_ai_child_support = yes }
             }
         }
+    }
+}
+# Country scope, AI only. The land reform is about to fail anyway: confidence is nearly gone, or disorder is
+# near the extreme-crisis line (90) after at least six straight bad months. Only then is freezing it through
+# "议止地权革命" (nesnd_crisis.32 a) the cheaper exit. Read by the button and by the event option.
+nesnd_cne_ai_reform_doomed = {
+    is_ai = yes
+    OR = {
+        AND = { has_variable = nesnd_cne_confidence var:nesnd_cne_confidence <= 100 }
+        AND = {
+            has_variable = cne_landreform_failure_tracker var:cne_landreform_failure_tracker >= 80
+            has_variable = nesnd_reform_bad_months var:nesnd_reform_bad_months >= 6
+        }
+    }
+}
+# Country scope. A coup is under way, or a commander has loyalty below $LOYALTY$.
+# GAME events/iberia_events/ip4_coup_events.txt ip4_coup.1 starts a coup from a commander below 25 (LOYALTY_UNCERTAIN_THRESHOLD).
+# A coup that succeeds during the reform fails the reform (nesnd_cne_coup_has_succeeded).
+nesnd_cne_ai_coup_risk = {
+    OR = {
+        has_journal_entry = je_ip4_coup
+        any_scope_character = { is_character_alive = yes is_commander = yes loyalty < $LOYALTY$ }
     }
 }

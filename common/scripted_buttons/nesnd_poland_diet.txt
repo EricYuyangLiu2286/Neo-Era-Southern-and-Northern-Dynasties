@@ -1,0 +1,96 @@
+﻿nesnd_poland_university_btn = {
+	name = nesnd_poland_university_name
+	desc = nesnd_poland_university_desc
+	visible = { c:KRA ?= this }
+	possible = {
+		exists = s:STATE_GREATER_POLAND.region_state:KRA
+		# Claude audit 2026-11-17: NOT { levels >= 3 } rendered as "not more than or equal to 3". Vanilla
+		# only uses ">=" inside this trigger, so the same test is kept and shown as one named line.
+		custom_tooltip = {
+			text = nesnd_poland_university_below_3_tt
+			NOT = { has_building_levels_in_state_region = { region = STATE_GREATER_POLAND building = building_university levels >= 3 } }
+		}
+		in_default = no
+	}
+	ai_chance = { value = 1 }
+	effect = {
+		add_treasury = { value = fixed_income min = 0 multiply = -4 }
+		s:STATE_GREATER_POLAND.region_state:KRA = { create_building = { building = building_university level = 3 } }
+	}
+}
+
+nesnd_poland_diet_btn = {
+	name = nesnd_poland_diet_name
+	desc = nesnd_poland_diet_desc
+	visible = { c:KRA ?= this }
+	possible = {
+		always = yes
+	}
+	cooldown = { months = 36 }
+	ai_chance = { value = 2 }
+	effect = {
+		custom_tooltip = nesnd_poland_diet_effect_tt
+		trigger_event = { id = nesnd_polish_diet.7 popup = yes }
+	}
+}
+
+nesnd_poland_paris_btn = {
+	name = nesnd_poland_paris_name
+	desc = nesnd_poland_paris_desc
+	visible = { c:KRA ?= this }
+	possible = {
+		exists = c:FRA
+		NOT = { has_war_with = c:FRA }
+	}
+	cooldown = { months = 48 }
+	ai_chance = { value = 1 }
+	# Claude audit 2026-11-17: the description promised French will +10 and support for the Whites,
+	# but neither the variable nor the bar change shows in the effect panel.
+	effect = {
+		custom_tooltip = nesnd_poland_paris_appeal_tt
+		set_variable = { name = nesnd_poland_paris_appeal months = 24 }
+		custom_tooltip = { text = nesnd_bar_rw_m8_tt je:je_ce_polish_reconquest ?= { add_progress = { name = nesnd_poland_red_white_bar value = -8 } } }
+	}
+}
+
+nesnd_poland_agitators_btn = {
+	name = nesnd_poland_agitators_name
+	desc = nesnd_poland_agitators_desc
+	visible = { c:KRA ?= this }
+	possible = {
+		has_technology_researched = nationalism
+		custom_tooltip = { text = nesnd_poland_agitator_target_tt any_country = { nesnd_poland_agitator_partition = yes } }
+		NOT = { has_modifier = funding_polish_radicals }
+	}
+	cooldown = { months = 36 }
+	ai_chance = { value = 1 }
+	effect = {
+		custom_tooltip = nesnd_poland_agitators_effect_tt
+		set_variable = { name = nesnd_poland_partition_agitation days = 30 }
+		trigger_event = { id = poland_events.1 popup = yes }
+	}
+}
+
+nesnd_poland_rising_btn = {
+	name = nesnd_poland_rising_name
+	desc = nesnd_poland_rising_desc
+	visible = { c:KRA ?= this }
+	possible = {
+		OR = {
+			custom_tooltip = { text = nesnd_poland_reds_full_tt je:je_ce_polish_reconquest ?= { "scripted_bar_progress(nesnd_poland_red_white_bar)" >= 120 } }
+			custom_tooltip = { text = nesnd_poland_veto_mandate_tt has_variable = nesnd_poland_congress_rising_mandate }
+		}
+		is_subject = no
+		is_at_war = no
+		is_diplomatic_play_committed_participant = no
+		custom_tooltip = { text = nesnd_poland_no_rising_tt NOT = { has_variable = nesnd_poland_rising_region } }
+		NOT = { has_modifier = nesnd_poland_repression }
+		custom_tooltip = { text = nesnd_poland_rising_target_tt any_state = { nesnd_poland_rising_target = yes } }
+	}
+	cooldown = { months = 1 }
+	ai_chance = { value = 8 }
+	effect = {
+		custom_tooltip = nesnd_poland_rising_effect_tt
+		trigger_event = { id = nesnd_polish_diet.8 popup = yes }
+	}
+}

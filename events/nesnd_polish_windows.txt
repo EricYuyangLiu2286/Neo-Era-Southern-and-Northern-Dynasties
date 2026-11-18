@@ -1,0 +1,931 @@
+﻿namespace = nesnd_polish_windows
+
+nesnd_polish_windows.1 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.1.t
+	desc = nesnd_polish_windows.1.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+		global_var:nesnd_poland_window ?= 1
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+			global_var:nesnd_poland_window ?= 1
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.1.a
+		default_option = yes
+		ai_chance = {
+			base = 4
+		}
+		custom_tooltip = { text = nesnd_bar_rw_p24_tt je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				name = nesnd_poland_red_white_bar
+				value = 24
+			}
+		} }
+		custom_tooltip = { text = nesnd_bar_prep_p20_tt je:je_ce_polish_war_preparation ?= {
+			add_progress = {
+				name = ce_polish_reconquest_war_prep_bar
+				value = 20
+			}
+		} }
+	}
+	option = {
+		name = nesnd_polish_windows.1.b
+		ai_chance = {
+			base = 3
+		}
+		custom_tooltip = { text = nesnd_bar_rw_m10_tt je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				name = nesnd_poland_red_white_bar
+				value = -10
+			}
+		} }
+		nesnd_poland_close_window = yes
+	}
+	option = {
+		name = nesnd_polish_windows.1.c
+		ai_chance = {
+			base = 2
+		}
+		trigger = {
+			OR = {
+				c:RUS ?= {
+					any_civil_war = {
+						always = yes
+					}
+				}
+				c:PRU ?= {
+					any_civil_war = {
+						always = yes
+					}
+				}
+				c:AUS ?= {
+					any_civil_war = {
+						always = yes
+					}
+				}
+			}
+		}
+		custom_tooltip = nesnd_polish_windows.1.c_tt
+		random_country = {
+			limit = {
+				OR = {
+					c:RUS ?= this
+					c:PRU ?= this
+					c:AUS ?= this
+				}
+				any_civil_war = {
+					always = yes
+				}
+			}
+			trigger_event = {
+				id = nesnd_polish_windows.4
+				popup = yes
+			}
+		}
+	}
+}
+
+nesnd_polish_windows.2 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.2.t
+	desc = nesnd_polish_windows.2.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+		OR = {
+			global_var:nesnd_poland_window ?= 2
+			global_var:nesnd_poland_window ?= 3
+		}
+		exists = global_var:nesnd_poland_window_enemy
+		exists = c:FRA
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+			OR = {
+				global_var:nesnd_poland_window ?= 2
+				global_var:nesnd_poland_window ?= 3
+			}
+			exists = global_var:nesnd_poland_window_enemy
+			exists = c:FRA
+		}
+	}
+	immediate = {
+		global_var:nesnd_poland_window_enemy = {
+			save_scope_as = window_enemy
+		}
+		c:FRA = {
+			save_scope_as = window_france
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.2.a
+		ai_chance = {
+			base = 5
+		}
+		trigger = {
+			nesnd_poland_window_joinable = yes
+		}
+		custom_tooltip = nesnd_polish_windows.2.a_tt
+		nesnd_poland_join_france = yes
+	}
+	option = {
+		name = nesnd_polish_windows.2.b
+		default_option = yes
+		ai_chance = {
+			base = 4
+		}
+		custom_tooltip = { text = nesnd_bar_rw_m6_tt je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				name = nesnd_poland_red_white_bar
+				value = -6
+			}
+		} }
+	}
+}
+
+nesnd_polish_windows.3 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.3.t
+	desc = nesnd_polish_windows.3.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+		exists = c:FRA
+		exists = global_var:nesnd_poland_window_enemy
+		global_var:nesnd_poland_window_play ?= {
+			is_war = yes
+			nesnd_poland_external_play = yes
+		}
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+			exists = c:FRA
+			exists = global_var:nesnd_poland_window_enemy
+			global_var:nesnd_poland_window_play ?= {
+				is_war = yes
+				nesnd_poland_external_play = yes
+			}
+		}
+	}
+	immediate = {
+		global_var:nesnd_poland_window_enemy = {
+			save_scope_as = window_enemy
+		}
+		c:FRA = {
+			save_scope_as = window_france
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.3.a
+		default_option = yes
+		ai_chance = {
+			base = 6
+		}
+		save_scope_as = window_neutral
+		custom_tooltip = nesnd_polish_windows.3.a_tt
+		c:FRA = {
+			trigger_event = {
+				id = nesnd_polish_windows.10
+				popup = yes
+			}
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.3.b
+		ai_chance = {
+			base = 2
+		}
+		trigger = {
+			nesnd_poland_window_joinable = yes
+		}
+		save_scope_as = window_intervener
+		global_var:nesnd_poland_window_play = {
+			war = {
+				join_war = {
+					target = scope:window_intervener
+					side = global_var:nesnd_poland_window_enemy
+				}
+				nesnd_poland_snapshot_war_sides = yes
+			}
+		}
+		change_relations = {
+			country = c:FRA
+			value = -20
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.3.c
+		ai_chance = {
+			base = 2
+		}
+		trigger = {
+			hidden_trigger = { c:RUS ?= this global_var:nesnd_poland_window ?= 3 }
+			nesnd_poland_window_joinable = yes
+			# Claude audit 2026-11-17: named condition instead of raw global-variable rows.
+			custom_tooltip = {
+				text = nesnd_poland_krakow_in_war_tt
+				global_var:nesnd_poland_window_play = {
+					war = {
+						is_war_participant = c:KRA
+						nesnd_poland_krakow_joined_france = yes
+					}
+				}
+			}
+			c:KRA = {
+				any_scope_state = {
+					OR = {
+						state_region = s:STATE_MAZOVIA
+						state_region = s:STATE_GREATER_POLAND
+					}
+				}
+			}
+		}
+		save_scope_as = window_intervener
+		global_var:nesnd_poland_window_play = {
+			war = {
+				join_war = {
+					target = scope:window_intervener
+					side = global_var:nesnd_poland_window_enemy
+				}
+				nesnd_poland_snapshot_war_sides = yes
+			}
+		}
+		if = {
+			limit = {
+				global_var:nesnd_poland_window_play ?= {
+					war = {
+						nesnd_poland_krakow_joined_france = yes
+						nesnd_poland_opposing_war_sides = {
+							FIRST = c:RUS
+							SECOND = c:KRA
+						}
+						nesnd_poland_opposing_war_sides = {
+							FIRST = c:RUS
+							SECOND = c:FRA
+						}
+					}
+				}
+			}
+			c:KRA = {
+				random_scope_state = {
+					limit = {
+						OR = {
+							state_region = s:STATE_MAZOVIA
+							state_region = s:STATE_GREATER_POLAND
+						}
+					}
+					save_scope_as = window_russian_demand
+					if = {
+						limit = {
+							has_claim_by = c:RUS
+						}
+						global_var:nesnd_poland_window_play = {
+							add_war_goal = {
+								holder = c:RUS
+								type = return_state
+								target_state = scope:window_russian_demand
+								target_country = c:KRA
+							}
+						}
+					}
+					else = {
+						global_var:nesnd_poland_window_play = {
+							add_war_goal = {
+								holder = c:RUS
+								type = conquer_state
+								target_state = scope:window_russian_demand
+								target_country = c:KRA
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+nesnd_polish_windows.4 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.4.t
+	desc = nesnd_polish_windows.4.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+		global_var:nesnd_poland_window ?= 1
+		any_civil_war = {
+			always = yes
+		}
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+			global_var:nesnd_poland_window ?= 1
+			any_civil_war = {
+				always = yes
+			}
+		}
+	}
+	immediate = {
+		c:KRA = {
+			save_scope_as = window_krakow
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.4.a
+		ai_chance = {
+			base = 4
+		}
+		add_treasury = {
+			value = c:KRA.fixed_income
+			min = 0
+			multiply = -3
+		}
+		c:KRA = {
+			add_treasury = {
+				value = fixed_income
+				min = 0
+				multiply = 3
+			}
+			custom_tooltip = { text = nesnd_bar_rw_m20_tt je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					name = nesnd_poland_red_white_bar
+					value = -20
+				}
+			} }
+		}
+		every_scope_state = {
+			add_radicals_in_state = {
+				culture = cu:polish
+				value = -0.05
+			}
+		}
+		nesnd_poland_close_window = yes
+	}
+	option = {
+		name = nesnd_polish_windows.4.b
+		default_option = yes
+		ai_chance = {
+			base = 2
+		}
+		change_relations = {
+			country = c:KRA
+			value = -10
+		}
+	}
+}
+
+nesnd_polish_windows.5 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.5.t
+	desc = nesnd_polish_windows.5.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+		global_var:nesnd_poland_window ?= 5
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+			global_var:nesnd_poland_window ?= 5
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.5.a
+		ai_chance = {
+			base = 6
+		}
+		trigger = {
+			exists = c:AUS
+			is_subject = no
+			NOT = {
+				has_war_with = c:AUS
+			}
+		}
+		save_scope_as = nesnd_poland_krakow
+		custom_tooltip = nesnd_polish_windows.5.a_tt
+		c:AUS = {
+			trigger_event = {
+				id = ce_poland_events.17
+				popup = yes
+			}
+		}
+		nesnd_poland_close_window = yes
+	}
+	option = {
+		name = nesnd_polish_windows.5.b
+		default_option = yes
+		ai_chance = {
+			base = 4
+		}
+		custom_tooltip = { text = nesnd_bar_rw_p20_tt je:je_ce_polish_reconquest ?= {
+			add_progress = {
+				name = nesnd_poland_red_white_bar
+				value = 20
+			}
+		} }
+		every_country = {
+			limit = {
+				OR = {
+					c:RUS ?= this
+					c:PRU ?= this
+					c:AUS ?= this
+				}
+			}
+			trigger_event = {
+				id = nesnd_polish_windows.6
+				popup = yes
+			}
+		}
+	}
+}
+
+nesnd_polish_windows.6 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.6.t
+	desc = nesnd_polish_windows.6.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+		global_var:nesnd_poland_window ?= 5
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+			global_var:nesnd_poland_window ?= 5
+		}
+	}
+	immediate = {
+		c:KRA = {
+			save_scope_as = window_krakow
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.6.a
+		ai_chance = {
+			base = 7
+		}
+		change_relations = {
+			country = c:KRA
+			value = -25
+		}
+		c:KRA = {
+			custom_tooltip = { text = nesnd_bar_prep_m15_tt je:je_ce_polish_war_preparation ?= {
+				add_progress = {
+					name = ce_polish_reconquest_war_prep_bar
+					value = -15
+				}
+			} }
+			add_modifier = {
+				name = nesnd_poland_partition_pressure
+				months = 24
+			}
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.6.b
+		default_option = yes
+		ai_chance = {
+			base = 3
+		}
+		change_relations = {
+			country = c:KRA
+			value = 10
+		}
+	}
+}
+
+nesnd_polish_windows.7 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.7.t
+	desc = nesnd_polish_windows.7.d
+	duration = 14
+	event_image = {
+		texture = "gfx/event_pictures/nesnd_poland_congress.dds"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+		global_var:nesnd_poland_window ?= 4
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+			global_var:nesnd_poland_window ?= 4
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.7.a
+		default_option = yes
+		ai_chance = {
+			base = 1
+		}
+		custom_tooltip = nesnd_polish_windows.7.a_tt
+		nesnd_congress_request_peace = yes
+	}
+}
+
+nesnd_polish_windows.8 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.8.t
+	desc = nesnd_polish_windows.8.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.8.a
+		default_option = yes
+		ai_chance = {
+			base = 1
+		}
+		custom_tooltip = nesnd_polish_windows.window_closed_tt
+	}
+}
+
+nesnd_polish_windows.9 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.9.t
+	desc = nesnd_polish_windows.9.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.9.a
+		default_option = yes
+		ai_chance = {
+			base = 1
+		}
+		custom_tooltip = nesnd_polish_windows.window_closed_tt
+	}
+}
+
+nesnd_polish_windows.11 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.11.t
+	desc = nesnd_polish_windows.11.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+		}
+	}
+	immediate = {
+		c:KRA = {
+			save_scope_as = window_krakow
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.11.a
+		ai_chance = {
+			base = 4
+		}
+		custom_tooltip = nesnd_poland_paris_appeal_tt
+		c:KRA = {
+			set_variable = {
+				name = nesnd_poland_paris_appeal
+				months = 24
+			}
+		}
+		c:PRU ?= {
+			change_relations = {
+				country = c:FRA
+				value = -10
+			}
+		}
+		c:AUS ?= {
+			change_relations = {
+				country = c:FRA
+				value = -10
+			}
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.11.b
+		default_option = yes
+		ai_chance = {
+			base = 3
+		}
+		change_relations = {
+			country = c:KRA
+			value = -10
+		}
+	}
+}
+
+nesnd_polish_windows.12 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.12.t
+	desc = nesnd_polish_windows.12.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+		}
+	}
+	immediate = {
+		c:KRA = {
+			save_scope_as = window_krakow
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.12.a
+		ai_chance = {
+			base = 4
+		}
+		add_treasury = {
+			value = c:KRA.fixed_income
+			min = 0
+			multiply = -4
+		}
+		c:KRA = {
+			add_treasury = {
+				value = fixed_income
+				min = 0
+				multiply = 4
+			}
+			custom_tooltip = { text = nesnd_bar_prep_p20_tt je:je_ce_polish_war_preparation ?= {
+				add_progress = {
+					name = ce_polish_reconquest_war_prep_bar
+					value = 20
+				}
+			} }
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.12.b
+		default_option = yes
+		ai_chance = {
+			base = 3
+		}
+		custom_tooltip = nesnd_polish_windows.12.b_tt
+	}
+}
+
+nesnd_polish_windows.13 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.13.t
+	desc = nesnd_polish_windows.13.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+		}
+	}
+	immediate = {
+		c:KRA = {
+			save_scope_as = window_krakow
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.13.a
+		ai_chance = {
+			base = 4
+		}
+		add_treasury = {
+			value = c:KRA.fixed_income
+			min = 0
+			multiply = -2
+		}
+		custom_tooltip = nesnd_poland_fund_15
+		c:KRA = {
+			set_variable = {
+				name = nesnd_poland_claim_fund
+				value = {
+					value = var:nesnd_poland_claim_fund
+					add = 15
+					max = 100
+				}
+			}
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.13.b
+		default_option = yes
+		ai_chance = {
+			base = 3
+		}
+		c:KRA = {
+			custom_tooltip = { text = nesnd_bar_rw_m10_tt je:je_ce_polish_reconquest ?= {
+				add_progress = {
+					name = nesnd_poland_red_white_bar
+					value = -10
+				}
+			} }
+		}
+	}
+}
+
+# Called only by exact-play on_war_end. Never infer victory merely from peace.
+nesnd_polish_windows.90 = {
+	type = country_event
+	hidden = yes
+	trigger = {
+		nesnd_poland_active = yes
+		OR = {
+			global_var:nesnd_poland_window ?= 2
+			global_var:nesnd_poland_window ?= 3
+		}
+	}
+	immediate = {
+		if = {
+			limit = {
+				NOT = { has_global_variable = nesnd_poland_war_unclassified_goal }
+				exists = global_var:nesnd_poland_window_enemy
+				exists = c:FRA
+				NOT = {
+					has_global_variable = nesnd_poland_war_france_lost
+				}
+				OR = {
+					has_global_variable = nesnd_poland_war_france_won
+					AND = {
+						has_global_variable = nesnd_poland_war_from_start
+						has_global_variable = nesnd_poland_war_signed
+						NOR = {
+							has_global_variable = nesnd_poland_war_any_goal
+							has_global_variable = nesnd_poland_war_capitulation
+						}
+					}
+				}
+			}
+			set_global_variable = {
+				name = nesnd_poland_window
+				value = 4
+			}
+			set_global_variable = {
+				name = nesnd_poland_peace_target
+				value = global_var:nesnd_poland_window_enemy
+			}
+			if = {
+				limit = {
+					has_global_variable = nesnd_poland_war_france_won
+				}
+				set_global_variable = {
+					name = nesnd_poland_peace_defeated
+					value = yes
+				}
+			}
+			else = {
+				set_global_variable = {
+					name = nesnd_poland_peace_defeated
+					value = no
+				}
+			}
+			trigger_event = {
+				id = nesnd_polish_windows.7
+				popup = yes
+			}
+		}
+		else = {
+			if = {
+				limit = {
+					has_global_variable = nesnd_poland_war_france_lost
+				}
+				set_global_variable = {
+					name = nesnd_poland_france_defeated
+					months = 60
+				}
+			}
+			trigger_event = {
+				id = nesnd_polish_windows.9
+				popup = yes
+			}
+			nesnd_poland_close_window = yes
+		}
+	}
+}
+
+nesnd_polish_windows.10 = {
+	type = country_event
+	placement = root
+	title = nesnd_polish_windows.10.t
+	desc = nesnd_polish_windows.10.d
+	duration = 14
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+	trigger = {
+		nesnd_poland_active = yes
+		scope:window_neutral ?= {
+			is_at_war = no
+		}
+		global_var:nesnd_poland_window_play ?= {
+			is_war = yes
+		}
+	}
+	cancellation_trigger = {
+		NOT = {
+			nesnd_poland_active = yes
+			scope:window_neutral ?= {
+				is_at_war = no
+			}
+			global_var:nesnd_poland_window_play ?= {
+				is_war = yes
+			}
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.10.a
+		ai_chance = {
+			base = 6
+		}
+		add_treasury = {
+			value = scope:window_neutral.fixed_income
+			min = 0
+			multiply = -2
+		}
+		scope:window_neutral = {
+			add_treasury = {
+				value = fixed_income
+				min = 0
+				multiply = 2
+			}
+			change_relations = {
+				country = c:FRA
+				value = 15
+			}
+		}
+	}
+	option = {
+		name = nesnd_polish_windows.10.b
+		default_option = yes
+		ai_chance = {
+			base = 3
+		}
+		change_relations = {
+			country = scope:window_neutral
+			value = -10
+		}
+	}
+}

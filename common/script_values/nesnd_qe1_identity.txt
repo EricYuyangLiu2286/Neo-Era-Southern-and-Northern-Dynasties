@@ -52,36 +52,62 @@ nesnd_qe1_unity_war = {
 nesnd_qe1_unity_infamy = { value = 0 if = { limit = { infamy >= 25 } add = -0.15 } if = { limit = { infamy >= 50 } add = -0.25 } if = { limit = { infamy >= 100 } add = -0.5 } }
 nesnd_qe1_unity_soldiers = { value = 0 if = { limit = { pop_type_percent_country = { target = pop_type:soldiers value > 0.03 } } add = -0.15 } if = { limit = { nesnd_qe1_soldier_radicals >= 0.25 } add = -0.3 } if = { limit = { ig:ig_armed_forces = { ig_approval >= 5 } } add = 0.1 } }
 nesnd_qe1_unity_victory = { value = 0 if = { limit = { has_variable = nesnd_qe1_victory_prestige } add = 0.15 } if = { limit = { has_variable = nesnd_qe1_new_land_prestige } add = 0.1 } }
-nesnd_qe1_unity_persia = { value = 0 if = { limit = { nesnd_qe1_persian_subversion = yes } value = -1 } }
+nesnd_qe1_unity_persia = { value = 0 if = { limit = { nesnd_qe1_persian_subversion = yes } value = -0.25 } }
 # 波斯沙阿北伐（交战中）与北伐雪耻告成后十年。
 nesnd_qe1_unity_persia_north = {
 	value = 0
 	if = { limit = { any_country = { has_variable = nesnd_per_north_war has_war_with = root } } add = -0.5 }
 	if = { limit = { has_variable = nesnd_qe1_persian_revenge } add = -0.5 }
 }
-nesnd_qe1_unity_delta = { value = nesnd_qe1_unity_order add = nesnd_qe1_unity_population add = nesnd_qe1_unity_diversity add = nesnd_qe1_unity_livelihood add = nesnd_qe1_unity_institutions add = nesnd_qe1_unity_laws add = nesnd_qe1_unity_war add = nesnd_qe1_unity_infamy add = nesnd_qe1_unity_soldiers add = nesnd_qe1_unity_victory add = nesnd_qe1_unity_persia add = nesnd_qe1_unity_persia_north add = nesnd_unity_material_growth add = nesnd_unity_political_growth }
-nesnd_qe1_uprising_low_unity = {
-	value = 0
+# —— 团结补贴在西秦的实际效力（2026-11-16 作者通过）——
+# 每月效果 = 0.35 × 国情 × 区间 × 续期。_rate 是按当前情形算出的数值，供按钮提示显示。
+# 区间：团结度低于 40 为 1.5，40 至 55 为 1，55 至 70 为 0.5，70 以上为 0。
+nesnd_qe1_subsidy_zone = {
+	value = 1
 	if = {
 		limit = { has_variable = nesnd_qe1_unity }
-		if = { limit = { var:nesnd_qe1_unity < 25 } value = 2 } else = { value = -1 }
+		if = { limit = { var:nesnd_qe1_unity < 40 } value = 1.5 }
+		else_if = { limit = { var:nesnd_qe1_unity >= 70 } value = 0 }
+		else_if = { limit = { var:nesnd_qe1_unity >= 55 } value = 0.5 }
 	}
 }
-nesnd_qe1_uprising_war = {
+# 续期：到期后一年内再开算连续，连续第 n 期为 1.1 − 0.1n，最低 0.5。期数由 nesnd_unity_start_* 记在国家变量里。
+nesnd_qe1_subsidy_material_streak = { value = 1 if = { limit = { has_variable = nesnd_unity_material_streak } value = 1.1 subtract = { value = var:nesnd_unity_material_streak multiply = 0.1 } } min = 0.5 max = 1 }
+nesnd_qe1_subsidy_political_streak = { value = 1 if = { limit = { has_variable = nesnd_unity_political_streak } value = 1.1 subtract = { value = var:nesnd_unity_political_streak multiply = 0.1 } } min = 0.5 max = 1 }
+nesnd_qe1_subsidy_material_rate = {
 	value = 0
 	if = {
-		limit = { has_variable = nesnd_qe1_unity }
-		if = { limit = { var:nesnd_qe1_unity < 25 is_at_war = yes } value = 1 }
+		limit = { in_default = no NOT = { has_modifier = declared_bankruptcy } }
+		value = 0.35
+		if = { limit = { OR = { taking_loans = yes scaled_debt >= 0.5 } } multiply = 0.5 }
+		if = { limit = { average_sol < 10 } multiply = 1.5 }
+		else_if = { limit = { average_sol >= 15 } multiply = 0.5 }
+		multiply = nesnd_qe1_subsidy_zone
+		multiply = nesnd_qe1_subsidy_material_streak
 	}
 }
-nesnd_qe1_uprising_deprivation = {
+nesnd_qe1_subsidy_political_rate = {
 	value = 0
 	if = {
-		limit = { has_variable = nesnd_qe1_unity }
-		if = { limit = { var:nesnd_qe1_unity < 25 OR = { has_modifier = declared_bankruptcy radical_population_fraction > 0.25 } } value = 1 }
+		limit = { government_legitimacy >= 25 radical_population_fraction < 0.35 }
+		value = 0.35
+		if = { limit = { government_legitimacy < 50 } multiply = 0.5 }
+		if = { limit = { radical_population_fraction >= 0.2 } multiply = 0.5 }
+		multiply = nesnd_qe1_subsidy_zone
+		multiply = nesnd_qe1_subsidy_political_streak
 	}
 }
-nesnd_qe1_uprising_delta = { value = nesnd_qe1_uprising_low_unity add = nesnd_qe1_uprising_war add = nesnd_qe1_uprising_deprivation }
+nesnd_qe1_subsidy_material = { value = 0 if = { limit = { nesnd_unity_policy_live = yes has_modifier = nesnd_unity_material_assistance } value = nesnd_qe1_subsidy_material_rate } }
+nesnd_qe1_subsidy_political = { value = 0 if = { limit = { nesnd_unity_policy_live = yes has_modifier = nesnd_unity_political_assistance } value = nesnd_qe1_subsidy_political_rate } }
+# —— 团结度的财政、激进派、生活水平、污染、粮食来源（同日通过）——
+nesnd_qe1_unity_finance = { value = 0 if = { limit = { taking_loans = yes } add = -0.05 } if = { limit = { scaled_debt >= 0.5 } add = -0.1 } if = { limit = { in_default = yes } add = -0.3 } }
+nesnd_qe1_unity_radicals = { value = 0 if = { limit = { radical_population_fraction >= 0.3 } add = -0.3 } else_if = { limit = { radical_population_fraction >= 0.15 } add = -0.1 } }
+nesnd_qe1_unity_sol_level = { value = 0 if = { limit = { average_sol < 8 } add = -0.1 } else_if = { limit = { average_sol >= 12 } add = 0.1 } }
+# 污染：所在州地区污染超过 100 的州每个 −0.03，至多 −0.09。门槛取原版意识形态脚本所用的 pollution_amount > 100。
+nesnd_qe1_unity_pollution = { value = 0 every_scope_state = { limit = { state_region = { pollution_amount > 100 } } add = -0.03 } min = -0.09 }
+# 粮食：正在发生饥荒的州每个 −0.05，至多 −0.3（原版 1.9 起的饥荒与收成机制，has_famine）。
+nesnd_qe1_unity_food = { value = 0 every_scope_state = { limit = { has_famine = yes } add = -0.05 } min = -0.3 }
+nesnd_qe1_unity_delta = { value = nesnd_qe1_unity_order add = nesnd_qe1_unity_population add = nesnd_qe1_unity_diversity add = nesnd_qe1_unity_livelihood add = nesnd_qe1_unity_institutions add = nesnd_qe1_unity_laws add = nesnd_qe1_unity_war add = nesnd_qe1_unity_infamy add = nesnd_qe1_unity_soldiers add = nesnd_qe1_unity_victory add = nesnd_qe1_unity_persia add = nesnd_qe1_unity_persia_north add = nesnd_qe1_subsidy_material add = nesnd_qe1_subsidy_political add = nesnd_qe1_unity_finance add = nesnd_qe1_unity_radicals add = nesnd_qe1_unity_sol_level add = nesnd_qe1_unity_pollution add = nesnd_qe1_unity_food add = nesnd_qe1_unity_grievance add = nesnd_qe1_unity_nationalism add = nesnd_qe1_unity_legitimacy add = nesnd_qe1_unity_palace add = nesnd_qe1_unity_frontier }
 # Preview size for the journal: the same saved plan and shares as nesnd_qe1_unity_monthly
 # (one state: half of its Western Regions Han-Qiang; all states: 0.5% of eligible Pops).
 nesnd_qe1_next_size = {

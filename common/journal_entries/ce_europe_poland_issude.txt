@@ -1,5 +1,5 @@
 ﻿je_ce_the_polish_problem = {
-	icon = "gfx/interface/icons/event_icons/event_fire.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_poland_settlement.dds"
 	group = je_ce_poland_unification
 	activation_description = { always = yes }
 
@@ -9,21 +9,17 @@
 			has_global_variable = ce_poland_problem_end
 		}
 		exists = c:KRA
-		year <= 1850
 	}
 
+	# Claude audit 2026-11-17: guard hidden; the end flag is internal.
 	possible = {
-		#has_variable = ce_participated_in_polish_problem
-		NOT = {
-			has_global_variable = ce_poland_problem_end
-		}
+		hidden_trigger = { NOT = { has_global_variable = ce_poland_problem_end } }
 		exists = c:KRA
-		year <= 1850
 	}
 
 	is_shown_in_lobby = {
-		has_variable = ce_participated_in_polish_problem
-		NOT = { has_global_variable = ce_poland_problem_end }
+		custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem }
+		custom_tooltip = { text = nesnd_ui_not_ce_poland_problem_end_tt NOT = { has_global_variable = ce_poland_problem_end } }
 	}
 
 	should_be_involved = {
@@ -38,18 +34,35 @@
 		always = no
 	}
 
-	
+	# Phase is written monthly by nesnd_poland_root_month from the consensus bar (60 / 30).
 	status_desc = {
-		desc = je_ce_the_polish_problem_status_desc
+		first_valid = {
+			triggered_desc = { trigger = { global_var:nesnd_poland_window ?= 1 } desc = nesnd_poland_window_status_1 }
+			triggered_desc = { trigger = { global_var:nesnd_poland_window ?= 2 } desc = nesnd_poland_window_status_2 }
+			triggered_desc = { trigger = { global_var:nesnd_poland_window ?= 3 } desc = nesnd_poland_window_status_3 }
+			triggered_desc = { trigger = { global_var:nesnd_poland_window ?= 4 } desc = nesnd_poland_window_status_4 }
+			triggered_desc = { trigger = { global_var:nesnd_poland_window ?= 5 } desc = nesnd_poland_window_status_5 }
+			triggered_desc = {
+				desc = nesnd_poland_status_decision
+				trigger = { has_global_variable = nesnd_poland_phase global_var:nesnd_poland_phase >= 3 }
+			}
+			triggered_desc = {
+				desc = nesnd_poland_status_shaken
+				trigger = { has_global_variable = nesnd_poland_phase global_var:nesnd_poland_phase = 2 }
+			}
+			triggered_desc = {
+				desc = nesnd_poland_status_consensus
+				trigger = { always = yes }
+			}
+		}
 	}
 
-	# scripted_button = ce_support_polish_problem_btn
-	# scripted_button = ce_oppose_polish_problem_btn
-	
-	
-	# scripted_progress_bar = ce_polish_problem_pro_support_bar
-	# scripted_progress_bar = ce_polish_problem_anti_support_bar
-	
+	scripted_progress_bar = nesnd_poland_consensus_bar
+	scripted_progress_bar = nesnd_poland_france_will_bar
+
+	# 1836-01-01 + 8766 days = 1860-01-01 (author 2026-11-17: the question ends in 1860).
+	timeout = 8766
+
 	immediate = {
 		# Triggered when it starts
 		if = {
@@ -63,19 +76,20 @@
 				NOT = { has_global_variable = ce_poland_supporters_count }
 			}
 			set_global_variable = { name = ce_poland_supporters_count value = 0 }
-		}	
+		}
 		if = {
 			limit = {
 				NOT = { has_global_variable = ce_poland_allied_supporters_count }
 			}
 			set_global_variable = { name = ce_poland_allied_supporters_count value = 0 }
-		}	
+		}
 		if = {
 			limit = {
 				NOT = { has_global_variable = ce_poland_anti_count }
 			}
 			set_global_variable = { name = ce_poland_anti_count value = 0 }
-		}	
+		}
+		nesnd_poland_root_month = { ADVANCE_WINDOWS = no }
 		hidden_effect = {
 			c:KRA = { trigger_event = { id = ce_poland_events.98 } }
 		}
@@ -83,78 +97,185 @@
 
 	immediate_all_involved = { nesnd_poland_enrol_country = yes }
 
-	# on_yearly_pulse = {
-	# 	events = {
-	# 		ce_poland_events.99
-	# 	}
-	# }
+	on_monthly_pulse = {
+		effect = {
+			nesnd_poland_refresh_participants = yes
+			nesnd_poland_root_month = { ADVANCE_WINDOWS = yes }
+			nesnd_poland_civil_month = yes
+			nesnd_polish_exile_month = yes
+			c:KRA ?= { trigger_event = { id = ce_poland_events.98 } }
+		}
+	}
 
-	on_monthly_pulse = { effect = { nesnd_poland_refresh_participants = yes c:KRA ?= { trigger_event = { id = ce_poland_events.98 } } } }
-	
+	on_yearly_pulse = { effect = { nesnd_poland_conspiracy_year = yes } }
+
+	# Map mode. Root scope = state.
+	map_color = {
+		if = {
+			limit = {
+				nesnd_poland_restoration_state = yes
+				owner ?= { OR = { c:KRA ?= this c:POL ?= this } }
+			}
+			value = "nesnd_poland_held"
+		}
+		else_if = {
+			limit = { nesnd_poland_restoration_state = yes }
+			value = "nesnd_poland_missing"
+		}
+		else_if = {
+			limit = { nesnd_poland_outer_state = yes }
+			value = "nesnd_poland_outer"
+		}
+	}
+
+	map_color_second = {
+		if = { limit = { nesnd_poland_window_map_state = yes } value = "nesnd_poland_claim" }
+	}
+
+	map_tooltip = {
+		if = { limit = { nesnd_poland_window_map_state = yes } custom_tooltip_no_bullet = nesnd_poland_window_map_tt }
+		if = {
+			limit = {
+				nesnd_poland_restoration_state = yes
+				owner ?= { OR = { c:KRA ?= this c:POL ?= this } }
+			}
+			custom_tooltip_no_bullet = nesnd_poland_map_held_tt
+		}
+		else_if = {
+			limit = { nesnd_poland_restoration_state = yes }
+			custom_tooltip_no_bullet = nesnd_poland_map_missing_tt
+		}
+		else_if = {
+			limit = { nesnd_poland_outer_state = yes }
+			custom_tooltip_no_bullet = nesnd_poland_map_outer_tt
+		}
+		if = {
+			limit = {
+				OR = { nesnd_poland_restoration_state = yes nesnd_poland_outer_state = yes }
+				exists = c:KRA
+				has_claim_by = c:KRA
+				NOT = { owner ?= c:KRA }
+			}
+			custom_tooltip_no_bullet = nesnd_poland_map_claimed_tt
+		}
+		if = {
+			limit = {
+				OR = { nesnd_poland_restoration_state = yes nesnd_poland_outer_state = yes }
+				owner ?= { custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable } }
+			}
+			custom_tooltip_no_bullet = nesnd_poland_map_owner_pro_tt
+		}
+		else_if = {
+			limit = {
+				OR = { nesnd_poland_restoration_state = yes nesnd_poland_outer_state = yes }
+				owner ?= { custom_tooltip = { text = nesnd_ui_ce_anti_polish_variable_tt has_variable = ce_anti_polish_variable } }
+			}
+			custom_tooltip_no_bullet = nesnd_poland_map_owner_anti_tt
+		}
+	}
+
+	# Restoration: Krakow declared victory (button needs the five states and Warsaw as capital).
 	outcome = {
 		header = je_standard_completion_header
 		effect_header = je_standard_on_completion_header
 		color = "gold_positive"
 		conclusion_desc = je_standard_completion_conclusion_desc
+		# Claude audit 2026-11-17: the panel showed the three partition tests (negated) and a raw
+		# "country has variable" row in this list. Partition precedence and the POL check are hidden
+		# guards; the player sees the five states, Warsaw and the declaration as named lines.
 		trigger = {
-			c:KRA = {
-				has_variable = ce_polish_victory_declared
+			hidden_trigger = {
+				exists = c:KRA
+				NOT = { exists = c:POL }
+				nesnd_poland_partitioned = no
+			}
+			c:KRA ?= {
+				nesnd_poland_restoration_met = yes
+				custom_tooltip = { text = nesnd_poland_victory_declared_tt has_variable = ce_polish_victory_declared }
 			}
 		}
+		effect = {
+			nesnd_poland_set_result = { RESULT = restored }
+		}
 		effect_all_involved = {
-		nesnd_poland_snapshot_stance = yes
-
+			nesnd_poland_snapshot_stance = yes
 			trigger_event = { id = ce_poland_events.10 popup = yes }
 			if = {
-				limit = { NOT = { has_global_variable = ce_poland_problem_end } }
-				set_global_variable = ce_poland_problem_end
-			}		
-			if = {
-				limit = { has_variable = ce_participated_in_polish_problem }
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
-			}  
+			}
 		}
 	}
-	
-	
+
+	# Partition: Krakow gone, a subject of Russia, Prussia or Austria, or left without its core.
 	outcome = {
 		header = je_standard_failure_header
 		effect_header = je_standard_on_failure_header
 		color = "blue_negative"
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
-			OR = {
-				NOT = { exists = c:KRA }
-				year >= 1850
-			}
+			nesnd_poland_partitioned = yes
+		}
+		effect = {
+			nesnd_poland_set_result = { RESULT = partition }
 		}
 		effect_all_involved = {
-		nesnd_poland_snapshot_stance = yes
-
+			nesnd_poland_snapshot_stance = yes
 			trigger_event = { id = ce_poland_events.11 popup = yes }
 			if = {
-				limit = { NOT = { has_global_variable = ce_poland_problem_end } }
-				set_global_variable = ce_poland_problem_end
-			}	
-			if = {
-				limit = { has_variable = ce_participated_in_polish_problem }
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
-			}  
+			}
 		}
 	}
-	
-	
+
+	# 1860: the settlement outlived the question.
+	outcome = {
+		header = JOURNAL_ENTRY_TIMEOUT
+		effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+		flags = { timeout }
+		conclusion_desc = JOURNAL_ENTRY_TIMEOUT_CONCLUSION_DESC
+		# The deadline may fall on the same tick as annexation or an already
+		# declared victory. Resolve once, before dispatch can change the KRA tag.
+		effect = {
+			if = { limit = { nesnd_poland_partitioned = yes }
+				nesnd_poland_set_result = { RESULT = partition }
+			}
+			else_if = { limit = { nesnd_poland_declared_restoration = yes }
+				nesnd_poland_set_result = { RESULT = restored }
+			}
+			else = { nesnd_poland_set_result = { RESULT = consensus } }
+			scope:journal_entry = {
+				every_scope_je_involved = {
+					nesnd_poland_snapshot_stance = yes
+					if = { limit = { nesnd_poland_result_is = { RESULT = partition } }
+						trigger_event = { id = ce_poland_events.11 popup = yes }
+					}
+					else_if = { limit = { nesnd_poland_result_is = { RESULT = restored } }
+						trigger_event = { id = ce_poland_events.10 popup = yes }
+					}
+					else = { trigger_event = { id = ce_poland_events.16 popup = yes } }
+					if = { limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
+						remove_variable = ce_participated_in_polish_problem
+					}
+				}
+			}
+		}
+	}
+
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
+			nesnd_poland_partitioned = no
+			nesnd_poland_declared_restoration = no
 			OR = {
 
 				custom_tooltip = {
 					text = ce_je_poland_1_invalid_tt_0
 					has_global_variable = ce_poland_problem_end
 				}
-				nesnd_poland_existing_successor = yes
+				nesnd_poland_existing_plc = yes
 				custom_tooltip = {
 					text = ce_je_poland_1_invalid_tt_2
 					NOT = {
@@ -183,50 +304,38 @@
 					}
 
 				}
-
-				custom_tooltip = {
-					text = kra_is_subject_ce_tt
-					AND = {
-						exists = c:KRA
-						c:KRA = { is_subject = yes }
-					}
-				}	
-
 			}
 		}
+		effect = { nesnd_poland_windows_cleanup = yes nesnd_poland_civil_cleanup = yes set_global_variable = ce_poland_problem_end }
 		effect_all_involved = {
-		nesnd_poland_snapshot_stance = yes
+			nesnd_poland_snapshot_stance = yes
 
 			trigger_event = { id = ce_poland_events.12 popup = yes }
 			if = {
-				limit = { NOT = { has_global_variable = ce_poland_problem_end } }
-				set_global_variable = ce_poland_problem_end
-			}	
-			if = {
-				limit = { has_variable = ce_participated_in_polish_problem }
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
-			}  
+			}
 		}
 	}
-	
-	
-	
+
+	should_be_pinned_by_default_involved = yes
 	should_be_pinned_by_default_uninvolved_or_context = yes
 
-on_become_involved_after_activation = { nesnd_poland_enrol_country = yes }
+	on_become_involved_after_activation = { nesnd_poland_enrol_country = yes }
 }
 
 je_ce_polish_reconquest = {
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	is_shown_in_lobby = { c:KRA ?= THIS }
+	icon = "gfx/interface/icons/event_icons/nesnd_poland_reconquest.dds"
 	group = je_ce_poland_unification_country
 	activation_description = { always = yes }
-	
+
 	is_shown_when_inactive = {
 		exists = c:KRA
 		c:KRA ?= this
 		has_journal_entry = je_ce_the_polish_problem
 	}
-	
+
 	possible = {
 		exists = c:KRA
 		c:KRA ?= this
@@ -234,6 +343,7 @@ je_ce_polish_reconquest = {
 	}
 
 	immediate = {
+		set_variable = { name = nesnd_poland_claim_fund value = 0 }
 		hidden_effect = {
 			if = {
 				limit = { NOT = { has_global_variable = ce_polish_claim_state_count } }
@@ -244,42 +354,94 @@ je_ce_polish_reconquest = {
 			}
 		}
 	}
-	
+
+	# Buttons show only while their state can still be claimed (see the button file).
 	scripted_button = ce_polish_claim_state_west_galicia_btn
-	scripted_button = ce_polish_claim_state_upper_silesia_btn
 	scripted_button = ce_polish_claim_state_posen_btn
+	scripted_button = ce_polish_claim_state_greater_poland_btn
+	scripted_button = ce_polish_claim_state_lesser_poland_btn
+	scripted_button = ce_polish_claim_state_mazovia_btn
+	scripted_button = ce_polish_claim_state_upper_silesia_btn
+	scripted_button = ce_polish_claim_state_west_prussia_btn
 	scripted_button = ce_polish_claim_state_east_galicia_btn
 	scripted_button = ce_polish_claim_state_kaunas_btn
 	scripted_button = ce_polish_claim_state_brest_btn
 	scripted_button = ce_polish_claim_state_volhynia_btn
-	scripted_button = ce_polish_claim_state_west_prussia_btn
-	scripted_button = ce_polish_claim_state_greater_poland_btn
-	scripted_button = ce_polish_claim_state_lesser_poland_btn
-	
-	
-	scripted_progress_bar = ce_polish_reconquest_energy_bar
-	
+
+	# Exile policy and congress proposals are chosen in their own journals.
+	scripted_button = nesnd_poland_university_btn
+	scripted_button = nesnd_poland_diet_btn
+	scripted_button = nesnd_poland_paris_btn
+	scripted_button = nesnd_poland_agitators_btn
+	scripted_button = nesnd_poland_rising_btn
+	scripted_button = nesnd_poland_secret_societies
+	scripted_button = nesnd_poland_shelter_exiles
+	scripted_progress_bar = nesnd_poland_red_white_bar
+	status_desc = { first_valid = {
+		triggered_desc = { trigger = { has_variable = nesnd_poland_keeping_faith } desc = nesnd_poland_rw_status_white }
+		desc = nesnd_poland_rw_status
+	} }
+	on_monthly_pulse = {
+		effect = {
+			set_variable = { name = nesnd_poland_claim_fund value = {
+				value = 0
+				if = { limit = { has_global_variable = ce_poland_support_diff } value = global_var:ce_poland_support_diff }
+				min = 1 max = 3
+				if = { limit = { has_variable = nesnd_poland_claim_fund } add = var:nesnd_poland_claim_fund }
+				max = 100
+			} }
+			if = { limit = { scope:journal_entry = { "scripted_bar_progress(nesnd_poland_red_white_bar)" <= -120 } }
+				set_variable = nesnd_poland_keeping_faith
+			}
+			else_if = { limit = { scope:journal_entry = { "scripted_bar_progress(nesnd_poland_red_white_bar)" > 0 } }
+				remove_variable = nesnd_poland_keeping_faith
+			}
+			if = { limit = { scope:journal_entry = { "scripted_bar_progress(nesnd_poland_red_white_bar)" >= 60 } }
+				set_variable = nesnd_poland_red_ascendant
+			}
+			else_if = { limit = { has_variable = nesnd_poland_red_ascendant } remove_variable = nesnd_poland_red_ascendant }
+			debug_log = "NESND_POLAND_MONTH [TimeKeeper.GetCurrentDate.GetString] guarantees=[GetGlobalVariable('nesnd_poland_guarantees').GetValue|0] support=[GetGlobalVariable('ce_poland_support_diff').GetValue|0] stability=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_french_stability')|0] will=[GetGlobalVariable('nesnd_poland_france_will').GetValue|0] settlement=[GetGlobalVariable('nesnd_poland_last_consensus').GetValue|1] phase=[GetGlobalVariable('nesnd_poland_phase').GetValue|0] army_incl_conscripts=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_army')|0] influence=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_influence')|0] claims=[GetGlobalVariable('ce_polish_claim_state_count').GetValue|0] fund=[THIS.GetCountry.MakeScope.Var('nesnd_poland_claim_fund').GetValue|0] prep=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_preparation')|0]"
+			debug_log = "NESND_POLAND_INPUT [TimeKeeper.GetCurrentDate.GetString] bloc=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_bloc')|0] austrian_bloc=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_austrian_bloc')|0] default=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_default')|0] great_power=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_great_power')|0] bankruptcy=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_bankruptcy')|0] foreign_backing=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_foreign_backing')|0] warsaw=[THIS.GetCountry.MakeScope.ScriptValue('nesnd_poland_probe_warsaw')|0] held=[GetGlobalVariable('ce_poland_owned_polish_states_global').GetValue|0]"
+		}
+		random_events = { 200 = 0 5 = nesnd_polish_diet.1 5 = nesnd_polish_diet.2 5 = nesnd_polish_diet.3 5 = nesnd_polish_diet.4 5 = nesnd_polish_diet.5 5 = nesnd_polish_diet.6 }
+	}
+
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = { text = nesnd_poland_result_restored_tt nesnd_poland_result_is = { RESULT = restored } }
+		}
+	}
+
 	outcome = {
 		header = je_standard_failure_header
 		effect_header = je_standard_on_failure_header
 		color = "blue_negative"
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
-			OR = {
-				NOT = { exists = c:KRA }
-				year >= 1850
-			}
+			custom_tooltip = { text = nesnd_poland_result_partition_tt nesnd_poland_result_is = { RESULT = partition } }
 		}
 	}
-	
+
+	outcome = {
+		header = nesnd_journal_closures_header
+		effect_header = nesnd_journal_closures_effect_header
+		color = "blue_negative"
+		conclusion_desc = nesnd_poland_consensus_conclusion
+		trigger = {
+			custom_tooltip = { text = nesnd_poland_result_consensus_tt nesnd_poland_result_is = { RESULT = consensus } }
+		}
+	}
+
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
-			OR = {
-				NOT = { has_journal_entry = je_ce_the_polish_problem }
-				c:KRA = { has_variable = ce_polish_victory_declared }
-			}
+			custom_tooltip = { text = nesnd_ui_ce_poland_problem_end_tt has_global_variable = ce_poland_problem_end }
+			custom_tooltip = { text = nesnd_ui_not_poland_result_tt NOT = { has_global_variable = nesnd_poland_result } }
 		}
 	}
 
@@ -287,530 +449,345 @@ je_ce_polish_reconquest = {
 }
 
 je_ce_polish_war_preparation = {
-	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_poland_preparation.dds"
 	group = je_ce_poland_unification_country
 	activation_description = { always = yes }
 
-	# is_shown_in_lobby = {
-	# 	exists = c:KRA
-	# 	c:KRA ?= this
-	# 	has_journal_entry = je_ce_the_polish_problem
-	# }
-	
 	is_shown_when_inactive = {
 		exists = c:KRA
 		c:KRA ?= this
 		has_journal_entry = je_ce_the_polish_problem
 	}
-	
+
 	possible = {
 		exists = c:KRA
 		c:KRA ?= this
 		has_journal_entry = je_ce_the_polish_problem
 	}
-	
+
 	scripted_button = ce_polish_move_capital_btn
 	scripted_button = ce_polish_boost_relations_btn
 	scripted_button = ce_polish_boost_army_btn
-	#scripted_button = ce_polish_diplo_play_btn
 	scripted_button = ce_polish_announce_victory_btn
 
+	# Ultimatum buttons show only for states Krakow already claims (see the button file).
 	scripted_button = ce_polish_dp_state_west_galicia_btn
-	scripted_button = ce_polish_dp_state_upper_silesia_btn
 	scripted_button = ce_polish_dp_state_posen_btn
+	scripted_button = ce_polish_dp_state_greater_poland_btn
+	scripted_button = ce_polish_dp_state_lesser_poland_btn
+	scripted_button = ce_polish_dp_state_mazovia_btn
+	scripted_button = ce_polish_dp_state_upper_silesia_btn
+	scripted_button = ce_polish_dp_state_west_prussia_btn
 	scripted_button = ce_polish_dp_state_east_galicia_btn
 	scripted_button = ce_polish_dp_state_kaunas_btn
 	scripted_button = ce_polish_dp_state_brest_btn
 	scripted_button = ce_polish_dp_state_volhynia_btn
-	scripted_button = ce_polish_dp_state_west_prussia_btn
-	scripted_button = ce_polish_dp_state_greater_poland_btn
-	scripted_button = ce_polish_dp_state_lesser_poland_btn
-	
-	#
+
 	scripted_progress_bar = ce_polish_reconquest_war_prep_bar
-	
+
 	outcome = {
 		header = je_standard_completion_header
 		effect_header = je_standard_on_completion_header
 		color = "gold_positive"
 		conclusion_desc = je_standard_completion_conclusion_desc
 		trigger = {
-			c:KRA = {
-				has_variable = ce_polish_victory_declared
-			}
+			custom_tooltip = { text = nesnd_poland_result_restored_tt nesnd_poland_result_is = { RESULT = restored } }
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_30 }
-				remove_modifier = ce_poland_war_prep_30
-			}
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_50 }
-				remove_modifier = ce_poland_war_prep_50
-			}
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_100 }
-				remove_modifier = ce_poland_war_prep_100
-			}
+			nesnd_poland_snapshot_stance = yes
+			nesnd_poland_clear_stage_modifiers = yes
 		}
 	}
-	
-	
+
 	outcome = {
 		header = je_standard_failure_header
 		effect_header = je_standard_on_failure_header
 		color = "blue_negative"
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
-			OR = {
-				NOT = { exists = c:KRA }
-				year >= 1850
-			}
+			custom_tooltip = { text = nesnd_poland_result_partition_tt nesnd_poland_result_is = { RESULT = partition } }
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_30 }
-				remove_modifier = ce_poland_war_prep_30
-			}
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_50 }
-				remove_modifier = ce_poland_war_prep_50
-			}
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_100 }
-				remove_modifier = ce_poland_war_prep_100
-			}
+			nesnd_poland_snapshot_stance = yes
+			nesnd_poland_clear_stage_modifiers = yes
 		}
 	}
-	
+
+	outcome = {
+		header = nesnd_journal_closures_header
+		effect_header = nesnd_journal_closures_effect_header
+		color = "blue_negative"
+		conclusion_desc = nesnd_poland_consensus_conclusion
+		trigger = {
+			custom_tooltip = { text = nesnd_poland_result_consensus_tt nesnd_poland_result_is = { RESULT = consensus } }
+		}
+		effect = {
+			nesnd_poland_snapshot_stance = yes
+			nesnd_poland_clear_stage_modifiers = yes
+		}
+	}
+
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
-			NOT = { has_journal_entry = je_ce_the_polish_problem }
+			custom_tooltip = { text = nesnd_ui_ce_poland_problem_end_tt has_global_variable = ce_poland_problem_end }
+			custom_tooltip = { text = nesnd_ui_not_poland_result_tt NOT = { has_global_variable = nesnd_poland_result } }
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_30 }
-				remove_modifier = ce_poland_war_prep_30
-			}
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_50 }
-				remove_modifier = ce_poland_war_prep_50
-			}
-			if = {
-				limit = { has_modifier = ce_poland_war_prep_100 }
-				remove_modifier = ce_poland_war_prep_100
-			}
+			nesnd_poland_snapshot_stance = yes
+			nesnd_poland_clear_stage_modifiers = yes
 		}
 	}
-	
+
+	# Tiered army modifiers follow the bar. They sit on the country (2026-11-17: they used to be
+	# added to the journal while the outcomes removed them from the country).
 	on_weekly_pulse = {
 		effect = {
-			# Check 100+ threshold first
-			if = {
-				limit = {
-					scope:journal_entry = {
-						"scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 100
-					}
-				}
-				if = {
-					limit = { NOT = { scope:journal_entry = { has_modifier = ce_poland_war_prep_100 } } }
-					scope:journal_entry = { add_modifier = ce_poland_war_prep_100 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_50 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_50 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_30 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_30 }
-				}
-			}
-			# Check 50-99 threshold
-			else_if = {
-				limit = {
-					scope:journal_entry = {
-						"scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 50
-					}
-				}
-				if = {
-					limit = { NOT = { scope:journal_entry = { has_modifier = ce_poland_war_prep_50 } } }
-					scope:journal_entry = { add_modifier = ce_poland_war_prep_50 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_100 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_100 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_30 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_30 }
-				}
-			}
-			# Check 30-49 threshold
-			else_if = {
-				limit = {
-					scope:journal_entry = {
-						"scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 30
-					}
-				}
-				if = {
-					limit = { NOT = { scope:journal_entry = { has_modifier = ce_poland_war_prep_30 } } }
-					scope:journal_entry = { add_modifier = ce_poland_war_prep_30 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_100 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_100 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_50 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_50 }
-				}
-			}
-			# Below 30 threshold - remove all
-			else = {
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_30 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_30 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_50 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_50 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_poland_war_prep_100 } }
-					scope:journal_entry = { remove_modifier = ce_poland_war_prep_100 }
-				}
+			nesnd_poland_tier_modifiers = {
+				JE = je_ce_polish_war_preparation
+				BAR = ce_polish_reconquest_war_prep_bar
+				KEY_30 = ce_poland_war_prep_30
+				KEY_50 = ce_poland_war_prep_50
+				KEY_TOP = ce_poland_war_prep_100
+				TOP = 100
 			}
 		}
 	}
-	
-	
 
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }
 
 je_ce_polish_territory_claim = {
-	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_poland_support.dds"
 	group = je_ce_poland_unification_country
 	activation_description = { always = yes }
-	
+
 	is_shown_when_inactive = {
 		has_variable = ce_pro_polish_variable
 	}
-	
+
 	possible = {
-		has_variable = ce_pro_polish_variable
+		custom_tooltip = { text = nesnd_poland_is_supporter_tt has_variable = ce_pro_polish_variable }
 		has_journal_entry = je_ce_the_polish_problem
 	}
-	
+
 	outcome = {
 		header = je_standard_completion_header
 		effect_header = je_standard_on_completion_header
 		color = "gold_positive"
 		conclusion_desc = je_standard_completion_conclusion_desc
 		trigger = {
-			c:KRA = {
-				has_variable = ce_polish_victory_declared
-			}
+			custom_tooltip = { text = nesnd_poland_result_restored_tt nesnd_poland_result_is = { RESULT = restored } }
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
+			nesnd_poland_snapshot_stance = yes
 			remove_variable = ce_pro_polish_variable
 			if = {
-				limit = {
-					has_variable = ce_participated_in_polish_problem
-				}
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
 			}
 		}
 	}
 
-	
 	outcome = {
 		header = je_standard_failure_header
 		effect_header = je_standard_on_failure_header
 		color = "blue_negative"
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
-			OR = {
-				NOT = { exists = c:KRA }
-				year >= 1850
-			}
+			custom_tooltip = { text = nesnd_poland_result_partition_tt nesnd_poland_result_is = { RESULT = partition } }
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
-			# Clean up any modifiers that may have been added
+			nesnd_poland_snapshot_stance = yes
 			remove_variable = ce_pro_polish_variable
 			if = {
-				limit = {
-					has_variable = ce_participated_in_polish_problem
-				}
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
 			}
 		}
 	}
-	
-	
+
+	outcome = {
+		header = nesnd_journal_closures_header
+		effect_header = nesnd_journal_closures_effect_header
+		color = "blue_negative"
+		conclusion_desc = nesnd_poland_consensus_conclusion
+		trigger = {
+			custom_tooltip = { text = nesnd_poland_result_consensus_tt nesnd_poland_result_is = { RESULT = consensus } }
+		}
+		effect = {
+			nesnd_poland_snapshot_stance = yes
+			remove_variable = ce_pro_polish_variable
+			if = {
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
+				remove_variable = ce_participated_in_polish_problem
+			}
+		}
+	}
+
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
+			custom_tooltip = { text = nesnd_ui_not_poland_result_tt NOT = { has_global_variable = nesnd_poland_result } }
 			OR = {
-				NOT = { has_journal_entry = je_ce_the_polish_problem }
-				c:KRA = { has_variable = ce_polish_victory_declared }
-				NOT = { has_variable = ce_pro_polish_variable }
+				custom_tooltip = { text = nesnd_ui_not_ce_pro_polish_variable_tt NOT = { has_variable = ce_pro_polish_variable } }
+				custom_tooltip = { text = nesnd_ui_ce_poland_problem_end_tt has_global_variable = ce_poland_problem_end }
 			}
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
-			remove_variable = ce_pro_polish_variable
+			nesnd_poland_snapshot_stance = yes
 			if = {
-				limit = {
-					has_variable = ce_participated_in_polish_problem
-				}
+				limit = { custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable } }
+				remove_variable = ce_pro_polish_variable
+			}
+			if = {
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
 			}
 		}
 	}
-	
-	
+
 	scripted_button = ce_pro_polish_give_money_btn
 	scripted_button = ce_pro_polish_influence_btn
 	scripted_button = ce_pro_polish_infamy_btn
 	scripted_button = ce_pro_polish_lobby_btn
-	
-	
+
+	# Supporters may press the same claims for Krakow; buttons show only for claimed states.
+	scripted_button = ce_polish_dp_state_west_galicia_btn
+	scripted_button = ce_polish_dp_state_posen_btn
+	scripted_button = ce_polish_dp_state_greater_poland_btn
+	scripted_button = ce_polish_dp_state_lesser_poland_btn
+	scripted_button = ce_polish_dp_state_mazovia_btn
+	scripted_button = ce_polish_dp_state_upper_silesia_btn
+	scripted_button = ce_polish_dp_state_west_prussia_btn
+	scripted_button = ce_polish_dp_state_east_galicia_btn
+	scripted_button = ce_polish_dp_state_kaunas_btn
+	scripted_button = ce_polish_dp_state_brest_btn
+	scripted_button = ce_polish_dp_state_volhynia_btn
+
 	scripted_progress_bar = ce_polish_territory_claim_bar
 
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }
 
 je_ce_block_polish_advance = {
-	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_poland_blockade.dds"
 	group = je_ce_poland_unification_country
 	activation_description = { always = yes }
-	
+
 	is_shown_when_inactive = {
 		has_variable = ce_anti_polish_variable
 	}
-	
+
 	possible = {
-		has_variable = ce_anti_polish_variable
+		custom_tooltip = { text = nesnd_poland_is_opponent_tt has_variable = ce_anti_polish_variable }
 		has_journal_entry = je_ce_the_polish_problem
 	}
-	
+
 	outcome = {
 		header = je_standard_completion_header
 		effect_header = je_standard_on_completion_header
 		color = "gold_positive"
 		conclusion_desc = je_standard_completion_conclusion_desc
 		trigger = {
-			OR = {
-				NOT = { exists = c:KRA }
-				year >= 1850
-			}
+			custom_tooltip = { text = nesnd_poland_result_partition_tt nesnd_poland_result_is = { RESULT = partition } }
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
+			nesnd_poland_snapshot_stance = yes
+			nesnd_poland_clear_stage_modifiers = yes
+			remove_variable = ce_anti_polish_variable
 			if = {
-				limit = { has_modifier = ce_anti_poland_block_30 }
-				remove_modifier = ce_anti_poland_block_30
-			}
-			if = {
-				limit = { has_modifier = ce_anti_poland_block_50 }
-				remove_modifier = ce_anti_poland_block_50
-			}
-			if = {
-				limit = { has_modifier = ce_anti_poland_block_90 }
-				remove_modifier = ce_anti_poland_block_90
-			}
-			if = {
-				limit = {
-					has_variable = ce_anti_polish_variable
-				}
-				remove_variable = ce_anti_polish_variable
-			}
-			if = {
-				limit = {
-					has_variable = ce_participated_in_polish_problem
-				}
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
 			}
 		}
 	}
-	
+
 	outcome = {
 		header = je_standard_failure_header
 		effect_header = je_standard_on_failure_header
 		color = "blue_negative"
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
-			c:KRA = {
-				has_variable = ce_polish_victory_declared
-			}
+			custom_tooltip = { text = nesnd_poland_result_restored_tt nesnd_poland_result_is = { RESULT = restored } }
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
+			nesnd_poland_snapshot_stance = yes
+			nesnd_poland_clear_stage_modifiers = yes
+			remove_variable = ce_anti_polish_variable
 			if = {
-				limit = { has_modifier = ce_anti_poland_block_30 }
-				remove_modifier = ce_anti_poland_block_30
-			}
-			if = {
-				limit = { has_modifier = ce_anti_poland_block_50 }
-				remove_modifier = ce_anti_poland_block_50
-			}
-			if = {
-				limit = { has_modifier = ce_anti_poland_block_90 }
-				remove_modifier = ce_anti_poland_block_90
-			}
-			if = {
-				limit = {
-					has_variable = ce_anti_polish_variable
-				}
-				remove_variable = ce_anti_polish_variable
-			}
-			if = {
-				limit = {
-					has_variable = ce_participated_in_polish_problem
-				}
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
 			}
 		}
 	}
-	
-	
-	
+
+	outcome = {
+		header = nesnd_journal_closures_header
+		effect_header = nesnd_journal_closures_effect_header
+		color = "blue_negative"
+		conclusion_desc = nesnd_poland_consensus_conclusion
+		trigger = {
+			custom_tooltip = { text = nesnd_poland_result_consensus_tt nesnd_poland_result_is = { RESULT = consensus } }
+		}
+		effect = {
+			nesnd_poland_snapshot_stance = yes
+			nesnd_poland_clear_stage_modifiers = yes
+			remove_variable = ce_anti_polish_variable
+			if = {
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
+				remove_variable = ce_participated_in_polish_problem
+			}
+		}
+	}
+
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
-			NOT = { has_journal_entry = je_ce_the_polish_problem }
+			custom_tooltip = { text = nesnd_ui_not_poland_result_tt NOT = { has_global_variable = nesnd_poland_result } }
+			OR = {
+				custom_tooltip = { text = nesnd_ui_not_ce_anti_polish_variable_tt NOT = { has_variable = ce_anti_polish_variable } }
+				custom_tooltip = { text = nesnd_ui_ce_poland_problem_end_tt has_global_variable = ce_poland_problem_end }
+			}
 		}
 		effect = {
-		nesnd_poland_snapshot_stance = yes
-
+			nesnd_poland_snapshot_stance = yes
+			nesnd_poland_clear_stage_modifiers = yes
 			if = {
-				limit = { has_modifier = ce_anti_poland_block_30 }
-				remove_modifier = ce_anti_poland_block_30
-			}
-			if = {
-				limit = { has_modifier = ce_anti_poland_block_50 }
-				remove_modifier = ce_anti_poland_block_50
-			}
-			if = {
-				limit = {
-					has_variable = ce_anti_polish_variable
-				}
+				limit = { custom_tooltip = { text = nesnd_ui_ce_anti_polish_variable_tt has_variable = ce_anti_polish_variable } }
 				remove_variable = ce_anti_polish_variable
 			}
 			if = {
-				limit = {
-					has_variable = ce_participated_in_polish_problem
-				}
+				limit = { custom_tooltip = { text = nesnd_ui_ce_participated_in_polish_problem_tt has_variable = ce_participated_in_polish_problem } }
 				remove_variable = ce_participated_in_polish_problem
 			}
-
 		}
 	}
-	
-	
+
+	scripted_button = ce_polish_exile_release_btn
+	scripted_button = ce_polish_exile_blockade_btn
+	scripted_button = nesnd_congress_sanctions_btn
 	scripted_button = ce_anti_polish_radicals_kra_btn
 	scripted_button = ce_anti_polish_radicals_pro_btn
 	scripted_button = ce_anti_polish_free_factory_btn
 	scripted_button = ce_anti_polish_lobby_btn
 
 	should_be_pinned_by_default_uninvolved_or_context = yes
-	
-	
+
 	scripted_progress_bar = ce_block_polish_advance_bar
+
 	on_weekly_pulse = {
 		effect = {
-			# Check 90+ threshold first
-			if = {
-				limit = {
-					scope:journal_entry = {
-						"scripted_bar_progress(ce_block_polish_advance_bar)" >= 90
-					}
-				}
-				if = {
-					limit = { NOT = { scope:journal_entry = { has_modifier = ce_anti_poland_block_90 } } }
-					scope:journal_entry = { add_modifier = ce_anti_poland_block_90 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_50 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_50 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_30 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_30 }
-				}
-			}
-			# Check 50-89 threshold
-			else_if = {
-				limit = {
-					scope:journal_entry = {
-						"scripted_bar_progress(ce_block_polish_advance_bar)" >= 50
-					}
-				}
-				if = {
-					limit = { NOT = { scope:journal_entry = { has_modifier = ce_anti_poland_block_50 } } }
-					scope:journal_entry = { add_modifier = ce_anti_poland_block_50 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_90 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_90 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_30 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_30 }
-				}
-			}
-			# Check 30-49 threshold
-			else_if = {
-				limit = {
-					scope:journal_entry = {
-						"scripted_bar_progress(ce_block_polish_advance_bar)" >= 30
-					}
-				}
-				if = {
-					limit = { NOT = { scope:journal_entry = { has_modifier = ce_anti_poland_block_30 } } }
-					scope:journal_entry = { add_modifier = ce_anti_poland_block_30 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_90 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_90 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_50 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_50 }
-				}
-			}
-			# Below 30 threshold - remove all
-			else = {
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_30 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_30 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_50 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_50 }
-				}
-				if = {
-					limit = { scope:journal_entry = { has_modifier = ce_anti_poland_block_90 } }
-					scope:journal_entry = { remove_modifier = ce_anti_poland_block_90 }
-				}
+			nesnd_poland_tier_modifiers = {
+				JE = je_ce_block_polish_advance
+				BAR = ce_block_polish_advance_bar
+				KEY_30 = ce_anti_poland_block_30
+				KEY_50 = ce_anti_poland_block_50
+				KEY_TOP = ce_anti_poland_block_90
+				TOP = 90
 			}
 		}
 	}

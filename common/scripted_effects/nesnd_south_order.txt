@@ -1,0 +1,66 @@
+﻿# Country scope: the winner of the civil war. Called from the journal "Life under the Rites" when it opens and every month.
+# Not after a peaceful settlement and not during a stalemate.
+nesnd_south_order_grant = {
+    if = {
+        limit = {
+            has_global_variable = nesnd_south_settled
+            NOT = { has_global_variable = usm_civilwar_status_quo }
+            NOT = { has_variable = nesnd_south_peaceful }
+            NOT = { has_variable = nesnd_south_order_done }
+        }
+        set_variable = nesnd_south_order_done
+        set_variable = { name = nesnd_order_base_fresh years = 10 }
+        if = { limit = { has_variable = tag_WUU_var }
+            set_variable = nesnd_wu_fence_started
+            set_social_hierarchy = nesnd_wu_fence_hierarchy
+            activate_law = law_type:law_nesnd_wu_southeast_fence
+        }
+        else = {
+            set_variable = nesnd_ming_gate_started
+            set_social_hierarchy = nesnd_ming_gate_hierarchy
+            activate_law = law_type:law_nesnd_ming_high_gate
+        }
+    }
+}
+# Country scope: the court after a peaceful settlement, on completing the journal.
+nesnd_south_order_zheng_reward = {
+    add_modifier = { name = nesnd_south_zheng_settlement years = 20 }
+    nesnd_south_order_ultimatums = yes
+}
+nesnd_south_order_ming_reward = {
+    add_modifier = { name = nesnd_south_ming_settlement years = 20 }
+    s:STATE_HENAN ?= { add_claim = root }
+    s:STATE_SHANDONG ?= { add_claim = root }
+    s:STATE_HANZHONG ?= { add_claim = root }
+    s:STATE_NORTHERN_ANHUI ?= { add_claim = root }
+    s:STATE_SOUTHERN_ANHUI ?= { add_claim = root }
+    s:STATE_ZHILI ?= { add_claim = root }
+    s:STATE_BEIJING ?= { add_claim = root }
+    s:STATE_SHENGJING ?= { add_claim = root }
+    s:STATE_SOUTHERN_MANCHURIA ?= { add_claim = root }
+    s:STATE_NORTHERN_MANCHURIA ?= { add_claim = root }
+    s:STATE_OUTER_MANCHURIA ?= { add_claim = root }
+    s:STATE_AMUR ?= { add_claim = root }
+    nesnd_south_order_ultimatums = yes
+}
+# Country scope. Every mainland province that is still a subject of the court is told to merge.
+nesnd_south_order_ultimatums = {
+    every_country = {
+        limit = { nesnd_tilt_mainland = yes is_country_alive = yes is_subject_of = root NOT = { has_variable = nesnd_order_ultimatum_sent } }
+        set_variable = nesnd_order_ultimatum_sent
+        set_variable = { name = nesnd_order_sender value = root }
+        trigger_event = { id = nesnd_south_order.1 days = 7 popup = yes }
+    }
+}
+# Province scope, on refusing. scope:nesnd_order_sender is the court.
+nesnd_south_order_war = {
+    save_scope_as = nesnd_order_target
+    add_modifier = { name = nesnd_south_defied_ultimatum years = 10 }
+    if = { limit = { is_subject = yes } make_independent = yes }
+    scope:nesnd_order_sender = {
+        create_diplomatic_play = {
+            name = dp_nesnd_order_unification target_country = scope:nesnd_order_target type = dp_nesnd_order_unification war = yes
+            add_war_goal = { holder = scope:nesnd_order_target target_country = scope:nesnd_order_sender type = humiliation }
+        }
+    }
+}

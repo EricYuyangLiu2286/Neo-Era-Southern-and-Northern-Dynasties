@@ -1,0 +1,120 @@
+﻿on_monthly_pulse = {
+	on_actions = { nesnd_congress_start }
+}
+
+# The 1829 settlement is already in force. Open its successor congress only
+# when a member requests it or an existing diplomatic obligation falls due.
+nesnd_congress_start = {
+	trigger = { nesnd_poland_active = yes }
+	effect = {
+		if = {
+			limit = {
+				has_global_variable = peoples_springtime_happening
+				NOT = { has_global_variable = nesnd_congress_spring_seen }
+			}
+			set_global_variable = nesnd_congress_spring_seen
+			set_global_variable = nesnd_congress_requested
+		}
+		if = {
+			limit = {
+				has_global_variable = nesnd_congress_spring_seen
+				NOT = { has_global_variable = peoples_springtime_happening }
+				NOT = { has_global_variable = nesnd_congress_spring_end_seen }
+			}
+			set_global_variable = nesnd_congress_spring_end_seen
+			set_global_variable = nesnd_congress_requested
+		}
+		if = {
+			limit = {
+				game_date >= 1839.1.5
+				NOT = { has_global_variable = nesnd_congress_guarantees_due }
+			}
+			set_global_variable = nesnd_congress_guarantees_due
+			set_global_variable = nesnd_congress_requested
+		}
+		if = {
+			limit = { NOT = { has_global_variable = nesnd_congress_started } }
+			# The Polish settlement bar also reads order before the first congress.
+			set_global_variable = { name = nesnd_congress_order value = nesnd_congress_order_value }
+			if = {
+				limit = {
+					OR = {
+						has_global_variable = nesnd_congress_requested
+						has_global_variable = nesnd_poland_peace_target
+					}
+				}
+				set_global_variable = nesnd_congress_started
+				add_contextless_journal_entry = je_nesnd_congress
+			}
+		}
+	}
+}
+
+# GAME 00_code_on_actions.txt on_war_end: actor=initiator, target=target country.
+# This records each war end, including overlapping wars, without polling a
+# country's aggregate is_at_war flag. Several simultaneous requests coalesce.
+on_war_end = {
+	on_actions = { nesnd_congress_member_peace }
+}
+
+nesnd_congress_member_peace = {
+	trigger = {
+		nesnd_poland_active = yes
+		exists = scope:actor
+		exists = scope:target
+		scope:actor ?= { nesnd_congress_member = yes }
+		scope:target ?= { nesnd_congress_member = yes }
+	}
+	effect = { set_global_variable = nesnd_congress_requested }
+}
+
+# GAME on_revolution_start/on_secession_start: root=parent, target=new rebel.
+on_revolution_start = {
+	on_actions = { nesnd_congress_rebel_cleanup }
+}
+
+on_secession_start = {
+	on_actions = { nesnd_congress_rebel_cleanup }
+}
+
+nesnd_congress_rebel_cleanup = {
+	effect = {
+		scope:target ?= {
+			remove_variable = nesnd_congress_pending
+			remove_variable = nesnd_congress_petitioner
+			remove_variable = nesnd_congress_ballot
+			remove_variable = nesnd_congress_voted
+			remove_variable = nesnd_congress_vote_choice
+			remove_variable = nesnd_congress_vote_weight
+			remove_variable = nesnd_congress_russian_no_serial
+			remove_variable = nesnd_congress_guarantee_pledge
+		}
+	}
+}
+
+on_diplo_play_start = {
+	on_actions = { nesnd_congress_revolution_sitting }
+}
+
+on_diplo_play_war_start = {
+	on_actions = { nesnd_congress_revolution_sitting }
+}
+
+nesnd_congress_revolution_sitting = {
+	trigger = {
+		nesnd_poland_active = yes
+		NOT = { has_variable = nesnd_congress_revolution_notified }
+		is_diplomatic_play_type = dp_revolution
+		target = { nesnd_congress_member = yes }
+		initiator = {
+			OR = {
+				var:civil_war_type_var ?= movement_type:movement_socialist
+				var:civil_war_type_var ?= movement_type:movement_communist
+			}
+		}
+	}
+	effect = {
+		set_variable = nesnd_congress_revolution_notified
+		set_global_variable = nesnd_congress_requested
+	}
+}

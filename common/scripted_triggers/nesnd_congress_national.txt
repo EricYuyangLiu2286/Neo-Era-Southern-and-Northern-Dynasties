@@ -1,0 +1,117 @@
+﻿nesnd_cc_national_power = {
+	is_country_alive = yes
+	is_revolutionary = no
+	is_secessionist = no
+	OR = { c:RUS ?= this c:FRA ?= this c:AUS ?= this nesnd_prussian_identity = yes }
+}
+nesnd_cc_author = {
+	trigger_if = { limit = { $KIND$ = 5 } c:RUS ?= this }
+	trigger_else_if = { limit = { $KIND$ = 6 } c:RUS ?= this }
+	trigger_else_if = { limit = { $KIND$ = 7 } c:FRA ?= this }
+	trigger_else_if = { limit = { $KIND$ = 8 } OR = { c:FRA ?= this nesnd_prussian_identity = yes } }
+	trigger_else_if = { limit = { $KIND$ = 9 } c:AUS ?= this }
+	trigger_else_if = { limit = { $KIND$ = 10 } nesnd_prussian_identity = yes }
+	trigger_else_if = { limit = { $KIND$ = 11 } nesnd_prussian_identity = yes }
+	trigger_else = { always = no }
+}
+nesnd_cc_partner = {
+	trigger_if = { limit = { $KIND$ = 5 } OR = { c:AUS ?= this c:PRU ?= this } }
+	trigger_else_if = { limit = { $KIND$ = 6 } OR = { c:TUR ?= this } }
+	trigger_else_if = { limit = { $KIND$ = 7 } OR = { c:RUS ?= this } }
+	trigger_else_if = { limit = { $KIND$ = 8 } OR = { c:FRA ?= this nesnd_prussian_identity = yes } }
+	trigger_else_if = { limit = { $KIND$ = 9 } OR = { c:PAP ?= this c:SIC ?= this c:SAR ?= this c:TUS ?= this c:PAR ?= this c:MOD ?= this } }
+	trigger_else_if = { limit = { $KIND$ = 10 } OR = { c:ANH ?= this c:BAD ?= this c:BAV ?= this c:HAN ?= this c:HEK ?= this c:HES ?= this c:LIP ?= this c:MEC ?= this c:OLD ?= this c:BRA ?= this c:NAS ?= this c:SAX ?= this c:WLD ?= this c:WUR ?= this } }
+	trigger_else_if = { limit = { $KIND$ = 11 } OR = { c:KRA ?= this } }
+	trigger_else = { always = no }
+}
+nesnd_cc_can_sign_pact = {
+	has_technology_researched = international_relations
+	scope:cc_partner = { has_technology_researched = international_relations }
+	"relations(scope:cc_partner)" >= relations_threshold:cordial
+	highest_overlapping_interest_tier = { target = scope:cc_partner value >= interest_tier_effect_can_sign_defensive_pact_min_tier }
+	NOT = { has_treaty_alliance_with = { TARGET = scope:cc_partner } }
+	NOT = { has_treaty_defensive_pact_with = { TARGET = scope:cc_partner } }
+	NOT = { any_scope_treaty = { binds = scope:cc_partner any_scope_article = { has_type = guarantee_independence } } }
+	can_create_treaty = { first_country = scope:cc_delegation second_country = scope:cc_partner is_draft = no binding_period = { years = 5 } articles_to_create = { { article = defensive_pact } } }
+}
+nesnd_cc_terms_valid = {
+	save_temporary_scope_as = cc_delegation
+	nesnd_cc_national_power = yes
+	nesnd_cc_author = { KIND = $KIND$ }
+	exists = scope:cc_partner
+	NOT = { this = scope:cc_partner }
+	is_subject = no
+	scope:cc_partner = { is_country_alive = yes is_revolutionary = no is_secessionist = no is_subject = no nesnd_cc_partner = { KIND = $KIND$ } }
+	NOT = { has_war_with = scope:cc_partner }
+	NOT = { is_diplomatic_play_enemy_of = scope:cc_partner }
+	trigger_if = {
+		limit = { $KIND$ = 5 }
+		has_law = law_type:law_monarchy
+		custom_tooltip = { text = nesnd_cc_allies_tt NOT = { any_country_in_europe = { count >= 3 NOT = { c:RUS ?= this } country_counts_as_holy_alliance_member = yes } } }
+		trigger_if = { limit = { has_dlc_feature = ip5_content } has_journal_entry = je_ce_tp_tsar_gendarme_of_europe custom_tooltip = { text = nesnd_cc_holy_unfinished_tt NOT = { has_variable = je_tp_tsar_gendarme_of_europe_button_1_complete } } }
+		scope:cc_partner = { country_rank >= rank_value:great_power has_law = law_type:law_monarchy }
+		nesnd_cc_can_sign_pact = yes
+	}
+	trigger_else_if = {
+		limit = { $KIND$ = 6 }
+		has_journal_entry = je_eastern_question_russia
+		custom_tooltip = { text = nesnd_cc_kars_tt has_variable = ottomans_own_kars_at_start }
+		scope:cc_partner = { owns_entire_state_region_uncontested = STATE_KARS }
+		NOT = { has_truce_with = scope:cc_partner }
+	}
+	trigger_else_if = {
+		limit = { $KIND$ = 7 }
+		nesnd_poland_active = yes
+		nesnd_poland_guarantees_krakow = yes
+		c:KRA = { owns_entire_state_region_uncontested = STATE_MAZOVIA }
+		scope:cc_partner = { has_claim = s:STATE_MAZOVIA }
+		NOT = { has_truce_with = scope:cc_partner }
+	}
+	trigger_else_if = {
+		limit = { $KIND$ = 8 }
+		c:FRM ?= { is_subject_of = c:FRA }
+		trigger_if = { limit = { c:FRA ?= this } scope:cc_partner = { nesnd_prussian_identity = yes has_journal_entry = nesnd_prussian_rhine
+		custom_tooltip = { text = nesnd_cc_rhine_ready_tt has_modifier = nesnd_rhine_war_footing } } }
+		trigger_else = { scope:cc_partner = { c:FRA ?= this } has_journal_entry = nesnd_prussian_rhine
+		custom_tooltip = { text = nesnd_cc_rhine_ready_tt has_modifier = nesnd_rhine_war_footing } }
+		NOT = { has_truce_with = scope:cc_partner }
+	}
+	trigger_else_if = {
+		limit = { $KIND$ = 9 }
+		has_journal_entry = nesnd_austrian_italy
+		scope:cc_partner = { nesnd_canon_italian_country = yes NOT = { c:ITA ?= this } }
+		"relations(scope:cc_partner)" >= 20
+		nesnd_cc_can_sign_pact = yes
+	}
+	trigger_else_if = {
+		limit = { $KIND$ = 10 }
+		has_journal_entry = nesnd_prussian_coalition
+		custom_tooltip = { text = nesnd_cc_german_seats_tt NOT = { any_country = { count >= 3 nesnd_canon_german_partner = yes NOT = { this = scope:cc_delegation } OR = { has_treaty_alliance_with = { TARGET = scope:cc_delegation } has_treaty_defensive_pact_with = { TARGET = scope:cc_delegation } } } } }
+		scope:cc_partner = { nesnd_canon_german_partner = yes }
+		"relations(scope:cc_partner)" >= 20
+		nesnd_cc_can_sign_pact = yes
+	}
+	trigger_else_if = {
+		limit = { $KIND$ = 11 }
+		nesnd_poland_active = yes
+		owns_entire_state_region_uncontested = STATE_POSEN
+		scope:cc_partner = { has_claim = s:STATE_POSEN }
+		game_date < 1900.1.1
+		nesnd_congress_migration_target = yes
+		custom_tooltip = { text = nesnd_cc_exile_capacity_tt nesnd_cc_new_emigrants >= 1 }
+	}
+	trigger_else = { always = no }
+}
+nesnd_cc_may_file = {
+	nesnd_congress_can_propose = yes
+	custom_tooltip = { text = nesnd_cc_summon_ready_tt OR = { has_global_variable = nesnd_congress_requested has_variable = nesnd_cc_invited NOT = { has_variable = nesnd_congress_request_cooldown } } }
+	custom_tooltip = { text = nesnd_cc_peace_seat_tt NOT = { AND = { exists = global_var:nesnd_poland_peace_target OR = { has_global_variable = nesnd_congress_kind_1 has_global_variable = nesnd_congress_kind_2 } } } }
+}
+nesnd_cc_not_duplicate = {
+	custom_tooltip = { text = nesnd_cc_duplicate_tt NOR = { AND = { global_var:nesnd_congress_kind_1 ?= $KIND$ OR = { AND = { global_var:nesnd_congress_proposer_1 ?= this global_var:nesnd_congress_target_1 ?= scope:cc_partner } AND = { global_var:nesnd_congress_proposer_1 ?= scope:cc_partner global_var:nesnd_congress_target_1 ?= this } } } AND = { global_var:nesnd_congress_kind_2 ?= $KIND$ OR = { AND = { global_var:nesnd_congress_proposer_2 ?= this global_var:nesnd_congress_target_2 ?= scope:cc_partner } AND = { global_var:nesnd_congress_proposer_2 ?= scope:cc_partner global_var:nesnd_congress_target_2 ?= this } } } } }
+}
+nesnd_cc_file_valid = {
+	nesnd_cc_may_file = yes
+	nesnd_cc_terms_valid = { KIND = $KIND$ }
+	nesnd_cc_not_duplicate = { KIND = $KIND$ }
+}

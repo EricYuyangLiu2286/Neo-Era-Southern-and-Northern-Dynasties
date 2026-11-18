@@ -1,0 +1,423 @@
+﻿# All queue writes are synchronous. A round is sealed on opening; two fixed slots,
+# never append into the active round. Country proposal outcomes: 1 passed, 2 vetoed,
+# 3 withdrawn (no valid target). No forced transfer for a white peace.
+nesnd_congress_submit = {
+	if = {
+		limit = {
+			nesnd_poland_active = yes
+			nesnd_congress_room = yes
+			exists = $TARGET$
+			custom_tooltip = { text = nesnd_ui_not_congress_pending_tt NOT = { has_variable = nesnd_congress_pending } }
+		}
+		set_variable = nesnd_congress_petitioner
+		set_variable = nesnd_congress_pending
+		if = {
+			limit = {
+				custom_tooltip = { text = nesnd_ui_not_congress_kind_1_tt NOT = { has_global_variable = nesnd_congress_kind_1 } }
+			}
+			nesnd_congress_store = {
+				SLOT = 1
+				KIND = $KIND$
+				TARGET = $TARGET$
+				DEFEATED = $DEFEATED$
+			}
+		}
+		else = {
+			nesnd_congress_store = {
+				SLOT = 2
+				KIND = $KIND$
+				TARGET = $TARGET$
+				DEFEATED = $DEFEATED$
+			}
+		}
+		set_global_variable = nesnd_congress_requested
+	}
+}
+
+nesnd_congress_store = {
+	set_global_variable = {
+		name = nesnd_congress_expiry_$SLOT$
+		value = yes
+		days = 365
+	}
+	set_global_variable = { name = nesnd_congress_kind_$SLOT$ value = $KIND$ }
+	set_global_variable = { name = nesnd_congress_proposer_$SLOT$ value = this }
+	set_global_variable = { name = nesnd_congress_target_$SLOT$ value = $TARGET$ }
+	set_global_variable = { name = nesnd_congress_defeated_$SLOT$ value = $DEFEATED$ }
+}
+
+nesnd_congress_clear_slot = {
+	remove_global_variable = nesnd_congress_expiry_$SLOT$
+	remove_global_variable = nesnd_congress_kind_$SLOT$
+	remove_global_variable = nesnd_congress_proposer_$SLOT$
+	remove_global_variable = nesnd_congress_target_$SLOT$
+	remove_global_variable = nesnd_congress_defeated_$SLOT$
+}
+
+# Window API. Keep a full-queue request for the monthly retry. Invalid country clears it.
+nesnd_congress_request_peace = {
+	if = {
+		limit = { custom_tooltip = { text = nesnd_ui_exists_eq_global_var_nesnd_poland_peace_target_tt exists = global_var:nesnd_poland_peace_target } nesnd_poland_active = yes }
+		if = {
+			limit = {
+				nesnd_congress_room = yes
+				c:KRA = {
+					custom_tooltip = { text = nesnd_ui_not_congress_pending_tt NOT = { has_variable = nesnd_congress_pending } }
+				}
+			}
+			c:KRA = {
+				if = {
+					limit = { custom_tooltip = { text = nesnd_ui_global_var_nesnd_poland_peace_defeated_is_yes_tt global_var:nesnd_poland_peace_defeated ?= yes } }
+					nesnd_congress_submit = {
+						KIND = 1
+						TARGET = global_var:nesnd_poland_peace_target
+						DEFEATED = yes
+					}
+				}
+				else = {
+					nesnd_congress_submit = { KIND = 2 TARGET = c:FRA DEFEATED = no }
+				}
+			}
+			if = {
+				limit = {
+					c:KRA = { custom_tooltip = { text = nesnd_ui_congress_pending_tt has_variable = nesnd_congress_pending } }
+				}
+				remove_global_variable = nesnd_poland_peace_target
+				remove_global_variable = nesnd_poland_peace_defeated
+				# Claude audit 2026-11-17: removed nesnd_congress_peace_accepted (written here only,
+				# no reader; error.log "set but is never used").
+			}
+		}
+	}
+	else = {
+		remove_global_variable = nesnd_poland_peace_target
+		remove_global_variable = nesnd_poland_peace_defeated
+	}
+}
+
+nesnd_congress_choose_chair = {
+	remove_global_variable = nesnd_congress_chair
+	if = {
+		limit = {
+			c:FRA ?= {
+				nesnd_congress_member = yes
+				country_rank >= rank_value:great_power
+				is_power_bloc_leader = yes
+			}
+		}
+		set_global_variable = { name = nesnd_congress_chair value = c:FRA }
+	}
+	else = {
+		ordered_country = {
+			limit = { nesnd_congress_member = yes }
+			order_by = { value = global_country_ranking multiply = -1 }
+			max = 1
+			check_range_bounds = no
+			set_global_variable = { name = nesnd_congress_chair value = this }
+		}
+	}
+}
+
+nesnd_congress_begin_agenda = {
+	if = {
+		limit = {
+			nesnd_poland_active = yes
+			has_global_variable = nesnd_congress_expiry_$SLOT$
+			exists = global_var:nesnd_congress_proposer_$SLOT$
+			exists = global_var:nesnd_congress_target_$SLOT$
+		}
+		set_global_variable = {
+			name = nesnd_congress_kind
+			value = global_var:nesnd_congress_kind_$SLOT$
+		}
+		set_global_variable = {
+			name = nesnd_congress_proposer
+			value = global_var:nesnd_congress_proposer_$SLOT$
+		}
+		set_global_variable = {
+			name = nesnd_congress_target
+			value = global_var:nesnd_congress_target_$SLOT$
+		}
+		set_global_variable = {
+			name = nesnd_congress_defeated
+			value = global_var:nesnd_congress_defeated_$SLOT$
+		}
+		nesnd_congress_clear_slot = { SLOT = $SLOT$ }
+		change_global_variable = { name = nesnd_congress_serial add = 1 }
+		set_global_variable = { name = nesnd_congress_yes value = 0 }
+		set_global_variable = { name = nesnd_congress_no value = 0 }
+		set_global_variable = { name = nesnd_congress_wait value = 0 }
+		set_global_variable = nesnd_congress_voting
+		set_global_variable = { name = nesnd_congress_deadline value = yes days = 60 }
+		if = {
+			limit = { nesnd_congress_agenda_valid = yes }
+			every_country = {
+				limit = {
+					OR = { nesnd_congress_member = yes global_var:nesnd_congress_target ?= this }
+				}
+				set_variable = {
+					name = nesnd_congress_ballot
+					value = global_var:nesnd_congress_serial
+				}
+				set_variable = { name = nesnd_congress_vote_weight value = nesnd_congress_votes }
+				change_global_variable = { name = nesnd_congress_wait add = 1 }
+				save_scope_as = congress_voter
+				save_scope_value_as = {
+					name = congress_serial
+					value = global_var:nesnd_congress_serial
+				}
+				save_scope_value_as = {
+					name = congress_kind
+					value = global_var:nesnd_congress_kind
+				}
+				global_var:nesnd_congress_proposer = { save_scope_as = congress_proposer }
+				global_var:nesnd_congress_target = { save_scope_as = congress_target }
+				trigger_event = { id = nesnd_congress.1 popup = yes }
+			}
+		}
+	}
+	else = {
+		change_global_variable = { name = nesnd_congress_decisions add = 1 }
+		global_var:nesnd_congress_proposer_$SLOT$ ?= {
+			remove_variable = nesnd_congress_pending
+			remove_variable = nesnd_congress_petitioner
+			set_variable = { name = nesnd_congress_result value = 3 }
+			trigger_event = { id = nesnd_congress.2 popup = yes }
+		}
+		nesnd_congress_clear_slot = { SLOT = $SLOT$ }
+	}
+}
+
+nesnd_congress_cast_vote = {
+	if = {
+		limit = { nesnd_congress_ballot_valid = yes }
+		set_variable = {
+			name = nesnd_congress_voted
+			value = global_var:nesnd_congress_serial
+		}
+		if = {
+			limit = { always = $OPPOSE$ }
+			set_variable = { name = nesnd_congress_vote_choice value = 2 }
+		}
+		else = {
+			set_variable = { name = nesnd_congress_vote_choice value = 1 }
+		}
+		change_global_variable = {
+			name = nesnd_congress_$VOTE$
+			add = var:nesnd_congress_vote_weight
+		}
+		change_global_variable = { name = nesnd_congress_wait subtract = 1 }
+		if = {
+			limit = { c:RUS ?= this custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_kind_lt_4_tt global_var:nesnd_congress_kind < 4 } always = $OPPOSE$ }
+			set_variable = {
+				name = nesnd_congress_russian_no_serial
+				value = global_var:nesnd_congress_serial
+			}
+		}
+	}
+}
+
+nesnd_congress_resolve = {
+	# Recount only surviving eligible voters. A deposed/annexed government cannot
+	# leave a ghost vote, and rebellion cleanup prevents inherited duplicate ballots.
+	set_global_variable = { name = nesnd_congress_yes value = 0 }
+	set_global_variable = { name = nesnd_congress_no value = 0 }
+	every_country = {
+		limit = {
+			nesnd_congress_member = yes
+			var:nesnd_congress_ballot ?= global_var:nesnd_congress_serial
+			var:nesnd_congress_voted ?= global_var:nesnd_congress_serial
+		}
+		if = {
+			limit = { var:nesnd_congress_vote_choice ?= 1 }
+			change_global_variable = {
+				name = nesnd_congress_yes
+				add = var:nesnd_congress_vote_weight
+			}
+		}
+		else_if = {
+			limit = { var:nesnd_congress_vote_choice ?= 2 }
+			change_global_variable = {
+				name = nesnd_congress_no
+				add = var:nesnd_congress_vote_weight
+			}
+		}
+	}
+	remove_global_variable = nesnd_congress_voting
+	remove_global_variable = nesnd_congress_deadline
+	change_global_variable = { name = nesnd_congress_decisions add = 1 }
+	if = {
+		limit = { nesnd_congress_agenda_valid = yes }
+		if = {
+			limit = { global_var:nesnd_congress_yes > global_var:nesnd_congress_no }
+			change_global_variable = { name = nesnd_congress_passed add = 1 }
+			global_var:nesnd_congress_proposer = {
+				set_variable = { name = nesnd_congress_result value = 1 }
+			}
+			nesnd_congress_enact = yes
+		}
+		else = {
+			if = {
+				limit = { global_var:nesnd_congress_kind < 4 }
+				c:RUS ?= {
+					if = {
+						limit = {
+							nesnd_congress_member = yes
+							var:nesnd_congress_russian_no_serial ?= global_var:nesnd_congress_serial
+							var:nesnd_congress_vote_choice ?= 2
+						}
+						set_variable = nesnd_poland_vetoed_agenda
+					}
+				}
+			}
+			global_var:nesnd_congress_proposer = {
+				set_variable = { name = nesnd_congress_result value = 2 }
+				if = {
+					limit = { c:KRA ?= this }
+					set_variable = {
+						name = nesnd_poland_congress_rising_mandate
+						value = yes
+						years = 5
+					}
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = nesnd_congress_grievances }
+					}
+					set_variable = { name = nesnd_congress_grievances value = 0 }
+				}
+				change_variable = { name = nesnd_congress_grievances add = 1 }
+				je:je_ce_polish_reconquest ?= {
+					add_progress = { name = nesnd_poland_red_white_bar value = 15 }
+				}
+			}
+		}
+	}
+	else = {
+		global_var:nesnd_congress_proposer ?= {
+			set_variable = { name = nesnd_congress_result value = 3 }
+		}
+	}
+	global_var:nesnd_congress_proposer ?= {
+		remove_variable = nesnd_congress_pending
+		remove_variable = nesnd_congress_petitioner
+		set_variable = { name = nesnd_congress_proposal_cooldown value = yes years = 1 }
+		trigger_event = { id = nesnd_congress.2 popup = yes }
+	}
+	c:RUS ?= { remove_variable = nesnd_congress_russian_no_serial }
+	remove_global_variable = nesnd_congress_kind
+	remove_global_variable = nesnd_congress_proposer
+	remove_global_variable = nesnd_congress_target
+	remove_global_variable = nesnd_congress_defeated
+}
+
+nesnd_congress_enact = {
+	if = {
+		limit = { global_var:nesnd_congress_kind = 1 }
+		set_local_variable = { name = congress_land_limit value = 1 }
+		if = {
+			limit = {
+				global_var:nesnd_congress_proposer = { has_variable = nesnd_poland_keeping_faith }
+				has_global_variable = nesnd_poland_france_will
+				global_var:nesnd_poland_france_will >= 60
+			}
+			set_local_variable = { name = congress_land_limit value = 2 }
+		}
+		global_var:nesnd_congress_target = {
+			ordered_scope_state = {
+				limit = { nesnd_poland_restoration_state = yes }
+				order_by = state_population
+				max = local_var:congress_land_limit
+				check_range_bounds = no
+				set_state_owner = global_var:nesnd_congress_proposer
+			}
+		}
+	}
+	else_if = {
+		limit = { global_var:nesnd_congress_kind = 2 }
+		global_var:nesnd_congress_target = {
+			if = {
+				limit = { nesnd_poland_guarantees_krakow = no }
+				create_treaty = {
+					name = nesnd_congress_guarantee_treaty
+					first_country = this
+					second_country = c:KRA
+					is_draft = no
+					binding_period = { years = 5 }
+					articles_to_create = {
+						{ article = guarantee_independence source_country = this target_country = c:KRA }
+					}
+				}
+			}
+			if = {
+				limit = { nesnd_poland_guarantees_krakow = yes }
+				set_variable = { name = nesnd_congress_guarantee_pledge value = c:KRA years = 5 }
+			}
+			else = {
+				# A vote cannot supply a guarantee that the treaty system did not establish.
+				c:KRA = {
+					set_variable = { name = nesnd_congress_result value = 3 }
+				}
+				change_global_variable = { name = nesnd_congress_passed subtract = 1 }
+			}
+		}
+	}
+	else_if = {
+		limit = { global_var:nesnd_congress_kind = 3 }
+		global_var:nesnd_congress_target = {
+			nesnd_polish_exile_register = { SHARE = 0.05 }
+			set_variable = { name = nesnd_congress_migration_cooldown value = yes years = 5 }
+		}
+	}
+	else_if = {
+		limit = { global_var:nesnd_congress_kind = 4 }
+		global_var:nesnd_congress_target = {
+			add_modifier = { name = nesnd_congress_sanction years = 5 }
+		}
+		global_var:nesnd_congress_proposer = {
+			remove_variable = nesnd_poland_sanctions_claim
+		}
+		nesnd_congress_reduce_forest = yes
+	}
+}
+
+# Country-independent once-per-resolution effect. The contextless JE is looked up
+# through an involved country, so it can be mutated exactly once without FRA.
+nesnd_congress_reduce_forest = {
+	random_country = {
+		limit = { is_involved_in_journal_entry = je_forest_of_bayonets }
+		je:je_forest_of_bayonets ?= {
+			add_progress = { name = forest_of_bayonets_progress_bar value = -5 }
+		}
+	}
+}
+
+nesnd_congress_expire_slot = {
+	if = {
+		limit = {
+			has_global_variable = nesnd_congress_kind_$SLOT$
+			NOT = { has_global_variable = nesnd_congress_expiry_$SLOT$ }
+		}
+		global_var:nesnd_congress_proposer_$SLOT$ ?= {
+			remove_variable = nesnd_congress_pending
+			remove_variable = nesnd_congress_petitioner
+			set_variable = { name = nesnd_congress_result value = 3 }
+			trigger_event = { id = nesnd_congress.2 popup = yes }
+		}
+		nesnd_congress_clear_slot = { SLOT = $SLOT$ }
+	}
+}
+
+nesnd_congress_request_sitting = {
+	set_variable = { name = nesnd_congress_request_cooldown value = yes years = 5 }
+	add_modifier = { name = nesnd_congress_request_cost years = 1 }
+	set_global_variable = nesnd_congress_requested
+	# The requesting country receives the receipt; the ballot still goes to all eligible voters.
+	hidden_effect = {
+		if = {
+			limit = { is_ai = no }
+			global_var:nesnd_congress_chair ?= { save_scope_as = congress_recipient }
+			trigger_event = { id = nesnd_congress.4 popup = yes }
+		}
+	}
+}

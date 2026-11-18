@@ -1,0 +1,534 @@
+﻿# Political balance of the Wu subjects: enrolment, monthly bookkeeping, fixing of positions, and the four endings.
+# The war itself (court in exile, restoration and republican journals, collapse, holdouts) is not handled here.
+
+# Wu scope, from the opening of ce_usm_conflicts_within.
+nesnd_south_tilt_enrol = {
+    if = { limit = { c:USM ?= this NOT = { has_variable = nesnd_tilt_month } }
+        set_variable = { name = nesnd_tilt_month value = 0 }
+        
+        set_variable = { name = nesnd_pledge_milli value = 0 }
+        # Default stance before the opening event nesnd_south_tilt.1, where an AI court follows the Zheng 9 times in 10 (author 2026-11-17).
+        set_variable = { name = nesnd_south_stance value = 2 }
+        set_variable = { name = nesnd_tilt_events_done value = 1 }
+        trigger_event = { id = nesnd_south_tilt.1 popup = yes }
+        # Starting balances (2026-11-17): the overseas states start neutral, so the Zheng side holds about 30% of the
+        # south at the start instead of 85% (WORK/reports/2026-11-17-observer-1839b/sim/start_values.txt, option C).
+        c:SIH ?= { nesnd_south_tilt_enrol_one = { START = -30 LEGACY = -1 } }
+        c:HNA ?= { nesnd_south_tilt_enrol_one = { START = -30 LEGACY = -1 } }
+        c:GNG ?= { nesnd_south_tilt_enrol_one = { START = -30 LEGACY = -1 } }
+        c:PHI ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:YN1 ?= { nesnd_south_tilt_enrol_one = { START = 11 LEGACY = 0 } }
+        c:DEI ?= { nesnd_south_tilt_enrol_one = { START = 14 LEGACY = 0 } }
+        c:BUR ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:DAI ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:SIA ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:CHP ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:CMI ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:LUA ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:CAM ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:BRU ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:BLG ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:LAN ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:JMB ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:SAK ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:ACE ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:SRK ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:YOG ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:BAL ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:BNJ ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+        c:KTI ?= { nesnd_south_tilt_enrol_one = { START = 8 LEGACY = 0 } }
+    }
+}
+# Subject scope.
+nesnd_south_tilt_enrol_one = {
+    if = { limit = { is_country_alive = yes is_subject_of = c:USM NOT = { has_variable = nesnd_tilt_enrolled } }
+        set_variable = nesnd_tilt_enrolled
+        set_variable = { name = nesnd_tilt_value value = $START$ }
+        set_variable = { name = nesnd_tilt_start value = $START$ }
+        set_variable = { name = nesnd_tilt_prev value = $START$ }
+        set_variable = { name = nesnd_tilt_delta value = 0 }
+        set_variable = { name = nesnd_tilt_legacy value = $LEGACY$ }
+        nesnd_south_tilt_set_stance = yes
+        add_journal_entry = { type = nesnd_south_allegiance }
+    }
+}
+# Subject scope. The journal's immediate block; enrolment has normally set everything already.
+nesnd_south_tilt_start = {
+    if = { limit = { NOT = { has_variable = nesnd_tilt_value } }
+        set_variable = nesnd_tilt_enrolled
+        set_variable = { name = nesnd_tilt_value value = 0 }
+        set_variable = { name = nesnd_tilt_prev value = 0 }
+        set_variable = { name = nesnd_tilt_delta value = 0 }
+        set_variable = { name = nesnd_tilt_legacy value = 0 }
+    }
+}
+# Subject scope, monthly. The bar is the single writer; these variables only mirror it for the board and for triggers.
+nesnd_south_tilt_sync = {
+    if = { limit = { has_journal_entry = nesnd_south_allegiance }
+        # The journal's bar starts at 0: the starting balance is written into it once, on the first pulse, from the
+        # saved start (setting it from the journal's immediate block did not take: observer game of 2026-11-17).
+        # On that pulse the variables take the start directly and the bar is not read back (journal-state.md: write the
+        # bar absolutely, never read it back in the same cycle). In a game already under way the bar is left alone.
+        if = { limit = { hidden_trigger = { NOT = { has_variable = nesnd_tilt_seeded } } hidden_trigger = { has_variable = nesnd_tilt_start } c:USM ?= { nesnd_tilt_month_value <= 2 } }
+            set_variable = nesnd_tilt_seeded
+            je:nesnd_south_allegiance ?= { set_bar_progress = { name = nesnd_south_tilt_bar value = owner.var:nesnd_tilt_start } }
+            set_variable = { name = nesnd_tilt_value value = var:nesnd_tilt_start }
+            set_variable = { name = nesnd_tilt_prev value = var:nesnd_tilt_start }
+            set_variable = { name = nesnd_tilt_delta value = 0 }
+        }
+        else = {
+            if = { limit = { hidden_trigger = { NOT = { has_variable = nesnd_tilt_seeded } } } set_variable = nesnd_tilt_seeded }
+            set_variable = { name = nesnd_tilt_prev value = nesnd_tilt_now }
+            set_variable = { name = nesnd_tilt_value value = nesnd_tilt_bar_now }
+            set_variable = { name = nesnd_tilt_delta value = { value = nesnd_tilt_now subtract = var:nesnd_tilt_prev } }
+        }
+        nesnd_south_tilt_set_stance = yes
+        if = { limit = { nesnd_tilt_group_indo = yes nesnd_tilt_now > 16 } set_variable = nesnd_tilt_returning }
+        else_if = { limit = { hidden_trigger = { has_variable = nesnd_tilt_returning } nesnd_tilt_now < 12 } remove_variable = nesnd_tilt_returning }
+    }
+}
+# The board and the war-side scripts still read nesnd_south_stance: 1 Ming, 2 Wu, 3 neutral.
+nesnd_south_tilt_set_stance = {
+    if = { limit = { nesnd_tilt_zone_ming = yes } set_variable = { name = nesnd_south_stance value = 1 } }
+    else_if = { limit = { nesnd_tilt_zone_wu = yes } set_variable = { name = nesnd_south_stance value = 2 } }
+    else = { set_variable = { name = nesnd_south_stance value = 3 } }
+}
+nesnd_south_tilt_cleanup_country = {
+    remove_variable = nesnd_tilt_enrolled remove_variable = nesnd_tilt_value remove_variable = nesnd_tilt_prev
+    remove_variable = nesnd_tilt_start remove_variable = nesnd_tilt_seeded
+    remove_variable = nesnd_tilt_delta remove_variable = nesnd_tilt_legacy remove_variable = nesnd_tilt_declared
+    remove_variable = nesnd_tilt_declare_cooldown remove_variable = nesnd_tilt_appease remove_variable = nesnd_tilt_envoy remove_variable = nesnd_tilt_concession remove_variable = nesnd_tilt_returning
+}
+
+# Wu scope, monthly pulse of ce_usm_conflicts_within. Every event is worth 4 pressure; 25 events fill the bar in July 1839.
+nesnd_south_tilt_month = {
+    nesnd_south_initialize = yes
+    if = { limit = { NOT = { has_variable = nesnd_tilt_month } } nesnd_south_tilt_enrol = yes }
+    change_variable = { name = nesnd_tilt_month add = 1 }
+    nesnd_south_tilt_dispatch = yes
+    # After month 42 the count keeps the same pace (24 per 42 months) with no event behind it, so pressure taken away by
+    # court events only delays the lock (author, 2026-11-17: an observer game stuck at 91 with the count capped at 25).
+    if = { limit = { nesnd_tilt_month_value >= 42 nesnd_tilt_events_done_value >= 24 }
+        set_variable = { name = nesnd_tilt_events_done value = { value = nesnd_tilt_month_value multiply = 24 divide = 42 floor = yes add = 1 min = 25 } }
+    }
+    # Events give 4 each; the court events and the First Minister's case add their lasting share on top.
+    set_variable = { name = usm_conflicts_within_tracker value = { value = nesnd_tilt_events_done_value multiply = 4 add = nesnd_south_pressure_extra_value } }
+    clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+    # Reform pledge: the share of subjects that back the court's own side.
+    # The inputs are kept in variables (readable from any save) and written to debug.log each month, so a test game
+    # shows how the pledge actually grew (added 2026-11-17 after two games filled it by month 27 against the estimate).
+    set_variable = { name = nesnd_tilt_dbg_wu value = nesnd_tilt_weight_wu }
+    set_variable = { name = nesnd_tilt_dbg_ming value = nesnd_tilt_weight_ming }
+    set_variable = { name = nesnd_tilt_dbg_total value = nesnd_tilt_weight_total }
+    set_variable = { name = nesnd_tilt_dbg_gain value = nesnd_tilt_pledge_gain }
+    change_variable = { name = nesnd_pledge_milli add = var:nesnd_tilt_dbg_gain }
+    clamp_variable = { name = nesnd_pledge_milli min = 0 max = 1000 }
+    debug_log = "NESND_PLEDGE [TimeKeeper.GetCurrentDate.GetString] month=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_month').GetValue|0] stance=[THIS.GetCountry.MakeScope.Var('nesnd_south_stance').GetValue|0] wu=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_dbg_wu').GetValue|1] ming=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_dbg_ming').GetValue|1] total=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_dbg_total').GetValue|1] gain=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_dbg_gain').GetValue|0] pledge=[THIS.GetCountry.MakeScope.Var('nesnd_pledge_milli').GetValue|0] pressure=[THIS.GetCountry.MakeScope.Var('usm_conflicts_within_tracker').GetValue|0]"
+    every_country = {
+        limit = { nesnd_tilt_member = yes }
+        set_variable = { name = nesnd_tilt_dbg_army value = army_size }
+        set_variable = { name = nesnd_tilt_dbg_army_all value = army_size_including_conscripts }
+        debug_log = "NESND_TILT [THIS.GetCountry.GetNameNoFormatting] balance=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_value').GetValue|0] army_size=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_dbg_army').GetValue|0] with_conscripts=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_dbg_army_all').GetValue|0]"
+    }
+    set_variable = { name = nesnd_tilt_dbg_army value = army_size }
+    set_variable = { name = nesnd_tilt_dbg_army_all value = army_size_including_conscripts }
+    debug_log = "NESND_TILT [THIS.GetCountry.GetNameNoFormatting] (court) army_size=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_dbg_army').GetValue|0] with_conscripts=[THIS.GetCountry.MakeScope.Var('nesnd_tilt_dbg_army_all').GetValue|0]"
+    set_variable = { name = nesnd_compact_progress value = { value = var:nesnd_pledge_milli divide = 10 } }
+    if = { limit = { var:nesnd_pledge_milli >= 1000 } set_global_variable = nesnd_south_peace_forced }
+    # The existing assassination case keeps its own start until batch 2 moves it.
+    
+    nesnd_refresh_south_display = yes
+}
+# Hook for the event chain (batches 2 and 3). In batch 1 the month only advances the pressure.
+nesnd_south_tilt_fire_event = {
+    clear_saved_scope = nesnd_tilt_subject
+    random_country = { limit = { nesnd_tilt_member = yes is_subject_of = root } save_scope_as = nesnd_tilt_subject }
+    # Salt licences only for the three mainland provinces; the kingdoms and sultanates only get the envoy and the disaster.
+    if = { limit = { exists = scope:nesnd_tilt_subject scope:nesnd_tilt_subject = { nesnd_tilt_mainland = yes } }
+        random_list = {
+            1 = { trigger_event = { id = nesnd_south_tilt.50 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.51 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.52 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.53 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.54 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.56 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.57 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.55 popup = yes } }
+        }
+    }
+    else_if = { limit = { exists = scope:nesnd_tilt_subject scope:nesnd_tilt_subject = { nesnd_tilt_chinese_admin = yes } }
+        random_list = {
+            1 = { trigger_event = { id = nesnd_south_tilt.50 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.51 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.52 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.53 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.54 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.56 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.57 popup = yes } }
+        }
+    }
+    else_if = { limit = { exists = scope:nesnd_tilt_subject }
+        random_list = {
+            1 = { trigger_event = { id = nesnd_south_tilt.54 popup = yes } }
+            1 = { trigger_event = { id = nesnd_south_tilt.57 popup = yes } }
+        }
+    }
+}
+
+# Wu scope, completion of ce_usm_conflicts_within. The subjects' own journals answer the global variable.
+nesnd_south_lock = {
+    if = { limit = { c:USM ?= this custom_tooltip = { text = nesnd_ui_not_south_locked_tt NOT = { has_global_variable = nesnd_south_locked } } }
+        set_global_variable = nesnd_south_locked
+        nesnd_notify_foreign_countries = yes
+        c:JAP ?= { trigger_event = { id = usm_civilwar.23 days = 1 popup = yes } }
+        trigger_event = { id = nesnd_south_tilt.101 days = 10 }
+    }
+}
+
+# Subject scope. The author's follow-up notices (flavorUSM.8, .9, .10: Wu taking Sichuan, Yunnan, Guangxi) wait for these
+# marks. They used to be set by the old choice event usm_civilwar.1.
+nesnd_south_mark_opposition = {
+    if = { limit = { c:SIH ?= this } set_global_variable = sih_anti_wuu_choice_1 set_global_variable = sih_anti_wuu_choice_2 }
+    if = { limit = { c:GNG ?= this } set_global_variable = sih_anti_gng_choice }
+}
+# Subject scope. A country that did not answer in time takes the plain course of its zone.
+nesnd_south_default_fate = {
+    if = { limit = { NOT = { has_variable = nesnd_fate } }
+        if = { limit = { nesnd_tilt_zone_wu = yes } set_variable = { name = nesnd_fate value = 6 } }
+        else_if = { limit = { nesnd_tilt_zone_neutral = yes } set_variable = { name = nesnd_fate value = 5 } }
+        else_if = { limit = { has_global_variable = nesnd_south_peace_forced } set_variable = { name = nesnd_fate value = 5 } }
+        else_if = { limit = { nesnd_tilt_mainland = yes }
+            set_variable = { name = nesnd_fate value = 1 }
+            set_variable = usm_opposition_country nesnd_south_mark_opposition = yes
+        }
+        else = { set_variable = { name = nesnd_fate value = 4 } }
+    }
+}
+
+# Wu scope, ten days after the positions were fixed, and again every week while the play could not be opened.
+nesnd_south_resolve = {
+    if = { limit = {
+            c:USM ?= this
+            has_global_variable = nesnd_south_locked
+            NOT = { has_variable = nesnd_south_resolved }
+            NOT = { has_global_variable = usm_civilwar_occured }
+            NOT = { has_global_variable = nesnd_south_settled }
+        }
+        every_country = { limit = { nesnd_tilt_member = yes } nesnd_south_default_fate = yes }
+        # A full reform pledge decides the outcome by the court's own side alone, whatever the subjects' balances are.
+        if = { limit = { has_global_variable = nesnd_south_peace_forced nesnd_board_stance_value = 1 } nesnd_south_peace_ming = yes }
+        else_if = { limit = { has_global_variable = nesnd_south_peace_forced } nesnd_south_peace_wu = yes }
+        # With Shu, Chu and Huai all gone there is nobody to fight: the court's own side prevails without a war.
+        else_if = { limit = { nesnd_tilt_no_rebel_left = yes nesnd_board_stance_value = 1 } nesnd_south_peace_ming = yes }
+        else_if = { limit = { nesnd_tilt_no_rebel_left = yes } nesnd_south_peace_wu = yes }
+        # Full pressure without a full pledge always means the civil war. If no province has risen of its own accord,
+        # the mainland province that stands furthest from Wu does.
+        else = {
+            if = { limit = { NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country } } }
+                ordered_country = {
+                    limit = { nesnd_tilt_member = yes nesnd_tilt_mainland = yes is_subject_of = c:USM }
+                    order_by = { value = nesnd_tilt_now multiply = -1 }
+                    set_variable = { name = nesnd_fate value = 1 }
+                    set_variable = usm_opposition_country nesnd_south_mark_opposition = yes
+                }
+            }
+            every_country = { limit = { nesnd_tilt_member = yes } nesnd_south_apply_fate = { PEACE = no } }
+            nesnd_ming_prepare_accession = yes
+            nesnd_open_southern_war = yes
+            # usm_civilwar.2 gives Wu ce_usm_suppress_rebellion; this path opens the war itself, so the event's own
+            # nesnd_open_southern_war call does nothing (2026-11-17: Wu went through a whole war without the journal).
+            if = { limit = { has_global_variable = usm_civilwar_occured } set_variable = nesnd_south_resolved
+                if = { limit = { NOT = { has_journal_entry = ce_usm_suppress_rebellion } } trigger_event = { id = usm_civilwar.2 popup = yes } }
+            }
+            else = { trigger_event = { id = nesnd_south_tilt.101 days = 7 } }
+        }
+    }
+}
+
+# Subject scope. PEACE = yes when no civil war follows: those seeking independence then fight for it one by one,
+# and those who turned to a foreign power stay where they are.
+nesnd_south_apply_fate = {
+    if = { limit = { has_variable = nesnd_fate NOT = { has_variable = nesnd_fate_applied } }
+        set_variable = nesnd_fate_applied
+        if = { limit = { var:nesnd_fate = 3 }
+            if = { limit = { always = $PEACE$ }
+                var:nesnd_fate_patron ?= { trigger_event = { id = nesnd_south_tilt.120 days = 3 popup = yes } }
+            }
+            else_if = { limit = { exists = var:nesnd_fate_patron var:nesnd_fate_patron = { is_country_alive = yes } }
+                save_scope_as = nesnd_fate_client
+                make_independent = yes
+                var:nesnd_fate_patron = { create_diplomatic_pact = { country = scope:nesnd_fate_client type = protectorate } }
+                clear_saved_scope = nesnd_fate_client
+            }
+        }
+        else_if = { limit = { OR = { var:nesnd_fate = 4 var:nesnd_fate = 7 } }
+            if = { limit = { var:nesnd_fate = 7 } nesnd_south_self_rule = yes }
+            # Overseas breakaways always have to fight for it. Shu, Chu and Huai going their own way fight only when
+            # the south is settled without a war; during the civil war they simply leave.
+            if = { limit = { OR = { var:nesnd_fate = 4 always = $PEACE$ } is_direct_subject_of = c:USM }
+                nesnd_south_secession_war = yes
+                if = { limit = { always = $PEACE$ } c:USM = { set_variable = nesnd_south_peace_secession } }
+            }
+            else_if = { limit = { is_subject_of = c:USM } make_independent = yes }
+        }
+        else_if = { limit = { var:nesnd_fate = 5 is_subject_of = c:USM } nesnd_indochina_stand_aside = yes }
+        else_if = { limit = { var:nesnd_fate = 6 }
+            set_variable = nesnd_south_loyal_pending
+            add_modifier = { name = USM_loyal_subject months = 120 }
+        }
+    }
+}
+
+# Subject scope. The subject breaks away and the court goes to war at once. Both sides have a demand: the court takes
+# Shu, Chu or Huai back whole (annexation) and the overseas subjects back as subjects (a puppet as a puppet, everyone
+# else as a dominion); the breakaway demands the court's humiliation.
+nesnd_south_secession_war = {
+    save_scope_as = nesnd_fate_seceder
+    if = { limit = { OR = { is_subject_type = subject_type_puppet is_subject_type = subject_type_colony } } set_variable = nesnd_fate_was_puppet }
+    make_independent = yes
+    c:USM ?= {
+        save_scope_as = nesnd_fate_court
+        if = { limit = { scope:nesnd_fate_seceder = { nesnd_tilt_mainland = yes } }
+            create_diplomatic_play = {
+                name = dp_nesnd_order_unification target_country = scope:nesnd_fate_seceder type = dp_nesnd_order_unification war = yes
+                add_war_goal = { holder = scope:nesnd_fate_seceder target_country = scope:nesnd_fate_court type = humiliation }
+            }
+        }
+        else_if = { limit = { scope:nesnd_fate_seceder = { has_variable = nesnd_fate_was_puppet } }
+            create_diplomatic_play = {
+                name = dp_nesnd_south_resubjugation_puppet target_country = scope:nesnd_fate_seceder type = dp_nesnd_south_resubjugation_puppet war = yes
+                add_war_goal = { holder = scope:nesnd_fate_seceder target_country = scope:nesnd_fate_court type = humiliation }
+            }
+        }
+        else = {
+            create_diplomatic_play = {
+                name = dp_nesnd_south_resubjugation target_country = scope:nesnd_fate_seceder type = dp_nesnd_south_resubjugation war = yes
+                add_war_goal = { holder = scope:nesnd_fate_seceder target_country = scope:nesnd_fate_court type = humiliation }
+            }
+        }
+    }
+    remove_variable = nesnd_fate_was_puppet
+    clear_saved_scope = nesnd_fate_seceder
+    clear_saved_scope = nesnd_fate_court
+}
+
+# Subject scope: the three provinces going their own way.
+nesnd_south_self_rule = {
+    if = { limit = { c:SIH ?= this }
+        activate_law = law_type:law_monarchy
+        random_scope_character = {
+            limit = { has_template = USM_liu_zhongming is_character_alive = yes is_ruler_of_own_country = no }
+            set_character_as_ruler = yes
+        }
+        set_variable = nesnd_postwar_great_han
+    }
+    else_if = { limit = { c:HNA ?= this }
+        set_variable = ce_usm_republican_revolution_tag
+        activate_law = law_type:law_presidential_republic
+        activate_law = law_type:law_nesnd_keju_voting
+        trigger_event = { id = nesnd_south_tilt.130 popup = yes }
+    }
+    else_if = { limit = { c:GNG ?= this }
+        trigger_event = { id = nesnd_south_tilt.131 popup = yes }
+    }
+}
+nesnd_south_huai_theocracy = {
+    every_scope_character = {
+        limit = { OR = { has_template = USM_zhu_zhongying has_template = USM_zhu_jingyin } is_character_alive = yes }
+        kill_character = { hidden = yes }
+    }
+    clear_saved_scope = nesnd_huai_usurper
+    if = { limit = { any_scope_character = { has_template = nesnd_yang_xiuqing is_character_alive = yes } }
+        random_scope_character = { limit = { has_template = nesnd_yang_xiuqing is_character_alive = yes } save_scope_as = nesnd_huai_usurper }
+    }
+    else = { create_character = { template = nesnd_yang_xiuqing save_scope_as = nesnd_huai_usurper } }
+    activate_law = law_type:law_theocracy
+    activate_law = law_type:law_nesnd_keju_voting
+    scope:nesnd_huai_usurper ?= { set_character_as_ruler = yes }
+    clear_saved_scope = nesnd_huai_usurper
+}
+
+# Wu scope. The old lord of Wu dies, his son takes the throne and the Ming emperor abdicates.
+# Called only once the outcome is certain: from nesnd_open_southern_war after the play exists, or from the peaceful ending.
+nesnd_south_accession = {
+    if = { limit = { c:USM ?= this NOT = { has_variable = tag_WUU_var } }
+        every_scope_character = {
+            limit = { has_template = USM_zheng_qin is_character_alive = yes }
+            kill_character = { hidden = yes }
+        }
+        clear_saved_scope = nesnd_wu_ruler
+        if = { limit = { any_country = { any_scope_character = { has_template = USM_zheng_Ju OR = { owner = root is_ruler_of_own_country = no } is_character_alive = yes } } }
+            random_country = {
+                limit = { any_scope_character = { has_template = USM_zheng_Ju OR = { owner = root is_ruler_of_own_country = no } is_character_alive = yes } }
+                random_scope_character = {
+                    limit = { has_template = USM_zheng_Ju OR = { owner = root is_ruler_of_own_country = no } is_character_alive = yes }
+                    transfer_character = root
+                    save_scope_as = nesnd_wu_ruler
+                }
+            }
+        }
+        else_if = { limit = { NOT = { has_global_variable = nesnd_born_usm_zheng_ju } year < 1890 }
+            create_character = { template = USM_zheng_Ju save_scope_as = nesnd_wu_ruler }
+        }
+        if = { limit = { exists = scope:nesnd_wu_ruler } scope:nesnd_wu_ruler = { set_character_as_ruler = yes } }
+        else = {
+            create_character = { last_name = "ce_Zheng" first_name = "name_yuan" age = 35 culture = cu:ce_wuu interest_group = ig_industrialists ideology = ideology_reformer ruler = yes }
+        }
+        set_variable = tag_WUU_var
+        if = { limit = { has_modifier = nesnd_south_regency } remove_modifier = nesnd_south_regency }
+        nesnd_ming_mark_retained_royals = yes
+        set_variable = ce_usm_conflict_evoked
+        remove_variable = flavor_USM_crisis_intro
+        set_variable = nesnd_accession_executed
+        clear_saved_scope = nesnd_wu_ruler
+        trigger_event = { id = nesnd_south_tilt.110 popup = yes }
+    }
+}
+
+# Wu scope. Nobody stands against the Zheng: Wu is founded without a war.
+nesnd_south_peace_wu = {
+    set_variable = nesnd_south_resolved
+    set_variable = nesnd_south_peaceful
+    set_variable = nesnd_south_peace_committed
+    every_country = { limit = { nesnd_tilt_member = yes } nesnd_south_apply_fate = { PEACE = yes } }
+    nesnd_ming_prepare_accession = yes
+    nesnd_south_accession = yes
+    set_global_variable = nesnd_south_settled
+    set_variable = usm_government_winner_civilwar
+    add_modifier = { name = USM_wuu_post_war_modifier months = 360 is_decaying = yes }
+    nesnd_south_grant_loyal_rewards = yes
+}
+# Wu scope. The court stood by the Ming house and no subject sides with the Zheng: the southern office is purged.
+nesnd_south_peace_ming = {
+    set_variable = nesnd_south_resolved
+    set_variable = nesnd_south_peaceful
+    set_variable = nesnd_south_peace_committed
+    set_variable = nesnd_ming_preserved
+    every_country = { limit = { has_variable = usm_opposition_country } remove_variable = usm_opposition_country }
+    every_country = { limit = { nesnd_tilt_member = yes } nesnd_south_apply_fate = { PEACE = yes } }
+    every_country = {
+        every_scope_character = {
+            limit = { OR = { has_template = USM_zheng_qin has_template = USM_zheng_Ju } is_character_alive = yes is_ruler_of_own_country = no }
+            kill_character = { hidden = yes }
+        }
+    }
+    random_scope_character = {
+        limit = { has_template = USM_deng_mingyu is_character_alive = yes }
+        set_as_interest_group_leader = yes
+    }
+    remove_variable = flavor_USM_crisis_intro
+    if = { limit = { has_modifier = nesnd_south_regency } remove_modifier = nesnd_south_regency }
+    set_global_variable = nesnd_south_settled
+    trigger_event = { id = nesnd_south_tilt.111 popup = yes }
+}
+
+# Wu scope. Loyal subjects are rewarded after the war (usm_civilwar.8) or at the peaceful founding.
+nesnd_south_grant_loyal_rewards = {
+    every_country = {
+        limit = { has_variable = nesnd_south_loyal_pending is_subject_of = root }
+        remove_variable = nesnd_south_loyal_pending
+        if = { limit = { OR = { is_subject_type = subject_type_puppet is_subject_type = subject_type_colony } } change_subject_type = subject_type_dominion }
+        else_if = { limit = { is_subject_type = subject_type_dominion } change_subject_type = subject_type_protectorate }
+        add_modifier = { name = nesnd_south_loyal_autonomy months = 120 }
+    }
+}
+
+# ---- Event chain, buttons and links (batches 2-4) ----
+# Subject scope. A timed monthly source named after the event slot.
+nesnd_tilt_give = {
+    if = { limit = { nesnd_tilt_member = yes }
+        set_variable = { name = nesnd_tilt_ev_$SLOT$ value = $VALUE$ months = $MONTHS$ }
+    }
+}
+# The generic pool rotates through four slots so that overlapping events do not overwrite each other.
+nesnd_tilt_give_generic = {
+    if = { limit = { NOT = { has_variable = nesnd_tilt_evg_1 } } set_variable = { name = nesnd_tilt_evg_1 value = $VALUE$ months = 6 } }
+    else_if = { limit = { NOT = { has_variable = nesnd_tilt_evg_2 } } set_variable = { name = nesnd_tilt_evg_2 value = $VALUE$ months = 6 } }
+    else_if = { limit = { NOT = { has_variable = nesnd_tilt_evg_3 } } set_variable = { name = nesnd_tilt_evg_3 value = $VALUE$ months = 6 } }
+    else = { set_variable = { name = nesnd_tilt_evg_4 value = $VALUE$ months = 6 } }
+}
+# Wu scope, monthly. A special event due this month always happens; otherwise a generic one fills in when the count is behind.
+nesnd_south_tilt_dispatch = {
+    if = { limit = { var:nesnd_tilt_month = 27 NOT = { has_variable = nesnd_tilt_special_8 } }
+        set_variable = nesnd_tilt_special_8
+        change_variable = { name = nesnd_tilt_events_done add = 1 }
+        set_variable = nesnd_chen_case_due
+        trigger_event = { id = nesnd_chen.2 days = 0 }
+    }
+        else_if = { limit = { var:nesnd_tilt_month = 3 NOT = { has_variable = nesnd_tilt_special_2 } }
+            set_variable = nesnd_tilt_special_2
+            change_variable = { name = nesnd_tilt_events_done add = 1 }
+            trigger_event = { id = nesnd_south_tilt.2 popup = yes }
+        }
+        else_if = { limit = { var:nesnd_tilt_month = 6 NOT = { has_variable = nesnd_tilt_special_3 } }
+            set_variable = nesnd_tilt_special_3
+            change_variable = { name = nesnd_tilt_events_done add = 1 }
+            trigger_event = { id = nesnd_south_tilt.3 popup = yes }
+        }
+        else_if = { limit = { var:nesnd_tilt_month = 12 NOT = { has_variable = nesnd_tilt_special_4 } }
+            set_variable = nesnd_tilt_special_4
+            change_variable = { name = nesnd_tilt_events_done add = 1 }
+            trigger_event = { id = nesnd_south_tilt.4 popup = yes }
+        }
+        else_if = { limit = { var:nesnd_tilt_month = 15 NOT = { has_variable = nesnd_tilt_special_5 } }
+            set_variable = nesnd_tilt_special_5
+            change_variable = { name = nesnd_tilt_events_done add = 1 }
+            trigger_event = { id = nesnd_south_tilt.5 popup = yes }
+        }
+        else_if = { limit = { var:nesnd_tilt_month = 21 NOT = { has_variable = nesnd_tilt_special_6 } }
+            set_variable = nesnd_tilt_special_6
+            change_variable = { name = nesnd_tilt_events_done add = 1 }
+            trigger_event = { id = nesnd_south_tilt.6 popup = yes }
+        }
+        else_if = { limit = { var:nesnd_tilt_month = 24 NOT = { has_variable = nesnd_tilt_special_7 } }
+            set_variable = nesnd_tilt_special_7
+            change_variable = { name = nesnd_tilt_events_done add = 1 }
+            trigger_event = { id = nesnd_south_tilt.7 popup = yes }
+        }
+        else_if = { limit = { var:nesnd_tilt_month = 30 NOT = { has_variable = nesnd_tilt_special_9 } }
+            set_variable = nesnd_tilt_special_9
+            change_variable = { name = nesnd_tilt_events_done add = 1 }
+            trigger_event = { id = nesnd_south_tilt.9 popup = yes }
+        }
+        else_if = { limit = { nesnd_tilt_events_done_value < nesnd_tilt_events_due }
+            change_variable = { name = nesnd_tilt_events_done add = 1 }
+            nesnd_south_tilt_fire_event = yes
+        }
+}
+# Wu scope: appease the subject closest to the line on the wrong side of it.
+nesnd_south_appease = {
+    clear_saved_scope = nesnd_appease_target
+    if = { limit = { nesnd_board_stance_value = 1 }
+        ordered_country = {
+            limit = { nesnd_tilt_member = yes NOT = { nesnd_tilt_zone_ming = yes } NOT = { has_variable = nesnd_tilt_appease } }
+            order_by = { value = nesnd_tilt_now multiply = -1 }
+            save_scope_as = nesnd_appease_target
+        }
+        scope:nesnd_appease_target ?= { set_variable = { name = nesnd_tilt_appease value = -1 months = 6 } }
+    }
+    else = {
+        ordered_country = {
+            limit = { nesnd_tilt_member = yes NOT = { nesnd_tilt_zone_wu = yes } NOT = { has_variable = nesnd_tilt_appease } }
+            order_by = nesnd_tilt_now
+            save_scope_as = nesnd_appease_target
+        }
+        scope:nesnd_appease_target ?= { set_variable = { name = nesnd_tilt_appease value = 1 months = 6 } }
+    }
+    set_variable = { name = nesnd_appease_cooldown months = 6 }
+    clear_saved_scope = nesnd_appease_target
+}
+# Wu scope, weekly: Wu and its subjects fight better against a great power or a breakaway subject.
+nesnd_south_wartime_refresh = {
+    every_country = {
+        limit = {
+            OR = { c:USM ?= this is_subject_of = c:USM }
+            is_at_war = yes
+            OR = {
+                any_country = { country_rank >= rank_value:great_power has_war_with = prev }
+                any_scope_war = { diplomatic_play ?= { OR = { is_diplomatic_play_type = dp_independence is_diplomatic_play_type = dp_nesnd_southern_independence is_diplomatic_play_type = dp_nesnd_south_resubjugation is_diplomatic_play_type = dp_nesnd_south_resubjugation_puppet is_diplomatic_play_type = dp_nesnd_order_unification } } }
+            }
+        }
+        if = { limit = { has_modifier = nesnd_south_wartime } remove_modifier = nesnd_south_wartime }
+        add_modifier = { name = nesnd_south_wartime months = 2 }
+    }
+}

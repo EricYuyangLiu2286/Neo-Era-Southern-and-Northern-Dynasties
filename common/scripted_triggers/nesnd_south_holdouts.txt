@@ -2,44 +2,40 @@
 nesnd_south_mainland_holdout = { nesnd_south_campaign_holdout = yes }
 nesnd_south_campaign_holdout = {
     is_country_alive = yes num_states > 0 NOT = { c:USM ?= this }
-    NOT = { has_variable = nesnd_postwar_allegiance_answered }
+    custom_tooltip = { text = nesnd_ui_not_postwar_allegiance_answered_tt NOT = { has_variable = nesnd_postwar_allegiance_answered } }
     OR = {
         AND = {
             OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this }
-            OR = { has_variable = nesnd_restoration_side has_variable = nesnd_ming_court nesnd_board_stance_value = 1 }
-            OR = { has_variable = usm_opposition_country has_variable = nesnd_ming_court }
+            OR = { custom_tooltip = { text = nesnd_ui_restoration_side_tt has_variable = nesnd_restoration_side } custom_tooltip = { text = nesnd_ui_ming_court_tt has_variable = nesnd_ming_court } nesnd_board_stance_value = 1 }
+            OR = { custom_tooltip = { text = nesnd_ui_usm_opposition_country_tt has_variable = usm_opposition_country } custom_tooltip = { text = nesnd_ui_ming_court_tt has_variable = nesnd_ming_court } }
         }
         AND = {
-            has_variable = usm_opposition_country
+            custom_tooltip = { text = nesnd_ui_usm_opposition_country_tt has_variable = usm_opposition_country }
             OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this c:PHI ?= this c:DEI ?= this c:YN1 ?= this }
-            OR = { has_variable = nesnd_restoration_side has_variable = ce_usm_republican_revolution_tag
-                has_journal_entry = ce_usm_restoration_of_ming has_variable = usm_opposition_country_leader_var
-                has_variable = nesnd_south_answered }
-        }
-        AND = {
-            c:JAP ?= this has_variable = usm_opposition_country has_variable = nesnd_japan_answered
-            NOR = { has_variable = ce_usm_cw_ally_with_mng has_variable = nesnd_japan_neutral
-                has_variable = nesnd_japan_recovery_created has_global_variable = nesnd_japan_partitioned }
+            OR = { custom_tooltip = { text = nesnd_ui_restoration_side_tt has_variable = nesnd_restoration_side } custom_tooltip = { text = nesnd_ui_ce_usm_republican_revolution_tag_tt has_variable = ce_usm_republican_revolution_tag }
+                has_journal_entry = ce_usm_restoration_of_ming custom_tooltip = { text = nesnd_ui_usm_opposition_country_leader_var_tt has_variable = usm_opposition_country_leader_var }
+                custom_tooltip = { text = nesnd_ui_south_answered_tt has_variable = nesnd_south_answered } }
         }
     }
+    # Japan is not a holdout: its war with Wu is the Eastern Intervention (nesnd_open_japan_jingnan_war) and is settled apart (author, 2026-11-17).
 }
 nesnd_south_remnant_window = {
-    nesnd_south_wu_survives = yes has_global_variable = usm_civilwar_occured
-    c:USM ?= { NOR = { has_variable = usm_government_winner_civilwar has_variable = nesnd_south_peace_committed
-        has_variable = nesnd_south_inconclusive_settlement has_variable = nesnd_ming_preserved
-        has_variable = nesnd_celestial_collapsed } }
+    nesnd_south_wu_survives = yes custom_tooltip = { text = nesnd_ui_usm_civilwar_occured_tt has_global_variable = usm_civilwar_occured }
+    c:USM ?= { NOR = { custom_tooltip = { text = nesnd_ui_usm_government_winner_civilwar_tt has_variable = usm_government_winner_civilwar } custom_tooltip = { text = nesnd_ui_south_peace_committed_tt has_variable = nesnd_south_peace_committed }
+        custom_tooltip = { text = nesnd_ui_south_inconclusive_settlement_tt has_variable = nesnd_south_inconclusive_settlement } custom_tooltip = { text = nesnd_ui_ming_preserved_tt has_variable = nesnd_ming_preserved }
+        custom_tooltip = { text = nesnd_ui_celestial_collapsed_tt has_variable = nesnd_celestial_collapsed } } }
 }
 nesnd_south_wu_survives = {
-    trigger_if = { limit = { exists = c:USM } c:USM = { is_country_alive = yes has_variable = tag_WUU_var NOT = { has_variable = usm_rebel_winner_of_the_civil_war } } }
+    trigger_if = { limit = { exists = c:USM } c:USM = { is_country_alive = yes custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var } custom_tooltip = { text = nesnd_ui_not_usm_rebel_winner_of_the_civil_war_tt NOT = { has_variable = usm_rebel_winner_of_the_civil_war } } } }
     trigger_else = { always = no }
 }
 nesnd_holdout_peace_eligible = {
     nesnd_south_campaign_holdout = yes nesnd_south_remnant_window = yes
-    has_global_variable = usm_civilwar_occured
-    has_variable = nesnd_holdout_enrolled_round
-    NOT = { has_variable = nesnd_holdout_resolved }
+    custom_tooltip = { text = nesnd_ui_usm_civilwar_occured_tt has_global_variable = usm_civilwar_occured }
+    custom_tooltip = { text = nesnd_ui_holdout_enrolled_round_tt has_variable = nesnd_holdout_enrolled_round }
+    custom_tooltip = { text = nesnd_ui_not_holdout_resolved_tt NOT = { has_variable = nesnd_holdout_resolved } }
     is_subject = no is_at_war = no is_active_in_diplomatic_play = no
-    NOT = { has_variable = nesnd_capital_surrender_pending }
+    custom_tooltip = { text = nesnd_ui_not_capital_surrender_pending_tt NOT = { has_variable = nesnd_capital_surrender_pending } }
     NOT = { nesnd_south_capital_defeat = yes }
 }
 nesnd_holdout_offer_due = {
@@ -68,7 +64,7 @@ nesnd_holdout_north_request_valid = {
         scope:nesnd_holdout_sender = {
             nesnd_holdout_peace_eligible = yes
             NOT = { c:JAP ?= this }
-            has_variable = nesnd_holdout_north_awaited has_variable = nesnd_holdout_north_clock
+            custom_tooltip = { text = nesnd_ui_holdout_north_awaited_tt has_variable = nesnd_holdout_north_awaited } custom_tooltip = { text = nesnd_ui_holdout_north_clock_tt has_variable = nesnd_holdout_north_clock }
             nesnd_holdout_round_value = scope:nesnd_holdout_request_round
         }
     } trigger_else = { always = no }
@@ -80,9 +76,13 @@ nesnd_holdout_north_can_accept = {
 }
 nesnd_south_campaign_peace = {
     nesnd_south_wu_survives = yes
-    NOT = { c:USM ?= { has_variable = nesnd_war_opening_grace } }
-    NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
-    c:USM ?= { is_at_war = no is_active_in_diplomatic_play = no }
+    NOT = { c:USM ?= { custom_tooltip = { text = nesnd_ui_war_opening_grace_tt has_variable = nesnd_war_opening_grace } } }
+    NOT = { any_diplomatic_play = { nesnd_south_named_play = yes NOT = { is_diplomatic_play_type = dp_nesnd_eastern_intervention } } }
+    # Japan's own war does not hold up the mainland settlement (author, 2026-11-17).
+    c:USM ?= {
+        NOT = { any_scope_war = { NOT = { diplomatic_play ?= { is_diplomatic_play_type = dp_nesnd_eastern_intervention custom_tooltip = { text = nesnd_ui_jingnan_japan_play_tt has_variable = nesnd_jingnan_japan_play } } } } }
+        NOT = { any_diplomatic_play = { is_war = no any_scope_play_involved = { this = c:USM } NOT = { is_diplomatic_play_type = dp_nesnd_eastern_intervention custom_tooltip = { text = nesnd_ui_jingnan_japan_play_tt has_variable = nesnd_jingnan_japan_play } } } }
+    }
     NOT = { nesnd_south_defeat_resolution_pending = yes }
 }
 # Candidate countries can shelter a guest emperor without changing their own government.
@@ -98,7 +98,7 @@ nesnd_ming_flight_host = {
         NOT = { this = scope:nesnd_court_fallen }
         NOT = { c:USM ?= this }
         NOT = { is_subject_of = c:USM }
-        OR = { has_variable = nesnd_restoration_side nesnd_board_stance_value = 1 }
+        OR = { custom_tooltip = { text = nesnd_ui_restoration_side_tt has_variable = nesnd_restoration_side } nesnd_board_stance_value = 1 }
         capital = { controller = prev }
     } trigger_else = { always = no }
 }
@@ -116,11 +116,17 @@ nesnd_south_campaign_resolved = {
 nesnd_south_wu_total_victory = {
     c:USM ?= this has_global_variable = usm_civilwar_occured
     nesnd_south_campaign_resolved = yes
-    NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } }
+    NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } NOT = { c:JAP ?= this } } }
 }
 
 # Diplomatic-play scope. Only the southern campaign can issue a military defeat receipt.
-nesnd_south_named_play = { is_diplomatic_play_type = dp_usm_civil_war initiator_is = c:USM }
+# A concluded play stays in the save for a while with no war and full escalation (observer game 2026-11-17: the civil war
+# ended 1841.10.12 and its play was still there three days later). Only a live play counts.
+# Japan's war in the Jingnan campaign is the Eastern Intervention marked by nesnd_open_japan_jingnan_war (2026-11-17).
+nesnd_south_named_play = {
+    OR = { is_diplomatic_play_type = dp_usm_civil_war AND = { is_diplomatic_play_type = dp_nesnd_eastern_intervention custom_tooltip = { text = nesnd_ui_jingnan_japan_play_tt has_variable = nesnd_jingnan_japan_play } } }
+    initiator_is = c:USM OR = { is_war = yes escalation < 100 }
+}
 # Country scope. PREV inside the country's own war iterator is the candidate country.
 nesnd_south_defender_in_campaign_war = {
     custom_tooltip = {
@@ -134,8 +140,8 @@ nesnd_south_defender_in_campaign_war = {
 }
 # Country scope. An old wargoal receipt without its provenance cannot justify later annexation.
 nesnd_south_verified_wu_defeat = {
-    trigger_if = { limit = { has_variable = nesnd_south_case_defeat_round }
-        var:nesnd_south_case_defeat_round = nesnd_south_round_value
+    trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_south_case_defeat_round_tt has_variable = nesnd_south_case_defeat_round } }
+        custom_tooltip = { text = nesnd_ui_var_nesnd_south_case_defeat_round_eq_nesnd_south_round_value_tt var:nesnd_south_case_defeat_round = nesnd_south_round_value }
     }
     trigger_else = { always = no }
 }
@@ -165,8 +171,8 @@ nesnd_holdout_can_recover_round = {
 }
 
 nesnd_holdout_offer_ticket_live = {
-    trigger_if = { limit = { exists = scope:nesnd_holdout_offer_round has_variable = nesnd_holdout_choice_pending }
-        var:nesnd_holdout_choice_pending = scope:nesnd_holdout_offer_round
+    trigger_if = { limit = { exists = scope:nesnd_holdout_offer_round custom_tooltip = { text = nesnd_ui_holdout_choice_pending_tt has_variable = nesnd_holdout_choice_pending } }
+        hidden_trigger = { var:nesnd_holdout_choice_pending = scope:nesnd_holdout_offer_round }
         nesnd_holdout_round_value = scope:nesnd_holdout_offer_round
     }
     trigger_else = { always = no }
@@ -205,15 +211,19 @@ nesnd_south_wu_japan_callback = {
 }
 
 # Country scope. Japan's opposition answer carries the same obligation as the mainland summons.
-nesnd_jingnan_rebel_signatory = { has_variable = usm_opposition_country }
+nesnd_jingnan_rebel_signatory = { custom_tooltip = { text = nesnd_ui_usm_opposition_country_tt has_variable = usm_opposition_country } }
 
-nesnd_jingnan_wu_ally = { c:JAP ?= this has_variable = ce_usm_cw_ally_with_mng }
+nesnd_jingnan_wu_ally = { c:JAP ?= this custom_tooltip = { text = nesnd_ui_ce_usm_cw_ally_with_mng_tt has_variable = ce_usm_cw_ally_with_mng } }
+# The play it answered is still a war, and it is at war with Wu. Comparing the war's play with prev.var: failed in game
+# ("Invalid right side during comparison 'var'", 943 times on 2026-11-17), so the play is not compared directly.
 nesnd_jingnan_may_receive_rebel_journal = {
-    exists = var:nesnd_jingnan_locked_play
+    custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_jingnan_locked_play_tt exists = var:nesnd_jingnan_locked_play }
+    # The 2026-11-17 form (var:nesnd_jingnan_locked_play = { is_war = yes } + has_war_with) let no mainland rebel
+    # receive usm_civilwar.2 in game. This is the iterator form nesnd_south_capital_defeat uses.
     any_scope_war = {
-        is_war_participant = prev
         is_on_defending_side = prev
-        diplomatic_play ?= prev.var:nesnd_jingnan_locked_play
+        exists = diplomatic_play
+        diplomatic_play ?= { nesnd_south_named_play = yes }
     }
 }
 

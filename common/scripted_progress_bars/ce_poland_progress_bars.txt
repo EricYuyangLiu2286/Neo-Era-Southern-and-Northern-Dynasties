@@ -36,105 +36,143 @@
 # 	# }
 # }
 
-ce_polish_reconquest_energy_bar = {
-	name = "ce_polish_reconquest_energy_bar_name"
-	desc = "ce_polish_reconquest_energy_bar_desc"
-	
-	start_value = 0
+# Root journal je_ce_the_polish_problem (contextless). Strength of the 1829 settlement, 0-100.
+# Only writer: this monthly_progress. Inputs are global variables written by nesnd_poland_root_month.
+# Phase thresholds (60 / 30) are read in nesnd_poland_root_month.
+nesnd_poland_consensus_bar = {
+	name = "nesnd_poland_consensus_bar_name"
+	desc = "nesnd_poland_consensus_bar_desc"
+
+	start_value = 70
 	min_value = 0
 	max_value = 100
-	
+
 	default_green = yes
-	
+
 	monthly_progress = {
 		add = {
-			desc = "ce_polish_war_prep_allies"
+			desc = nesnd_poland_order_from_congress
+			if = { limit = { has_global_variable = nesnd_congress_order }
+				add = { value = global_var:nesnd_congress_order subtract = 75 divide = 100 }
+			}
+		}
+		add = { desc = nesnd_poland_rw_pressure
+			if = { limit = { c:KRA ?= { je:je_ce_polish_reconquest ?= { "scripted_bar_progress(nesnd_poland_red_white_bar)" > 60 } } } add = -1 }
+		}
+		add = {
+			desc = "nesnd_poland_consensus_drift"
+			value = -2
+		}
+		add = {
+			desc = "nesnd_poland_consensus_guarantees"
 			if = {
-				limit = { has_global_variable = ce_poland_support_diff }
+				limit = { has_global_variable = nesnd_poland_guarantees }
 				add = {
-					value = global_var:ce_poland_support_diff
-					max = 3
-					min = -3
+					value = global_var:nesnd_poland_guarantees
+					multiply = 0.5
 				}
 			}
 		}
 		add = {
+			desc = "nesnd_poland_consensus_bloc"
 			if = {
 				limit = {
-					infamy > 10
+					exists = c:KRA
+					exists = c:FRA
+					c:KRA = { is_in_same_power_bloc = c:FRA }
 				}
-				add = {
-					value = -1
-					desc = "ce_polish_energy_infamy"
-				}
+				add = 0.5
 			}
 		}
 		add = {
+			desc = "nesnd_poland_consensus_paris_strong"
 			if = {
 				limit = {
-					has_modifier = ce_pro_poland_spend_buff
+					has_global_variable = nesnd_poland_france_will
+					global_var:nesnd_poland_france_will >= 75
 				}
-				add = {
-					value = 2
-					desc = "ce_pro_poland_spend_buff"
-				}
+				add = 0.5
 			}
 		}
 		add = {
+			desc = "nesnd_poland_consensus_paris_weak"
 			if = {
 				limit = {
-					radical_fraction = {
-						value >= 0.2
+					has_global_variable = nesnd_poland_france_will
+					global_var:nesnd_poland_france_will < 40
+				}
+				add = -1
+			}
+		}
+		add = {
+			desc = "nesnd_poland_consensus_france_rank"
+			if = {
+				limit = {
+					exists = c:FRA
+					c:FRA = { country_rank < rank_value:great_power }
+				}
+				add = -2
+			}
+		}
+		add = {
+			desc = "nesnd_poland_consensus_warsaw"
+			if = {
+				limit = {
+					exists = c:KRA
+					c:KRA = { capital ?= { state_region = s:STATE_GREATER_POLAND } }
+				}
+				add = -1
+			}
+		}
+		add = {
+			desc = "nesnd_poland_consensus_war"
+			if = {
+				limit = {
+					exists = c:FRA
+					c:FRA = {
+						OR = {
+							trigger_if = { limit = { exists = c:RUS } has_war_with = c:RUS } trigger_else = { always = no }
+							trigger_if = { limit = { exists = c:PRU } has_war_with = c:PRU } trigger_else = { always = no }
+							trigger_if = { limit = { exists = c:AUS } has_war_with = c:AUS } trigger_else = { always = no }
+						}
 					}
 				}
-				add = {
-					value = -1
-					desc = "ce_polish_energy_radicals_1"
-				}
+				add = -2
 			}
 		}
 		add = {
+			desc = "nesnd_poland_consensus_backers"
 			if = {
 				limit = {
-					radical_fraction = {
-						value >= 0.4
-					}
+					has_global_variable = ce_poland_support_diff
+					global_var:ce_poland_support_diff > 0
 				}
-				add = {
-					value = -1
-					desc = "ce_polish_energy_radicals_2"
-				}
+				add = 0.5
 			}
-		}
-		add = {
-			if = {
+			else_if = {
 				limit = {
-					radical_fraction = {
-						value >= 0.8
-					}
+					has_global_variable = ce_poland_support_diff
+					global_var:ce_poland_support_diff < 0
 				}
-				add = {
-					value = -1
-					desc = "ce_polish_energy_radicals_3"
-				}
-			}
-		}
-		add = {
-			if = {
-				limit = {
-					gdp_ownership_ratio = {
-						target = c:KRA
-						value < 0.5
-					}
-				}
-				add = {
-					value = -2
-					desc = "ce_polish_energy_gdp"
-				}
+				add = -0.5
 			}
 		}
 	}
 }
+
+# Root journal je_ce_the_polish_problem. How far Paris will go for Poland, 0-100.
+# Only writer: nesnd_poland_root_month (set_bar_progress each month); no periodic progress here.
+nesnd_poland_france_will_bar = {
+	name = "nesnd_poland_france_will_bar_name"
+	desc = "nesnd_poland_france_will_bar_desc"
+
+	start_value = 50
+	min_value = 0
+	max_value = 100
+
+	default_green = yes
+}
+
 
 ce_polish_reconquest_war_prep_bar = {
 	name = "ce_polish_reconquest_war_prep_bar_name"
@@ -146,13 +184,19 @@ ce_polish_reconquest_war_prep_bar = {
 	
 	default_green = yes
 	
+	# 2026-11-17: sources a city state can reach. The old GDP-rank and influence rows
+	# (rank <= 15, influence >= 500) kept Krakow at about +0.4 a month.
 	monthly_progress = {
+		add = {
+			desc = nesnd_poland_window_preparation
+			if = { limit = { has_global_variable = nesnd_poland_window } add = 3 }
+		}
 		add = {
 			desc = "ce_polish_war_prep_allies"
 			if = {
-				limit = { 
+				limit = {
 					has_global_variable = ce_poland_support_diff
-					has_global_variable = ce_poland_support_diff 
+					has_global_variable = ce_poland_support_diff
 				}
 				add = {
 					value = global_var:ce_poland_support_diff
@@ -162,13 +206,14 @@ ce_polish_reconquest_war_prep_bar = {
 			}
 		}
 		add = {
-			desc = "ce_polish_war_prep_economy_g"
+			desc = "nesnd_poland_war_prep_bloc"
 			if = {
 				limit = {
-					gdp_ranking <= 15
+					exists = c:FRA
+					is_in_same_power_bloc = c:FRA
 				}
 				add = {
-					value = 1
+					value = 2
 				}
 			}
 		}
@@ -184,30 +229,10 @@ ce_polish_reconquest_war_prep_bar = {
 			}
 		}
 		add = {
-			desc = "ce_polish_war_prep_economy_r"
+			desc = "nesnd_poland_war_prep_army"
 			if = {
 				limit = {
-					gdp_ranking > 15
-					gdp_ranking <= 30
-				}
-				add = {
-					value = -1
-				}
-			}
-			if = {
-				limit = {
-					gdp_ranking >= 30
-				}
-				add = {
-					value = -3
-				}
-			}
-		}
-		add = {
-			desc = "ce_polish_war_prep_military"
-			if = {
-				limit = {
-					army_power_projection >= 500
+					army_size_including_conscripts >= 20
 				}
 				add = {
 					value = 1
@@ -215,24 +240,14 @@ ce_polish_reconquest_war_prep_bar = {
 			}
 		}
 		add = {
-			desc = "ce_progress_influence_small"
+			desc = "nesnd_poland_war_prep_paris_cold"
 			if = {
 				limit = {
-					influence < 200
+					has_global_variable = nesnd_poland_france_will
+					global_var:nesnd_poland_france_will < 30
 				}
 				add = {
-					value = -1
-				}
-			}
-		}
-		add = {
-			desc = "ce_progress_influence_big"
-			if = {
-				limit = {
-					influence >= 500
-				}
-				add = {
-					value = 1
+					value = -2
 				}
 			}
 		}

@@ -1,18 +1,62 @@
 ﻿wg_nesnd_japan_reorganization = {
     icon = "gfx/interface/icons/war_goals/regime_change.dds"
     kind = custom
-    settings = { require_target_be_part_of_war country_creation validate_conflicts_war_goals_all conflicts_with_country_creation conflicts_with_annex_country }
+    # No country_creation: the engine then reads Japan, which exists, as the country to create and discards the
+    # goal outright (1844 save: other=18, status=discarded). The new realms come from on_enforced (2026-11-18).
+    settings = { require_target_be_part_of_war }
     execution_priority = 80
     contestion_type = control_target_country_capital
     mirrored_wargoal = { method = no_mirror }
     target_type = country
     possible = { root = { c:USM ?= this } scope:target_country = { c:JAP ?= this } }
-    valid = { root = { nesnd_eastern_reorganization_valid = yes } scope:target_country = { c:JAP ?= this } }
+    # Author, 2026-11-18: the goal stays for the whole war, from either launch (the 1844 save discarded it mid-war).
+    valid = { root = { c:USM ?= this } scope:target_country = { c:JAP ?= this is_country_alive = yes } }
     maneuvers = { value = 40 }
     infamy = { value = 20 }
+    # Each grant needs only Japan's own state in its region, so one missing region cannot block the others:
+    # Wa (JIM) needs Kyoto, Fu (JTK) Kanto, the Toyotomi remnant Chugoku; Kyushu and Shikoku go to Wu as owned.
     on_enforced = {
-        if = { limit = { root = { nesnd_eastern_reorganization_valid = yes } }
-            c:JAP = { nesnd_partition_japan = yes }
+        c:JAP ?= {
+            if = { limit = { is_country_alive = yes NOT = { has_global_variable = nesnd_japan_partitioned } }
+                clear_saved_scope = nesnd_partition_wa_made
+                clear_saved_scope = nesnd_partition_fu_made
+                if = { limit = { OR = {
+                        AND = { any_scope_state = { state_region = s:STATE_KYOTO } NOT = { c:JIM ?= { is_country_alive = yes } } }
+                        AND = { any_scope_state = { state_region = s:STATE_KANTO } NOT = { c:JTK ?= { is_country_alive = yes } } }
+                    } }
+                    set_variable = nesnd_jp_managed
+                    nesnd_partition_japan_prepare = yes
+                }
+                if = { limit = { any_scope_state = { state_region = s:STATE_KYOTO } NOT = { c:JIM ?= { is_country_alive = yes } } }
+                    nesnd_partition_japan_create_yamato = yes
+                    nesnd_partition_japan_give_yamato = yes
+                    save_scope_as = nesnd_partition_wa_made
+                }
+                if = { limit = { any_scope_state = { state_region = s:STATE_KANTO } NOT = { c:JTK ?= { is_country_alive = yes } } }
+                    nesnd_partition_japan_create_tokugawa = yes
+                    nesnd_partition_japan_give_tokugawa = yes
+                    save_scope_as = nesnd_partition_fu_made
+                }
+                # The incumbent moves only to a court made just now.
+                if = { limit = { OR = {
+                        AND = { exists = scope:nesnd_partition_tokugawa_incumbent exists = scope:nesnd_partition_fu_made }
+                        AND = { exists = scope:nesnd_partition_yamato_incumbent exists = scope:nesnd_partition_wa_made }
+                    } }
+                    nesnd_japan_seat_partition_incumbent = yes
+                }
+                clear_saved_scope = nesnd_partition_tokugawa_incumbent
+                clear_saved_scope = nesnd_partition_yamato_incumbent
+                nesnd_partition_japan_give_wu = yes
+                if = { limit = { OR = { exists = scope:nesnd_partition_wa_made exists = scope:nesnd_partition_fu_made } }
+                    if = { limit = { any_scope_state = { state_region = s:STATE_CHUGOKU } }
+                        nesnd_partition_japan_toyotomi_remnant = yes
+                    }
+                    nesnd_partition_japan_protect = yes
+                    nesnd_partition_japan_finalize = yes
+                }
+                clear_saved_scope = nesnd_partition_wa_made
+                clear_saved_scope = nesnd_partition_fu_made
+            }
         }
     }
     ai = { is_significant_demand = yes }

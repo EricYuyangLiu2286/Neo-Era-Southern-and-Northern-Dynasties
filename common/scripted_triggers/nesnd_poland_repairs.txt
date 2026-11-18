@@ -1,13 +1,18 @@
-﻿nesnd_poland_active = {
-	exists = c:KRA
-	NOT = { has_global_variable = ce_poland_problem_end }
+﻿# Claude audit 2026-11-17: one named line ("the Polish Question is still open") instead of
+# "Krakow exists" plus a raw "no global variable" row wherever a button or option shows it.
+nesnd_poland_active = {
+	custom_tooltip = {
+		text = nesnd_poland_active_tt
+		exists = c:KRA
+		NOT = { has_global_variable = ce_poland_problem_end }
+	}
 }
 # Country scope; no reference to an absent private journal is evaluated.
 nesnd_poland_can_issue_ultimatum = {
-	c:KRA ?= { is_subject = no is_diplomatic_play_committed_participant = no }
+	c:KRA ?= { is_subject = no is_at_war = no is_diplomatic_play_committed_participant = no }
 	nesnd_poland_active = yes
 	is_at_war = no
-	NOT = { has_variable = nesnd_polish_pending_state }
+	custom_tooltip = { text = nesnd_poland_no_pending_demand_tt NOT = { has_variable = nesnd_polish_pending_state } }
 	trigger_if = { limit = { has_journal_entry = je_ce_polish_war_preparation }
 		je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 100 }
 	}
@@ -22,10 +27,12 @@ nesnd_poland_ultimatum_state = {
 		NOT = { owner = c:KRA }
 		has_claim_by = c:KRA
 		owner = {
-			is_at_war = no
+			OR = { is_at_war = no AND = { custom_tooltip = { text = nesnd_ui_poland_civil_ultimatum_target_tt has_variable = nesnd_poland_civil_ultimatum_target } any_civil_war = { always = yes } } }
 			NOR = {
 				has_subject_relation_with = c:KRA
-				is_in_same_power_bloc = c:KRA
+				has_truce_with = c:KRA
+
+				custom_tooltip = { text = nesnd_ui_poland_request_cooldown_tt has_variable = nesnd_poland_request_cooldown }
 				any_scope_treaty = { binds = c:KRA any_scope_article = { has_type = alliance } }
 				any_scope_treaty = { binds = c:KRA any_scope_article = { has_type = defensive_pact } }
 				any_scope_treaty = { binds = c:KRA any_scope_article = { has_type = guarantee_independence } }
@@ -37,8 +44,8 @@ nesnd_poland_ultimatum_state = {
 nesnd_poland_ultimatum_valid = {
 	trigger_if = { limit = { exists = c:KRA exists = scope:target_diplo_play_state exists = scope:ce_from_country }
 		nesnd_poland_active = yes
-		is_at_war = no
-		c:KRA = { is_subject = no is_diplomatic_play_committed_participant = no }
+		OR = { is_at_war = no AND = { custom_tooltip = { text = nesnd_ui_poland_civil_ultimatum_target_tt has_variable = nesnd_poland_civil_ultimatum_target } any_civil_war = { always = yes } } }
+		c:KRA = { is_subject = no is_at_war = no is_diplomatic_play_committed_participant = no }
 		scope:ce_from_country = { is_country_alive = yes nesnd_poland_matching_pending = yes }
 		scope:target_diplo_play_state = { owner = root nesnd_poland_ultimatum_state = yes }
 	}
@@ -47,18 +54,11 @@ nesnd_poland_ultimatum_valid = {
 nesnd_poland_join_invitation_valid = {
 	trigger_if = { limit = { exists = scope:ce_poland_return_land_dp exists = c:KRA }
 		nesnd_poland_active = yes
-		has_variable = ce_pro_polish_variable
+		custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable }
 		is_diplomatic_play_committed_participant = no
 		NOT = { has_war_with = c:KRA }
 		scope:ce_poland_return_land_dp = { is_war = no initiator = c:KRA NOT = { target = root } }
 	}
-	trigger_else = { always = no }
-}
-nesnd_poland_existing_successor = {
-	OR = { nesnd_poland_existing_pol = yes nesnd_poland_existing_plc = yes }
-}
-nesnd_poland_existing_pol = {
-	trigger_if = { limit = { exists = c:POL } c:POL = { is_subject = no num_incorporated_states >= 3 } }
 	trigger_else = { always = no }
 }
 nesnd_poland_existing_plc = {
@@ -66,22 +66,130 @@ nesnd_poland_existing_plc = {
 	trigger_else = { always = no }
 }
 nesnd_poland_can_declare_victory = {
-	c:KRA ?= this
+	hidden_trigger = { c:KRA ?= this }
 	nesnd_poland_active = yes
 	NOT = { exists = c:POL }
-	NOT = { has_variable = ce_polish_victory_declared }
-	nesnd_poland_live_control_count >= 5
+	custom_tooltip = { text = nesnd_poland_not_declared_tt NOT = { has_variable = ce_polish_victory_declared } }
+	nesnd_poland_restoration_met = yes
+}
+# Country scope. Restoration = the 1809 Duchy of Warsaw: capital at Warsaw and the five
+# Polish-majority states held whole (WORK reports/2026-11-17-poland-redesign/map_poland.md).
+# Readers: nesnd_poland_can_declare_victory (victory button).
+nesnd_poland_restoration_met = {
+	capital ?= { state_region = s:STATE_GREATER_POLAND }
+	owns_entire_state_region = STATE_GREATER_POLAND
+	owns_entire_state_region = STATE_MAZOVIA
+	owns_entire_state_region = STATE_LESSER_POLAND
+	owns_entire_state_region = STATE_WEST_GALICIA
+	owns_entire_state_region = STATE_POSEN
+}
+# State scope. The five restoration states. Readers: map mode of je_ce_the_polish_problem.
+nesnd_poland_restoration_state = {
+	OR = {
+		state_region = s:STATE_GREATER_POLAND
+		state_region = s:STATE_MAZOVIA
+		state_region = s:STATE_LESSER_POLAND
+		state_region = s:STATE_WEST_GALICIA
+		state_region = s:STATE_POSEN
+	}
+}
+# State scope. Polish lands outside the restoration list that the claim buttons cover.
+# Readers: map mode of je_ce_the_polish_problem.
+nesnd_poland_outer_state = {
+	OR = {
+		state_region = s:STATE_UPPER_SILESIA
+		state_region = s:STATE_WEST_PRUSSIA
+		state_region = s:STATE_EAST_GALICIA
+		state_region = s:STATE_KAUNAS
+		state_region = s:STATE_BREST
+		state_region = s:STATE_VOLHYNIA
+	}
+}
+# No scope needed. Partition: Krakow gone, a subject of one of the three partition powers,
+# or holding no part of Greater Poland, Mazovia or Lesser Poland.
+# Readers: partition outcome of je_ce_the_polish_problem.
+nesnd_poland_partitioned = {
+	OR = {
+		custom_tooltip = {
+			text = nesnd_poland_partition_gone_tt
+			NOT = { exists = c:KRA }
+		}
+		custom_tooltip = {
+			text = nesnd_poland_partition_subject_tt
+			c:KRA ?= {
+				OR = {
+					trigger_if = { limit = { exists = c:RUS } is_subject_of = c:RUS } trigger_else = { always = no }
+					trigger_if = { limit = { exists = c:PRU } is_subject_of = c:PRU } trigger_else = { always = no }
+					trigger_if = { limit = { exists = c:AUS } is_subject_of = c:AUS } trigger_else = { always = no }
+				}
+			}
+		}
+		custom_tooltip = {
+			text = nesnd_poland_partition_core_lost_tt
+			c:KRA ?= {
+				NOT = {
+					any_scope_state = {
+						OR = {
+							state_region = s:STATE_GREATER_POLAND
+							state_region = s:STATE_MAZOVIA
+							state_region = s:STATE_LESSER_POLAND
+						}
+					}
+				}
+			}
+		}
+	}
+}
+# Global variable nesnd_poland_result: flag:restored, flag:partition or flag:consensus.
+# Writer: nesnd_poland_set_result. Readers: outcomes of the four country journals.
+nesnd_poland_result_is = {
+	trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_poland_result_tt has_global_variable = nesnd_poland_result } } custom_tooltip = { text = nesnd_poland_result_$RESULT$_tt global_var:nesnd_poland_result = flag:$RESULT$ } }
+	trigger_else = { always = no }
 }
 nesnd_poland_many_claims = {
 	trigger_if = { limit = { has_global_variable = ce_polish_claim_state_count } global_var:ce_polish_claim_state_count >= 3 }
 	trigger_else = { always = no }
 }
 nesnd_poland_matching_pending = {
-	trigger_if = { limit = { has_variable = nesnd_polish_pending_state }
-		trigger_if = { limit = { exists = var:nesnd_polish_pending_state }
-			var:nesnd_polish_pending_state = scope:target_diplo_play_state
+	trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_polish_pending_state_tt has_variable = nesnd_polish_pending_state } }
+		trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_polish_pending_state_tt exists = var:nesnd_polish_pending_state } }
+			hidden_trigger = { var:nesnd_polish_pending_state = scope:target_diplo_play_state }
 		}
 		trigger_else = { always = no }
 	}
 	trigger_else = { always = no }
+}
+
+# Only one envoy can have an outstanding request with this owner. Replies use the
+# state validity test above so the envoy's own pending marker never cancels it.
+nesnd_poland_free_ultimatum_state = {
+	# A civil-war ultimatum authorised by the Diet remains available against that government.
+	OR = {
+		custom_tooltip = { text = nesnd_ui_poland_window_tt has_global_variable = nesnd_poland_window }
+		owner ?= { custom_tooltip = { text = nesnd_ui_poland_civil_ultimatum_target_tt has_variable = nesnd_poland_civil_ultimatum_target } any_civil_war = { always = yes } }
+	}
+	nesnd_poland_ultimatum_state = yes
+	owner = { custom_tooltip = { text = nesnd_ui_not_poland_incoming_envoy_tt NOT = { has_variable = nesnd_poland_incoming_envoy } } }
+}
+
+nesnd_poland_declared_restoration = {
+	exists = c:KRA
+	NOT = { exists = c:POL }
+	nesnd_poland_partitioned = no
+	c:KRA = {
+		nesnd_poland_restoration_met = yes
+		custom_tooltip = { text = nesnd_ui_ce_polish_victory_declared_tt has_variable = ce_polish_victory_declared }
+	}
+}
+
+# State overlay follows the opportunity: the war/peace counterparty's restoration
+# lands, or a legally claimable demand during the other crises.
+nesnd_poland_window_map_state = {
+	custom_tooltip = { text = nesnd_ui_poland_window_tt has_global_variable = nesnd_poland_window }
+	exists = owner
+	trigger_if = { limit = { hidden_trigger = { exists = global_var:nesnd_poland_window_enemy } }
+		owner = global_var:nesnd_poland_window_enemy
+		nesnd_poland_restoration_state = yes
+	}
+	trigger_else = { nesnd_poland_free_ultimatum_state = yes }
 }

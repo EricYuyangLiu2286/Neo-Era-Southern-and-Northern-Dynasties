@@ -1,0 +1,44 @@
+﻿on_monthly_pulse = { on_actions = { nesnd_poland_check_rising } }
+nesnd_poland_check_rising = {
+	trigger = { c:KRA ?= { has_variable = nesnd_poland_rising_region } }
+	effect = { c:KRA = { nesnd_poland_settle_rising = yes } }
+}
+
+# Only the initiator's own demand counts. A third owner can retain its part of the region.
+on_wargoal_enforced = { on_actions = { nesnd_poland_rising_goal_enforced } }
+nesnd_poland_rising_goal_enforced = {
+	trigger = {
+		scope:actor ?= { c:KRA ?= this }
+		scope:diplomatic_play ?= { is_diplomatic_play_type = dp_nesnd_poland_rising initiator = c:KRA }
+	}
+	effect = { scope:actor = { set_variable = nesnd_poland_rising_goal_won } }
+}
+
+# Only a recorded Russian victory over the Polish insurgents earns authority.
+# A subsidy, a declaration of neutrality or a white peace cannot meet this hook.
+on_wargoal_enforced = { on_actions = { nesnd_poland_tsar_victory } }
+nesnd_poland_tsar_victory = {
+	trigger = {
+		nesnd_poland_active = yes
+		exists = c:RUS
+		scope:actor = c:RUS
+		c:RUS = { has_journal_entry = je_tsarpoints_master }
+		scope:diplomatic_play = {
+			NOT = { has_variable = nesnd_poland_tsar_credited }
+			target = c:RUS
+			OR = {
+				AND = { is_diplomatic_play_type = dp_nesnd_poland_rising initiator = c:KRA scope:target = c:KRA }
+				AND = {
+					is_diplomatic_play_type = dp_secession
+					has_variable = nesnd_poland_civil_record
+					var:nesnd_poland_civil_kind = flag:secession
+					var:nesnd_poland_civil_rebels = scope:target
+				}
+			}
+		}
+	}
+	effect = {
+		scope:diplomatic_play = { set_variable = nesnd_poland_tsar_credited }
+		c:RUS = { je_tsarpoints_add_med = yes }
+	}
+}

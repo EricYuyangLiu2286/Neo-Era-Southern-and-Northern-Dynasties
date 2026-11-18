@@ -1,13 +1,13 @@
 ﻿nesnd_sha_yan_open = {
     nesnd_sha_native = yes
-    has_variable = nesnd_sha_northern_stage_ended
-    NOT = { has_variable = nesnd_sha_yan_ended }
-    OR = { var:nesnd_sha_route ?= flag:nesnd_sha_war var:nesnd_sha_route ?= flag:nesnd_sha_peace }
+    custom_tooltip = { text = nesnd_ui_sha_northern_stage_ended_tt has_variable = nesnd_sha_northern_stage_ended }
+    custom_tooltip = { text = nesnd_ui_not_sha_yan_ended_tt NOT = { has_variable = nesnd_sha_yan_ended } }
+    OR = { custom_tooltip = { text = nesnd_ui_var_nesnd_sha_route_is_flag_nesnd_sha_war_tt var:nesnd_sha_route ?= flag:nesnd_sha_war } custom_tooltip = { text = nesnd_ui_var_nesnd_sha_route_is_flag_nesnd_sha_peace_tt var:nesnd_sha_route ?= flag:nesnd_sha_peace } }
 }
 nesnd_sha_yan_preparing = {
     nesnd_sha_yan_open = yes
-    OR = { has_variable = nesnd_sha_yan_preparation_window has_variable = nesnd_yan_notice }
-    NOT = { has_variable = nesnd_sha_yan_rose }
+    OR = { custom_tooltip = { text = nesnd_ui_sha_yan_preparation_window_tt has_variable = nesnd_sha_yan_preparation_window } custom_tooltip = { text = nesnd_ui_yan_notice_tt has_variable = nesnd_yan_notice } }
+    custom_tooltip = { text = nesnd_ui_not_sha_yan_rose_tt NOT = { has_variable = nesnd_sha_yan_rose } }
 }
 # The northeastern states (Outer Manchuria is split into Haishenwai and Boli). Liaodong and Jilin join the rising
 # only while CNE still holds them; the rest are the minimum (nesnd_sha_yan_four_states).
@@ -32,7 +32,7 @@ nesnd_sha_yan_four_states = {
 # SHA scope. All five core garrisons are needed for both settlements and the Yan army.
 nesnd_yan_conditions = {
     nesnd_sha_yan_preparing = yes
-    has_variable = nesnd_sha_yan_contacts
+    custom_tooltip = { text = nesnd_ui_sha_yan_contacts_tt has_variable = nesnd_sha_yan_contacts }
     nesnd_sha_yan_four_states = yes
     exists = c:CNE
     has_journal_entry = nesnd_sha_restore_yan
@@ -43,46 +43,46 @@ nesnd_yan_conditions = {
     s:STATE_AMUR.region_state:CNE ?= { nesnd_yan_contact_state = yes }
     s:STATE_BOLI.region_state:CNE ?= { nesnd_yan_contact_state = yes }
     c:CNE ?= {
-        OR = { is_at_war = yes has_revolution = yes has_variable = nesnd_land_failed }
+        OR = { is_at_war = yes has_revolution = yes custom_tooltip = { text = nesnd_ui_land_failed_tt has_variable = nesnd_land_failed } }
         any_scope_state = { nesnd_sha_yan_region = no }
     }
     trigger_if = {
-        limit = { var:nesnd_sha_route ?= flag:nesnd_sha_peace }
+        limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_sha_route_is_flag_nesnd_sha_peace_tt var:nesnd_sha_route ?= flag:nesnd_sha_peace } }
         NOT = { has_modifier = declared_bankruptcy }
         c:CNE ?= { NOT = { has_war_with = c:SHA } }
     }
 }
 nesnd_yan_can_agree = {
     nesnd_yan_conditions = yes
-    has_variable = nesnd_sha_yan_preparation_window
-    NOR = { has_variable = nesnd_yan_cooldown has_variable = nesnd_yan_notice }
+    custom_tooltip = { text = nesnd_ui_sha_yan_preparation_window_tt has_variable = nesnd_sha_yan_preparation_window }
+    NOR = { custom_tooltip = { text = nesnd_ui_yan_cooldown_tt has_variable = nesnd_yan_cooldown } custom_tooltip = { text = nesnd_ui_yan_notice_tt has_variable = nesnd_yan_notice } }
     c:CNE ?= { NOT = { has_journal_entry = nesnd_yan_warning } }
     je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 95 }
     OR = {
-        NOT = { has_variable = nesnd_yan_wait_for_full }
+        custom_tooltip = { text = nesnd_ui_not_yan_wait_for_full_tt NOT = { has_variable = nesnd_yan_wait_for_full } }
         je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 100 }
     }
 }
 # State scope. Entries are individual state pieces, never a claim on a whole split region.
 nesnd_yan_contact_state = {
     exists = c:SHA
-    c:SHA ?= { is_target_in_variable_list = { name = nesnd_yan_contacts_by_state target = prev } }
+    c:SHA ?= { custom_tooltip = { text = nesnd_ui_is_target_in_variable_list_eq_nesnd_yan_contacts_by_state_prev_tt is_target_in_variable_list = { name = nesnd_yan_contacts_by_state target = prev } } }
 }
 nesnd_yan_announced_state = {
     exists = c:CNE
-    c:CNE ?= { is_target_in_variable_list = { name = nesnd_yan_states target = prev } }
+    c:CNE ?= { custom_tooltip = { text = nesnd_ui_is_target_in_variable_list_eq_nesnd_yan_states_prev_tt is_target_in_variable_list = { name = nesnd_yan_states target = prev } } }
 }
 # CNE scope.
 nesnd_yan_warning_valid = {
     c:CNE ?= this
     exists = c:SHA
-    NOT = { has_variable = nesnd_yan_interrupted }
+    custom_tooltip = { text = nesnd_ui_not_yan_interrupted_tt NOT = { has_variable = nesnd_yan_interrupted } }
     c:SHA ?= {
-        has_variable = nesnd_yan_notice
+        custom_tooltip = { text = nesnd_ui_yan_notice_tt has_variable = nesnd_yan_notice }
         nesnd_yan_conditions = yes
         je:nesnd_sha_restore_yan = { "scripted_bar_progress(nesnd_sha_yan_banner)" >= 85 }
     }
-    has_variable = nesnd_yan_count
+    hidden_trigger = { has_variable = nesnd_yan_count }
     nesnd_yan_valid_state_count = var:nesnd_yan_count
     num_states > var:nesnd_yan_count
 }
@@ -108,7 +108,7 @@ nesnd_yan_can_contact = {
 nesnd_sha_yan_korean_offer = {
     nesnd_sha_yan_preparing = yes
     exists = c:KOR
-    NOT = { has_variable = nesnd_sha_korean_compact }
+    custom_tooltip = { text = nesnd_ui_not_sha_korean_compact_tt NOT = { has_variable = nesnd_sha_korean_compact } }
     custom_tooltip = { text = nesnd_sha_yan_korean_cooldown_tt NOT = { has_variable = nesnd_sha_yan_korean_refusal } }
     trigger_if = { limit = { exists = c:KOR } NOT = { has_war_with = c:KOR } }
 }
@@ -178,4 +178,15 @@ nesnd_yan_has_unread_report = {
         AND = { nesnd_yan_report_4_available = yes NOT = { has_variable = nesnd_cne_yan_hint_4 } }
         AND = { nesnd_yan_report_5_available = yes NOT = { has_variable = nesnd_cne_yan_hint_5 } }
     }
+}
+# SHA scope. Denglai holds no piece of its founding capital Sakhalin (STATE_SAKHALIN, common/country_definitions/ce_countries.txt)
+# and has not moved the capital by its own choice (Qingdao decision, Vladivostok event nesnd_sha_republic.8).
+nesnd_sha_yan_capital_lost = {
+    NOT = { exists = s:STATE_SAKHALIN.region_state:SHA }
+    NOR = { has_variable = nesnd_sha_qingdao_capital has_variable = nesnd_sha_vladivostok_capital }
+}
+# State-region scope. The lower strata of this region, whoever owns its pieces, average below 9 standard of living.
+nesnd_sha_yan_region_hardship = {
+    nesnd_sha_yan_lower_pop > 0
+    nesnd_sha_yan_lower_sol < 9
 }

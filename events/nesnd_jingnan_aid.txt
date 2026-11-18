@@ -1,0 +1,136 @@
+﻿# Foreign intervention in the Second Jingnan War: settling with the foreign countries that sent troops.
+# Design: .scratch/jingnan-intervention/spec.md §6.
+
+namespace = nesnd_jingnan_aid
+
+# ------------------------------------------------------------------
+# .1 The anti-Wu winner answers the interveners.
+# Fired by nesnd_jingnan_aid_offer at the end of nesnd_commit_rebel_settlement.
+# ------------------------------------------------------------------
+nesnd_jingnan_aid.1 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_jingnan_aid.1.t
+    desc = nesnd_jingnan_aid.1.d
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+    trigger = { any_country = { has_variable = nesnd_jingnan_aid_due } }
+    immediate = {
+        c:CNE ?= { save_scope_as = nesnd_aid_cne }
+        c:QE1 ?= { save_scope_as = nesnd_aid_qe1 }
+        c:HUS ?= { save_scope_as = nesnd_aid_hus }
+    }
+
+    # a. Pay what each intervener sent its troops for
+    option = {
+        name = nesnd_jingnan_aid.1.a
+        default_option = yes
+        ai_chance = { base = 70 }
+        if = {
+            limit = { c:CNE ?= { hidden_trigger = { has_variable = nesnd_jingnan_aid_due } } }
+            if = {
+                limit = { hidden_trigger = { has_variable = nesnd_jingnan_aid_west } }
+                custom_tooltip = nesnd_jingnan_aid_cne_west_tt
+            }
+            else = { custom_tooltip = nesnd_jingnan_aid_cne_east_tt }
+        }
+        if = {
+            limit = { c:QE1 ?= { hidden_trigger = { has_variable = nesnd_jingnan_aid_due } } }
+            custom_tooltip = nesnd_jingnan_aid_qe1_tt
+        }
+        if = {
+            limit = { c:HUS ?= { hidden_trigger = { has_variable = nesnd_jingnan_aid_due } } }
+            custom_tooltip = nesnd_jingnan_aid_hus_tt
+        }
+        custom_tooltip = nesnd_jingnan_aid_treaty_note_tt
+        hidden_effect = { nesnd_jingnan_aid_pay = yes }
+    }
+    # b. Thanks only
+    option = {
+        name = nesnd_jingnan_aid.1.b
+        ai_chance = { base = 30 }
+        custom_tooltip = nesnd_jingnan_aid_refuse_tt
+        hidden_effect = { nesnd_jingnan_aid_refuse = yes }
+    }
+}
+
+# ------------------------------------------------------------------
+# .2 The intervener hears the winner's answer. Result codes are set by nesnd_jingnan_aid_pay / _refuse:
+# 0 thanks only, 1 CNE east, 2 CNE west, 3 QE1, 4 HUS with port (state in var:nesnd_jingnan_aid_port), 5 HUS without port.
+# ------------------------------------------------------------------
+nesnd_jingnan_aid.2 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_jingnan_aid.2.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { var:nesnd_jingnan_aid_result ?= 0 } desc = nesnd_jingnan_aid.2.d0 }
+            triggered_desc = { trigger = { var:nesnd_jingnan_aid_result ?= 1 } desc = nesnd_jingnan_aid.2.d1 }
+            triggered_desc = { trigger = { var:nesnd_jingnan_aid_result ?= 2 } desc = nesnd_jingnan_aid.2.d2 }
+            triggered_desc = { trigger = { var:nesnd_jingnan_aid_result ?= 3 } desc = nesnd_jingnan_aid.2.d3 }
+            triggered_desc = { trigger = { var:nesnd_jingnan_aid_result ?= 4 } desc = nesnd_jingnan_aid.2.d4 }
+            desc = nesnd_jingnan_aid.2.d5
+        }
+    }
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+    trigger = { has_variable = nesnd_jingnan_aid_result }
+    immediate = {
+        var:nesnd_jingnan_aid_patron ?= { save_scope_as = nesnd_aid_patron }
+        remove_variable = nesnd_jingnan_aid_patron
+        var:nesnd_jingnan_aid_port ?= { save_scope_as = nesnd_aid_port }
+        remove_variable = nesnd_jingnan_aid_port
+    }
+
+    option = {
+        name = nesnd_jingnan_aid.2.a
+        default_option = yes
+        if = {
+            limit = {
+                c:CNE ?= this
+                OR = { hidden_trigger = { var:nesnd_jingnan_aid_result ?= 1 } hidden_trigger = { var:nesnd_jingnan_aid_result ?= 2 } }
+                hidden_trigger = { has_variable = cne_landreform_completion_tracker }
+                custom_tooltip = { text = nesnd_ui_not_ce_cne_land_reform_done_tt NOT = { has_variable = ce_CNE_land_reform_done } }
+            }
+            custom_tooltip = nesnd_jingnan_aid_land_reform_tt
+        }
+    }
+    after = { remove_variable = nesnd_jingnan_aid_result }
+}
+
+# ------------------------------------------------------------------
+# .3 Wu has won; the intervener learns the terms. Fired by nesnd_jingnan_aid_wu_victory (usm_civilwar.8).
+# Result 7: a reparations treaty was signed. 6: the engine refused the treaty.
+# ------------------------------------------------------------------
+nesnd_jingnan_aid.3 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_jingnan_aid.3.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { var:nesnd_jingnan_aid_result ?= 7 c:CNE ?= this } desc = nesnd_jingnan_aid.3.d_cne }
+            triggered_desc = { trigger = { var:nesnd_jingnan_aid_result ?= 7 } desc = nesnd_jingnan_aid.3.d }
+            triggered_desc = { trigger = { c:CNE ?= this } desc = nesnd_jingnan_aid.3.d_cne_no_treaty }
+            desc = nesnd_jingnan_aid.3.d_no_treaty
+        }
+    }
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+    trigger = { has_variable = nesnd_jingnan_aid_result }
+    immediate = {
+        var:nesnd_jingnan_aid_patron ?= { save_scope_as = nesnd_aid_patron }
+        remove_variable = nesnd_jingnan_aid_patron
+    }
+
+    option = {
+        name = nesnd_jingnan_aid.3.a
+        default_option = yes
+    }
+    after = { remove_variable = nesnd_jingnan_aid_result }
+}

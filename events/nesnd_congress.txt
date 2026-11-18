@@ -1,0 +1,272 @@
+﻿namespace = nesnd_congress
+
+nesnd_congress.1 = {
+	type = country_event
+	placement = root
+	duration = 30
+	title = nesnd_congress.1.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:congress_kind = 1 }
+				desc = nesnd_congress.1.land
+			}
+			triggered_desc = {
+				trigger = { scope:congress_kind = 2 }
+				desc = nesnd_congress.1.guarantee
+			}
+			triggered_desc = {
+				trigger = { scope:congress_kind = 3 }
+				desc = nesnd_congress.1.migration
+			}
+			desc = nesnd_congress.1.sanctions
+		}
+	}
+	event_image = { texture = "gfx/event_pictures/nesnd_poland_congress.dds" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	option = {
+		name = nesnd_congress.1.a
+		# Claude audit 2026-11-17: one named condition replaces ~30 raw variable lines.
+		trigger = { custom_tooltip = { text = nesnd_congress_ballot_open_tt nesnd_congress_ballot_valid = yes } }
+		ai_chance = {
+			base = 20
+			modifier = {
+				trigger = { global_var:nesnd_congress_proposer ?= this }
+				add = 100
+			}
+			modifier = {
+				trigger = {
+					has_variable = ce_pro_polish_variable
+					global_var:nesnd_congress_kind < 4
+				}
+				add = 50
+			}
+			modifier = {
+				trigger = {
+					has_variable = ce_anti_polish_variable
+					global_var:nesnd_congress_kind = 4
+				}
+				add = 50
+			}
+			modifier = {
+				# Claude audit 2026-11-17: was "relations:scope:congress_proposer" (unknown trigger, line dropped,
+				# empty trigger counted as true, so every voter got +30). Vanilla form "relations(scope:x)".
+				trigger = { "relations(scope:congress_proposer)" >= relations_threshold:amicable } # = 50, unchanged
+				add = 30
+			}
+			modifier = {
+				trigger = {
+					global_var:nesnd_congress_proposer = { has_variable = nesnd_poland_keeping_faith }
+					global_var:nesnd_congress_kind < 4
+				}
+				add = 30
+			}
+			modifier = {
+				trigger = {
+					global_var:nesnd_congress_target ?= this
+					global_var:nesnd_congress_kind = 1
+				}
+				factor = 0.1
+			}
+		}
+		custom_tooltip = nesnd_congress_vote_yes_tt
+		nesnd_congress_cast_vote = { VOTE = yes OPPOSE = no }
+	}
+	option = {
+		name = nesnd_congress.1.b
+		trigger = { custom_tooltip = { text = nesnd_congress_ballot_open_tt nesnd_congress_ballot_valid = yes } }
+		ai_chance = {
+			base = 20
+			modifier = {
+				trigger = {
+					has_variable = ce_anti_polish_variable
+					global_var:nesnd_congress_kind < 4
+				}
+				add = 50
+			}
+			modifier = {
+				trigger = {
+					has_variable = ce_pro_polish_variable
+					global_var:nesnd_congress_kind = 4
+				}
+				add = 50
+			}
+			modifier = {
+				trigger = {
+					global_var:nesnd_congress_target ?= this
+					OR = { global_var:nesnd_congress_kind = 1 global_var:nesnd_congress_kind = 4 }
+				}
+				add = 100
+			}
+			modifier = {
+				# Claude audit 2026-11-17: see option a; vanilla form "relations(scope:x)".
+				trigger = { "relations(scope:congress_proposer)" <= relations_threshold:cold } # = -50, unchanged
+				add = 30
+			}
+		}
+		custom_tooltip = nesnd_congress_vote_no_tt
+		nesnd_congress_cast_vote = { VOTE = no OPPOSE = yes }
+	}
+	option = {
+		name = nesnd_congress.1.c
+		default_option = yes
+		ai_chance = { base = 5 }
+		custom_tooltip = nesnd_congress_vote_abstain_tt
+		if = {
+			limit = { nesnd_congress_ballot_valid = yes }
+			set_variable = {
+				name = nesnd_congress_voted
+				value = global_var:nesnd_congress_serial
+			}
+			set_variable = { name = nesnd_congress_vote_choice value = 0 }
+			change_global_variable = { name = nesnd_congress_wait subtract = 1 }
+		}
+	}
+}
+
+nesnd_congress.2 = {
+	type = country_event
+	placement = root
+	duration = 7
+	title = nesnd_congress.2.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:nesnd_congress_result = 1 }
+				desc = nesnd_congress.2.pass
+			}
+			triggered_desc = {
+				trigger = { var:nesnd_congress_result = 2 }
+				desc = nesnd_congress.2.veto
+			}
+			desc = nesnd_congress.2.invalid
+		}
+	}
+	event_image = { texture = "gfx/event_pictures/nesnd_poland_congress.dds" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	# Claude audit 2026-11-17: the option now states what the answer changed.
+	option = {
+		name = nesnd_congress.2.a
+		default_option = yes
+		if = {
+			limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_congress_result_is_1_tt var:nesnd_congress_result ?= 1 } }
+			custom_tooltip = nesnd_congress_result_pass_tt
+		}
+		else_if = {
+			limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_congress_result_is_2_tt var:nesnd_congress_result ?= 2 } c:KRA ?= this }
+			custom_tooltip = nesnd_congress_result_veto_krakow_tt
+		}
+		else_if = {
+			limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_congress_result_is_2_tt var:nesnd_congress_result ?= 2 } }
+			custom_tooltip = nesnd_congress_result_veto_tt
+		}
+		else = {
+			custom_tooltip = nesnd_congress_result_invalid_tt
+		}
+	}
+}
+
+nesnd_congress.3 = {
+	type = country_event
+	placement = root
+	duration = 30
+	title = nesnd_congress.3.t
+	desc = nesnd_congress.3.d
+	# Claude audit 2026-11-17: names are saved as event scopes for the option text. The four
+	# global variables used before were only read in localization (error.log "set but never used").
+	immediate = {
+		c:FRA ?= { save_scope_as = congress_france }
+		c:RUS ?= { save_scope_as = congress_rus }
+		c:PRU ?= { save_scope_as = congress_pru }
+		c:AUS ?= { save_scope_as = congress_aus }
+	}
+	event_image = { texture = "gfx/event_pictures/nesnd_poland_congress.dds" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	# Claude audit 2026-11-17: option triggers show named conditions only (rule: no raw
+	# "has variable" lines); identity/end guards are hidden; effects say what is submitted.
+	option = {
+		name = nesnd_congress.3.guarantee
+		trigger = {
+			hidden_trigger = { nesnd_poland_active = yes c:KRA ?= this exists = c:FRA }
+			nesnd_congress_can_propose = yes
+			is_subject = no
+			NOT = { has_war_with = c:FRA }
+			c:FRA = {
+				nesnd_congress_can_guarantee = yes
+				custom_tooltip = {
+					text = nesnd_congress_no_pledge_tt
+					NOT = {
+						AND = {
+							var:nesnd_congress_guarantee_pledge ?= c:KRA
+							nesnd_poland_guarantees_krakow = yes
+						}
+					}
+				}
+			}
+		}
+		ai_chance = { base = 40 }
+		custom_tooltip = nesnd_congress_submit_guarantee_tt
+		nesnd_congress_submit = { KIND = 2 TARGET = c:FRA DEFEATED = no }
+	}
+	option = {
+		name = nesnd_congress.3.migrate_RUS
+		trigger = {
+			hidden_trigger = { nesnd_poland_active = yes c:KRA ?= this exists = c:RUS }
+			nesnd_congress_can_propose = yes
+			game_date < 1900.1.1
+			c:RUS = { nesnd_congress_migration_target = yes }
+		}
+		ai_chance = { base = 10 }
+		custom_tooltip = nesnd_congress_submit_migration_rus_tt
+		nesnd_congress_submit = { KIND = 3 TARGET = c:RUS DEFEATED = no }
+	}
+	option = {
+		name = nesnd_congress.3.migrate_PRU
+		trigger = {
+			hidden_trigger = { nesnd_poland_active = yes c:KRA ?= this exists = c:PRU }
+			nesnd_congress_can_propose = yes
+			game_date < 1900.1.1
+			c:PRU = { nesnd_congress_migration_target = yes }
+		}
+		ai_chance = { base = 10 }
+		custom_tooltip = nesnd_congress_submit_migration_pru_tt
+		nesnd_congress_submit = { KIND = 3 TARGET = c:PRU DEFEATED = no }
+	}
+	option = {
+		name = nesnd_congress.3.migrate_AUS
+		trigger = {
+			hidden_trigger = { nesnd_poland_active = yes c:KRA ?= this exists = c:AUS }
+			nesnd_congress_can_propose = yes
+			game_date < 1900.1.1
+			c:AUS = { nesnd_congress_migration_target = yes }
+		}
+		ai_chance = { base = 10 }
+		custom_tooltip = nesnd_congress_submit_migration_aus_tt
+		nesnd_congress_submit = { KIND = 3 TARGET = c:AUS DEFEATED = no }
+	}
+	option = {
+		name = nesnd_congress.3.cancel
+		default_option = yes
+		ai_chance = { base = 20 }
+		custom_tooltip = nesnd_congress_submit_none_tt
+	}
+}
+
+nesnd_congress.4 = {
+	type = country_event
+	placement = root
+	duration = 30
+	title = nesnd_congress.4.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { exists = scope:congress_recipient }
+				desc = nesnd_congress.4.chair
+			}
+			desc = nesnd_congress.4.pending
+		}
+	}
+	icon = "gfx/interface/icons/event_icons/nesnd_poland_congress.dds"
+	event_image = { texture = "gfx/event_pictures/nesnd_poland_congress.dds" }
+	option = { name = nesnd_congress.4.a default_option = yes }
+}

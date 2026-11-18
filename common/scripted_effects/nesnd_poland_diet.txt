@@ -1,0 +1,48 @@
+﻿# Called on the selected foreign state. Save the state region, which survives a transfer.
+nesnd_poland_begin_rising = {
+	save_scope_as = nesnd_rising_land
+	owner = { save_scope_as = nesnd_rising_enemy }
+	state_region = { add_claim = c:KRA }
+	c:KRA = {
+		create_diplomatic_play = {
+			target_country = scope:nesnd_rising_enemy
+			target_state = scope:nesnd_rising_land
+			type = dp_nesnd_poland_rising
+			add_war_goal = { holder = scope:nesnd_rising_enemy type = humiliation target_country = c:KRA }
+		}
+		if = { limit = {
+			any_diplomatic_play = { is_diplomatic_play_type = dp_nesnd_poland_rising initiator = c:KRA target = scope:nesnd_rising_enemy }
+		}
+			if = { limit = { custom_tooltip = { text = nesnd_ui_poland_congress_rising_mandate_tt has_variable = nesnd_poland_congress_rising_mandate } } remove_variable = nesnd_poland_congress_rising_mandate }
+			set_variable = { name = nesnd_poland_rising_region value = scope:nesnd_rising_land.state_region }
+			set_variable = { name = nesnd_poland_rising_enemy value = scope:nesnd_rising_enemy }
+		}
+	}
+}
+
+# Re-evaluate the saved demand after the play and its war have both ended.
+# Called from on_monthly_pulse, which has no root, so name Kraków directly.
+nesnd_poland_settle_rising = {
+	if = {
+		limit = { has_variable = nesnd_poland_rising_region
+			NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_nesnd_poland_rising initiator = c:KRA } }
+			NOT = { var:nesnd_poland_rising_enemy ?= { has_war_with = c:KRA } }
+		}
+		var:nesnd_poland_rising_region = { save_scope_as = nesnd_rising_region }
+		if = { limit = { has_variable = nesnd_poland_rising_goal_won }
+			trigger_event = { id = nesnd_polish_diet.9 popup = yes }
+		}
+		else = {
+			je:je_ce_polish_reconquest ?= { set_bar_progress = { name = nesnd_poland_red_white_bar value = -60 } }
+			add_modifier = { name = nesnd_poland_repression years = 10 }
+			var:nesnd_poland_rising_enemy ?= {
+				set_variable = nesnd_poland_suppressed_rising
+				nesnd_polish_exile_defeat = yes
+			}
+			trigger_event = { id = nesnd_polish_diet.10 popup = yes }
+		}
+		remove_variable = nesnd_poland_rising_goal_won
+		remove_variable = nesnd_poland_rising_enemy
+		remove_variable = nesnd_poland_rising_region
+	}
+}

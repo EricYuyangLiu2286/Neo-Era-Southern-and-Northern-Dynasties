@@ -1,0 +1,530 @@
+﻿# 西秦「边疆诸部」的效果。Root = country（西秦），另注明者除外。
+
+nesnd_qe1_fr_init = {
+	if = { limit = { NOT = { has_variable = nesnd_qe1_fr_afg } } set_variable = { name = nesnd_qe1_fr_afg value = 20 } }
+	if = { limit = { NOT = { has_variable = nesnd_qe1_fr_kaz } } set_variable = { name = nesnd_qe1_fr_kaz value = 10 } }
+	nesnd_qe1_fr_sync = yes
+}
+nesnd_qe1_fr_sync = {
+	clamp_variable = { name = nesnd_qe1_fr_afg min = 0 max = 100 }
+	clamp_variable = { name = nesnd_qe1_fr_kaz min = 0 max = 100 }
+	if = {
+		limit = { has_journal_entry = nesnd_qe1_frontier_journal }
+		je:nesnd_qe1_frontier_journal = {
+			set_bar_progress = { name = nesnd_qe1_fr_afg_bar value = root.var:nesnd_qe1_fr_afg }
+			set_bar_progress = { name = nesnd_qe1_fr_kaz_bar value = root.var:nesnd_qe1_fr_kaz }
+			set_bar_progress = { name = nesnd_qe1_fr_resolve_bar value = root.nesnd_qe1_fr_resolve_value }
+		}
+	}
+}
+
+# 每月：结算两条地区条，开闭运动，文化退转，认领起事，判定战果，连锁响应。
+nesnd_qe1_fr_monthly = {
+	if = {
+		limit = { nesnd_qe1_frontier_live = yes }
+		change_variable = { name = nesnd_qe1_fr_afg add = nesnd_qe1_fr_afg_delta }
+		change_variable = { name = nesnd_qe1_fr_kaz add = nesnd_qe1_fr_kaz_delta }
+
+		# 阿富汗：1842 年起，条到 40 即有运动。
+		if = {
+			limit = {
+				nesnd_qe1_fr_afg_active = yes
+				NOT = { has_variable = nesnd_qe1_fr_afg_stirring }
+				var:nesnd_qe1_fr_afg >= 40
+				game_date >= 1842.1.1
+			}
+			set_variable = nesnd_qe1_fr_afg_stirring
+			if = {
+				limit = { NOT = { any_political_movement = { is_political_movement_type = movement_nesnd_qe1_afghan } } }
+				create_political_movement = { type = movement_nesnd_qe1_afghan culture = cu:pashtun }
+			}
+			if = {
+				limit = { NOT = { has_variable = nesnd_qe1_fr_afg_agitator } }
+				set_variable = nesnd_qe1_fr_afg_agitator
+				create_character = {
+					first_name = nesnd_qe1_fr_n_akbar
+					last_name = nesnd_qe1_fr_n_barakzai
+					historical = yes
+					birth_date = 1816.1.1
+					is_agitator = yes
+					culture = cu:pashtun
+					religion = rel:sunni
+					interest_group = ig_armed_forces
+					ideology = ideology_reformer
+				}
+			}
+			trigger_event = { id = nesnd_qe1_frontier.1 popup = yes }
+		}
+		# 草原：条到 40，且阿富汗没有在起事中，上一次起事已过五年。
+		if = {
+			limit = {
+				nesnd_qe1_fr_kaz_active = yes
+				NOT = { has_variable = nesnd_qe1_fr_kaz_stirring }
+				var:nesnd_qe1_fr_kaz >= 40
+				game_date >= 1842.1.1
+				NOT = { has_variable = nesnd_qe1_fr_recent_rising }
+				NOT = { has_variable = nesnd_qe1_fr_afg_risen }
+			}
+			set_variable = nesnd_qe1_fr_kaz_stirring
+			if = {
+				limit = { NOT = { any_political_movement = { is_political_movement_type = movement_nesnd_qe1_uzbek } } }
+				create_political_movement = { type = movement_nesnd_qe1_uzbek culture = cu:kazak }
+			}
+			if = {
+				limit = { NOT = { has_variable = nesnd_qe1_fr_kaz_agitator } }
+				set_variable = nesnd_qe1_fr_kaz_agitator
+				create_character = {
+					first_name = nesnd_qe1_fr_n_makhambet
+					last_name = nesnd_qe1_fr_n_utemisuly
+					historical = yes
+					birth_date = 1803.1.1
+					is_agitator = yes
+					culture = cu:kazak
+					religion = rel:sunni
+					interest_group = ig_rural_folk
+					ideology = ideology_reformer
+				}
+			}
+			trigger_event = { id = nesnd_qe1_frontier.2 popup = yes }
+		}
+		# 条落回 25 以下，运动散去。
+		if = {
+			limit = { has_variable = nesnd_qe1_fr_afg_stirring NOT = { has_variable = nesnd_qe1_fr_afg_risen } var:nesnd_qe1_fr_afg < 25 }
+			remove_variable = nesnd_qe1_fr_afg_stirring
+		}
+		if = {
+			limit = { has_variable = nesnd_qe1_fr_kaz_stirring NOT = { has_variable = nesnd_qe1_fr_kaz_risen } var:nesnd_qe1_fr_kaz < 25 }
+			remove_variable = nesnd_qe1_fr_kaz_stirring
+		}
+
+		# 文化退转：运动存在期间，本地区每月有一成五的几率（条到 70 后二成五）让一个州的西域汉羌半数改回本地民族。
+		if = {
+			limit = { has_variable = nesnd_qe1_fr_afg_stirring NOT = { has_variable = nesnd_qe1_fr_afg_risen } }
+			if = {
+				limit = { var:nesnd_qe1_fr_afg >= 70 }
+				random_list = { 75 = { } 25 = { nesnd_qe1_fr_revert = { REGION = nesnd_qe1_fr_afg_region } } }
+			}
+			else = { random_list = { 85 = { } 15 = { nesnd_qe1_fr_revert = { REGION = nesnd_qe1_fr_afg_region } } } }
+		}
+		if = {
+			limit = { has_variable = nesnd_qe1_fr_kaz_stirring NOT = { has_variable = nesnd_qe1_fr_kaz_risen } }
+			if = {
+				limit = { var:nesnd_qe1_fr_kaz >= 70 }
+				random_list = { 75 = { } 25 = { nesnd_qe1_fr_revert = { REGION = nesnd_qe1_fr_kaz_region } } }
+			}
+			else = { random_list = { 85 = { } 15 = { nesnd_qe1_fr_revert = { REGION = nesnd_qe1_fr_kaz_region } } } }
+		}
+
+		nesnd_qe1_fr_claim_risings = yes
+		nesnd_qe1_fr_settle_afg = yes
+		nesnd_qe1_fr_settle_kaz = yes
+		nesnd_qe1_fr_chain = yes
+		nesnd_qe1_fr_sync = yes
+	}
+}
+
+# 一个州的退转。沿用「帝国的稳定」的抽取与转换（nesnd_qe1_select_old_identity、nesnd_qe1_convert_selected_cohort）。
+# 上限：该州西域汉羌不足四分之一即不再退转；同一州五年内只退转一次。
+nesnd_qe1_fr_revert = {
+	random_scope_state = {
+		limit = { $REGION$ = yes nesnd_qe1_fr_revert_state = yes }
+		set_variable = { name = nesnd_qe1_fr_reverted years = 5 }
+		nesnd_qe1_select_old_identity = yes
+		if = {
+			limit = { exists = scope:nesnd_qe1_return_culture exists = scope:nesnd_qe1_return_religion }
+			nesnd_qe1_convert_selected_cohort = yes
+		}
+		clear_saved_scope = nesnd_qe1_return_culture
+		clear_saved_scope = nesnd_qe1_return_religion
+	}
+}
+
+# 引擎的分离战争一开始（on_secession_start 与每周脉冲都会调用），认领新国家：定国号、首都、人物与军队。
+nesnd_qe1_fr_claim_risings = {
+	if = {
+		limit = {
+			has_variable = nesnd_qe1_fr_afg_stirring
+			NOT = { has_variable = nesnd_qe1_fr_afg_risen }
+			exists = c:AFG
+			c:AFG = {
+				NOT = { has_variable = nesnd_qe1_fr_setup }
+				var:civil_war_target_var ?= c:QE1
+				var:civil_war_type_var ?= movement_type:movement_nesnd_qe1_afghan
+			}
+		}
+		set_variable = nesnd_qe1_fr_afg_risen
+		set_variable = { name = nesnd_qe1_fr_recent_rising years = 5 }
+		set_variable = { name = nesnd_qe1_fr_afg_recent years = 5 }
+		c:AFG = { save_scope_as = nesnd_qe1_fr_rising_country nesnd_qe1_fr_setup_afg = yes nesnd_qe1_fr_big_host = { NAME = nesnd_qe1_fr_afg_army } }
+		trigger_event = { id = nesnd_qe1_frontier.3 popup = yes }
+	}
+	if = {
+		limit = {
+			has_variable = nesnd_qe1_fr_kaz_stirring
+			NOT = { has_variable = nesnd_qe1_fr_kaz_risen }
+			exists = c:UZB
+			c:UZB = {
+				NOT = { has_variable = nesnd_qe1_fr_setup }
+				var:civil_war_target_var ?= c:QE1
+				var:civil_war_type_var ?= movement_type:movement_nesnd_qe1_uzbek
+			}
+		}
+		set_variable = nesnd_qe1_fr_kaz_risen
+		set_variable = { name = nesnd_qe1_fr_recent_rising years = 5 }
+		set_variable = { name = nesnd_qe1_fr_kaz_recent years = 5 }
+		c:UZB = { save_scope_as = nesnd_qe1_fr_rising_country nesnd_qe1_fr_setup_kaz = yes nesnd_qe1_fr_big_host = { NAME = nesnd_qe1_fr_kaz_army } }
+		trigger_event = { id = nesnd_qe1_frontier.4 popup = yes }
+	}
+}
+
+# Root = 新国家。一支军队：步、骑、炮的营数由调用者给出。
+nesnd_qe1_fr_raise_host = {
+	save_scope_as = nesnd_qe1_fr_host_owner
+	create_military_formation = {
+		name = $NAME$
+		type = army
+		hq_region = scope:nesnd_qe1_fr_host_owner.capital.region
+		combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = scope:nesnd_qe1_fr_host_owner.capital.state_region count = $INF$ }
+		combat_unit = { type = unit_type:combat_unit_type_hussars state_region = scope:nesnd_qe1_fr_host_owner.capital.state_region count = $CAV$ }
+		combat_unit = { type = unit_type:combat_unit_type_cannon_artillery state_region = scope:nesnd_qe1_fr_host_owner.capital.state_region count = $ART$ }
+	}
+}
+# Root = 新国家。两处主要起事：约为西秦兵营总等级的四分之一。
+nesnd_qe1_fr_big_host = {
+	add_technology_researched = line_infantry
+	add_technology_researched = artillery
+	add_modifier = { name = nesnd_qe1_fr_host years = 5 }
+	if = {
+		limit = { exists = c:QE1 c:QE1 = { country_has_building_type_levels = { target = bt:building_barrack value >= 160 } } }
+		nesnd_qe1_fr_raise_host = { NAME = $NAME$ INF = 22 CAV = 12 ART = 6 }
+	}
+	else_if = {
+		limit = { exists = c:QE1 c:QE1 = { country_has_building_type_levels = { target = bt:building_barrack value >= 120 } } }
+		nesnd_qe1_fr_raise_host = { NAME = $NAME$ INF = 16 CAV = 10 ART = 4 }
+	}
+	else_if = {
+		limit = { exists = c:QE1 c:QE1 = { country_has_building_type_levels = { target = bt:building_barrack value >= 80 } } }
+		nesnd_qe1_fr_raise_host = { NAME = $NAME$ INF = 11 CAV = 6 ART = 3 }
+	}
+	else = { nesnd_qe1_fr_raise_host = { NAME = $NAME$ INF = 8 CAV = 5 ART = 2 } }
+}
+# Root = 新国家。连锁响应的三国：约为西秦兵营总等级的十分之一。
+nesnd_qe1_fr_small_host = {
+	add_technology_researched = line_infantry
+	add_technology_researched = artillery
+	add_modifier = { name = nesnd_qe1_fr_host years = 5 }
+	if = {
+		limit = { exists = c:QE1 c:QE1 = { country_has_building_type_levels = { target = bt:building_barrack value >= 160 } } }
+		nesnd_qe1_fr_raise_host = { NAME = $NAME$ INF = 8 CAV = 6 ART = 2 }
+	}
+	else_if = {
+		limit = { exists = c:QE1 c:QE1 = { country_has_building_type_levels = { target = bt:building_barrack value >= 100 } } }
+		nesnd_qe1_fr_raise_host = { NAME = $NAME$ INF = 6 CAV = 4 ART = 2 }
+	}
+	else = { nesnd_qe1_fr_raise_host = { NAME = $NAME$ INF = 4 CAV = 3 ART = 1 } }
+}
+
+# Root = 新生的阿富汗。多斯特·穆罕默德与他的儿子、赫拉特的宰相。
+nesnd_qe1_fr_setup_afg = {
+	set_variable = nesnd_qe1_fr_setup
+	set_state_religion = rel:sunni
+	activate_law = law_type:law_monarchy
+	activate_law = law_type:law_autocracy
+	if = { limit = { any_scope_state = { state_region = s:STATE_KABUL } } set_capital = STATE_KABUL }
+	create_character = { template = dost_mohammad_khan }
+}
+
+# Root = 新生的哈萨克国（乌兹别克汗国）。肯尼萨尔、瑙鲁兹拜、诗人马哈姆别特。
+nesnd_qe1_fr_setup_kaz = {
+	set_variable = nesnd_qe1_fr_setup
+	set_variable = nesnd_qe1_uzbek_khanate
+	add_primary_culture = cu:kazak
+	set_state_religion = rel:sunni
+	activate_law = law_type:law_monarchy
+	activate_law = law_type:law_autocracy
+	if = { limit = { any_scope_state = { state_region = s:STATE_SYRDARYA } } set_capital = STATE_SYRDARYA }
+	create_character = { template = kaz_kenesary_khan }
+	create_character = {
+		first_name = nesnd_qe1_fr_n_nauryzbai
+		last_name = nesnd_qe1_fr_n_kasymuli
+		historical = yes
+		birth_date = 1822.1.1
+		is_general = yes
+		culture = cu:kazak
+		religion = rel:sunni
+		interest_group = ig_armed_forces
+		ideology = ideology_jingoist_leader
+	}
+}
+
+# 把一个地区的州交给一个国家；该国不存在时就地建国。西秦是调用者。
+nesnd_qe1_fr_release = {
+	if = {
+		limit = { any_scope_state = { $REGION$ = yes } }
+		if = {
+			limit = { NOT = { exists = c:$TAG$ } }
+			clear_saved_scope = nesnd_qe1_fr_seed
+			ordered_scope_state = {
+				limit = { state_population > 0 $REGION$ = yes }
+				order_by = state_population position = 0 check_range_bounds = no
+				save_scope_as = nesnd_qe1_fr_seed
+			}
+			if = {
+				limit = { exists = scope:nesnd_qe1_fr_seed }
+				create_country = { tag = $TAG$ origin = root state = scope:nesnd_qe1_fr_seed }
+			}
+		}
+		if = {
+			limit = { exists = c:$TAG$ }
+			every_scope_state = { limit = { $REGION$ = yes } set_state_owner = c:$TAG$ }
+		}
+	}
+}
+
+# Root = 连锁响应的新国家。随后借用西秦解体脚本现成的开战流程（dp_nesnd_qe1_frontier）。
+nesnd_qe1_fr_setup_responder = {
+	set_variable = nesnd_qe1_fr_setup
+	set_state_religion = rel:sunni
+	activate_law = law_type:law_monarchy
+	activate_law = law_type:law_autocracy
+	nesnd_qe1_fr_small_host = { NAME = $NAME$ }
+	if = {
+		limit = { is_subject = no }
+		set_variable = nesnd_qe1_breakaway_attacker
+		set_variable = { name = nesnd_qe1_war_launch_window days = 90 }
+		trigger_event = { id = nesnd_qe1_fracture.91 days = 2 popup = no }
+	}
+}
+
+# 连锁响应：先是土库曼与希瓦同时起事，十八个月后（或草原已失）轮到浩罕。
+nesnd_qe1_fr_chain = {
+	if = {
+		limit = { nesnd_qe1_fr_chain_ready = yes NOT = { has_variable = nesnd_qe1_fr_chain_west } }
+		set_variable = nesnd_qe1_fr_chain_west
+		set_variable = { name = nesnd_qe1_fr_chain_wait months = 18 }
+		nesnd_qe1_fr_release = { TAG = TRC REGION = nesnd_qe1_fr_trc_region }
+		nesnd_qe1_fr_release = { TAG = KHI REGION = nesnd_qe1_fr_khi_region }
+		if = {
+			limit = { exists = c:TRC c:TRC = { NOT = { has_variable = nesnd_qe1_fr_setup } } }
+			c:TRC = {
+				if = { limit = { any_scope_state = { state_region = s:STATE_MERZ } } set_capital = STATE_MERZ }
+				create_character = {
+					first_name = nesnd_qe1_fr_n_kaushut
+					last_name = nesnd_qe1_fr_n_teke
+					historical = yes
+					birth_date = 1823.1.1
+					ruler = yes
+					is_general = yes
+					culture = cu:turkmen
+					religion = rel:sunni
+					interest_group = ig_armed_forces
+					ideology = ideology_jingoist_leader
+				}
+				nesnd_qe1_fr_setup_responder = { NAME = nesnd_qe1_fr_trc_army }
+			}
+		}
+		if = {
+			limit = { exists = c:KHI c:KHI = { NOT = { has_variable = nesnd_qe1_fr_setup } } }
+			c:KHI = {
+				create_character = {
+					first_name = nesnd_qe1_fr_n_allah_quli
+					last_name = nesnd_qe1_fr_n_qungrat
+					historical = yes
+					birth_date = 1794.1.1
+					ruler = yes
+					culture = cu:uzbek
+					religion = rel:sunni
+					interest_group = ig_landowners
+					ideology = ideology_traditionalist
+				}
+				nesnd_qe1_fr_setup_responder = { NAME = nesnd_qe1_fr_khi_army }
+			}
+		}
+		trigger_event = { id = nesnd_qe1_frontier.9 popup = yes }
+	}
+	if = {
+		limit = {
+			has_variable = nesnd_qe1_fr_chain_west
+			NOT = { has_variable = nesnd_qe1_fr_chain_kok }
+			OR = { has_variable = nesnd_qe1_fr_kaz_lost NOT = { has_variable = nesnd_qe1_fr_chain_wait } }
+		}
+		set_variable = nesnd_qe1_fr_chain_kok
+		nesnd_qe1_fr_release = { TAG = KOK REGION = nesnd_qe1_fr_kok_region }
+		if = {
+			limit = { exists = c:KOK c:KOK = { NOT = { has_variable = nesnd_qe1_fr_setup } } }
+			c:KOK = {
+				add_primary_culture = cu:uzbek
+				create_character = {
+					first_name = nesnd_qe1_fr_n_madali
+					last_name = nesnd_qe1_fr_n_ming
+					historical = yes
+					birth_date = 1808.1.1
+					ruler = yes
+					culture = cu:uzbek
+					religion = rel:sunni
+					interest_group = ig_landowners
+					ideology = ideology_traditionalist
+				}
+				create_character = {
+					first_name = nesnd_qe1_fr_n_yaqub
+					last_name = nesnd_qe1_fr_n_beg
+					historical = yes
+					birth_date = 1820.1.1
+					is_general = yes
+					culture = cu:uzbek
+					religion = rel:sunni
+					interest_group = ig_armed_forces
+					ideology = ideology_jingoist_leader
+				}
+				nesnd_qe1_fr_setup_responder = { NAME = nesnd_qe1_fr_kok_army }
+			}
+		}
+		trigger_event = { id = nesnd_qe1_frontier.10 popup = yes }
+	}
+}
+
+# 许以自治：该地区建国，成为西秦的保护国。不给军队，不开战。
+nesnd_qe1_fr_autonomy_afg = {
+	nesnd_qe1_fr_release = { TAG = AFG REGION = nesnd_qe1_fr_afg_region }
+	if = {
+		limit = { exists = c:AFG }
+		c:AFG = { if = { limit = { NOT = { has_variable = nesnd_qe1_fr_setup } } nesnd_qe1_fr_setup_afg = yes } }
+		if = { limit = { c:AFG = { is_subject = no } } create_diplomatic_pact = { country = c:AFG type = protectorate } }
+	}
+	remove_variable = nesnd_qe1_fr_afg_stirring
+	set_variable = nesnd_qe1_fr_afg_lost
+	change_variable = { name = nesnd_qe1_unity add = 5 }
+	nesnd_qe1_fr_sync = yes
+}
+nesnd_qe1_fr_autonomy_kaz = {
+	nesnd_qe1_fr_release = { TAG = UZB REGION = nesnd_qe1_fr_kaz_region }
+	if = {
+		limit = { exists = c:UZB }
+		c:UZB = { if = { limit = { NOT = { has_variable = nesnd_qe1_fr_setup } } nesnd_qe1_fr_setup_kaz = yes } }
+		if = { limit = { c:UZB = { is_subject = no } } create_diplomatic_pact = { country = c:UZB type = protectorate } }
+	}
+	remove_variable = nesnd_qe1_fr_kaz_stirring
+	set_variable = nesnd_qe1_fr_kaz_lost
+	change_variable = { name = nesnd_qe1_unity add = 5 }
+	nesnd_qe1_fr_sync = yes
+}
+
+# 战果：开战后才判定。新国家还在而战争已停，地区失去。新国家已不存在，平定。
+nesnd_qe1_fr_settle_afg = {
+	if = {
+		limit = {
+			has_variable = nesnd_qe1_fr_afg_risen
+			NOT = { exists = c:AFG c:AFG = { OR = { has_war_with = root is_diplomatic_play_enemy_of = root } } }
+		}
+		if = {
+			limit = { exists = c:AFG c:AFG = { is_country_alive = yes } }
+			remove_variable = nesnd_qe1_fr_afg_risen
+			remove_variable = nesnd_qe1_fr_afg_stirring
+			set_variable = nesnd_qe1_fr_afg_lost
+			change_variable = { name = nesnd_qe1_unity add = -10 }
+			c:AFG = { save_scope_as = nesnd_qe1_fr_rising_country }
+			trigger_event = { id = nesnd_qe1_frontier.5 popup = yes }
+		}
+		else = {
+			remove_variable = nesnd_qe1_fr_afg_risen
+			remove_variable = nesnd_qe1_fr_afg_stirring
+			set_variable = { name = nesnd_qe1_fr_afg_quiet years = 10 }
+			set_variable = { name = nesnd_qe1_fr_afg value = 20 }
+			change_variable = { name = nesnd_qe1_unity add = 10 }
+			trigger_event = { id = nesnd_qe1_frontier.7 popup = yes }
+		}
+	}
+}
+nesnd_qe1_fr_settle_kaz = {
+	if = {
+		limit = {
+			has_variable = nesnd_qe1_fr_kaz_risen
+			NOT = { exists = c:UZB c:UZB = { OR = { has_war_with = root is_diplomatic_play_enemy_of = root } } }
+		}
+		if = {
+			limit = { exists = c:UZB c:UZB = { is_country_alive = yes } }
+			remove_variable = nesnd_qe1_fr_kaz_risen
+			remove_variable = nesnd_qe1_fr_kaz_stirring
+			set_variable = nesnd_qe1_fr_kaz_lost
+			change_variable = { name = nesnd_qe1_unity add = -10 }
+			c:UZB = { save_scope_as = nesnd_qe1_fr_rising_country }
+			trigger_event = { id = nesnd_qe1_frontier.6 popup = yes }
+		}
+		else = {
+			remove_variable = nesnd_qe1_fr_kaz_risen
+			remove_variable = nesnd_qe1_fr_kaz_stirring
+			set_variable = { name = nesnd_qe1_fr_kaz_quiet years = 10 }
+			set_variable = { name = nesnd_qe1_fr_kaz value = 20 }
+			change_variable = { name = nesnd_qe1_unity add = 10 }
+			trigger_event = { id = nesnd_qe1_frontier.8 popup = yes }
+		}
+	}
+}
+
+# 日志结束时：撤掉两面旗号，运动随之散去。
+nesnd_qe1_fr_close = {
+	remove_variable = nesnd_qe1_fr_afg_stirring
+	remove_variable = nesnd_qe1_fr_kaz_stirring
+}
+
+# —— 波斯将军府「将军府的忠心」。Root = 波斯 ——
+# 这条取代了原先的「近西帝国的未来」：方略不再开局掷骰，而由忠心走到哪一端决定。
+nesnd_per_stance_init = {
+	if = { limit = { NOT = { has_variable = nesnd_per_stance } } set_variable = { name = nesnd_per_stance value = 50 } }
+	nesnd_per_stance_sync = yes
+}
+nesnd_per_stance_sync = {
+	clamp_variable = { name = nesnd_per_stance min = 0 max = 100 }
+	if = {
+		limit = { has_journal_entry = nesnd_per_stance_journal }
+		je:nesnd_per_stance_journal = { set_bar_progress = { name = nesnd_per_stance_bar value = root.var:nesnd_per_stance } }
+	}
+}
+nesnd_per_stance_monthly = {
+	change_variable = { name = nesnd_per_stance add = nesnd_per_stance_delta }
+	nesnd_per_stance_sync = yes
+	# 倾向助秦期间，西秦不时给予扶助（原「遣使伊犁」路线的三件事）。
+	if = {
+		limit = { nesnd_per_aid_live = yes }
+		random_list = {
+			70 = { }
+			10 = { trigger = { NOT = { has_modifier = nesnd_per_aid_law } } trigger_event = { id = nesnd_per.1 popup = yes } }
+			10 = { trigger = { NOT = { has_modifier = nesnd_per_aid_building } } trigger_event = { id = nesnd_per.2 popup = yes } }
+			10 = { trigger = { NOT = { has_modifier = nesnd_per_aid_legitimacy } } trigger_event = { id = nesnd_per.3 popup = yes } }
+		}
+	}
+	# 忠心落到 20 以下：方略定为助秦西进。
+	if = {
+		limit = { var:nesnd_per_stance <= 20 NOT = { has_variable = nesnd_per_future_done } }
+		nesnd_per_settle_route = { ROUTE = aid }
+	}
+	# 自立一端：脱离朝贡，方略定为东向。
+	if = {
+		limit = { var:nesnd_per_stance >= 100 exists = c:QE1 is_subject_of = c:QE1 is_at_war = no }
+		make_independent = yes
+		c:QE1 = {
+			change_variable = { name = nesnd_qe1_unity add = -5 }
+			if = { limit = { has_variable = nesnd_qe1_fr_afg nesnd_qe1_fr_afg_active = yes } change_variable = { name = nesnd_qe1_fr_afg add = 10 } }
+			trigger_event = { id = nesnd_per_stance.2 popup = yes }
+		}
+		nesnd_per_settle_route = { ROUTE = covert }
+	}
+	# 助秦一端：有叛军与西秦交战时出兵助剿，忠心回到 30。三年内不重复。
+	if = {
+		limit = {
+			var:nesnd_per_stance <= 0
+			exists = c:QE1
+			is_subject_of = c:QE1
+			NOT = { has_variable = nesnd_per_stance_aided }
+			any_country = { nesnd_qe1_fr_enemy = yes }
+		}
+		set_variable = { name = nesnd_per_stance_aided years = 3 }
+		set_variable = { name = nesnd_per_stance value = 30 }
+		c:QE1 = {
+			add_modifier = { name = nesnd_qe1_fr_persian_aid years = 3 }
+			if = { limit = { has_variable = nesnd_qe1_fr_afg nesnd_qe1_fr_afg_active = yes } change_variable = { name = nesnd_qe1_fr_afg add = -20 } }
+			trigger_event = { id = nesnd_per_stance.3 popup = yes }
+		}
+		nesnd_per_stance_sync = yes
+	}
+}

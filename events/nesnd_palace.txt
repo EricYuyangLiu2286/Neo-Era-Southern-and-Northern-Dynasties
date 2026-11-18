@@ -1,7 +1,7 @@
 ﻿namespace = nesnd_palace
 
 # 「宫廷力量」的宫廷事件。由 nesnd_power_month 在宫廷事件条满时抽取（common/scripted_effects/nesnd_power.txt）。
-# 情形 A：宠臣不是最大利益集团的领袖（宫廷派系相争）。情形 B：宠臣就是最大集团的领袖（大权臣）。
+# 情形 A：宠臣不是最大利益集团的领袖（宫廷派系相争），对手是宠臣所在集团以外最大的集团。情形 B：宠臣就是最大集团的领袖（大权臣）。
 # 凡杀死、流放、撤去人物的结果，目标都已通过 nesnd_power_character_removable。
 # 极端结果的概率（作者规定）：遇害 20%，被逐或被捕流放 15%，脱身 65%；按钮清除成功 45%。
 
@@ -86,7 +86,7 @@ nesnd_palace.12 = {
 	event_image = { video = "europenorthamerica_capitalists_meeting" }
 	icon = "gfx/interface/icons/event_icons/event_trade.dds"
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	trigger = { has_journal_entry = nesnd_palace_journal nesnd_power_has_holder = yes }
+	trigger = { has_journal_entry = nesnd_palace_journal nesnd_power_has_rival = yes }
 	immediate = { nesnd_power_save_scopes = yes }
 
 	option = {
@@ -161,7 +161,7 @@ nesnd_palace.14 = {
 	event_image = { video = "middleeast_middleclass_cafe" }
 	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	trigger = { has_journal_entry = nesnd_palace_journal }
+	trigger = { has_journal_entry = nesnd_palace_journal OR = { nesnd_power_has_holder = no nesnd_power_has_rival = yes } }
 	immediate = { nesnd_power_save_scopes = yes }
 
 	option = {
@@ -197,7 +197,7 @@ nesnd_palace.15 = {
 	event_image = { video = "unspecific_politicians_arguing" }
 	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	trigger = { has_journal_entry = nesnd_palace_journal nesnd_power_has_holder = yes }
+	trigger = { has_journal_entry = nesnd_palace_journal nesnd_power_has_rival = yes }
 	immediate = { nesnd_power_save_scopes = yes }
 
 	option = {
@@ -342,7 +342,7 @@ nesnd_palace.21 = {
 		name = nesnd_palace.21.a
 		nesnd_power_add = { BAR = balance AMT = 20 }
 		if = {
-			limit = { var:nesnd_power_ev_case ?= 1 exists = scope:nesnd_power_top_ig_scope }
+			limit = { hidden_trigger = { var:nesnd_power_ev_case ?= 1 } exists = scope:nesnd_power_top_ig_scope }
 			add_radicals = { value = medium_radicals interest_group = scope:nesnd_power_top_ig_scope }
 		}
 		else = {
@@ -551,7 +551,7 @@ nesnd_palace.25 = {
 		name = nesnd_palace.25.a
 		default_option = yes
 		if = {
-			limit = { var:nesnd_power_ev_outcome ?= 2 }
+			limit = { hidden_trigger = { var:nesnd_power_ev_outcome ?= 2 } }
 			nesnd_power_reset_balance = yes
 		}
 		else = {
@@ -607,7 +607,7 @@ nesnd_palace.26 = {
 			add_radicals = { value = medium_radicals interest_group = scope:nesnd_power_top_ig_scope }
 		}
 		if = {
-			limit = { NOT = { var:nesnd_power_ev_outcome ?= 2 } }
+			limit = { hidden_trigger = { NOT = { var:nesnd_power_ev_outcome ?= 2 } } }
 			nesnd_power_sub = { BAR = balance AMT = 10 }
 		}
 	}

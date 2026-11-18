@@ -1,0 +1,424 @@
+﻿# Foreign intervention in the Second Jingnan War. Design: .scratch/jingnan-intervention/spec.md (§4, §6).
+
+# ------------------------------------------------------------------
+# Entry: option of nesnd_external.1 for the Western Qin and Huaxia Dongzhou.
+# Same cost as option c of nesnd_crisis.20; joins the war now or when it opens.
+# ------------------------------------------------------------------
+nesnd_jingnan_intervene = {
+    set_variable = nesnd_jingnan_intervener
+    add_modifier = { name = nesnd_foreign_commitment months = 60 }
+    nesnd_join_opposition_play = yes
+}
+
+# Any scope. Interveners stop rejoining once the war is settled.
+nesnd_jingnan_aid_clear_flags = {
+    every_country = {
+        limit = { nesnd_jingnan_is_intervener = yes }
+        remove_variable = nesnd_north_intervention
+        remove_variable = nesnd_jingnan_intervener
+    }
+}
+
+# ------------------------------------------------------------------
+# Wu morale bar (ce_usm_suppress_rebellion, USM scope, journal pulse).
+# The bar has already moved this month; this sets the counters it reads and re-applies the modifier.
+# ------------------------------------------------------------------
+nesnd_wu_resolve_remove_modifiers = {
+    if = { limit = { has_modifier = nesnd_wu_resolve_high } remove_modifier = nesnd_wu_resolve_high }
+    if = { limit = { has_modifier = nesnd_wu_resolve_low } remove_modifier = nesnd_wu_resolve_low }
+}
+
+nesnd_wu_resolve_refresh = {
+    # Name shown in the bar's rules tooltip.
+    c:CNE ?= { save_scope_as = nesnd_label_cne }
+    nesnd_wu_resolve_remove_modifiers = yes
+    # Two monthly bonuses per new foreign enemy: count down the old ones before marking new ones.
+    every_country = {
+        limit = { has_variable = nesnd_wu_resolve_fresh }
+        change_variable = { name = nesnd_wu_resolve_fresh add = -1 }
+        if = { limit = { var:nesnd_wu_resolve_fresh <= 0 } remove_variable = nesnd_wu_resolve_fresh }
+    }
+    if = {
+        limit = { nesnd_wu_jingnan_at_war = yes }
+        if = {
+            limit = { has_variable = nesnd_wu_resolve_months }
+            change_variable = { name = nesnd_wu_resolve_months add = 1 }
+        }
+        else = { set_variable = { name = nesnd_wu_resolve_months value = 1 } }
+        every_country = {
+            limit = {
+                nesnd_wu_resolve_foreign_enemy = yes
+                NOT = { has_variable = nesnd_wu_resolve_counted }
+            }
+            set_variable = nesnd_wu_resolve_counted
+            set_variable = { name = nesnd_wu_resolve_fresh value = 2 }
+        }
+        if = {
+            limit = { exists = scope:journal_entry }
+            set_variable = { name = nesnd_wu_resolve value = "scope:journal_entry.scripted_bar_progress(nesnd_wu_resolve_bar)" }
+        }
+        if = {
+            limit = { has_variable = nesnd_wu_resolve var:nesnd_wu_resolve > 50 }
+            add_modifier = { name = nesnd_wu_resolve_high multiplier = nesnd_wu_resolve_high_mult }
+        }
+        else_if = {
+            limit = { has_variable = nesnd_wu_resolve var:nesnd_wu_resolve < 50 }
+            add_modifier = { name = nesnd_wu_resolve_low multiplier = nesnd_wu_resolve_low_mult }
+        }
+    }
+    else = {
+        # Between rounds the bar holds still and the round's month count starts over.
+        set_variable = { name = nesnd_wu_resolve_months value = 0 }
+    }
+}
+
+# Any outcome of ce_usm_suppress_rebellion.
+nesnd_wu_resolve_cleanup = {
+    nesnd_wu_resolve_remove_modifiers = yes
+    remove_variable = nesnd_wu_resolve
+    remove_variable = nesnd_wu_resolve_months
+    every_country = {
+        limit = { OR = { hidden_trigger = { has_variable = nesnd_wu_resolve_counted } hidden_trigger = { has_variable = nesnd_wu_resolve_fresh } } }
+        remove_variable = nesnd_wu_resolve_counted
+        remove_variable = nesnd_wu_resolve_fresh
+    }
+}
+
+# ------------------------------------------------------------------
+# Rebel victory. Called at the start of nesnd_commit_rebel_settlement (winner scope, before change_tag).
+# Marks who is owed, then the winner answers in nesnd_jingnan_aid.1.
+# ------------------------------------------------------------------
+nesnd_jingnan_aid_mark_due = {
+    if = { limit = { c:SIH ?= this } set_variable = nesnd_jingnan_aid_west }
+    every_country = {
+        limit = {
+            nesnd_jingnan_aid_eligible = yes
+            NOT = { this = root }
+        }
+        set_variable = nesnd_jingnan_aid_due
+        remove_variable = nesnd_joined_south_play
+    }
+}
+
+# Winner scope. Called at the end of nesnd_commit_rebel_settlement.
+nesnd_jingnan_aid_offer = {
+    if = {
+        limit = { any_country = { hidden_trigger = { has_variable = nesnd_jingnan_aid_due } } }
+        trigger_event = { id = nesnd_jingnan_aid.1 popup = yes }
+    }
+    else = { remove_variable = nesnd_jingnan_aid_west }
+}
+
+# Intervener scope inside nesnd_jingnan_aid_pay. Tries a treaty port in one state region held by the winner,
+# unless an earlier region already gave one (result 4). Records the state for nesnd_jingnan_aid.2.
+nesnd_jingnan_aid_try_port = {
+    if = {
+        limit = { NOT = { var:nesnd_jingnan_aid_result ?= 4 } }
+        s:$REGION$ = {
+            random_scope_state = {
+                limit = { owner = root }
+                save_scope_as = nesnd_aid_port_state
+            }
+        }
+        if = {
+            limit = {
+                exists = scope:nesnd_aid_port_state
+                can_create_treaty = {
+                    first_country = root second_country = scope:nesnd_aid_partner is_draft = no
+                    binding_period = { years = 99 }
+                    articles_to_create = { { article = treaty_port source_country = root target_country = scope:nesnd_aid_partner inputs = { { state = scope:nesnd_aid_port_state } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_aid_port_treaty_name
+                first_country = root second_country = scope:nesnd_aid_partner is_draft = no
+                binding_period = { years = 99 }
+                articles_to_create = { { article = treaty_port source_country = root target_country = scope:nesnd_aid_partner inputs = { { state = scope:nesnd_aid_port_state } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 4 }
+            set_variable = { name = nesnd_jingnan_aid_port value = scope:nesnd_aid_port_state }
+        }
+        clear_saved_scope = nesnd_aid_port_state
+    }
+}
+
+# Winner scope, scope:nesnd_aid_partner = the intervener. One treaty per article so that one refusal
+# by the engine does not cancel the others.
+nesnd_jingnan_aid_trade_privilege = {
+    if = {
+        limit = {
+            can_create_treaty = {
+                first_country = root second_country = scope:nesnd_aid_partner is_draft = no
+                binding_period = { years = 10 }
+                articles_to_create = { { article = trade_privilege source_country = root target_country = scope:nesnd_aid_partner } }
+            }
+        }
+        create_treaty = {
+            name = nesnd_jingnan_aid_treaty_name
+            first_country = root second_country = scope:nesnd_aid_partner is_draft = no
+            binding_period = { years = 10 }
+            articles_to_create = { { article = trade_privilege source_country = root target_country = scope:nesnd_aid_partner } }
+        }
+    }
+}
+
+nesnd_jingnan_aid_pay = {
+    every_country = {
+        limit = { has_variable = nesnd_jingnan_aid_due }
+        save_scope_as = nesnd_aid_partner
+        set_variable = { name = nesnd_jingnan_aid_patron value = root }
+        if = {
+            limit = { c:CNE ?= this }
+            if = {
+                limit = { root = { has_variable = nesnd_jingnan_aid_west } }
+                # Western route (Shu won): what the Chinese Empire sent through Hanzhong.
+                root = { set_owes_obligation_to = { country = scope:nesnd_aid_partner setting = yes } }
+                if = {
+                    limit = {
+                        can_create_treaty = {
+                            first_country = root second_country = scope:nesnd_aid_partner is_draft = no
+                            binding_period = { years = 10 }
+                            articles_to_create = { { article = foreign_investment_rights source_country = root target_country = scope:nesnd_aid_partner } }
+                        }
+                    }
+                    create_treaty = {
+                        name = nesnd_jingnan_aid_treaty_name
+                        first_country = root second_country = scope:nesnd_aid_partner is_draft = no
+                        binding_period = { years = 10 }
+                        articles_to_create = { { article = foreign_investment_rights source_country = root target_country = scope:nesnd_aid_partner } }
+                    }
+                }
+                nesnd_jingnan_aid_trade_privilege = yes
+                set_variable = { name = nesnd_jingnan_aid_result value = 2 }
+            }
+            else = {
+                # Eastern route: Subei, Chuzhou and Hefei, as far as the winner holds them.
+                s:STATE_JIANGSU = { every_scope_state = { limit = { owner = root } set_state_owner = scope:nesnd_aid_partner } }
+                s:STATE_CHUZHOU = { every_scope_state = { limit = { owner = root } set_state_owner = scope:nesnd_aid_partner } }
+                s:STATE_SOUTHERN_ANHUI = { every_scope_state = { limit = { owner = root } set_state_owner = scope:nesnd_aid_partner } }
+                set_variable = { name = nesnd_jingnan_aid_result value = 1 }
+            }
+            create_bidirectional_truce = { country = root months = 120 }
+            if = {
+                limit = {
+                    has_variable = cne_landreform_completion_tracker
+                    NOT = { has_variable = ce_CNE_land_reform_done }
+                }
+                change_variable = { name = cne_landreform_completion_tracker add = 10 }
+                clamp_variable = { name = cne_landreform_completion_tracker min = 0 max = 100 }
+            }
+        }
+        else_if = {
+            limit = { c:QE1 ?= this }
+            root = { set_owes_obligation_to = { country = scope:nesnd_aid_partner setting = yes } }
+            nesnd_jingnan_aid_trade_privilege = yes
+            if = {
+                limit = {
+                    can_create_treaty = {
+                        first_country = root second_country = scope:nesnd_aid_partner is_draft = no
+                        binding_period = { years = 10 }
+                        articles_to_create = { { article = transit_rights source_country = root target_country = scope:nesnd_aid_partner } }
+                    }
+                }
+                create_treaty = {
+                    name = nesnd_jingnan_aid_treaty_name
+                    first_country = root second_country = scope:nesnd_aid_partner is_draft = no
+                    binding_period = { years = 10 }
+                    articles_to_create = { { article = transit_rights source_country = root target_country = scope:nesnd_aid_partner } }
+                }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 3 }
+        }
+        else_if = {
+            limit = { c:HUS ?= this }
+            # Treaty port, created the way vanilla does it (treaty_port article, ceded on entry into force).
+            # Zhejiang first; if that fails, Fujian, Minjiang, then Yuezhong (author 2026-11-16).
+            set_variable = { name = nesnd_jingnan_aid_result value = 5 }
+            nesnd_jingnan_aid_try_port = { REGION = STATE_ZHEJIANG }
+            nesnd_jingnan_aid_try_port = { REGION = STATE_FUJIAN }
+            nesnd_jingnan_aid_try_port = { REGION = STATE_NORTHERN_FUJIAN }
+            nesnd_jingnan_aid_try_port = { REGION = STATE_GUANGDONG }
+            nesnd_jingnan_aid_trade_privilege = yes
+        }
+        remove_variable = nesnd_jingnan_aid_due
+        trigger_event = { id = nesnd_jingnan_aid.2 popup = yes }
+    }
+    remove_variable = nesnd_jingnan_aid_west
+}
+
+# Winner scope: thanks only.
+nesnd_jingnan_aid_refuse = {
+    every_country = {
+        limit = { has_variable = nesnd_jingnan_aid_due }
+        set_variable = { name = nesnd_jingnan_aid_patron value = root }
+        set_variable = { name = nesnd_jingnan_aid_result value = 0 }
+        change_relations = { country = root value = -30 }
+        remove_variable = nesnd_jingnan_aid_due
+        trigger_event = { id = nesnd_jingnan_aid.2 popup = yes }
+    }
+    remove_variable = nesnd_jingnan_aid_west
+}
+
+# ------------------------------------------------------------------
+# Wu victory. usm_civilwar.8 immediate, USM scope, before the flags are cleared.
+# Claims on the Chinese Empire's Hanzhong and northern Anhui; every intervener pays
+# 10% of its weekly fixed income for five years (vanilla reparations use fixed_income the same way).
+# ------------------------------------------------------------------
+nesnd_jingnan_aid_wu_victory = {
+    every_country = {
+        # Only interveners carry nesnd_joined_south_play; the flags may already be gone once the war is settled.
+        limit = {
+            is_country_alive = yes
+            has_variable = nesnd_joined_south_play
+            NOT = { this = root }
+        }
+        save_scope_as = nesnd_aid_partner
+        remove_variable = nesnd_joined_south_play
+        set_variable = { name = nesnd_jingnan_aid_patron value = root }
+        if = {
+            limit = { c:CNE ?= this }
+            s:STATE_HANZHONG = { if = { limit = { any_scope_state = { owner = scope:nesnd_aid_partner } } add_claim = root } }
+            s:STATE_NORTHERN_ANHUI = { if = { limit = { any_scope_state = { owner = scope:nesnd_aid_partner } } add_claim = root } }
+        }
+        save_temporary_scope_value_as = {
+            name = nesnd_jingnan_reparation
+            value = {
+                value = fixed_income
+                multiply = 0.10
+                min = 1
+            }
+        }
+        set_variable = { name = nesnd_jingnan_aid_result value = 6 }
+        # A treaty article takes a plain number, not a scope value (the engine cannot parse one in can_create_treaty).
+        # The reparation is a tenth of the partner's weekly fixed income, rounded down to the nearest step.
+        if = {
+            limit = {
+                scope:nesnd_jingnan_reparation >= 64000 can_create_treaty = {
+                    first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 64000 } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_reparation_treaty_name
+                first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 64000 } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 7 }
+        }
+        else_if = {
+            limit = {
+                scope:nesnd_jingnan_reparation >= 32000 can_create_treaty = {
+                    first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 32000 } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_reparation_treaty_name
+                first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 32000 } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 7 }
+        }
+        else_if = {
+            limit = {
+                scope:nesnd_jingnan_reparation >= 16000 can_create_treaty = {
+                    first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 16000 } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_reparation_treaty_name
+                first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 16000 } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 7 }
+        }
+        else_if = {
+            limit = {
+                scope:nesnd_jingnan_reparation >= 8000 can_create_treaty = {
+                    first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 8000 } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_reparation_treaty_name
+                first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 8000 } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 7 }
+        }
+        else_if = {
+            limit = {
+                scope:nesnd_jingnan_reparation >= 4000 can_create_treaty = {
+                    first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 4000 } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_reparation_treaty_name
+                first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 4000 } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 7 }
+        }
+        else_if = {
+            limit = {
+                scope:nesnd_jingnan_reparation >= 2000 can_create_treaty = {
+                    first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 2000 } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_reparation_treaty_name
+                first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 2000 } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 7 }
+        }
+        else_if = {
+            limit = {
+                scope:nesnd_jingnan_reparation >= 1000 can_create_treaty = {
+                    first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 1000 } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_reparation_treaty_name
+                first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 1000 } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 7 }
+        }
+        else_if = {
+            limit = {
+                can_create_treaty = {
+                    first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 500 } } } }
+                }
+            }
+            create_treaty = {
+                name = nesnd_jingnan_reparation_treaty_name
+                first_country = scope:nesnd_aid_partner second_country = root is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = money_transfer source_country = scope:nesnd_aid_partner target_country = root inputs = { { quantity = 500 } } } }
+            }
+            set_variable = { name = nesnd_jingnan_aid_result value = 7 }
+        }
+        trigger_event = { id = nesnd_jingnan_aid.3 popup = yes }
+    }
+}

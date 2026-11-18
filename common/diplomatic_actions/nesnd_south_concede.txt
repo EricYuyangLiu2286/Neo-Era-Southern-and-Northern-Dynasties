@@ -1,0 +1,46 @@
+﻿# A court loyal to the Ming house buys a pro-Wu subject's allegiance with autonomy: one step more self-rule
+# for a strong swing of its political balance towards the Ming house over twelve months.
+# A subject already at the last step becomes independent instead and leaves the contest; the AI never does that.
+da_nesnd_south_concede_autonomy = {
+    groups = { overlord }
+    requires_approval = no
+    show_effect_in_tooltip = yes
+    texture = "gfx/interface/icons/diplomatic_action_icons/da_increase_autonomy.dds"
+    confirmation_sound = "event:/SFX/UI/SubjectInteractions/subject_button_small_autonomy_increased"
+    potential = {
+        c:USM ?= this
+        has_journal_entry = ce_usm_conflicts_within
+        nesnd_board_stance_value = 1
+        custom_tooltip = { text = nesnd_ui_not_south_locked_tt NOT = { has_global_variable = nesnd_south_locked } }
+        scope:target_country = { is_subject_of = root nesnd_tilt_member = yes }
+    }
+    possible = {
+        scope:target_country = {
+            custom_tooltip = { text = nesnd_south_concede_wu_zone_tt nesnd_tilt_zone_wu = yes }
+            custom_tooltip = { text = nesnd_south_concede_cooldown_tt NOT = { has_variable = nesnd_tilt_concession } }
+            NOT = { is_diplomatic_play_enemy_of = root }
+            # Luzon, the Nanyang commission and the three mainland provinces are never let go: the action works on them only while it can still raise their autonomy.
+            custom_tooltip = {
+                text = nesnd_south_concede_keep_tt
+                OR = { can_increase_autonomy = yes NOR = { c:PHI ?= this c:DEI ?= this nesnd_tilt_mainland = yes } }
+            }
+        }
+    }
+    accept_effect = {
+        scope:target_country = {
+            custom_tooltip = nesnd_south_concede_swing_tt
+            hidden_effect = { set_variable = { name = nesnd_tilt_concession value = -1.5 months = 12 } }
+            if = { limit = { can_increase_autonomy = yes } increase_autonomy = yes }
+            else = { make_independent = yes set_variable = nesnd_tilt_released }
+        }
+        # A subject let go keeps the peace with the court: five years' truce in both directions.
+        if = { limit = { scope:target_country = { hidden_trigger = { has_variable = nesnd_tilt_released } } }
+            create_bidirectional_truce = { country = scope:target_country months = 60 }
+        }
+    }
+    ai = {
+        evaluation_chance = { value = 0.005 }
+        propose_score = { value = 10 }
+        will_propose = { scope:target_country = { can_increase_autonomy = yes } }
+    }
+}

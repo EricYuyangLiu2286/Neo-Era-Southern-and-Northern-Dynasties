@@ -1,0 +1,148 @@
+﻿nesnd_congress_member = {
+	is_country_alive = yes
+	is_revolutionary = no
+	is_secessionist = no
+	OR = {
+		AND = {
+			is_in_geographic_region = geographic_region_europe
+			country_rank >= rank_value:great_power
+		}
+		AND = {
+			custom_tooltip = { text = nesnd_ui_not_ce_poland_problem_end_tt NOT = { has_global_variable = ce_poland_problem_end } }
+			OR = {
+				custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable }
+				custom_tooltip = { text = nesnd_ui_ce_anti_polish_variable_tt has_variable = ce_anti_polish_variable }
+			}
+		}
+		custom_tooltip = { text = nesnd_ui_congress_petitioner_tt has_variable = nesnd_congress_petitioner }
+		custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_target_is_this_tt global_var:nesnd_congress_target ?= this }
+		custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_target_1_is_this_tt global_var:nesnd_congress_target_1 ?= this }
+		custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_target_2_is_this_tt global_var:nesnd_congress_target_2 ?= this }
+		c:KRA ?= this
+	}
+}
+
+nesnd_congress_room = {
+	custom_tooltip = { text = nesnd_ui_not_congress_round_tt NOT = { has_global_variable = nesnd_congress_round } }
+	custom_tooltip = {
+		text = nesnd_congress_vacancy_tt
+		OR = {
+			NOT = { has_global_variable = nesnd_congress_kind_1 }
+			NOT = { has_global_variable = nesnd_congress_kind_2 }
+		}
+	}
+}
+
+nesnd_congress_ballot_valid = {
+	nesnd_congress_member = yes
+	scope:congress_voter ?= this
+	nesnd_congress_agenda_valid = yes
+	custom_tooltip = { text = nesnd_ui_congress_voting_tt has_global_variable = nesnd_congress_voting }
+	exists = scope:congress_serial
+	scope:congress_serial = global_var:nesnd_congress_serial
+	custom_tooltip = { text = nesnd_ui_var_nesnd_congress_ballot_is_global_var_nesnd_congress_serial_tt var:nesnd_congress_ballot ?= global_var:nesnd_congress_serial }
+	custom_tooltip = { text = nesnd_ui_not_var_nesnd_congress_voted_is_global_var_nesnd_congress_serial_tt NOT = { var:nesnd_congress_voted ?= global_var:nesnd_congress_serial } }
+}
+
+nesnd_congress_agenda_valid = {
+	nesnd_poland_active = yes
+	custom_tooltip = { text = nesnd_ui_exists_eq_global_var_nesnd_congress_chair_tt exists = global_var:nesnd_congress_chair }
+	global_var:nesnd_congress_chair = { nesnd_congress_member = yes }
+	trigger_if = {
+		limit = { custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_kind_lt_4_tt global_var:nesnd_congress_kind < 4 } }
+		custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_proposer_is_c_kra_tt global_var:nesnd_congress_proposer ?= c:KRA }
+	}
+	trigger_else = { custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_target_is_c_kra_tt global_var:nesnd_congress_target ?= c:KRA } }
+	custom_tooltip = { text = nesnd_ui_exists_eq_global_var_nesnd_congress_proposer_tt exists = global_var:nesnd_congress_proposer }
+	custom_tooltip = { text = nesnd_ui_exists_eq_global_var_nesnd_congress_target_tt exists = global_var:nesnd_congress_target }
+	trigger_if = {
+		limit = { custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_kind_eq_1_tt global_var:nesnd_congress_kind = 1 } }
+		custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_defeated_eq_yes_tt global_var:nesnd_congress_defeated = yes }
+		global_var:nesnd_congress_target = {
+			OR = { c:RUS ?= this c:PRU ?= this c:AUS ?= this }
+			is_at_war = no
+			any_scope_state = {
+				nesnd_poland_restoration_state = yes
+				NOT = { owner = global_var:nesnd_congress_proposer }
+			}
+		}
+	}
+	trigger_else_if = {
+		limit = { custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_kind_eq_2_tt global_var:nesnd_congress_kind = 2 } }
+		global_var:nesnd_congress_proposer = { is_subject = no }
+		global_var:nesnd_congress_target = { nesnd_congress_can_guarantee = yes }
+	}
+	trigger_else_if = {
+		limit = { custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_kind_eq_3_tt global_var:nesnd_congress_kind = 3 } }
+		game_date < 1900.1.1
+		global_var:nesnd_congress_target = {
+			nesnd_polish_exile_population >= 1
+			custom_tooltip = { text = nesnd_ui_not_congress_migration_cooldown_tt NOT = { has_variable = nesnd_congress_migration_cooldown } }
+		}
+	}
+	trigger_else_if = {
+		limit = { custom_tooltip = { text = nesnd_ui_global_var_nesnd_congress_kind_eq_4_tt global_var:nesnd_congress_kind = 4 } }
+		global_var:nesnd_congress_proposer = {
+			custom_tooltip = { text = nesnd_ui_poland_sanctions_claim_tt has_variable = nesnd_poland_sanctions_claim }
+		}
+	}
+}
+
+# Country scope. Only the Polish chapter submits guarantees in this batch.
+nesnd_poland_guarantees_krakow = {
+	exists = c:KRA
+	is_subject = no
+	c:KRA = { is_subject = no }
+	country_rank >= c:KRA.country_rank
+	save_temporary_scope_as = polish_guarantor
+	any_scope_treaty = {
+		binds = c:KRA
+		any_scope_article = {
+			has_type = guarantee_independence
+			source_country = scope:polish_guarantor
+			target_country = c:KRA
+		}
+	}
+}
+
+nesnd_congress_can_guarantee = {
+	exists = c:KRA
+	is_subject = no
+	c:KRA = { is_subject = no }
+	NOT = { has_war_with = c:KRA }
+	trigger_if = {
+		limit = { nesnd_poland_guarantees_krakow = no }
+		country_rank > c:KRA.country_rank
+		has_technology_researched = international_relations
+		# Claude audit 2026-11-17: "relations:c:KRA" is not a trigger (error.log "Unknown trigger type");
+		# the loader dropped the line, so this guarantee check ignored relations. Vanilla form:
+		# "relations(scope:overlord)" < relations_threshold:cordial (GAME events, 1.15.1).
+		"relations(c:KRA)" > relations_threshold:poor
+		highest_overlapping_interest_tier = {
+			target = c:KRA
+			value >= interest_tier_effect_can_sign_guarantee_independence_min_tier
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:KRA
+				any_scope_article = {
+					OR = { has_type = alliance has_type = defensive_pact }
+				}
+			}
+		}
+	}
+}
+
+# Claude audit 2026-11-17: player-facing form of the proposal gate. Each line is a named condition,
+# so buttons and event options no longer show raw "has variable" rows. Country scope.
+nesnd_congress_can_propose = {
+	nesnd_congress_room = yes
+	custom_tooltip = { text = nesnd_congress_no_pending_tt NOT = { has_variable = nesnd_congress_pending } }
+	custom_tooltip = { text = nesnd_congress_no_cooldown_tt NOT = { has_variable = nesnd_congress_proposal_cooldown } }
+}
+
+# Country scope: the partition power asked to let Poles leave.
+nesnd_congress_migration_target = {
+	custom_tooltip = { text = nesnd_congress_has_poles_tt nesnd_polish_exile_population >= 1 }
+	custom_tooltip = { text = nesnd_congress_migration_ready_tt NOT = { has_variable = nesnd_congress_migration_cooldown } }
+}

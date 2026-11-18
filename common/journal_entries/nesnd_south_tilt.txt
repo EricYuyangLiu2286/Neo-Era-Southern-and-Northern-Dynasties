@@ -1,0 +1,51 @@
+﻿# One per enrolled Wu subject, added by nesnd_south_tilt_enrol.
+nesnd_south_allegiance = {
+    is_shown_in_lobby = { OR = { c:SIH ?= THIS c:HNA ?= THIS c:GNG ?= THIS c:PHI ?= THIS c:YN1 ?= THIS c:DEI ?= THIS c:BUR ?= THIS c:DAI ?= THIS c:SIA ?= THIS c:CHP ?= THIS c:CMI ?= THIS c:LUA ?= THIS c:CAM ?= THIS c:BRU ?= THIS c:BLG ?= THIS c:LAN ?= THIS c:JMB ?= THIS c:SAK ?= THIS c:ACE ?= THIS c:SRK ?= THIS c:YOG ?= THIS c:BAL ?= THIS c:BNJ ?= THIS c:KTI ?= THIS } }
+    icon = "gfx/interface/icons/event_icons/nesnd_south_investiture.dds"
+    group = je_group_historical_content
+    can_revolution_inherit = no
+    activation_description = { always = yes }
+    immediate = {
+        nesnd_south_tilt_start = yes
+        scope:journal_entry ?= { set_bar_progress = { name = nesnd_south_tilt_bar value = owner.nesnd_tilt_now } }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_tilt_zone_ming = yes } desc = nesnd_south_allegiance_status_ming }
+            triggered_desc = { trigger = { nesnd_tilt_zone_wu = yes } desc = nesnd_south_allegiance_status_wu }
+            desc = nesnd_south_allegiance_status_neutral
+        }
+    }
+    scripted_progress_bar = nesnd_south_tilt_bar
+    scripted_button = nesnd_tilt_declare_ming_button
+    scripted_button = nesnd_tilt_declare_wu_button
+    scripted_button = nesnd_south_indochina_envoy
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_south_allegiance_conclusion
+        trigger = { custom_tooltip = { text = nesnd_south_locked_tt has_global_variable = nesnd_south_locked } }
+        effect = {
+            nesnd_south_tilt_sync = yes
+            trigger_event = { id = nesnd_south_tilt.100 popup = yes }
+        }
+        event_outcome_desc = { desc = nesnd_south_fate_effect_tt }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_south_allegiance_invalid_conclusion
+        trigger = {
+            custom_tooltip = { text = nesnd_ui_not_south_locked_tt NOT = { has_global_variable = nesnd_south_locked } }
+            OR = {
+                NOT = { exists = c:USM }
+                NOT = { is_subject_of = c:USM }
+                c:USM ?= { NOT = { has_journal_entry = ce_usm_conflicts_within } }
+            }
+        }
+        effect = { nesnd_south_tilt_cleanup_country = yes }
+    }
+    on_monthly_pulse = { effect = { nesnd_south_tilt_sync = yes } }
+    weight = 1100
+    should_be_pinned_by_default_uninvolved_or_context = yes
+}

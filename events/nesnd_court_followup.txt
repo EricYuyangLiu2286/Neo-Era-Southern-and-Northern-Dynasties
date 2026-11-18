@@ -2,7 +2,7 @@
 nesnd_court_followup.15 = { type = country_event placement = root duration = 3
  title = nesnd_court_followup.15.t desc = nesnd_court_followup.15.d flavor = nesnd_court_followup.15.f
  event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
- trigger = { c:USM ?= this has_variable = nesnd_ming_royals_retained }
+ trigger = { c:USM ?= this has_variable = nesnd_ming_royals_retained any_scope_character = { has_role = character_role_nesnd_ming_refuge is_character_alive = yes } }
  option = { name = nesnd_court_followup.15.a default_option = yes
     if = { limit = { c:USM ?= this any_scope_character = { has_role = character_role_nesnd_ming_refuge is_character_alive = yes } }
         add_modifier = { name = nesnd_ming_royal_allowance months = 36 }
@@ -14,12 +14,96 @@ nesnd_court_followup.19 = { type = country_event placement = root duration = 3
  event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
  trigger = { nesnd_south_deadlock_context = yes has_variable = nesnd_south_deadlock_started NOT = { has_variable = nesnd_south_deadlock_minimum } }
  option = { name = nesnd_court_followup.19.a
-    trigger = { nesnd_south_deadlock_context = yes NOT = { has_variable = nesnd_south_deadlock_minimum } }
-    ai_chance = { base = 40 modifier = { trigger = { NOT = { nesnd_south_reconciliation_basis = yes } } add = 40 } }
+    trigger = { nesnd_south_deadlock_context = yes custom_tooltip = { text = nesnd_ui_not_south_deadlock_minimum_tt NOT = { has_variable = nesnd_south_deadlock_minimum } } }
+    ai_chance = { base = 40 }
     custom_tooltip = nesnd_south_inconclusive_result_tt
     nesnd_south_accept_inconclusive_order = yes
  }
  option = { name = nesnd_court_followup.19.b default_option = yes
-    ai_chance = { base = 20 modifier = { trigger = { nesnd_south_reconciliation_basis = yes } add = 50 } }
+    ai_chance = { base = 20 }
  }
+}
+# The war is over and a court in exile still holds the emperor while the throne's successor state carries the Ming name.
+# Fires once (nesnd_ming_court_reunion_done). The successor state decides; the AI always receives him.
+nesnd_court_followup.20 = { type = country_event placement = root duration = 3
+ title = nesnd_court_followup.20.t desc = nesnd_court_followup.20.d flavor = nesnd_court_followup.20.f
+ event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+ trigger = { nesnd_ming_court_reunion_due = yes }
+ immediate = {
+    set_global_variable = nesnd_ming_court_reunion_done
+    random_country = { limit = { nesnd_ming_court_with_emperor = yes NOT = { has_war_with = c:USM } } save_scope_as = nesnd_reunion_court }
+    scope:nesnd_reunion_court ?= { ruler ?= { save_scope_as = nesnd_reunion_emperor } }
+    save_scope_as = nesnd_reunion_successor
+ }
+ option = { name = nesnd_court_followup.20.a default_option = yes
+    ai_chance = { base = 100 }
+    custom_tooltip = nesnd_court_followup.20.a_tt
+    hidden_effect = {
+        scope:nesnd_reunion_court ?= {
+            clear_saved_scope = nesnd_reunion_heir
+            random_scope_character = {
+                limit = { is_heir_of_own_country = yes is_character_alive = yes nesnd_ming_authorized_dynast = yes }
+                save_scope_as = nesnd_reunion_heir
+            }
+            nesnd_ming_court_dissolve = yes
+        }
+        scope:nesnd_reunion_emperor ?= {
+            transfer_character = root
+            if = { limit = { has_role = character_role_nesnd_ming_refuge } remove_character_role = character_role_nesnd_ming_refuge }
+            set_variable = nesnd_ming_claimant
+        }
+        scope:nesnd_reunion_heir ?= {
+            transfer_character = root
+            if = { limit = { has_role = character_role_nesnd_ming_refuge } remove_character_role = character_role_nesnd_ming_refuge }
+            set_variable = nesnd_ming_claimant
+        }
+        if = {
+            limit = { has_law_or_variant = law_type:law_monarchy exists = scope:nesnd_reunion_emperor }
+            scope:nesnd_reunion_emperor = { set_character_as_ruler = yes }
+            if = { limit = { exists = scope:nesnd_reunion_heir } set_heir = scope:nesnd_reunion_heir }
+        }
+        else = {
+            scope:nesnd_reunion_emperor ?= { nesnd_ming_give_guest_role = yes }
+            scope:nesnd_reunion_heir ?= { nesnd_ming_give_guest_role = yes }
+        }
+        clear_saved_scope = nesnd_reunion_heir
+        # The court in exile is told what became of its emperor (the player may be playing it).
+        scope:nesnd_reunion_court ?= { set_variable = { name = nesnd_reunion_answer value = 1 } trigger_event = { id = nesnd_court_followup.21 popup = yes } }
+    }
+ }
+ option = { name = nesnd_court_followup.20.b
+    ai_chance = { base = 0 }
+    add_modifier = { name = nesnd_ming_court_refused years = 10 }
+    custom_tooltip = nesnd_court_followup.20.b_tt
+    hidden_effect = {
+        scope:nesnd_reunion_court ?= { nesnd_ming_court_dissolve = yes }
+        scope:nesnd_reunion_emperor ?= {
+            set_is_noble = yes
+            if = { limit = { has_role = character_role_nesnd_ming_refuge } remove_character_role = character_role_nesnd_ming_refuge }
+            if = { limit = { NOT = { has_role = character_role_nesnd_ming_fanwang } } add_character_role = character_role_nesnd_ming_fanwang }
+            remove_variable = nesnd_ming_claimant
+        }
+        scope:nesnd_reunion_court ?= { set_variable = { name = nesnd_reunion_answer value = 2 } trigger_event = { id = nesnd_court_followup.21 popup = yes } }
+    }
+ }
+}
+# The former court in exile hears the answer of nesnd_court_followup.20. Notice only; the change has already happened.
+nesnd_court_followup.21 = { type = country_event placement = root duration = 3
+ title = nesnd_court_followup.21.t
+ desc = { first_valid = {
+    triggered_desc = { trigger = { var:nesnd_reunion_answer ?= 2 } desc = nesnd_court_followup.21.d_refused }
+    desc = nesnd_court_followup.21.d_received
+ } }
+ flavor = nesnd_court_followup.20.f
+ event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+ trigger = { has_variable = nesnd_reunion_answer exists = scope:nesnd_reunion_emperor exists = scope:nesnd_reunion_successor }
+ option = { name = nesnd_court_followup.21.a default_option = yes
+    trigger = { var:nesnd_reunion_answer ?= 1 }
+    custom_tooltip = nesnd_court_followup.21.a_tt
+ }
+ option = { name = nesnd_court_followup.21.a
+    trigger = { var:nesnd_reunion_answer ?= 2 }
+    custom_tooltip = nesnd_court_followup.21.b_tt
+ }
+ after = { remove_variable = nesnd_reunion_answer }
 }

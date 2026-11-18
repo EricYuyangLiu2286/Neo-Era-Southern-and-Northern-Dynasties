@@ -37,9 +37,22 @@ ce_poland_events.1 = {
 
 	option = {
 		name = ce_poland_events.1.b
+		default_option = yes
 		# Refuse and switch to anti-polish
+		ai_chance = {
+			base = 1
+			modifier = {
+				trigger = {
+					has_variable = ce_pro_polish_variable
+					has_global_variable = nesnd_poland_france_will
+					global_var:nesnd_poland_france_will < 50
+				}
+				add = 3
+			}
+		}
 		if = {
-			limit = { has_variable = ce_pro_polish_variable }
+			limit = { custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable } }
+			custom_tooltip = ce_poland_events.1.b_switch_tt # Claude audit 2026-11-17
 			remove_variable = ce_pro_polish_variable
 			#remove_journal_entry = je_ce_polish_territory_claim
 			set_variable = ce_anti_polish_variable
@@ -50,6 +63,26 @@ ce_poland_events.1 = {
 		change_relations = {
 			country = c:KRA
 			value = -25
+		}
+	}
+
+	# 2026-11-17: a supporter may protest and keep its stance instead of turning against Krakow.
+	option = {
+		name = ce_poland_events.1.c
+		trigger = { custom_tooltip = { text = nesnd_poland_is_supporter_tt has_variable = ce_pro_polish_variable } } # Claude audit 2026-11-17
+		ai_chance = {
+			base = 1
+			modifier = {
+				trigger = {
+					has_global_variable = nesnd_poland_france_will
+					global_var:nesnd_poland_france_will >= 50
+				}
+				add = 2
+			}
+		}
+		change_relations = {
+			country = c:KRA
+			value = -10
 		}
 	}
 }
@@ -74,12 +107,29 @@ ce_poland_events.2 = {
 
 	option = {
 		name = ce_poland_events.2.a
+		# Owners give way more often while Paris stands behind Krakow, less once the settlement breaks.
 		ai_chance = {
 			base = 1
+			modifier = { trigger = { has_variable = nesnd_poland_civil_ultimatum_target any_civil_war = { always = yes } } add = 16 }
+			modifier = {
+				trigger = {
+					has_global_variable = nesnd_poland_france_will
+					global_var:nesnd_poland_france_will >= 60
+				}
+				add = 3
+			}
+			modifier = {
+				trigger = {
+					has_global_variable = nesnd_poland_phase
+					global_var:nesnd_poland_phase >= 3
+				}
+				factor = 0.5
+			}
 		}
 		if = { limit = { nesnd_poland_ultimatum_valid = yes }
 			nesnd_poland_clear_request = yes
-
+			set_variable = { name = nesnd_poland_request_cooldown months = 60 }
+			debug_log = "NESND_POLAND_REPLY yield [THIS.GetCountry.GetNameNoFormatting] [SCOPE.sState('target_diplo_play_state').GetName]"
 			change_infamy = -5
 			hidden_effect = {
 				if = {
@@ -115,39 +165,42 @@ ce_poland_events.2 = {
 	option = {
 		name = ce_poland_events.2.b
 		ai_chance = {
-			base = 9
+			base = 20
 		}
 		default_option = yes
 		if = { limit = { nesnd_poland_ultimatum_valid = yes }
 			nesnd_poland_clear_request = yes
+			set_variable = { name = nesnd_poland_request_cooldown months = 60 }
+			debug_log = "NESND_POLAND_REPLY refuse [THIS.GetCountry.GetNameNoFormatting] [SCOPE.sState('target_diplo_play_state').GetName]"
+			if = { limit = { NOT = { is_in_same_power_bloc = c:KRA } }
+				c:KRA = {
+					create_diplomatic_play = {
+						#name = ce_poland_diplo_play_name
+						escalation = 50
+						target_country = root
+						target_state = scope:target_diplo_play_state
+						type = dp_return_state
 
-			c:KRA = {
-				create_diplomatic_play = {
-					#name = ce_poland_diplo_play_name
-					escalation = 50
-					target_country = root
-					target_state = scope:target_diplo_play_state
-					type = dp_return_state
-
-					add_war_goal = { holder = root target_country = c:KRA type = annex_country }
+						add_war_goal = { holder = root target_country = c:KRA type = annex_country }
 
 
+					}
+					add_modifier = {
+						name = ce_poland_war_prep_diplo_play_buff
+						months = 12
+					}
 				}
-				add_modifier = {
-					name = ce_poland_war_prep_diplo_play_buff
-					months = 12
+				random_diplomatic_play = {
+					limit = { initiator = c:KRA target = root is_diplomatic_play_type = dp_return_state is_war = no }
+					save_scope_as = ce_poland_return_land_dp
 				}
-			}
-			random_diplomatic_play = {
-				limit = { initiator = c:KRA target = root is_diplomatic_play_type = dp_return_state is_war = no }
-				save_scope_as = ce_poland_return_land_dp
-			}
-			every_country = {
-				limit = { has_variable = ce_pro_polish_variable NOT = { c:KRA ?= this } NOT = { this = root } exists = scope:ce_poland_return_land_dp }
-				# scope:ce_poland_return_land_dp = {
-				# 	add_initiator_backers = { prev }
-				# }
-				trigger_event = { id = ce_poland_events.7 popup = yes }
+				every_country = {
+					limit = { custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable } NOT = { c:KRA ?= this } NOT = { this = root } exists = scope:ce_poland_return_land_dp }
+					# scope:ce_poland_return_land_dp = {
+					# 	add_initiator_backers = { prev }
+					# }
+					trigger_event = { id = ce_poland_events.7 popup = yes }
+				}
 			}
 		}
 	}
@@ -173,7 +226,7 @@ ce_poland_events.3 = {
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 
-	option = { name = ce_poland_events.3.a default_option = yes }
+	option = { name = ce_poland_events.3.a default_option = yes custom_tooltip = ce_poland_events.3.a_tt }
 }
 
 # Event 4: KRA receives radicals
@@ -204,10 +257,7 @@ ce_poland_events.4 = {
 			}
 		}
 		if = { limit = { has_journal_entry = je_ce_polish_reconquest }
-			je:je_ce_polish_reconquest = {
-				if = { limit = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 10 } add_progress = { name = ce_polish_reconquest_energy_bar value = -10 } }
-				else = { set_bar_progress = { name = ce_polish_reconquest_energy_bar value = 0 } }
-			}
+			set_variable = { name = nesnd_poland_claim_fund value = { value = var:nesnd_poland_claim_fund subtract = 10 min = 0 } }
 		}
 	}
 }
@@ -400,6 +450,7 @@ ce_poland_events.8 = {
 		ai_chance = {
 			base = 1
 		}
+		custom_tooltip = ce_poland_events.8.a_tt
 	}
 }
 
@@ -417,6 +468,7 @@ ce_poland_events.10 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 
 	immediate = {
+		c:FRA ?= { save_scope_as = nesnd_poland_france }
 		nesnd_poland_snapshot_stance = yes
 		if = { limit = { NOT = { has_variable = nesnd_polish_result_resolved } }
 			set_variable = nesnd_polish_result_resolved
@@ -484,7 +536,11 @@ ce_poland_events.10 = {
 				clear_variable_list = ce_list_state_effective
 			}
 			if = {
-				limit = { c:KRA ?= this NOT = { exists = c:POL } }
+				limit = { exists = c:KRA c:KRA = this NOT = { exists = c:POL } }
+				# Author 2026-11-17: the 1809 vow was forced on Poland; the restored state may take
+				# a crown (options below). Returning to POL costs 10 infamy.
+				set_variable = nesnd_poland_restorer
+				change_infamy = 10
 				change_tag = POL
 
 				if = {
@@ -602,7 +658,51 @@ ce_poland_events.10 = {
 		}
 	}
 
-	option = { name = ce_poland_events.10.a default_option = yes }
+	option = {
+		name = ce_poland_events.10.a
+		# Claude audit 2026-11-17: restorer test is an identity guard, hidden; options say what they do.
+		trigger = { hidden_trigger = { NOT = { has_variable = nesnd_poland_restorer } } }
+		default_option = yes
+		custom_tooltip = ce_poland_events.10.a_tt
+	}
+
+	option = {
+		name = ce_poland_events.10.b
+		trigger = { hidden_trigger = { has_variable = nesnd_poland_restorer } }
+		default_option = yes
+		ai_chance = { base = 4 modifier = { trigger = { has_variable = nesnd_poland_keeping_faith } add = 4 } }
+		if = {
+			limit = { NOT = { has_law_or_variant = law_type:law_monarchy } }
+			activate_law = law_type:law_monarchy
+		}
+		remove_variable = nesnd_poland_restorer
+	}
+
+	option = {
+		name = ce_poland_events.10.c
+		trigger = {
+			hidden_trigger = { has_variable = nesnd_poland_restorer }
+			exists = c:FRA
+		}
+		ai_chance = { base = 4 modifier = { trigger = { has_variable = nesnd_poland_keeping_faith } add = 4 } }
+		if = {
+			limit = { NOT = { has_law_or_variant = law_type:law_monarchy } }
+			activate_law = law_type:law_monarchy
+		}
+		change_relations = {
+			country = c:FRA
+			value = 30
+		}
+		remove_variable = nesnd_poland_restorer
+	}
+
+	option = {
+		name = ce_poland_events.10.e
+		trigger = { hidden_trigger = { has_variable = nesnd_poland_restorer } }
+		custom_tooltip = ce_poland_events.10.e_tt
+		ai_chance = { base = 2 modifier = { trigger = { has_variable = nesnd_poland_red_ascendant } add = 16 } }
+		remove_variable = nesnd_poland_restorer
+	}
 }
 
 # Event 11: Failure
@@ -619,6 +719,7 @@ ce_poland_events.11 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 
 	immediate = {
+		c:AUS ?= { save_scope_as = nesnd_poland_austria }
 		nesnd_poland_snapshot_stance = yes
 		if = { limit = { NOT = { has_variable = nesnd_polish_result_resolved } }
 			set_variable = nesnd_polish_result_resolved
@@ -704,7 +805,98 @@ ce_poland_events.11 = {
 		}
 	}
 
-	option = { name = ce_poland_events.11.a default_option = yes }
+	option = {
+		name = ce_poland_events.11.a
+		default_option = yes
+		ai_chance = { base = 1 }
+		custom_tooltip = ce_poland_events.11.a_tt
+	}
+
+	# Author 2026-11-17: after the partition Krakow leans on Austria (the 1936 setting has Poland
+	# as an Austrian satellite).
+	option = {
+		name = ce_poland_events.11.b
+		trigger = {
+			exists = c:KRA
+			c:KRA ?= root
+			is_subject = no
+			exists = c:AUS
+			NOT = { has_war_with = c:AUS }
+		}
+		ai_chance = { base = 3 }
+		save_scope_as = nesnd_poland_krakow
+		custom_tooltip = ce_poland_events.11.b_tt
+		c:AUS = { trigger_event = { id = ce_poland_events.17 popup = yes } }
+	}
+}
+
+# Event 16: 1860, the settlement outlived the question (timeout of je_ce_the_polish_problem)
+ce_poland_events.16 = {
+	type = country_event
+	placement = root
+	title = ce_poland_events.16.t
+	desc = ce_poland_events.16.d
+	duration = 3
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	option = { name = ce_poland_events.16.a default_option = yes custom_tooltip = ce_poland_events.16.a_tt }
+}
+
+# Event 17: Austria is asked to take Krakow under its protection (from ce_poland_events.11.b)
+ce_poland_events.17 = {
+	type = country_event
+	placement = root
+	title = ce_poland_events.17.t
+	desc = ce_poland_events.17.d
+	duration = 3
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	trigger = {
+		exists = scope:nesnd_poland_krakow
+		exists = c:KRA
+		c:KRA = { is_subject = no }
+		NOT = { has_war_with = c:KRA }
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { exists = c:KRA }
+			c:KRA ?= { is_subject = yes }
+		}
+	}
+
+	option = {
+		name = ce_poland_events.17.a
+		default_option = yes
+		ai_chance = { base = 9 }
+		if = {
+			limit = { exists = c:KRA }
+			create_diplomatic_pact = {
+				country = c:KRA
+				type = protectorate
+			}
+		}
+	}
+
+	option = {
+		name = ce_poland_events.17.b
+		ai_chance = { base = 1 }
+		if = {
+			limit = { exists = c:KRA }
+			change_relations = {
+				country = c:KRA
+				value = -10
+			}
+		}
+	}
 }
 
 # Event 12: Invalid
@@ -722,6 +914,7 @@ ce_poland_events.12 = {
 
 	option = {
 		name = ce_poland_events.12.a
+		custom_tooltip = ce_poland_events.12.a_tt
 	}
 }
 
@@ -760,25 +953,20 @@ ce_poland_events.13 = {
 			has_journal_entry = je_ce_polish_reconquest
 		}
 		custom_tooltip = {
-			text = ce_polish_reconquest_energy_bar_15
-			je:je_ce_polish_reconquest = {
-				add_progress = {
-					value = 15
-					name = ce_polish_reconquest_energy_bar
-				}
-			}
+			text = nesnd_poland_fund_15
+			set_variable = { name = nesnd_poland_claim_fund value = { value = var:nesnd_poland_claim_fund add = 15 max = 100 } }
 		}
 	}
+	# Neither Krakow journal is running (the question ended between the button and the event).
 	option = {
-		name = ce_poland_events.13.b
+		name = ce_poland_events.13.c
 		trigger = {
 			NOR = {
 				has_journal_entry = je_ce_polish_war_preparation
 				has_journal_entry = je_ce_polish_reconquest
 			}
 		}
-		custom_tooltip = ce_this_is_a_bug
-		# you should not have seen this
+		custom_tooltip = ce_poland_events.13.c_tt
 	}
 }
 
@@ -856,6 +1044,7 @@ ce_poland_events.97 = {
 			exists = c:KRA
 			c:KRA ?= This
 		}
+		custom_tooltip = ce_poland_events.97.c_tt
 		if = { limit = { nesnd_poland_active = yes }
 			hidden_effect = {
 				set_variable = is_ce_council_poland_variable
@@ -915,31 +1104,18 @@ ce_poland_events.97 = {
 		}
 		if = { limit = { nesnd_poland_active = yes }
 			set_variable = ce_pro_polish_variable
-			if = { limit = { NOT = { has_journal_entry = je_ce_polish_territory_claim } }
-				# Journal entry activates from its possible trigger.
-			}
-			create_bidirectional_truce = {
-				country = c:KRA
-				months = 2400
-			}
-			custom_tooltip = ce_poland_events.97.a.tt
+			# 2026-11-17: support no longer strips Krakow's claims on our states or imposes a
+			# 200-year truce; that locked Posen, West Prussia and Upper Silesia from the start.
 			hidden_effect = {
 				if = {
 					limit = { has_variable = ce_anti_polish_variable }
 					remove_variable = ce_anti_polish_variable
 				}
 
-				every_scope_state = {
-					limit = {
-						has_claim_by = c:KRA
-					}
-					state_region = { remove_claim = c:KRA }
-				}
-
 				ce_update_poland_supporter_and_haters_effect = yes
 			}
 			if = {
-				limit = { any_country = { has_variable = ce_pro_polish_variable } }
+				limit = { any_country = { custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable } } }
 				every_in_global_list = {
 					variable = ce_temp_pro_pol_tag
 					limit = { NOT = { this = root } }
@@ -1032,7 +1208,7 @@ ce_poland_events.97 = {
 				ce_update_poland_supporter_and_haters_effect = yes
 			}
 			if = {
-				limit = { any_country = { has_variable = ce_anti_polish_variable } }
+				limit = { any_country = { custom_tooltip = { text = nesnd_ui_ce_anti_polish_variable_tt has_variable = ce_anti_polish_variable } } }
 				every_in_global_list = {
 					variable = ce_temp_anti_pol_tag
 					limit = { NOT = { this = root } }

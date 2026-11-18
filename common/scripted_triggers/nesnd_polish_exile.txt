@@ -1,0 +1,39 @@
+﻿nesnd_polish_exile_partition = {
+ OR = { c:RUS ?= this c:PRU ?= this c:AUS ?= this }
+}
+nesnd_polish_exile_pop = { culture = cu:polish total_size >= 1 }
+nesnd_polish_exile_source = {
+ has_variable = nesnd_polish_exile_due
+ var:nesnd_polish_exile_due >= 1
+ any_scope_state = { any_scope_pop = { nesnd_polish_exile_pop = yes } }
+}
+nesnd_polish_exile_destination = {
+ trigger_if = {
+  limit = { global_var:nesnd_polish_exile_policy = 1 }
+  any_scope_building = { level > 0 occupancy < 1 }
+ }
+}
+# Recheck the live owner and pop before every transfer; neither is assumed stable.
+nesnd_polish_exile_route_valid = {
+ exists = global_var:nesnd_polish_exile_source_1
+ exists = global_var:nesnd_polish_exile_from_1
+ exists = global_var:nesnd_polish_exile_to_1
+ exists = global_var:nesnd_polish_exile_pop_1
+ global_var:nesnd_polish_exile_source_1 ?= { nesnd_polish_exile_source = yes }
+ global_var:nesnd_polish_exile_pop_1 ?= {
+  nesnd_polish_exile_pop = yes
+  owner = global_var:nesnd_polish_exile_source_1
+  state = global_var:nesnd_polish_exile_from_1
+ }
+ global_var:nesnd_polish_exile_to_1 ?= {
+  owner ?= {
+   OR = { global_var:nesnd_polish_exile_home ?= this c:FRA ?= this }
+   NOT = { this = global_var:nesnd_polish_exile_source_1 }
+   NOT = { has_war_with = global_var:nesnd_polish_exile_source_1 }
+  }
+  trigger_if = {
+   limit = { owner ?= { global_var:nesnd_polish_exile_home ?= this } }
+   nesnd_polish_exile_destination = yes
+  }
+ }
+}

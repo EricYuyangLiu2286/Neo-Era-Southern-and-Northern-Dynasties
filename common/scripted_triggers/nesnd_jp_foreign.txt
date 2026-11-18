@@ -1,4 +1,4 @@
-﻿nesnd_jp_foreign_available = { nesnd_jp_country = yes OR = { game_date >= 1840.1.1 has_variable = nesnd_japan_partition_state is_subject = no } }
+﻿nesnd_jp_foreign_available = { nesnd_jp_country = yes OR = { game_date >= 1840.1.1 custom_tooltip = { text = nesnd_ui_japan_partition_state_tt has_variable = nesnd_japan_partition_state } is_subject = no } }
 nesnd_jp_can_send_request = {
     nesnd_jp_foreign_available = yes has_journal_entry = nesnd_jp_foreign
     NOT = { has_variable = nesnd_jp_request_clock }
@@ -14,8 +14,8 @@ nesnd_jp_subject_request_available = {
     } trigger_else = { always = no }
 }
 nesnd_jp_authorized_union = {
-    trigger_if = { limit = { is_subject = yes exists = overlord exists = var:nesnd_jp_union_patron }
-        has_variable = nesnd_jp_union_authorized
+    trigger_if = { limit = { is_subject = yes exists = overlord hidden_trigger = { exists = var:nesnd_jp_union_patron } }
+        custom_tooltip = { text = nesnd_ui_jp_union_authorized_tt has_variable = nesnd_jp_union_authorized }
         overlord = var:nesnd_jp_union_patron
     } trigger_else = { always = no }
 }
@@ -43,13 +43,13 @@ nesnd_jp_reply_valid = {
             NOT = { this = scope:jp_partner }
             nesnd_jp_regime = scope:jp_sender_regime
             has_journal_entry = nesnd_jp_foreign
-            has_variable = nesnd_jp_request_clock
+            hidden_trigger = { has_variable = nesnd_jp_request_clock }
             nesnd_jp_request_kind >= 1
             nesnd_jp_request_kind <= 7
             trigger_if = { limit = { OR = { nesnd_jp_request_kind = 1 nesnd_jp_request_kind = 2 nesnd_jp_request_kind = 6 nesnd_jp_request_kind = 7 } } nesnd_jp_diplomatic_standing = yes }
             nesnd_jp_request_number = scope:jp_request_number
-            trigger_if = { limit = { exists = var:nesnd_jp_request_partner }
-                var:nesnd_jp_request_partner = scope:jp_partner
+            trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_jp_request_partner_tt exists = var:nesnd_jp_request_partner } }
+                hidden_trigger = { var:nesnd_jp_request_partner = scope:jp_partner }
                 NOT = { has_war_with = scope:jp_partner }
             } trigger_else = { always = no }
             trigger_if = { limit = { is_subject = yes } overlord = scope:jp_sender_patron }
@@ -59,10 +59,10 @@ nesnd_jp_reply_valid = {
                 scope:jp_partner = { nesnd_jp_regime = scope:jp_partner_regime }
             }
             trigger_if = { limit = { nesnd_jp_request_kind = 1 } can_increase_autonomy = yes }
-            trigger_if = { limit = { nesnd_jp_request_kind = 3 } NOT = { has_variable = nesnd_jp_political_done } }
+            trigger_if = { limit = { nesnd_jp_request_kind = 3 } custom_tooltip = { text = nesnd_ui_not_jp_political_done_tt NOT = { has_variable = nesnd_jp_political_done } } }
             trigger_if = { limit = { nesnd_jp_request_kind = 4 } nesnd_jp_request_quote > 0 }
             trigger_if = { limit = { nesnd_jp_request_kind = 5 }
-                NOT = { has_global_variable = nesnd_kr_open }
+                custom_tooltip = { text = nesnd_ui_not_kr_open_tt NOT = { has_global_variable = nesnd_kr_open } }
                 nesnd_jp_owned_korea = yes
                 is_subject = no is_at_war = no is_active_in_diplomatic_play = no
                 NOT = { any_scope_state = { OR = { state_region = s:STATE_BUSAN state_region = s:STATE_YANGHO } NOT = { controller = owner } } }
@@ -94,7 +94,7 @@ nesnd_jp_independence_play_ready = {
         NOT = { has_truce_with = overlord }
         NOT = { has_war_with = overlord }
         NOT = { has_law_or_variant = law_type:law_isolationism }
-        NOT = { has_variable = nesnd_jp_independence_play_lock }
+        custom_tooltip = { text = nesnd_ui_not_jp_independence_play_lock_tt NOT = { has_variable = nesnd_jp_independence_play_lock } }
         overlord = { is_country_alive = yes is_active_in_diplomatic_play = no relations:root < relations_threshold:cordial }
         OR = { can_increase_autonomy = no any_diplomatic_catalyst = { is_diplomatic_catalyst_type = catalyst_autonomy_increase_denied target = root.overlord } }
         trigger_if = { limit = { overlord = { is_subject = yes } } overlord.overlord = { relations:root < relations_threshold:cordial } }

@@ -1,15 +1,15 @@
 ﻿nesnd_wu_eastern_question = {
-    icon = "gfx/interface/icons/politics_icons/revolution.dds"
+    icon = "gfx/interface/icons/event_icons/nesnd_usm_three_scrolls.dds"
     group = je_group_historical_content
     activation_description = { always = yes }
     can_revolution_inherit = no
     possible = {
-        c:USM ?= this has_variable = tag_WUU_var
-        has_global_variable = nesnd_south_settled
+        c:USM ?= this custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var }
+        custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled }
         trigger_if = { limit = { exists = c:JAP exists = c:USM } c:JAP = { is_country_alive = yes } }
         trigger_else = { always = no }
-        NOT = { has_variable = nesnd_japan_dossier_entered }
-        NOT = { has_global_variable = nesnd_japan_dossier_closed }
+        custom_tooltip = { text = nesnd_ui_not_japan_dossier_entered_tt NOT = { has_variable = nesnd_japan_dossier_entered } }
+        custom_tooltip = { text = nesnd_ui_not_japan_dossier_closed_tt NOT = { has_global_variable = nesnd_japan_dossier_closed } }
     }
     is_shown_when_inactive = { c:USM ?= this has_variable = tag_WUU_var }
     immediate = { set_variable = nesnd_japan_dossier_entered nesnd_japan_consider_terms_once = yes set_variable = nesnd_eastern_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_eastern_readiness_bar value = owner.nesnd_japan_preparation_score } } }
@@ -78,7 +78,7 @@
             }
         } }
         effect = {
-            if = { limit = { NOT = { has_global_variable = nesnd_japan_dossier_closed } }
+            if = { limit = { custom_tooltip = { text = nesnd_ui_not_japan_dossier_closed_tt NOT = { has_global_variable = nesnd_japan_dossier_closed } } }
                 set_global_variable = nesnd_japan_dossier_closed
                 trigger_event = { id = nesnd_japan.4 popup = yes }
             }
@@ -88,16 +88,16 @@
         flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_eastern_invalid_conclusion
         trigger = {
-            NOT = { has_global_variable = nesnd_japan_dossier_closed }
+            custom_tooltip = { text = nesnd_ui_not_japan_dossier_closed_tt NOT = { has_global_variable = nesnd_japan_dossier_closed } }
             OR = {
                 NOT = { exists = c:JAP c:JAP ?= { is_country_alive = yes } }
-                NOT = { has_global_variable = nesnd_south_settled }
-                NOT = { has_variable = tag_WUU_var }
-                NOT = { has_variable = nesnd_eastern_absolute_v2 }
+                custom_tooltip = { text = nesnd_ui_not_south_settled_tt NOT = { has_global_variable = nesnd_south_settled } }
+                custom_tooltip = { text = nesnd_ui_not_tag_wuu_var_tt NOT = { has_variable = tag_WUU_var } }
+                hidden_trigger = { NOT = { has_variable = nesnd_eastern_absolute_v2 } }
             }
         }
         effect = {
-            if = { limit = { OR = { NOT = { exists = c:JAP c:JAP ?= { is_country_alive = yes } } NOT = { has_variable = tag_WUU_var } } }
+            if = { limit = { OR = { NOT = { exists = c:JAP c:JAP ?= { is_country_alive = yes } } custom_tooltip = { text = nesnd_ui_not_tag_wuu_var_tt NOT = { has_variable = tag_WUU_var } } } }
                 set_global_variable = nesnd_japan_dossier_closed
             }
             else = { remove_variable = nesnd_japan_dossier_entered }
@@ -119,21 +119,22 @@
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
 nesnd_japan_reunification = {
-    icon = "gfx/interface/icons/politics_icons/revolution.dds"
+    is_shown_in_lobby = { OR = { c:JAP ?= THIS c:JTK ?= THIS c:JIM ?= THIS } }
+    icon = "gfx/interface/icons/event_icons/nesnd_jp_castle.dds"
     group = je_group_historical_content
     activation_description = { always = yes }
     can_revolution_inherit = yes
     possible = {
         OR = { c:JAP ?= this c:JTK ?= this c:JIM ?= this }
-        has_global_variable = nesnd_japan_partitioned
-        NOT = { has_variable = nesnd_japan_unified }
+        custom_tooltip = { text = nesnd_ui_japan_partitioned_tt has_global_variable = nesnd_japan_partitioned }
+        custom_tooltip = { text = nesnd_ui_not_japan_unified_tt NOT = { has_variable = nesnd_japan_unified } }
     }
     is_shown_when_inactive = { OR = { c:JAP ?= this c:JTK ?= this c:JIM ?= this } }
     immediate = { set_variable = nesnd_japan_unity_entered set_variable = nesnd_unification_absolute_v2  scope:journal_entry ?= { set_bar_progress = { name = nesnd_japan_unification_bar value = owner.nesnd_japan_unity_score } } }
     outcome = {
     	flags = { hidden invalid_outcome }
     	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { OR = { NOT = { nesnd_jp_country = yes } NOT = { has_variable = nesnd_unification_absolute_v2 } } }
+    	trigger = { OR = { NOT = { nesnd_jp_country = yes } hidden_trigger = { NOT = { has_variable = nesnd_unification_absolute_v2 } } } }
     }
     scripted_progress_bar = nesnd_japan_unification_bar
     outcome = {
@@ -150,5 +151,55 @@ nesnd_japan_reunification = {
     }
     on_monthly_pulse = { effect = { nesnd_japan_review_old_split = yes } }
     weight = 800
+    should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+# Wu holds part of the home islands while Japan survives. Six months of peace open a war of annexation.
+nesnd_wu_eastern_expedition = {
+    icon = "gfx/interface/icons/event_icons/nesnd_usm_war_junk.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    possible = { nesnd_eastern_expedition_ready = yes }
+    is_shown_when_inactive = { nesnd_eastern_expedition_context = yes }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_eastern_expedition_war_running = yes } desc = nesnd_wu_eastern_expedition_status_war }
+            triggered_desc = { trigger = { nesnd_eastern_expedition_ready = yes } desc = nesnd_wu_eastern_expedition_status_count }
+            desc = nesnd_wu_eastern_expedition_status_wait
+        }
+    }
+    scripted_progress_bar = nesnd_eastern_expedition_bar
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_eastern_expedition_done_conclusion
+        trigger = { custom_tooltip = {
+            text = nesnd_eastern_expedition_done_tt
+            NOT = { c:JAP ?= { is_country_alive = yes } }
+        } }
+        effect = { nesnd_eastern_expedition_concluded = yes }
+        event_outcome_desc = { desc = nesnd_eastern_expedition_done_effect_tt }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_eastern_expedition_invalid_conclusion
+        trigger = {
+            c:JAP ?= { is_country_alive = yes }
+            NOT = { nesnd_eastern_expedition_context = yes }
+        }
+    }
+    # The bar has already counted this month. A full bar waits for peace, then opens the war and starts again.
+    on_monthly_pulse = { effect = {
+        if = { limit = {
+                scope:journal_entry ?= { "scripted_bar_progress(nesnd_eastern_expedition_bar)" >= 6 }
+                nesnd_eastern_expedition_ready = yes
+            }
+            nesnd_eastern_expedition_open = yes
+            scope:journal_entry ?= { set_bar_progress = { name = nesnd_eastern_expedition_bar value = 0 } }
+        }
+    } }
+    weight = 890
     should_be_pinned_by_default_uninvolved_or_context = yes
 }

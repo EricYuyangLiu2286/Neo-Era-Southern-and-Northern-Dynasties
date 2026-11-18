@@ -5,8 +5,22 @@ nesnd_usm_court_pressure = {
 	custom_tooltip = {
 		text = nesnd_usm_court_pressure_$DIR$_$AMT$_tt
 		nesnd_south_initialize = yes
+		if = { limit = { NOT = { has_variable = nesnd_south_pressure_extra } } set_variable = { name = nesnd_south_pressure_extra value = 0 } }
+		# The monthly pulse rewrites the tracker from the event count; the change is kept in nesnd_south_pressure_extra.
+		change_variable = { name = nesnd_south_pressure_extra $DIR$ = $AMT$ }
 		change_variable = { name = usm_conflicts_within_tracker $DIR$ = $AMT$ }
 		clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
 	}
 	hidden_effect = { nesnd_refresh_south_display = yes }
+}
+
+# Wu scope. Extra succession pressure that lasts: the First Minister's case only (death +25, injury +10, escape +3).
+# Kept in nesnd_south_pressure_extra and added to the event count every month (nesnd_south_tilt_month).
+nesnd_south_add_pressure = {
+	nesnd_south_initialize = yes
+	if = { limit = { NOT = { has_variable = nesnd_south_pressure_extra } } set_variable = { name = nesnd_south_pressure_extra value = 0 } }
+	change_variable = { name = nesnd_south_pressure_extra add = $AMT$ }
+	change_variable = { name = usm_conflicts_within_tracker add = $AMT$ }
+	clamp_variable = { name = usm_conflicts_within_tracker min = 0 max = 100 }
+	nesnd_refresh_south_display = yes
 }

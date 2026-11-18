@@ -1,0 +1,54 @@
+﻿# Second Jingnan War, southern approach. The Wu side advancing through the mountains and rainforest of
+# Yunnan, Guizhou, south Sichuan and Guangxi. The condition exists only while that side is fighting the
+# Jingnan play (dp_usm_civil_war started by USM), so it leaves peacetime and every other war untouched.
+# Guilin is left out: it is the Hunan approach to Guangxi that the east-to-west campaign uses.
+# Scale follows vanilla battle_condition_lost (-10% offense, -25% defense, +20% morale loss).
+battle_condition_nesnd_southwest_miasma = { #attacker only
+	icon = "gfx/interface/icons/battle_conditions/battle_condition_broken_supply_line.dds"
+
+	modifier = {
+		unit_offense_mult = -0.25
+		unit_morale_loss_mult = 0.25
+		battle_casualties_mult = 0.2
+	}
+
+	possible = {
+		scope:is_advancing_side = yes
+		exists = scope:character
+		scope:character = {
+			has_role_of_type = general
+		}
+		custom_tooltip = { text = nesnd_ui_usm_civilwar_occured_tt has_global_variable = usm_civilwar_occured }
+		province = {
+			OR = {
+				has_label = label_elevated
+				has_label = label_hazardous
+				has_terrain = forest
+			}
+			state = {
+				OR = {
+					state_region = s:STATE_YUNNAN
+					state_region = s:STATE_GUIZHOU
+					state_region = s:STATE_CHUANNAN
+					state_region = s:STATE_GUANGXI
+				}
+			}
+		}
+		scope:character ?= {
+			owner ?= {
+				is_in_guerilla_war = no
+				any_scope_war = {
+					is_war_participant = prev
+					NOT = { is_on_defending_side = prev }
+					exists = diplomatic_play
+					diplomatic_play ?= { nesnd_south_named_play = yes }
+				}
+			}
+		}
+	}
+
+	# Vanilla attacker-side conditions weigh roughly 0.5 to 3 each, so this one is drawn in most battles.
+	weight = {
+		value = 20
+	}
+}

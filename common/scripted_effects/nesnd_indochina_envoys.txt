@@ -1,0 +1,79 @@
+﻿# Indochina envoys (task 110, design A). Triggers in common/scripted_triggers/nesnd_indochina_envoys.txt.
+
+# Sender scope (button root). The envoy goes to the unanswered subject that leans towards Wu the least.
+nesnd_indochina_send_envoy = {
+    clear_saved_scope = nesnd_indochina_next
+    ordered_country = {
+        limit = { nesnd_envoy_pick = yes }
+        order_by = { value = nesnd_tilt_now multiply = -1 }
+        save_scope_as = nesnd_indochina_next
+    }
+    set_variable = { name = nesnd_indochina_envoy_cooldown months = 6 }
+    scope:nesnd_indochina_next ?= {
+        # The mission also pulls its political balance towards the middle for six months.
+        set_variable = { name = nesnd_tilt_envoy months = 6 }
+        set_variable = { name = nesnd_indochina_envoy_from value = root }
+        set_variable = { name = nesnd_indochina_pending days = 60 }
+        if = { limit = { has_variable = nesnd_indochina_envoy_round }
+            change_variable = { name = nesnd_indochina_envoy_round add = 1 }
+        }
+        else = { set_variable = { name = nesnd_indochina_envoy_round value = 1 } }
+        trigger_event = { id = nesnd_indochina.1 days = 7 popup = yes }
+    }
+}
+
+# Contextless (succession board weekly pulse). From 1838-06-01 a dominion no envoy has reached
+# hears of the coming war itself and answers once, without a sender.
+nesnd_indochina_rumour_check = {
+    if = { limit = { game_date >= 1838.6.1 nesnd_indochina_window_open = yes }
+        every_country = {
+            limit = {
+                nesnd_indochina_country = yes
+                nesnd_indochina_envoy_target = yes
+                NOT = { has_variable = nesnd_indochina_envoy_round }
+                NOT = { has_variable = nesnd_indochina_rumour_sent }
+            }
+            set_variable = nesnd_indochina_rumour_sent
+            set_variable = { name = nesnd_indochina_pending days = 60 }
+            trigger_event = { id = nesnd_indochina.1 days = 1 popup = yes }
+        }
+    }
+}
+
+# Subject scope, inside nesnd_indochina.1 (scope:nesnd_indochina_sender exists only for an envoy).
+nesnd_indochina_stand_aside = {
+    change_subject_type = subject_type_tributary
+    set_variable = nesnd_indochina_stood_aside
+    set_variable = nesnd_indochina_answered
+    change_relations = { country = c:USM value = -25 }
+    if = { limit = { exists = scope:nesnd_indochina_sender }
+        change_relations = { country = scope:nesnd_indochina_sender value = 25 }
+    }
+}
+nesnd_indochina_keep_duty = {
+    change_relations = { country = c:USM value = 25 }
+    if = { limit = { exists = scope:nesnd_indochina_sender }
+        change_relations = { country = scope:nesnd_indochina_sender value = -25 }
+    }
+    # A second envoy, or the rumour, is the last chance.
+    if = { limit = { OR = { hidden_trigger = { NOT = { has_variable = nesnd_indochina_envoy_round } } hidden_trigger = { var:nesnd_indochina_envoy_round >= 2 } } }
+        set_variable = nesnd_indochina_answered
+    }
+}
+# Subject scope, after either answer: tell the sender and the overlord.
+nesnd_indochina_report_answer = {
+    scope:nesnd_indochina_sender ?= { trigger_event = { id = nesnd_indochina.2 popup = yes } }
+    c:USM ?= { trigger_event = { id = nesnd_indochina.3 popup = yes } }
+}
+
+# USM scope. After Wu's victory, ask about each tributary that stood aside, one at a time.
+nesnd_indochina_next_reckoning = {
+    if = { limit = { c:USM ?= this any_country = { nesnd_indochina_reckoning_due = yes } }
+        random_country = {
+            limit = { nesnd_indochina_reckoning_due = yes }
+            save_scope_as = nesnd_indochina_reckon_next
+        }
+        set_variable = { name = nesnd_indochina_reckon_target value = scope:nesnd_indochina_reckon_next }
+        trigger_event = { id = nesnd_indochina.10 days = 7 popup = yes }
+    }
+}

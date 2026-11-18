@@ -66,9 +66,65 @@ nesnd_jp_cohesion_victory = {
 
     }
 }
-nesnd_jp_cohesion_material = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready } value = nesnd_unity_material_growth } }
-nesnd_jp_cohesion_political = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready } value = nesnd_unity_political_growth } }
-nesnd_jp_cohesion_delta = { value = nesnd_jp_cohesion_order add = nesnd_jp_cohesion_living add = nesnd_jp_cohesion_learning add = nesnd_jp_cohesion_conflict add = nesnd_jp_cohesion_victory add = nesnd_jp_cohesion_material add = nesnd_jp_cohesion_political }
+# —— 工业化与国民团结（2026-11-16 作者通过）——
+nesnd_jp_labour_share = { value = "pop_type_percent_country(pop_type:laborers)" add = "pop_type_percent_country(pop_type:machinists)" }
+nesnd_jp_petty_share = { value = "pop_type_percent_country(pop_type:shopkeepers)" add = "pop_type_percent_country(pop_type:clerks)" }
+nesnd_jp_peasant_share = { value = "pop_type_percent_country(pop_type:peasants)" }
+nesnd_jp_cohesion_industry = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready }
+    if = { limit = { construction_queue_num_queued_levels >= 5 } add = 0.1 } else_if = { limit = { construction_queue_num_queued_levels >= 1 } add = 0.05 }
+} }
+# 激进派达到两成时，劳工一项不计。
+nesnd_jp_cohesion_labour = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready radical_population_fraction < 0.2 }
+    if = { limit = { nesnd_jp_labour_share >= 0.2 } add = 0.15 } else_if = { limit = { nesnd_jp_labour_share >= 0.1 } add = 0.1 } else_if = { limit = { nesnd_jp_labour_share >= 0.05 } add = 0.05 }
+} }
+nesnd_jp_cohesion_petty = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready }
+    if = { limit = { nesnd_jp_petty_share >= 0.1 } add = 0.15 } else_if = { limit = { nesnd_jp_petty_share >= 0.06 } add = 0.1 } else_if = { limit = { nesnd_jp_petty_share >= 0.03 } add = 0.05 }
+} }
+nesnd_jp_cohesion_peasant = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready }
+    if = { limit = { nesnd_jp_peasant_share >= 0.6 } add = -0.1 } else_if = { limit = { nesnd_jp_peasant_share >= 0.4 } add = -0.05 } else_if = { limit = { nesnd_jp_peasant_share < 0.25 } add = 0.05 }
+} }
+nesnd_jp_cohesion_economy = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready }
+    if = { limit = { has_healthy_economy = yes } add = 0.1 }
+    if = { limit = { taking_loans = yes } add = -0.05 }
+    if = { limit = { in_default = yes } add = -0.3 }
+} }
+# 污染：州地区污染超过 100 的州每个 −0.06，超过 250 的再 −0.06，至多 −0.4。卫生体系 2 级以上减半，不免除。
+nesnd_jp_cohesion_pollution = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready }
+    every_scope_state = { limit = { state_region = { pollution_amount > 100 } } add = -0.06 }
+    every_scope_state = { limit = { state_region = { pollution_amount > 250 } } add = -0.06 }
+    if = { limit = { institution_investment_level = { institution = institution_health_system value >= 2 } } multiply = 0.5 }
+    min = -0.4
+} }
+# 补贴在日本的效力：基数 0.3，随劳工或小市民比例加成至多四成，不随续期衰减。
+# 区间：低于 40 为 1.5，40 至 60 为 1，60 至 75 为 0.5（经济健康时仍为 1），75 以上为 0。
+nesnd_jp_subsidy_zone = {
+    value = 1
+    if = { limit = { nesnd_jp_cohesion_value < 40 } value = 1.5 }
+    else_if = { limit = { nesnd_jp_cohesion_value >= 75 } value = 0 }
+    else_if = { limit = { nesnd_jp_cohesion_value >= 60 NOT = { has_healthy_economy = yes } } value = 0.5 }
+}
+nesnd_jp_subsidy_material_rate = {
+    value = 0
+    if = { limit = { in_default = no NOT = { has_modifier = declared_bankruptcy } }
+        value = 0.3
+        multiply = { value = nesnd_jp_labour_share multiply = 2 add = 1 max = 1.4 }
+        multiply = nesnd_jp_subsidy_zone
+    }
+}
+nesnd_jp_subsidy_political_rate = {
+    value = 0
+    if = { limit = { government_legitimacy >= 25 }
+        value = 0.3
+        if = { limit = { government_legitimacy < 50 } multiply = 0.5 }
+        multiply = { value = nesnd_jp_petty_share multiply = 4 add = 1 max = 1.4 }
+        multiply = nesnd_jp_subsidy_zone
+    }
+}
+# 团结度对激进化的增减：每偏离 50 五点为一档，共十档。
+nesnd_jp_mood_step_value = { value = nesnd_jp_cohesion_value subtract = 50 divide = 5 round = yes min = -10 max = 10 }
+nesnd_jp_cohesion_material = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready } if = { limit = { nesnd_unity_policy_live = yes has_modifier = nesnd_unity_material_assistance } value = nesnd_jp_subsidy_material_rate } } }
+nesnd_jp_cohesion_political = { value = 0 if = { limit = { has_variable = nesnd_jp_statistics_ready } if = { limit = { nesnd_unity_policy_live = yes has_modifier = nesnd_unity_political_assistance } value = nesnd_jp_subsidy_political_rate } } }
+nesnd_jp_cohesion_delta = { value = nesnd_jp_cohesion_order add = nesnd_jp_cohesion_living add = nesnd_jp_cohesion_learning add = nesnd_jp_cohesion_conflict add = nesnd_jp_cohesion_victory add = nesnd_jp_cohesion_material add = nesnd_jp_cohesion_political add = nesnd_jp_cohesion_industry add = nesnd_jp_cohesion_labour add = nesnd_jp_cohesion_petty add = nesnd_jp_cohesion_peasant add = nesnd_jp_cohesion_economy add = nesnd_jp_cohesion_pollution }
 nesnd_jp_negotiation_cost = { value = net_fixed_income multiply = 2 min = 5000 max = 100000 }
 nesnd_jp_industrial_grant = { value = net_fixed_income multiply = 4 min = 25000 max = 150000 }
 

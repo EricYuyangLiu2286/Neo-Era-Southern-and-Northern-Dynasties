@@ -1,16 +1,38 @@
-﻿nesnd_unity_start_material = {
+﻿# 两项补贴开启时各结算一次。按文化的平均融合度分两类：四级、五级的文化 15% 人口趋于激进，
+# 一至三级的文化 15% 人口趋于忠诚。add_radicals 只能按文化筛选，所以按该文化在本国的平均融合度判断。
+nesnd_unity_subsidy_sentiment = {
+    every_scope_culture = {
+        limit = { prev = { country_average_culture_pop_acceptance = { culture = prev value >= acceptance_status_4 } } }
+        prev = { add_radicals = { culture = prev value = 0.15 } }
+    }
+    every_scope_culture = {
+        limit = { prev = { country_average_culture_pop_acceptance = { culture = prev value < acceptance_status_4 } } }
+        prev = { add_loyalists = { culture = prev value = 0.15 } }
+    }
+}
+nesnd_unity_start_material = {
     if = { limit = { nesnd_unity_material_available = yes }
         set_variable = { name = nesnd_unity_material_quote value = nesnd_unity_material_weekly_cost }
         set_variable = { name = nesnd_unity_material_pulses value = 0 }
         set_variable = { name = nesnd_unity_material_term months = 12 }
         add_modifier = { name = nesnd_unity_material_expense months = 12 multiplier = nesnd_unity_material_weekly_cost }
+        # 连续期数：上一期到期后一年内再开算连续。目前只有西秦的效力公式读取。
+        if = { limit = { has_variable = nesnd_unity_material_recent has_variable = nesnd_unity_material_streak } change_variable = { name = nesnd_unity_material_streak add = 1 } }
+        else = { set_variable = { name = nesnd_unity_material_streak value = 1 } }
+        set_variable = { name = nesnd_unity_material_recent months = 24 }
         add_modifier = { name = nesnd_unity_material_assistance months = 12 }
+        nesnd_unity_subsidy_sentiment = yes
     }
 }
 nesnd_unity_start_political = {
     if = { limit = { nesnd_unity_political_available = yes }
         set_variable = { name = nesnd_unity_political_term months = 12 }
+        # 连续期数：上一期到期后一年内再开算连续。目前只有西秦的效力公式读取。
+        if = { limit = { has_variable = nesnd_unity_political_recent has_variable = nesnd_unity_political_streak } change_variable = { name = nesnd_unity_political_streak add = 1 } }
+        else = { set_variable = { name = nesnd_unity_political_streak value = 1 } }
+        set_variable = { name = nesnd_unity_political_recent months = 24 }
         add_modifier = { name = nesnd_unity_political_assistance months = 12 }
+        nesnd_unity_subsidy_sentiment = yes
     }
 }
 # Called by every ending of the Japanese and Western Qin cohesion journals. Subsidies are paid
@@ -44,13 +66,6 @@ nesnd_unity_material_monthly_cost = {
         }
         set_variable = { name = nesnd_unity_material_pulse_lock days = 1 }
         if = { limit = { NOT = { has_variable = nesnd_unity_material_pulses } } set_variable = { name = nesnd_unity_material_pulses value = 0 } }
-        save_scope_as = nesnd_unity_policy_owner
-        every_primary_culture = {
-            save_scope_as = nesnd_unity_policy_culture
-            scope:nesnd_unity_policy_owner = { add_radicals = { value = 0.001 culture = scope:nesnd_unity_policy_culture } }
-        }
-        clear_saved_scope = nesnd_unity_policy_culture
-        clear_saved_scope = nesnd_unity_policy_owner
         change_variable = { name = nesnd_unity_material_pulses add = 1 }
     }
 }

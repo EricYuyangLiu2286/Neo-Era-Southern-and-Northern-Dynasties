@@ -230,7 +230,7 @@ REPLACE:je_acw_countdown = {
 # 东洲. Mirrors the USA's "continental protector" journal: shelter escapees, press claims,
 # and strike east while the Union is divided.
 nesnd_hus_west_lever = {
-    icon = "gfx/interface/icons/event_icons/event_map.dds"
+    icon = "gfx/interface/icons/event_icons/nesnd_hus_weight.dds"
     group = je_group_historical_content
     activation_description = { always = yes }
     should_be_pinned_by_default_uninvolved_or_context = yes
@@ -248,6 +248,10 @@ nesnd_hus_west_lever = {
     scripted_button = nesnd_hus_west_fund
     scripted_button = nesnd_hus_west_claim
     scripted_button = nesnd_hus_west_press
+    scripted_button = nesnd_hus_west_claim_auto
+    scripted_button = nesnd_hus_west_claim_manual
+    scripted_button = nesnd_hus_west_press_auto
+    scripted_button = nesnd_hus_west_press_manual
 
     status_desc = {
         first_valid = {
@@ -265,8 +269,10 @@ nesnd_hus_west_lever = {
         trigger = {
             custom_tooltip = {
                 text = nesnd_hus_west_success_tt
-                any_scope_state = {
-                    root = { is_target_in_variable_list = { name = nesnd_hus_west_claims target = prev.state_region } }
+                any_in_list = {
+                    variable = nesnd_hus_west_claims
+                    count >= 10
+                    nesnd_hus_west_region_won = yes
                 }
             }
         }
@@ -276,33 +282,12 @@ nesnd_hus_west_lever = {
         }
     }
     outcome = {
-        header = je_standard_failure_header
-        effect_header = je_standard_on_failure_header
-        color = "blue_negative"
-        conclusion_desc = je_standard_failure_conclusion_desc
-        trigger = {
-            custom_tooltip = {
-                text = nesnd_hus_west_failure_tt
-                exists = c:USA
-                c:USA = {
-                    NOR = { has_journal_entry = je_acw_countdown has_journal_entry = je_acw_war }
-                }
-            }
-        }
-        effect = {
-            change_relations = { country = c:USA value = -30 }
-            hidden_effect = { nesnd_hus_west_cleanup = yes }
-        }
-    }
-    outcome = {
         flags = { hidden invalid_outcome }
         conclusion_desc = je_standard_failure_conclusion_desc
         trigger = {
             OR = {
                 NOT = { c:HUS ?= this }
-                has_variable = nesnd_hus_native_successor
-                NOT = { exists = c:USA }
-                NOT = { any_scope_state = { any_neighbouring_state = { owner = c:USA } } }
+                custom_tooltip = { text = nesnd_ui_hus_native_successor_tt has_variable = nesnd_hus_native_successor }
             }
         }
         effect = { nesnd_hus_west_cleanup = yes }
@@ -310,9 +295,24 @@ nesnd_hus_west_lever = {
 
     on_monthly_pulse = {
         effect = {
-            set_variable = { name = nesnd_hus_west_bar value = "scope:journal_entry.scripted_bar_progress(nesnd_hus_west_claim_bar)" }
             remove_variable = nesnd_hus_west_once_batches
-            remove_variable = nesnd_hus_west_once_spent
+            every_in_list = {
+                variable = nesnd_hus_west_claims
+                every_in_list = { variable = nesnd_hus_west_land nesnd_hus_west_observe_owner = yes }
+            }
+            if = {
+                limit = { has_variable = nesnd_hus_west_auto_press nesnd_hus_west_can_press = yes }
+                nesnd_hus_west_push_east = yes
+            }
+            else_if = {
+                limit = {
+                    has_variable = nesnd_hus_west_auto_claim
+                    nesnd_hus_west_can_claim = yes
+                    # Save up for an available campaign if both standing orders are active.
+                    NAND = { has_variable = nesnd_hus_west_auto_press nesnd_hus_west_press_window = yes }
+                }
+                nesnd_hus_west_make_claim = yes
+            }
 
             # One batch of escapees every six months while the border is open.
             if = {

@@ -1,25 +1,28 @@
 ﻿nesnd_poland_pay_ultimatum = {
 	if = { limit = { has_journal_entry = je_ce_polish_war_preparation }
-		je:je_ce_polish_war_preparation = { add_progress = { name = ce_polish_reconquest_war_prep_bar value = -50 } }
+		custom_tooltip = { text = nesnd_bar_prep_m50_tt je:je_ce_polish_war_preparation = { add_progress = { name = ce_polish_reconquest_war_prep_bar value = -50 } } }
 	} else_if = { limit = { has_journal_entry = je_ce_polish_territory_claim }
-		je:je_ce_polish_territory_claim = { add_progress = { name = ce_polish_territory_claim_bar value = -50 } }
+		custom_tooltip = { text = nesnd_bar_claim_m50_tt je:je_ce_polish_territory_claim = { add_progress = { name = ce_polish_territory_claim_bar value = -50 } } }
 	}
 }
 nesnd_poland_clear_request = {
+	if = { limit = { hidden_trigger = { var:nesnd_poland_incoming_envoy ?= scope:ce_from_country } }
+		remove_variable = nesnd_poland_incoming_envoy
+	}
 	if = { limit = { exists = scope:ce_from_country exists = scope:target_diplo_play_state }
 		scope:ce_from_country = { if = { limit = { nesnd_poland_matching_pending = yes } remove_variable = nesnd_polish_pending_state } }
 	}
 }
 nesnd_poland_snapshot_stance = {
-	if = { limit = { NOT = { has_variable = nesnd_polish_result_resolved } }
-		if = { limit = { has_variable = ce_pro_polish_variable } set_variable = nesnd_polish_result_pro remove_variable = nesnd_polish_result_anti }
-		else_if = { limit = { has_variable = ce_anti_polish_variable } set_variable = nesnd_polish_result_anti remove_variable = nesnd_polish_result_pro }
+	if = { limit = { custom_tooltip = { text = nesnd_ui_not_polish_result_resolved_tt NOT = { has_variable = nesnd_polish_result_resolved } } }
+		if = { limit = { custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable } } set_variable = nesnd_polish_result_pro remove_variable = nesnd_polish_result_anti }
+		else_if = { limit = { custom_tooltip = { text = nesnd_ui_ce_anti_polish_variable_tt has_variable = ce_anti_polish_variable } } set_variable = nesnd_polish_result_anti remove_variable = nesnd_polish_result_pro }
 	}
 }
 nesnd_poland_enrol_country = {
-	if = { limit = { NOT = { has_variable = nesnd_polish_stance_invited } NOT = { has_global_variable = ce_poland_problem_end } }
+	if = { limit = { custom_tooltip = { text = nesnd_ui_not_polish_stance_invited_tt NOT = { has_variable = nesnd_polish_stance_invited } } custom_tooltip = { text = nesnd_ui_not_ce_poland_problem_end_tt NOT = { has_global_variable = ce_poland_problem_end } } }
 		set_variable = nesnd_polish_stance_invited
-		if = { limit = { NOR = { has_variable = ce_pro_polish_variable has_variable = ce_anti_polish_variable } }
+		if = { limit = { NOR = { custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable } custom_tooltip = { text = nesnd_ui_ce_anti_polish_variable_tt has_variable = ce_anti_polish_variable } } }
 			trigger_event = { id = ce_poland_events.97 popup = yes }
 		}
 	}
@@ -68,5 +71,69 @@ nesnd_poland_failure_secessions = {
 
 		}
 		else = { every_scope_state = { add_radicals_in_state = { value = 0.10 } } }
+	}
+}
+# Called from je_ce_the_polish_problem (immediate and monthly pulse); scope:journal_entry is that JE.
+# Writes the inputs read by its bars and status: guarantees still binding Krakow, how far Paris
+# will go (also set on the France bar; this effect is that bar's only writer) and the phase.
+nesnd_poland_root_month = {
+	if = { limit = { exists = scope:journal_entry }
+		if = { limit = { exists = c:KRA }
+			c:KRA = { set_global_variable = { name = nesnd_poland_guarantees value = nesnd_poland_guarantee_count } }
+		}
+		else = { set_global_variable = { name = nesnd_poland_guarantees value = 0 } }
+		set_global_variable = { name = nesnd_poland_france_will value = nesnd_poland_france_will_value }
+		scope:journal_entry = { set_global_variable = { name = nesnd_poland_last_consensus value = "scripted_bar_progress(nesnd_poland_consensus_bar)" } }
+		scope:journal_entry = { set_bar_progress = { name = nesnd_poland_france_will_bar value = global_var:nesnd_poland_france_will } }
+		if = { limit = { always = $ADVANCE_WINDOWS$ } nesnd_poland_windows_month = yes }
+		if = { limit = { has_global_variable = nesnd_poland_window } set_global_variable = { name = nesnd_poland_phase value = 3 } }
+		else_if = { limit = { scope:journal_entry = { "scripted_bar_progress(nesnd_poland_consensus_bar)" >= 60 } } set_global_variable = { name = nesnd_poland_phase value = 1 } }
+		else_if = { limit = { scope:journal_entry = { "scripted_bar_progress(nesnd_poland_consensus_bar)" >= 30 } } set_global_variable = { name = nesnd_poland_phase value = 2 } }
+		else = { set_global_variable = { name = nesnd_poland_phase value = 3 } }
+	}
+}
+# Called once by an outcome of je_ce_the_polish_problem. RESULT = restored, partition or consensus.
+# The country journals end on this flag with a visible outcome.
+nesnd_poland_set_result = {
+	nesnd_poland_windows_cleanup = yes
+	nesnd_poland_civil_cleanup = yes
+	if = { limit = { custom_tooltip = { text = nesnd_ui_not_poland_result_tt NOT = { has_global_variable = nesnd_poland_result } } }
+		set_global_variable = { name = nesnd_poland_result value = flag:$RESULT$ }
+	}
+	if = { limit = { custom_tooltip = { text = nesnd_ui_not_ce_poland_problem_end_tt NOT = { has_global_variable = ce_poland_problem_end } } }
+		set_global_variable = ce_poland_problem_end
+	}
+}
+# Country scope. Removes the war-preparation and blocking modifiers this chain adds to a country.
+nesnd_poland_clear_stage_modifiers = {
+	if = { limit = { has_modifier = ce_poland_war_prep_30 } remove_modifier = ce_poland_war_prep_30 }
+	if = { limit = { has_modifier = ce_poland_war_prep_50 } remove_modifier = ce_poland_war_prep_50 }
+	if = { limit = { has_modifier = ce_poland_war_prep_100 } remove_modifier = ce_poland_war_prep_100 }
+	if = { limit = { has_modifier = ce_anti_poland_block_30 } remove_modifier = ce_anti_poland_block_30 }
+	if = { limit = { has_modifier = ce_anti_poland_block_50 } remove_modifier = ce_anti_poland_block_50 }
+	if = { limit = { has_modifier = ce_anti_poland_block_90 } remove_modifier = ce_anti_poland_block_90 }
+}
+# Country scope, called weekly by a journal. Keeps exactly one of three tiered modifiers that
+# matches the journal's bar: KEY_30 at 30+, KEY_50 at 50+, KEY_TOP at TOP+.
+nesnd_poland_tier_modifiers = {
+	if = { limit = { je:$JE$ ?= { scripted_bar_progress = { name = $BAR$ value >= $TOP$ } } }
+		if = { limit = { NOT = { has_modifier = $KEY_TOP$ } } add_modifier = $KEY_TOP$ }
+		if = { limit = { has_modifier = $KEY_50$ } remove_modifier = $KEY_50$ }
+		if = { limit = { has_modifier = $KEY_30$ } remove_modifier = $KEY_30$ }
+	}
+	else_if = { limit = { je:$JE$ ?= { scripted_bar_progress = { name = $BAR$ value >= 50 } } }
+		if = { limit = { NOT = { has_modifier = $KEY_50$ } } add_modifier = $KEY_50$ }
+		if = { limit = { has_modifier = $KEY_TOP$ } remove_modifier = $KEY_TOP$ }
+		if = { limit = { has_modifier = $KEY_30$ } remove_modifier = $KEY_30$ }
+	}
+	else_if = { limit = { je:$JE$ ?= { scripted_bar_progress = { name = $BAR$ value >= 30 } } }
+		if = { limit = { NOT = { has_modifier = $KEY_30$ } } add_modifier = $KEY_30$ }
+		if = { limit = { has_modifier = $KEY_TOP$ } remove_modifier = $KEY_TOP$ }
+		if = { limit = { has_modifier = $KEY_50$ } remove_modifier = $KEY_50$ }
+	}
+	else = {
+		if = { limit = { has_modifier = $KEY_30$ } remove_modifier = $KEY_30$ }
+		if = { limit = { has_modifier = $KEY_50$ } remove_modifier = $KEY_50$ }
+		if = { limit = { has_modifier = $KEY_TOP$ } remove_modifier = $KEY_TOP$ }
 	}
 }

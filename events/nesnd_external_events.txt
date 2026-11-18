@@ -10,7 +10,16 @@ nesnd_external.1 = {
  immediate = { set_variable = nesnd_external_policy_seen }
  option = { name = nesnd_external_follow trigger = { nesnd_external_agenda_over = no } ai_chance = { base = 50 modifier = { add = 100 trigger = { c:HUS ?= this } } modifier = { add = -25 trigger = { OR = { c:GBR ?= this c:RUS ?= this } } } }
   set_variable = nesnd_external_following
-  if = { limit = { NOT = { has_journal_entry = nesnd_external_policy } } add_journal_entry = { type = nesnd_external_policy } }
+  if = { limit = { NOT = { has_journal_entry = nesnd_external_policy } } if = { limit = { NOR = { has_journal_entry = nesnd_external_policy hidden_trigger = { has_variable = nesnd_jeq_nesnd_external_policy } } } set_variable = { name = nesnd_jeq_nesnd_external_policy days = 3 } add_journal_entry = { type = nesnd_external_policy } } }
+ }
+ # Western Qin and Huaxia Dongzhou may send troops against Wu (same cost as option c of nesnd_crisis.20).
+ option = { name = nesnd_external_intervene
+  trigger = { OR = { c:QE1 ?= this c:HUS ?= this } exists = c:USM nesnd_external_agenda_over = no
+   is_subject = no bureaucracy > 0 is_at_war = no NOT = { has_modifier = declared_bankruptcy } }
+  show_as_unavailable = { OR = { c:QE1 ?= this c:HUS ?= this } }
+  ai_chance = { base = 5 }
+  nesnd_jingnan_intervene = yes
+  custom_tooltip = nesnd_crisis.20.c_no_war_tt
  }
  option = { name = nesnd_external_decline default_option = yes ai_chance = { base = 50 } }
 }

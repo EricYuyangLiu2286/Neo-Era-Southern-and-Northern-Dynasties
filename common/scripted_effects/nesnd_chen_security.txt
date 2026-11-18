@@ -11,7 +11,7 @@ nesnd_chen_clear_security = {
  if = { limit = { has_modifier = nesnd_chen_intelligence } remove_modifier = nesnd_chen_intelligence }
 }
 nesnd_chen_security_maintenance = {
- if = { limit = { has_variable = nesnd_chen_protected }
+ if = { limit = { custom_tooltip = { text = nesnd_ui_chen_protected_tt has_variable = nesnd_chen_protected } }
   remove_variable = nesnd_chen_protected
   if = { limit = { has_modifier = nesnd_court_protection } remove_modifier = nesnd_court_protection }
   if = { limit = { nesnd_chen_security_active = yes }
@@ -21,7 +21,7 @@ nesnd_chen_security_maintenance = {
   }
  }
  if = { limit = { NOT = { nesnd_chen_security_active = yes } } nesnd_chen_clear_security = yes }
- if = { limit = { NOT = { has_variable = nesnd_chen_guard_active } }
+ if = { limit = { custom_tooltip = { text = nesnd_ui_not_chen_guard_active_tt NOT = { has_variable = nesnd_chen_guard_active } } }
   remove_variable = nesnd_chen_relocated remove_variable = nesnd_chen_intel_ready
   if = { limit = { has_modifier = nesnd_chen_inner_guard } remove_modifier = nesnd_chen_inner_guard } if = { limit = { has_modifier = nesnd_chen_residence_guard } remove_modifier = nesnd_chen_residence_guard } if = { limit = { has_modifier = nesnd_chen_intelligence } remove_modifier = nesnd_chen_intelligence }
  }
@@ -128,17 +128,11 @@ nesnd_chen_after_death = {
 			limit = {
 				has_variable = started_with_chendongyang
 			}
-			nesnd_south_initialize = yes
-			change_variable = {
-				name = usm_conflicts_within_tracker
-				add = 25
-			}
-			clamp_variable = {
-				name = usm_conflicts_within_tracker
-				min = 0
-				max = 100
-			}
-			remove_variable = started_with_chendongyang
+			# The killing settles Xiangyang and Shu against the Zheng.
+        c:HNA ?= { nesnd_tilt_give = { SLOT = 8 VALUE = -2 MONTHS = 6 } }
+        c:SIH ?= { nesnd_tilt_give = { SLOT = 8 VALUE = -2 MONTHS = 6 } }
+        c:PHI ?= { nesnd_tilt_give = { SLOT = 8 VALUE = -1 MONTHS = 6 } }
+        remove_variable = started_with_chendongyang
 		}
 		nesnd_chen_clear_security = yes
 	}
@@ -158,39 +152,17 @@ nesnd_chen_case_wounded = {
 			add_trait = wounded
 		}
 	}
-	nesnd_south_initialize = yes
-	change_variable = {
-		name = usm_conflicts_within_tracker
-		add = 10
-	}
-	clamp_variable = {
-		name = usm_conflicts_within_tracker
-		min = 0
-		max = 100
-	}
-	nesnd_chen_clear_security = yes
-	trigger_event = {
-		id = nesnd_chen.3
-		popup = yes
-	}
+	nesnd_chen_survived = yes
+    nesnd_chen_clear_security = yes
+    nesnd_south_add_pressure = { AMT = 10 }
+    trigger_event = { id = nesnd_chen.3 popup = yes }
 	nesnd_refresh_south_display = yes
 }
 nesnd_chen_case_escape = {
-	nesnd_south_initialize = yes
-	change_variable = {
-		name = usm_conflicts_within_tracker
-		add = 3
-	}
-	clamp_variable = {
-		name = usm_conflicts_within_tracker
-		min = 0
-		max = 100
-	}
-	nesnd_chen_clear_security = yes
-	trigger_event = {
-		id = nesnd_chen.4
-		popup = yes
-	}
+	nesnd_chen_survived = yes
+    nesnd_chen_clear_security = yes
+    nesnd_south_add_pressure = { AMT = 3 }
+    trigger_event = { id = nesnd_chen.4 popup = yes }
 	nesnd_refresh_south_display = yes
 }
 
@@ -219,4 +191,12 @@ nesnd_chen_prepare_case = {
 			}
 		}
 	}
+}
+
+# Wu scope. Chen lived through the attempt under the court's protection: Xiangyang and Shu are somewhat reassured.
+nesnd_chen_survived = {
+    if = { limit = { has_variable = nesnd_chen_guard_active }
+        c:HNA ?= { nesnd_tilt_give = { SLOT = 8 VALUE = 1 MONTHS = 6 } }
+        c:SIH ?= { nesnd_tilt_give = { SLOT = 8 VALUE = 1 MONTHS = 6 } }
+    }
 }

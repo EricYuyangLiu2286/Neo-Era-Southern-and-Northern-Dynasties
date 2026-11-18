@@ -1155,7 +1155,7 @@ if = { limit = { exists = var:nesnd_c2_usm_distribution_target } var:nesnd_c2_us
 nesnd_c2_request_scholarly_exchange = {
  if = { limit = { exists = c:SIH }
   if = { limit = { nesnd_c2_can_request_scholarly = yes }
-   if = { limit = { NOT = { has_variable = nesnd_c2_scholar_serial } } set_variable = { name = nesnd_c2_scholar_serial value = 0 } }
+   if = { limit = { hidden_trigger = { NOT = { has_variable = nesnd_c2_scholar_serial } } } set_variable = { name = nesnd_c2_scholar_serial value = 0 } }
    change_variable = { name = nesnd_c2_scholar_serial add = 1 }
    remove_variable = nesnd_c2_scholar_closed
    set_variable = { name = nesnd_c2_scholar_clock days = 90 }
@@ -1240,10 +1240,22 @@ nesnd_usm_mandate_project_shift = {
     if = {
         limit = { nesnd_usm_civic_country = yes NOT = { has_variable = nesnd_usm_mandate_victory } }
         if = {
-            limit = { NOT = { has_journal_entry = nesnd_c2_usm_agenda } }
-            add_journal_entry = { type = nesnd_c2_usm_agenda }
+            limit = { NOT = { nesnd_usm_agenda_any = yes } }
+            if = { limit = { has_variable = nesnd_south_peaceful has_variable = tag_WUU_var } add_journal_entry = { type = nesnd_c2_usm_agenda_zheng } }
+            else_if = { limit = { has_variable = nesnd_south_peaceful } add_journal_entry = { type = nesnd_c2_usm_agenda_ming } }
+            else = { add_journal_entry = { type = nesnd_c2_usm_agenda } }
         }
         je:nesnd_c2_usm_agenda ?= {
+            nesnd_usm_mandate_initialize = yes
+            add_progress = { name = nesnd_usm_mandate_bar value = $AMOUNT$ }
+            nesnd_usm_mandate_refresh = yes
+        }
+        je:nesnd_c2_usm_agenda_zheng ?= {
+            nesnd_usm_mandate_initialize = yes
+            add_progress = { name = nesnd_usm_mandate_bar value = $AMOUNT$ }
+            nesnd_usm_mandate_refresh = yes
+        }
+        je:nesnd_c2_usm_agenda_ming ?= {
             nesnd_usm_mandate_initialize = yes
             add_progress = { name = nesnd_usm_mandate_bar value = $AMOUNT$ }
             nesnd_usm_mandate_refresh = yes

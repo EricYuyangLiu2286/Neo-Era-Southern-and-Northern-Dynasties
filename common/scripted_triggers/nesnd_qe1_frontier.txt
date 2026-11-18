@@ -1,0 +1,89 @@
+﻿# 西秦「边疆诸部」。Root 另注明者除外都是 country。
+
+# State scope. 阿富汗：七州加俾路支三州。
+nesnd_qe1_fr_afg_region = {
+	OR = {
+		state_region = s:STATE_KABUL state_region = s:STATE_KANDAHAR state_region = s:STATE_HERAT
+		state_region = s:STATE_PASHTUNISTAN state_region = s:STATE_BALKH state_region = s:STATE_CENTRAL_HIGHLANDS
+		state_region = s:STATE_QUETTA state_region = s:STATE_NORTHERN_BALUCHISTAN state_region = s:STATE_SISTAN
+		state_region = s:STATE_BALUCHISTAN
+	}
+}
+# State scope. 草原六州（与西秦解体脚本的哈萨克一条相同）。
+nesnd_qe1_fr_kaz_region = {
+	OR = {
+		state_region = s:STATE_SYRDARYA state_region = s:STATE_SEMIRECHE state_region = s:STATE_URALSK
+		state_region = s:STATE_AKTOBE state_region = s:STATE_SAMARA state_region = s:STATE_CHELYABINSK
+	}
+}
+# State scope. 连锁响应的三国：土库曼、希瓦、浩罕。
+nesnd_qe1_fr_trc_region = { OR = { state_region = s:STATE_TURKMENIA state_region = s:STATE_MERZ } }
+nesnd_qe1_fr_khi_region = { state_region = s:STATE_KHIVA }
+nesnd_qe1_fr_kok_region = { state_region = s:STATE_FERGANA }
+
+nesnd_qe1_fr_afg_open = {
+	custom_tooltip = { text = nesnd_ui_not_qe1_fr_afg_lost_tt NOT = { has_variable = nesnd_qe1_fr_afg_lost } }
+	any_scope_state = { nesnd_qe1_fr_afg_region = yes }
+}
+nesnd_qe1_fr_kaz_open = {
+	custom_tooltip = { text = nesnd_ui_not_qe1_fr_kaz_lost_tt NOT = { has_variable = nesnd_qe1_fr_kaz_lost } }
+	any_scope_state = { nesnd_qe1_fr_kaz_region = yes }
+}
+# 条在上涨：地区未了结、未在起事中。
+nesnd_qe1_fr_afg_active = { nesnd_qe1_fr_afg_open = yes NOT = { has_variable = nesnd_qe1_fr_afg_risen } }
+nesnd_qe1_fr_kaz_active = { nesnd_qe1_fr_kaz_open = yes NOT = { has_variable = nesnd_qe1_fr_kaz_risen } }
+
+# A secession can transfer the last frontier states before its diplomatic play ends.
+nesnd_qe1_fr_unfinished = {
+	OR = {
+		nesnd_qe1_fr_afg_open = yes
+		nesnd_qe1_fr_kaz_open = yes
+		custom_tooltip = { text = nesnd_ui_qe1_fr_afg_risen_tt has_variable = nesnd_qe1_fr_afg_risen }
+		custom_tooltip = { text = nesnd_ui_qe1_fr_kaz_risen_tt has_variable = nesnd_qe1_fr_kaz_risen }
+		AND = {
+			OR = { custom_tooltip = { text = nesnd_ui_qe1_fr_afg_lost_tt has_variable = nesnd_qe1_fr_afg_lost } custom_tooltip = { text = nesnd_ui_qe1_fr_kaz_lost_tt has_variable = nesnd_qe1_fr_kaz_lost } }
+			custom_tooltip = { text = nesnd_ui_not_qe1_fr_chain_kok_tt NOT = { has_variable = nesnd_qe1_fr_chain_kok } }
+		}
+	}
+}
+
+nesnd_qe1_frontier_eligible = {
+	nesnd_qe1_unity_eligible = yes
+	nesnd_cohesion_open = yes
+	nesnd_qe1_fr_unfinished = yes
+}
+nesnd_qe1_frontier_live = { nesnd_qe1_frontier_eligible = yes has_journal_entry = nesnd_qe1_frontier_journal }
+
+nesnd_qe1_fr_no_cooldown = {
+	custom_tooltip = { text = nesnd_qe1_fr_cooldown_tt NOT = { has_variable = nesnd_qe1_fr_cd } }
+}
+nesnd_qe1_fr_can_pay = {
+	custom_tooltip = { text = nesnd_qe1_fr_cost_tt gold_reserves >= nesnd_qe1_fr_enfeoff_cost }
+}
+
+# 连锁响应的条件：已有一处战败独立；或团结度低于 25 而仍有一处在交战。
+nesnd_qe1_fr_chain_ready = {
+	OR = {
+		has_variable = nesnd_qe1_fr_afg_lost
+		has_variable = nesnd_qe1_fr_kaz_lost
+		AND = {
+			has_variable = nesnd_qe1_unity
+			var:nesnd_qe1_unity < 25
+			OR = { has_variable = nesnd_qe1_fr_afg_risen has_variable = nesnd_qe1_fr_kaz_risen }
+		}
+	}
+}
+
+# State scope. 文化退转可以落在这里：西域汉羌仍占四分之一以上，五年内没有退转过。
+nesnd_qe1_fr_revert_state = {
+	culture_percent_state = { target = cu:ce_xiyu value >= 0.25 }
+	NOT = { has_variable = nesnd_qe1_fr_reverted }
+	is_capital = no
+}
+
+# Country scope（任意国家）。由「边疆诸部」引出、正与西秦交战的国家。
+nesnd_qe1_fr_enemy = {
+	has_variable = nesnd_qe1_fr_setup
+	exists = c:QE1
+	has_war_with = c:QE1
+}

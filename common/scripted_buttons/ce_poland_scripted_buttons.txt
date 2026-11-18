@@ -49,12 +49,12 @@
     }
 
     effect = {
-        je:je_ce_polish_war_preparation ?= {
+        custom_tooltip = { text = nesnd_bar_prep_m50_tt je:je_ce_polish_war_preparation ?= {
             add_progress = {
                 value = -50
                 name = ce_polish_reconquest_war_prep_bar
             }
-        }
+        } }
         random_state = {
             limit = {
                 OR = {
@@ -89,44 +89,30 @@ ce_polish_claim_state_west_galicia_btn = {
     name = "ce_polish_claim_state_west_galicia_btn_name"
     desc = "ce_polish_claim_state_west_galicia_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_WEST_GALICIA }
+        NOT = { has_claim = s:STATE_WEST_GALICIA }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_WEST_GALICIA }
-                c:KRA = { has_claim = s:STATE_WEST_GALICIA }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 1. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
-        value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
-            }
-            add = 30
-        }
+        value = 30
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
         random_state = {
             limit = {
                 state_region = s:STATE_WEST_GALICIA
@@ -134,6 +120,7 @@ ce_polish_claim_state_west_galicia_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_WEST_GALICIA"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -143,12 +130,12 @@ ce_polish_claim_state_west_galicia_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -165,31 +152,44 @@ ce_polish_claim_state_west_galicia_btn = {
 ce_polish_dp_state_west_galicia_btn = {
     name = ce_polish_dp_state_west_galicia_btn_name
     desc = ce_polish_dp_state_west_galicia_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_WEST_GALICIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_WEST_GALICIA = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_WEST_GALICIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 1. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.4
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.4 }
+                if = { limit = { nesnd_poland_restoration_count = 4 } multiply = 2 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_WEST_GALICIA = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_WEST_GALICIA = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -198,31 +198,43 @@ ce_polish_dp_state_west_galicia_btn = {
 ce_polish_dp_state_upper_silesia_btn = {
     name = ce_polish_dp_state_upper_silesia_btn_name
     desc = ce_polish_dp_state_upper_silesia_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_UPPER_SILESIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_UPPER_SILESIA = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_UPPER_SILESIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 2. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.0008
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.0008 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_UPPER_SILESIA = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_UPPER_SILESIA = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -231,31 +243,44 @@ ce_polish_dp_state_upper_silesia_btn = {
 ce_polish_dp_state_posen_btn = {
     name = ce_polish_dp_state_posen_btn_name
     desc = ce_polish_dp_state_posen_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_POSEN = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_POSEN = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_POSEN = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 1. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.4
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.4 }
+                if = { limit = { nesnd_poland_restoration_count = 4 } multiply = 2 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_POSEN = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_POSEN = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -264,31 +289,43 @@ ce_polish_dp_state_posen_btn = {
 ce_polish_dp_state_east_galicia_btn = {
     name = ce_polish_dp_state_east_galicia_btn_name
     desc = ce_polish_dp_state_east_galicia_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_EAST_GALICIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_EAST_GALICIA = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_EAST_GALICIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 2. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.0008
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.0008 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_EAST_GALICIA = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_EAST_GALICIA = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -297,31 +334,43 @@ ce_polish_dp_state_east_galicia_btn = {
 ce_polish_dp_state_kaunas_btn = {
     name = ce_polish_dp_state_kaunas_btn_name
     desc = ce_polish_dp_state_kaunas_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_KAUNAS = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_KAUNAS = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_KAUNAS = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 3. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.0002
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.0002 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_KAUNAS = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_KAUNAS = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -330,31 +379,43 @@ ce_polish_dp_state_kaunas_btn = {
 ce_polish_dp_state_brest_btn = {
     name = ce_polish_dp_state_brest_btn_name
     desc = ce_polish_dp_state_brest_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_BREST = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_BREST = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_BREST = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 3. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.0002
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.0002 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_BREST = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_BREST = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -363,31 +424,43 @@ ce_polish_dp_state_brest_btn = {
 ce_polish_dp_state_volhynia_btn = {
     name = ce_polish_dp_state_volhynia_btn_name
     desc = ce_polish_dp_state_volhynia_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_VOLHYNIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_VOLHYNIA = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_VOLHYNIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 3. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.0002
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.0002 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_VOLHYNIA = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_VOLHYNIA = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -396,31 +469,43 @@ ce_polish_dp_state_volhynia_btn = {
 ce_polish_dp_state_west_prussia_btn = {
     name = ce_polish_dp_state_west_prussia_btn_name
     desc = ce_polish_dp_state_west_prussia_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_WEST_PRUSSIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_WEST_PRUSSIA = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_WEST_PRUSSIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 2. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.0008
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.0008 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_WEST_PRUSSIA = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_WEST_PRUSSIA = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -429,31 +514,44 @@ ce_polish_dp_state_west_prussia_btn = {
 ce_polish_dp_state_greater_poland_btn = {
     name = ce_polish_dp_state_greater_poland_btn_name
     desc = ce_polish_dp_state_greater_poland_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_GREATER_POLAND = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_GREATER_POLAND = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_GREATER_POLAND = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 1. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.4
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.4 }
+                if = { limit = { nesnd_poland_restoration_count = 4 } multiply = 2 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_GREATER_POLAND = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_GREATER_POLAND = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -462,31 +560,44 @@ ce_polish_dp_state_greater_poland_btn = {
 ce_polish_dp_state_lesser_poland_btn = {
     name = ce_polish_dp_state_lesser_poland_btn_name
     desc = ce_polish_dp_state_lesser_poland_btn_desc
-    visible = { nesnd_poland_active = yes OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim } }
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_LESSER_POLAND = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
     possible = {
         nesnd_poland_can_issue_ultimatum = yes
-        s:STATE_LESSER_POLAND = { any_scope_state = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } }
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_LESSER_POLAND = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
     }
+    # Tier 1. Krakow presses harder than its supporters, and harder while Paris stands behind it.
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.4
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.4 }
+                if = { limit = { nesnd_poland_restoration_count = 4 } multiply = 2 }
             }
-            add = 30
+            else = { add = 0.001 }
         }
     }
     effect = {
-        custom_tooltip = nesnd_poland_ultimatum_outcome_tt
+        custom_tooltip = nesnd_poland_negotiation_terms
 
         if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
             clear_saved_scope = target_diplo_play_state
             save_scope_as = ce_from_country
-            s:STATE_LESSER_POLAND = { random_scope_state = { limit = { nesnd_poland_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            s:STATE_LESSER_POLAND = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
             if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
                 nesnd_poland_pay_ultimatum = yes
                 set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
-                scope:target_diplo_play_state.owner = { trigger_event = { id = ce_poland_events.2 popup = yes } }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
             }
         }
     }
@@ -496,44 +607,34 @@ ce_polish_claim_state_upper_silesia_btn = {
     name = "ce_polish_claim_state_upper_silesia_btn_name"
     desc = "ce_polish_claim_state_upper_silesia_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_UPPER_SILESIA }
+        NOT = { has_claim = s:STATE_UPPER_SILESIA }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_UPPER_SILESIA }
-                c:KRA = { has_claim = s:STATE_UPPER_SILESIA }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 2. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
-            }
-            add = 30
-        }
+        if = { limit = {
+            OR = { owns_entire_state_region = STATE_WEST_GALICIA has_claim = s:STATE_WEST_GALICIA }
+            OR = { owns_entire_state_region = STATE_POSEN has_claim = s:STATE_POSEN }
+        } add = 0.002 }
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
         random_state = {
             limit = {
                 state_region = s:STATE_UPPER_SILESIA
@@ -541,6 +642,7 @@ ce_polish_claim_state_upper_silesia_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_UPPER_SILESIA"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -550,12 +652,12 @@ ce_polish_claim_state_upper_silesia_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -573,45 +675,30 @@ ce_polish_claim_state_posen_btn = {
     name = "ce_polish_claim_state_posen_btn_name"
     desc = "ce_polish_claim_state_posen_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_POSEN }
+        NOT = { has_claim = s:STATE_POSEN }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_POSEN }
-                c:KRA = { has_claim = s:STATE_POSEN }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 1. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
-        value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
-            }
-            add = 25
-        }
+        value = 30
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
         random_state = {
             limit = {
                 state_region = s:STATE_POSEN
@@ -619,6 +706,7 @@ ce_polish_claim_state_posen_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_POSEN"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -628,12 +716,12 @@ ce_polish_claim_state_posen_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -651,50 +739,34 @@ ce_polish_claim_state_east_galicia_btn = {
     name = "ce_polish_claim_state_east_galicia_btn_name"
     desc = "ce_polish_claim_state_east_galicia_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_EAST_GALICIA }
+        NOT = { has_claim = s:STATE_EAST_GALICIA }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_EAST_GALICIA }
-                c:KRA = { has_claim = s:STATE_EAST_GALICIA }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 2. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count <= 3
-            }
-            add = 100
-        }
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
-            }
-            add = 25
-        }
+        if = { limit = {
+            OR = { owns_entire_state_region = STATE_WEST_GALICIA has_claim = s:STATE_WEST_GALICIA }
+            OR = { owns_entire_state_region = STATE_POSEN has_claim = s:STATE_POSEN }
+        } add = 0.002 }
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
         random_state = {
             limit = {
                 state_region = s:STATE_EAST_GALICIA
@@ -702,6 +774,7 @@ ce_polish_claim_state_east_galicia_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_EAST_GALICIA"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -711,12 +784,12 @@ ce_polish_claim_state_east_galicia_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -734,50 +807,35 @@ ce_polish_claim_state_kaunas_btn = {
     name = "ce_polish_claim_state_kaunas_btn_name"
     desc = "ce_polish_claim_state_kaunas_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_KAUNAS }
+        NOT = { has_claim = s:STATE_KAUNAS }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_KAUNAS }
-                c:KRA = { has_claim = s:STATE_KAUNAS }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 3. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count <= 3
-            }
-            add = 100
-        }
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
-            }
-            add = 25
-        }
+        if = { limit = {
+            OR = { owns_entire_state_region = STATE_WEST_GALICIA has_claim = s:STATE_WEST_GALICIA }
+            OR = { owns_entire_state_region = STATE_POSEN has_claim = s:STATE_POSEN }
+        } add = 0.002 }
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
+        change_infamy = 5
         random_state = {
             limit = {
                 state_region = s:STATE_KAUNAS
@@ -785,6 +843,7 @@ ce_polish_claim_state_kaunas_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_KAUNAS"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -794,12 +853,12 @@ ce_polish_claim_state_kaunas_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -817,51 +876,35 @@ ce_polish_claim_state_brest_btn = {
     name = "ce_polish_claim_state_brest_btn_name"
     desc = "ce_polish_claim_state_brest_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_BREST }
+        NOT = { has_claim = s:STATE_BREST }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_BREST }
-                c:KRA = { has_claim = s:STATE_BREST }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 3. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count <= 3
-            }
-            add = 100
-        }
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
-            }
-            add = 25
-        }
+        if = { limit = {
+            OR = { owns_entire_state_region = STATE_WEST_GALICIA has_claim = s:STATE_WEST_GALICIA }
+            OR = { owns_entire_state_region = STATE_POSEN has_claim = s:STATE_POSEN }
+        } add = 0.002 }
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
+        change_infamy = 5
         random_state = {
             limit = {
                 state_region = s:STATE_BREST
@@ -869,6 +912,7 @@ ce_polish_claim_state_brest_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_BREST"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -878,12 +922,12 @@ ce_polish_claim_state_brest_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -901,50 +945,35 @@ ce_polish_claim_state_volhynia_btn = {
     name = "ce_polish_claim_state_volhynia_btn_name"
     desc = "ce_polish_claim_state_volhynia_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_VOLHYNIA }
+        NOT = { has_claim = s:STATE_VOLHYNIA }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_VOLHYNIA }
-                c:KRA = { has_claim = s:STATE_VOLHYNIA }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 3. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count <= 3
-            }
-            add = 100
-        }
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
-            }
-            add = 25
-        }
+        if = { limit = {
+            OR = { owns_entire_state_region = STATE_WEST_GALICIA has_claim = s:STATE_WEST_GALICIA }
+            OR = { owns_entire_state_region = STATE_POSEN has_claim = s:STATE_POSEN }
+        } add = 0.002 }
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
+        change_infamy = 5
         random_state = {
             limit = {
                 state_region = s:STATE_VOLHYNIA
@@ -952,6 +981,7 @@ ce_polish_claim_state_volhynia_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_VOLHYNIA"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -961,12 +991,12 @@ ce_polish_claim_state_volhynia_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -984,44 +1014,34 @@ ce_polish_claim_state_west_prussia_btn = {
     name = "ce_polish_claim_state_west_prussia_btn_name"
     desc = "ce_polish_claim_state_west_prussia_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_WEST_PRUSSIA }
+        NOT = { has_claim = s:STATE_WEST_PRUSSIA }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_WEST_PRUSSIA }
-                c:KRA = { has_claim = s:STATE_WEST_PRUSSIA }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 2. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
         value = 0
-        if = {
-            limit = {
-                global_var:ce_polish_claim_state_count > 3
-            }
-            add = 15
-        }
+        if = { limit = {
+            OR = { owns_entire_state_region = STATE_WEST_GALICIA has_claim = s:STATE_WEST_GALICIA }
+            OR = { owns_entire_state_region = STATE_POSEN has_claim = s:STATE_POSEN }
+        } add = 0.002 }
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
         random_state = {
             limit = {
                 state_region = s:STATE_WEST_PRUSSIA
@@ -1029,6 +1049,7 @@ ce_polish_claim_state_west_prussia_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_WEST_PRUSSIA"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -1038,12 +1059,12 @@ ce_polish_claim_state_west_prussia_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -1061,38 +1082,30 @@ ce_polish_claim_state_greater_poland_btn = {
     name = "ce_polish_claim_state_greater_poland_btn_name"
     desc = "ce_polish_claim_state_greater_poland_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_GREATER_POLAND }
+        NOT = { has_claim = s:STATE_GREATER_POLAND }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_GREATER_POLAND }
-                c:KRA = { has_claim = s:STATE_GREATER_POLAND }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 1. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
         value = 100
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
         random_state = {
             limit = {
                 state_region = s:STATE_GREATER_POLAND
@@ -1100,6 +1113,7 @@ ce_polish_claim_state_greater_poland_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_GREATER_POLAND"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -1109,12 +1123,12 @@ ce_polish_claim_state_greater_poland_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -1132,38 +1146,30 @@ ce_polish_claim_state_lesser_poland_btn = {
     name = "ce_polish_claim_state_lesser_poland_btn_name"
     desc = "ce_polish_claim_state_lesser_poland_btn_desc"
 
+    # Shown only while the claim is still open: not held whole and not yet claimed.
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_LESSER_POLAND }
+        NOT = { has_claim = s:STATE_LESSER_POLAND }
     }
 
     possible = {
         has_journal_entry = je_ce_polish_reconquest
         custom_tooltip = {
-            text = ce_polish_script_bar_tt_20
-            je:je_ce_polish_reconquest = { "scripted_bar_progress(ce_polish_reconquest_energy_bar)" >= 20 }
-        }
-        custom_tooltip = {
-            text = can_claim_ce_polish_state_tt
-            exists = c:KRA
-            NOT = {
-                c:KRA = { owns_entire_state_region = STATE_LESSER_POLAND }
-                c:KRA = { has_claim = s:STATE_LESSER_POLAND }
-            }
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
         }
     }
 
+    # Tier 1. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
     ai_chance = {
         value = 100
     }
 
     effect = {
-        je:je_ce_polish_reconquest ?= {
-            add_progress = {
-                value = -20
-                name = ce_polish_reconquest_energy_bar
-            }
-        }
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
         random_state = {
             limit = {
                 state_region = s:STATE_LESSER_POLAND
@@ -1171,6 +1177,7 @@ ce_polish_claim_state_lesser_poland_btn = {
                 NOT = { has_claim_by = c:KRA }
             }
             state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_LESSER_POLAND"
             owner = {
                 trigger_event = { id = ce_poland_events.1 popup = yes }
             }
@@ -1180,12 +1187,12 @@ ce_polish_claim_state_lesser_poland_btn = {
                 limit = { has_variable = ce_anti_polish_variable }
                 if = {
                     limit = { has_journal_entry = je_ce_block_polish_advance }
-                    je:je_ce_block_polish_advance = {
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
                         add_progress = {
                             value = 5
                             name = ce_block_polish_advance_bar
                         }
-                    }
+                    } }
                 }
             }
             if = {
@@ -1199,6 +1206,116 @@ ce_polish_claim_state_lesser_poland_btn = {
     }
 }
 
+ce_polish_claim_state_mazovia_btn = {
+    name = "ce_polish_claim_state_mazovia_btn_name"
+    desc = "ce_polish_claim_state_mazovia_btn_desc"
+
+    # Shown only while the claim is still open: not held whole and not yet claimed.
+    visible = {
+        exists = c:KRA
+        c:KRA ?= this
+        NOT = { owns_entire_state_region = STATE_MAZOVIA }
+        NOT = { has_claim = s:STATE_MAZOVIA }
+    }
+
+    possible = {
+        has_journal_entry = je_ce_polish_reconquest
+        custom_tooltip = {
+            text = nesnd_poland_claim_fund_tt
+            has_variable = nesnd_poland_claim_fund
+            var:nesnd_poland_claim_fund >= 20
+        }
+    }
+
+    # Tier 1. 2026-11-17: no longer gated on three earlier claims (the AI never made the first).
+    ai_chance = {
+        value = 100
+    }
+
+    effect = {
+        change_variable = { name = nesnd_poland_claim_fund subtract = 20 }
+        random_state = {
+            limit = {
+                state_region = s:STATE_MAZOVIA
+                NOT = { owner = c:KRA }
+                NOT = { has_claim_by = c:KRA }
+            }
+            state_region = { add_claim = c:KRA }
+            debug_log = "NESND_POLAND_CLAIM [TimeKeeper.GetCurrentDate.GetString] STATE_MAZOVIA"
+            owner = {
+                trigger_event = { id = ce_poland_events.1 popup = yes }
+            }
+        }
+        hidden_effect = {
+            every_country = {
+                limit = { has_variable = ce_anti_polish_variable }
+                if = {
+                    limit = { has_journal_entry = je_ce_block_polish_advance }
+                    custom_tooltip = { text = nesnd_bar_block_p5_tt je:je_ce_block_polish_advance = {
+                        add_progress = {
+                            value = 5
+                            name = ce_block_polish_advance_bar
+                        }
+                    } }
+                }
+            }
+            if = {
+                limit = { has_global_variable = ce_polish_claim_state_count }
+                change_global_variable = {
+                    name = ce_polish_claim_state_count
+                    add = 1
+                }
+            }
+        }
+    }
+}
+
+ce_polish_dp_state_mazovia_btn = {
+    name = ce_polish_dp_state_mazovia_btn_name
+    desc = ce_polish_dp_state_mazovia_btn_desc
+    # Show only an admissible demand in this crisis.
+    visible = {
+        nesnd_poland_active = yes
+        OR = { has_journal_entry = je_ce_polish_war_preparation has_journal_entry = je_ce_polish_territory_claim }
+        s:STATE_MAZOVIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } }
+    }
+    possible = {
+        nesnd_poland_can_issue_ultimatum = yes
+        # Claude audit 2026-11-17: named condition replaces the expanded raw variable rows.
+        custom_tooltip = { text = nesnd_poland_demand_open_tt s:STATE_MAZOVIA = { any_scope_state = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } } }
+    }
+    # Tier 1. Krakow presses harder than its supporters, and harder while Paris stands behind it.
+    ai_chance = {
+        value = 0
+        if = { limit = { OR = { has_global_variable = nesnd_poland_window global_var:nesnd_poland_phase >= 2 } }
+            if = { limit = { c:KRA ?= this }
+                add = 0.4
+                if = { limit = { global_var:nesnd_poland_france_will >= 60 } add = 0.4 }
+                if = { limit = { nesnd_poland_restoration_count = 4 } multiply = 2 }
+            }
+            else = { add = 0.001 }
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_poland_negotiation_terms
+
+        if = { limit = { nesnd_poland_can_issue_ultimatum = yes }
+            clear_saved_scope = target_diplo_play_state
+            save_scope_as = ce_from_country
+            s:STATE_MAZOVIA = { random_scope_state = { limit = { nesnd_poland_free_ultimatum_state = yes NOT = { owner = root } } save_scope_as = target_diplo_play_state } }
+            if = { limit = { exists = scope:target_diplo_play_state }
+                debug_log = "NESND_POLAND_REQUEST [TimeKeeper.GetCurrentDate.GetString] actor=[SCOPE.sCountry('ce_from_country').GetName] land=[SCOPE.sState('target_diplo_play_state').GetName]"
+                nesnd_poland_pay_ultimatum = yes
+                set_variable = { name = nesnd_polish_pending_state value = scope:target_diplo_play_state months = 4 }
+                scope:target_diplo_play_state.owner = {
+                    set_variable = { name = nesnd_poland_incoming_envoy value = scope:ce_from_country months = 4 }
+                    trigger_event = { id = ce_poland_events.2 popup = yes }
+                }
+            }
+        }
+    }
+}
+
 ce_polish_move_capital_btn = {
     name = "ce_polish_move_capital_btn_name"
     desc = "ce_polish_move_capital_btn_desc"
@@ -1206,6 +1323,7 @@ ce_polish_move_capital_btn = {
     visible = {
         exists = c:KRA
         c:KRA ?= this
+        NOT = { capital ?= { state_region = s:STATE_GREATER_POLAND } }
     }
 
     possible = {
@@ -1222,13 +1340,23 @@ ce_polish_move_capital_btn = {
         }
     }
 
+    # Moving to Warsaw costs the settlement 1 a month (consensus bar), so the AI moves only
+    # when the capital is the last thing missing for restoration.
+    ai_chance = {
+        value = 0
+        if = {
+            limit = { nesnd_poland_restoration_count >= 5 }
+            add = 200
+        }
+    }
+
     effect = {
-        je:je_ce_polish_war_preparation ?= {
+        custom_tooltip = { text = nesnd_bar_prep_m50_tt je:je_ce_polish_war_preparation ?= {
             add_progress = {
                 value = -50
                 name = ce_polish_reconquest_war_prep_bar
             }
-        }
+        } }
         set_capital = STATE_GREATER_POLAND
         add_modifier = {
             name = ce_poland_war_prep_capital_buff
@@ -1252,23 +1380,30 @@ ce_polish_boost_relations_btn = {
             text = ce_polish_script_bar_tt_5
             je:je_ce_polish_war_preparation = { "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" >= 5 }
         }
-        any_country = {
-            has_variable = ce_pro_polish_variable
+        # Claude audit 2026-11-17: was a raw "any country: has variable" row.
+        custom_tooltip = {
+            text = nesnd_poland_any_supporter_tt
+            any_country = {
+                has_variable = ce_pro_polish_variable
+            }
         }
     }
 
     effect = {
-        je:je_ce_polish_war_preparation ?= {
+        custom_tooltip = { text = nesnd_bar_prep_m5_tt je:je_ce_polish_war_preparation ?= {
             add_progress = {
                 value = -5
                 name = ce_polish_reconquest_war_prep_bar
             }
-        }
-        every_country = {
-            limit = { has_variable = ce_pro_polish_variable }
-            change_relations = {
-                country = c:KRA
-                value = 20
+        } }
+        custom_tooltip = nesnd_poland_boost_relations_tt
+        hidden_effect = {
+            every_country = {
+                limit = { has_variable = ce_pro_polish_variable }
+                change_relations = {
+                    country = c:KRA
+                    value = 20
+                }
             }
         }
     }
@@ -1293,12 +1428,12 @@ ce_polish_boost_army_btn = {
     }
 
     effect = {
-        je:je_ce_polish_war_preparation ?= {
+        custom_tooltip = { text = nesnd_bar_prep_m5_tt je:je_ce_polish_war_preparation ?= {
             add_progress = {
                 value = -5
                 name = ce_polish_reconquest_war_prep_bar
             }
-        }
+        } }
         add_modifier = {
             name = ce_poland_war_prep_spend_buff
             months = 12
@@ -1321,10 +1456,15 @@ ce_polish_announce_victory_btn = {
 
     possible = { nesnd_poland_can_declare_victory = yes }
 
+    # Claude audit 2026-11-17: the effect panel was empty (silent variable + event). The tooltip says
+    # what follows: the root journal closes with restoration, every party gets the outcome event.
     effect = {
-        if = { limit = { nesnd_poland_can_declare_victory = yes }
-            set_variable = ce_polish_victory_declared
-            trigger_event = { id = ce_poland_events.3 popup = yes }
+        custom_tooltip = nesnd_poland_announce_victory_tt
+        hidden_effect = {
+            if = { limit = { nesnd_poland_can_declare_victory = yes }
+                set_variable = ce_polish_victory_declared
+                trigger_event = { id = ce_poland_events.3 popup = yes }
+            }
         }
     }
 }
@@ -1352,12 +1492,12 @@ ce_pro_polish_give_money_btn = {
     effect = {
         save_scope_as = ce_strong_power
 
-        je:je_ce_polish_territory_claim ?= {
+        custom_tooltip = { text = nesnd_bar_claim_m10_tt je:je_ce_polish_territory_claim ?= {
             add_progress = {
                 value = -10
                 name = ce_polish_territory_claim_bar
             }
-        }
+        } }
         add_modifier = {
             name = ce_pro_poland_spend_buff
             months = 12
@@ -1391,12 +1531,12 @@ ce_pro_polish_influence_btn = {
     effect = {
         save_scope_as = ce_strong_power
 
-        je:je_ce_polish_territory_claim ?= {
+        custom_tooltip = { text = nesnd_bar_claim_m20_tt je:je_ce_polish_territory_claim ?= {
             add_progress = {
                 value = -20
                 name = ce_polish_territory_claim_bar
             }
-        }
+        } }
         add_modifier = {
             name = ce_pro_poland_influence_buff
             is_decaying = yes
@@ -1428,12 +1568,12 @@ ce_pro_polish_infamy_btn = {
     }
 
     effect = {
-        je:je_ce_polish_territory_claim ?= {
+        custom_tooltip = { text = nesnd_bar_claim_m15_tt je:je_ce_polish_territory_claim ?= {
             add_progress = {
                 value = -15
                 name = ce_polish_territory_claim_bar
             }
-        }
+        } }
         change_infamy = -5
         c:KRA = {
             change_infamy = -5
@@ -1460,12 +1600,12 @@ ce_pro_polish_lobby_btn = {
     }
 
     effect = {
-        je:je_ce_polish_territory_claim ?= {
+        custom_tooltip = { text = nesnd_bar_claim_m15_tt je:je_ce_polish_territory_claim ?= {
             add_progress = {
                 value = -15
                 name = ce_polish_territory_claim_bar
             }
-        }
+        } }
         save_scope_as = ce_strong_power
         c:KRA = {
             trigger_event = { id = ce_poland_events.13 popup = yes }
@@ -1516,12 +1656,12 @@ ce_anti_polish_radicals_kra_btn = {
     }
 
     effect = {
-        je:je_ce_block_polish_advance ?= {
+        custom_tooltip = { text = nesnd_bar_block_m5_tt je:je_ce_block_polish_advance ?= {
             add_progress = {
                 value = -5
                 name = ce_block_polish_advance_bar
             }
-        }
+        } }
         add_modifier = {
             name = ce_anti_poland_influence_debuff
             months = 12
@@ -1563,23 +1703,27 @@ ce_anti_polish_radicals_pro_btn = {
             text = ce_polish_script_bar_tt_10
             je:je_ce_block_polish_advance = { "scripted_bar_progress(ce_block_polish_advance_bar)" >= 15 }
         }
-        any_country = {
-            has_variable = ce_pro_polish_variable
-            exists = c:KRA
-            NOT = { c:KRA ?= this }
+        # 2026-11-17: wrapped so the tooltip does not compare every country with Krakow each frame.
+        custom_tooltip = {
+            text = nesnd_poland_any_supporter_tt
+            any_country = {
+                has_variable = ce_pro_polish_variable
+                exists = c:KRA
+                NOT = { c:KRA ?= this }
+            }
         }
     }
 
     effect = {
-        je:je_ce_block_polish_advance ?= {
+        custom_tooltip = { text = nesnd_bar_block_m15_tt je:je_ce_block_polish_advance ?= {
             add_progress = {
                 value = -15
                 name = ce_block_polish_advance_bar
             }
-        }
+        } }
         random_country = {
             limit = {
-                has_variable = ce_pro_polish_variable
+                custom_tooltip = { text = nesnd_ui_ce_pro_polish_variable_tt has_variable = ce_pro_polish_variable }
                 exists = c:KRA
                 NOT = { c:KRA ?= this }
             }
@@ -1627,12 +1771,12 @@ ce_anti_polish_free_factory_btn = {
     }
 
     effect = {
-        je:je_ce_block_polish_advance ?= {
+        custom_tooltip = { text = nesnd_bar_block_m20_tt je:je_ce_block_polish_advance ?= {
             add_progress = {
                 value = -20
                 name = ce_block_polish_advance_bar
             }
-        }
+        } }
         trigger_event = { id = ce_poland_events.6 popup = yes }
     }
 }
@@ -1665,12 +1809,12 @@ ce_anti_polish_lobby_btn = {
     }
 
     effect = {
-        je:je_ce_block_polish_advance ?= {
+        custom_tooltip = { text = nesnd_bar_block_m10_tt je:je_ce_block_polish_advance ?= {
             add_progress = {
                 value = -10
                 name = ce_block_polish_advance_bar
             }
-        }
+        } }
         every_interest_group = {
             limit = {
                 OR = {
@@ -1834,7 +1978,3 @@ ce_anti_polish_lobby_btn = {
 
 # 	}
 # }
-
-
-
-

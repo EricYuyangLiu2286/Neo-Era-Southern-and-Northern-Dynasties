@@ -1,0 +1,195 @@
+﻿# Public country-scope entry point. Caller must identify the victorious government.
+nesnd_polish_exile_defeat = {
+ if = { limit = { game_date < 1900.1.1 }
+  nesnd_polish_exile_register = { SHARE = 0.2 }
+ }
+}
+nesnd_polish_exile_register = {
+ if = { limit = { nesnd_polish_exile_population >= 1 game_date < 1900.1.1 }
+  if = { limit = { NOT = { has_variable = nesnd_polish_exile_due } }
+   set_variable = { name = nesnd_polish_exile_due value = 0 }
+  }
+  set_variable = { name = nesnd_polish_exile_due value = {
+   value = nesnd_polish_exile_population multiply = $SHARE$ add = var:nesnd_polish_exile_due
+   max = nesnd_polish_exile_population floor = yes
+  } }
+  set_variable = { name = nesnd_polish_exile_batch value = { value = var:nesnd_polish_exile_due divide = 10 floor = yes min = 1 } }
+  if = { limit = { NOT = { has_global_variable = nesnd_polish_exile_policy } }
+   set_global_variable = { name = nesnd_polish_exile_policy value = 0 }
+  }
+  if = { limit = { NOT = { exists = global_var:nesnd_polish_exile_home } }
+   if = { limit = { exists = c:KRA } set_global_variable = { name = nesnd_polish_exile_home value = c:KRA } }
+   else_if = { limit = { exists = c:POL } set_global_variable = { name = nesnd_polish_exile_home value = c:POL } }
+  }
+  if = { limit = { NOT = { has_global_variable = nesnd_polish_exile_open } }
+   set_global_variable = nesnd_polish_exile_open
+   set_global_variable = nesnd_polish_exile_ever_started
+   set_global_variable = { name = nesnd_polish_exile_arrived value = 0 }
+   set_global_variable = { name = nesnd_polish_exile_dead value = 0 }
+   # Freeze the timeout at opening. Calendar arithmetic uses the first day of
+   # the current month; the dated outcome cuts off any mid-month overestimate.
+   set_global_variable = { name = nesnd_polish_exile_timeout_days value = {
+    value = 1900 subtract = year multiply = 365
+    add = 474
+    subtract = { value = year subtract = 1 divide = 4 floor = yes }
+    if = { limit = { month >= 1 } subtract = 31 }
+    if = { limit = { month >= 2 } subtract = 28 }
+    if = { limit = { month >= 3 } subtract = 31 }
+    if = { limit = { month >= 4 } subtract = 30 }
+    if = { limit = { month >= 5 } subtract = 31 }
+    if = { limit = { month >= 6 } subtract = 30 }
+    if = { limit = { month >= 7 } subtract = 31 }
+    if = { limit = { month >= 8 } subtract = 31 }
+    if = { limit = { month >= 9 } subtract = 30 }
+    if = { limit = { month >= 10 } subtract = 31 }
+    if = { limit = { month >= 11 } subtract = 30 }
+    if = { limit = { month >= 2 OR = {
+     year = 1836 year = 1840 year = 1844 year = 1848
+     year = 1852 year = 1856 year = 1860 year = 1864
+     year = 1868 year = 1872 year = 1876 year = 1880
+     year = 1884 year = 1888 year = 1892 year = 1896
+    } } subtract = 1 }
+    min = 1
+   } }
+   add_contextless_journal_entry = je_nesnd_polish_exile
+  }
+ }
+}
+# Public entry point for the Polish root. The global monthly action takes over
+# after the first opening, including between completed and reopened journals.
+nesnd_polish_exile_month = {
+ if = { limit = { game_date < 1900.1.1 }
+  every_country = { limit = {
+   nesnd_polish_exile_partition = yes
+   NOT = { has_variable = nesnd_polish_exile_law_cooldown }
+   OR = { has_journal_entry = je_russification
+    has_law = law_type:law_ethnostate has_law = law_type:law_national_supremacy
+    has_law = law_type:law_racial_segregation has_law = law_type:law_cultural_exclusion
+   }
+  }
+   set_variable = { name = nesnd_polish_exile_law_cooldown value = yes years = 5 }
+   nesnd_polish_exile_register = { SHARE = 0.05 }
+  }
+ }
+}
+nesnd_polish_exile_clear_slot = {
+ remove_global_variable = nesnd_polish_exile_source_1
+ remove_global_variable = nesnd_polish_exile_from_1
+ remove_global_variable = nesnd_polish_exile_to_1
+ remove_global_variable = nesnd_polish_exile_pop_1
+ remove_global_variable = nesnd_polish_exile_amount_1
+ remove_global_variable = nesnd_polish_exile_rate_1
+ set_bar_progress = { name = nesnd_polish_exile_bar_1 value = 0 }
+}
+# Debit the source only at settlement, using the current entitlement and pop size.
+nesnd_polish_exile_pick_slot = {
+ random_country = { limit = { nesnd_polish_exile_source = yes }
+  set_global_variable = { name = nesnd_polish_exile_source_1 value = this }
+  set_global_variable = { name = nesnd_polish_exile_amount_1 value = var:nesnd_polish_exile_batch }
+  random_scope_state = { limit = { any_scope_pop = { nesnd_polish_exile_pop = yes } }
+   set_global_variable = { name = nesnd_polish_exile_from_1 value = this }
+   random_scope_pop = { limit = { nesnd_polish_exile_pop = yes }
+    set_global_variable = { name = nesnd_polish_exile_pop_1 value = this }
+   }
+  }
+ }
+ if = { limit = { has_global_variable = nesnd_polish_exile_source_1 }
+  if = { limit = { global_var:nesnd_polish_exile_policy < 2 exists = global_var:nesnd_polish_exile_home }
+   global_var:nesnd_polish_exile_home = {
+    random_scope_state = { limit = { nesnd_polish_exile_destination = yes }
+     set_global_variable = { name = nesnd_polish_exile_to_1 value = this }
+    }
+   }
+  }
+  else = {
+   c:FRA ?= { random_scope_state = { limit = { state_region = s:STATE_ILE_DE_FRANCE }
+    set_global_variable = { name = nesnd_polish_exile_to_1 value = this }
+   } }
+  }
+ }
+}
+nesnd_polish_exile_count = {
+ set_local_variable = { name = $COUNT$ value = 0 }
+ global_var:nesnd_polish_exile_$SIDE$_1 = {
+  every_scope_pop = { limit = { culture = cu:polish }
+   change_local_variable = { name = $COUNT$ add = total_size }
+  }
+ }
+}
+nesnd_polish_exile_move = {
+ set_local_variable = { name = exile_requested value = {
+  value = global_var:nesnd_polish_exile_amount_1
+  max = global_var:nesnd_polish_exile_source_1.var:nesnd_polish_exile_due
+  max = global_var:nesnd_polish_exile_pop_1.total_size floor = yes
+ } }
+ nesnd_polish_exile_count = { COUNT = exile_before SIDE = from }
+ nesnd_polish_exile_count = { COUNT = exile_dest_before SIDE = to }
+ global_var:nesnd_polish_exile_pop_1 = {
+  if = { limit = { total_size <= local_var:exile_requested }
+   move_pop = global_var:nesnd_polish_exile_to_1
+  }
+  else = { move_partial_pop = { state = global_var:nesnd_polish_exile_to_1 population = local_var:exile_requested } }
+ }
+ nesnd_polish_exile_count = { COUNT = exile_after SIDE = from }
+ set_local_variable = { name = exile_shipped value = {
+  value = local_var:exile_before subtract = local_var:exile_after min = 0 max = local_var:exile_requested
+ } }
+ if = { limit = { local_var:exile_shipped > 0 }
+  set_local_variable = { name = exile_loss value = { integer_range = { min = 0 max = 5 } divide = 100 } }
+  if = { limit = { global_var:nesnd_polish_exile_source_1 = { has_variable = nesnd_polish_exile_blockade } }
+   change_local_variable = { name = exile_loss add = 0.05 }
+  }
+  set_local_variable = { name = exile_losses value = { value = local_var:exile_shipped multiply = local_var:exile_loss floor = yes } }
+  global_var:nesnd_polish_exile_to_1 = {
+   if = { limit = { local_var:exile_losses >= 1 } kill_population_in_state = { culture = cu:polish value = local_var:exile_losses } }
+  }
+  nesnd_polish_exile_count = { COUNT = exile_dest_after SIDE = to }
+  set_local_variable = { name = exile_arrived value = { value = local_var:exile_dest_after subtract = local_var:exile_dest_before min = 0 max = local_var:exile_shipped } }
+  change_global_variable = { name = nesnd_polish_exile_arrived add = local_var:exile_arrived }
+  change_global_variable = { name = nesnd_polish_exile_dead add = { value = local_var:exile_shipped subtract = local_var:exile_arrived min = 0 } }
+  global_var:nesnd_polish_exile_source_1 = {
+   change_variable = { name = nesnd_polish_exile_due subtract = local_var:exile_shipped }
+   if = { limit = { has_variable = nesnd_polish_exile_blockade }
+    add_radicals = { culture = cu:polish value = 0.01 }
+   }
+   else = { add_radicals = { culture = cu:polish value = -0.01 } }
+  }
+  global_var:nesnd_polish_exile_to_1 = { owner = {
+   if = { limit = { c:FRA ?= this }
+    if = { limit = { NOT = { has_global_variable = nesnd_poland_exile_france_bonus } }
+     set_global_variable = { name = nesnd_poland_exile_france_bonus value = 0 }
+    }
+    set_global_variable = { name = nesnd_poland_exile_france_bonus value = { value = global_var:nesnd_poland_exile_france_bonus add = 1 max = 10 } }
+    global_var:nesnd_polish_exile_home ?= {
+     je:je_ce_polish_reconquest ?= { add_progress = { name = nesnd_poland_red_white_bar value = 2 } }
+    }
+   }
+   else = { add_treasury = { value = fixed_income min = 0 multiply = -3 } }
+  } }
+ }
+}
+nesnd_polish_exile_week_slot = {
+ if = { limit = { nesnd_polish_exile_route_valid = yes }
+  if = { limit = { scripted_bar_progress = { name = nesnd_polish_exile_bar_1 value >= 100 } }
+   nesnd_polish_exile_move = yes
+   nesnd_polish_exile_clear_slot = yes
+  }
+ }
+ else = { nesnd_polish_exile_clear_slot = yes }
+ if = { limit = { NOT = { has_global_variable = nesnd_polish_exile_source_1 } }
+  nesnd_polish_exile_pick_slot = yes
+ }
+ if = { limit = { nesnd_polish_exile_route_valid = yes }
+  global_var:nesnd_polish_exile_source_1 = {
+   set_global_variable = { name = nesnd_polish_exile_rate_1 value = nesnd_polish_exile_speed }
+  }
+ }
+}
+nesnd_polish_exile_close = {
+ nesnd_polish_exile_clear_slot = yes
+ remove_global_variable = nesnd_polish_exile_open
+ every_country = { limit = { has_variable = nesnd_polish_exile_due }
+  remove_variable = nesnd_polish_exile_due
+  remove_variable = nesnd_polish_exile_batch
+ }
+}

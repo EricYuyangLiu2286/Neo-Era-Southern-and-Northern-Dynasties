@@ -1,6 +1,7 @@
 ﻿ce_usm_conflicts_within = {
+	is_shown_in_lobby = { c:USM ?= THIS }
 	# 东西之争：
-	icon = "gfx/interface/icons/invention_icons/pan_nationalism.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_south_debate.dds"
 	should_be_pinned_by_default_uninvolved_or_context = yes
 	group = je_group_historical_content
 	activation_description = { always = yes }
@@ -10,6 +11,7 @@
 	}
 	immediate = {
 		nesnd_south_initialize = yes
+		nesnd_south_tilt_enrol = yes
 		if = {
 			limit = {
 				NOT = {
@@ -26,7 +28,7 @@
 	#inheritable = no
 	on_monthly_pulse = {
 		effect = {
-			nesnd_south_crisis_month = yes
+			nesnd_south_tilt_month = yes
 		}
 		random_events = {
 			100 = 0
@@ -42,9 +44,15 @@
 		color = "gold_positive"
 		conclusion_desc = je_standard_completion_conclusion_desc
 		trigger = {
-			custom_tooltip = {
-				text = nesnd_usm_conflicts_within_tracker_ge_100
-				nesnd_south_pressure_value >= 100
+			OR = {
+				custom_tooltip = {
+					text = nesnd_usm_conflicts_within_tracker_ge_100
+					nesnd_south_pressure_value >= 100
+				}
+				custom_tooltip = {
+					text = nesnd_south_pledge_full_tt
+					has_global_variable = nesnd_south_peace_forced
+				}
 			}
 			custom_tooltip = {
 				text = nesnd_south_unsettled_tt
@@ -52,27 +60,16 @@
 					has_global_variable = nesnd_south_settled
 				}
 			}
-			custom_tooltip = {
-				text = nesnd_south_qin_departed_tt
-				nesnd_south_accession_window_open = yes
-			}
+			
 			custom_tooltip = {
 				text = nesnd_chen_case_concluded_tt
 				nesnd_chen_case_concluded = yes
 			}
 		}
 		effect = {
-			trigger_event = {
-				id = flavorUSM.4
-			}
-			set_variable = {
-				name = ce_usm_conflict_evoked
-				value = yes
-			}
-			hidden_effect = {
-				remove_variable = flavor_USM_crisis_intro
-			}
+			nesnd_south_lock = yes
 		}
+		event_outcome_desc = { desc = nesnd_south_lock_effect_tt }
 	}
 	outcome = {
 		header = je_standard_failure_header
@@ -201,15 +198,15 @@
 			remove_variable = flavor_USM_crisis_intro
 			if = {
 				limit = {
-					NOT = {
+					custom_tooltip = { text = nesnd_ui_not_tag_wuu_var_tt NOT = {
 						has_variable = tag_WUU_var
-					}
-					NOT = {
+					} }
+					custom_tooltip = { text = nesnd_ui_not_ming_preserved_tt NOT = {
 						has_variable = nesnd_ming_preserved
-					}
-					NOT = {
+					} }
+					custom_tooltip = { text = nesnd_ui_not_south_inconclusive_settlement_tt NOT = {
 						has_variable = nesnd_south_inconclusive_settlement
-					}
+					} }
 				}
 				set_global_variable = nesnd_south_settled
 				trigger_event = {
@@ -222,17 +219,23 @@
 	weight = 1200
 
 	scripted_button = nesnd_protect_chen_button
-	scripted_button = nesnd_early_accession
+	scripted_button = nesnd_south_appease_button
+	scripted_button = nesnd_south_side_ming_button
+	scripted_button = nesnd_south_side_wu_button
 	scripted_progress_bar = nesnd_south_pressure_bar
 	scripted_progress_bar = nesnd_south_compact_bar
 	on_weekly_pulse = {
 		effect = {
-			nesnd_south_enforce_crisis_deadline = yes
 			nesnd_refresh_south_display = yes
+			nesnd_south_wartime_refresh = yes
 		}
 	}
 	status_desc = {
 		first_valid = {
+			triggered_desc = {
+				trigger = { any_country = { country_rank >= rank_value:great_power has_war_with = root } }
+				desc = nesnd_south_status_foreign_war
+			}
 			triggered_desc = {
 				trigger = {
 					game_date < 1839.1.1
@@ -249,7 +252,8 @@
 }
 
 ce_usm_ruling_of_nanfu = {
-	icon = "gfx/interface/icons/decree/decree_emergency_relief.dds"
+	is_shown_in_lobby = { c:USM ?= THIS }
+	icon = "gfx/interface/icons/event_icons/nesnd_south_nanfu.dds"
 
 	can_revolution_inherit = yes
 	group = je_group_historical_content
@@ -310,7 +314,7 @@ ce_usm_ruling_of_nanfu = {
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
-		trigger = { OR = { has_global_variable = nesnd_south_settled
+		trigger = { OR = { custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled }
 		custom_tooltip = {
 		text = ce_usm_conflict_looming_tt
 		has_variable = ce_usm_conflict_looming
@@ -328,76 +332,16 @@ ce_usm_ruling_of_nanfu = {
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }
 
-ce_usm_civilwar_journal = {
-	icon = "gfx/interface/icons/infamy_icons/pariah.dds"
-
-	can_revolution_inherit = yes
-	group = je_group_historical_content
-	activation_description = { always = yes }
-
-	possible = {
-		hidden_trigger = { has_variable = ce_usm_civilwar_journal_trigger NOT = { has_global_variable = usm_civilwar_occured } }
-	}
-
-	immediate = { set_variable = { name = usm_journal_start_buffer months = 3 } }
-
-	outcome = {
-		header = je_standard_failure_header
-		effect_header = je_standard_on_failure_header
-		color = "blue_negative"
-		conclusion_desc = je_standard_failure_conclusion_desc
-		trigger = {
-		    custom_tooltip = { text = nesnd_ui_south_response_period_tt NOT = { has_variable = usm_journal_start_buffer } }
-		    custom_tooltip = { text = nesnd_ui_south_all_replied_tt var:usm_opposition_country_choice <= 0 }
-		    custom_tooltip = { text = nesnd_ui_south_opposition_exists_tt any_country = { has_variable = usm_opposition_country } }
-		}
-		effect = { trigger_event = { id = usm_civilwar.2 popup = yes } }
-	}
-
-
-	outcome = {
-		flags = { hidden invalid_outcome }
-		conclusion_desc = je_standard_failure_conclusion_desc
-		trigger = { custom_tooltip = { text = nesnd_ui_south_response_period_tt NOT = { has_variable = usm_journal_start_buffer } } custom_tooltip = { text = nesnd_ui_south_all_replied_tt var:usm_opposition_country_choice <= 0 } custom_tooltip = { text = nesnd_ui_south_no_opposition_tt NOT = { any_country = { has_variable = usm_opposition_country } } } }
-		effect = { trigger_event = { id = usm_civilwar.3 popup = yes } }
-	}
-
-
-	timeout = 180
-
-	outcome = {
-		header = JOURNAL_ENTRY_TIMEOUT
-		effect_header = JOURNAL_ENTRY_ON_TIMEOUT
-		flags = { timeout }
-		conclusion_desc = JOURNAL_ENTRY_TIMEOUT_CONCLUSION_DESC
-		effect = { if = { limit = { any_country = { has_variable = usm_opposition_country } } trigger_event = { id = usm_civilwar.2 popup = yes } }
-		else = { trigger_event = { id = usm_civilwar.3 popup = yes } } }
-	}
-
-	weight = 1
-	should_be_pinned_by_default_uninvolved_or_context = yes
-
-
-on_monthly_pulse = { effect = {
-    set_variable = { name = usm_opposition_country_choice value = 0 }
-    set_variable = { name = usm_opposition_country_count value = 0 }
-    every_country = { limit = { has_variable = nesnd_invited_south NOT = { has_variable = nesnd_south_answered } }
-        root = { change_variable = { name = usm_opposition_country_choice add = 1 } }
-    }
-    every_country = { limit = { has_variable = usm_opposition_country }
-        root = { change_variable = { name = usm_opposition_country_count add = 1 } }
-    }
- } }
-}
-
 ce_usm_suppress_rebellion = {
-	icon = "gfx/interface/icons/politics_icons/radicalized.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_south_disarm.dds"
 
 	can_revolution_inherit = yes
 	group = je_group_historical_content
 	activation_description = { always = yes }
 
 	scripted_progress_bar = nesnd_continue_war_bar
+	# Wu morale (nesnd_wu_resolve.txt): rises with foreign enemies, sinks as the war drags on.
+	scripted_progress_bar = nesnd_wu_resolve_bar
 
 	# Declared first: losing the mainland outweighs a victory or settlement reached at the same moment.
 	outcome = {
@@ -415,7 +359,7 @@ ce_usm_suppress_rebellion = {
 				NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
 			}
 		}
-		effect = { trigger_event = { id = nesnd_celestial_collapse.1 popup = yes } }
+		effect = { nesnd_wu_resolve_cleanup = yes trigger_event = { id = nesnd_celestial_collapse.1 popup = yes } }
 		event_outcome_desc = { desc = nesnd_celestial_collapse_outcome_tt }
 	}
 
@@ -427,10 +371,10 @@ ce_usm_suppress_rebellion = {
 		trigger = {
 		    custom_tooltip = { text = nesnd_sweep_south_no_war nesnd_south_campaign_peace = yes }
 		    custom_tooltip = { text = nesnd_sweep_south_no_holdouts NOT = { nesnd_south_unresolved_holdouts = yes } }
-		    custom_tooltip = { text = nesnd_sweep_south_opposition_subdued NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } } } }
+		    custom_tooltip = { text = nesnd_sweep_south_opposition_subdued NOT = { any_country = { is_country_alive = yes has_variable = usm_opposition_country NOT = { is_subject_of = root } NOT = { c:JAP ?= this } } } }
 		    hidden_trigger = { nesnd_south_wu_total_victory = yes NOT = { has_global_variable = nesnd_south_settled } }
 		}
-		effect = { set_global_variable = nesnd_south_settled set_variable = usm_government_winner_civilwar trigger_event = { id = usm_civilwar.8 popup = yes } }
+		effect = { nesnd_wu_resolve_cleanup = yes set_global_variable = nesnd_south_settled set_variable = usm_government_winner_civilwar trigger_event = { id = usm_civilwar.8 popup = yes } }
 	}
 
 
@@ -455,16 +399,18 @@ ce_usm_suppress_rebellion = {
 			nesnd_continue_war_open = yes
 			scope:journal_entry ?= { set_bar_progress = { name = nesnd_continue_war_bar value = 0 } }
 		}
+		nesnd_wu_resolve_refresh = yes
 	} }
     outcome = {
     	flags = { hidden invalid_outcome }
     	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { OR = { NOT = { nesnd_south_wu_survives = yes } has_global_variable = nesnd_south_settled } }
+    	trigger = { OR = { NOT = { nesnd_south_wu_survives = yes } custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled } } }
+    	effect = { nesnd_wu_resolve_cleanup = yes }
     }
 }
 
 ce_usm_restoration_of_ming = {
-	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_south_jingnan.dds"
 
 	can_revolution_inherit = no
 	transferable = no
@@ -517,8 +463,8 @@ ce_usm_restoration_of_ming = {
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
-		trigger = { OR = { AND = { has_global_variable = nesnd_south_settled NOT = { has_variable = usm_rebel_winner_of_the_civil_war } } has_variable = nesnd_sih_surrendered } }
-		effect = { if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
+		trigger = { OR = { AND = { custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled } custom_tooltip = { text = nesnd_ui_not_usm_rebel_winner_of_the_civil_war_tt NOT = { has_variable = usm_rebel_winner_of_the_civil_war } } } custom_tooltip = { text = nesnd_ui_sih_surrendered_tt has_variable = nesnd_sih_surrendered } } }
+		effect = { if = { limit = { nesnd_postwar_allegiance_eligible = yes custom_tooltip = { text = nesnd_ui_not_postwar_allegiance_pending_tt NOT = { has_variable = nesnd_postwar_allegiance_pending } } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
 	}
 
 
@@ -531,7 +477,7 @@ ce_usm_restoration_of_ming = {
 }
 
 ce_usm_acheive_revolution = {
-	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_south_deeds_fire.dds"
 
 	can_revolution_inherit = no
 	transferable = no
@@ -584,8 +530,8 @@ ce_usm_acheive_revolution = {
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
-		trigger = { OR = { AND = { has_global_variable = nesnd_south_settled NOT = { has_variable = usm_rebel_winner_of_the_civil_war } } has_variable = nesnd_sih_surrendered } }
-		effect = { if = { limit = { nesnd_postwar_allegiance_eligible = yes NOT = { has_variable = nesnd_postwar_allegiance_pending } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
+		trigger = { OR = { AND = { custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled } custom_tooltip = { text = nesnd_ui_not_usm_rebel_winner_of_the_civil_war_tt NOT = { has_variable = usm_rebel_winner_of_the_civil_war } } } custom_tooltip = { text = nesnd_ui_sih_surrendered_tt has_variable = nesnd_sih_surrendered } } }
+		effect = { if = { limit = { nesnd_postwar_allegiance_eligible = yes custom_tooltip = { text = nesnd_ui_not_postwar_allegiance_pending_tt NOT = { has_variable = nesnd_postwar_allegiance_pending } } } trigger_event = { id = usm_civilwar.11 popup = yes } } }
 	}
 
 
@@ -598,7 +544,7 @@ ce_usm_acheive_revolution = {
 }
 
 ce_usm_cw_japanese_interest = { # 历史转折中的和族
-	icon = "gfx/interface/icons/politics_icons/revolution.dds"
+	icon = "gfx/interface/icons/event_icons/nesnd_jp_tachi.dds"
 
 	can_revolution_inherit = no
 	group = je_group_historical_content
@@ -634,41 +580,41 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 			} }
 		}
 
-        has_global_variable = usm_civilwar_occured
+        custom_tooltip = { text = nesnd_ui_usm_civilwar_occured_tt has_global_variable = usm_civilwar_occured }
 
 }
 		effect = {
         set_variable = nesnd_japan_civilwar_interest_resolved
         if = { limit = {
-                has_variable = usm_opposition_country has_variable = nesnd_japan_fought_against_wu
-                c:USM ?= { has_variable = tag_WUU_var has_variable = usm_government_winner_civilwar }
-                NOT = { has_global_variable = nesnd_japan_partitioned }
+                custom_tooltip = { text = nesnd_ui_usm_opposition_country_tt has_variable = usm_opposition_country } custom_tooltip = { text = nesnd_ui_japan_fought_against_wu_tt has_variable = nesnd_japan_fought_against_wu }
+                c:USM ?= { custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var } custom_tooltip = { text = nesnd_ui_usm_government_winner_civilwar_tt has_variable = usm_government_winner_civilwar } }
+                custom_tooltip = { text = nesnd_ui_not_japan_partitioned_tt NOT = { has_global_variable = nesnd_japan_partitioned } }
             }
             c:USM = { set_variable = nesnd_japan_defeat_confirmed nesnd_queue_war_collapse_check = yes }
         }
         else_if = { limit = {
-                has_variable = ce_usm_cw_ally_with_mng has_variable = nesnd_japan_fought_for_wu
-                c:USM ?= { is_country_alive = yes has_variable = usm_government_winner_civilwar }
+                custom_tooltip = { text = nesnd_ui_ce_usm_cw_ally_with_mng_tt has_variable = ce_usm_cw_ally_with_mng } custom_tooltip = { text = nesnd_ui_japan_fought_for_wu_tt has_variable = nesnd_japan_fought_for_wu }
+                c:USM ?= { is_country_alive = yes custom_tooltip = { text = nesnd_ui_usm_government_winner_civilwar_tt has_variable = usm_government_winner_civilwar } }
             }
             set_variable = ce_japan_kyushu_winner
             trigger_event = { id = usm_civilwar.14 popup = yes }
         }
         else_if = { limit = {
-                has_variable = ce_usm_cw_ally_with_mng has_variable = nesnd_japan_fought_for_wu
-                has_global_variable = usm_civilwar_status_quo
-                c:USM ?= { is_country_alive = yes has_variable = tag_WUU_var }
+                custom_tooltip = { text = nesnd_ui_ce_usm_cw_ally_with_mng_tt has_variable = ce_usm_cw_ally_with_mng } custom_tooltip = { text = nesnd_ui_japan_fought_for_wu_tt has_variable = nesnd_japan_fought_for_wu }
+                custom_tooltip = { text = nesnd_ui_usm_civilwar_status_quo_tt has_global_variable = usm_civilwar_status_quo }
+                c:USM ?= { is_country_alive = yes custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var } }
             }
             set_variable = ce_japan_keyushu_status_quo
             trigger_event = { id = usm_civilwar.14 popup = yes }
         }
         else_if = { limit = {
-                has_variable = usm_opposition_country has_variable = nesnd_japan_fought_against_wu
-                c:USM ?= { is_country_alive = yes has_variable = usm_rebel_winner_of_the_civil_war }
+                custom_tooltip = { text = nesnd_ui_usm_opposition_country_tt has_variable = usm_opposition_country } custom_tooltip = { text = nesnd_ui_japan_fought_against_wu_tt has_variable = nesnd_japan_fought_against_wu }
+                c:USM ?= { is_country_alive = yes custom_tooltip = { text = nesnd_ui_usm_rebel_winner_of_the_civil_war_tt has_variable = usm_rebel_winner_of_the_civil_war } }
             }
             trigger_event = { id = usm_civilwar.17 popup = yes }
         }
-        else_if = { limit = { OR = { has_variable = nesnd_japan_fought_for_wu has_variable = nesnd_japan_fought_against_wu } }
-            if = { limit = { has_variable = nesnd_japan_fought_for_wu }
+        else_if = { limit = { OR = { custom_tooltip = { text = nesnd_ui_japan_fought_for_wu_tt has_variable = nesnd_japan_fought_for_wu } custom_tooltip = { text = nesnd_ui_japan_fought_against_wu_tt has_variable = nesnd_japan_fought_against_wu } } }
+            if = { limit = { custom_tooltip = { text = nesnd_ui_japan_fought_for_wu_tt has_variable = nesnd_japan_fought_for_wu } }
                 set_variable = usm_cw_jap_loss_when_pro_usm
             }
             trigger_event = { id = usm_civilwar.20 popup = yes }
@@ -691,8 +637,8 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = { OR = {
-            has_global_variable = nesnd_japan_partitioned
-            AND = { has_global_variable = nesnd_south_settled NOT = { has_global_variable = usm_civilwar_occured } }
+            custom_tooltip = { text = nesnd_ui_japan_partitioned_tt has_global_variable = nesnd_japan_partitioned }
+            AND = { custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled } custom_tooltip = { text = nesnd_ui_not_usm_civilwar_occured_tt NOT = { has_global_variable = usm_civilwar_occured } } }
         } }
 		effect = { set_variable = nesnd_japan_civilwar_interest_resolved }
 	}
@@ -701,6 +647,6 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 	weight = 1000
 	should_be_pinned_by_default_uninvolved_or_context = yes
 
-    possible = { c:JAP ?= this NOT = { has_variable = nesnd_japan_civilwar_interest_resolved } }
+    possible = { c:JAP ?= this custom_tooltip = { text = nesnd_ui_not_japan_civilwar_interest_resolved_tt NOT = { has_variable = nesnd_japan_civilwar_interest_resolved } } }
 
 }

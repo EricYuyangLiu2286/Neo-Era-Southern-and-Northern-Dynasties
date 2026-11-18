@@ -65,7 +65,7 @@ nesnd_jp_seek_union_permission = {
 nesnd_jp_seek_overlord_capital = {
     name = nesnd_jp_seek_overlord_capital desc = nesnd_jp_seek_overlord_capital_desc
     visible = { is_subject = yes NOT = { has_variable = nesnd_jp_capital_aid_lock } NOT = { nesnd_jp_industry_finished = yes } NOT = { has_variable = nesnd_jp_request_cooldown } }
-    possible = { hidden_trigger = { nesnd_jp_subject_request_available = yes NOT = { has_variable = nesnd_jp_capital_aid_lock } } NOT = { has_variable = nesnd_jp_capital_aid_lock } gold_reserves >= nesnd_jp_negotiation_cost
+    possible = { hidden_trigger = { nesnd_jp_subject_request_available = yes NOT = { has_variable = nesnd_jp_capital_aid_lock } } custom_tooltip = { text = nesnd_ui_not_jp_capital_aid_lock_tt NOT = { has_variable = nesnd_jp_capital_aid_lock } } gold_reserves >= nesnd_jp_negotiation_cost
         trigger_if = { limit = { is_subject = yes exists = overlord }
             NOT = { has_war_with = overlord }
         }
@@ -214,7 +214,9 @@ nesnd_jp_independence_play = {
     effect = { if = { limit = { nesnd_jp_independence_play_ready = yes }
             overlord = { save_scope_as = jp_old_overlord }
             if = { limit = { exists = scope:jp_old_overlord }
-                create_diplomatic_play = { target_country = scope:jp_old_overlord type = dp_independence }
+                save_scope_as = jp_independence_seeker
+                # The overlord's own demand: a play needs a demand on both sides.
+                create_diplomatic_play = { target_country = scope:jp_old_overlord type = dp_independence add_war_goal = { holder = scope:jp_old_overlord target_country = scope:jp_independence_seeker type = humiliation } }
                 set_variable = { name = nesnd_jp_independence_play_lock months = 6 }
             }
         }

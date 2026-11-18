@@ -1,0 +1,205 @@
+﻿je_nesnd_congress = {
+	icon = "gfx/interface/icons/event_icons/nesnd_poland_congress.dds"
+	group = je_group_global_international_situations
+	context = none
+	activation_description = { always = yes }
+	possible = { custom_tooltip = { text = nesnd_ui_congress_started_tt has_global_variable = nesnd_congress_started } }
+	is_shown_when_inactive = { always = no }
+	should_be_involved = { nesnd_congress_member = yes }
+	should_show_when_not_involved = {
+		is_in_geographic_region = geographic_region_europe
+	}
+	can_revolution_inherit = no
+	should_be_pinned_by_default_involved = yes
+	should_be_pinned_by_default_uninvolved_or_context = no
+	weight = 1500
+	scripted_progress_bar = nesnd_congress_order_bar
+	scripted_button = nesnd_congress_request_btn
+	scripted_button = nesnd_congress_submit_btn
+	scripted_button = nesnd_congress_sanctions_btn
+	immediate = {
+		set_global_variable = { name = nesnd_congress_serial value = 0 }
+		nesnd_congress_choose_chair = yes
+	}
+	on_weekly_pulse = {
+		effect = {
+			nesnd_congress_expire_slot = { SLOT = 1 }
+			nesnd_congress_expire_slot = { SLOT = 2 }
+			if = {
+				limit = {
+					OR = {
+						NOT = { exists = global_var:nesnd_congress_chair }
+						global_var:nesnd_congress_chair ?= {
+							NOT = { nesnd_congress_member = yes }
+						}
+					}
+				}
+				nesnd_congress_choose_chair = yes
+			}
+			# The Polish chapter ending invalidates all outstanding Polish business,
+			# including queues that never opened because their convener disappeared.
+			if = {
+				limit = {
+					NOT = { nesnd_poland_active = yes }
+					NOT = { has_global_variable = nesnd_congress_polish_chapter_ended }
+				}
+				set_global_variable = nesnd_congress_polish_chapter_ended
+				if = {
+					limit = { has_global_variable = nesnd_congress_voting }
+					nesnd_congress_resolve = yes
+				}
+				every_country = {
+					limit = { has_variable = nesnd_congress_pending }
+					remove_variable = nesnd_congress_pending
+					remove_variable = nesnd_congress_petitioner
+					set_variable = { name = nesnd_congress_result value = 3 }
+				}
+				nesnd_congress_clear_slot = { SLOT = 1 }
+				nesnd_congress_clear_slot = { SLOT = 2 }
+				remove_global_variable = nesnd_congress_round
+				remove_global_variable = nesnd_congress_requested
+				remove_global_variable = nesnd_poland_peace_target
+				remove_global_variable = nesnd_poland_peace_defeated
+			}
+			if = {
+				limit = {
+					has_global_variable = nesnd_congress_voting
+					OR = {
+						global_var:nesnd_congress_wait <= 0
+						NOT = { has_global_variable = nesnd_congress_deadline }
+						NOT = { nesnd_congress_agenda_valid = yes }
+					}
+				}
+				nesnd_congress_resolve = yes
+			}
+			if = {
+				limit = {
+					has_global_variable = nesnd_congress_round
+					NOT = { has_global_variable = nesnd_congress_voting }
+				}
+				if = {
+					limit = { has_global_variable = nesnd_congress_kind_2 }
+					nesnd_congress_begin_agenda = { SLOT = 2 }
+				}
+				else = {
+					set_global_variable = {
+						name = nesnd_congress_last_rate
+						value = {
+							value = global_var:nesnd_congress_passed
+							divide = global_var:nesnd_congress_decisions
+							multiply = 100
+						}
+					}
+					remove_global_variable = nesnd_congress_round
+				}
+			}
+		}
+	}
+	on_monthly_pulse = {
+		effect = {
+			every_country = {
+				limit = {
+					has_variable = nesnd_congress_guarantee_pledge
+					nesnd_poland_guarantees_krakow = no
+				}
+				remove_variable = nesnd_congress_guarantee_pledge
+			}
+			if = {
+				limit = {
+					OR = {
+						NOT = { has_global_variable = nesnd_congress_round }
+						NOT = { exists = global_var:nesnd_congress_chair }
+					}
+				}
+				nesnd_congress_choose_chair = yes
+			}
+			set_global_variable = {
+				name = nesnd_congress_order
+				value = nesnd_congress_order_value
+			}
+			scope:journal_entry = {
+				set_bar_progress = {
+					name = nesnd_congress_order_bar
+					value = global_var:nesnd_congress_order
+				}
+			}
+			every_country = {
+				limit = {
+					nesnd_congress_member = yes
+					NOT = { is_involved_in_journal_entry = je_nesnd_congress }
+				}
+				scope:journal_entry = { add_involved_country = prev }
+			}
+			every_country = {
+				limit = {
+					NOT = { nesnd_congress_member = yes }
+					is_involved_in_journal_entry = je_nesnd_congress
+				}
+				scope:journal_entry = { remove_involved_country = prev }
+			}
+			if = {
+				limit = { has_global_variable = nesnd_poland_peace_target }
+				nesnd_congress_request_peace = yes
+			}
+			# The third batch has only Polish business. An externally requested empty
+			# meeting invites the chair and Krakow; it does not invent a passed resolution.
+			if = {
+				limit = {
+					nesnd_poland_active = yes
+					has_global_variable = nesnd_congress_requested
+					NOT = { has_global_variable = nesnd_congress_round }
+					exists = global_var:nesnd_congress_chair
+				}
+				if = {
+					limit = {
+						OR = {
+							has_global_variable = nesnd_congress_kind_1
+							has_global_variable = nesnd_congress_kind_2
+						}
+					}
+					remove_global_variable = nesnd_congress_requested
+					set_global_variable = nesnd_congress_round
+					set_global_variable = { name = nesnd_congress_passed value = 0 }
+					set_global_variable = { name = nesnd_congress_decisions value = 0 }
+					if = {
+						limit = { has_global_variable = nesnd_congress_kind_1 }
+						nesnd_congress_begin_agenda = { SLOT = 1 }
+					}
+					else = {
+						nesnd_congress_begin_agenda = { SLOT = 2 }
+					}
+				}
+				else_if = {
+					limit = {
+						NOT = { has_global_variable = nesnd_congress_invitation_cooldown }
+					}
+					set_global_variable = {
+						name = nesnd_congress_invitation_cooldown
+						value = yes
+						months = 6
+					}
+					remove_global_variable = nesnd_congress_requested
+					c:KRA ?= {
+						trigger_event = { id = nesnd_congress.3 popup = yes }
+					}
+				}
+			}
+		}
+	}
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_global_variable = nesnd_congress_voting
+					exists = global_var:nesnd_congress_chair
+				}
+				desc = nesnd_congress_status_voting
+			}
+			triggered_desc = {
+				trigger = { exists = global_var:nesnd_congress_chair }
+				desc = nesnd_congress_status_recess
+			}
+			desc = nesnd_congress_status_no_chair
+		}
+	}
+}

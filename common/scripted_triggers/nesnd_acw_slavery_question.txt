@@ -3,7 +3,7 @@
 # COUNTRY scope (USA). Slavery still legal and no secession crisis under way.
 nesnd_acw_pre_abolition = {
     NOT = { has_law_or_variant = law_type:law_slavery_banned }
-    NOT = { has_variable = nesnd_acw_crisis }
+    custom_tooltip = { text = nesnd_ui_not_acw_crisis_tt NOT = { has_variable = nesnd_acw_crisis } }
 }
 
 # STATE scope. Before abolition: slave states. After: the old South (Dixie homeland).
@@ -31,8 +31,8 @@ nesnd_acw_abolitionist_ig = {
 # COUNTRY scope (HUS). The lever journal exists while the USA question or war is open.
 nesnd_hus_west_eligible = {
     c:HUS ?= this
-    NOT = { has_variable = nesnd_hus_native_successor }
-    NOT = { has_variable = nesnd_hus_west_closed }
+    custom_tooltip = { text = nesnd_ui_not_hus_native_successor_tt NOT = { has_variable = nesnd_hus_native_successor } }
+    custom_tooltip = { text = nesnd_ui_not_hus_west_closed_tt NOT = { has_variable = nesnd_hus_west_closed } }
     exists = c:USA
     c:USA = { OR = { has_journal_entry = je_acw_countdown has_journal_entry = je_acw_war } }
     any_scope_state = { any_neighbouring_state = { owner = c:USA } }
@@ -54,18 +54,109 @@ nesnd_hus_west_departure = {
     any_scope_pop = { nesnd_hus_west_escapee = yes }
 }
 
-# STATE scope (USA-owned). A USA border state 东洲 may claim.
+# Both secession tags continue to hold their own states after a divided peace.
+nesnd_hus_west_american_side = {
+    OR = { c:USA ?= this c:CSA ?= this c:FSA ?= this }
+}
+
+nesnd_hus_west_question_over = {
+    NOT = { c:USA ?= { has_journal_entry = je_acw_countdown } }
+    NOT = { c:USA ?= { has_journal_entry = je_acw_war } }
+}
+
 nesnd_hus_west_claim_candidate = {
-    owner = c:USA
+    is_in_geographic_region = geographic_region_americas
+    owner = { nesnd_hus_west_american_side = yes }
     state_population > 0
     any_neighbouring_state = { owner = c:HUS }
     NOT = { has_claim_by = c:HUS }
+    c:HUS = { NOT = { is_target_in_variable_list = { name = nesnd_hus_west_claims target = prev.state_region } } }
 }
 
-# STATE scope (USA-owned). A claimed USA border state 东洲 may press for.
 nesnd_hus_west_press_candidate = {
-    owner = c:USA
+    owner = {
+        nesnd_hus_west_american_side = yes
+        NOT = { has_truce_with = c:HUS }
+        "relations(c:HUS)" < relations_threshold:cordial
+        trigger_if = {
+            limit = { is_subject = yes }
+            overlord = { "relations(c:HUS)" < relations_threshold:cordial }
+            top_overlord = { "relations(c:HUS)" < relations_threshold:cordial }
+        }
+        NOT = { c:HUS = { is_subject_of = prev } }
+    }
     num_provinces > 0
+    is_treaty_port = no
     any_neighbouring_state = { owner = c:HUS }
     c:HUS = { is_target_in_variable_list = { name = nesnd_hus_west_claims target = prev.state_region } }
+}
+
+# Apply the same checks to manual orders and to the monthly orders.
+nesnd_hus_west_can_claim = {
+    custom_tooltip = {
+        text = nesnd_hus_west_claim_bar_tt
+        "je:nesnd_hus_west_lever.scripted_bar_progress(nesnd_hus_west_claim_bar)" >= 50
+    }
+    custom_tooltip = {
+        text = nesnd_hus_west_quota_tt
+        NOT = { any_in_list = { variable = nesnd_hus_west_claims count >= 10 always = yes } }
+    }
+    custom_tooltip = { text = nesnd_hus_west_claim_cooldown_tt NOT = { has_variable = nesnd_hus_west_claim_cooldown } }
+    custom_tooltip = {
+        text = nesnd_hus_west_claim_candidate_tt
+        OR = {
+            c:USA ?= { any_scope_state = { nesnd_hus_west_claim_candidate = yes } }
+            c:CSA ?= { any_scope_state = { nesnd_hus_west_claim_candidate = yes } }
+            c:FSA ?= { any_scope_state = { nesnd_hus_west_claim_candidate = yes } }
+        }
+    }
+}
+
+nesnd_hus_west_press_window = {
+    custom_tooltip = {
+        text = nesnd_hus_west_press_divided_tt
+        OR = {
+            nesnd_hus_west_question_over = yes
+            c:USA ?= { has_journal_entry = je_acw_war }
+            c:USA ?= { has_variable = nesnd_acw_bar var:nesnd_acw_bar >= 80 }
+        }
+    }
+    custom_tooltip = { text = nesnd_hus_west_press_cooldown_tt NOT = { has_variable = nesnd_hus_west_border_cooldown } }
+    is_at_war = no
+    is_diplomatic_play_committed_participant = no
+    custom_tooltip = { text = aggresive_diplomatic_plays_permitted_tt aggressive_diplomatic_plays_permitted = yes }
+    custom_tooltip = {
+        text = nesnd_hus_west_press_target_tt
+        any_in_list = {
+            variable = nesnd_hus_west_claims
+            any_scope_state = { nesnd_hus_west_press_candidate = yes }
+        }
+    }
+}
+
+nesnd_hus_west_can_press = {
+    custom_tooltip = {
+        text = nesnd_hus_west_press_bar_tt
+        "je:nesnd_hus_west_lever.scripted_bar_progress(nesnd_hus_west_claim_bar)" >= 100
+    }
+    nesnd_hus_west_press_window = yes
+}
+
+# A region's original American provinces must all be held under settled territorial awards.
+nesnd_hus_west_region_won = {
+    any_in_list = { variable = nesnd_hus_west_land always = yes }
+    NOT = {
+        any_in_list = {
+            variable = nesnd_hus_west_land
+            OR = {
+                NOT = { owner ?= c:HUS }
+                NOT = { has_variable = nesnd_hus_west_awarded }
+                var:nesnd_hus_west_pending_play ?= {
+                    is_war = yes
+                    NOT = { has_variable = nesnd_hus_west_peace_signed }
+                }
+            }
+        }
+    }
+    NOT = { any_scope_state = { owner = { nesnd_hus_west_american_side = yes } } }
 }

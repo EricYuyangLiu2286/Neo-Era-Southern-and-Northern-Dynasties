@@ -1,8 +1,8 @@
-﻿# NESND 当前状态
+# NESND 当前状态
 
 这是项目唯一的“当前”入口。只写现在的情况；历史放 `docs/agents/history/`。维护规则见文末。
 
-更新于 2026-11-12。当前跟进法国后继内容和登莱原生路线。此前收口的任务中，已交付的标 completed，未实施的任务 08 原始欠账、南朝立场 01–07 标 rejected。
+更新于 2026-11-17。当前跟进法国后继内容和登莱原生路线。此前收口的任务中，已交付的标 completed，未实施的任务 08 原始欠账、南朝立场 01–07 标 rejected。
 
 ## 基线
 
@@ -25,7 +25,27 @@
 
 ## 未完成
 
+2026-11-18 [东征日本吴方目标作废](../../.scratch/debug-release/issues/111-japan-reorganization-goal-kept.md)：「重组日本诸藩」有效条件只剩吴对存活的日本；去掉引擎的 country_creation 设置（推断它让目标一开战即作废）；兑现按京都、关东、中国、九州四国逐项分封。部署 `ab24288d`，STATIC_PASS，待新开局两入口复测。
+
+2026-11-18 [日志专属图标](../../.scratch/journal-icons/issues/01-design.md)：156 个 MOD 日志的图标设计分 8 批，每批一份 Codex 画图提示词（工作台 `reports/2026-11-18-journal-icons/codex-journal-icons-batchN.txt`）。尚未画图，未接入。批次拆分、几处国家符号和地权革命原作子目标是否补回，待作者决定。
+
 2026-11-18 [自建国家的本国公司](../../.scratch/national-companies/issues/01-design.md)：19 家公司、4 个特许事件、1 个日志、7 名经理、16 种名贵商品，部署 `a6699181`，STATIC_PASS，未实机验证。图标暂用原版，画图提示词在工作台 `reports/2026-11-18-national-companies/codex-icon-prompt.md`。
+
+2026-11-17 波兰线三批已部署 5dc18f1c。根日志及朝圣者地图解析、九个默认选项与四个结局已修（[修复记录](../../.scratch/poland-redesign/issues/04-ending-repair.md)）。[第三批](../../.scratch/poland-redesign/issues/05-windows-congress.md)已接入五个危机窗口、法国与瓜分国选项、战后和会、两项议程表决、守约与否决、原创会议图。STATIC_PASS，未启动游戏，待新局验收。 [八枚日志图标](../../.scratch/poland-redesign/issues/06-journal-icons.md)已部署 7872679d，重启读档可看。 [波兰朝圣者逐批迁移](../../.scratch/poland-redesign/issues/07-single-journey.md)已部署 914bcc27，STATIC_PASS，待重启读档复测。 [大陆会议回执与公开条件](../../.scratch/poland-redesign/issues/08-public-tooltips.md)已部署 8b9f06e3，STATIC_PASS，待复测。
+
+2026-11-17 [西岸的砝码十州目标](../../.scratch/acw-slavery/issues/01-west-ten-claims.md)：修复共同分州造宣称立即完成。十州经领土要求取得并持有后完成，两项自动化独立开关，内战及战后继续索地。文案按技能四轮复核，55对中修改36对，STATIC_PASS。最终文案已包含于部署752609ec65fbedbd0145378c185c459c，待作者新开局复测交地与分州合并回调。
+
+2026-11-16 [靖难战争南线](../../.scratch/debug-release/issues/110-jingnan-southern-front.md)：吴借中南半岛 dominion 自动参战，从缅甸、老挝北上，蜀国「成都的去从」因云南先失而早于楚、淮亡国出现。新增战斗条件「瘴疠山路」（吴方在内战中进攻滇黔、川南、广西山地时进攻 −25%、士气损失 +25%、伤亡 +20%，内战外不出现）。游戏外检查通过，已部署 `b5273335`，未实机验证，待作者新开局观察者复测。附属国转为不参战（A）按作者选的日志按钮入口实施：「南朝诸国」加「遣使南疆」，答复、回报、吴胜后清算四个事件，其余数值用方案默认值（工作台 `reports/2026-11-16-xifu-southern-front/A-design.md`），同样未实机验证，部署 `bbab5753`。
+
+2026-11-17 [西秦「边疆诸部」与波斯忠心](../../.scratch/qin-frontier/issues/01-frontier-risings.md)。同一观察者局的 1850 年 10 月档中，团结度 31.10，草原运动激进度 76.60%，已开始筹备分离。地区方案及西秦补贴已实施。旧解体条件、重复加入和分离认领、战果结算已修并部署 `fdaa7f43`，待新开局验证战果。[专项交付](../../../nesnd-workbench/reports/2026-11-17-qe1-stability-audit/diagnosis.md)
+
+2026-11-16 [地权革命 AI 提前结束；复燕燕旗新增两项](../../.scratch/debug-release/issues/109-cne-reform-ai-and-yan-banner.md)：观察者局中华帝国 1840-04 政变成功，母日志按失败结局结束，子日志随之失效（旧局是「议止」冻结）。AI 改为只在改革濒临失败时议止，将领忠诚低于 25 或政变中关停营产，自耕农法权重不再限 96 个月。燕旗加「失去首都苦兀」−5、「底层困苦」每州 +0.5。游戏外检查通过，已部署 `80e7ddf9`，待作者新开局复测。−5 按作者决定保留（失去首都即停滞）。「做出让步」改为在「宫廷力量」「执政者与派系」「统治者与内阁」下都可用，部署 `73e6a716`，可读档复测。
+
+2026-11-16 [「承认和人为国人」主流文化链接报错](../../.scratch/debug-release/issues/108-primary-culture-concept-link.md)：改用原版概念 `concept_primary_cultures`，两种语言。新扫描工具 `nesnd-workbench/tools/loc_link_check.py` 查出「统治者与内阁」事件 30 处 `SCOPE.sInterestGroup`，已按原版改为 `gsInterestGroup`。改后扫描 0 条。游戏外检查通过，待作者读档复测。
+
+2026-11-15 [长江十州合入源目录](../../.scratch/yangtze-merge/issues/01-merge.md)：外审版 `yangtze-ten-nanjing` 按文件三方合并进源目录（29 个取外审版、4 个合并、15 个新增），主线另改的 144 个文件保持不动。江面三段、两关、三渡、原生 Repack 高度文件、十州人口建筑与城镇交通均已在源目录副本上复核。部署白名单加了 `map_data` 的图片与 `default.map`、`adjacencies.csv`。游戏外检查通过，已部署 `6e1eafbd`。观察者局报出的落水要塞定位点和邻接表末尾空行已修，部署 `c84bc423`，待作者用 `yangtze-ten-formal-play` 存档目录开新局复测。46 个占位名提案未动。
+
+2026-11-15 [选国界面「特有日志条目」](../../.scratch/debug-release/issues/106-lobby-journal-entries.md)：补波兰问题的列表描述，地权革命、教派消长及 25 个主要国别日志加入列表，共 30 条中英描述，按作者样本重写，国名改用开局全局变量显示。全 MOD 日志正文中的代理腔也已清理（作者稿保留）。游戏外检查通过，各条已点出所属国，外国叙述已去掉汉地旧式名词，已部署 `90707c71`，待作者在选国界面和日志里复测，重点看国名是否正常显示。
 
 2026-11-15 [新日志「统治者与内阁」](../../.scratch/premier/issues/01-implement.md)：给不能任命宠臣的非共和帝国（多为立宪君主国）。首相由角色互动任命，按人气缩放立法速度与合法性。平衡是首相集团对最大在野集团，所有集团都入阁时改为对其余各派。政府改组后首相集团出阁时，由政府内最大集团的领袖接任。与「宫廷力量」「执政者与派系」互斥，只改了 `nesnd_palace_shown` 一行。游戏外检查通过，已部署 `c3e2f208`（人气条为摇摆条，按钮扣人气当场刷新），待作者复测（英国）。
 
@@ -82,7 +102,9 @@
 
 登莱共和国按[六批定稿](../../.scratch/denglai-route/map.md)实施。作者截图已确认「雪国共和」在通商局显示，[两位周公的选举保护](../../.scratch/denglai-route/issues/03-opening-and-presidents.md)仍待实测。[第 2 批远北、黄金与北海公司](../../.scratch/denglai-route/issues/05-far-north-and-gold.md)及[两批文字的贸易、领土与人物口吻修订](../../.scratch/denglai-route/issues/06-trade-and-state-prose.md)已完成游戏外检查，等作者复测。[第 3 批「复燕」](../../.scratch/denglai-route/issues/07-restore-eastern-yan.md)已完成游戏外检查，等作者实测东燕起事、两种划界及北朝镇压后的整编。[勘金条件与复燕后续文案](../../.scratch/denglai-route/issues/08-survey-and-yan-prose.md)已修订，等作者复测。[第 4 批「渡海」「齐鲁之约」](../../.scratch/denglai-route/issues/09-shandong.md)已实施，待测山东省城与口岸分属不同国家时的外交，以及停战回退。[第 5 批非洲落脚点、垦殖船期与远洋公司](../../.scratch/denglai-route/issues/10-overseas.md)已实施，等作者实测。[第 6 批「君主主义阴谋」](../../.scratch/denglai-route/issues/11-monarchist-conspiracy.md)已实施，六批现均待按各自记录实测。2026-11-11 [外东北分为海参崴、勃利两州，延迟回调改为事件，渡海结盟分支重做](../../.scratch/denglai-route/issues/14-boli-split-delay-alliance.md)，已按 1.15.1 完成[全链可达性与条件概率复核](../../.scratch/denglai-route/issues/15-reachability.md)，待实测。2026-11-12 [俄属远北 9 州人口按东西渐变重算](../../.scratch/denglai-route/issues/17-far-north-pops-gradient.md)，游戏外检查通过，待新开局复测。
 
-2026-11-11 新增帝国级以上国家的常驻日志[「宫廷力量」与「执政者与派系」](../../.scratch/court-power/map.md)，连带给西秦「伊犁的朝议」加了朝争条与两个按钮，并在明吴明论战、法国维持拿破仑王朝的月度随机事件中各加 3 件宫廷事件。游戏外检查通过。[权力平衡支持度及国家能力](../../.scratch/court-power/issues/03-balance-approval.md)已完成游戏外检查。[22 张界面素材](../../.scratch/court-power/issues/02-art.md)已接入脚本与界面，待作者实测。
+2026-11-11 新增帝国级以上国家的常驻日志[「宫廷力量」与「执政者与派系」](../../.scratch/court-power/map.md)，连带给西秦「伊犁的朝议」加了朝争条与两个按钮，并在明吴明论战、法国维持拿破仑王朝的月度随机事件中各加 3 件宫廷事件。游戏外检查通过。[权力平衡支持度及国家能力](../../.scratch/court-power/issues/03-balance-approval.md)已完成游戏外检查。[22 张界面素材](../../.scratch/court-power/issues/02-art.md)已接入脚本与界面，待作者实测。2026-11-17 [同集团宠臣的对手改为其集团以外的最大集团](../../.scratch/court-power/issues/04-rival-outside-own-group.md)，部署 `fc01f573`，STATIC_PASS，待作者新开局复测（莫卧儿）。
+
+2026-11-16 [第二次靖难的域外介入](../../.scratch/jingnan-intervention/issues/01-implement.md)：西秦、东洲可与中华帝国一样出兵反吴。反吴方胜时由胜者决定是否酬谢：中华帝国东路得苏北、滁州、合肥，西路得人情与投资、贸易条约，西秦得人情与贸易、过境条约，东洲得条约港（浙江，不成依次改福建、闽江、粤中）与贸易特权。吴胜时介入国付五年赔款，吴得汉中、皖北宣称，僵持时不给。大吴「平叛」日志加「军心」条，按敌方外国数缩放吴军四项。「统一南方」改为八处要地。游戏外检查通过，已部署 `dd61f45b`，待作者新开局实测条约是否成立、浙江条约港与军心读数。
 
 2026-11-13 [蜀国第二次靖难](../../.scratch/shu-jingnan/map.md)的[大汉国旗与属旗](../../.scratch/shu-jingnan/issues/03-great-han-flag.md)已通过游戏外检查。[v3tree 核查](../../.scratch/shu-jingnan/issues/02-trigger-audit.md)记录的朝廷身份、战败顺序、割地与战后日志缺口待处理。投降退战与州控制权待实测。
 
@@ -105,6 +127,10 @@
 
 [日本三家分封各路线](../../.scratch/debug-release/issues/93-japan-partition-weight.md)已在开发版调整靖难选边、保护国交涉、国书与东征的 AI 权重，游戏外检查通过，待实测整局分封频率。
 
+2026-11-16 [南朝易代重做 · 第一批](../../.scratch/south-succession/issues/01-balance-core.md)：每个属国一条政治天平，易代压力满 100 时各国定下立场，同日易代、开战；另有两种不战而定的收场。旧的立场、协定和表态事件已断开。暹罗及其附属国改为吴的自治领。游戏外检查通过，待作者新开局复测。第二至四批（事件链、谋刺案重做、安抚与遣使、法律提示、战时修正、撤旧件）已连续实施并部署 `ee972086`。剩文字一批，正文键目前是占位。第五批文字已写入并部署 `8e5141a8`。收尾（渡边华山、吕宋驳回、真实税收、引文核对、遣使扩大、外战状态行、旧协定件清理、数值调整、承诺先满按站队结算）已部署 `a15e7a21`，模拟对上目标，仍未实机验证。2026-11-17 第二次靖难收尾已部署 `3217c1ee`，均未实机验证：继位路径补发「镇压叛乱」，三藩收事件的条件改回遍历战争，日本反吴单开「东征日本」并当场开战、不拖大陆结算，面板日本一行，日本新日志「外藩去从」。待作者新开局复测。同日观察者局（加载 `1533ad4c`）1842 年易代压力停在 91：事件数封顶 25 后，朝中事件记下的 −9 使压力永远到不了 100。已改为第 42 个月后事件数照原进度续涨，朝中减压只推迟锁定，悬停同步，部署 `43e6b322`，STATIC_PASS，可读该局 1842 年存档复测。复测局 1839.4.1 靖难开战后崩溃：「东征日本」在日本仍是朝贡国时开战，吴的目标当场失效（首要嫌疑，推断）。已改为先令日本独立，大和主体文化的日本一律开战，否则只给关东、京都、四国宣称，并删去重复目标，部署 `a1d6a6e0`，待新开局验证能否打过 1839 年 4 月。已确认：大吴拿到「镇压叛乱」，三藩收到 `usm_civilwar.2`。
+
+[吴吞并日本后的三家分封](../../.scratch/debug-release/issues/100-japan-partition-after-annex.md)：吴在东洋之议以外取得日本会绕过分封。分封决议在日本被吞并或成为朝贡国以外的吴属国时可用（AI 权重 100，玩家自愿）。新增日志“东征”，吴占有九州以外的日本本土而日本尚存时，和平满 6 个月开吞并战，不许议和。发国书的 AI 权重提到 100，AI 的吴在战争中也可发国书。游戏外检查通过，待作者复测。
+
 - 主 MOD 比 Git main 多远北人口与祖地、登莱第 1–2 批及开局补丁，以及三角贸易（文件见其[任务记录](../../.scratch/triangle-trade/issues/01-implement.md)）。文件范围见[登莱路线任务记录](../../.scratch/denglai-route/map.md)，尚未同步。
 
 ## 历史
@@ -120,3 +146,5 @@
 - 作者确认完成后，从当前待办中移除该项。任务细节和当时的验证记录保存在各自的 issue 文件。
 - 被替换的旧状态如仍有价值，另存为 `history/<主题>-<日期>.md`。
 - 技能里不写项目状态。
+2026-11-17 [礼法之下的生活与等级制度](../../.scratch/south-order/issues/01-life-under-the-rites.md)：日志按内战、郑氏和平、明室和平分三个版本；和平版本完成后发通牒；内战胜方获得等级制度（大吴按文化，大明按职业），各四部法律。让权换取效忠改为每月 −1.5。游戏外检查通过，未实机验证。
+2026-11-18 [吴明论战两条路线汇入同一内战入口与战后迎驾](../../.scratch/south-succession/issues/02-civil-war-routes.md)：明帝出逃不再按路线分叉，行在开战当天成立；大明联邦与行在并存时战后发一次「迎驾」。部署 `1587ec5b`，STATIC_PASS，待新开局复测。

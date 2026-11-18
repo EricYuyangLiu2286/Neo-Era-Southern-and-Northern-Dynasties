@@ -180,14 +180,14 @@ nesnd_hus_clear_hierarchy = {
 nesnd_hus_end_registration = {
     set_variable = nesnd_hus_hierarchy_mutating
     # Only the actual current record owner can terminate a registration globally.
-    if = { limit = { nesnd_hus_epoch_matches_record = yes global_var:nesnd_hus_registration_record_owner ?= this }
+    if = { limit = { nesnd_hus_epoch_matches_record = yes hidden_trigger = { global_var:nesnd_hus_registration_record_owner ?= this } }
         set_global_variable = { name = nesnd_hus_registration_record_state value = 4 }
         remove_global_variable = nesnd_hus_registration_wait
     }
     remove_variable = nesnd_hus_hierarchy_active
     nesnd_hus_uninstall_hierarchy = yes
     if = { limit = { nesnd_hus_has_legacy_law = yes }
-        if = { limit = { exists = var:nesnd_hus_frozen_citizenship_type } activate_law = var:nesnd_hus_frozen_citizenship_type }
+        if = { limit = { hidden_trigger = { exists = var:nesnd_hus_frozen_citizenship_type } } activate_law = var:nesnd_hus_frozen_citizenship_type }
         else = { activate_law = law_type:law_cultural_exclusion }
     }
     remove_variable = nesnd_hus_registration_wait
@@ -196,7 +196,7 @@ nesnd_hus_end_registration = {
     remove_variable = nesnd_hus_revolution_source
     remove_variable = nesnd_hus_revolution_continuation
     remove_variable = nesnd_hus_revolution_suspended
-    if = { limit = { has_variable = nesnd_hus_registration_epoch } change_variable = { name = nesnd_hus_registration_epoch add = 1 } }
+    if = { limit = { hidden_trigger = { has_variable = nesnd_hus_registration_epoch } } change_variable = { name = nesnd_hus_registration_epoch add = 1 } }
     remove_variable = nesnd_hus_hierarchy_mutating
     recalculate_pop_ig_support = yes
 }

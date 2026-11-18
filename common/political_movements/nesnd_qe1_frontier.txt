@@ -1,0 +1,189 @@
+﻿# 西秦「边疆诸部」的两个分离运动。写法仿原版 movement_anti_slavery 的 secession 段（forced_tags 指定国家，state_weight 指定州）。
+# 运动只在日志把对应的地区条推到 40 以上后出现（国家变量 nesnd_qe1_fr_*_stirring）。
+# 激进度读地区条：50 时为 0，100 时 +100%。其余交给引擎：激进度到 75% 开始酝酿分离，进度满即开战。
+
+movement_nesnd_qe1_afghan = {
+	category = movement_category_cultural
+	ideology = ideology_pluralist_movement_4
+	character_ideologies = { ideology_reformer }
+	can_cause_obstinance = yes
+
+	creation_trigger = {
+		c:QE1 ?= this
+		custom_tooltip = { text = nesnd_ui_qe1_fr_afg_stirring_tt has_variable = nesnd_qe1_fr_afg_stirring }
+	}
+	creation_weight = { value = 1000 }
+	on_created = {}
+	disband_trigger = {
+		custom_tooltip = { text = nesnd_ui_not_qe1_fr_afg_stirring_tt NOT = { has_variable = nesnd_qe1_fr_afg_stirring } }
+	}
+
+	culture_selection_trigger = { this = cu:pashtun }
+	culture_selection_weight = { value = 100 }
+
+	character_support_trigger = {
+		OR = { culture = cu:pashtun culture = cu:tajik culture = cu:hazara culture = cu:baluchi }
+	}
+	character_support_weight = { value = 200 }
+
+	# 本地各族，以及本地区内不再认同汉羌身份的西域汉羌。
+	pop_support_trigger = {
+		OR = {
+			culture = cu:pashtun culture = cu:tajik culture = cu:hazara culture = cu:baluchi
+			AND = { culture = cu:ce_xiyu state = { nesnd_qe1_fr_afg_region = yes } }
+		}
+	}
+	pop_support_factors = {
+		movement_support_cultural_fervor
+		movement_support_cultural_discrimination
+	}
+	pop_support_weight = {
+		add = { value = 40 desc = "nesnd_qe1_fr_support_base" }
+		if = {
+			limit = { owner = { hidden_trigger = { has_variable = nesnd_qe1_fr_afg } } }
+			add = { value = owner.var:nesnd_qe1_fr_afg desc = "nesnd_qe1_fr_support_bar" }
+		}
+		if = {
+			limit = { strata = upper }
+			add = { value = 10 desc = "UPPER_NO_ICON" }
+		}
+	}
+
+	secession = {
+		can_secede_during_revolution = yes
+		possible = {
+			owner ?= {
+				custom_tooltip = { text = nesnd_ui_qe1_fr_afg_stirring_tt has_variable = nesnd_qe1_fr_afg_stirring }
+				# 另一处起事后五年内不得起事
+				custom_tooltip = { text = nesnd_ui_not_qe1_fr_kaz_recent_tt NOT = { has_variable = nesnd_qe1_fr_kaz_recent } }
+				any_scope_state = { nesnd_qe1_fr_afg_region = yes }
+			}
+		}
+		weight = { value = 1000 }
+		forced_tags = {
+			AFG = {
+				trigger = { always = yes }
+				weight = 1000
+			}
+		}
+		state_weight = {
+			value = 0
+			if = {
+				limit = { is_capital = no nesnd_qe1_fr_afg_region = yes }
+				add = 1000
+			}
+		}
+		interest_group_can_join = { always = no }
+		target_fraction_of_states = {
+			value = owner.nesnd_qe1_fr_afg_fraction
+			min = 0.05
+			max = 0.9
+		}
+	}
+
+	additional_radicalism_factors = {
+		if = {
+			limit = { owner = { hidden_trigger = { has_variable = nesnd_qe1_fr_afg } } }
+			add = {
+				value = owner.var:nesnd_qe1_fr_afg
+				subtract = 50
+				divide = 50
+				min = 0
+				desc = "nesnd_qe1_fr_radicalism_bar"
+			}
+		}
+	}
+}
+
+movement_nesnd_qe1_uzbek = {
+	category = movement_category_cultural
+	ideology = ideology_pluralist_movement_4
+	character_ideologies = { ideology_reformer }
+	can_cause_obstinance = yes
+
+	creation_trigger = {
+		c:QE1 ?= this
+		custom_tooltip = { text = nesnd_ui_qe1_fr_kaz_stirring_tt has_variable = nesnd_qe1_fr_kaz_stirring }
+	}
+	creation_weight = { value = 1000 }
+	on_created = {}
+	disband_trigger = {
+		custom_tooltip = { text = nesnd_ui_not_qe1_fr_kaz_stirring_tt NOT = { has_variable = nesnd_qe1_fr_kaz_stirring } }
+	}
+
+	culture_selection_trigger = { this = cu:kazak }
+	culture_selection_weight = { value = 100 }
+
+	character_support_trigger = {
+		OR = { culture = cu:kazak culture = cu:uzbek culture = cu:kirgiz culture = cu:bashkir }
+	}
+	character_support_weight = { value = 200 }
+
+	# 草原各族，以及本地区内不再认同汉羌身份的西域汉羌。
+	pop_support_trigger = {
+		OR = {
+			culture = cu:kazak culture = cu:uzbek culture = cu:kirgiz culture = cu:bashkir
+			AND = { culture = cu:ce_xiyu state = { nesnd_qe1_fr_kaz_region = yes } }
+		}
+	}
+	pop_support_factors = {
+		movement_support_cultural_fervor
+		movement_support_cultural_discrimination
+	}
+	pop_support_weight = {
+		add = { value = 40 desc = "nesnd_qe1_fr_support_base" }
+		if = {
+			limit = { owner = { hidden_trigger = { has_variable = nesnd_qe1_fr_kaz } } }
+			add = { value = owner.var:nesnd_qe1_fr_kaz desc = "nesnd_qe1_fr_support_bar" }
+		}
+		if = {
+			limit = { strata = upper }
+			add = { value = 10 desc = "UPPER_NO_ICON" }
+		}
+	}
+
+	secession = {
+		can_secede_during_revolution = yes
+		possible = {
+			owner ?= {
+				custom_tooltip = { text = nesnd_ui_qe1_fr_kaz_stirring_tt has_variable = nesnd_qe1_fr_kaz_stirring }
+				# 另一处起事后五年内不得起事
+				custom_tooltip = { text = nesnd_ui_not_qe1_fr_afg_recent_tt NOT = { has_variable = nesnd_qe1_fr_afg_recent } }
+				any_scope_state = { nesnd_qe1_fr_kaz_region = yes }
+			}
+		}
+		weight = { value = 1000 }
+		forced_tags = {
+			UZB = {
+				trigger = { always = yes }
+				weight = 1000
+			}
+		}
+		state_weight = {
+			value = 0
+			if = {
+				limit = { is_capital = no nesnd_qe1_fr_kaz_region = yes }
+				add = 1000
+			}
+		}
+		interest_group_can_join = { always = no }
+		target_fraction_of_states = {
+			value = owner.nesnd_qe1_fr_kaz_fraction
+			min = 0.05
+			max = 0.9
+		}
+	}
+
+	additional_radicalism_factors = {
+		if = {
+			limit = { owner = { hidden_trigger = { has_variable = nesnd_qe1_fr_kaz } } }
+			add = {
+				value = owner.var:nesnd_qe1_fr_kaz
+				subtract = 50
+				divide = 50
+				min = 0
+				desc = "nesnd_qe1_fr_radicalism_bar"
+			}
+		}
+	}
+}

@@ -100,301 +100,54 @@ nesnd_ming_mark_retained_royals = {
         }
     }
 }
-# No play_as here: AI/world characters can migrate independently of player control.
-nesnd_ming_general_refuge = {
-    if = {
-        limit = {
-            c:USM ?= this
-            has_variable = tag_WUU_var
-            NOT = {
-                has_variable = nesnd_ming_refuge_resolved
-            }
-            NOT = {
-                has_variable = nesnd_ming_player_transferred
-            }
-            NOT = {
-                has_global_variable = nesnd_south_settled
-            }
-            any_diplomatic_play = {
-                has_variable = this_is_nanming_civilwar_var
-                initiator = root
-            }
-        }
-        save_scope_as = nesnd_ming_royal_origin
-        clear_saved_scope = nesnd_ming_royal_host
-        if = {
-            limit = {
-                exists = c:HNA
-                c:HNA = {
-                    nesnd_ming_royal_refuge_host = yes
-                }
-            }
-            c:HNA = {
-                save_scope_as = nesnd_ming_royal_host
-            }
-        }
-        else_if = {
-            limit = {
-                exists = c:SIH
-                c:SIH = {
-                    nesnd_ming_royal_refuge_host = yes
-                }
-            }
-            c:SIH = {
-                save_scope_as = nesnd_ming_royal_host
-            }
-        }
-        nesnd_ming_mark_retained_royals = yes
-        if = {
-            limit = {
-                exists = scope:nesnd_ming_royal_host
-            }
-            scope:nesnd_ming_royal_host = {
-                set_variable = nesnd_ming_refuge_received
-            }
-            if = {
-                limit = {
-                    trigger_if = {
-                        limit = {
-                            exists = var:nesnd_ming_claimant_ref
-                        }
-                        var:nesnd_ming_claimant_ref = {
-                            is_character_alive = yes
-                            trigger_if = {
-                                limit = {
-                                    exists = owner
-                                }
-                                owner = scope:nesnd_ming_royal_origin
-                            }
-                            trigger_else = {
-                                always = no
-                            }
-                            is_ruler_of_own_country = no
-                            nesnd_ming_authorized_dynast = yes
-                        }
-                    }
-                    trigger_else = {
-                        always = no
-                    }
-                }
-                var:nesnd_ming_claimant_ref = {
-                    transfer_character = scope:nesnd_ming_royal_host
-                    save_scope_as = nesnd_ming_refuge_character
-                }
-                scope:nesnd_ming_royal_host = {
-                    set_variable = {
-                        name = nesnd_ming_refuge_claimant
-                        value = scope:nesnd_ming_refuge_character
-                    }
-                }
-            }
-            if = {
-                limit = {
-                    trigger_if = {
-                        limit = {
-                            exists = var:nesnd_ming_heir_ref
-                        }
-                        var:nesnd_ming_heir_ref = {
-                            is_character_alive = yes
-                            trigger_if = {
-                                limit = {
-                                    exists = owner
-                                }
-                                owner = scope:nesnd_ming_royal_origin
-                            }
-                            trigger_else = {
-                                always = no
-                            }
-                            is_ruler_of_own_country = no
-                            nesnd_ming_authorized_dynast = yes
-                        }
-                    }
-                    trigger_else = {
-                        always = no
-                    }
-                }
-                var:nesnd_ming_heir_ref = {
-                    transfer_character = scope:nesnd_ming_royal_host
-                    save_scope_as = nesnd_ming_refuge_character
-                }
-                scope:nesnd_ming_royal_host = {
-                    set_variable = {
-                        name = nesnd_ming_refuge_heir
-                        value = scope:nesnd_ming_refuge_character
-                    }
-                }
-            }
-            set_variable = nesnd_ming_refuge_resolved
-            remove_variable = nesnd_ming_player_intent
-            remove_variable = nesnd_ming_waiting_flight
-            remove_variable = nesnd_ming_royals_retained
-            if = {
-                limit = {
-                    has_modifier = nesnd_ming_royal_allowance
-                }
-                remove_modifier = nesnd_ming_royal_allowance
-            }
-        }
-        else = {
-            nesnd_ming_notice_retained_royals = yes
-        }
-    }
-}
+# Wu scope (nesnd_ming_court.2, right after the civil-war play opens; the player's "seek refuge" button calls it again).
+# The same flight on every route: the court's earlier side only decides whether the player goes with the emperor.
 nesnd_ming_resolve_court_migration = {
     if = {
         limit = {
             c:USM ?= this
-            is_player = yes
-            has_variable = nesnd_ming_player_intent
-            nesnd_board_stance_value = 1
-        }
-        nesnd_ming_commit_player_transfer = yes
-    }
-    else = {
-        nesnd_ming_general_refuge = yes
-    }
-    nesnd_ming_preserve_unhosted_royals = yes
-}
-nesnd_ming_enthrone_refuge = {
-    if = {
-        limit = {
-            has_variable = nesnd_ming_refuge_received
-            NOT = {
-                has_variable = nesnd_ming_court
+            NOT = { has_variable = nesnd_ming_refuge_resolved }
+            NOT = { has_variable = nesnd_ming_player_transferred }
+            NOT = { has_global_variable = nesnd_south_settled }
+            OR = {
+                any_diplomatic_play = { has_variable = this_is_nanming_civilwar_var initiator = root }
+                any_country = { has_variable = usm_opposition_country has_war_with = root }
             }
         }
-        save_scope_as = nesnd_ming_refuge_host
-        clear_saved_scope = nesnd_ming_refuge_sovereign
+        clear_saved_scope = nesnd_ming_host
+        nesnd_ming_find_rebel_host = yes
         if = {
-            limit = {
-                trigger_if = {
-                    limit = {
-                        exists = var:nesnd_ming_refuge_claimant
-                    }
-                    var:nesnd_ming_refuge_claimant = {
-                        is_character_alive = yes
-                        trigger_if = {
-                            limit = {
-                                exists = owner
-                            }
-                            owner = scope:nesnd_ming_refuge_host
-                        }
-                        trigger_else = {
-                            always = no
-                        }
-                        nesnd_ming_authorized_dynast = yes
-                    }
-                }
-                trigger_else = {
-                    always = no
-                }
-            }
-            var:nesnd_ming_refuge_claimant = {
-                save_scope_as = nesnd_ming_refuge_sovereign
-            }
-        }
-        else_if = {
-            limit = {
-                trigger_if = {
-                    limit = {
-                        exists = var:nesnd_ming_refuge_heir
-                    }
-                    var:nesnd_ming_refuge_heir = {
-                        is_character_alive = yes
-                        trigger_if = {
-                            limit = {
-                                exists = owner
-                            }
-                            owner = scope:nesnd_ming_refuge_host
-                        }
-                        trigger_else = {
-                            always = no
-                        }
-                        nesnd_ming_authorized_dynast = yes
-                    }
-                }
-                trigger_else = {
-                    always = no
-                }
-            }
-            var:nesnd_ming_refuge_heir = {
-                save_scope_as = nesnd_ming_refuge_sovereign
-            }
-        }
-        if = {
-            limit = {
-                exists = ruler
-            }
-            set_variable = {
-                name = nesnd_ming_local_ruler_ref
-                value = ruler
-            }
-            ruler = {
-                set_variable = nesnd_ming_local_patron
-            }
-        }
-        set_variable = nesnd_ming_court
-        set_variable = nesnd_restoration_side
-        if = {
-            limit = {
-                exists = scope:nesnd_ming_refuge_sovereign
-            }
-            activate_law = law_type:law_monarchy
-            scope:nesnd_ming_refuge_sovereign = {
-                set_variable = nesnd_ming_claimant
-                set_character_as_ruler = yes
-                if = {
-                    limit = {
-                        has_role = character_role_nesnd_ming_refuge
-                    }
-                    remove_character_role = character_role_nesnd_ming_refuge
-                }
-            }
-            set_variable = {
-                name = nesnd_ming_court_monarch
-                value = scope:nesnd_ming_refuge_sovereign
-            }
+            limit = { exists = var:nesnd_ming_receiver var:nesnd_ming_receiver = { nesnd_ming_host_rebel = yes is_subject = no } }
+            var:nesnd_ming_receiver = { save_scope_as = nesnd_ming_host }
+            nesnd_ming_seat_court = yes
+            set_variable = nesnd_ming_refuge_resolved
+            remove_variable = nesnd_ming_waiting_flight
+            if = { limit = { has_modifier = nesnd_ming_royal_allowance } remove_modifier = nesnd_ming_royal_allowance }
+            # A player who stood by the Ming house follows the emperor and plays on as the court in exile.
             if = {
-                limit = {
-                    trigger_if = {
-                        limit = {
-                            exists = var:nesnd_ming_refuge_heir
-                        }
-                        var:nesnd_ming_refuge_heir = {
-                            is_character_alive = yes
-                            trigger_if = {
-                                limit = {
-                                    exists = owner
-                                }
-                                owner = scope:nesnd_ming_refuge_host
-                            }
-                            trigger_else = {
-                                always = no
-                            }
-                            is_ruler_of_own_country = no
-                            nesnd_ming_authorized_dynast = yes
-                        }
-                    }
-                    trigger_else = {
-                        always = no
-                    }
-                }
-                set_heir = var:nesnd_ming_refuge_heir
-                var:nesnd_ming_refuge_heir = {
-                    set_variable = nesnd_ming_claimant
-                    if = {
-                        limit = {
-                            has_role = character_role_nesnd_ming_refuge
-                        }
-                        remove_character_role = character_role_nesnd_ming_refuge
-                    }
-                }
+                limit = { is_player = yes has_variable = nesnd_ming_player_intent nesnd_board_stance_value = 1 }
+                set_variable = nesnd_ming_player_transferred
+                play_as = scope:nesnd_ming_host
+                scope:nesnd_ming_host = { trigger_event = { id = nesnd_ming_court.3 days = 1 popup = yes } }
             }
+            remove_variable = nesnd_ming_player_intent
+            # Wu is the Zheng side from here on, whichever side the court took before the war.
+            set_variable = { name = nesnd_south_stance value = 2 }
+            nesnd_ming_preserve_unhosted_royals = yes
         }
+        # The player's court waits in Nanjing for another host (nesnd_ming_court.12): the emperor stays where he is,
+        # so that "seek refuge" can still take him and the event does not speak of a court that has already gone.
+        else_if = {
+            limit = { is_player = yes has_variable = nesnd_ming_player_intent nesnd_board_stance_value = 1 }
+            trigger_event = { id = nesnd_ming_court.12 popup = yes }
+        }
+        # No host at all: the royals go into exile at once. No "royal allowance" notice here, since nobody stays.
         else = {
-            set_variable = nesnd_ming_interregnum
+            remove_variable = nesnd_ming_player_intent
+            set_variable = { name = nesnd_south_stance value = 2 }
+            nesnd_ming_preserve_unhosted_royals = yes
         }
-        nesnd_ming_preserve_local_patron = yes
+        clear_saved_scope = nesnd_ming_host
     }
 }
 
@@ -408,6 +161,14 @@ nesnd_ming_notice_retained_royals = {
             NOT = {
                 has_variable = nesnd_ming_retained_notice
             }
+            # Not while the flight of the court is still open: the war has begun but nesnd_ming_court.2 has not yet run,
+            # or the player's court is still looking for a host (2026-11-18).
+            OR = {
+                NOT = { has_global_variable = usm_civilwar_occured }
+                has_variable = nesnd_ming_refuge_resolved
+            }
+            NOT = { has_variable = nesnd_ming_player_intent }
+            NOT = { has_variable = nesnd_ming_waiting_flight }
             any_scope_character = {
                 has_role = character_role_nesnd_ming_refuge
                 is_character_alive = yes
@@ -428,7 +189,7 @@ nesnd_ming_preserve_local_patron = {
         limit = {
             trigger_if = {
                 limit = {
-                    exists = var:nesnd_ming_local_ruler_ref
+                    hidden_trigger = { exists = var:nesnd_ming_local_ruler_ref }
                 }
                 var:nesnd_ming_local_ruler_ref = {
                     is_character_alive = yes
@@ -459,4 +220,41 @@ nesnd_ming_preserve_local_patron = {
             }
         }
     }
+}
+# Court-in-exile scope (nesnd_court_followup.20). The country stops being the Ming court: the emperor leaves the throne
+# and its former leader, kept as the court's protector, rules again. Without him a new ruler is chosen.
+nesnd_ming_court_dissolve = {
+    save_scope_as = nesnd_dissolved_court
+    clear_saved_scope = nesnd_restored_local_ruler
+    if = {
+        limit = {
+            trigger_if = {
+                limit = { exists = var:nesnd_ming_local_ruler_ref }
+                var:nesnd_ming_local_ruler_ref = {
+                    is_character_alive = yes
+                    trigger_if = { limit = { exists = owner } owner = scope:nesnd_dissolved_court }
+                    trigger_else = { always = no }
+                    is_ruler_of_own_country = no
+                }
+            }
+            trigger_else = { always = no }
+        }
+        var:nesnd_ming_local_ruler_ref = { save_scope_as = nesnd_restored_local_ruler }
+    }
+    if = { limit = { exists = scope:nesnd_restored_local_ruler }
+        scope:nesnd_restored_local_ruler = {
+            set_character_as_ruler = yes
+            if = { limit = { has_role = character_role_nesnd_ming_patron } remove_character_role = character_role_nesnd_ming_patron }
+            remove_variable = nesnd_ming_local_patron
+        }
+    }
+    else = {
+        create_character = { interest_group = ig_landowners ideology = ideology_royalist age = default ruler = yes }
+    }
+    remove_variable = nesnd_ming_court
+    remove_variable = nesnd_ming_court_monarch
+    remove_variable = nesnd_ming_interregnum
+    remove_variable = nesnd_ming_local_ruler_ref
+    clear_saved_scope = nesnd_restored_local_ruler
+    clear_saved_scope = nesnd_dissolved_court
 }

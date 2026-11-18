@@ -90,7 +90,7 @@ nesnd_acw_buyout = {
         }
     }
     possible = {
-        NOT = { has_variable = nesnd_acw_crisis }
+        custom_tooltip = { text = nesnd_ui_not_acw_crisis_tt NOT = { has_variable = nesnd_acw_crisis } }
         in_default = no
     }
     effect = {
@@ -188,97 +188,58 @@ nesnd_hus_west_fund = {
 nesnd_hus_west_claim = {
     name = nesnd_hus_west_claim
     desc = nesnd_hus_west_claim_desc
-    visible = { always = yes }
-    possible = {
-        custom_tooltip = {
-            text = nesnd_hus_west_claim_bar_tt
-            trigger_if = { limit = { has_variable = nesnd_hus_west_bar } var:nesnd_hus_west_bar >= 50 }
-            trigger_else = { always = no }
-        }
-        custom_tooltip = { text = nesnd_hus_west_claim_cooldown_tt NOT = { has_variable = nesnd_hus_west_claim_cooldown } }
-        custom_tooltip = {
-            text = nesnd_hus_west_claim_candidate_tt
-            c:USA ?= { any_scope_state = { nesnd_hus_west_claim_candidate = yes } }
-        }
-    }
+    visible = { NOT = { has_variable = nesnd_hus_west_auto_claim } }
+    possible = { nesnd_hus_west_can_claim = yes }
     effect = {
         custom_tooltip = nesnd_hus_west_claim_tt
-        hidden_effect = {
-            c:USA = {
-                ordered_scope_state = {
-                    limit = { nesnd_hus_west_claim_candidate = yes }
-                    order_by = state_population
-                    max = 1
-                    state_region = {
-                        add_claim = c:HUS
-                        c:HUS = { add_to_variable_list = { name = nesnd_hus_west_claims target = prev } }
-                    }
-                }
-            }
-            set_variable = { name = nesnd_hus_west_claim_cooldown months = 6 }
-            set_variable = { name = nesnd_hus_west_once_spent value = -50 }
-            change_relations = { country = c:USA value = -10 }
-        }
+        hidden_effect = { nesnd_hus_west_make_claim = yes }
     }
     ai_chance = { value = 20 }
 }
 
-# Needs full pressure and a divided Union (civil war, or crisis bar at 80 or more).
+nesnd_hus_west_claim_auto = {
+    name = nesnd_hus_west_claim_auto
+    desc = nesnd_hus_west_claim_auto_desc
+    visible = { NOT = { has_variable = nesnd_hus_west_auto_claim } }
+    effect = { hidden_effect = { set_variable = nesnd_hus_west_auto_claim } }
+    ai_chance = { value = 0 }
+}
+
+nesnd_hus_west_claim_manual = {
+    name = nesnd_hus_west_claim_manual
+    desc = nesnd_hus_west_claim_manual_desc
+    visible = { has_variable = nesnd_hus_west_auto_claim }
+    effect = { hidden_effect = { remove_variable = nesnd_hus_west_auto_claim } }
+    ai_chance = { value = 0 }
+}
+
 nesnd_hus_west_press = {
     name = nesnd_hus_west_press
     desc = nesnd_hus_west_press_desc
-    visible = { always = yes }
-    possible = {
-        custom_tooltip = {
-            text = nesnd_hus_west_press_bar_tt
-            trigger_if = { limit = { has_variable = nesnd_hus_west_bar } var:nesnd_hus_west_bar >= 100 }
-            trigger_else = { always = no }
-        }
-        custom_tooltip = {
-            text = nesnd_hus_west_press_divided_tt
-            c:USA ?= {
-                OR = {
-                    has_journal_entry = je_acw_war
-                    AND = { has_variable = nesnd_acw_bar var:nesnd_acw_bar >= 80 }
-                }
-            }
-        }
-        custom_tooltip = {
-            text = nesnd_hus_west_press_target_tt
-            c:USA ?= { any_scope_state = { nesnd_hus_west_press_candidate = yes } }
-        }
-        custom_tooltip = { text = nesnd_hus_west_press_cooldown_tt NOT = { has_variable = nesnd_hus_west_border_cooldown } }
-        is_at_war = no
-        is_diplomatic_play_committed_participant = no
-        hidden_trigger = { NOT = { has_variable = nesnd_hus_west_launching } }
-    }
+    visible = { NOT = { has_variable = nesnd_hus_west_auto_press } }
+    possible = { nesnd_hus_west_can_press = yes }
     effect = {
         custom_tooltip = nesnd_hus_west_press_tt
-        hidden_effect = {
-            c:USA = {
-                ordered_scope_state = {
-                    limit = { nesnd_hus_west_press_candidate = yes }
-                    order_by = state_population
-                    max = 1
-                    save_scope_as = nesnd_hus_west_target
-                }
-            }
-            if = {
-                limit = { exists = scope:nesnd_hus_west_target }
-                set_variable = { name = nesnd_hus_west_launching days = 7 }
-                set_variable = { name = nesnd_hus_west_border_cooldown months = 24 }
-                set_variable = { name = nesnd_hus_west_once_spent value = -100 }
-                create_diplomatic_play = {
-                    name = nesnd_hus_west_confrontation
-                    type = dp_return_state
-                    target_country = c:USA
-                    target_state = scope:nesnd_hus_west_target
-                }
-            }
-        }
+        hidden_effect = { nesnd_hus_west_push_east = yes }
     }
     ai_chance = {
         value = 0
         if = { limit = { c:USA ?= { has_journal_entry = je_acw_war } } value = 30 }
     }
+}
+
+nesnd_hus_west_press_auto = {
+    name = nesnd_hus_west_press_auto
+    desc = nesnd_hus_west_press_auto_desc
+    visible = { NOT = { has_variable = nesnd_hus_west_auto_press } }
+    effect = { hidden_effect = { set_variable = nesnd_hus_west_auto_press } }
+    ai_chance = { value = 0 }
+}
+
+nesnd_hus_west_press_manual = {
+    name = nesnd_hus_west_press_manual
+    desc = nesnd_hus_west_press_manual_desc
+    visible = { has_variable = nesnd_hus_west_auto_press }
+    effect = { hidden_effect = { remove_variable = nesnd_hus_west_auto_press } }
+    ai_chance = { value = 0 }
 }

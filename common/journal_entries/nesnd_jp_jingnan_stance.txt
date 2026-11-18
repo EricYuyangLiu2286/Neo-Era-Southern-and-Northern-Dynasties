@@ -1,0 +1,44 @@
+﻿# Japan's intended answer to the southern succession, chosen by a player Japan before the dispute locks.
+# usm_civilwar.23 (at the lock) reads var:nesnd_jp_jingnan_choice and offers only that answer. AI Japan has no
+# weight on the buttons and answers in the event as before (author, 2026-11-17).
+nesnd_jp_jingnan_stance = {
+    icon = "gfx/interface/icons/event_icons/nesnd_jp_gunbai.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = { c:JAP ?= this }
+    possible = {
+        c:JAP ?= this exists = c:USM
+        custom_tooltip = { text = nesnd_ui_not_south_locked_tt NOT = { has_global_variable = nesnd_south_locked } }
+        custom_tooltip = { text = nesnd_ui_not_japan_answered_tt NOT = { has_variable = nesnd_japan_answered } }
+        c:USM = { custom_tooltip = { text = nesnd_ui_not_tag_wuu_var_tt NOT = { has_variable = tag_WUU_var } } }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_jp_jingnan_choice var:nesnd_jp_jingnan_choice = 1 } desc = nesnd_jp_jingnan_stance_status_against }
+            triggered_desc = { trigger = { has_variable = nesnd_jp_jingnan_choice var:nesnd_jp_jingnan_choice = 2 } desc = nesnd_jp_jingnan_stance_status_wu }
+            triggered_desc = { trigger = { has_variable = nesnd_jp_jingnan_choice var:nesnd_jp_jingnan_choice = 3 } desc = nesnd_jp_jingnan_stance_status_neutral }
+            desc = nesnd_jp_jingnan_stance_status_none
+        }
+    }
+    scripted_button = nesnd_jp_stance_against_button
+    scripted_button = nesnd_jp_stance_wu_button
+    scripted_button = nesnd_jp_stance_neutral_button
+    outcome = {
+        header = nesnd_journal_closures_header
+        effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_jp_jingnan_stance_conclusion
+        trigger = { custom_tooltip = { text = nesnd_jp_jingnan_stance_end_tt
+            OR = {
+                has_global_variable = nesnd_south_locked
+                has_variable = nesnd_japan_answered
+                NOT = { exists = c:USM }
+                c:USM ?= { has_variable = tag_WUU_var }
+            }
+        } }
+        effect = { remove_variable = nesnd_jp_jingnan_cooldown }
+    }
+    weight = 900
+    should_be_pinned_by_default_uninvolved_or_context = yes
+}

@@ -1,0 +1,58 @@
+﻿namespace = nesnd_south_order
+
+# A province: the court's ultimatum after the peaceful settlement.
+nesnd_south_order.1 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_order.1.t
+    # Sent after a peaceful settlement or, since 2026-11-18, after the civil-war version of "Life under the Rites".
+    desc = { first_valid = {
+        triggered_desc = { trigger = { var:nesnd_order_sender ?= { has_variable = nesnd_south_peaceful } } desc = nesnd_south_order.1.d }
+        desc = nesnd_south_order.1.d_war
+    } }
+    flavor = nesnd_south_order.1.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    # Seven days pass between sending and arrival: a province that has left the sender's realm meanwhile is not asked.
+    trigger = { has_variable = nesnd_order_sender var:nesnd_order_sender ?= { is_country_alive = yes } is_subject_of = var:nesnd_order_sender }
+    immediate = {
+        save_scope_as = nesnd_order_target
+        var:nesnd_order_sender = { save_scope_as = nesnd_order_sender }
+    }
+    option = {
+        name = nesnd_south_order.1.a
+        default_option = yes
+        ai_chance = { base = 85 }
+        set_variable = nesnd_order_accepted
+        scope:nesnd_order_sender = {
+            trigger_event = { id = nesnd_south_order.2 popup = yes }
+            annex = root
+        }
+    }
+    option = {
+        name = nesnd_south_order.1.b
+        ai_chance = { base = 15 }
+        custom_tooltip = nesnd_south_order.1.b_tt
+        nesnd_south_order_war = yes
+        scope:nesnd_order_sender = { trigger_event = { id = nesnd_south_order.2 popup = yes } }
+    }
+}
+
+# The court: the province's answer.
+nesnd_south_order.2 = {
+    type = country_event
+    placement = root
+    title = nesnd_south_order.2.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { scope:nesnd_order_target ?= { has_variable = nesnd_order_accepted } } desc = nesnd_south_order.2.d_accepted }
+            desc = nesnd_south_order.2.d_refused
+        }
+    }
+    flavor = nesnd_south_order.2.f
+    duration = 3
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    trigger = { exists = scope:nesnd_order_target }
+    option = { name = nesnd_south_order.2.a default_option = yes }
+}

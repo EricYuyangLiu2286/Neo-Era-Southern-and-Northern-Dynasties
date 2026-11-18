@@ -1,0 +1,43 @@
+﻿# Indochina envoys (task 110, design A). Wu's Indochinese dominions follow the overlord into war
+# (join_overlord_wars = yes, common/subject_types/ce_subject_types.txt). Before the Jingnan War the
+# anti-Wu side can ask them to become tributaries, which do not.
+
+# Country scope.
+nesnd_indochina_country = {
+    OR = { c:BUR ?= this c:DAI ?= this c:LUA ?= this c:CHP ?= this c:CMI ?= this c:CAM ?= this }
+}
+# Country scope. Every overseas subject on the political balance: the envoys' field since the balance replaced the old board.
+nesnd_envoy_overseas = { nesnd_tilt_member = yes NOT = { nesnd_tilt_mainland = yes } }
+# Country scope. The envoys go where a subject still leans towards Wu.
+nesnd_envoy_pick = { nesnd_indochina_envoy_target = yes nesnd_tilt_zone_wu = yes }
+# Country scope. A subject an envoy or the 1838 rumour can still reach.
+nesnd_indochina_envoy_target = {
+    OR = { nesnd_indochina_country = yes nesnd_envoy_overseas = yes }
+    is_country_alive = yes
+    exists = c:USM
+    is_direct_subject_of = c:USM
+    OR = { is_subject_type = subject_type_dominion is_subject_type = subject_type_puppet is_subject_type = subject_type_colony }
+    NOT = { has_variable = nesnd_indochina_answered }
+    NOT = { has_variable = nesnd_indochina_pending }
+}
+# Contextless. Envoys and answers only before the war breaks out.
+nesnd_indochina_window_open = {
+    NOR = { has_global_variable = usm_civilwar_occured has_global_variable = nesnd_south_settled }
+}
+# Country scope. An anti-Wu member of the Southern succession board.
+nesnd_indochina_envoy_sender = {
+    is_involved_in_journal_entry = nesnd_south_succession_board
+    nesnd_south_political_member = yes
+    NOT = { nesnd_indochina_country = yes }
+    NOT = { nesnd_envoy_overseas = yes }
+    OR = { nesnd_board_stance_value = 1 has_variable = nesnd_ming_court }
+}
+# Country scope. A country that stood aside and is still Wu's tributary after Wu won.
+nesnd_indochina_reckoning_due = {
+    has_variable = nesnd_indochina_stood_aside
+    NOT = { has_variable = nesnd_indochina_reckoned }
+    is_country_alive = yes
+    exists = c:USM
+    is_direct_subject_of = c:USM
+    is_subject_type = subject_type_tributary
+}

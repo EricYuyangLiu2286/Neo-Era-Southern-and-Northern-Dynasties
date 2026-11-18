@@ -1,0 +1,181 @@
+﻿namespace = nesnd_indochina
+
+# Indochina envoys (task 110, design A). Scripts in common/scripted_effects/nesnd_indochina_envoys.txt.
+
+# A Wu dominion in Indochina answers an anti-Wu envoy, or (from 1838-06-01, no sender) the rumour of war.
+nesnd_indochina.1 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:nesnd_indochina_sender } desc = nesnd_indochina.1.t }
+            desc = nesnd_indochina.1.t_rumour
+        }
+    }
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:nesnd_indochina_sender } desc = nesnd_indochina.1.d }
+            desc = nesnd_indochina.1.d_rumour
+        }
+    }
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = {
+        OR = { nesnd_indochina_country = yes nesnd_envoy_overseas = yes }
+        is_country_alive = yes
+        exists = c:USM
+        is_direct_subject_of = c:USM
+        OR = { is_subject_type = subject_type_dominion is_subject_type = subject_type_puppet }
+        NOT = { has_variable = nesnd_indochina_answered }
+        nesnd_indochina_window_open = yes
+    }
+    # Changing the subject type once the war has begun is untested, so an unanswered event lapses.
+    cancellation_trigger = { NOT = { nesnd_indochina_window_open = yes } }
+    immediate = {
+        save_scope_as = nesnd_indochina_target
+        c:USM = { save_scope_as = nesnd_indochina_overlord }
+        if = { limit = { has_variable = nesnd_indochina_envoy_from var:nesnd_indochina_envoy_from ?= { is_country_alive = yes } }
+            var:nesnd_indochina_envoy_from = { save_scope_as = nesnd_indochina_sender }
+        }
+    }
+    # Stand aside: become a tributary, which does not join the overlord's wars.
+    option = {
+        name = nesnd_indochina.1.a
+        ai_chance = {
+            base = 60
+            modifier = { trigger = { NOT = { exists = scope:nesnd_indochina_sender } } add = -20 }
+            modifier = { trigger = { exists = scope:nesnd_indochina_sender "relations(scope:nesnd_indochina_sender)" >= relations_threshold:cordial } add = 15 }
+            modifier = { trigger = { "relations(c:USM)" < 0 } add = 15 }
+            modifier = { trigger = { "relations(c:USM)" >= relations_threshold:amicable } add = -25 }
+            modifier = { trigger = { liberty_desire >= 50 } add = 15 }
+            modifier = { trigger = { liberty_desire < 20 } add = -10 }
+            modifier = { trigger = { has_variable = nesnd_indochina_envoy_round var:nesnd_indochina_envoy_round >= 2 } add = 15 }
+            modifier = { trigger = { c:USM.ruler ?= { has_trait = wrathful } } add = -10 }
+        }
+        nesnd_indochina_stand_aside = yes
+        custom_tooltip = nesnd_indochina.1.a_tt
+        hidden_effect = { nesnd_indochina_report_answer = yes }
+    }
+    # Keep the dominion's duty to march with the overlord.
+    option = {
+        name = nesnd_indochina.1.b
+        default_option = yes
+        ai_chance = { base = 40 }
+        nesnd_indochina_keep_duty = yes
+        hidden_effect = { nesnd_indochina_report_answer = yes }
+    }
+    after = {
+        remove_variable = nesnd_indochina_pending
+        remove_variable = nesnd_indochina_envoy_from
+    }
+}
+
+# The sender hears the answer.
+nesnd_indochina.2 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_indochina.2.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { scope:nesnd_indochina_target = { has_variable = nesnd_indochina_stood_aside } } desc = nesnd_indochina.2.d_accepted }
+            desc = nesnd_indochina.2.d_refused
+        }
+    }
+    event_image = { video = "gfx/event_pictures/unspecific_signed_contract.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { exists = scope:nesnd_indochina_target exists = scope:nesnd_indochina_overlord }
+    option = {
+        name = nesnd_indochina.2.a
+        default_option = yes
+        trigger = { scope:nesnd_indochina_target = { custom_tooltip = { text = nesnd_ui_indochina_stood_aside_tt has_variable = nesnd_indochina_stood_aside } } }
+    }
+    option = {
+        name = nesnd_indochina.2.b
+        default_option = yes
+        trigger = { scope:nesnd_indochina_target = { custom_tooltip = { text = nesnd_ui_not_indochina_stood_aside_tt NOT = { has_variable = nesnd_indochina_stood_aside } } } }
+    }
+}
+
+# The overlord hears the answer. Notice only: Wu does not force the matter before the war.
+nesnd_indochina.3 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_indochina.3.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { scope:nesnd_indochina_target = { has_variable = nesnd_indochina_stood_aside } exists = scope:nesnd_indochina_sender }
+                desc = nesnd_indochina.3.d_envoy
+            }
+            triggered_desc = {
+                trigger = { scope:nesnd_indochina_target = { has_variable = nesnd_indochina_stood_aside } }
+                desc = nesnd_indochina.3.d_rumour
+            }
+            desc = nesnd_indochina.3.d_refused
+        }
+    }
+    event_image = { video = "gfx/event_pictures/unspecific_politicians_arguing.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = { c:USM ?= this exists = scope:nesnd_indochina_target }
+    option = {
+        name = nesnd_indochina.3.a
+        default_option = yes
+    }
+}
+
+# After Wu's victory: one tributary that stood aside.
+nesnd_indochina.10 = {
+    type = country_event
+    placement = root
+    duration = 3
+    title = nesnd_indochina.10.t
+    desc = nesnd_indochina.10.d
+    event_image = { video = "gfx/event_pictures/unspecific_signed_contract.bk2" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    trigger = {
+        c:USM ?= this
+        has_variable = nesnd_indochina_reckon_target
+        var:nesnd_indochina_reckon_target ?= { nesnd_indochina_reckoning_due = yes }
+    }
+    immediate = { var:nesnd_indochina_reckon_target = { save_scope_as = nesnd_indochina_target } }
+    # Restore the duty to march.
+    option = {
+        name = nesnd_indochina.10.a
+        default_option = yes
+        ai_chance = { base = 60 }
+        scope:nesnd_indochina_target = {
+            change_subject_type = subject_type_dominion
+            add_liberty_desire = 15
+        }
+    }
+    # Claim its capital region.
+    option = {
+        name = nesnd_indochina.10.b
+        ai_chance = {
+            base = 25
+            modifier = { trigger = { ruler ?= { OR = { has_trait = wrathful has_trait = ambitious } } } add = 25 }
+            modifier = { trigger = { "relations(scope:nesnd_indochina_target)" < 0 } add = 15 }
+        }
+        scope:nesnd_indochina_target = {
+            capital ?= { state_region = { add_claim = root } }
+            change_relations = { country = root value = -50 }
+        }
+    }
+    # Leave it a tributary.
+    option = {
+        name = nesnd_indochina.10.c
+        ai_chance = {
+            base = 15
+            modifier = { trigger = { ruler ?= { OR = { has_trait = honorable has_trait = charismatic } } } add = 20 }
+        }
+        custom_tooltip = nesnd_indochina.10.c_tt
+    }
+    after = {
+        scope:nesnd_indochina_target ?= { set_variable = nesnd_indochina_reckoned }
+        remove_variable = nesnd_indochina_reckon_target
+        nesnd_indochina_next_reckoning = yes
+    }
+}

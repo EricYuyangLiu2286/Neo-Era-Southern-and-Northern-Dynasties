@@ -1,19 +1,17 @@
 ﻿# Monthly occupation-cohort estimate, not a hook into each native SoL change.
 # The native impact function and cohort sums are already used by the Qin campaign.
+# Read the cohort script values directly: a JE immediate preview does not run set_variable,
+# so a temporary variable written here cannot be read back on the next line.
 nesnd_usm_western_sample_cohort = {
-    set_variable = { name = nesnd_west_sol_n value = $N$ }
-    if = { limit = { var:nesnd_west_sol_n > 0 }
-        set_variable = { name = nesnd_west_sol_current value = { value = $S$ divide = var:nesnd_west_sol_n } }
-        set_variable = { name = nesnd_west_sol_factor value = { value = $F$ divide = var:nesnd_west_sol_n } }
+    if = { limit = { $N$ > 0 }
+        # A rise or no change in SoL clamps to 0 radicals through min = 0.
         if = { limit = { has_variable = $PREVIOUS$ }
-            if = { limit = { var:nesnd_west_sol_current < var:$PREVIOUS$ }
-                add_radicals_in_state = {
-                    pop_type = pop_type:$TYPE$
-                    value = { value = var:$PREVIOUS$ subtract = var:nesnd_west_sol_current multiply = var:nesnd_west_sol_factor multiply = 0.10 min = 0 max = 0.05 }
-                }
+            add_radicals_in_state = {
+                pop_type = pop_type:$TYPE$
+                value = { value = var:$PREVIOUS$ subtract = { value = $S$ divide = $N$ } multiply = { value = $F$ divide = $N$ } multiply = 0.10 min = 0 max = 0.05 }
             }
         }
-        set_variable = { name = $PREVIOUS$ value = var:nesnd_west_sol_current days = 40 }
+        set_variable = { name = $PREVIOUS$ value = { value = $S$ divide = $N$ } days = 40 }
     }
     else = { remove_variable = $PREVIOUS$ }
 }
@@ -35,9 +33,6 @@ nesnd_usm_western_observe = {
             nesnd_usm_western_sample_cohort = { TYPE = shopkeepers N = nesnd_qe1_sol_shopkeepers_n S = nesnd_qe1_sol_shopkeepers_s F = nesnd_qe1_sol_shopkeepers_f PREVIOUS = nesnd_west_sol_shopkeepers }
             nesnd_usm_western_sample_cohort = { TYPE = slaves N = nesnd_qe1_sol_slaves_n S = nesnd_qe1_sol_slaves_s F = nesnd_qe1_sol_slaves_f PREVIOUS = nesnd_west_sol_slaves }
             nesnd_usm_western_sample_cohort = { TYPE = soldiers N = nesnd_qe1_sol_soldiers_n S = nesnd_qe1_sol_soldiers_s F = nesnd_qe1_sol_soldiers_f PREVIOUS = nesnd_west_sol_soldiers }
-            remove_variable = nesnd_west_sol_n
-            remove_variable = nesnd_west_sol_current
-            remove_variable = nesnd_west_sol_factor
         }
     }
 }

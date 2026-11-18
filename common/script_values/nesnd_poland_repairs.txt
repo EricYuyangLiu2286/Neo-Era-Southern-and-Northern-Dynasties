@@ -1,12 +1,71 @@
-﻿nesnd_poland_live_control_count = { value = 0
- if = { limit = { owns_entire_state_region = STATE_WEST_GALICIA } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_UPPER_SILESIA } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_EAST_GALICIA } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_POSEN } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_KAUNAS } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_BREST } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_VOLHYNIA } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_WEST_PRUSSIA } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_GREATER_POLAND } add = 1 }
- if = { limit = { owns_entire_state_region = STATE_LESSER_POLAND } add = 1 }
+﻿# KRA scope. Guarantee-of-independence treaties that still bind Krakow (the 1829 settlement).
+# Writer of global_var:nesnd_poland_guarantees: nesnd_poland_root_month.
+nesnd_poland_guarantee_count = {
+	value = 0
+	every_country = { limit = { nesnd_poland_guarantees_krakow = yes } add = 1 }
 }
+# Any scope. How far Paris will go for Poland, 0-100. Reads the author's French Empire chain:
+# its stability bar while it runs, 70 after the constitutional settlement, 20 once the Bonapartes fall.
+# Writer of global_var:nesnd_poland_france_will: nesnd_poland_root_month.
+nesnd_poland_france_will_value = {
+	value = 0
+	if = { limit = { has_global_variable = ce_france_no_more_napoleon } add = 20 }
+	else_if = { limit = { has_global_variable = ce_french_empire_je_end } add = 70 }
+	else_if = { limit = { c:FRA ?= { je:je_ce_unstable_imperium ?= { "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 900 } } } add = 90 }
+	else_if = { limit = { c:FRA ?= { je:je_ce_unstable_imperium ?= { "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 800 } } } add = 80 }
+	else_if = { limit = { c:FRA ?= { je:je_ce_unstable_imperium ?= { "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 700 } } } add = 70 }
+	else_if = { limit = { c:FRA ?= { je:je_ce_unstable_imperium ?= { "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 600 } } } add = 60 }
+	else_if = { limit = { c:FRA ?= { je:je_ce_unstable_imperium ?= { "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 500 } } } add = 50 }
+	else_if = { limit = { c:FRA ?= { je:je_ce_unstable_imperium ?= { "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 400 } } } add = 40 }
+	else_if = { limit = { c:FRA ?= { je:je_ce_unstable_imperium ?= { "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 300 } } } add = 30 }
+	else_if = { limit = { c:FRA ?= { je:je_ce_unstable_imperium ?= { "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" >= 200 } } } add = 20 }
+	else_if = { limit = { c:FRA ?= { has_journal_entry = je_ce_unstable_imperium } } add = 10 }
+	else = { add = 50 }
+	if = {
+		limit = { exists = c:FRA }
+		if = { limit = { has_global_variable = nesnd_poland_france_civil_offset } add = global_var:nesnd_poland_france_civil_offset }
+		if = { limit = { has_global_variable = nesnd_poland_exile_france_bonus } add = global_var:nesnd_poland_exile_france_bonus }
+		if = { limit = { c:KRA ?= { has_variable = nesnd_poland_paris_appeal } } add = 10 }
+		if = { limit = { c:FRA = { country_rank < rank_value:great_power } } subtract = 30 }
+		if = { limit = { OR = { c:FRA = { in_default = yes } has_global_variable = nesnd_poland_france_defeated } } subtract = 20 }
+		if = { limit = { exists = c:KRA c:KRA = { is_in_same_power_bloc = c:FRA } } add = 10 }
+	}
+	else = { multiply = 0 }
+	min = 0
+	max = 100
+}
+# Country scope. Restoration states held whole (0-5). Reader: AI weight of the capital button.
+nesnd_poland_restoration_count = {
+	value = 0
+	if = { limit = { owns_entire_state_region = STATE_GREATER_POLAND } add = 1 }
+	if = { limit = { owns_entire_state_region = STATE_MAZOVIA } add = 1 }
+	if = { limit = { owns_entire_state_region = STATE_LESSER_POLAND } add = 1 }
+	if = { limit = { owns_entire_state_region = STATE_WEST_GALICIA } add = 1 }
+	if = { limit = { owns_entire_state_region = STATE_POSEN } add = 1 }
+}
+
+# These values expose the actual bars and battalion count to the monthly debug probe.
+nesnd_poland_probe_army = { value = army_size_including_conscripts }
+nesnd_poland_probe_influence = { value = influence }
+nesnd_poland_probe_french_stability = {
+	value = -1
+	c:FRA ?= { je:je_ce_unstable_imperium ?= { value = "scripted_bar_progress(ce_monarchists_bonapartist_stability_progress_bar)" } }
+}
+nesnd_poland_probe_preparation = {
+	value = 0
+	je:je_ce_polish_war_preparation ?= { value = "scripted_bar_progress(ce_polish_reconquest_war_prep_bar)" }
+}
+
+nesnd_poland_probe_bloc = { value = 0 if = { limit = { c:FRA ?= { is_in_same_power_bloc = c:KRA } } add = 1 } }
+
+nesnd_poland_probe_austrian_bloc = { value = 0 if = { limit = { c:AUS ?= { is_in_same_power_bloc = c:KRA } } add = 1 } }
+
+nesnd_poland_probe_default = { value = 0 if = { limit = { c:FRA ?= { in_default = yes } } add = 1 } }
+
+nesnd_poland_probe_great_power = { value = 0 if = { limit = { c:FRA ?= { country_rank >= rank_value:great_power } } add = 1 } }
+
+nesnd_poland_probe_bankruptcy = { value = 0 if = { limit = { has_modifier = declared_bankruptcy } add = 1 } }
+
+nesnd_poland_probe_foreign_backing = { value = 0 if = { limit = { has_modifier = ce_pro_poland_influence_buff } add = 1 } }
+
+nesnd_poland_probe_warsaw = { value = 0 if = { limit = { capital ?= { state_region = s:STATE_GREATER_POLAND } } add = 1 } }

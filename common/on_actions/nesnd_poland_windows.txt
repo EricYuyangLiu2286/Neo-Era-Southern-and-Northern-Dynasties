@@ -1,0 +1,190 @@
+﻿# Additive narrow callbacks, no vanilla on_action override.
+on_diplo_play_war_start = {
+	on_actions = {
+		nesnd_poland_window_war_start
+	}
+}
+
+nesnd_poland_window_war_start = {
+	trigger = {
+		nesnd_poland_window_free = yes
+		nesnd_poland_external_play = yes
+		war = {
+			nesnd_poland_window_war = yes
+		}
+	}
+	effect = {
+		nesnd_poland_open_war_window = yes
+		set_global_variable = nesnd_poland_war_from_start
+	}
+}
+
+on_wargoal_enforced = {
+	on_actions = {
+		nesnd_poland_window_goal
+	}
+}
+
+nesnd_poland_window_goal = {
+	trigger = {
+		trigger_if = {
+			limit = {
+				has_global_variable = nesnd_poland_window_play
+				exists = global_var:nesnd_poland_window_play
+			}
+			scope:diplomatic_play ?= global_var:nesnd_poland_window_play
+		}
+		trigger_else = {
+			always = no
+		}
+	}
+	effect = {
+		nesnd_poland_snapshot_war_sides = yes
+		set_global_variable = nesnd_poland_war_any_goal
+		if = {
+			limit = {
+				c:FRA ?= {
+					nesnd_poland_recorded_in_window_war = yes
+				}
+				scope:actor ?= {
+					nesnd_poland_recorded_in_window_war = yes
+				}
+				scope:target ?= {
+					nesnd_poland_recorded_in_window_war = yes
+				}
+			}
+			if = {
+				limit = {
+					scope:target ?= global_var:nesnd_poland_window_enemy
+					scope:actor = {
+						var:nesnd_poland_recorded_side = c:FRA.var:nesnd_poland_recorded_side
+					}
+					scope:target = {
+						NOT = {
+							var:nesnd_poland_recorded_side = c:FRA.var:nesnd_poland_recorded_side
+						}
+					}
+				}
+				set_global_variable = nesnd_poland_war_france_won
+			}
+			if = {
+				limit = {
+					scope:actor = {
+						NOT = {
+							var:nesnd_poland_recorded_side = c:FRA.var:nesnd_poland_recorded_side
+						}
+					}
+					scope:target = {
+						var:nesnd_poland_recorded_side = c:FRA.var:nesnd_poland_recorded_side
+					}
+				}
+				set_global_variable = nesnd_poland_war_france_lost
+			}
+		}
+		else = {
+			set_global_variable = nesnd_poland_war_unclassified_goal
+		}
+	}
+}
+
+# Country-only callback has no documented war scope. A capitulation in any concurrent war
+# conservatively prevents a white-peace claim. This can suppress W4, never invent victory.
+on_capitulation = {
+	on_actions = {
+		nesnd_poland_window_capitulation
+	}
+}
+
+nesnd_poland_window_capitulation = {
+	trigger = {
+		has_global_variable = nesnd_poland_window_play
+		OR = {
+			c:FRA ?= this
+			global_var:nesnd_poland_window_enemy ?= this
+		}
+	}
+	effect = {
+		set_global_variable = nesnd_poland_war_capitulation
+		if = {
+			limit = {
+				c:FRA ?= this
+			}
+			set_global_variable = nesnd_poland_war_unclassified_goal
+		}
+	}
+}
+
+on_peace_agreement_signed_war_leader = {
+	on_actions = {
+		nesnd_poland_window_signed
+	}
+}
+
+on_peace_agreement_signed_war_participant = {
+	on_actions = {
+		nesnd_poland_window_signed
+	}
+}
+
+nesnd_poland_window_signed = {
+	trigger = {
+		c:FRA ?= this
+		trigger_if = {
+			limit = {
+				has_global_variable = nesnd_poland_window_play
+				exists = global_var:nesnd_poland_window_play
+			}
+			NOT = {
+				any_scope_war = {
+					NOT = {
+						diplomatic_play = global_var:nesnd_poland_window_play
+					}
+				}
+			}
+		}
+		trigger_else = {
+			always = no
+		}
+	}
+	effect = {
+		set_global_variable = {
+			name = nesnd_poland_war_signed
+			days = 3
+		}
+	}
+}
+
+on_war_end = {
+	on_actions = {
+		nesnd_poland_window_war_end
+	}
+}
+
+nesnd_poland_window_war_end = {
+	trigger = {
+		trigger_if = {
+			limit = {
+				has_global_variable = nesnd_poland_window_play
+				exists = global_var:nesnd_poland_window_play
+			}
+			this = global_var:nesnd_poland_window_play
+		}
+		trigger_else = {
+			always = no
+		}
+	}
+	# Two days allow the game's goal/peace/capitulation callbacks to complete in any order.
+	effect = {
+		nesnd_poland_snapshot_war_sides = yes
+		set_global_variable = {
+			name = nesnd_poland_war_settlement_pending
+			days = 7
+		}
+		c:KRA ?= {
+			trigger_event = {
+				id = nesnd_polish_windows.90
+				days = 2
+			}
+		}
+	}
+}

@@ -1,0 +1,351 @@
+﻿# Called by the root journal's monthly pulse, with its scope:journal_entry preserved.
+# W2/3 may start in the engine callback; monthly discovery covers wars already running.
+nesnd_poland_windows_month = {
+	if = {
+		limit = {
+			NOT = {
+				nesnd_poland_active = yes
+			}
+		}
+		nesnd_poland_windows_cleanup = yes
+	}
+	else = {
+		if = {
+			limit = {
+				OR = {
+					global_var:nesnd_poland_window ?= 1
+					global_var:nesnd_poland_window ?= 5
+				}
+				NOT = {
+					has_global_variable = nesnd_poland_window_duration
+				}
+			}
+			c:KRA = {
+				trigger_event = {
+					id = nesnd_polish_windows.8
+					popup = yes
+				}
+			}
+			nesnd_poland_close_window = yes
+		}
+		if = {
+			limit = {
+				global_var:nesnd_poland_window ?= 4
+			}
+			if = {
+				limit = {
+					has_global_variable = nesnd_poland_peace_target
+				}
+				nesnd_congress_request_peace = yes
+			}
+			if = {
+				limit = {
+					NOT = {
+						has_global_variable = nesnd_poland_peace_target
+					}
+					NOT = { c:KRA = { has_variable = nesnd_congress_pending } }
+				}
+				nesnd_poland_close_window = yes
+			}
+		}
+		if = {
+			limit = {
+				nesnd_poland_window_free = yes
+				exists = c:FRA
+			}
+			c:FRA = {
+				random_scope_war = {
+					limit = {
+						nesnd_poland_window_war = yes
+					}
+					diplomatic_play = {
+						nesnd_poland_open_war_window = yes
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				nesnd_poland_window_free = yes
+				OR = {
+					has_global_variable = peoples_springtime_happening
+					c:RUS ?= {
+						capital ?= { is_in_revolt = yes }
+					}
+					c:PRU ?= {
+						capital ?= { is_in_revolt = yes }
+					}
+					c:AUS ?= {
+						capital ?= { is_in_revolt = yes }
+					}
+				}
+			}
+			set_global_variable = {
+				name = nesnd_poland_window
+				value = 1
+			}
+			set_global_variable = {
+				name = nesnd_poland_window_duration
+				months = 12
+			}
+			c:KRA = {
+				trigger_event = {
+					id = nesnd_polish_windows.1
+					popup = yes
+				}
+			}
+		}
+		if = {
+			limit = {
+				nesnd_poland_window_free = yes
+				nesnd_rhine_france_distracted = yes
+				global_var:nesnd_poland_last_consensus < 30
+			}
+			set_global_variable = {
+				name = nesnd_poland_window
+				value = 5
+			}
+			set_global_variable = {
+				name = nesnd_poland_window_duration
+				months = 6
+			}
+			c:KRA = {
+				trigger_event = {
+					id = nesnd_polish_windows.5
+					popup = yes
+				}
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					global_var:nesnd_poland_window ?= 2
+					global_var:nesnd_poland_window ?= 3
+				}
+				NOT = {
+					has_global_variable = nesnd_poland_war_settlement_pending
+				}
+				OR = {
+					NOT = {
+						exists = c:FRA
+					}
+					NOT = {
+						exists = global_var:nesnd_poland_window_enemy
+					}
+					NOT = {
+						global_var:nesnd_poland_window_play ?= {
+							is_war = yes
+						}
+					}
+				}
+			}
+			c:KRA ?= {
+				trigger_event = {
+					id = nesnd_polish_windows.9
+					popup = yes
+				}
+			}
+			nesnd_poland_close_window = yes
+		}
+		# France's pool is owned by the Polish monthly pulse, never by the imperial journal.
+		c:FRA ?= {
+			if = {
+				limit = {
+					NOT = {
+						has_variable = nesnd_poland_paris_cooldown
+					}
+				}
+				random_list = {
+					200 = {
+					}
+					5 = {
+						trigger_event = {
+							id = nesnd_polish_windows.11
+							popup = yes
+						}
+						set_variable = {
+							name = nesnd_poland_paris_cooldown
+							months = 24
+						}
+					}
+					5 = {
+						trigger_event = {
+							id = nesnd_polish_windows.12
+							popup = yes
+						}
+						set_variable = {
+							name = nesnd_poland_paris_cooldown
+							months = 24
+						}
+					}
+					5 = {
+						trigger_event = {
+							id = nesnd_polish_windows.13
+							popup = yes
+						}
+						set_variable = {
+							name = nesnd_poland_paris_cooldown
+							months = 24
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+# Diplomatic play scope. Saves the exact play, so unrelated wars cannot enforce its goals.
+nesnd_poland_open_war_window = {
+	set_global_variable = {
+		name = nesnd_poland_window_play
+		value = this
+	}
+	nesnd_poland_snapshot_war_sides = yes
+	war = {
+		if = {
+			limit = {
+				nesnd_poland_opposing_war_sides = {
+					FIRST = c:FRA
+					SECOND = c:RUS
+				}
+			}
+			set_global_variable = {
+				name = nesnd_poland_window_enemy
+				value = c:RUS
+			}
+			set_global_variable = {
+				name = nesnd_poland_window
+				value = 2
+			}
+		}
+		else_if = {
+			limit = {
+				nesnd_poland_opposing_war_sides = {
+					FIRST = c:FRA
+					SECOND = c:PRU
+				}
+			}
+			set_global_variable = {
+				name = nesnd_poland_window_enemy
+				value = c:PRU
+			}
+			set_global_variable = {
+				name = nesnd_poland_window
+				value = 3
+			}
+		}
+		else = {
+			set_global_variable = {
+				name = nesnd_poland_window_enemy
+				value = c:AUS
+			}
+			set_global_variable = {
+				name = nesnd_poland_window
+				value = 3
+			}
+		}
+	}
+	c:KRA = {
+		trigger_event = {
+			id = nesnd_polish_windows.2
+			popup = yes
+		}
+	}
+	every_country = {
+		limit = {
+			OR = {
+				c:RUS ?= this
+				c:PRU ?= this
+				c:AUS ?= this
+			}
+			NOT = {
+				this = global_var:nesnd_poland_window_enemy
+			}
+			is_subject = no
+			is_at_war = no
+		}
+		trigger_event = {
+			id = nesnd_polish_windows.3
+			popup = yes
+		}
+	}
+}
+
+# Country scope: joining cannot reach any civil war. One French-held custom demand is added.
+nesnd_poland_join_france = {
+	if = {
+		limit = {
+			nesnd_poland_window_joinable = yes
+		}
+		global_var:nesnd_poland_window_play = {
+			war = {
+				join_war = {
+					target = c:KRA
+					side = c:FRA
+				}
+				nesnd_poland_snapshot_war_sides = yes
+			}
+		}
+		# The engine may reject join_war. No state demand is added unless KRA actually joined.
+		if = {
+			limit = {
+				global_var:nesnd_poland_window_play ?= {
+					war = {
+						nesnd_poland_krakow_joined_france = yes
+					}
+				}
+			}
+			global_var:nesnd_poland_window_enemy = {
+				random_scope_state = {
+					limit = {
+						OR = {
+							state_region = s:STATE_WEST_GALICIA
+							state_region = s:STATE_POSEN
+							state_region = s:STATE_GREATER_POLAND
+							state_region = s:STATE_LESSER_POLAND
+							state_region = s:STATE_MAZOVIA
+						}
+					}
+					save_scope_as = nesnd_poland_war_land
+					owner = {
+						save_scope_as = nesnd_poland_war_owner
+					}
+					global_var:nesnd_poland_window_play = {
+						add_war_goal = {
+							holder = c:FRA
+							type = wg_nesnd_poland_restoration
+							target_state = scope:nesnd_poland_war_land
+							target_country = scope:nesnd_poland_war_owner
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+nesnd_poland_close_window = {
+	nesnd_poland_clear_war_sides = yes
+	remove_global_variable = nesnd_poland_window
+	remove_global_variable = nesnd_poland_war_settlement_pending
+	remove_global_variable = nesnd_poland_window_duration
+	remove_global_variable = nesnd_poland_window_play
+	remove_global_variable = nesnd_poland_window_enemy
+	remove_global_variable = nesnd_poland_war_from_start
+	remove_global_variable = nesnd_poland_war_any_goal
+	remove_global_variable = nesnd_poland_war_france_won
+	remove_global_variable = nesnd_poland_war_france_lost
+	remove_global_variable = nesnd_poland_war_capitulation
+	remove_global_variable = nesnd_poland_war_signed
+	set_global_variable = {
+		name = nesnd_poland_window_cooldown
+		months = 60
+	}
+}
+
+nesnd_poland_windows_cleanup = {
+	nesnd_poland_close_window = yes
+	remove_global_variable = nesnd_poland_window_cooldown
+	remove_global_variable = nesnd_poland_peace_target
+	remove_global_variable = nesnd_poland_peace_defeated
+}

@@ -1,0 +1,54 @@
+﻿# Country scope. Weight of a foreign enemy in the Wu morale bar: the Chinese Empire counts twice.
+nesnd_wu_resolve_weight = {
+    value = 1
+    if = { limit = { c:CNE ?= this } value = 2 }
+}
+
+# USM scope. Weighted foreign enemies, at most 4. Adds this much to the bar each month.
+nesnd_wu_resolve_foreign_value = {
+    value = 0
+    every_country = {
+        limit = { nesnd_wu_resolve_foreign_enemy = yes }
+        add = nesnd_wu_resolve_weight
+    }
+    max = 4
+}
+
+# USM scope. A newly joined foreign enemy adds 7.5 per weight in each of its first two months.
+nesnd_wu_resolve_fresh_value = {
+    value = 0
+    every_country = {
+        limit = {
+            nesnd_wu_resolve_foreign_enemy = yes
+            has_variable = nesnd_wu_resolve_fresh
+        }
+        add = {
+            value = nesnd_wu_resolve_weight
+            multiply = 7.5
+        }
+    }
+}
+
+# USM scope. Strength of the morale modifiers: (bar - 50) / 50 above the midpoint, (50 - bar) / 50 below it.
+nesnd_wu_resolve_high_mult = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_wu_resolve }
+        value = var:nesnd_wu_resolve
+        subtract = 50
+        divide = 50
+    }
+    min = 0
+    max = 1
+}
+nesnd_wu_resolve_low_mult = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_wu_resolve }
+        value = 50
+        subtract = var:nesnd_wu_resolve
+        divide = 50
+    }
+    min = 0
+    max = 1
+}

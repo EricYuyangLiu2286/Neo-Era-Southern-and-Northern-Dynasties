@@ -8,24 +8,25 @@ nesnd_cne_concession_button = {
     visible = {
         nesnd_cne_programs_live = yes
     }
-    # 宠臣与所属集团读宠臣日志每周写入的 nesnd_power_holder / nesnd_power_holder_ig，任命后最多一周才认定。
+    # 当权者按所在日志读取（nesnd_cne_concession_*，见 scripted_triggers/nesnd_cne_confidence.txt）。
+    # 宫廷、执政者日志每周写入当权者，任命后最多一周才认定；首相在任命时即写入。
     possible = {
         hidden_trigger = { nesnd_cne_programs_live = yes }
         # 信心已满时 +150 会被截掉，按钮变灰（作者 2026-11-14 定）。变量每月及每次增减后由条值读回。
         custom_tooltip = { text = nesnd_cne_concession_not_full_tt has_variable = nesnd_cne_confidence var:nesnd_cne_confidence < 1000 }
-        custom_tooltip = { text = nesnd_cne_concession_palace_tt has_journal_entry = nesnd_palace_journal }
-        custom_tooltip = { text = nesnd_cne_concession_has_favorite_tt nesnd_power_has_holder = yes }
+        custom_tooltip = { text = nesnd_cne_concession_palace_tt nesnd_cne_concession_court = yes }
+        custom_tooltip = { text = nesnd_cne_concession_has_favorite_tt nesnd_cne_concession_has_holder = yes }
         custom_tooltip = {
             text = nesnd_cne_concession_holder_ig_tt
             OR = {
-                var:nesnd_power_holder_ig ?= ig:ig_landowners
-                var:nesnd_power_holder_ig ?= ig:ig_armed_forces
-                var:nesnd_power_holder_ig ?= ig:ig_industrialists
+                nesnd_cne_concession_holder_ig = { IG = ig_landowners }
+                nesnd_cne_concession_holder_ig = { IG = ig_armed_forces }
+                nesnd_cne_concession_holder_ig = { IG = ig_industrialists }
             }
         }
     }
     # AI 每次评估的点击权重。C = 信心（变量 nesnd_cne_confidence，月度与每次增减后由条值读回），
-    # B = 权力平衡（nesnd_power_b，0–100，越高越偏向宠臣）。冷却中按钮不可用，AI 不会点。
+    # B = 当权者一方的平衡点（nesnd_cne_concession_b，0–100，越高越偏向宠臣或首相）。冷却中按钮不可用，AI 不会点。
     ai_chance = {
         value = 0
         # 一、信心需求，四档互斥，取最紧迫的一档。信心高于 750 时为 0。
@@ -55,11 +56,11 @@ nesnd_cne_concession_button = {
         }
         # 二、权力平衡已偏向宠臣时降低。+25 会把 65 以上推到 90 以上（宠臣压倒对方，宫廷极端事件可抽）。
         if = {
-            limit = { nesnd_power_b >= 65 }
+            limit = { nesnd_cne_concession_b >= 65 }
             multiply = 0.25
         }
         else_if = {
-            limit = { nesnd_power_b >= 50 }
+            limit = { nesnd_cne_concession_b >= 50 }
             multiply = 0.6
         }
         # 三、改革临近完成时降低：完成时身上有让步修正，完成奖励换成“不完全的改革”。

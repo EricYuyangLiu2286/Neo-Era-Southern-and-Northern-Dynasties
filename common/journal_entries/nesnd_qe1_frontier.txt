@@ -1,0 +1,122 @@
+﻿# 西秦「边疆诸部」：南线阿富汗、北线草原各一条地区条；土库曼、希瓦、浩罕连锁响应。
+# 条到 40 出现分离运动（common/political_movements/nesnd_qe1_frontier.txt），运动的激进度读这条，其后的酝酿与开战由引擎的分离机制完成。
+# 新国家出现时由 nesnd_qe1_fr_claim_risings 认领：草原称乌兹别克汗国。
+nesnd_qe1_frontier_journal = {
+	is_shown_in_lobby = { c:QE1 ?= THIS }
+	icon = "gfx/interface/icons/event_icons/nesnd_qe1_felt_hat.dds"
+	group = je_group_historical_content
+	activation_description = { always = yes }
+	can_revolution_inherit = no
+	is_shown_when_inactive = { nesnd_qe1_frontier_eligible = yes }
+	possible = {
+		nesnd_qe1_frontier_eligible = yes
+		OR = {
+			game_date >= 1840.1.1
+			AND = { hidden_trigger = { has_variable = nesnd_qe1_unity } custom_tooltip = { text = nesnd_ui_var_nesnd_qe1_unity_lt_65_tt var:nesnd_qe1_unity < 65 } }
+		}
+	}
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	weight = 990
+
+	immediate = { nesnd_qe1_fr_init = yes }
+
+	scripted_progress_bar = nesnd_qe1_fr_afg_bar
+	scripted_progress_bar = nesnd_qe1_fr_kaz_bar
+	scripted_progress_bar = nesnd_qe1_fr_resolve_bar
+	scripted_button = nesnd_qe1_fr_afg_enfeoff_button
+	scripted_button = nesnd_qe1_fr_afg_garrison_button
+	scripted_button = nesnd_qe1_fr_afg_autonomy_button
+	scripted_button = nesnd_qe1_fr_kaz_enfeoff_button
+	scripted_button = nesnd_qe1_fr_kaz_garrison_button
+	scripted_button = nesnd_qe1_fr_kaz_autonomy_button
+
+	# 老秦战意：敌国越多，西秦的军队越能打。
+	scaling_modifiers_while_active = {
+		modifier = nesnd_qe1_fr_resolve
+		value = nesnd_qe1_fr_enemy_count
+	}
+
+	on_weekly_pulse = { effect = { nesnd_qe1_fr_claim_risings = yes } }
+	on_monthly_pulse = {
+		effect = { nesnd_qe1_fr_monthly = yes }
+		random_events = {
+			1900 = 0
+			10 = nesnd_qe1_frontier.11
+			10 = nesnd_qe1_frontier.12
+			10 = nesnd_qe1_frontier.13
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = { trigger = { OR = { has_variable = nesnd_qe1_fr_afg_risen has_variable = nesnd_qe1_fr_kaz_risen } } desc = nesnd_qe1_frontier_status_war }
+			triggered_desc = { trigger = { OR = { has_variable = nesnd_qe1_fr_afg_stirring has_variable = nesnd_qe1_fr_kaz_stirring } } desc = nesnd_qe1_frontier_status_stirring }
+			desc = nesnd_qe1_frontier_status_quiet
+		}
+	}
+
+	# 两处都已了结：独立、自治，或已不在西秦手中。
+	outcome = {
+		header = nesnd_journal_closures_header
+		effect_header = nesnd_journal_closures_effect_header
+		color = "blue_negative"
+		conclusion_desc = nesnd_qe1_frontier_done_conclusion
+		trigger = {
+			custom_tooltip = {
+				text = nesnd_qe1_frontier_done_tt
+				NOT = { nesnd_qe1_fr_unfinished = yes }
+			}
+		}
+		effect = { nesnd_qe1_fr_close = yes }
+	}
+	# 西秦已不存在，或「帝国的稳定」已按统一结束收场。
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = { NOT = { nesnd_qe1_frontier_eligible = yes } }
+		effect = { nesnd_qe1_fr_close = yes }
+	}
+}
+
+# 波斯将军府「将军府的忠心」：一条从亲秦到自立的态度条，随西秦的形势移动。
+# 到自立一端脱离朝贡；到亲秦一端出兵助剿。只在仍是西秦附属时存在。
+nesnd_per_stance_journal = {
+	is_shown_in_lobby = { c:PER ?= THIS }
+	icon = "gfx/interface/icons/event_icons/nesnd_per_tribute_plate.dds"
+	group = je_group_historical_content
+	activation_description = { always = yes }
+	can_revolution_inherit = no
+	is_shown_when_inactive = { nesnd_per_country = yes exists = c:QE1 is_subject_of = c:QE1 }
+	possible = { nesnd_per_country = yes exists = c:QE1 is_subject_of = c:QE1 }
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	weight = 995
+
+	immediate = { nesnd_per_stance_init = yes }
+	scripted_progress_bar = nesnd_per_stance_bar
+	scripted_button = nesnd_per_stance_lean_qin_button
+	scripted_button = nesnd_per_stance_lean_out_button
+	on_monthly_pulse = { effect = { nesnd_per_stance_monthly = yes } }
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = { trigger = { nesnd_per_stance_value >= 70 } desc = nesnd_per_stance_status_out }
+			triggered_desc = { trigger = { nesnd_per_stance_value <= 30 } desc = nesnd_per_stance_status_qin }
+			desc = nesnd_per_stance_status_mid
+		}
+	}
+
+	outcome = {
+		header = nesnd_journal_closures_header
+		effect_header = nesnd_journal_closures_effect_header
+		color = "blue_negative"
+		conclusion_desc = nesnd_per_stance_done_conclusion
+		trigger = {
+			custom_tooltip = {
+				text = nesnd_per_stance_done_tt
+				NOT = { AND = { nesnd_per_country = yes exists = c:QE1 is_subject_of = c:QE1 } }
+			}
+		}
+		# 以别的方式脱离西秦而方略未定时，按东向处理。
+		effect = { nesnd_per_settle_route = { ROUTE = covert } }
+	}
+}

@@ -4,13 +4,13 @@ nesnd_khanate_selected_neighbour = {
  any_neighbouring_state = { has_variable = nesnd_khanate_selected owner = { c:USA ?= this } }
 }
 nesnd_khanate_exists = {
- trigger_if = { limit = { exists = c:NKH } c:NKH = { is_country_alive = yes has_variable = nesnd_native_khanate } }
+ trigger_if = { limit = { exists = c:NKH } c:NKH = { is_country_alive = yes custom_tooltip = { text = nesnd_ui_native_khanate_tt has_variable = nesnd_native_khanate } } }
  trigger_else = { always = no }
 }
 nesnd_khanate_has_play = {
  trigger_if = { limit = { nesnd_khanate_exists = yes }
-  trigger_if = { limit = { has_variable = nesnd_khanate_war_dispatched }
-   trigger_if = { limit = { exists = var:nesnd_khanate_play }
+  trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_khanate_war_dispatched_tt has_variable = nesnd_khanate_war_dispatched } }
+   trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_play_tt exists = var:nesnd_khanate_play } }
     any_diplomatic_play = { this = prev.var:nesnd_khanate_play is_diplomatic_play_type = dp_nesnd_khanate_suppression initiator = prev target = c:NKH }
    }
    trigger_else = { always = no }
@@ -29,32 +29,32 @@ nesnd_native_americas_unified = {
  } }
 }
 nesnd_khanate_can_form_hus = {
- c:NKH ?= this has_variable = nesnd_native_khanate nesnd_native_americas_unified = yes
- NOT = { exists = c:HUS } NOT = { is_at_war = yes } NOT = { has_variable = nesnd_khanate_forming_hus }
- has_variable = nesnd_khanate_survived_wars NOT = { has_variable = nesnd_khanate_legacy_invalid }
+ c:NKH ?= this custom_tooltip = { text = nesnd_ui_native_khanate_tt has_variable = nesnd_native_khanate } nesnd_native_americas_unified = yes
+ NOT = { exists = c:HUS } NOT = { is_at_war = yes } custom_tooltip = { text = nesnd_ui_not_khanate_forming_hus_tt NOT = { has_variable = nesnd_khanate_forming_hus } }
+ custom_tooltip = { text = nesnd_ui_khanate_survived_wars_tt has_variable = nesnd_khanate_survived_wars } custom_tooltip = { text = nesnd_ui_not_khanate_legacy_invalid_tt NOT = { has_variable = nesnd_khanate_legacy_invalid } }
 }
 nesnd_khanate_goal_bound_pair = {
  trigger_if = { limit = { exists = scope:target_country exists = scope:diplomatic_play }
   scope:diplomatic_play = { is_diplomatic_play_type = dp_nesnd_khanate_suppression }
   OR = {
    AND = {
-    scope:target_country = { c:NKH ?= this has_variable = nesnd_native_khanate }
+    scope:target_country = { c:NKH ?= this custom_tooltip = { text = nesnd_ui_native_khanate_tt has_variable = nesnd_native_khanate } }
     scope:diplomatic_play = { initiator = root target = scope:target_country }
     root = {
      nesnd_khanate_original_opponent = yes
-     NOT = { has_variable = nesnd_khanate_war_outcome }
-     trigger_if = { limit = { has_variable = nesnd_khanate_war_dispatched has_variable = nesnd_khanate_war_epoch exists = var:nesnd_khanate_case exists = var:nesnd_khanate_play }
-      var:nesnd_khanate_case = scope:target_country var:nesnd_khanate_play = scope:diplomatic_play
+     custom_tooltip = { text = nesnd_ui_not_khanate_war_outcome_tt NOT = { has_variable = nesnd_khanate_war_outcome } }
+     trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_khanate_war_dispatched_tt has_variable = nesnd_khanate_war_dispatched } hidden_trigger = { has_variable = nesnd_khanate_war_epoch } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_case_tt exists = var:nesnd_khanate_case } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_play_tt exists = var:nesnd_khanate_play } }
+      custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_case_eq_scope_target_country_tt var:nesnd_khanate_case = scope:target_country } custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_play_eq_scope_diplomatic_play_tt var:nesnd_khanate_play = scope:diplomatic_play }
      }
      trigger_else = { always = no }
     }
     OR = {
      AND = {
       scope:target_country = {
-       var:nesnd_khanate_original_usa ?= root
-       trigger_if = { limit = { has_variable = nesnd_khanate_usa_epoch exists = var:nesnd_khanate_usa_play }
-        trigger_if = { limit = { root = { has_variable = nesnd_khanate_war_epoch } }
-         var:nesnd_khanate_usa_epoch = root.var:nesnd_khanate_war_epoch var:nesnd_khanate_usa_play = scope:diplomatic_play
+       custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_original_usa_is_root_tt var:nesnd_khanate_original_usa ?= root }
+       trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_khanate_usa_epoch } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_usa_play_tt exists = var:nesnd_khanate_usa_play } }
+        trigger_if = { limit = { root = { hidden_trigger = { has_variable = nesnd_khanate_war_epoch } } }
+         hidden_trigger = { var:nesnd_khanate_usa_epoch = root.var:nesnd_khanate_war_epoch } custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_usa_play_eq_scope_diplomatic_play_tt var:nesnd_khanate_usa_play = scope:diplomatic_play }
         }
         trigger_else = { always = no }
        }
@@ -63,10 +63,10 @@ nesnd_khanate_goal_bound_pair = {
      }
      AND = {
       scope:target_country = {
-       var:nesnd_khanate_original_hus ?= root
-       trigger_if = { limit = { has_variable = nesnd_khanate_hus_epoch exists = var:nesnd_khanate_hus_play }
-        trigger_if = { limit = { root = { has_variable = nesnd_khanate_war_epoch } }
-         var:nesnd_khanate_hus_epoch = root.var:nesnd_khanate_war_epoch var:nesnd_khanate_hus_play = scope:diplomatic_play
+       custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_original_hus_is_root_tt var:nesnd_khanate_original_hus ?= root }
+       trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_khanate_hus_epoch } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_hus_play_tt exists = var:nesnd_khanate_hus_play } }
+        trigger_if = { limit = { root = { hidden_trigger = { has_variable = nesnd_khanate_war_epoch } } }
+         hidden_trigger = { var:nesnd_khanate_hus_epoch = root.var:nesnd_khanate_war_epoch } custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_hus_play_eq_scope_diplomatic_play_tt var:nesnd_khanate_hus_play = scope:diplomatic_play }
         }
         trigger_else = { always = no }
        }
@@ -76,23 +76,23 @@ nesnd_khanate_goal_bound_pair = {
     }
    }
    AND = {
-    root = { c:NKH ?= this has_variable = nesnd_native_khanate }
+    root = { c:NKH ?= this custom_tooltip = { text = nesnd_ui_native_khanate_tt has_variable = nesnd_native_khanate } }
     scope:diplomatic_play = { initiator = scope:target_country target = root }
     scope:target_country = {
      nesnd_khanate_original_opponent = yes
-     NOT = { has_variable = nesnd_khanate_war_outcome }
-     trigger_if = { limit = { has_variable = nesnd_khanate_war_dispatched has_variable = nesnd_khanate_war_epoch exists = var:nesnd_khanate_case exists = var:nesnd_khanate_play }
-      var:nesnd_khanate_case = root var:nesnd_khanate_play = scope:diplomatic_play
+     custom_tooltip = { text = nesnd_ui_not_khanate_war_outcome_tt NOT = { has_variable = nesnd_khanate_war_outcome } }
+     trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_khanate_war_dispatched_tt has_variable = nesnd_khanate_war_dispatched } hidden_trigger = { has_variable = nesnd_khanate_war_epoch } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_case_tt exists = var:nesnd_khanate_case } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_play_tt exists = var:nesnd_khanate_play } }
+      custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_case_eq_root_tt var:nesnd_khanate_case = root } custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_play_eq_scope_diplomatic_play_tt var:nesnd_khanate_play = scope:diplomatic_play }
      }
      trigger_else = { always = no }
     }
     OR = {
      AND = {
       root = {
-       var:nesnd_khanate_original_usa ?= scope:target_country
-       trigger_if = { limit = { has_variable = nesnd_khanate_usa_epoch exists = var:nesnd_khanate_usa_play }
-        trigger_if = { limit = { scope:target_country = { has_variable = nesnd_khanate_war_epoch } }
-         var:nesnd_khanate_usa_epoch = scope:target_country.var:nesnd_khanate_war_epoch var:nesnd_khanate_usa_play = scope:diplomatic_play
+       custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_original_usa_is_scope_target_country_tt var:nesnd_khanate_original_usa ?= scope:target_country }
+       trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_khanate_usa_epoch } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_usa_play_tt exists = var:nesnd_khanate_usa_play } }
+        trigger_if = { limit = { scope:target_country = { hidden_trigger = { has_variable = nesnd_khanate_war_epoch } } }
+         hidden_trigger = { var:nesnd_khanate_usa_epoch = scope:target_country.var:nesnd_khanate_war_epoch } custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_usa_play_eq_scope_diplomatic_play_tt var:nesnd_khanate_usa_play = scope:diplomatic_play }
         }
         trigger_else = { always = no }
        }
@@ -101,10 +101,10 @@ nesnd_khanate_goal_bound_pair = {
      }
      AND = {
       root = {
-       var:nesnd_khanate_original_hus ?= scope:target_country
-       trigger_if = { limit = { has_variable = nesnd_khanate_hus_epoch exists = var:nesnd_khanate_hus_play }
-        trigger_if = { limit = { scope:target_country = { has_variable = nesnd_khanate_war_epoch } }
-         var:nesnd_khanate_hus_epoch = scope:target_country.var:nesnd_khanate_war_epoch var:nesnd_khanate_hus_play = scope:diplomatic_play
+       custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_original_hus_is_scope_target_country_tt var:nesnd_khanate_original_hus ?= scope:target_country }
+       trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_khanate_hus_epoch } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_hus_play_tt exists = var:nesnd_khanate_hus_play } }
+        trigger_if = { limit = { scope:target_country = { hidden_trigger = { has_variable = nesnd_khanate_war_epoch } } }
+         hidden_trigger = { var:nesnd_khanate_hus_epoch = scope:target_country.var:nesnd_khanate_war_epoch } custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_hus_play_eq_scope_diplomatic_play_tt var:nesnd_khanate_hus_play = scope:diplomatic_play }
         }
         trigger_else = { always = no }
        }
@@ -122,11 +122,11 @@ nesnd_khanate_goal_pair = {
  scope:diplomatic_play = { is_diplomatic_play_type = dp_nesnd_khanate_suppression }
  OR = {
   AND = {
-   OR = { c:USA ?= this nesnd_hus_original_country = yes } scope:target_country = { c:NKH ?= this has_variable = nesnd_native_khanate }
+   OR = { c:USA ?= this nesnd_hus_original_country = yes } scope:target_country = { c:NKH ?= this custom_tooltip = { text = nesnd_ui_native_khanate_tt has_variable = nesnd_native_khanate } }
    scope:diplomatic_play = { initiator = root target = scope:target_country }
   }
   AND = {
-   c:NKH ?= this has_variable = nesnd_native_khanate
+   c:NKH ?= this custom_tooltip = { text = nesnd_ui_native_khanate_tt has_variable = nesnd_native_khanate }
    scope:target_country = { OR = { c:USA ?= this nesnd_hus_original_country = yes } }
    scope:diplomatic_play = { target = root initiator = scope:target_country }
   }
@@ -141,11 +141,11 @@ nesnd_khanate_goal_pair = {
 }
 nesnd_khanate_creation_receipt = {
  trigger_if = { limit = { nesnd_khanate_original_opponent = yes }
-  trigger_if = { limit = { has_variable = nesnd_khanate_creation_open has_variable = nesnd_khanate_creation_epoch exists = var:nesnd_khanate_creation_case }
-   var:nesnd_khanate_creation_case = c:NKH
+  trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_khanate_creation_open_tt has_variable = nesnd_khanate_creation_open } hidden_trigger = { has_variable = nesnd_khanate_creation_epoch } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_khanate_creation_case_tt exists = var:nesnd_khanate_creation_case } }
+   custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_creation_case_eq_c_nkh_tt var:nesnd_khanate_creation_case = c:NKH }
    OR = {
-    AND = { c:USA ?= this c:NKH = { trigger_if = { limit = { has_variable = nesnd_khanate_usa_epoch } var:nesnd_khanate_usa_epoch = prev.var:nesnd_khanate_creation_epoch } trigger_else = { always = no } } }
-    AND = { nesnd_hus_original_country = yes c:NKH = { trigger_if = { limit = { has_variable = nesnd_khanate_hus_epoch } var:nesnd_khanate_hus_epoch = prev.var:nesnd_khanate_creation_epoch } trigger_else = { always = no } } }
+    AND = { c:USA ?= this c:NKH = { trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_khanate_usa_epoch } } hidden_trigger = { var:nesnd_khanate_usa_epoch = prev.var:nesnd_khanate_creation_epoch } } trigger_else = { always = no } } }
+    AND = { nesnd_hus_original_country = yes c:NKH = { trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_khanate_hus_epoch } } hidden_trigger = { var:nesnd_khanate_hus_epoch = prev.var:nesnd_khanate_creation_epoch } } trigger_else = { always = no } } }
    }
   }
   trigger_else = { always = no }
@@ -155,8 +155,8 @@ nesnd_khanate_creation_receipt = {
 nesnd_khanate_original_opponent = {
  trigger_if = { limit = { nesnd_khanate_exists = yes }
  OR = {
-  AND = { c:USA ?= this c:NKH = { var:nesnd_khanate_original_usa ?= prev } }
-  AND = { nesnd_hus_original_country = yes c:NKH = { var:nesnd_khanate_original_hus ?= prev } }
+  AND = { c:USA ?= this c:NKH = { custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_original_usa_is_prev_tt var:nesnd_khanate_original_usa ?= prev } } }
+  AND = { nesnd_hus_original_country = yes c:NKH = { custom_tooltip = { text = nesnd_ui_var_nesnd_khanate_original_hus_is_prev_tt var:nesnd_khanate_original_hus ?= prev } } }
  }
  }
  trigger_else = { always = no }

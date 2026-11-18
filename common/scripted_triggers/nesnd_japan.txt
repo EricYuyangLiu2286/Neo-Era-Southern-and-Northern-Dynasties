@@ -4,9 +4,9 @@ nesnd_japan_partition_possible = {
         limit = { exists = c:JAP exists = c:USM }
         OR = {
             AND = {
-                NOT = {
+                custom_tooltip = { text = nesnd_ui_not_japan_partitioned_tt NOT = {
                     has_global_variable = nesnd_japan_partitioned
-                }
+                } }
                 NOT = {
                     exists = c:JTK
                 }
@@ -15,13 +15,13 @@ nesnd_japan_partition_possible = {
                 }
                 c:USM = {
                     is_country_alive = yes
-                    has_variable = tag_WUU_var
+                    custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var }
                 }
                 c:JAP = {
                     is_country_alive = yes
                     OR = {
                         AND = { has_law = law_type:law_monarchy nesnd_japan_three_houses = yes }
-                        AND = { is_subject_of = c:USM c:USM = { has_variable = nesnd_eastern_submission_accepted } }
+                        AND = { is_subject_of = c:USM c:USM = { custom_tooltip = { text = nesnd_ui_eastern_submission_accepted_tt has_variable = nesnd_eastern_submission_accepted } } }
                     }
                     OR = {
                         is_subject = no
@@ -56,9 +56,9 @@ nesnd_japan_partition_possible = {
                 }
             }
             AND = {
-                NOT = {
+                custom_tooltip = { text = nesnd_ui_not_japan_partitioned_tt NOT = {
                     has_global_variable = nesnd_japan_partitioned
-                }
+                } }
                 nesnd_japan_recovery_partition_possible = yes
             }
         }
@@ -78,7 +78,7 @@ nesnd_japan_navy_ready = {
 }
 nesnd_japan_can_send = {
     nesnd_japan_diplomatic_window = yes
-    NOT = { has_global_variable = nesnd_japan_offer_sent }
+    custom_tooltip = { text = nesnd_ui_not_japan_offer_sent_tt NOT = { has_global_variable = nesnd_japan_offer_sent } }
 }
 nesnd_japan_is_united = { nesnd_jp_core_united = yes is_subject = no }
 
@@ -94,13 +94,14 @@ nesnd_japan_diplomatic_window = {
         limit = { exists = c:JAP exists = c:USM }
         c:USM = this
         is_country_alive = yes
-        has_variable = tag_WUU_var
-        has_global_variable = nesnd_south_settled
-        NOT = { has_variable = nesnd_japan_recovery_pending }
-        NOT = { has_global_variable = nesnd_japan_dossier_closed }
+        custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var }
+        custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled }
+        custom_tooltip = { text = nesnd_ui_not_japan_recovery_pending_tt NOT = { has_variable = nesnd_japan_recovery_pending } }
+        custom_tooltip = { text = nesnd_ui_not_japan_dossier_closed_tt NOT = { has_global_variable = nesnd_japan_dossier_closed } }
         nesnd_japan_partition_possible = yes
         nesnd_eastern_target_valid = yes
-        is_at_war = no
+        # An AI Wu is at war somewhere in most years; it may open the eastern question regardless.
+        OR = { is_at_war = no is_ai = yes }
         is_diplomatic_play_committed_participant = no
         c:JAP = {
             is_country_alive = yes
@@ -288,19 +289,8 @@ nesnd_eastern_target_valid = {
     exists = c:JAP
     c:JAP ?= { is_country_alive = yes }
     NOR = {
-        has_variable = nesnd_eastern_submission_accepted
-        AND = { has_global_variable = nesnd_japan_war_started c:JAP ?= { is_subject_of = c:USM } }
-    }
-}
-
-# Native war goal callbacks supply the play as a named scope. A late peace cannot reopen a closed expedition.
-nesnd_eastern_reorganization_valid = {
-    c:USM ?= this
-    nesnd_japan_partition_possible = yes
-    trigger_if = {
-        limit = { exists = scope:diplomatic_play scope:diplomatic_play ?= { is_diplomatic_play_type = dp_nesnd_eastern_intervention } }
-        NOT = { has_global_variable = nesnd_japan_dossier_closed }
-        nesnd_eastern_target_valid = yes
+        custom_tooltip = { text = nesnd_ui_eastern_submission_accepted_tt has_variable = nesnd_eastern_submission_accepted }
+        AND = { custom_tooltip = { text = nesnd_ui_japan_war_started_tt has_global_variable = nesnd_japan_war_started } c:JAP ?= { is_subject_of = c:USM } }
     }
 }
 
@@ -318,4 +308,89 @@ nesnd_eastern_archipelago_state = {
 nesnd_eastern_refugee_pop = {
     state = { nesnd_eastern_archipelago_state = yes }
     culture = { has_discrimination_trait = heritage_han }
+}
+
+# Wu scope. The southern war has ended by any of its recorded endings and no Jingnan play is running.
+nesnd_japan_south_war_over = {
+    NOT = { any_diplomatic_play = { nesnd_south_named_play = yes } }
+    custom_tooltip = { text = nesnd_ui_not_usm_rebel_winner_of_the_civil_war_tt NOT = { has_variable = usm_rebel_winner_of_the_civil_war } }
+    OR = {
+        custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled }
+        custom_tooltip = { text = nesnd_ui_usm_civilwar_status_quo_tt has_global_variable = usm_civilwar_status_quo }
+        custom_tooltip = { text = nesnd_ui_usm_government_winner_civilwar_tt has_variable = usm_government_winner_civilwar }
+    }
+}
+
+# Any scope. Japan is bound to Wu more tightly than by the opening tribute, which the eastern question still has to settle.
+nesnd_japan_held_as_subject = {
+    trigger_if = {
+        limit = { exists = c:JAP exists = c:USM }
+        c:JAP = {
+            is_country_alive = yes
+            is_subject_of = c:USM
+            NOT = { is_subject_type = subject_type_tributary }
+            custom_tooltip = { text = nesnd_ui_not_japan_recovery_created_tt NOT = { has_variable = nesnd_japan_recovery_created } }
+        }
+    }
+    trigger_else = { always = no }
+}
+
+# Any scope. The four regions the settlement divides lie wholly in Japanese or Wu hands.
+nesnd_japan_subject_seats_whole = {
+    s:STATE_KANTO = { NOT = { any_scope_state = { NOR = { owner = c:JAP owner = c:USM } } } }
+    s:STATE_KYOTO = { NOT = { any_scope_state = { NOR = { owner = c:JAP owner = c:USM } } } }
+    s:STATE_KANSAI = { NOT = { any_scope_state = { NOR = { owner = c:JAP owner = c:USM } } } }
+    s:STATE_CHUGOKU = { NOT = { any_scope_state = { NOR = { owner = c:JAP owner = c:USM } } } }
+}
+
+# State scope. Wu held part of Kyushu before the eastern question opened, so Kyushu alone is no foothold.
+nesnd_eastern_expedition_foothold = {
+    owner = c:USM
+    nesnd_eastern_archipelago_state = yes
+    NOT = { state_region = s:STATE_KYUSHU }
+}
+
+# Wu scope. Wu holds part of the home islands while Japan survives outside a tighter Wu bond.
+nesnd_eastern_expedition_context = {
+    trigger_if = {
+        limit = { exists = c:JAP exists = c:USM }
+        c:USM = this
+        is_country_alive = yes
+        custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var }
+        custom_tooltip = { text = nesnd_ui_not_japan_partitioned_tt NOT = { has_global_variable = nesnd_japan_partitioned } }
+        custom_tooltip = { text = nesnd_ui_not_japan_recovery_pending_tt NOT = { has_variable = nesnd_japan_recovery_pending } }
+        c:JAP = {
+            is_country_alive = yes
+            custom_tooltip = { text = nesnd_ui_not_japan_recovery_created_tt NOT = { has_variable = nesnd_japan_recovery_created } }
+            OR = {
+                is_subject = no
+                AND = { is_direct_subject_of = c:USM is_subject_type = subject_type_tributary }
+            }
+        }
+        any_scope_state = { nesnd_eastern_expedition_foothold = yes }
+    }
+    trigger_else = { always = no }
+}
+
+# Wu scope. A month counts towards the expedition only while both countries are at peace.
+nesnd_eastern_expedition_ready = {
+    nesnd_eastern_expedition_context = yes
+    nesnd_japan_south_war_over = yes
+    country_rank >= rank_value:great_power
+    is_at_war = no
+    is_active_in_diplomatic_play = no
+    c:JAP = {
+        country_rank < rank_value:great_power
+        is_at_war = no
+        is_active_in_diplomatic_play = no
+        NOT = { has_truce_with = c:USM }
+    }
+}
+
+nesnd_eastern_expedition_war_running = {
+    trigger_if = {
+        limit = { exists = c:USM exists = c:JAP }
+        any_diplomatic_play = { is_diplomatic_play_type = dp_nesnd_eastern_expedition initiator_is = c:USM }
+    }
+    trigger_else = { always = no }
 }

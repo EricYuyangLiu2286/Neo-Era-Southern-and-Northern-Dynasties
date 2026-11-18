@@ -1,9 +1,10 @@
 ﻿nesnd_cne_ensure_children = {
     if = { limit = { nesnd_cne_programs_live = yes }
-        if = { limit = { NOT = { has_journal_entry = nesnd_cne_land_journal } } add_journal_entry = { type = nesnd_cne_land_journal } }
-        if = { limit = { NOT = { has_journal_entry = nesnd_cne_urban_journal } } add_journal_entry = { type = nesnd_cne_urban_journal } }
-        if = { limit = { NOT = { has_journal_entry = nesnd_cne_camps_journal } } add_journal_entry = { type = nesnd_cne_camps_journal } }
-        if = { limit = { NOT = { has_journal_entry = nesnd_cne_confidence_journal } } add_journal_entry = { type = nesnd_cne_confidence_journal } }
+        # An inactive instance activates by itself once possible holds; add only when the entry is gone.
+        if = { limit = { NOT = { has_journal_entry = nesnd_cne_land_journal } NOT = { has_inactive_journal_entry = nesnd_cne_land_journal } } add_journal_entry = { type = nesnd_cne_land_journal } }
+        if = { limit = { NOT = { has_journal_entry = nesnd_cne_urban_journal } NOT = { has_inactive_journal_entry = nesnd_cne_urban_journal } } add_journal_entry = { type = nesnd_cne_urban_journal } }
+        if = { limit = { NOT = { has_journal_entry = nesnd_cne_camps_journal } NOT = { has_inactive_journal_entry = nesnd_cne_camps_journal } } add_journal_entry = { type = nesnd_cne_camps_journal } }
+        if = { limit = { NOT = { has_journal_entry = nesnd_cne_confidence_journal } NOT = { has_inactive_journal_entry = nesnd_cne_confidence_journal } } add_journal_entry = { type = nesnd_cne_confidence_journal } }
     }
 }
 nesnd_cne_confidence_init = {
@@ -106,7 +107,7 @@ nesnd_cne_take_respite = {
 # (b) 战争结束而帝国未被羞辱，共和军日志的失败结局吞并共和军（nesnd_cne_republic_defeat）。
 # 两条路径互斥；30 天的锁只防同一次结算重复弹出。
 nesnd_cne_republicans_defeated = {
-    if = { limit = { c:CNE ?= this NOT = { has_variable = nesnd_cne_republicans_beaten } }
+    if = { limit = { c:CNE ?= this custom_tooltip = { text = nesnd_ui_not_cne_republicans_beaten_tt NOT = { has_variable = nesnd_cne_republicans_beaten } } }
         set_variable = { name = nesnd_cne_republicans_beaten days = 30 }
         trigger_event = { id = nesnd_cne_confidence.7 popup = yes }
     }
@@ -114,24 +115,29 @@ nesnd_cne_republicans_defeated = {
 
 # 做出让步：权力平衡向宠臣一方偏移 25。直接改宠臣日志的平衡变量，再调用它自己的同步效果。
 nesnd_cne_concession_balance = {
-    custom_tooltip = {
-        text = nesnd_cne_concession_balance_tt
-        change_variable = { name = nesnd_power_balance add = 25 }
-        clamp_variable = { name = nesnd_power_balance min = 0 max = 100 }
+    if = { limit = { has_journal_entry = nesnd_premier_journal }
+        nesnd_premier_add = { BAR = balance AMT = 25 }
     }
-    hidden_effect = { nesnd_power_sync_bars = yes }
+    else = {
+        custom_tooltip = {
+            text = nesnd_cne_concession_balance_tt
+            change_variable = { name = nesnd_power_balance add = 25 }
+            clamp_variable = { name = nesnd_power_balance min = 0 max = 100 }
+        }
+        hidden_effect = { nesnd_power_sync_bars = yes }
+    }
 }
-# 按宠臣所属集团（宠臣日志每周写入的 nesnd_power_holder_ig）给对应修正。同类先移除再加，刷新为 120 个月；不同类并存。
+# 按当权者所属集团（nesnd_cne_concession_holder_ig：首相读 nesnd_premier_pm_ig，宠臣、执政者读 nesnd_power_holder_ig）给对应修正。同类先移除再加，刷新为 120 个月；不同类并存。
 nesnd_cne_concession_modifier = {
-    if = { limit = { var:nesnd_power_holder_ig ?= ig:ig_landowners }
+    if = { limit = { nesnd_cne_concession_holder_ig = { IG = ig_landowners } }
         hidden_effect = { if = { limit = { has_modifier = nesnd_cne_concession_landowners } remove_modifier = nesnd_cne_concession_landowners } }
         add_modifier = { name = nesnd_cne_concession_landowners months = 120 }
     }
-    else_if = { limit = { var:nesnd_power_holder_ig ?= ig:ig_armed_forces }
+    else_if = { limit = { nesnd_cne_concession_holder_ig = { IG = ig_armed_forces } }
         hidden_effect = { if = { limit = { has_modifier = nesnd_cne_concession_armed_forces } remove_modifier = nesnd_cne_concession_armed_forces } }
         add_modifier = { name = nesnd_cne_concession_armed_forces months = 120 }
     }
-    else_if = { limit = { var:nesnd_power_holder_ig ?= ig:ig_industrialists }
+    else_if = { limit = { nesnd_cne_concession_holder_ig = { IG = ig_industrialists } }
         hidden_effect = { if = { limit = { has_modifier = nesnd_cne_concession_industrialists } remove_modifier = nesnd_cne_concession_industrialists } }
         add_modifier = { name = nesnd_cne_concession_industrialists months = 120 }
     }
