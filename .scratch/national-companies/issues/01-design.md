@@ -21,10 +21,10 @@ Evidence: [设计表](<D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 
 - `common/company_types/nesnd_national_companies.txt`：19 家公司。
 - `common/script_values/nesnd_national_companies.txt`：五个先到先得用的地区建筑合计。
 - `common/scripted_triggers/nesnd_national_companies.txt`：远南澳新诸州。
-- `common/prestige_goods/nesnd_national_prestige_goods.txt`：鲸油、羊绒披肩、库姆比呢、远南细羊毛（贴图暂用原版）。
+- `common/prestige_goods/nesnd_national_prestige_goods.txt`：16 种本国名贵商品，取代原用的通用名贵商品（2026-11-18 作者要求加多、起名更有想象力；贴图暂用原版通用图标）。
 - `common/character_templates/nesnd_national_company_executives.txt`：7 名经理。
 - `events/nesnd_national_companies.txt`：4 个特许事件；`common/on_actions/nesnd_national_companies.txt`：年度脉冲；`common/static_modifiers/nesnd_national_companies.txt`：开办经费。
-- `common/journal_entries/nesnd_national_companies.txt`：「横贯大陆的干线」。
+- `common/journal_entries/nesnd_national_companies.txt`：「贯通大陆的干线」。
 - 中英本地化 `nesnd_national_companies_l_*.yml`。
 
 部署 `a6699181`。
