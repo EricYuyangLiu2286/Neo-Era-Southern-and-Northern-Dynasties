@@ -6,7 +6,7 @@
 
 ## 基线
 
-- 游戏：Victoria 3 **1.15.2 Ivan-Chai / Steam build 26763837**。上一基线 1.15.1 / 26591675。2026-11-19 [1.15.2 迁移](../../.scratch/migration-1152/issues/01-migrate.md)：同路径文件三方合并、两个被移除的键、厄勒海峡地图像素、REPLACE 对象比对均已完成，STATIC_PASS，待作者新开局复测（报告在工作台 `reports/2026-11-19-game-1.15.2/迁移报告-1.15.2.md`）。
+- 游戏：Victoria 3 **1.15.2 Ivan-Chai / Steam build 26763837**。上一基线 1.15.1 / 26591675。2026-11-19 [1.15.2 迁移](../../.scratch/migration-1152/issues/01-migrate.md)：机制改动三方合并，开局数据不跟原版（作者定），开局贸易全部注释，俄国「东部边界」日志停用，两个被移除的键与厄勒海峡像素已处理。STATIC_PASS，待作者新开局复测（报告在工作台 `reports/2026-11-19-game-1.15.2/迁移报告-1.15.2.md`）。
 - Git：2026-11-14 起 Git 仓库就在源目录里（main `737a81b` 时迁入）。MOD 文件夹由部署脚本从源目录生成；工作台 `projects/nesnd-repository` 与同步工具 `sync_main_mod_to_repo.py` 停用。
 - metadata 版本 0.2.0，声明支持 1.15.2。
 
