@@ -2,13 +2,13 @@
 
 这是项目唯一的“当前”入口。只写现在的情况；历史放 `docs/agents/history/`。维护规则见文末。
 
-更新于 2026-11-17。当前跟进法国后继内容和登莱原生路线。此前收口的任务中，已交付的标 completed，未实施的任务 08 原始欠账、南朝立场 01–07 标 rejected。
+更新于 2026-11-19。当前跟进法国后继内容和登莱原生路线。此前收口的任务中，已交付的标 completed，未实施的任务 08 原始欠账、南朝立场 01–07 标 rejected。
 
 ## 基线
 
-- 游戏：Victoria 3 **1.15.1 Ivan-Chai / Steam build 26591675**。上一基线 1.15.0 / 26453692。[原版覆盖迁移](../../.scratch/migration-1151/issues/02-merge.md)已完成游戏外检查，待作者复测法律生效、分州铜矿及开局历史。
+- 游戏：Victoria 3 **1.15.2 Ivan-Chai / Steam build 26763837**。上一基线 1.15.1 / 26591675。2026-11-19 [1.15.2 迁移](../../.scratch/migration-1152/issues/01-migrate.md)：同路径文件三方合并、两个被移除的键、厄勒海峡地图像素、REPLACE 对象比对均已完成，STATIC_PASS，待作者新开局复测（报告在工作台 `reports/2026-11-19-game-1.15.2/迁移报告-1.15.2.md`）。
 - Git：2026-11-14 起 Git 仓库就在源目录里（main `737a81b` 时迁入）。MOD 文件夹由部署脚本从源目录生成；工作台 `projects/nesnd-repository` 与同步工具 `sync_main_mod_to_repo.py` 停用。
-- metadata 版本 0.2.0，声明支持 1.15.1。
+- metadata 版本 0.2.0，声明支持 1.15.2。
 
 ## 位置
 
