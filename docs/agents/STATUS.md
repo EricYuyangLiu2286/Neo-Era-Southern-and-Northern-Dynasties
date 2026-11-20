@@ -25,6 +25,8 @@
 
 ## 未完成
 
+[印度使团](../../.scratch/india-missions/issues/01-aid-for-concessions.md)与[印度诸邦开局调整](../../.scratch/india-missions/issues/02-princes-and-himalaya.md)已通过游戏外核对。待新局复测宗藩、外资持股、通行权与悬停排版。
+
 2026-11-18 [东征日本吴方目标作废](../../.scratch/debug-release/issues/111-japan-reorganization-goal-kept.md)：「重组日本诸藩」有效条件只剩吴对存活的日本；去掉引擎的 country_creation 设置（推断它让目标一开战即作废）；兑现按京都、关东、中国、九州四国逐项分封。部署 `ab24288d`，STATIC_PASS，待新开局两入口复测。
 
 2026-11-18 [日志专属图标](../../.scratch/journal-icons/issues/01-design.md)：156 个 MOD 日志的图标设计分 8 批，每批一份 Codex 画图提示词（工作台 `reports/2026-11-18-journal-icons/codex-journal-icons-batchN.txt`）。尚未画图，未接入。批次拆分、几处国家符号和地权革命原作子目标是否补回，待作者决定。
