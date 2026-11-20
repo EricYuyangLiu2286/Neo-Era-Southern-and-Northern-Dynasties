@@ -2,6 +2,8 @@
 #   deploy  部署：清空 MOD 文件夹，按白名单复制运行文件，写入新版本号
 #   preview 预览：只列出将删除、将复制的内容和版本号检查结果，不改任何文件
 #   check   检查：只核对两边版本号与 update_record.json 最后一条记录
+#   deploy 与 check 结束时都会列出源目录里尚未提交到 Git 的文件，并标出哪些已经在 MOD 文件夹里。
+#   部署不提交、也不因未提交而停止：做到一半先部署测试是正常的。它只负责把这件事说出来。
 #   force   版本号不一致时，经你逐字确认后仍然部署（会删掉 MOD 文件夹里的全部改动）
 #   menu    双击时的菜单
 # 退出码：0 成功/一致；1 检查不一致；2 前置检查未通过（未删除任何东西）；3 部署中途出错
@@ -133,7 +135,9 @@ function Show-Versions($V, [int]$Count = 5) {
     if ($items.Count -gt 0) {
         Say "  最近 $([Math]::Min($Count, $items.Count)) 条记录（共 $($items.Count) 条，最新在下）："
         foreach ($r in ($items | Select-Object -Last $Count)) {
-            Say ("    {0}  {1}  HEAD {2}  {3} 个文件" -f $r.deployed_at, $r.version, $r.source_git_head, $r.file_count)
+            $uc = $r.PSObject.Properties['uncommitted_files']   # 2026-11-20 起才有这一项
+            $ucText = $(if ($uc -and [int]$uc.Value -gt 0) { "  部署时未提交 $($uc.Value) 个" } elseif ($uc -and [int]$uc.Value -lt 0) { '  部署时未能读取 Git 状态' } else { '' })
+            Say ("    {0}  {1}  HEAD {2}  {3} 个文件{4}" -f $r.deployed_at, $r.version, $r.source_git_head, $r.file_count, $ucText)
         }
     }
 }
@@ -201,6 +205,39 @@ function Get-GitHead {
     return $h.Trim()
 }
 
+# ---------- 未提交的改动 ----------
+# 部署只复制文件，不提交。这里列出源目录里 Git 尚未提交的文件，并标出哪些已经原样在 MOD 文件夹里。
+# 版本号文件与 update_record.json 已列入 .git/info/exclude，不会出现在这里。
+function Get-Uncommitted {
+    $lines = @(& git -C $SOURCE -c core.quotepath=false status --porcelain --untracked-files=all 2>$null)
+    if ($LASTEXITCODE -ne 0) { return $null }
+    $items = @()
+    foreach ($l in $lines) {
+        if (-not $l -or $l.Length -lt 4) { continue }
+        $rel = $l.Substring(3)
+        $arrow = $rel.IndexOf(' -> '); if ($arrow -ge 0) { $rel = $rel.Substring($arrow + 4) }
+        $rel = $rel.Trim('"')
+        $src = Join-Path $SOURCE $rel; $tgt = Join-Path $TARGET $rel
+        $deployed = $false
+        if ((Test-Path -LiteralPath $src -PathType Leaf) -and (Test-Path -LiteralPath $tgt -PathType Leaf)) { $deployed = ((Get-Sha $src) -eq (Get-Sha $tgt)) }
+        $items += [pscustomobject]@{ Rel = $rel; Deployed = $deployed }
+    }
+    return , $items
+}
+function Show-Uncommitted([bool]$AfterDeploy) {
+    $u = Get-Uncommitted
+    if ($null -eq $u) { Say '未能读取源目录的 Git 状态，无法判断是否有未提交的改动。' Yellow; return }
+    $u = @($u)
+    if ($u.Count -eq 0) { Say '源目录没有未提交的改动。' Green; return }
+    $dep = @($u | Where-Object { $_.Deployed })
+    Say ''
+    Say "！！提醒：源目录有 $($u.Count) 个文件尚未提交到 Git，其中 $($dep.Count) 个已经在 MOD 文件夹里（已部署、未提交）。" Yellow
+    foreach ($x in ($u | Select-Object -First 20)) { Say ("    {0}  {1}" -f $(if ($x.Deployed) { '已部署' } else { '未部署' }), $x.Rel) Yellow }
+    if ($u.Count -gt 20) { Say "    ……另有 $($u.Count - 20) 个，运行 git status 查看全部。" Yellow }
+    if ($AfterDeploy) { Say '任务做完后把本任务的改动提交到 Git；交付时写明提交号，或写明还有哪些文件没有提交。' Yellow }
+    else { Say '这些若是本任务正在改的文件，做完后提交；若是别的任务留下的，先告诉作者，不要代为提交或回退。' Yellow }
+}
+
 # ---------- 记录 ----------
 function ConvertTo-JsonString([string]$s) {
     $sb = New-Object System.Text.StringBuilder '"'
@@ -210,14 +247,15 @@ function ConvertTo-JsonString([string]$s) {
     }
     return $sb.Append('"').ToString()
 }
-function Add-Record([string]$Version, [string]$Head, [int]$Count, $Before) {
+function Add-Record([string]$Version, [string]$Head, [int]$Count, $Before, [int]$Uncommitted) {
     $p = Join-Path $SOURCE $RECORD_FILE
     $entry = "  {`n" +
         "    `"deployed_at`": $(ConvertTo-JsonString (Get-Date -Format 'yyyy-MM-ddTHH:mm:sszzz')),`n" +
         "    `"version`": $(ConvertTo-JsonString $Version),`n" +
         "    `"mod_folder`": $(ConvertTo-JsonString $TARGET),`n" +
         "    `"source_git_head`": $(ConvertTo-JsonString $Head),`n" +
-        "    `"file_count`": $Count`n  }"
+        "    `"file_count`": $Count,`n" +
+        "    `"uncommitted_files`": $Uncommitted`n  }"
     if (-not $Before.Exists) { $prefix = "[`n"; $new = $prefix + $entry + "`n]`n" }
     else {
         $old = $Before.Text; $cut = $old.LastIndexOf(']')
@@ -237,9 +275,10 @@ function Invoke-Check {
     Say '== 检查：版本号' Cyan
     $v = Get-VersionState
     Show-Versions $v 5
-    if ($v.State -eq 'ok') { Say '三者一致。' Green; return 0 }
+    if ($v.State -eq 'ok') { Say '三者一致。' Green; Show-Uncommitted $false; return 0 }
     if ($v.State -eq 'first') { Say '尚未部署过（两边都没有版本号，也没有记录）。' Yellow; return 1 }
     Show-MismatchWarning $v
+    Show-Uncommitted $false
     return 1
 }
 
@@ -374,12 +413,15 @@ function Invoke-Deploy([bool]$Force) {
     $script:TargetState = '运行文件已就绪；MOD 文件夹版本号已写入，源目录版本号与记录尚未写入'
     [IO.File]::WriteAllText((Join-Path $SOURCE $VERSION_FILE), "$ver`n", $UTF8)
     $script:TargetState = '运行文件已就绪；两边版本号已写入，update_record.json 尚未追加'
-    Add-Record $ver $head $total $v.Records
+    $uc = Get-Uncommitted
+    $ucCount = $(if ($null -eq $uc) { -1 } else { @($uc).Count })
+    Add-Record $ver $head $total $v.Records $ucCount
     $script:TargetState = '部署完成'
     $final = Get-VersionState
     if ($final.State -ne 'ok') { Stop-Here '写入后三处版本号仍不一致' }
     Say "h. 新版本号 $ver 已写入两边并追加到 $RECORD_FILE。" Green
     Say "部署完成：$total 个运行文件 + $VERSION_FILE。" Green
+    Show-Uncommitted $true
     return 0
 }
 
