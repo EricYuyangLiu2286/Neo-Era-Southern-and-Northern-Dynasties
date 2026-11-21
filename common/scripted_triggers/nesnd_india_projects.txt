@@ -1,12 +1,13 @@
 ﻿# Local projects of the Indian princes: a university, a tooling workshop or a railway in one state,
-# paid for by the prince, by a neighbouring Indian government or by a foreign government.
-# Variables are listed in common/script_values/nesnd_india_projects.txt.
+# paid for by the prince, by another Indian government or by a foreign government.
+# A project asked of another government is a matter of kind 1 (nesnd_india_matters.txt).
+# Project variables are listed in common/script_values/nesnd_india_projects.txt.
 
 # ---------------------------------------------------------------------------------------------
 # The prince who plans the project (requester scope)
 # ---------------------------------------------------------------------------------------------
 nesnd_india_project_can_start = {
-    hidden_trigger = { nesnd_india_prince = yes }
+    hidden_trigger = { nesnd_india_prince = yes NOT = { has_variable = nesnd_india_matter_kind } }
     custom_tooltip = { text = nesnd_india_project_idle_tt NOT = { has_variable = nesnd_india_project_type } }
     custom_tooltip = { text = nesnd_small_no_emergency_tt is_at_war = no is_active_in_diplomatic_play = no }
     in_default = no
@@ -79,36 +80,16 @@ nesnd_india_project_can_ask = {
     trigger_else = { always = no }
 }
 
-# The overlord must agree when a puppet deals with any other government, and when any other
-# subject lets another government take a stake. Nothing is asked when the overlord itself pays.
+# Before the request is sent: must our overlord agree if FUNDER is asked? The rule itself is
+# nesnd_india_consent_needed; a workshop or a railway gives FUNDER a stake.
 nesnd_india_project_consent_needed = {
-    trigger_if = { limit = { is_subject = yes exists = overlord exists = $FUNDER$ }
-        NOT = { overlord = $FUNDER$ }
-        OR = {
-            is_subject_type = subject_type_puppet
-            nesnd_india_project_type_value = 2
-            nesnd_india_project_type_value = 3
-        }
-    }
-    trigger_else = { always = no }
+    trigger_if = { limit = { nesnd_india_project_type_value >= 2 nesnd_india_project_type_value <= 3 } nesnd_india_consent_needed = { OTHER = $FUNDER$ GRANTS = yes } }
+    trigger_else = { nesnd_india_consent_needed = { OTHER = $FUNDER$ GRANTS = no } }
 }
 
-# The request still stands: both governments exist and are at peace, the overlord whose consent
-# is awaited is still the overlord, and the site is still fit.
-nesnd_india_project_request_valid = {
+# What a project adds to nesnd_india_matter_valid: the prince is at peace and the site is still fit.
+nesnd_india_project_matter_valid = {
     is_at_war = no
-    trigger_if = { limit = { exists = var:nesnd_india_project_funder }
-        var:nesnd_india_project_funder = { is_country_alive = yes }
-        NOT = { has_war_with = var:nesnd_india_project_funder }
-    }
-    trigger_else = { always = no }
-    trigger_if = { limit = { nesnd_india_project_stage_value = 2 }
-        trigger_if = { limit = { is_subject = yes exists = overlord exists = var:nesnd_india_project_permit }
-            var:nesnd_india_project_permit = { is_country_alive = yes }
-            overlord = var:nesnd_india_project_permit
-        }
-        trigger_else = { always = no }
-    }
     nesnd_india_project_site_valid = yes
 }
 
@@ -135,53 +116,20 @@ nesnd_india_project_foreigner = {
 }
 
 # ---------------------------------------------------------------------------------------------
-# The government that must answer (answering scope). It holds nesnd_india_matter_from.
+# A project put to the answering government (answering scope, nesnd_india_matter_from is the prince)
 # ---------------------------------------------------------------------------------------------
-# Its consent is asked as overlord.
-nesnd_india_matter_consent_role = {
-    hidden_trigger = {
-        save_temporary_scope_as = india_matter_me
-        trigger_if = { limit = { exists = var:nesnd_india_matter_from }
-            var:nesnd_india_matter_from = {
-                is_country_alive = yes
-                nesnd_india_project_stage_value = 2
-                trigger_if = { limit = { exists = var:nesnd_india_project_permit } var:nesnd_india_project_permit = scope:india_matter_me }
-                trigger_else = { always = no }
-            }
-        }
-        trigger_else = { always = no }
-    }
-}
-# Its money, or its engineers, are asked.
-nesnd_india_matter_fund_role = {
-    hidden_trigger = {
-        save_temporary_scope_as = india_matter_me
-        trigger_if = { limit = { exists = var:nesnd_india_matter_from }
-            var:nesnd_india_matter_from = {
-                is_country_alive = yes
-                nesnd_india_project_stage_value = 3
-                trigger_if = { limit = { exists = var:nesnd_india_project_funder } var:nesnd_india_project_funder = scope:india_matter_me }
-                trigger_else = { always = no }
-            }
-        }
-        trigger_else = { always = no }
-    }
-}
-nesnd_india_matter_live = { OR = { nesnd_india_matter_consent_role = yes nesnd_india_matter_fund_role = yes } }
-
-nesnd_india_matter_is_survey = {
+nesnd_india_project_offer_survey = {
     trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { nesnd_india_project_type_value = 4 } }
     trigger_else = { always = no }
 }
-nesnd_india_matter_is_grant = {
+nesnd_india_project_offer_grant = {
     trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { nesnd_india_project_type_value = 1 } }
     trigger_else = { always = no }
 }
 # The answering government can meet the terms today.
-nesnd_india_matter_can_fund = {
+nesnd_india_project_offer_ok = {
     trigger_if = { limit = { exists = var:nesnd_india_matter_from }
-        NOT = { has_war_with = var:nesnd_india_matter_from }
-        trigger_if = { limit = { nesnd_india_matter_is_survey = no }
+        trigger_if = { limit = { nesnd_india_project_offer_survey = no }
             custom_tooltip = {
                 text = nesnd_india_matter_funds_tt
                 gold_reserves >= nesnd_india_matter_quote
@@ -198,51 +146,51 @@ nesnd_india_matter_can_fund = {
 }
 
 # What moves an AI government. All of these only weigh; none of them forbids.
-nesnd_india_matter_funder_is_ours = {
+nesnd_india_project_ai_funder_ours = {
     save_temporary_scope_as = india_matter_me
     trigger_if = { limit = { exists = var:nesnd_india_matter_from }
         var:nesnd_india_matter_from = {
-            trigger_if = { limit = { exists = var:nesnd_india_project_funder } var:nesnd_india_project_funder = { is_direct_subject_of = scope:india_matter_me } }
+            trigger_if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { is_direct_subject_of = scope:india_matter_me } }
             trigger_else = { always = no }
         }
     }
     trigger_else = { always = no }
 }
-nesnd_india_matter_funder_friendly = {
+nesnd_india_project_ai_funder_friendly = {
     save_temporary_scope_as = india_matter_me
     trigger_if = { limit = { exists = var:nesnd_india_matter_from }
         var:nesnd_india_matter_from = {
-            trigger_if = { limit = { exists = var:nesnd_india_project_funder } var:nesnd_india_project_funder = { "relations(scope:india_matter_me)" >= 20 } }
+            trigger_if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { "relations(scope:india_matter_me)" >= 20 } }
             trigger_else = { always = no }
         }
     }
     trigger_else = { always = no }
 }
-nesnd_india_matter_funder_hostile = {
+nesnd_india_project_ai_funder_hostile = {
     save_temporary_scope_as = india_matter_me
     trigger_if = { limit = { exists = var:nesnd_india_matter_from }
         var:nesnd_india_matter_from = {
-            trigger_if = { limit = { exists = var:nesnd_india_project_funder } var:nesnd_india_project_funder = { "relations(scope:india_matter_me)" < 0 } }
+            trigger_if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { "relations(scope:india_matter_me)" < 0 } }
             trigger_else = { always = no }
         }
     }
     trigger_else = { always = no }
 }
-nesnd_india_matter_owner_restless = {
+nesnd_india_project_ai_owner_restless = {
     trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { is_subject = yes liberty_desire >= 50 } }
     trigger_else = { always = no }
 }
-nesnd_india_matter_owner_friendly = {
+nesnd_india_project_ai_owner_friendly = {
     save_temporary_scope_as = india_matter_me
     trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { "relations(scope:india_matter_me)" >= 50 } }
     trigger_else = { always = no }
 }
-nesnd_india_matter_owner_is_ours = {
+nesnd_india_project_ai_owner_ours = {
     save_temporary_scope_as = india_matter_me
     trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { is_direct_subject_of = scope:india_matter_me } }
     trigger_else = { always = no }
 }
-nesnd_india_matter_has_interest = {
+nesnd_india_project_ai_has_interest = {
     save_temporary_scope_as = india_matter_me
     trigger_if = { limit = { exists = var:nesnd_india_matter_from }
         var:nesnd_india_matter_from = { any_scope_state = { scope:india_matter_me = { has_interest_marker_in_region = prev.region } } }

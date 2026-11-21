@@ -1,0 +1,148 @@
+﻿# Indian affairs: the layer through which one government asks another and gets an answer.
+# Used by the princes' local projects (nesnd_india_projects.txt) and by the treaties of Bhutan and
+# Nepal with Mughal (nesnd_india_frontier.txt). Variables are listed in
+# common/script_values/nesnd_india_matters.txt; the order of a matter in
+# common/scripted_effects/nesnd_india_matters.txt.
+
+# ---------------------------------------------------------------------------------------------
+# Overlord's consent. The one rule for every kind of matter.
+# ---------------------------------------------------------------------------------------------
+# Country scope. OTHER is the other government in the matter. GRANTS is yes when this country lets
+# OTHER take ownership in it or march its armies through it.
+# A puppet needs its overlord's consent for anything it agrees with another government; any other
+# subject only when it grants ownership or military access. Nothing is asked when OTHER is the overlord.
+nesnd_india_consent_needed = {
+    trigger_if = { limit = { is_subject = yes exists = overlord exists = $OTHER$ }
+        NOT = { overlord = $OTHER$ }
+        OR = {
+            is_subject_type = subject_type_puppet
+            always = $GRANTS$
+        }
+    }
+    trigger_else = { always = no }
+}
+
+# The asking country (holder scope) grants something to the other side: a stake in a workshop or
+# railway, or a renewed military access.
+nesnd_india_matter_grants_own = {
+    OR = {
+        AND = { nesnd_india_matter_kind_value = 1 nesnd_india_project_type_value >= 2 nesnd_india_project_type_value <= 3 }
+        nesnd_india_matter_kind_value = 5
+    }
+}
+# The other government grants something to the asking country: military access.
+nesnd_india_matter_grants_other = { nesnd_india_matter_kind_value = 3 }
+
+# Holder scope. Our own overlord must agree.
+nesnd_india_matter_own_consent_needed = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_to }
+        trigger_if = { limit = { nesnd_india_matter_grants_own = yes } nesnd_india_consent_needed = { OTHER = var:nesnd_india_matter_to GRANTS = yes } }
+        trigger_else = { nesnd_india_consent_needed = { OTHER = var:nesnd_india_matter_to GRANTS = no } }
+    }
+    trigger_else = { always = no }
+}
+# Holder scope. The other government's overlord must agree.
+nesnd_india_matter_other_consent_needed = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_to }
+        trigger_if = { limit = { nesnd_india_matter_grants_other = yes } var:nesnd_india_matter_to = { nesnd_india_consent_needed = { OTHER = prev GRANTS = yes } } }
+        trigger_else = { var:nesnd_india_matter_to = { nesnd_india_consent_needed = { OTHER = prev GRANTS = no } } }
+    }
+    trigger_else = { always = no }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The asking country (holder scope)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_matter_waiting = { nesnd_india_matter_stage_value >= 2 nesnd_india_matter_stage_value <= 3 }
+
+# The matter still stands: both governments exist and are at peace with each other, every consent
+# that is needed today was given by the overlord who holds that place today, a consent still awaited
+# is still needed, and the kind's own conditions hold.
+nesnd_india_matter_valid = {
+    is_country_alive = yes
+    trigger_if = { limit = { exists = var:nesnd_india_matter_to }
+        var:nesnd_india_matter_to = { is_country_alive = yes }
+        NOT = { has_war_with = var:nesnd_india_matter_to }
+    }
+    trigger_else = { always = no }
+    trigger_if = { limit = { nesnd_india_matter_own_consent_needed = yes }
+        trigger_if = { limit = { exists = var:nesnd_india_matter_ok_own } overlord ?= var:nesnd_india_matter_ok_own }
+        trigger_else_if = { limit = { nesnd_india_matter_stage_value = 2 nesnd_india_matter_side_value = 1 exists = var:nesnd_india_matter_await }
+            var:nesnd_india_matter_await = { is_country_alive = yes }
+            overlord ?= var:nesnd_india_matter_await
+        }
+        trigger_else = { always = no }
+    }
+    trigger_else_if = { limit = { nesnd_india_matter_stage_value = 2 nesnd_india_matter_side_value = 1 } always = no }
+    trigger_if = { limit = { nesnd_india_matter_other_consent_needed = yes exists = var:nesnd_india_matter_to }
+        trigger_if = { limit = { exists = var:nesnd_india_matter_ok_other } var:nesnd_india_matter_to = { overlord ?= prev.var:nesnd_india_matter_ok_other } }
+        trigger_else_if = { limit = { nesnd_india_matter_stage_value = 2 nesnd_india_matter_side_value = 2 exists = var:nesnd_india_matter_await }
+            var:nesnd_india_matter_await = { is_country_alive = yes }
+            var:nesnd_india_matter_to = { overlord ?= prev.var:nesnd_india_matter_await }
+        }
+        trigger_else = { always = no }
+    }
+    trigger_else_if = { limit = { nesnd_india_matter_stage_value = 2 nesnd_india_matter_side_value = 2 } always = no }
+    trigger_if = { limit = { nesnd_india_matter_kind_value = 1 } nesnd_india_project_matter_valid = yes }
+    trigger_else = { nesnd_india_frontier_matter_valid = yes }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The government that must answer (answering scope). It holds nesnd_india_matter_from.
+# ---------------------------------------------------------------------------------------------
+# Its consent is asked as overlord of one of the two governments. A matter that no longer stands
+# (nesnd_india_matter_valid) cannot be answered; its journal ends at once.
+nesnd_india_matter_consent_role = {
+    hidden_trigger = {
+        save_temporary_scope_as = india_matter_me
+        trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+            var:nesnd_india_matter_from = {
+                is_country_alive = yes
+                nesnd_india_matter_stage_value = 2
+                nesnd_india_matter_valid = yes
+                trigger_if = { limit = { exists = var:nesnd_india_matter_await } var:nesnd_india_matter_await = scope:india_matter_me }
+                trigger_else = { always = no }
+            }
+        }
+        trigger_else = { always = no }
+    }
+}
+# It answers as the other government in the matter.
+nesnd_india_matter_answer_role = {
+    hidden_trigger = {
+        save_temporary_scope_as = india_matter_me
+        trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+            var:nesnd_india_matter_from = {
+                is_country_alive = yes
+                nesnd_india_matter_stage_value = 3
+                nesnd_india_matter_valid = yes
+                trigger_if = { limit = { exists = var:nesnd_india_matter_await } var:nesnd_india_matter_await = scope:india_matter_me }
+                trigger_else = { always = no }
+            }
+        }
+        trigger_else = { always = no }
+    }
+}
+nesnd_india_matter_live = { OR = { nesnd_india_matter_consent_role = yes nesnd_india_matter_answer_role = yes } }
+
+# KIND is the kind of the matter put to us.
+nesnd_india_matter_is = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { nesnd_india_matter_kind_value = $KIND$ } }
+    trigger_else = { always = no }
+}
+# At stage 2: 1 when the asking country is our subject, 2 when the other government is.
+nesnd_india_matter_side_is = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { nesnd_india_matter_side_value = $SIDE$ } }
+    trigger_else = { always = no }
+}
+
+# We can agree to the terms today. Each kind keeps its own conditions.
+nesnd_india_matter_can_accept = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        NOT = { has_war_with = var:nesnd_india_matter_from }
+        trigger_if = { limit = { nesnd_india_matter_is = { KIND = 1 } } nesnd_india_project_offer_ok = yes }
+        trigger_else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 3 } nesnd_india_matter_is = { KIND = 5 } } } nesnd_india_frontier_can_grant_access = yes }
+        trigger_else = { nesnd_india_frontier_can_grant_trade = yes }
+    }
+    trigger_else = { always = no }
+}

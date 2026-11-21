@@ -2,26 +2,24 @@
 #
 # Order of a project paid for by another government:
 #   the prince chooses project, state and funder (events .1 to .3)
-#   -> nesnd_india_project_send            stage 2 if the overlord must agree, else stage 3
-#   -> the overlord answers in its journal  nesnd_india_matter_permit / _forbid
-#   -> the funder answers in its journal    nesnd_india_matter_fund / _decline
+#   -> nesnd_india_project_send        a matter of kind 1 (nesnd_india_matter_send): the overlord first
+#                                      if it must agree, then the funder, both in the journal nesnd_india_foreign_affairs
+#   -> the funder agrees: nesnd_india_project_accept
 #   -> money moves, the building is ordered or created, the agreement is recorded on the state region.
-# A journal that runs out counts as no answer (nesnd_india_matter_lapse).
 
 # ---------------------------------------------------------------------------------------------
 # The prince (requester scope)
 # ---------------------------------------------------------------------------------------------
 nesnd_india_project_clear = {
     remove_variable = nesnd_india_project_type remove_variable = nesnd_india_project_site
-    remove_variable = nesnd_india_project_stage remove_variable = nesnd_india_project_funder
-    remove_variable = nesnd_india_project_permit remove_variable = nesnd_india_project_quote
-    remove_variable = nesnd_india_project_base remove_variable = nesnd_india_project_clock
-    remove_variable = nesnd_india_project_choice
+    remove_variable = nesnd_india_project_base remove_variable = nesnd_india_project_choice
+    nesnd_india_matter_clear = yes
 }
 
 # TYPE is 1 to 3, SITE the matching state trigger. Offer up to three states, largest first.
 nesnd_india_project_pick = {
     nesnd_india_project_clear = yes
+    set_variable = { name = nesnd_india_matter_kind value = 1 }
     set_variable = { name = nesnd_india_project_type value = $TYPE$ }
     set_variable = { name = nesnd_india_project_shown value = $TYPE$ }
     set_variable = { name = nesnd_india_project_choice days = 30 }
@@ -37,6 +35,7 @@ nesnd_india_project_pick = {
 }
 nesnd_india_project_pick_survey = {
     nesnd_india_project_clear = yes
+    set_variable = { name = nesnd_india_matter_kind value = 1 }
     set_variable = { name = nesnd_india_project_type value = 4 }
     set_variable = { name = nesnd_india_project_shown value = 4 }
     set_variable = { name = nesnd_india_project_choice days = 30 }
@@ -76,8 +75,9 @@ nesnd_india_project_build = {
             set_variable = { name = nesnd_india_project_base value = var:nesnd_india_project_site.nesnd_india_project_level_3 }
             var:nesnd_india_project_site = { start_building_construction = building_railway }
         }
-        set_variable = { name = nesnd_india_project_stage value = 4 }
-        remove_variable = nesnd_india_project_clock
+        set_variable = { name = nesnd_india_matter_kind value = 1 }
+        set_variable = { name = nesnd_india_matter_stage value = 4 }
+        remove_variable = nesnd_india_matter_clock
         remove_variable = nesnd_india_project_choice
     }
     else = { nesnd_india_project_clear = yes }
@@ -86,59 +86,26 @@ nesnd_india_project_build = {
 # FUNDER is asked. Where the overlord must agree, the overlord is asked first.
 nesnd_india_project_send = {
     if = { limit = { has_variable = nesnd_india_project_type nesnd_india_project_can_ask = { FUNDER = $FUNDER$ } }
-        set_variable = { name = nesnd_india_project_funder value = $FUNDER$ }
-        if = { limit = { nesnd_india_project_type_value = 4 } set_variable = { name = nesnd_india_project_quote value = nesnd_india_survey_fee } }
-        else = { set_variable = { name = nesnd_india_project_quote value = nesnd_india_grant } }
-        set_variable = { name = nesnd_india_project_clock days = 60 }
-        set_variable = { name = nesnd_india_request_cooldown months = 6 }
         remove_variable = nesnd_india_project_choice
-        if = { limit = { nesnd_india_project_consent_needed = { FUNDER = $FUNDER$ } }
-            set_variable = { name = nesnd_india_project_permit value = overlord }
-            set_variable = { name = nesnd_india_project_stage value = 2 }
-        }
-        else = { set_variable = { name = nesnd_india_project_stage value = 3 } }
-        nesnd_india_project_deliver = yes
+        nesnd_india_matter_send = { KIND = 1 TO = $FUNDER$ AMOUNT = nesnd_india_project_ask_amount }
     }
 }
-# Hand the matter to whoever must answer next. A government deals with one matter at a time;
-# if it is busy, the monthly upkeep tries again.
-nesnd_india_project_deliver = {
-    save_scope_as = india_project_owner
-    if = { limit = { nesnd_india_project_stage_value = 2 exists = var:nesnd_india_project_permit } var:nesnd_india_project_permit = { nesnd_india_matter_receive = yes } }
-    else_if = { limit = { nesnd_india_project_stage_value = 3 exists = var:nesnd_india_project_funder } var:nesnd_india_project_funder = { nesnd_india_matter_receive = yes } }
-}
 
-# Keep the names for the report before the project is cleared.
+# The site, kept for the report before the project is cleared.
 nesnd_india_project_save_names = {
-    clear_saved_scope = india_project_funder
-    clear_saved_scope = india_project_permit
     clear_saved_scope = india_project_site
-    if = { limit = { exists = var:nesnd_india_project_funder } var:nesnd_india_project_funder = { save_scope_as = india_project_funder } }
-    if = { limit = { exists = var:nesnd_india_project_permit } var:nesnd_india_project_permit = { save_scope_as = india_project_permit } }
     if = { limit = { exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { save_scope_as = india_project_site } }
 }
-# RESULT: 1 the overlord refused, 2 the funder declined, 3 nobody answered, 5 the request no longer stands.
-nesnd_india_project_fail = {
-    nesnd_india_project_save_names = yes
-    save_scope_value_as = { name = india_project_result value = $RESULT$ }
-    trigger_event = { id = nesnd_india_project.5 popup = yes }
-    nesnd_india_project_clear = yes
-}
 nesnd_india_project_withdraw = {
-    if = { limit = { nesnd_india_project_stage_value >= 2 nesnd_india_project_stage_value <= 3 } nesnd_india_project_clear = yes }
+    if = { limit = { nesnd_india_matter_waiting = yes } nesnd_india_project_clear = yes }
 }
 
-# Monthly, from nesnd_india_refresh.
+# Monthly, from nesnd_india_refresh. A request waiting for an answer is checked by nesnd_india_matter_maintenance.
 nesnd_india_project_maintenance = {
     if = { limit = { has_variable = nesnd_india_project_type }
-        # a choice left open, or a request nobody answered in time
-        if = { limit = { nesnd_india_project_stage_value = 0 NOT = { has_variable = nesnd_india_project_choice } } nesnd_india_project_clear = yes }
-        else_if = { limit = { nesnd_india_project_stage_value >= 2 nesnd_india_project_stage_value <= 3 }
-            if = { limit = { NOT = { has_variable = nesnd_india_project_clock } } nesnd_india_project_fail = { RESULT = 3 } }
-            else_if = { limit = { NOT = { nesnd_india_project_request_valid = yes } } nesnd_india_project_fail = { RESULT = 5 } }
-            else = { nesnd_india_project_deliver = yes }
-        }
-        else_if = { limit = { nesnd_india_project_stage_value = 4 }
+        # a choice left open
+        if = { limit = { nesnd_india_matter_stage_value = 0 NOT = { has_variable = nesnd_india_project_choice } } nesnd_india_project_clear = yes }
+        else_if = { limit = { nesnd_india_matter_stage_value = 4 }
             if = { limit = { nesnd_india_project_built = yes }
                 nesnd_india_project_save_names = yes
                 trigger_event = { id = nesnd_india_project.6 popup = yes }
@@ -154,9 +121,9 @@ nesnd_india_project_maintenance = {
             limit = { nesnd_india_deal_lapsed = yes }
             save_scope_as = india_project_site
             state_region = {
-                clear_saved_scope = india_project_funder
-                if = { limit = { exists = var:nesnd_india_deal_funder } var:nesnd_india_deal_funder = { save_scope_as = india_project_funder } }
-                if = { limit = { exists = var:nesnd_india_deal_host exists = scope:india_project_funder }
+                clear_saved_scope = india_matter_to
+                if = { limit = { exists = var:nesnd_india_deal_funder } var:nesnd_india_deal_funder = { save_scope_as = india_matter_to } }
+                if = { limit = { exists = var:nesnd_india_deal_host exists = scope:india_matter_to }
                     if = { limit = { var:nesnd_india_deal_host = scope:india_project_owner } scope:india_project_owner = { trigger_event = { id = nesnd_india_project.7 popup = yes } } }
                 }
                 nesnd_india_deal_forget = yes
@@ -178,111 +145,51 @@ nesnd_india_deal_record = {
         nesnd_india_deal_forget = yes
         set_variable = { name = nesnd_india_deal_host value = scope:india_project_owner }
         set_variable = { name = nesnd_india_deal_funder value = scope:india_project_payer }
-        set_variable = { name = nesnd_india_deal_quote value = scope:india_project_owner.nesnd_india_project_quote_value }
+        set_variable = { name = nesnd_india_deal_quote value = scope:india_project_owner.nesnd_india_matter_amount_value }
         set_variable = { name = nesnd_india_deal_kind value = scope:india_project_owner.nesnd_india_project_type_value }
-        if = { limit = { exists = scope:india_project_permit } set_variable = { name = nesnd_india_deal_permit value = scope:india_project_permit } }
+        if = { limit = { exists = scope:india_project_owner.var:nesnd_india_matter_ok_own } set_variable = { name = nesnd_india_deal_permit value = scope:india_project_owner.var:nesnd_india_matter_ok_own } }
         set_variable = { name = nesnd_india_deal_term days = 1825 }
     }
 }
 
 # ---------------------------------------------------------------------------------------------
-# The government that answers (answering scope)
+# The funder agrees (answering scope, from nesnd_india_matter_accept)
 # ---------------------------------------------------------------------------------------------
-# scope:india_project_owner is the prince.
-nesnd_india_matter_receive = {
-    if = { limit = { is_country_alive = yes NOT = { has_journal_entry = nesnd_india_foreign_affairs } }
-        remove_variable = nesnd_india_matter_answered
-        set_variable = { name = nesnd_india_matter_from value = scope:india_project_owner }
-        add_journal_entry = { type = nesnd_india_foreign_affairs }
-    }
-}
-nesnd_india_matter_permit = {
-    if = { limit = { nesnd_india_matter_consent_role = yes exists = var:nesnd_india_matter_from }
-        set_variable = nesnd_india_matter_answered
-        var:nesnd_india_matter_from = {
-            set_variable = { name = nesnd_india_project_stage value = 3 }
-            set_variable = { name = nesnd_india_project_clock days = 60 }
-            nesnd_india_project_deliver = yes
+# For a survey the prince pays the fee; otherwise the funder pays the grant, the prince owes an
+# obligation, and the agreement is recorded on the state region.
+nesnd_india_project_accept = {
+    save_scope_as = india_project_payer
+    var:nesnd_india_matter_from = {
+        save_scope_as = india_project_owner
+        nesnd_india_matter_save_names = yes
+        if = { limit = { nesnd_india_project_type_value = 4 }
+            add_treasury = { value = nesnd_india_matter_amount_value multiply = -1 }
+            scope:india_project_payer = { add_treasury = scope:india_project_owner.nesnd_india_matter_amount_value }
+            if = { limit = { has_modifier = nesnd_india_survey } remove_modifier = nesnd_india_survey }
+            add_modifier = { name = nesnd_india_survey months = 24 }
         }
-    }
-}
-nesnd_india_matter_forbid = {
-    if = { limit = { nesnd_india_matter_consent_role = yes exists = var:nesnd_india_matter_from }
-        set_variable = nesnd_india_matter_answered
-        var:nesnd_india_matter_from = { nesnd_india_project_fail = { RESULT = 1 } }
-    }
-}
-nesnd_india_matter_decline = {
-    if = { limit = { nesnd_india_matter_fund_role = yes exists = var:nesnd_india_matter_from }
-        set_variable = nesnd_india_matter_answered
-        var:nesnd_india_matter_from = { nesnd_india_project_fail = { RESULT = 2 } }
-    }
-}
-# The thirty days ran out.
-nesnd_india_matter_lapse = {
-    if = { limit = { nesnd_india_matter_live = yes exists = var:nesnd_india_matter_from }
-        var:nesnd_india_matter_from = { nesnd_india_project_fail = { RESULT = 3 } }
-    }
-    remove_variable = nesnd_india_matter_from
-    remove_variable = nesnd_india_matter_answered
-}
-# The funder agrees. For a survey the prince pays the fee; otherwise the funder pays the grant,
-# the prince owes an obligation, and the agreement is recorded on the state region.
-nesnd_india_matter_fund = {
-    if = { limit = { nesnd_india_matter_fund_role = yes nesnd_india_matter_can_fund = yes exists = var:nesnd_india_matter_from }
-        save_scope_as = india_project_payer
-        set_variable = nesnd_india_matter_answered
-        var:nesnd_india_matter_from = {
-            save_scope_as = india_project_owner
-            nesnd_india_project_save_names = yes
-            if = { limit = { nesnd_india_project_type_value = 4 }
-                add_treasury = { value = nesnd_india_project_quote_value multiply = -1 }
-                scope:india_project_payer = { add_treasury = scope:india_project_owner.nesnd_india_project_quote_value }
-                if = { limit = { has_modifier = nesnd_india_survey } remove_modifier = nesnd_india_survey }
-                add_modifier = { name = nesnd_india_survey months = 24 }
-            }
-            else = {
-                add_treasury = nesnd_india_project_quote_value
-                scope:india_project_payer = { add_treasury = { value = scope:india_project_owner.nesnd_india_project_quote_value multiply = -1 } }
-                set_owes_obligation_to = { country = scope:india_project_payer setting = yes }
-                change_relations = { country = scope:india_project_payer value = 25 }
-                if = { limit = { exists = scope:india_project_site }
-                    scope:india_project_site = {
-                        nesnd_india_deal_record = yes
-                        if = { limit = { scope:india_project_owner.nesnd_india_project_type_value = 2 }
-                            create_building = { building = building_tooling_workshop add_ownership = { country = { country = scope:india_project_payer levels = 1 } } }
-                        }
-                        else_if = { limit = { scope:india_project_owner.nesnd_india_project_type_value = 3 }
-                            create_building = { building = building_railway add_ownership = { country = { country = scope:india_project_payer levels = 1 } } }
-                        }
+        else = {
+            add_treasury = nesnd_india_matter_amount_value
+            scope:india_project_payer = { add_treasury = { value = scope:india_project_owner.nesnd_india_matter_amount_value multiply = -1 } }
+            set_owes_obligation_to = { country = scope:india_project_payer setting = yes }
+            change_relations = { country = scope:india_project_payer value = 25 }
+            if = { limit = { exists = scope:india_project_site }
+                scope:india_project_site = {
+                    nesnd_india_deal_record = yes
+                    if = { limit = { scope:india_project_owner.nesnd_india_project_type_value = 2 }
+                        create_building = { building = building_tooling_workshop add_ownership = { country = { country = scope:india_project_payer levels = 1 } } }
+                    }
+                    else_if = { limit = { scope:india_project_owner.nesnd_india_project_type_value = 3 }
+                        create_building = { building = building_railway add_ownership = { country = { country = scope:india_project_payer levels = 1 } } }
                     }
                 }
             }
-            trigger_event = { id = nesnd_india_project.4 popup = yes }
-            # A university is built by the prince with the grant; a workshop or railway already stands.
-            if = { limit = { nesnd_india_project_type_value = 1 } nesnd_india_project_build = yes }
-            else = { nesnd_india_project_clear = yes }
         }
+        trigger_event = { id = nesnd_india_project.4 popup = yes }
+        # A university is built by the prince with the grant; a workshop or railway already stands.
+        if = { limit = { nesnd_india_project_type_value = 1 } nesnd_india_project_build = yes }
+        else = { nesnd_india_project_clear = yes }
     }
-}
-# An AI government answers on the weekly pulse of its journal.
-nesnd_india_matter_ai_answer = {
-    remove_variable = nesnd_india_matter_ai_yes
-    if = { limit = { nesnd_india_matter_consent_role = yes }
-        save_temporary_scope_value_as = { name = india_matter_chance value = nesnd_india_matter_consent_chance }
-        random = { chance = scope:india_matter_chance set_variable = nesnd_india_matter_ai_yes }
-        if = { limit = { has_variable = nesnd_india_matter_ai_yes } nesnd_india_matter_permit = yes }
-        else = { nesnd_india_matter_forbid = yes }
-    }
-    else_if = { limit = { nesnd_india_matter_fund_role = yes }
-        if = { limit = { nesnd_india_matter_can_fund = yes }
-            save_temporary_scope_value_as = { name = india_matter_chance value = nesnd_india_matter_fund_chance }
-            random = { chance = scope:india_matter_chance set_variable = nesnd_india_matter_ai_yes }
-        }
-        if = { limit = { has_variable = nesnd_india_matter_ai_yes } nesnd_india_matter_fund = yes }
-        else = { nesnd_india_matter_decline = yes }
-    }
-    remove_variable = nesnd_india_matter_ai_yes
 }
 
 # What the prince is shown before asking FUNDER. Tooltips only.

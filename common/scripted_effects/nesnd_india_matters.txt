@@ -1,0 +1,167 @@
+﻿# Indian affairs. See common/script_values/nesnd_india_matters.txt for the variables.
+#
+# Order of a matter:
+#   nesnd_india_matter_send          the asking country names the kind, the other government and the sum
+#   -> nesnd_india_matter_next       our overlord first if it must agree, then the other side's overlord,
+#                                    then the other government (stage 2, 2, 3)
+#   -> nesnd_india_matter_deliver    the government asked gets the journal nesnd_india_foreign_affairs
+#   -> it answers: nesnd_india_matter_permit / _forbid as overlord, _accept / _decline as the other government
+#   -> nesnd_india_matter_accept hands over to the kind (nesnd_india_project_accept, nesnd_india_frontier_accept)
+# Thirty days without an answer count as no answer (nesnd_india_matter_lapse). A government deals with
+# one matter at a time; a matter for a busy government waits and is delivered at a later monthly check.
+
+# ---------------------------------------------------------------------------------------------
+# The asking country (holder scope)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_matter_clear = {
+    remove_variable = nesnd_india_matter_kind remove_variable = nesnd_india_matter_stage
+    remove_variable = nesnd_india_matter_to remove_variable = nesnd_india_matter_await
+    remove_variable = nesnd_india_matter_side remove_variable = nesnd_india_matter_ok_own
+    remove_variable = nesnd_india_matter_ok_other remove_variable = nesnd_india_matter_amount
+    remove_variable = nesnd_india_matter_clock
+}
+
+# KIND as listed in the script values, TO the other government, AMOUNT the sum named.
+# A request of our own starts the six months before another negotiation; a renewal does not.
+nesnd_india_matter_send = {
+    set_variable = { name = nesnd_india_matter_kind value = $KIND$ }
+    set_variable = { name = nesnd_india_matter_to value = $TO$ }
+    set_variable = { name = nesnd_india_matter_amount value = $AMOUNT$ }
+    set_variable = { name = nesnd_india_matter_clock days = 60 }
+    remove_variable = nesnd_india_matter_ok_own
+    remove_variable = nesnd_india_matter_ok_other
+    if = { limit = { nesnd_india_matter_kind_value <= 3 } set_variable = { name = nesnd_india_request_cooldown months = 6 } }
+    nesnd_india_matter_next = yes
+}
+
+# Who must answer next.
+nesnd_india_matter_next = {
+    if = { limit = { nesnd_india_matter_own_consent_needed = yes NOT = { has_variable = nesnd_india_matter_ok_own } exists = overlord }
+        set_variable = { name = nesnd_india_matter_stage value = 2 }
+        set_variable = { name = nesnd_india_matter_side value = 1 }
+        set_variable = { name = nesnd_india_matter_await value = overlord }
+    }
+    else_if = { limit = { nesnd_india_matter_other_consent_needed = yes NOT = { has_variable = nesnd_india_matter_ok_other } exists = var:nesnd_india_matter_to.overlord }
+        set_variable = { name = nesnd_india_matter_stage value = 2 }
+        set_variable = { name = nesnd_india_matter_side value = 2 }
+        set_variable = { name = nesnd_india_matter_await value = var:nesnd_india_matter_to.overlord }
+    }
+    else = {
+        set_variable = { name = nesnd_india_matter_stage value = 3 }
+        remove_variable = nesnd_india_matter_side
+        set_variable = { name = nesnd_india_matter_await value = var:nesnd_india_matter_to }
+    }
+    nesnd_india_matter_deliver = yes
+}
+
+nesnd_india_matter_deliver = {
+    save_scope_as = india_matter_holder
+    if = { limit = { nesnd_india_matter_waiting = yes exists = var:nesnd_india_matter_await } var:nesnd_india_matter_await = { nesnd_india_matter_receive = yes } }
+}
+
+# Keep the names for the report before the matter is cleared.
+nesnd_india_matter_save_names = {
+    clear_saved_scope = india_matter_to
+    clear_saved_scope = india_matter_permit
+    if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { save_scope_as = india_matter_to } }
+    if = { limit = { nesnd_india_matter_stage_value = 2 exists = var:nesnd_india_matter_await } var:nesnd_india_matter_await = { save_scope_as = india_matter_permit } }
+    save_scope_value_as = { name = india_matter_kind value = nesnd_india_matter_kind_value }
+    if = { limit = { nesnd_india_matter_kind_value = 1 } nesnd_india_project_save_names = yes }
+}
+
+# RESULT: 1 an overlord refused, 2 the other government declined, 3 nobody answered,
+# 5 the matter no longer stands. The asking country is told, and the matter ends.
+nesnd_india_matter_fail = {
+    nesnd_india_matter_save_names = yes
+    save_scope_value_as = { name = india_matter_result value = $RESULT$ }
+    if = { limit = { nesnd_india_matter_kind_value = 1 }
+        trigger_event = { id = nesnd_india_project.5 popup = yes }
+        nesnd_india_project_clear = yes
+    }
+    else = {
+        trigger_event = { id = nesnd_india_frontier.2 popup = yes }
+        nesnd_india_matter_clear = yes
+    }
+}
+
+# Monthly, from nesnd_india_refresh.
+nesnd_india_matter_maintenance = {
+    if = { limit = { nesnd_india_matter_waiting = yes }
+        if = { limit = { NOT = { has_variable = nesnd_india_matter_clock } } nesnd_india_matter_fail = { RESULT = 3 } }
+        else_if = { limit = { NOT = { nesnd_india_matter_valid = yes } } nesnd_india_matter_fail = { RESULT = 5 } }
+        else = { nesnd_india_matter_deliver = yes }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The government that answers (answering scope)
+# ---------------------------------------------------------------------------------------------
+# scope:india_matter_holder is the asking country. The thirty days of the journal start now.
+nesnd_india_matter_receive = {
+    if = { limit = { is_country_alive = yes NOT = { has_journal_entry = nesnd_india_foreign_affairs } }
+        remove_variable = nesnd_india_matter_answered
+        set_variable = { name = nesnd_india_matter_from value = scope:india_matter_holder }
+        add_journal_entry = { type = nesnd_india_foreign_affairs }
+        scope:india_matter_holder = { set_variable = { name = nesnd_india_matter_clock days = 45 } }
+    }
+}
+nesnd_india_matter_permit = {
+    if = { limit = { nesnd_india_matter_consent_role = yes exists = var:nesnd_india_matter_from }
+        save_scope_as = india_matter_me
+        set_variable = nesnd_india_matter_answered
+        var:nesnd_india_matter_from = {
+            if = { limit = { nesnd_india_matter_side_value = 1 } set_variable = { name = nesnd_india_matter_ok_own value = scope:india_matter_me } }
+            else = { set_variable = { name = nesnd_india_matter_ok_other value = scope:india_matter_me } }
+            set_variable = { name = nesnd_india_matter_clock days = 60 }
+            nesnd_india_matter_next = yes
+        }
+    }
+}
+nesnd_india_matter_forbid = {
+    if = { limit = { nesnd_india_matter_consent_role = yes exists = var:nesnd_india_matter_from }
+        set_variable = nesnd_india_matter_answered
+        var:nesnd_india_matter_from = { nesnd_india_matter_fail = { RESULT = 1 } }
+    }
+}
+nesnd_india_matter_decline = {
+    if = { limit = { nesnd_india_matter_answer_role = yes exists = var:nesnd_india_matter_from }
+        set_variable = nesnd_india_matter_answered
+        var:nesnd_india_matter_from = { nesnd_india_matter_fail = { RESULT = 2 } }
+    }
+}
+nesnd_india_matter_accept = {
+    if = { limit = { nesnd_india_matter_answer_role = yes nesnd_india_matter_can_accept = yes exists = var:nesnd_india_matter_from }
+        save_scope_as = india_matter_me
+        set_variable = nesnd_india_matter_answered
+        var:nesnd_india_matter_from = { save_scope_as = india_matter_holder }
+        if = { limit = { nesnd_india_matter_is = { KIND = 1 } } nesnd_india_project_accept = yes }
+        else = { nesnd_india_frontier_accept = yes }
+    }
+}
+# The thirty days ran out.
+nesnd_india_matter_lapse = {
+    if = { limit = { nesnd_india_matter_live = yes exists = var:nesnd_india_matter_from }
+        var:nesnd_india_matter_from = { nesnd_india_matter_fail = { RESULT = 3 } }
+    }
+    remove_variable = nesnd_india_matter_from
+    remove_variable = nesnd_india_matter_answered
+}
+# An AI government answers on the weekly pulse of its journal.
+nesnd_india_matter_ai_answer = {
+    remove_variable = nesnd_india_matter_ai_yes
+    if = { limit = { nesnd_india_matter_consent_role = yes }
+        save_temporary_scope_value_as = { name = india_matter_chance value = nesnd_india_matter_consent_chance }
+        random = { chance = scope:india_matter_chance set_variable = nesnd_india_matter_ai_yes }
+        if = { limit = { has_variable = nesnd_india_matter_ai_yes } nesnd_india_matter_permit = yes }
+        else = { nesnd_india_matter_forbid = yes }
+    }
+    else_if = { limit = { nesnd_india_matter_answer_role = yes }
+        if = { limit = { nesnd_india_matter_can_accept = yes }
+            save_temporary_scope_value_as = { name = india_matter_chance value = nesnd_india_matter_answer_chance }
+            random = { chance = scope:india_matter_chance set_variable = nesnd_india_matter_ai_yes }
+        }
+        if = { limit = { has_variable = nesnd_india_matter_ai_yes } nesnd_india_matter_accept = yes }
+        else = { nesnd_india_matter_decline = yes }
+    }
+    remove_variable = nesnd_india_matter_ai_yes
+}

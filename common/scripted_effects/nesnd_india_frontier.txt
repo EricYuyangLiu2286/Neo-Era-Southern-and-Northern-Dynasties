@@ -1,0 +1,221 @@
+﻿# Bhutan and Nepal with Mughal. See common/scripted_triggers/nesnd_india_frontier.txt.
+#
+#   Bhutan or Nepal asks Mughal for the trade privilege     matter kind 2, nesnd_india_frontier_ask_trade
+#   Mughal asks Bhutan or Nepal for military access         matter kind 3, nesnd_india_frontier_ask_access
+#   180 days before expiry Bhutan or Nepal is asked whether to renew (event .3); renewing is matter
+#   kind 4 or 5, answered by Mughal. A treaty not renewed is withdrawn from in the month it expires.
+
+# ---------------------------------------------------------------------------------------------
+# Asking
+# ---------------------------------------------------------------------------------------------
+# Bhutan or Nepal scope.
+nesnd_india_frontier_ask_trade = {
+    if = { limit = { nesnd_india_frontier_can_ask_trade = yes exists = var:nesnd_india_frontier_empire }
+        nesnd_india_matter_send = { KIND = 2 TO = var:nesnd_india_frontier_empire AMOUNT = nesnd_india_frontier_payment }
+    }
+}
+# Mughal scope. SMALL is Bhutan or Nepal.
+nesnd_india_frontier_ask_access = {
+    if = { limit = { nesnd_india_frontier_can_ask_access = { SMALL = $SMALL$ } }
+        nesnd_india_matter_send = { KIND = 3 TO = $SMALL$ AMOUNT = nesnd_india_frontier_payment }
+    }
+}
+# Bhutan or Nepal scope, from event .3. T is trade or access, KIND 4 or 5.
+nesnd_india_frontier_renew = {
+    if = { limit = { exists = var:nesnd_india_frontier_$T$_with NOT = { has_variable = nesnd_india_matter_kind } }
+        nesnd_india_matter_send = { KIND = $KIND$ TO = var:nesnd_india_frontier_$T$_with AMOUNT = 0 }
+    }
+}
+
+# What the asking country is shown. Tooltips only.
+nesnd_india_frontier_ask_trade_tooltips = {
+    custom_tooltip = nesnd_india_frontier_ask_trade_tt
+    if = { limit = { exists = var:nesnd_india_frontier_empire nesnd_india_consent_needed = { OTHER = var:nesnd_india_frontier_empire GRANTS = no } } custom_tooltip = nesnd_india_frontier_consent_own_tt }
+    if = { limit = { exists = var:nesnd_india_frontier_empire var:nesnd_india_frontier_empire = { nesnd_india_consent_needed = { OTHER = prev GRANTS = no } } } custom_tooltip = nesnd_india_frontier_consent_empire_tt }
+    custom_tooltip = nesnd_india_project_wait_tt
+}
+# SMALL is Bhutan or Nepal, TAG its tag in lower case for the text that names it.
+nesnd_india_frontier_ask_access_tooltips = {
+    custom_tooltip = nesnd_india_frontier_ask_access_$TAG$_tt
+    if = { limit = { exists = $SMALL$ nesnd_india_consent_needed = { OTHER = $SMALL$ GRANTS = no } } custom_tooltip = nesnd_india_frontier_consent_own_tt }
+    if = { limit = { exists = $SMALL$ $SMALL$ = { nesnd_india_consent_needed = { OTHER = prev GRANTS = yes } } } custom_tooltip = nesnd_india_frontier_consent_their_$TAG$_tt }
+    custom_tooltip = nesnd_india_project_wait_tt
+}
+
+# ---------------------------------------------------------------------------------------------
+# Signing (from nesnd_india_frontier_accept)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_frontier_sign_trade = {
+    create_treaty = {
+        first_country = $EMPIRE$
+        second_country = $SMALL$
+        is_draft = no
+        binding_period = { years = 5 }
+        articles_to_create = {
+            { article = trade_privilege source_country = $EMPIRE$ target_country = $SMALL$ }
+        }
+    }
+    $EMPIRE$ = { add_treasury = { value = nesnd_india_frontier_payment multiply = -1 } }
+    $SMALL$ = {
+        add_treasury = nesnd_india_frontier_payment
+        nesnd_india_frontier_record = { T = trade PARTNER = $EMPIRE$ }
+    }
+}
+nesnd_india_frontier_sign_access = {
+    create_treaty = {
+        first_country = $EMPIRE$
+        second_country = $SMALL$
+        is_draft = no
+        binding_period = { years = 5 }
+        articles_to_create = {
+            { article = military_access source_country = $SMALL$ target_country = $EMPIRE$ }
+        }
+    }
+    $EMPIRE$ = { add_treasury = { value = nesnd_india_frontier_payment multiply = -1 } }
+    $SMALL$ = {
+        add_treasury = nesnd_india_frontier_payment
+        nesnd_india_frontier_record = { T = access PARTNER = $EMPIRE$ }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# Records on Bhutan or Nepal (T is trade or access)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_frontier_record = {
+    set_variable = { name = nesnd_india_frontier_$T$_with value = $PARTNER$ }
+    set_variable = { name = nesnd_india_frontier_$T$_term days = 1825 }
+    set_variable = { name = nesnd_india_frontier_$T$_notice days = 1645 }
+    remove_variable = nesnd_india_frontier_$T$_asked
+    remove_variable = nesnd_india_frontier_$T$_renewed
+}
+nesnd_india_frontier_forget = {
+    remove_variable = nesnd_india_frontier_$T$_with
+    remove_variable = nesnd_india_frontier_$T$_term
+    remove_variable = nesnd_india_frontier_$T$_notice
+    remove_variable = nesnd_india_frontier_$T$_asked
+    remove_variable = nesnd_india_frontier_$T$_renewed
+}
+# Leave the treaty with PARTNER without the penalties of breaking it.
+nesnd_india_frontier_trade_withdraw = {
+    save_scope_as = india_frontier_leaver
+    every_scope_treaty = {
+        limit = {
+            binds = $PARTNER$
+            any_scope_article = { nesnd_canon_directed_article = { TYPE = trade_privilege SOURCE = $PARTNER$ TARGET = scope:india_frontier_leaver } }
+        }
+        withdraw = { country = scope:india_frontier_leaver apply_break_penalties = no }
+    }
+}
+nesnd_india_frontier_access_withdraw = {
+    save_scope_as = india_frontier_leaver
+    every_scope_treaty = {
+        limit = {
+            binds = $PARTNER$
+            any_scope_article = { nesnd_canon_directed_article = { TYPE = military_access SOURCE = scope:india_frontier_leaver TARGET = $PARTNER$ } }
+        }
+        withdraw = { country = scope:india_frontier_leaver apply_break_penalties = no }
+    }
+}
+# The term is over and the treaty was not renewed: we withdraw, and both governments are told.
+nesnd_india_frontier_expire = {
+    save_scope_as = india_frontier_small
+    var:nesnd_india_frontier_$T$_with = { save_scope_as = india_frontier_empire }
+    save_scope_value_as = { name = india_frontier_kind value = $KIND$ }
+    nesnd_india_frontier_$T$_withdraw = { PARTNER = scope:india_frontier_empire }
+    nesnd_india_frontier_forget = { T = $T$ }
+    trigger_event = { id = nesnd_india_frontier.4 popup = yes }
+    scope:india_frontier_empire = { trigger_event = { id = nesnd_india_frontier.4 popup = yes } }
+}
+
+# Monthly. KIND is 2 for trade, 3 for access.
+nesnd_india_frontier_tick = {
+    if = { limit = { has_variable = nesnd_india_frontier_$T$_with }
+        # Mughal is gone: only the record is cleared.
+        if = { limit = { OR = { NOT = { exists = var:nesnd_india_frontier_$T$_with } var:nesnd_india_frontier_$T$_with = { is_country_alive = no } } }
+            nesnd_india_frontier_forget = { T = $T$ }
+        }
+        # The treaty has ended some other way.
+        else_if = { limit = { NOT = { nesnd_india_frontier_$T$_treaty = { PARTNER = var:nesnd_india_frontier_$T$_with } } }
+            nesnd_india_frontier_forget = { T = $T$ }
+        }
+        else_if = { limit = { NOT = { has_variable = nesnd_india_frontier_$T$_term } }
+            if = { limit = { has_variable = nesnd_india_frontier_$T$_renewed } nesnd_india_frontier_record = { T = $T$ PARTNER = var:nesnd_india_frontier_$T$_with } }
+            else = { nesnd_india_frontier_expire = { T = $T$ KIND = $KIND$ } }
+        }
+        # 180 days before expiry: renew or let it lapse. Put off while another matter of ours is open.
+        else_if = { limit = {
+                NOT = { has_variable = nesnd_india_frontier_$T$_notice }
+                NOT = { has_variable = nesnd_india_frontier_$T$_asked }
+                NOT = { has_variable = nesnd_india_frontier_$T$_renewed }
+                NOT = { has_variable = nesnd_india_matter_kind }
+            }
+            set_variable = nesnd_india_frontier_$T$_asked
+            save_scope_as = india_frontier_small
+            var:nesnd_india_frontier_$T$_with = { save_scope_as = india_frontier_empire }
+            save_scope_value_as = { name = india_frontier_kind value = $KIND$ }
+            trigger_event = { id = nesnd_india_frontier.3 popup = yes }
+        }
+    }
+}
+
+# Monthly, from nesnd_india_refresh.
+nesnd_india_frontier_upkeep = {
+    if = { limit = { nesnd_india_frontier_holder = yes NOT = { has_journal_entry = nesnd_india_frontier } } add_journal_entry = { type = nesnd_india_frontier } }
+    if = { limit = { nesnd_india_himalaya_country = yes }
+        remove_variable = nesnd_india_frontier_empire
+        clear_saved_scope = india_frontier_pick
+        ordered_country = { limit = { nesnd_india_empire = yes } order_by = gdp position = 0 check_range_bounds = no save_scope_as = india_frontier_pick }
+        if = { limit = { exists = scope:india_frontier_pick } set_variable = { name = nesnd_india_frontier_empire value = scope:india_frontier_pick } }
+        nesnd_india_frontier_tick = { T = trade KIND = 2 }
+        nesnd_india_frontier_tick = { T = access KIND = 3 }
+    }
+}
+
+# Monthly, on the journal: an AI government asks now and then. Hard limits are in the ask triggers.
+nesnd_india_frontier_ai_asks = {
+    if = { limit = { is_ai = yes nesnd_india_himalaya_country = yes nesnd_india_frontier_can_ask_trade = yes }
+        save_temporary_scope_value_as = { name = india_frontier_chance value = nesnd_india_frontier_trade_ask_chance }
+        random = { chance = scope:india_frontier_chance nesnd_india_frontier_ask_trade = yes }
+    }
+    if = { limit = { is_ai = yes nesnd_india_empire = yes }
+        save_scope_as = india_frontier_asker
+        save_temporary_scope_value_as = { name = india_frontier_chance value = nesnd_india_frontier_access_ask_chance }
+        every_country = {
+            limit = { nesnd_india_himalaya_country = yes }
+            save_scope_as = india_frontier_target
+            scope:india_frontier_asker = {
+                if = { limit = { nesnd_india_frontier_can_ask_access = { SMALL = scope:india_frontier_target } }
+                    random = { chance = scope:india_frontier_chance nesnd_india_frontier_ask_access = { SMALL = scope:india_frontier_target } }
+                }
+            }
+        }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The government that answers (answering scope, from nesnd_india_matter_accept)
+# ---------------------------------------------------------------------------------------------
+# scope:india_matter_me answers, scope:india_matter_holder asked.
+nesnd_india_frontier_accept = {
+    if = { limit = { nesnd_india_matter_is = { KIND = 2 } } nesnd_india_frontier_sign_trade = { SMALL = scope:india_matter_holder EMPIRE = scope:india_matter_me } }
+    else_if = { limit = { nesnd_india_matter_is = { KIND = 3 } } nesnd_india_frontier_sign_access = { SMALL = scope:india_matter_me EMPIRE = scope:india_matter_holder } }
+    else_if = { limit = { nesnd_india_matter_is = { KIND = 4 } } scope:india_matter_holder = { set_variable = nesnd_india_frontier_trade_renewed } }
+    else_if = { limit = { nesnd_india_matter_is = { KIND = 5 } } scope:india_matter_holder = { set_variable = nesnd_india_frontier_access_renewed } }
+    scope:india_matter_holder = {
+        nesnd_india_matter_save_names = yes
+        trigger_event = { id = nesnd_india_frontier.1 popup = yes }
+        nesnd_india_matter_clear = yes
+    }
+}
+# What the answering government is shown on the button. Tooltips only.
+nesnd_india_frontier_accept_tooltips = {
+    if = { limit = { nesnd_india_matter_is = { KIND = 2 } }
+        custom_tooltip = nesnd_india_frontier_accept_trade_tt
+        show_as_tooltip = { add_treasury = { value = nesnd_india_matter_quote multiply = -1 } }
+    }
+    else_if = { limit = { nesnd_india_matter_is = { KIND = 3 } }
+        custom_tooltip = nesnd_india_frontier_accept_access_tt
+        show_as_tooltip = { add_treasury = nesnd_india_matter_quote }
+    }
+    else = { custom_tooltip = nesnd_india_frontier_accept_renew_tt }
+}
