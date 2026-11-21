@@ -8,12 +8,16 @@ nesnd_india_diplomacy.1 = {
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 3 } desc = nesnd_india_diplomacy.1.d3 }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 4 } desc = nesnd_india_diplomacy.1.d4 }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 5 } desc = nesnd_india_diplomacy.1.d5 }
+            triggered_desc = { trigger = { nesnd_india_incoming_kind = 6 NOT = { nesnd_india_union_dominion_open = yes } } desc = nesnd_india_diplomacy.1.d6_own }
+            triggered_desc = { trigger = { nesnd_india_incoming_kind = 6 nesnd_india_union_compensation_due = yes } desc = nesnd_india_diplomacy.1.d6_former }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 6 } desc = nesnd_india_diplomacy.1.d6 }
+            triggered_desc = { trigger = { nesnd_india_incoming_kind = 8 scope:india_sender = { nesnd_india_union_mode_value = 2 } } desc = nesnd_india_diplomacy.1.d8_dominion }
+            triggered_desc = { trigger = { nesnd_india_incoming_kind = 8 } desc = nesnd_india_diplomacy.1.d8_merge }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 7 } desc = nesnd_india_diplomacy.1.d7 }
             desc = nesnd_india_diplomacy.1.d } }
     flavor = nesnd_india_diplomacy.1.f
     duration = 1 trigger = { nesnd_india_reply_valid = yes } cancellation_trigger = { NOT = { nesnd_india_reply_valid = yes } }
-    option = { name = nesnd_india_diplomacy.1.a show_as_unavailable = { always = yes } trigger = { nesnd_india_reply_can_accept = yes }
+    option = { name = nesnd_india_diplomacy.1.a show_as_unavailable = { NOT = { nesnd_india_incoming_kind = 6 } } trigger = { NOT = { nesnd_india_incoming_kind = 6 } nesnd_india_reply_can_accept = yes }
         ai_chance = { base = 30
             modifier = {
                 trigger = {
@@ -29,8 +33,8 @@ nesnd_india_diplomacy.1 = {
             modifier = { trigger = { nesnd_india_reply_valid = yes nesnd_india_regime = 2 nesnd_india_incoming_kind = 2 } add = 40 }
             modifier = { trigger = { nesnd_india_reply_valid = yes nesnd_india_regime = 3 nesnd_india_incoming_kind = 1 trigger_if = { limit = { exists = scope:india_sender } scope:india_sender = { country_has_monarchy_law = yes } } trigger_else = { always = no } } add = 30 }
             modifier = { trigger = { nesnd_india_reply_valid = yes OR = { nesnd_india_regime = 4 nesnd_india_regime = 6 } nesnd_india_incoming_kind = 1 } add = 40 }
-            modifier = { trigger = { nesnd_india_reply_valid = yes trigger_if = { limit = { exists = scope:india_sender } "relations(scope:india_sender)" >= 50 } trigger_else = { always = no } } add = 25 }
-            modifier = { trigger = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 6 } factor = 0.25 }
+            modifier = { trigger = { nesnd_india_reply_valid = yes NOT = { nesnd_india_incoming_kind = 8 } trigger_if = { limit = { exists = scope:india_sender } "relations(scope:india_sender)" >= 50 } trigger_else = { always = no } } add = 25 }
+            modifier = { trigger = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 8 } add = 40 }
             modifier = { trigger = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 7 } factor = 0.25 }
         }
         if = {
@@ -44,11 +48,45 @@ nesnd_india_diplomacy.1 = {
         }
         else_if = { limit = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 4 } custom_tooltip = nesnd_india_reply_autonomy_tt }
         else_if = { limit = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 5 } custom_tooltip = nesnd_india_reply_defence_tt }
-        else_if = { limit = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 6 } custom_tooltip = nesnd_india_reply_union_tt }
+        else_if = { limit = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 8 }
+            if = { limit = { scope:india_sender = { nesnd_india_union_mode_value = 2 } } custom_tooltip = nesnd_india_union_reply_take_dominion_tt }
+            else = { custom_tooltip = nesnd_india_union_reply_take_merge_tt }
+            custom_tooltip = nesnd_india_union_reply_take_pay_tt
+            if = { limit = { nesnd_india_union_compensation_due = yes } custom_tooltip = nesnd_india_union_reply_take_compensation_tt }
+        }
         else_if = { limit = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 7 } custom_tooltip = nesnd_india_reply_independence_tt }
         hidden_effect = { nesnd_india_accept_request = yes }
     }
-    option = { name = nesnd_india_diplomacy.1.b default_option = yes ai_chance = { base = 70 } custom_tooltip = nesnd_india_refusal_tt hidden_effect = { nesnd_india_refuse_request = yes } }
+    # Request kind 6: the prince chooses how it joins (nesnd_india_union_accept), or declines with option b.
+    option = { name = nesnd_india_diplomacy.1.merge
+        show_as_unavailable = { nesnd_india_incoming_kind = 6 }
+        trigger = { nesnd_india_incoming_kind = 6 nesnd_india_reply_can_accept = yes }
+        ai_chance = { base = 5
+            modifier = { trigger = { nesnd_india_union_ai_close = yes } add = 5 }
+            modifier = { trigger = { nesnd_india_union_ai_broke = yes } add = 15 }
+            modifier = { trigger = { nesnd_india_union_ai_own_subject = yes } add = 10 }
+            modifier = { trigger = { nesnd_india_union_ai_large = yes } factor = 0.5 }
+        }
+        custom_tooltip = nesnd_india_union_reply_merge_tt
+        if = { limit = { nesnd_india_union_compensation_due = yes } custom_tooltip = nesnd_india_union_reply_former_tt }
+        hidden_effect = { nesnd_india_union_accept = { MODE = merge } }
+    }
+    option = { name = nesnd_india_diplomacy.1.dominion
+        show_as_unavailable = { nesnd_india_incoming_kind = 6 nesnd_india_union_dominion_open = yes }
+        trigger = { nesnd_india_incoming_kind = 6 nesnd_india_union_dominion_open = yes nesnd_india_reply_can_accept = yes }
+        ai_chance = { base = 20
+            modifier = { trigger = { nesnd_india_union_ai_close = yes } add = 20 }
+        }
+        custom_tooltip = nesnd_india_union_reply_dominion_tt
+        if = { limit = { nesnd_india_union_compensation_due = yes } custom_tooltip = nesnd_india_union_reply_former_tt }
+        hidden_effect = { nesnd_india_union_accept = { MODE = dominion } }
+    }
+    option = { name = nesnd_india_diplomacy.1.b default_option = yes
+        ai_chance = { base = 70 modifier = { trigger = { nesnd_india_incoming_kind = 8 } add = -40 } }
+        if = { limit = { nesnd_india_union_reply = yes } custom_tooltip = nesnd_india_union_reply_decline_tt }
+        else = { custom_tooltip = nesnd_india_refusal_tt }
+        hidden_effect = { nesnd_india_refuse_request = yes }
+    }
 }
 nesnd_india_diplomacy.2 = {
     event_image = { video = "unspecific_signed_contract" } type = country_event title = nesnd_india_diplomacy.2.t desc = nesnd_india_diplomacy.2.d trigger = { exists = scope:india_partner } cancellation_trigger = { NOT = { exists = scope:india_partner } } option = { name = nesnd_india_diplomacy_ack default_option = yes } }

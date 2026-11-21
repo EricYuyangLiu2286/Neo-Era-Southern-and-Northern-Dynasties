@@ -1,6 +1,7 @@
 ﻿# Indian affairs: the layer through which one government asks another and gets an answer.
-# Used by the princes' local projects (nesnd_india_projects.txt) and by the treaties of Bhutan and
-# Nepal with Mughal (nesnd_india_frontier.txt). Variables are listed in
+# Used by the princes' local projects (nesnd_india_projects.txt), by the treaties of Bhutan and
+# Nepal with Mughal (nesnd_india_frontier.txt), and by an overlord's consent before its subject joins
+# Mughal (nesnd_india_union.txt). Variables are listed in
 # common/script_values/nesnd_india_matters.txt; the order of a matter in
 # common/scripted_effects/nesnd_india_matters.txt.
 
@@ -23,15 +24,18 @@ nesnd_india_consent_needed = {
 }
 
 # The asking country (holder scope) grants something to the other side: a stake in a workshop or
-# railway, or a renewed military access.
+# railway, or a renewed military access. Leaving its overlord to join Mughal (kind 6) is counted the
+# same way, so that any subject needs its overlord's consent for it.
 nesnd_india_matter_grants_own = {
     OR = {
         AND = { nesnd_india_matter_kind_value = 1 nesnd_india_project_type_value >= 2 nesnd_india_project_type_value <= 3 }
         nesnd_india_matter_kind_value = 5
+        nesnd_india_matter_kind_value = 6
     }
 }
-# The other government grants something to the asking country: military access.
-nesnd_india_matter_grants_other = { nesnd_india_matter_kind_value = 3 }
+# The other government grants something to the asking country: military access, or (kind 6) the
+# invited prince leaves its overlord.
+nesnd_india_matter_grants_other = { OR = { nesnd_india_matter_kind_value = 3 nesnd_india_matter_kind_value = 6 } }
 
 # Holder scope. Our own overlord must agree.
 nesnd_india_matter_own_consent_needed = {
@@ -84,6 +88,7 @@ nesnd_india_matter_valid = {
     }
     trigger_else_if = { limit = { nesnd_india_matter_stage_value = 2 nesnd_india_matter_side_value = 2 } always = no }
     trigger_if = { limit = { nesnd_india_matter_kind_value = 1 } nesnd_india_project_matter_valid = yes }
+    trigger_else_if = { limit = { nesnd_india_matter_kind_value = 6 } nesnd_india_union_matter_valid = yes }
     trigger_else = { nesnd_india_frontier_matter_valid = yes }
 }
 
@@ -141,6 +146,7 @@ nesnd_india_matter_can_accept = {
     trigger_if = { limit = { exists = var:nesnd_india_matter_from }
         NOT = { has_war_with = var:nesnd_india_matter_from }
         trigger_if = { limit = { nesnd_india_matter_is = { KIND = 1 } } nesnd_india_project_offer_ok = yes }
+        trigger_else_if = { limit = { nesnd_india_matter_is = { KIND = 6 } } always = no }
         trigger_else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 3 } nesnd_india_matter_is = { KIND = 5 } } } nesnd_india_frontier_can_grant_access = yes }
         trigger_else = { nesnd_india_frontier_can_grant_trade = yes }
     }

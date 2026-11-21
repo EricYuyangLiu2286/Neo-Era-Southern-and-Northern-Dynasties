@@ -1,0 +1,128 @@
+﻿# Princes joining Mughal. See common/scripted_triggers/nesnd_india_union.txt for the order of things.
+# The settlement itself, nesnd_india_settle_union = { MODE = merge|dominion }, is in
+# common/scripted_effects/nesnd_india_diplomacy.txt next to the rest of the request channel.
+
+# Prince scope, monthly from nesnd_india_refresh. The Mughal government a prince would ask to join:
+# the one with the largest GDP, as for Bhutan and Nepal (nesnd_india_frontier_upkeep).
+nesnd_india_union_pick_host = {
+    remove_variable = nesnd_india_union_host
+    clear_saved_scope = india_union_richest
+    if = { limit = { nesnd_india_prince = yes any_country = { nesnd_india_empire = yes } }
+        ordered_country = {
+            limit = { nesnd_india_empire = yes }
+            order_by = gdp
+            position = 0
+            check_range_bounds = no
+            save_scope_as = india_union_richest
+        }
+        if = { limit = { exists = scope:india_union_richest } set_variable = { name = nesnd_india_union_host value = scope:india_union_richest } }
+    }
+}
+# Prince scope, in the journal nesnd_india_princes: the name shown on its buttons.
+nesnd_india_union_host_label = {
+    if = { limit = { exists = var:nesnd_india_union_host } var:nesnd_india_union_host = { save_scope_as = nesnd_label_india_empire } }
+}
+
+# Prince scope. MODE is merge or dominion. The prince asks Mughal to take it in: through its overlord
+# first when it is another country's subject (matter kind 6), otherwise straight to Mughal (request kind 8).
+nesnd_india_union_ask = {
+    if = {
+        limit = {
+            nesnd_india_can_ask_union = yes
+            exists = var:nesnd_india_union_host
+            OR = { nesnd_india_union_mode_$MODE$ = 1 nesnd_india_union_own_subject = no }
+        }
+        set_variable = { name = nesnd_india_union_mode value = nesnd_india_union_mode_$MODE$ }
+        if = { limit = { nesnd_india_consent_needed = { OTHER = var:nesnd_india_union_host GRANTS = yes } }
+            nesnd_india_matter_send = { KIND = 6 TO = var:nesnd_india_union_host AMOUNT = var:nesnd_india_union_host.nesnd_india_grant }
+        }
+        else = {
+            clear_saved_scope = india_partner
+            var:nesnd_india_union_host = { save_scope_as = india_partner }
+            nesnd_india_send_request = { KIND = 8 }
+        }
+        if = { limit = { NOR = { has_variable = nesnd_india_matter_clock has_variable = nesnd_india_request_clock } } remove_variable = nesnd_india_union_mode }
+    }
+}
+
+# Prince scope, monthly. An AI prince sometimes asks to join.
+nesnd_india_union_ai_asks = {
+    if = { limit = { is_ai = yes nesnd_india_can_ask_union = yes exists = var:nesnd_india_union_host }
+        var:nesnd_india_union_host = { save_scope_as = india_union_host }
+        if = { limit = { "relations(scope:india_union_host)" >= 50 }
+            random_list = { 1 = { trigger_event = { id = nesnd_india_union.4 } } 99 = {} }
+        }
+        else = {
+            random_list = { 1 = { trigger_event = { id = nesnd_india_union.4 } } 199 = {} }
+        }
+    }
+}
+
+# Holder scope, matter kind 6, from nesnd_india_matter_next once every consent is given. The consent
+# is used up here: the invitation (request kind 6) or the request (request kind 8) goes into the
+# request channel with the sum named in the matter, and the matter ends.
+nesnd_india_union_handoff = {
+    nesnd_india_matter_save_names = yes
+    save_scope_value_as = { name = india_union_quote value = nesnd_india_matter_amount_value }
+    clear_saved_scope = india_partner
+    if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { save_scope_as = india_partner } }
+    nesnd_india_matter_clear = yes
+    if = { limit = { exists = scope:india_partner nesnd_india_empire = yes } nesnd_india_send_request = { KIND = 6 } }
+    else_if = { limit = { exists = scope:india_partner } nesnd_india_send_request = { KIND = 8 } }
+    if = { limit = { has_variable = nesnd_india_request_clock exists = var:nesnd_india_request_partner }
+        set_variable = { name = nesnd_india_request_quote value = scope:india_union_quote }
+    }
+    else = {
+        # The request could not go out (a war or a diplomatic play began on the day of the consent).
+        save_scope_value_as = { name = india_matter_result value = 5 }
+        remove_variable = nesnd_india_union_mode
+        trigger_event = { id = nesnd_india_union.3 popup = yes }
+    }
+}
+
+# Holder scope, matter kind 6, from nesnd_india_matter_fail. RESULT 1 the overlord refused, 3 it did not
+# answer, 5 the matter no longer stands. A refusal or silence uses up the six months of a request.
+nesnd_india_union_matter_fail = {
+    trigger_event = { id = nesnd_india_union.3 popup = yes }
+    remove_variable = nesnd_india_union_mode
+    if = { limit = { NOT = { scope:india_matter_result = 5 } } set_variable = { name = nesnd_india_request_cooldown months = 6 } }
+    nesnd_india_matter_clear = yes
+}
+
+# Answering scope in the reply event, request kinds 6 and 8. MODE is merge or dominion.
+nesnd_india_union_accept = {
+    if = {
+        limit = {
+            nesnd_india_union_reply = yes
+            nesnd_india_reply_can_accept = yes
+            OR = { nesnd_india_union_mode_$MODE$ = 1 nesnd_india_union_dominion_open = yes }
+        }
+        save_scope_value_as = { name = india_union_price value = scope:india_sender.nesnd_india_request_quote }
+        scope:india_sender = { save_scope_as = india_union_requester }
+        if = { limit = { nesnd_india_incoming_kind = 6 }
+            scope:india_partner = { save_scope_as = india_union_prince }
+            scope:india_sender = { nesnd_india_settle_union = { MODE = $MODE$ } }
+        }
+        else = {
+            scope:india_sender = { save_scope_as = india_union_prince }
+            scope:india_partner = { nesnd_india_settle_union = { MODE = $MODE$ } }
+        }
+        # Told: whoever sent the invitation or request, if it still exists, and the former overlord.
+        if = { limit = { scope:india_union_requester = { is_country_alive = yes } }
+            scope:india_union_requester = { trigger_event = { id = nesnd_india_union.1 popup = yes } }
+        }
+        if = { limit = { exists = scope:india_union_former }
+            scope:india_union_former = { trigger_event = { id = nesnd_india_union.1 popup = yes } }
+        }
+    }
+}
+
+# Answering scope in the reply event, request kinds 6 and 8. Nothing changes; both sides are told.
+nesnd_india_union_decline = {
+    save_scope_as = india_union_decliner
+    trigger_event = { id = nesnd_india_union.2 popup = yes }
+    scope:india_sender = {
+        trigger_event = { id = nesnd_india_union.2 popup = yes }
+        nesnd_india_clear_request = yes
+    }
+}

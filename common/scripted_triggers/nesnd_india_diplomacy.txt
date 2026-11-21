@@ -116,8 +116,10 @@ nesnd_india_autonomy_available = {
         NOT = { has_war_with = overlord }
     } trigger_else = { always = no }
 }
+# Prince scope, root is Mughal. Any prince may be invited, another country's subject or Mughal's own;
+# for another country's subject the overlord is asked first (nesnd_india_invite_union).
 nesnd_india_union_target = {
-    nesnd_india_prince = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no
+    nesnd_india_prince = yes is_at_war = no is_active_in_diplomatic_play = no
     custom_tooltip = { text = nesnd_ui_not_india_incoming_union_clock_tt NOT = { has_variable = nesnd_india_incoming_union_clock } }
     NOT = { this = root } relations:root >= 25
     root = { is_subject = no }
@@ -125,10 +127,7 @@ nesnd_india_union_target = {
 # Empire scope. Shared by the invitation button and the choice event.
 nesnd_india_can_invite_union = {
     nesnd_india_can_send = yes
-    hidden_trigger = { nesnd_india_empire = yes }
-    is_subject = no
-    custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done }
-    nesnd_india_community >= 60
+    nesnd_india_union_host = yes
     custom_tooltip = { text = nesnd_india_union_target_exists_tt any_country = { nesnd_india_union_target = yes } }
 }
 nesnd_india_reply_valid = {
@@ -155,9 +154,14 @@ nesnd_india_reply_valid = {
             trigger_if = { limit = { OR = { nesnd_india_request_kind = 4 nesnd_india_request_kind = 7 } } is_direct_subject_of = scope:india_partner }
             trigger_if = { limit = { nesnd_india_request_kind = 4 } can_increase_autonomy = yes }
             trigger_if = { limit = { nesnd_india_request_kind = 5 } is_subject = no scope:india_partner = { is_subject = no } }
+            trigger_if = { limit = { nesnd_india_request_kind = 8 }
+                nesnd_india_prince = yes
+                scope:india_partner = { nesnd_india_union_host = yes }
+                hidden_trigger = { nesnd_india_union_mode_value >= 1 }
+            }
             trigger_if = { limit = { nesnd_india_request_kind = 6 }
-                nesnd_india_empire = yes is_subject = no custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done } nesnd_india_community >= 60
-                scope:india_partner = { nesnd_india_prince = yes is_subject = no is_active_in_diplomatic_play = no
+                nesnd_india_union_host = yes
+                scope:india_partner = { nesnd_india_prince = yes is_active_in_diplomatic_play = no
                     trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_india_incoming_union_sender_tt exists = var:nesnd_india_incoming_union_sender } } hidden_trigger = { var:nesnd_india_incoming_union_sender = scope:india_sender } custom_tooltip = { text = nesnd_ui_india_incoming_union_clock_tt has_variable = nesnd_india_incoming_union_clock } } trigger_else = { always = no }
                 }
             }
@@ -185,8 +189,11 @@ nesnd_india_can_offer_defence = {
 # A country's reported stake includes private investors. Even if every non-government
 # level belongs to its investors, the remaining levels must belong to its government.
 nesnd_india_workshop_stake_met = {
+    # Ownership can be read only on a building that stands (level > 0, as in vanilla
+    # 06_portugal_politics.txt:55); a workshop still in the construction queue is skipped.
     any_scope_building = {
         is_building_type = building_tooling_workshop
+        level > 0
         levels_owned_by_country = {
             target = scope:india_partner
             value >= {
@@ -207,6 +214,7 @@ nesnd_india_workshop_site = {
             NOT = {
                 any_scope_building = {
                     is_building_type = building_tooling_workshop
+                    level > 0
                     nesnd_india_government_levels > scope:india_sender.nesnd_india_workshop_levels
                     levels_owned_by_country = {
                         target = scope:india_partner
@@ -234,6 +242,6 @@ nesnd_india_reply_can_accept = {
             nesnd_india_access_treaty_possible = yes
         }
         trigger_if = { limit = { nesnd_india_incoming_kind = 5 } nesnd_india_defence_treaty_possible = { SENDER = scope:india_sender PARTNER = scope:india_partner } }
-        trigger_if = { limit = { nesnd_india_incoming_kind = 6 } scope:india_sender = { gold_reserves >= nesnd_india_request_quote } }
+        trigger_if = { limit = { nesnd_india_union_reply = yes } nesnd_india_union_can_pay = yes }
     } trigger_else = { always = no }
 }

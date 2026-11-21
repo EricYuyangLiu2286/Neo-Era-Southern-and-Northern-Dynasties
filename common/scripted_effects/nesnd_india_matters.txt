@@ -7,6 +7,8 @@
 #   -> nesnd_india_matter_deliver    the government asked gets the journal nesnd_india_foreign_affairs
 #   -> it answers: nesnd_india_matter_permit / _forbid as overlord, _accept / _decline as the other government
 #   -> nesnd_india_matter_accept hands over to the kind (nesnd_india_project_accept, nesnd_india_frontier_accept)
+#   Kind 6 has no answer of its own: once every consent is given, nesnd_india_union_handoff sends the
+#   invitation or the request into the request channel (nesnd_india_diplomacy.txt) and the matter ends.
 # Thirty days without an answer count as no answer (nesnd_india_matter_lapse). A government deals with
 # one matter at a time; a matter for a busy government waits and is delivered at a later monthly check.
 
@@ -46,6 +48,7 @@ nesnd_india_matter_next = {
         set_variable = { name = nesnd_india_matter_side value = 2 }
         set_variable = { name = nesnd_india_matter_await value = var:nesnd_india_matter_to.overlord }
     }
+    else_if = { limit = { nesnd_india_matter_kind_value = 6 } nesnd_india_union_handoff = yes }
     else = {
         set_variable = { name = nesnd_india_matter_stage value = 3 }
         remove_variable = nesnd_india_matter_side
@@ -78,6 +81,7 @@ nesnd_india_matter_fail = {
         trigger_event = { id = nesnd_india_project.5 popup = yes }
         nesnd_india_project_clear = yes
     }
+    else_if = { limit = { nesnd_india_matter_kind_value = 6 } nesnd_india_union_matter_fail = yes }
     else = {
         trigger_event = { id = nesnd_india_frontier.2 popup = yes }
         nesnd_india_matter_clear = yes
