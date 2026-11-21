@@ -1,0 +1,97 @@
+﻿# The journal nesnd_india_order (see common/scripted_triggers/nesnd_india_order.txt).
+# Variables on Mughal:
+#   nesnd_india_order_tax, _army, _school            1 central, 2 local; unset until first chosen
+#   nesnd_india_order_tax_wait, _army_wait, _school_wait   sixty months after each choice
+# Variables on an Indian subject:
+#   nesnd_india_order_lord          the Mughal government whose arrangements it carries
+#   nesnd_india_order_tax_pact      1 raise_payments, 2 decrease_payments: built by this journal
+#   nesnd_india_order_army_pact     2 exempt_from_service: built by this journal
+#   nesnd_india_order_school_pact   1 da_knowledge_sharing: built by this journal
+# A treaty is built once per choice: if it is broken later the marker stays, and it is not built
+# again until the matter is chosen anew or the subject leaves. Default numbers; to be tuned after
+# in-game tests.
+
+nesnd_india_order_tax_value = { value = 0 if = { limit = { has_variable = nesnd_india_order_tax } value = var:nesnd_india_order_tax } }
+nesnd_india_order_army_value = { value = 0 if = { limit = { has_variable = nesnd_india_order_army } value = var:nesnd_india_order_army } }
+nesnd_india_order_school_value = { value = 0 if = { limit = { has_variable = nesnd_india_order_school } value = var:nesnd_india_order_school } }
+nesnd_india_order_tax_pact_value = { value = 0 if = { limit = { has_variable = nesnd_india_order_tax_pact } value = var:nesnd_india_order_tax_pact } }
+
+# Mughal scope (root is Mughal). Its Indian subjects.
+nesnd_india_order_members = {
+    value = 0
+    every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root } add = 1 }
+}
+nesnd_india_order_half_members = { value = nesnd_india_order_members divide = 2 }
+nesnd_india_order_restless_count = {
+    value = 0
+    every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root liberty_desire >= 50 } add = 1 }
+}
+
+# Mughal scope. In each matter: subjects where the chosen treaty stands, where it was built and has
+# since been broken, and where it could not be built.
+nesnd_india_order_tax_in = {
+    value = 0
+    every_subject_or_below = {
+        limit = {
+            nesnd_india_country = yes is_direct_subject_of = root
+            OR = {
+                AND = { nesnd_india_order_tax_pact_value = 1 root = { has_diplomatic_pact = { who = prev type = raise_payments is_initiator = yes } } }
+                AND = { nesnd_india_order_tax_pact_value = 2 root = { has_diplomatic_pact = { who = prev type = decrease_payments is_initiator = yes } } }
+            }
+        }
+        add = 1
+    }
+}
+nesnd_india_order_tax_dropped = {
+    value = 0
+    every_subject_or_below = {
+        limit = {
+            nesnd_india_country = yes is_direct_subject_of = root has_variable = nesnd_india_order_tax_pact
+            NOR = {
+                AND = { nesnd_india_order_tax_pact_value = 1 root = { has_diplomatic_pact = { who = prev type = raise_payments is_initiator = yes } } }
+                AND = { nesnd_india_order_tax_pact_value = 2 root = { has_diplomatic_pact = { who = prev type = decrease_payments is_initiator = yes } } }
+            }
+        }
+        add = 1
+    }
+}
+nesnd_india_order_tax_unable = {
+    value = 0
+    every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { has_variable = nesnd_india_order_tax_pact } } add = 1 }
+}
+nesnd_india_order_army_in = {
+    value = 0
+    every_subject_or_below = {
+        limit = { nesnd_india_country = yes is_direct_subject_of = root has_variable = nesnd_india_order_army_pact root = { has_diplomatic_pact = { who = prev type = exempt_from_service is_initiator = yes } } }
+        add = 1
+    }
+}
+nesnd_india_order_army_dropped = {
+    value = 0
+    every_subject_or_below = {
+        limit = { nesnd_india_country = yes is_direct_subject_of = root has_variable = nesnd_india_order_army_pact NOT = { root = { has_diplomatic_pact = { who = prev type = exempt_from_service is_initiator = yes } } } }
+        add = 1
+    }
+}
+nesnd_india_order_army_unable = {
+    value = 0
+    every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { has_variable = nesnd_india_order_army_pact } } add = 1 }
+}
+nesnd_india_order_school_in = {
+    value = 0
+    every_subject_or_below = {
+        limit = { nesnd_india_country = yes is_direct_subject_of = root has_variable = nesnd_india_order_school_pact root = { has_diplomatic_pact = { who = prev type = da_knowledge_sharing is_initiator = yes } } }
+        add = 1
+    }
+}
+nesnd_india_order_school_dropped = {
+    value = 0
+    every_subject_or_below = {
+        limit = { nesnd_india_country = yes is_direct_subject_of = root has_variable = nesnd_india_order_school_pact NOT = { root = { has_diplomatic_pact = { who = prev type = da_knowledge_sharing is_initiator = yes } } } }
+        add = 1
+    }
+}
+nesnd_india_order_school_unable = {
+    value = 0
+    every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { has_variable = nesnd_india_order_school_pact } } add = 1 }
+}

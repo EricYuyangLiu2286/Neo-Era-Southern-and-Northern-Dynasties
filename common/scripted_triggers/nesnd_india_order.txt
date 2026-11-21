@@ -1,0 +1,61 @@
+﻿# The journal nesnd_india_order: Mughal ("Mughal" here is any country for which nesnd_india_empire holds)
+# chooses, for its Indian subjects, a central or a local arrangement in three matters:
+#   tax       nesnd_india_order_tax      1 raise_payments with each Indian subject, tax capacity at home
+#                                        2 decrease_payments with each Indian subject
+#   army      nesnd_india_order_army     1 authority per subject at home, liberty desire on each subject
+#                                        2 exempt_from_service with each Indian subject
+#   school    nesnd_india_order_school   1 da_knowledge_sharing with each Indian subject, qualifications at home
+#                                        2 qualifications and less liberty desire on each subject
+# Variables are listed in common/script_values/nesnd_india_order.txt.
+
+# Mughal scope. The journal is held.
+nesnd_india_order_live = {
+    save_temporary_scope_as = india_order_self
+    nesnd_india_empire = yes
+    custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done }
+    custom_tooltip = {
+        text = nesnd_india_order_has_subject_tt
+        any_subject_or_below = { nesnd_india_country = yes is_direct_subject_of = scope:india_order_self }
+    }
+}
+
+# Country scope. One of Mughal's Indian subjects (any subject type). LORD is Mughal.
+nesnd_india_order_member = { nesnd_india_country = yes is_direct_subject_of = $LORD$ }
+
+# Mughal scope. ISSUE is tax, army or school; true when that matter has been settled one way.
+nesnd_india_order_chosen = { has_variable = nesnd_india_order_$ISSUE$ }
+nesnd_india_order_is = { nesnd_india_order_$ISSUE$_value = $END$ }
+# Mughal scope. The five years since the last choice in that matter have run out.
+nesnd_india_order_free = {
+    trigger_if = { limit = { has_variable = nesnd_india_order_$ISSUE$_wait }
+        custom_tooltip = { text = nesnd_india_order_$ISSUE$_wait_tt NOT = { has_variable = nesnd_india_order_$ISSUE$_wait } }
+    }
+}
+# Mughal scope. A button for ISSUE and END can be pressed.
+nesnd_india_order_can_choose = {
+    nesnd_india_order_live = yes
+    custom_tooltip = { text = nesnd_india_order_already_tt NOT = { nesnd_india_order_is = { ISSUE = $ISSUE$ END = $END$ } } }
+    nesnd_india_order_free = { ISSUE = $ISSUE$ }
+}
+
+# Subject scope, with scope:india_order_lord (Mughal) and scope:india_order_member (this subject) saved.
+# Whether Mughal could sign each treaty with this subject today (the treaty's own conditions decide).
+nesnd_india_order_can_raise = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = raise_payments } } }
+nesnd_india_order_can_decrease = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = decrease_payments } } }
+nesnd_india_order_can_exempt = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = exempt_from_service } } }
+nesnd_india_order_can_share = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = da_knowledge_sharing } } }
+
+# Subject scope, from its own monthly refresh. It was given something by this journal and is no longer
+# an Indian subject of a Mughal that holds the journal.
+nesnd_india_order_left = {
+    has_variable = nesnd_india_order_lord
+    trigger_if = { limit = { exists = var:nesnd_india_order_lord }
+        NAND = {
+            var:nesnd_india_order_lord = { is_country_alive = yes nesnd_india_order_live = yes }
+            nesnd_india_order_member = { LORD = var:nesnd_india_order_lord }
+        }
+    }
+}
+
+# Mughal scope. AI: more than half of its Indian subjects have liberty desire of 50 or more.
+nesnd_india_order_ai_restless = { nesnd_india_order_restless_count > nesnd_india_order_half_members }
