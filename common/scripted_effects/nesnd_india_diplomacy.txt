@@ -116,17 +116,55 @@ nesnd_india_accept_request = {
             create_treaty = { first_country = scope:india_sender second_country = scope:india_partner is_draft = no binding_period = { years = 3 } articles_to_create = { { article = defensive_pact } } }
         }
         if = { limit = { nesnd_india_incoming_kind = 6 }
-            scope:india_sender = {
-                add_treasury = { value = nesnd_india_request_quote multiply = -1 }
-                add_modifier = { name = nesnd_india_princely_pensions months = 120 }
-                nesnd_india_inherit_partner = yes
-                nesnd_india_clear_request = yes
-                annex = scope:india_partner
-                nesnd_india_refresh = yes
-            }
+            scope:india_sender = { nesnd_india_settle_union = yes }
         }
         else = { scope:india_sender = { change_relations = { country = scope:india_partner value = 25 } trigger_event = { id = nesnd_india_diplomacy.2 popup = yes } nesnd_india_clear_request = yes } }
     }
+}
+# Empire scope. Offer up to four eligible princes, largest first, and let the government pick one.
+nesnd_india_open_union_choice = {
+    clear_saved_scope = india_union_candidate_1
+    clear_saved_scope = india_union_candidate_2
+    clear_saved_scope = india_union_candidate_3
+    clear_saved_scope = india_union_candidate_4
+    ordered_country = { limit = { nesnd_india_union_target = yes } order_by = total_population position = 0 check_range_bounds = no save_scope_as = india_union_candidate_1 }
+    ordered_country = { limit = { nesnd_india_union_target = yes } order_by = total_population position = 1 check_range_bounds = no save_scope_as = india_union_candidate_2 }
+    ordered_country = { limit = { nesnd_india_union_target = yes } order_by = total_population position = 2 check_range_bounds = no save_scope_as = india_union_candidate_3 }
+    ordered_country = { limit = { nesnd_india_union_target = yes } order_by = total_population position = 3 check_range_bounds = no save_scope_as = india_union_candidate_4 }
+    trigger_event = { id = nesnd_india_diplomacy.5 popup = yes }
+}
+nesnd_india_invite_union = {
+    if = { limit = { nesnd_india_can_invite_union = yes exists = $TARGET$ }
+        if = { limit = { $TARGET$ = { nesnd_india_union_target = yes } }
+            clear_saved_scope = india_partner
+            $TARGET$ = { save_scope_as = india_partner }
+            nesnd_india_send_request = { KIND = 6 }
+        }
+    }
+}
+# Empire scope. One more pension is owed; the ten years run again from today for all of them.
+# The count starts over once the previous pensions have run out.
+nesnd_india_add_pension = {
+    if = {
+        limit = { OR = { NOT = { has_variable = nesnd_india_pension_count } NOT = { has_modifier = nesnd_india_princely_pensions } } }
+        set_variable = { name = nesnd_india_pension_count value = 0 }
+    }
+    change_variable = { name = nesnd_india_pension_count add = 1 }
+    if = { limit = { has_modifier = nesnd_india_princely_pensions } remove_modifier = nesnd_india_princely_pensions }
+    add_modifier = { name = nesnd_india_princely_pensions months = 120 multiplier = nesnd_india_pension_count_value }
+}
+# Empire scope, scope:india_partner is the prince. What the empire owes whichever way the prince joins.
+nesnd_india_union_terms = {
+    add_treasury = { value = nesnd_india_request_quote multiply = -1 }
+    nesnd_india_add_pension = yes
+}
+# Empire scope, scope:india_partner is the prince. Full merger: the prince's state ceases to exist.
+nesnd_india_settle_union = {
+    nesnd_india_union_terms = yes
+    nesnd_india_inherit_partner = yes
+    nesnd_india_clear_request = yes
+    annex = scope:india_partner
+    nesnd_india_refresh = yes
 }
 nesnd_india_remove_advisers = {
     if = { limit = { has_modifier = nesnd_india_french_advisers } remove_modifier = nesnd_india_french_advisers } if = { limit = { has_modifier = nesnd_india_french_teachers } remove_modifier = nesnd_india_french_teachers } if = { limit = { has_modifier = nesnd_india_french_engineers } remove_modifier = nesnd_india_french_engineers } if = { limit = { has_modifier = nesnd_india_french_officers } remove_modifier = nesnd_india_french_officers }
@@ -148,12 +186,8 @@ nesnd_india_diplomacy_maintenance = {
         } else = { nesnd_india_remove_advisers = yes }
     }
 }
+# Empire scope. The prince's own pending request and advisers end with his state.
 nesnd_india_inherit_partner = {
-    if = { limit = { scope:india_partner = { has_variable = nesnd_india_schools_done } } set_variable = nesnd_india_schools_done }
-    if = { limit = { scope:india_partner = { has_variable = nesnd_india_industry_done } } set_variable = nesnd_india_industry_done }
-    if = { limit = { scope:india_partner = { has_variable = nesnd_india_reform_done } } set_variable = nesnd_india_reform_done }
-    if = { limit = { scope:india_partner = { has_variable = nesnd_india_caste_done } } set_variable = nesnd_india_caste_done }
-    if = { limit = { scope:india_partner = { has_variable = nesnd_india_unified_done } } set_variable = nesnd_india_unified_done }
     scope:india_partner = { nesnd_india_clear_request = yes nesnd_india_remove_advisers = yes }
 }
 
@@ -168,6 +202,7 @@ nesnd_india_open_mission = {
     if = {
         limit = { nesnd_india_can_address_mission = { PARTNER = $PARTNER$ } }
         $PARTNER$ = { save_scope_as = india_partner }
+        save_scope_as = india_sender
         trigger_event = { id = nesnd_india_diplomacy.4 popup = yes }
     }
 }
@@ -195,6 +230,7 @@ nesnd_india_choose_ai_partner = {
         limit = {
             is_at_war = no
             nesnd_india_mission_partner = { SENDER = scope:india_mission_requester }
+            nesnd_india_partner_can_fund = { SENDER = scope:india_mission_requester }
         }
         weight = {
             base = 1

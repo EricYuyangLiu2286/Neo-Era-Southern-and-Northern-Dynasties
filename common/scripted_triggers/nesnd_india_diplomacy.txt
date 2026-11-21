@@ -63,10 +63,50 @@ nesnd_india_can_address_mission = {
         $PARTNER$ = {
             nesnd_india_mission_partner = { SENDER = prev }
             is_at_war = no
+            nesnd_india_partner_can_fund = { SENDER = prev }
         }
         NOT = { has_war_with = $PARTNER$ }
     }
     trigger_else = { always = no }
+}
+
+# Partner scope. The reply stage checks the same three facts against the stored quote.
+nesnd_india_partner_can_fund = {
+    custom_tooltip = {
+        text = nesnd_india_partner_can_fund_tt
+        gold_reserves >= $SENDER$.nesnd_india_grant
+        in_default = no
+        NOT = { has_modifier = declared_bankruptcy }
+    }
+}
+# Any scope, with scope:india_sender and scope:india_partner saved. Used before sending and again at the reply.
+nesnd_india_access_treaty_possible = {
+    can_create_treaty = {
+        first_country = scope:india_sender
+        second_country = scope:india_partner
+        is_draft = no
+        binding_period = { years = 5 }
+        articles_to_create = {
+            { article = military_access source_country = scope:india_sender target_country = scope:india_partner }
+        }
+    }
+}
+# Sender scope, in the mission choice event. A choice event opened before this check existed has no
+# scope:india_sender; it stays selectable and the reply stage decides.
+nesnd_india_engineer_presend = {
+    trigger_if = {
+        limit = { exists = scope:india_sender exists = scope:india_partner }
+        custom_tooltip = {
+            text = nesnd_india_workshop_site_tt
+            any_scope_state = { nesnd_india_workshop_site = yes }
+        }
+    }
+}
+nesnd_india_officer_presend = {
+    trigger_if = {
+        limit = { exists = scope:india_sender exists = scope:india_partner }
+        nesnd_india_access_treaty_possible = yes
+    }
 }
 
 nesnd_india_autonomy_available = {
@@ -81,6 +121,15 @@ nesnd_india_union_target = {
     custom_tooltip = { text = nesnd_ui_not_india_incoming_union_clock_tt NOT = { has_variable = nesnd_india_incoming_union_clock } }
     NOT = { this = root } relations:root >= 25
     root = { is_subject = no }
+}
+# Empire scope. Shared by the invitation button and the choice event.
+nesnd_india_can_invite_union = {
+    nesnd_india_can_send = yes
+    hidden_trigger = { nesnd_india_empire = yes }
+    is_subject = no
+    custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done }
+    nesnd_india_community >= 60
+    custom_tooltip = { text = nesnd_india_union_target_exists_tt any_country = { nesnd_india_union_target = yes } }
 }
 nesnd_india_reply_valid = {
     trigger_if = { limit = {
@@ -182,15 +231,7 @@ nesnd_india_reply_can_accept = {
         }
         trigger_if = {
             limit = { nesnd_india_incoming_kind = 3 }
-            can_create_treaty = {
-                first_country = scope:india_sender
-                second_country = scope:india_partner
-                is_draft = no
-                binding_period = { years = 5 }
-                articles_to_create = {
-                    { article = military_access source_country = scope:india_sender target_country = scope:india_partner }
-                }
-            }
+            nesnd_india_access_treaty_possible = yes
         }
         trigger_if = { limit = { nesnd_india_incoming_kind = 5 } nesnd_india_defence_treaty_possible = { SENDER = scope:india_sender PARTNER = scope:india_partner } }
         trigger_if = { limit = { nesnd_india_incoming_kind = 6 } scope:india_sender = { gold_reserves >= nesnd_india_request_quote } }
