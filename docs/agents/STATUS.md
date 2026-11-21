@@ -25,7 +25,7 @@
 
 ## 未完成
 
-[印度使团](../../.scratch/india-missions/issues/01-aid-for-concessions.md)与[印度诸邦开局调整](../../.scratch/india-missions/issues/02-princes-and-himalaya.md)已通过游戏外核对。待新局复测宗藩、外资持股、通行权与悬停排版。
+[印度使团](../../.scratch/india-missions/issues/01-aid-for-concessions.md)与[印度诸邦开局调整](../../.scratch/india-missions/issues/02-princes-and-himalaya.md)已通过游戏外核对。待新局复测宗藩、外资持股、通行权与悬停排版。2026-11-21 整理了使团发信前核对、土邦重复按钮和并邦结算，并加了[土邦的本地项目](../../.scratch/india-missions/issues/03-local-projects.md)（自己出资、邻邦或外国出资，属国记产权要宗主许可，答复方有 30 日的日志「印度事务」）。STATIC_PASS，待实机项列在该任务文件和工作台 `reports/2026-11-21-india-development/`。
 
 2026-11-18 [东征日本吴方目标作废](../../.scratch/debug-release/issues/111-japan-reorganization-goal-kept.md)：「重组日本诸藩」有效条件只剩吴对存活的日本；去掉引擎的 country_creation 设置（推断它让目标一开战即作废）；兑现按京都、关东、中国、九州四国逐项分封。部署 `ab24288d`，STATIC_PASS，待新开局两入口复测。
 
