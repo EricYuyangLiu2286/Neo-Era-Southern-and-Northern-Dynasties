@@ -1,0 +1,255 @@
+﻿# Mughal's own affairs. "Mughal" is only the country holding nesnd_india_mughal_court. Variables and
+# sums are listed in common/script_values/nesnd_india_mughal.txt.
+
+# ---------------------------------------------------------------------------------------------
+# Who holds the two journals
+# ---------------------------------------------------------------------------------------------
+# The old agreement with the overlord: Mughal is a subject, and its overlord is not an Indian country.
+nesnd_mug_france_live = {
+    hidden_trigger = {
+        is_country_alive = yes
+        has_variable = nesnd_india_mughal_court
+        is_subject = yes
+        exists = overlord
+        overlord = { NOT = { nesnd_india_country = yes } }
+    }
+}
+# The council of princes: Mughal has finished its reform.
+nesnd_mug_council_live = {
+    hidden_trigger = {
+        is_country_alive = yes
+        has_variable = nesnd_india_mughal_court
+        has_variable = nesnd_india_reform_done
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The loan
+# ---------------------------------------------------------------------------------------------
+nesnd_mug_in_default = { OR = { in_default = yes has_modifier = declared_bankruptcy } }
+
+# Article scope, with scope:mug_loan_debtor and scope:mug_loan_creditor saved. The repayment article.
+nesnd_mug_loan_article = {
+    trigger_if = { limit = { exists = source_country exists = target_country }
+        has_type = money_transfer
+        source_country = scope:mug_loan_debtor
+        target_country = scope:mug_loan_creditor
+        input_quantity = nesnd_mug_loan_weekly
+    }
+    trigger_else = { always = no }
+}
+# Mughal scope. Our repayment treaty with PARTNER is in force.
+nesnd_mug_loan_treaty = {
+    save_temporary_scope_as = mug_loan_debtor
+    $PARTNER$ = { save_temporary_scope_as = mug_loan_creditor }
+    any_scope_treaty = {
+        binds = scope:mug_loan_creditor
+        any_scope_article = { nesnd_mug_loan_article = yes }
+    }
+}
+# Any scope. The repayment treaty and the trade privilege owed on default can be created.
+nesnd_mug_loan_possible = {
+    can_create_treaty = {
+        first_country = $DEBTOR$
+        second_country = $CREDITOR$
+        is_draft = no
+        binding_period = { years = 5 }
+        articles_to_create = {
+            { article = money_transfer source_country = $DEBTOR$ target_country = $CREDITOR$ inputs = { { quantity = 460 } } }
+        }
+    }
+}
+nesnd_mug_trade_possible = {
+    can_create_treaty = {
+        first_country = $DEBTOR$
+        second_country = $CREDITOR$
+        is_draft = no
+        binding_period = { years = 10 }
+        articles_to_create = {
+            { article = trade_privilege source_country = $DEBTOR$ target_country = $CREDITOR$ }
+        }
+    }
+}
+
+# Mughal scope. The two buttons of nesnd_mug_france.
+nesnd_mug_can_ask_loan = {
+    nesnd_mug_france_live = yes
+    nesnd_india_channel_free = yes
+    custom_tooltip = { text = nesnd_mug_no_loan_tt NOT = { has_variable = nesnd_mug_loan_from } }
+    custom_tooltip = { text = nesnd_mug_not_in_default_tt NOT = { nesnd_mug_in_default = yes } }
+    trigger_if = { limit = { exists = overlord } NOT = { has_war_with = overlord } }
+}
+nesnd_mug_can_ask_redeem = {
+    nesnd_mug_france_live = yes
+    nesnd_india_channel_free = yes
+    custom_tooltip = { text = nesnd_mug_can_pay_redeem_tt gold_reserves >= nesnd_mug_redeem_price }
+    trigger_if = { limit = { exists = overlord } NOT = { has_war_with = overlord } }
+}
+
+# ---------------------------------------------------------------------------------------------
+# Famine
+# ---------------------------------------------------------------------------------------------
+# State region scope. A harvest condition that cuts the throughput of farms.
+nesnd_mug_food_harvest = {
+    OR = {
+        has_harvest_condition = drought
+        has_harvest_condition = flood
+        has_harvest_condition = frost
+        has_harvest_condition = wildfire
+        has_harvest_condition = hailstorm
+        has_harvest_condition = locust_swarm
+        has_harvest_condition = heatwave
+        has_harvest_condition = disease_outbreak
+        has_harvest_condition = extreme_winds
+        has_harvest_condition = torrential_rains
+    }
+}
+# State scope. A populated Indian state in such a region.
+nesnd_mug_famine_struck = {
+    nesnd_india_state = yes
+    state_population > 0
+    state_region = { nesnd_mug_food_harvest = yes }
+}
+# Country scope. An Indian government that asks for help as a prince: a prince, or an Indian empire
+# (BHT or DRA formed by a prince) that is not Mughal.
+nesnd_mug_famine_asker = {
+    NOT = { has_variable = nesnd_india_mughal_court }
+    OR = { nesnd_india_prince = yes nesnd_india_empire = yes }
+}
+nesnd_mug_famine_due = {
+    is_country_alive = yes
+    OR = {
+        AND = { has_variable = nesnd_india_mughal_court nesnd_india_country = yes }
+        nesnd_mug_famine_asker = yes
+    }
+    NOT = { has_variable = nesnd_mug_famine_wait }
+    any_scope_state = { nesnd_mug_famine_struck = yes }
+}
+# Country scope. We can pay the relief of our struck states ourselves.
+nesnd_mug_can_relieve = {
+    custom_tooltip = {
+        text = nesnd_mug_can_relieve_tt
+        nesnd_mug_famine_states > 0
+        gold_reserves >= nesnd_mug_famine_cost
+        in_default = no
+    }
+}
+# Prince scope. No other matter of ours waits for an answer.
+nesnd_mug_matter_free = {
+    custom_tooltip = {
+        text = nesnd_mug_matter_free_tt
+        NOR = { has_variable = nesnd_india_matter_kind has_variable = nesnd_india_matter_clock }
+    }
+}
+# Prince scope, in the famine events (scope:mug_famine_mughal is saved there).
+nesnd_mug_can_ask_mughal = {
+    nesnd_mug_matter_free = yes
+    custom_tooltip = {
+        text = nesnd_mug_mughal_at_peace_tt
+        exists = scope:mug_famine_mughal
+        scope:mug_famine_mughal = { is_country_alive = yes }
+        NOT = { has_war_with = scope:mug_famine_mughal }
+    }
+}
+nesnd_mug_can_ask_overlord = {
+    nesnd_mug_matter_free = yes
+    custom_tooltip = {
+        text = nesnd_mug_overlord_at_peace_tt
+        exists = overlord
+        NOT = { overlord = { has_variable = nesnd_india_mughal_court } }
+        NOT = { has_war_with = overlord }
+    }
+}
+# Prince scope. Shown only to a subject of another country than Mughal.
+nesnd_mug_overlord_option_shown = {
+    is_subject = yes
+    exists = overlord
+    NOT = { overlord = { has_variable = nesnd_india_mughal_court } }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The council of princes
+# ---------------------------------------------------------------------------------------------
+# Country scope. A prince that can be invited by CONVENER.
+nesnd_mug_council_guest = {
+    is_country_alive = yes
+    nesnd_india_prince = yes
+    is_at_war = no
+    NOT = { has_war_with = $CONVENER$ }
+}
+nesnd_mug_can_call_council = {
+    nesnd_mug_council_live = yes
+    custom_tooltip = { text = nesnd_mug_council_rested_tt NOT = { has_variable = nesnd_mug_council_wait } }
+    custom_tooltip = { text = nesnd_mug_council_not_sitting_tt NOT = { has_variable = nesnd_mug_council_topic } }
+    custom_tooltip = { text = nesnd_mug_council_has_guests_tt any_country = { nesnd_mug_council_guest = { CONVENER = root } } }
+}
+# Any scope. A common defence treaty of five years between FIRST and SECOND can be created.
+nesnd_mug_defence_possible = {
+    can_create_treaty = {
+        first_country = $FIRST$
+        second_country = $SECOND$
+        is_draft = no
+        binding_period = { years = 5 }
+        articles_to_create = { { article = defensive_pact } }
+    }
+}
+# Prince scope (nesnd_mug_council_invite is the Mughal that invited us). For the AI only.
+nesnd_mug_council_host_relations = {
+    save_temporary_scope_as = mug_council_me
+    trigger_if = { limit = { exists = var:nesnd_mug_council_invite } var:nesnd_mug_council_invite = { "relations(scope:mug_council_me)" >= $VALUE$ } }
+    trigger_else = { always = no }
+}
+nesnd_mug_council_host_hostile = {
+    save_temporary_scope_as = mug_council_me
+    trigger_if = { limit = { exists = var:nesnd_mug_council_invite } var:nesnd_mug_council_invite = { "relations(scope:mug_council_me)" < 0 } }
+    trigger_else = { always = no }
+}
+nesnd_mug_council_other_subject = {
+    is_subject = yes
+    trigger_if = { limit = { exists = var:nesnd_mug_council_invite } NOT = { overlord ?= var:nesnd_mug_council_invite } }
+}
+# Prince scope. The topic of the council we were invited to.
+nesnd_mug_council_topic_is = {
+    trigger_if = { limit = { exists = var:nesnd_mug_council_invite } var:nesnd_mug_council_invite = { has_variable = nesnd_mug_council_topic var:nesnd_mug_council_topic = $T$ } }
+    trigger_else = { always = no }
+}
+
+# ---------------------------------------------------------------------------------------------
+# Matters of kinds 7 to 9 (Indian affairs, common/scripted_triggers/nesnd_india_matters.txt)
+# ---------------------------------------------------------------------------------------------
+# Holder scope: the matter still stands.
+nesnd_mug_matter_valid = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_to }
+        trigger_if = { limit = { nesnd_india_matter_kind_value = 9 }
+            nesnd_mug_famine_asker = yes
+            any_scope_state = { has_variable = nesnd_mug_famine_state }
+            OR = {
+                var:nesnd_india_matter_to = { has_variable = nesnd_india_mughal_court }
+                overlord ?= var:nesnd_india_matter_to
+            }
+        }
+        trigger_else = {
+            nesnd_mug_france_live = yes
+            overlord ?= var:nesnd_india_matter_to
+            trigger_if = { limit = { nesnd_india_matter_kind_value = 7 } NOT = { has_variable = nesnd_mug_loan_from } }
+        }
+    }
+    trigger_else = { always = no }
+}
+# Answering scope: we can agree today.
+nesnd_mug_can_accept = {
+    trigger_if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
+        custom_tooltip = { text = nesnd_mug_we_can_lend_tt gold_reserves >= nesnd_mug_loan_sum in_default = no }
+    }
+    trigger_else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
+        custom_tooltip = { text = nesnd_mug_they_can_redeem_tt var:nesnd_india_matter_from = { gold_reserves >= nesnd_mug_redeem_price } }
+    }
+    trigger_else = {
+        custom_tooltip = { text = nesnd_mug_we_can_aid_tt gold_reserves >= nesnd_india_matter_quote in_default = no }
+    }
+}
+# Answering scope, for the AI. Our overlord's holdings in Mughal are large.
+nesnd_mug_ai_many_levels = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { nesnd_mug_overlord_levels >= 3 } }
+    trigger_else = { always = no }
+}
