@@ -238,6 +238,22 @@ function Show-Uncommitted([bool]$AfterDeploy) {
     else { Say '这些若是本任务正在改的文件，做完后提交；若是别的任务留下的，先告诉作者，不要代为提交或回退。' Yellow }
 }
 
+# ---------- 本地化位置 ----------
+# 作者 2026-11-22：MOD 的本地化 yml 只放 localization/<语言>/replace/。这里列出放在 replace 之外的 yml。
+# 只醒目提醒、不改退出码：check 的非零退出码专指版本号不一致或尚未部署，代理见到就停止一切工作，不能混用。
+function Show-LocOutsideReplace([string]$Root = $SOURCE) {
+    $base = Join-Path $Root 'localization'
+    if (-not (Test-Path -LiteralPath $base -PathType Container)) { return }
+    $bad = @(Get-ChildItem -LiteralPath $base -Recurse -Force -File -Filter '*.yml' | ForEach-Object { Get-Rel $Root $_.FullName } |
+        Where-Object { $p = $_.Split('/'); -not ($p.Count -ge 4 -and $p[2] -ceq 'replace') } | Sort-Object)
+    if ($bad.Count -eq 0) { Say '本地化 yml 都在 localization/<语言>/replace/ 下。' Green; return }
+    Say ''
+    Say "！！本地化 yml 必须放在 replace/ 下：localization/<语言>/ 里 replace/ 之外有 $($bad.Count) 个 yml。" Red
+    foreach ($x in ($bad | Select-Object -First 20)) { Say "    $x" Red }
+    if ($bad.Count -gt 20) { Say "    ……另有 $($bad.Count - 20) 个。" Red }
+    Say '把它们移进 localization/<语言>/replace/（作者 2026-11-22）。' Red
+}
+
 # ---------- 记录 ----------
 function ConvertTo-JsonString([string]$s) {
     $sb = New-Object System.Text.StringBuilder '"'
@@ -275,10 +291,11 @@ function Invoke-Check {
     Say '== 检查：版本号' Cyan
     $v = Get-VersionState
     Show-Versions $v 5
-    if ($v.State -eq 'ok') { Say '三者一致。' Green; Show-Uncommitted $false; return 0 }
+    if ($v.State -eq 'ok') { Say '三者一致。' Green; Show-Uncommitted $false; Show-LocOutsideReplace; return 0 }
     if ($v.State -eq 'first') { Say '尚未部署过（两边都没有版本号，也没有记录）。' Yellow; return 1 }
     Show-MismatchWarning $v
     Show-Uncommitted $false
+    Show-LocOutsideReplace
     return 1
 }
 
