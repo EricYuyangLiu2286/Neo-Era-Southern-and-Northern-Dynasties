@@ -128,22 +128,28 @@ nesnd_india_union_consent_chance = {
 }
 
 # Country scope. Populated Indian states held by this country and its subjects, and in all the world.
-# Only states held by countries whose capital lies in an Indian state count, on both sides of the share:
-# a foreign holder (FRA, POR, GBR and the like) is left out of the numerator and the denominator.
+# On both sides of the share a holder counts only if its capital lies in an Indian state and it is not
+# the subject of an overlord whose capital lies outside India (nesnd_mug_foreign_overlord): a foreign
+# holder (FRA, POR, GBR and the like) and a foreign holder's subjects are left out. Our own states always
+# count, even while we are ourselves the subject of a foreign overlord.
 nesnd_india_held_states = {
     value = 0
     if = { limit = { capital ?= { nesnd_india_state = yes } }
         every_scope_state = { limit = { nesnd_india_state = yes state_population > 0 } add = 1 }
     }
     every_subject_or_below = {
-        limit = { capital ?= { nesnd_india_state = yes } }
+        limit = { capital ?= { nesnd_india_state = yes } NOT = { nesnd_mug_foreign_overlord = yes } }
         every_scope_state = { limit = { nesnd_india_state = yes state_population > 0 } add = 1 }
     }
 }
 nesnd_india_all_states = {
     value = 0
     every_country = {
-        limit = { is_country_alive = yes capital ?= { nesnd_india_state = yes } }
+        limit = {
+            is_country_alive = yes
+            capital ?= { nesnd_india_state = yes }
+            OR = { this = root NOT = { nesnd_mug_foreign_overlord = yes } }
+        }
         every_scope_state = { limit = { nesnd_india_state = yes state_population > 0 } add = 1 }
     }
 }

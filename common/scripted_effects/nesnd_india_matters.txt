@@ -24,7 +24,7 @@ nesnd_india_matter_clear = {
     remove_variable = nesnd_india_matter_to remove_variable = nesnd_india_matter_await
     remove_variable = nesnd_india_matter_side remove_variable = nesnd_india_matter_ok_own
     remove_variable = nesnd_india_matter_ok_other remove_variable = nesnd_india_matter_amount
-    remove_variable = nesnd_india_matter_clock
+    remove_variable = nesnd_india_matter_clock remove_variable = nesnd_india_matter_queue
 }
 
 # KIND as listed in the script values, TO the other government, AMOUNT the sum named.
@@ -35,6 +35,8 @@ nesnd_india_matter_send = {
     set_variable = { name = nesnd_india_matter_to value = $TO$ }
     set_variable = { name = nesnd_india_matter_amount value = $AMOUNT$ }
     set_variable = { name = nesnd_india_matter_clock days = 60 }
+    # A plea for famine aid may wait for a busy government, but not for more than 90 days from sending.
+    if = { limit = { nesnd_india_matter_kind_value = 9 } set_variable = { name = nesnd_india_matter_queue days = 90 } }
     remove_variable = nesnd_india_matter_ok_own
     remove_variable = nesnd_india_matter_ok_other
     if = { limit = { OR = { nesnd_india_matter_kind_value <= 3 nesnd_india_matter_kind_value = 7 nesnd_india_matter_kind_value = 8 nesnd_india_matter_kind_value = 10 nesnd_india_matter_kind_value = 11 } } set_variable = { name = nesnd_india_request_cooldown months = 6 } }
@@ -98,8 +100,10 @@ nesnd_india_matter_fail = {
 # Monthly, from nesnd_india_refresh.
 nesnd_india_matter_maintenance = {
     if = { limit = { nesnd_india_matter_waiting = yes }
-        if = { limit = { nesnd_india_matter_kind_value = 9 nesnd_india_matter_undelivered = yes } set_variable = { name = nesnd_india_matter_clock days = 60 } }
-        if = { limit = { NOT = { has_variable = nesnd_india_matter_clock } } nesnd_india_matter_fail = { RESULT = 3 } }
+        if = { limit = { nesnd_india_matter_kind_value = 9 nesnd_india_matter_undelivered = yes has_variable = nesnd_india_matter_queue } set_variable = { name = nesnd_india_matter_clock days = 60 } }
+        # 6: the plea waited 90 days for the government asked and never reached it.
+        if = { limit = { nesnd_india_matter_kind_value = 9 nesnd_india_matter_undelivered = yes NOT = { has_variable = nesnd_india_matter_queue } } nesnd_india_matter_fail = { RESULT = 6 } }
+        else_if = { limit = { NOT = { has_variable = nesnd_india_matter_clock } } nesnd_india_matter_fail = { RESULT = 3 } }
         else_if = { limit = { NOT = { nesnd_india_matter_valid = yes } } nesnd_india_matter_fail = { RESULT = 5 } }
         else = { nesnd_india_matter_deliver = yes }
     }
