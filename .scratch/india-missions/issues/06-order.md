@@ -29,15 +29,24 @@ Evidence: 工作台 `reports/2026-11-21-india-development/中央与各邦/交付
 
 跨州铁路分摊、赈济调粮、歉收压力测试；改附属国类型或傀儡化；地方退出或重新谈判；莫卧儿与法兰西的旧约、王公会议、饥荒；BHT、DRA 的成立条件。
 
-## 待实机
+## 已按代码核验
 
-接着 05 的编号：
+2026-11-22 收尾批读代码定下，不进游戏。每项的依据（原版与源目录文件:行）见 工作台 reports/2026-11-21-india-development/收尾/审阅/待实机核验.md。
 
 28. 脚本 `create_diplomatic_pact` 建这四种条约；`can_create_diplomatic_pact` 对自治领、朝贡国、受保护国、傀儡国的结果（例 3、6、13）。
+   结论：按原版动作的 potential/possible/maintain 可以逐项定出（DLC 功能 subject_and_bloc_actions 视为已有）： 不改。
 29. `remove_diplomatic_pact` 撤有 12 个月强制期的条约（降低附属国贡金、免除军事服务、分享知识）能否撤掉，撤时是否触发对方独立倾向 +10。
+   结论：代码无法证实。 收尾已改：nesnd_india_order_clear_* 只在条约确实不在时清标记，nesnd_india_order_leave 在标记清完后才清 nesnd_india_order_lord，撤约没生效的下月再试。
 30. 正文三行的计数和改选日期显示。
+   结论：成立。 不改。
 31. AI 莫卧儿会不会按原版的 will_break 自己撤掉本日志建的条约。
+   结论：会，尤其是分享知识。 未改，可选改：SRC `common/scripted_effects/nesnd_india_empire.txt` 的 `nesnd_india_order_ai` 学务一段，莫卧儿 `is_country_type = unrecognized` 时把 END = 1（分享知识）的权重降到 20、END = 2 升到 80，免得 AI 选了又自己撤（见核验报告）。
 32. 成立 BHT 后日志、选择、条约、修正都在（例 10），以及莫卧儿专属奖励（例 11）。
+   结论：成立。 不改。
 33. 附属国独立后，标记、修正、条约在一个月内清干净（例 8）。
+   结论：标记、修正一个月内清干净；条约可能晚。 随 06-29 一起改。
 34. 分享知识在莫卧儿科技不多于对方时自动解除，正文计入「已撤」。
+   结论：成立，但前 12 个月不会解除。 不改。
 35. `country_authority_per_subject_add` 写在国家修正上生效（原版只用在国家集团原则上）。
+   结论：成立。 不改。
+

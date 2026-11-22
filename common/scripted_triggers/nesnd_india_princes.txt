@@ -1,0 +1,622 @@
+﻿# ==== The request channel: princes ask their overlord or a power for aid (formerly nesnd_india_diplomacy.txt) ====
+nesnd_india_diplomacy_live = { hidden_trigger = { OR = { nesnd_india_empire = yes nesnd_india_prince = yes } } }
+nesnd_india_mission_country = {
+    custom_tooltip = {
+        text = nesnd_india_mission_country_tt
+        OR = { nesnd_india_diplomacy_live = yes nesnd_small_state_country = yes }
+    }
+}
+nesnd_india_can_send = {
+    nesnd_india_diplomacy_live = yes
+    nesnd_india_channel_free = yes
+}
+nesnd_india_channel_free = {
+    custom_tooltip = { text = nesnd_small_no_emergency_tt is_at_war = no is_active_in_diplomatic_play = no }
+    custom_tooltip = { text = nesnd_small_diplomacy_not_cooling_tt
+        trigger_if = { limit = { nesnd_small_state_country = yes }
+            nesnd_canon_request_free = yes
+            NOT = { has_variable = nesnd_small_market_verification }
+            NOT = { has_variable = nesnd_small_market_verifying }
+        }
+        NOR = { has_variable = nesnd_india_request_clock has_variable = nesnd_india_matter_clock has_variable = nesnd_external_pending has_variable = nesnd_india_request_cooldown has_variable = nesnd_external_cooldown }
+    }
+}
+nesnd_india_mission_ready = {
+    nesnd_india_mission_country = yes
+    nesnd_india_channel_free = yes
+    custom_tooltip = {
+        text = nesnd_sweep_no_aid_active
+        NOR = { has_variable = nesnd_india_aid_lock has_variable = nesnd_external_aid_committed }
+    }
+}
+
+# Candidate country scope. SENDER is the requester.
+nesnd_india_mission_partner = {
+    is_country_alive = yes
+    NOT = { this = $SENDER$ }
+    trigger_if = {
+        limit = { $SENDER$ = { is_subject = yes } }
+        OR = {
+            $SENDER$ = { is_direct_subject_of = prev }
+            AND = {
+                exists = c:USM
+                $SENDER$ = { is_direct_subject_of = c:USM }
+                OR = { c:YN1 ?= this c:JAP ?= this }
+                is_direct_subject_of = c:USM
+                is_subject_type = subject_type_dominion
+            }
+        }
+    }
+    trigger_else = {
+        is_at_war = no
+        NOT = { has_war_with = $SENDER$ }
+        OR = {
+            c:FRA ?= this c:USM ?= this c:YN1 ?= this c:QE1 ?= this c:CNE ?= this c:JAP ?= this
+            c:SHA ?= this c:GBR ?= this c:HUS ?= this c:PRU ?= this c:AUS ?= this c:TUR ?= this
+        }
+    }
+}
+
+nesnd_india_can_address_mission = {
+    nesnd_india_mission_ready = yes
+    trigger_if = {
+        limit = { exists = $PARTNER$ }
+        $PARTNER$ = {
+            nesnd_india_mission_partner = { SENDER = prev }
+            is_at_war = no
+            nesnd_india_can_pay = { TEXT = nesnd_india_partner_can_fund_tt SUM = prev.nesnd_india_grant }
+        }
+        NOT = { has_war_with = $PARTNER$ }
+    }
+    trigger_else = { always = no }
+}
+
+# Any scope, with scope:india_sender and scope:india_partner saved. Used before sending and again at the reply.
+nesnd_india_access_treaty_possible = {
+    can_create_treaty = {
+        first_country = scope:india_sender
+        second_country = scope:india_partner
+        is_draft = no
+        binding_period = { years = 5 }
+        articles_to_create = {
+            { article = military_access source_country = scope:india_sender target_country = scope:india_partner }
+        }
+    }
+}
+# Sender scope, in the mission choice event. A choice event opened before this check existed has no
+# scope:india_sender; it stays selectable and the reply stage decides.
+nesnd_india_engineer_presend = {
+    trigger_if = {
+        limit = { exists = scope:india_sender exists = scope:india_partner }
+        custom_tooltip = {
+            text = nesnd_india_workshop_site_tt
+            any_scope_state = { nesnd_india_workshop_site = yes }
+        }
+    }
+}
+nesnd_india_officer_presend = {
+    trigger_if = {
+        limit = { exists = scope:india_sender exists = scope:india_partner }
+        nesnd_india_access_treaty_possible = yes
+    }
+}
+
+nesnd_india_autonomy_available = {
+    nesnd_india_can_send = yes
+    trigger_if = { limit = { is_subject = yes exists = overlord }
+        overlord = { is_country_alive = yes }
+        NOT = { has_war_with = overlord }
+    } trigger_else = { always = no }
+}
+# Prince scope, root is Mughal. Any prince may be invited, another country's subject or Mughal's own;
+# for another country's subject the overlord is asked first (nesnd_india_invite_union).
+nesnd_india_union_target = {
+    nesnd_india_prince = yes is_at_war = no is_active_in_diplomatic_play = no
+    custom_tooltip = { text = nesnd_ui_not_india_incoming_union_clock_tt NOT = { has_variable = nesnd_india_incoming_union_clock } }
+    NOT = { this = root } relations:root >= 25
+    root = { is_subject = no }
+}
+# Empire scope. Shared by the invitation button and the choice event.
+nesnd_india_can_invite_union = {
+    nesnd_india_can_send = yes
+    nesnd_india_union_host = yes
+    custom_tooltip = { text = nesnd_india_union_target_exists_tt any_country = { nesnd_india_union_target = yes } }
+}
+nesnd_india_reply_valid = {
+    trigger_if = { limit = {
+            exists = scope:india_sender exists = scope:india_partner exists = scope:india_serial
+            exists = scope:india_sender_patron exists = scope:india_partner_patron
+            exists = scope:india_sender_regime exists = scope:india_partner_regime
+        }
+        this = scope:india_partner is_country_alive = yes is_at_war = no
+        nesnd_india_regime = scope:india_partner_regime
+        trigger_if = { limit = { is_subject = yes } overlord = scope:india_partner_patron } trigger_else = { this = scope:india_partner_patron }
+        scope:india_sender = {
+            trigger_if = { limit = { nesnd_india_request_kind <= 3 } nesnd_india_mission_country = yes }
+            trigger_else = { nesnd_india_diplomacy_live = yes }
+            is_at_war = no
+            custom_tooltip = { text = nesnd_ui_india_request_clock_tt has_variable = nesnd_india_request_clock }
+            nesnd_india_request_serial = scope:india_serial nesnd_india_regime = scope:india_sender_regime
+            trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_india_request_partner_tt exists = var:nesnd_india_request_partner } } hidden_trigger = { var:nesnd_india_request_partner = scope:india_partner } } trigger_else = { always = no }
+            NOT = { has_war_with = scope:india_partner }
+            trigger_if = { limit = { is_subject = yes } overlord = scope:india_sender_patron } trigger_else = { this = scope:india_sender_patron }
+            trigger_if = { limit = { nesnd_india_request_kind <= 3 }
+                scope:india_partner = { nesnd_india_mission_partner = { SENDER = scope:india_sender } } custom_tooltip = { text = nesnd_ui_not_india_aid_lock_tt NOT = { has_variable = nesnd_india_aid_lock } } custom_tooltip = { text = nesnd_ui_not_external_aid_committed_tt NOT = { has_variable = nesnd_external_aid_committed } }
+            }
+            trigger_if = { limit = { OR = { nesnd_india_request_kind = 4 nesnd_india_request_kind = 7 } } is_direct_subject_of = scope:india_partner }
+            trigger_if = { limit = { nesnd_india_request_kind = 4 } can_increase_autonomy = yes }
+            trigger_if = { limit = { nesnd_india_request_kind = 5 } is_subject = no scope:india_partner = { is_subject = no } }
+            trigger_if = { limit = { nesnd_india_request_kind = 8 }
+                nesnd_india_prince = yes
+                scope:india_partner = { nesnd_india_union_host = yes }
+                hidden_trigger = { nesnd_india_union_mode_value >= 1 }
+            }
+            trigger_if = { limit = { nesnd_india_request_kind = 6 }
+                nesnd_india_union_host = yes
+                scope:india_partner = { nesnd_india_prince = yes is_active_in_diplomatic_play = no
+                    trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_india_incoming_union_sender_tt exists = var:nesnd_india_incoming_union_sender } } hidden_trigger = { var:nesnd_india_incoming_union_sender = scope:india_sender } custom_tooltip = { text = nesnd_ui_india_incoming_union_clock_tt has_variable = nesnd_india_incoming_union_clock } } trigger_else = { always = no }
+                }
+            }
+        }
+    } trigger_else = { always = no }
+}
+nesnd_india_can_offer_defence = {
+    nesnd_india_can_send = yes
+    is_subject = no
+    trigger_if = {
+        limit = { exists = $PARTNER$ }
+        NOT = { this = $PARTNER$ }
+        $PARTNER$ = { is_subject = no is_at_war = no }
+        nesnd_india_defence_possible = { FIRST = this SECOND = $PARTNER$ YEARS = 3 }
+    }
+    trigger_else = { always = no }
+}
+# A country's reported stake includes private investors. Even if every non-government
+# level belongs to its investors, the remaining levels must belong to its government.
+nesnd_india_workshop_stake_met = {
+    # Ownership can be read only on a building that stands (level > 0, as in vanilla
+    # 06_portugal_politics.txt:55); a workshop still in the construction queue is skipped.
+    any_scope_building = {
+        is_building_type = building_tooling_workshop
+        level > 0
+        levels_owned_by_country = {
+            target = scope:india_partner
+            value >= {
+                value = level
+                subtract = nesnd_india_government_levels
+                add = scope:india_sender.nesnd_india_workshop_levels
+            }
+        }
+    }
+}
+nesnd_india_workshop_site = {
+    OR = {
+        nesnd_india_workshop_stake_met = yes
+        AND = {
+            can_construct_building = building_tooling_workshop
+            # Writing the promised stake is safe if either total caps the donor's
+            # existing government stake at the promised number of levels.
+            NOT = {
+                any_scope_building = {
+                    is_building_type = building_tooling_workshop
+                    level > 0
+                    nesnd_india_government_levels > scope:india_sender.nesnd_india_workshop_levels
+                    levels_owned_by_country = {
+                        target = scope:india_partner
+                        value > scope:india_sender.nesnd_india_workshop_levels
+                    }
+                }
+            }
+        }
+    }
+}
+
+nesnd_india_reply_can_accept = {
+    nesnd_india_reply_valid = yes
+    trigger_if = { limit = { exists = scope:india_sender }
+        trigger_if = { limit = { nesnd_india_incoming_kind <= 3 } gold_reserves >= scope:india_sender.nesnd_india_request_quote in_default = no NOT = { has_modifier = declared_bankruptcy } }
+        trigger_if = {
+            limit = { nesnd_india_incoming_kind = 2 }
+            custom_tooltip = {
+                text = nesnd_india_workshop_site_tt
+                scope:india_sender = { any_scope_state = { nesnd_india_workshop_site = yes } }
+            }
+        }
+        trigger_if = {
+            limit = { nesnd_india_incoming_kind = 3 }
+            nesnd_india_access_treaty_possible = yes
+        }
+        trigger_if = { limit = { nesnd_india_incoming_kind = 5 } nesnd_india_defence_possible = { FIRST = scope:india_sender SECOND = scope:india_partner YEARS = 3 } }
+        trigger_if = { limit = { nesnd_india_union_reply = yes } nesnd_india_union_can_pay = yes }
+    } trigger_else = { always = no }
+}
+
+# ==== Local projects (formerly nesnd_india_projects.txt) ====
+# Local projects of the Indian princes: a university, a tooling workshop or a railway in one state,
+# paid for by the prince, by another Indian government or by a foreign government.
+# A project asked of another government is a matter of kind 1 (nesnd_india_matters.txt).
+# Project variables are listed in common/script_values/nesnd_india_princes.txt.
+
+# ---------------------------------------------------------------------------------------------
+# The prince who plans the project (requester scope)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_project_can_start = {
+    hidden_trigger = { nesnd_india_prince = yes NOT = { has_variable = nesnd_india_matter_kind } }
+    custom_tooltip = { text = nesnd_india_project_idle_tt NOT = { has_variable = nesnd_india_project_type } }
+    custom_tooltip = { text = nesnd_small_no_emergency_tt is_at_war = no is_active_in_diplomatic_play = no }
+    in_default = no
+}
+
+# State scope.
+nesnd_india_project_site_1 = { can_construct_building = building_university }
+nesnd_india_project_site_2 = { can_construct_building = building_tooling_workshop }
+nesnd_india_project_site_3 = { can_construct_building = building_railway }
+
+nesnd_india_project_has_site = { custom_tooltip = { text = nesnd_india_project_site_exists_tt any_scope_state = { nesnd_india_project_site_$N$ = yes } } }
+
+# The chosen state is still ours and the building can still be raised there.
+nesnd_india_project_site_valid = {
+    trigger_if = { limit = { nesnd_india_project_type_value = 4 } always = yes }
+    trigger_else_if = { limit = { nesnd_india_project_type_value = 1 exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { owner = prev nesnd_india_project_site_1 = yes } }
+    trigger_else_if = { limit = { nesnd_india_project_type_value = 2 exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { owner = prev nesnd_india_project_site_2 = yes } }
+    trigger_else_if = { limit = { nesnd_india_project_type_value = 3 exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { owner = prev nesnd_india_project_site_3 = yes } }
+    trigger_else = { always = no }
+}
+nesnd_india_project_site_owned = {
+    trigger_if = { limit = { exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { owner = prev } }
+    trigger_else = { always = no }
+}
+# One more level stands at the site than when the work was ordered.
+nesnd_india_project_built = {
+    trigger_if = { limit = { nesnd_india_project_type_value = 1 exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { owner = prev nesnd_india_project_level_1 > prev.nesnd_india_project_base_value } }
+    trigger_else_if = { limit = { nesnd_india_project_type_value = 2 exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { owner = prev nesnd_india_project_level_2 > prev.nesnd_india_project_base_value } }
+    trigger_else_if = { limit = { nesnd_india_project_type_value = 3 exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { owner = prev nesnd_india_project_level_3 > prev.nesnd_india_project_base_value } }
+    trigger_else = { always = no }
+}
+
+# State scope. A funding agreement made by the present owner is still within its five years.
+nesnd_india_deal_active = {
+    save_temporary_scope_as = india_deal_state
+    state_region = {
+        has_variable = nesnd_india_deal_term
+        trigger_if = { limit = { exists = var:nesnd_india_deal_host } var:nesnd_india_deal_host = scope:india_deal_state.owner }
+        trigger_else = { always = no }
+    }
+}
+# State scope. The five years of an agreement have run out and its record is still there.
+nesnd_india_deal_lapsed = {
+    state_region = { has_variable = nesnd_india_deal_host NOT = { has_variable = nesnd_india_deal_term } }
+}
+
+# Before asking another government: no agreement is running at the site, and a government that
+# takes a stake gets a new building rather than a share of an old one.
+nesnd_india_project_site_free = {
+    trigger_if = { limit = { exists = var:nesnd_india_project_site }
+        custom_tooltip = { text = nesnd_india_project_no_deal_tt var:nesnd_india_project_site = { NOT = { nesnd_india_deal_active = yes } } }
+        trigger_if = { limit = { nesnd_india_project_type_value = 2 } custom_tooltip = { text = nesnd_india_project_fresh_tt var:nesnd_india_project_site = { NOT = { has_building = building_tooling_workshop } } } }
+        trigger_if = { limit = { nesnd_india_project_type_value = 3 } custom_tooltip = { text = nesnd_india_project_fresh_tt var:nesnd_india_project_site = { NOT = { has_building = building_railway } } } }
+    }
+    trigger_else = { always = no }
+}
+
+# FUNDER is the government asked for money or for its engineers.
+nesnd_india_project_can_ask = {
+    trigger_if = { limit = { exists = $FUNDER$ }
+        nesnd_india_channel_free = yes
+        trigger_if = { limit = { nesnd_india_project_type_value = 4 } gold_reserves >= nesnd_india_survey_fee }
+        trigger_else = {
+            $FUNDER$ = { nesnd_india_can_pay = { TEXT = nesnd_india_partner_can_fund_tt SUM = prev.nesnd_india_grant } }
+            nesnd_india_project_site_free = yes
+        }
+    }
+    trigger_else = { always = no }
+}
+
+# Before the request is sent: must our overlord agree if FUNDER is asked? The rule itself is
+# nesnd_india_consent_needed; a workshop or a railway gives FUNDER a stake.
+nesnd_india_project_consent_needed = {
+    trigger_if = { limit = { nesnd_india_project_type_value >= 2 nesnd_india_project_type_value <= 3 } nesnd_india_consent_needed = { OTHER = $FUNDER$ GRANTS = yes } }
+    trigger_else = { nesnd_india_consent_needed = { OTHER = $FUNDER$ GRANTS = no } }
+}
+
+# What a project adds to nesnd_india_matter_valid: the prince is at peace and the site is still fit.
+nesnd_india_project_matter_valid = {
+    is_at_war = no
+    nesnd_india_project_site_valid = yes
+}
+
+# ---------------------------------------------------------------------------------------------
+# Governments that may be asked (candidate scope, OWNER is the prince)
+# ---------------------------------------------------------------------------------------------
+# A puppet cannot sign for itself. Money is only asked of a government that has it.
+nesnd_india_project_funder_ok = {
+    is_country_alive = yes
+    NOT = { this = $OWNER$ }
+    is_at_war = no
+    NOT = { has_war_with = $OWNER$ }
+    trigger_if = { limit = { is_subject = yes } NOT = { is_subject_type = subject_type_puppet } }
+    trigger_if = { limit = { $OWNER$ = { nesnd_india_project_type_value <= 3 } } nesnd_india_can_pay = { TEXT = nesnd_india_partner_can_fund_tt SUM = $OWNER$.nesnd_india_grant } }
+}
+nesnd_india_project_neighbour = {
+    nesnd_india_diplomacy_live = yes
+    nesnd_india_project_funder_ok = { OWNER = $OWNER$ }
+}
+nesnd_india_project_foreigner = {
+    NOT = { nesnd_india_diplomacy_live = yes }
+    nesnd_india_mission_partner = { SENDER = $OWNER$ }
+    nesnd_india_project_funder_ok = { OWNER = $OWNER$ }
+}
+
+# ---------------------------------------------------------------------------------------------
+# A project put to the answering government (answering scope, nesnd_india_matter_from is the prince)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_project_offer_is = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { nesnd_india_project_type_value = $TYPE$ } }
+    trigger_else = { always = no }
+}
+# The answering government can meet the terms today.
+nesnd_india_project_offer_ok = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        trigger_if = { limit = { NOT = { nesnd_india_project_offer_is = { TYPE = 4 } } }
+            custom_tooltip = {
+                text = nesnd_india_matter_funds_tt
+                gold_reserves >= nesnd_india_matter_quote
+                in_default = no
+                NOT = { has_modifier = declared_bankruptcy }
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_india_matter_site_tt
+            var:nesnd_india_matter_from = { nesnd_india_project_site_valid = yes }
+        }
+    }
+    trigger_else = { always = no }
+}
+
+# What moves an AI government. All of these only weigh; none of them forbids.
+nesnd_india_project_ai_funder_ours = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        var:nesnd_india_matter_from = {
+            trigger_if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { is_direct_subject_of = scope:india_matter_me } }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_india_project_ai_funder_friendly = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        var:nesnd_india_matter_from = {
+            trigger_if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { "relations(scope:india_matter_me)" >= 20 } }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_india_project_ai_funder_hostile = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        var:nesnd_india_matter_from = {
+            trigger_if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { "relations(scope:india_matter_me)" < 0 } }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_india_project_ai_owner_restless = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { is_subject = yes liberty_desire >= 50 } }
+    trigger_else = { always = no }
+}
+nesnd_india_project_ai_owner_ours = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { is_direct_subject_of = scope:india_matter_me } }
+    trigger_else = { always = no }
+}
+nesnd_india_project_ai_has_interest = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        var:nesnd_india_matter_from = { any_scope_state = { scope:india_matter_me = { has_interest_marker_in_region = prev.region } } }
+    }
+    trigger_else = { always = no }
+}
+
+# ==== Princes join Mughal (formerly nesnd_india_union.txt) ====
+# Princes joining Mughal ("Mughal" here is any country for which nesnd_india_empire holds).
+# Two ways in, both through the request channel (nesnd_india_princes.txt):
+#   request kind 6   Mughal invites a prince (button nesnd_india_request_6, choice event nesnd_india_diplomacy.5)
+#   request kind 8   a prince asks to join (button nesnd_india_union_ask_button, choice event nesnd_india_union.4)
+# When the prince is another country's subject, that overlord's consent comes first, as matter kind 6
+# of Indian affairs (nesnd_india_matters.txt); once it is given the invitation or the request goes into
+# the request channel. Accepting runs the one settlement, nesnd_india_settle_union = { MODE = merge|dominion }.
+
+# Country scope. A government that can take in a prince: independent, reform complete, community 60.
+nesnd_india_union_host = {
+    hidden_trigger = { nesnd_india_empire = yes }
+    custom_tooltip = { text = nesnd_india_union_host_free_tt is_subject = no }
+    custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done }
+    nesnd_india_community >= 60
+}
+
+# Prince scope. The prince can ask the government in nesnd_india_union_host (the richest Mughal,
+# set monthly by nesnd_india_union_pick_host) to take it in. Mughal's conditions are those of an
+# invitation, less the one that some prince is eligible.
+nesnd_india_can_ask_union = {
+    nesnd_india_can_send = yes
+    hidden_trigger = { nesnd_india_prince = yes }
+    custom_tooltip = { text = nesnd_india_union_host_exists_tt exists = var:nesnd_india_union_host }
+    trigger_if = { limit = { exists = var:nesnd_india_union_host }
+        var:nesnd_india_union_host = { nesnd_india_union_host = yes }
+        NOT = { has_war_with = var:nesnd_india_union_host }
+        trigger_if = { limit = { nesnd_india_consent_needed = { OTHER = var:nesnd_india_union_host GRANTS = yes } }
+            custom_tooltip = { text = nesnd_india_union_no_project_tt NOR = { has_variable = nesnd_india_matter_kind has_variable = nesnd_india_project_type } }
+        }
+    }
+}
+# Prince scope. The prince is already a subject of the government it would join: it can only be merged.
+nesnd_india_union_own_subject = {
+    trigger_if = { limit = { exists = var:nesnd_india_union_host } is_subject = yes overlord ?= var:nesnd_india_union_host }
+    trigger_else = { always = no }
+}
+
+# Holder scope, matter kind 6. Both governments are still what they were when the matter was sent.
+nesnd_india_union_matter_valid = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_to }
+        trigger_if = { limit = { nesnd_india_empire = yes }
+            nesnd_india_union_host = yes
+            var:nesnd_india_matter_to = { nesnd_india_prince = yes is_at_war = no }
+        }
+        trigger_else = {
+            nesnd_india_prince = yes is_at_war = no
+            var:nesnd_india_matter_to = { nesnd_india_union_host = yes }
+        }
+    }
+    trigger_else = { always = no }
+}
+
+# ---------------------------------------------------------------------------------------------
+# In the reply event (answering scope, with scope:india_sender and scope:india_partner),
+# request kinds 6 and 8. In kind 6 the sender is Mughal and the answer is the prince's; in kind 8
+# the sender is the prince and the answer is Mughal's.
+# ---------------------------------------------------------------------------------------------
+nesnd_india_union_reply = { OR = { nesnd_india_incoming_kind = 6 nesnd_india_incoming_kind = 8 } }
+# The prince is another country's subject: that overlord is paid compensation when it joins.
+nesnd_india_union_compensation_due = {
+    trigger_if = { limit = { nesnd_india_incoming_kind = 6 exists = scope:india_partner exists = scope:india_sender }
+        scope:india_partner = { nesnd_india_consent_needed = { OTHER = scope:india_sender GRANTS = yes } }
+    }
+    trigger_else_if = { limit = { nesnd_india_incoming_kind = 8 exists = scope:india_partner exists = scope:india_sender }
+        scope:india_sender = { nesnd_india_consent_needed = { OTHER = scope:india_partner GRANTS = yes } }
+    }
+    trigger_else = { always = no }
+}
+# The prince is not already Mughal's subject, so it may choose to become Mughal's dominion.
+nesnd_india_union_dominion_open = {
+    trigger_if = { limit = { nesnd_india_incoming_kind = 6 exists = scope:india_partner exists = scope:india_sender }
+        custom_tooltip = { text = nesnd_india_union_not_own_subject_tt scope:india_partner = { NAND = { is_subject = yes overlord ?= scope:india_sender } } }
+        nesnd_india_union_dominion_possible = { EMPIRE = scope:india_sender PRINCE = scope:india_partner }
+    }
+    trigger_else_if = { limit = { nesnd_india_incoming_kind = 8 exists = scope:india_partner exists = scope:india_sender }
+        custom_tooltip = { text = nesnd_india_union_not_own_subject_tt scope:india_sender = { NAND = { is_subject = yes overlord ?= scope:india_partner } } }
+        nesnd_india_union_dominion_possible = { EMPIRE = scope:india_partner PRINCE = scope:india_sender }
+    }
+    trigger_else = { always = no }
+}
+# The dominion subject type (common/subject_types/ce_subject_types.txt) needs a recognised or colonial
+# overlord of minor power rank or above, ranked higher than the subject.
+nesnd_india_union_dominion_possible = {
+    custom_tooltip = {
+        text = nesnd_india_union_dominion_rank_tt
+        $EMPIRE$ = { OR = { is_country_type = recognized is_country_type = colonial } country_rank >= rank_value:minor_power country_rank > $PRINCE$.country_rank }
+    }
+}
+# Mughal can pay the quote, and the compensation as well when it is due.
+nesnd_india_union_can_pay = {
+    custom_tooltip = {
+        text = nesnd_india_union_can_pay_tt
+        trigger_if = { limit = { nesnd_india_incoming_kind = 6 exists = scope:india_sender } scope:india_sender = { gold_reserves >= nesnd_india_union_due } }
+        trigger_else_if = { limit = { exists = scope:india_partner } scope:india_partner = { gold_reserves >= nesnd_india_union_due } }
+        trigger_else = { always = no }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# What moves an AI. These only weigh; none of them forbids.
+# ---------------------------------------------------------------------------------------------
+# Reply event, request kind 6 (the prince answers): relations with Mughal at least 50.
+nesnd_india_union_ai_close = {
+    trigger_if = { limit = { exists = scope:india_sender } "relations(scope:india_sender)" >= 50 }
+    trigger_else = { always = no }
+}
+# Reply event, request kind 6: the prince is already Mughal's subject.
+nesnd_india_union_ai_own_subject = {
+    trigger_if = { limit = { exists = scope:india_sender } is_subject = yes overlord ?= scope:india_sender }
+    trigger_else = { always = no }
+}
+# Reply event, request kind 6: the prince has at least half as many people as Mughal.
+nesnd_india_union_ai_large = {
+    trigger_if = { limit = { exists = scope:india_sender } total_population >= nesnd_india_union_half_host_population }
+    trigger_else = { always = no }
+}
+# Indian affairs, matter kind 6 (an overlord answers). Mughal's relations with us.
+nesnd_india_union_ai_host_friendly = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        var:nesnd_india_matter_from = {
+            trigger_if = { limit = { nesnd_india_empire = yes } "relations(scope:india_matter_me)" >= 20 }
+            trigger_else_if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { "relations(scope:india_matter_me)" >= 20 } }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_india_union_ai_host_hostile = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        var:nesnd_india_matter_from = {
+            trigger_if = { limit = { nesnd_india_empire = yes } "relations(scope:india_matter_me)" < 0 }
+            trigger_else_if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { "relations(scope:india_matter_me)" < 0 } }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+# Our subject in the matter wants to be free of us.
+nesnd_india_union_ai_prince_restless = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        var:nesnd_india_matter_from = {
+            trigger_if = { limit = { nesnd_india_empire = yes exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { liberty_desire >= 50 } }
+            trigger_else = { liberty_desire >= 50 }
+        }
+    }
+    trigger_else = { always = no }
+}
+
+# ==== The Indian uprising (formerly nesnd_india_uprising.txt) ====
+nesnd_india_colonial_owner = {
+    OR = { c:USM ?= this AND = { c:TZ1 ?= this trigger_if = { limit = { exists = c:USM } is_subject_of = c:USM } trigger_else = { always = no } } }
+}
+nesnd_india_uprising_strength = { nesnd_india_empire = yes custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done } has_technology_researched = nationalism OR = { is_subject = no AND = { army_size >= 60 government_legitimacy >= 50 } } }
+nesnd_india_contact_safe = { nesnd_india_uprising_strength = yes is_at_war = no is_active_in_diplomatic_play = no custom_tooltip = { text = nesnd_ui_not_india_contact_region_tt NOT = { has_variable = nesnd_india_contact_region } } }
+nesnd_india_colonial_state = {
+    state_population >= 300000 owner = { nesnd_india_colonial_owner = yes is_at_war = no is_active_in_diplomatic_play = no }
+    controller = owner
+}
+# The uprising in one state region: R its name, STATE its state region, TAG the country formed there, HQ its strategic region.
+nesnd_india_case_target = {
+    NOT = { exists = c:$TAG$ }
+    s:$STATE$ = { custom_tooltip = { text = nesnd_ui_not_india_case_stage_tt NOT = { has_variable = nesnd_india_case_stage } } custom_tooltip = { text = nesnd_ui_not_india_case_cooldown_tt NOT = { has_variable = nesnd_india_case_cooldown } } any_scope_state = { nesnd_india_colonial_state = yes } }
+}
+nesnd_india_case_our_case = {
+    s:$STATE$ = { trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_india_case_sponsor_tt exists = var:nesnd_india_case_sponsor } custom_tooltip = { text = nesnd_ui_india_case_stage_tt has_variable = nesnd_india_case_stage } } custom_tooltip = { text = nesnd_ui_var_nesnd_india_case_sponsor_eq_root_tt var:nesnd_india_case_sponsor = root } nesnd_india_case_stage_value <= 3 } trigger_else = { always = no } }
+}
+nesnd_india_case_launch_ready = {
+    nesnd_india_uprising_strength = yes nesnd_india_case_our_case = { STATE = $STATE$ } is_at_war = no is_active_in_diplomatic_play = no gold_reserves >= 20000
+    NOT = { exists = c:$TAG$ }
+    s:$STATE$ = {
+        trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_india_case_progress } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_india_case_state_tt exists = var:nesnd_india_case_state } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_india_case_owner_tt exists = var:nesnd_india_case_owner } }
+            nesnd_india_case_progress_value >= 100
+            var:nesnd_india_case_state = { nesnd_india_colonial_state = yes nesnd_india_case_unrest = yes owner = prev.var:nesnd_india_case_owner }
+            var:nesnd_india_case_owner = { NOT = { has_war_with = root } NOT = { has_truce_with = root } }
+        } trigger_else = { always = no }
+    }
+}
+nesnd_india_uprising_available = { nesnd_india_empire = yes OR = { custom_tooltip = { text = nesnd_ui_india_contact_region_tt has_variable = nesnd_india_contact_region } AND = { nesnd_india_uprising_strength = yes OR = { nesnd_india_case_target = { STATE = STATE_CIRCARS TAG = IR1 } nesnd_india_case_target = { STATE = STATE_KURNOOL TAG = IR2 } nesnd_india_case_target = { STATE = STATE_MADRAS TAG = IR3 } nesnd_india_case_target = { STATE = STATE_MYSORE TAG = IR4 } nesnd_india_case_target = { STATE = STATE_TRAVANCORE TAG = IR5 } nesnd_india_case_target = { STATE = STATE_GUJARAT TAG = IR6 } } } } }
+
+nesnd_india_case_unrest = { OR = { turmoil >= 0.15 average_sol < 10 } }
+nesnd_india_case_can_advance = {
+    trigger_if = { limit = { exists = var:nesnd_india_case_state exists = var:nesnd_india_case_sponsor }
+        nesnd_india_case_stage_value = 1
+        var:nesnd_india_case_state = { nesnd_india_case_unrest = yes state_population >= 300000 }
+        var:nesnd_india_case_sponsor = { nesnd_india_uprising_strength = yes in_default = no NOT = { has_modifier = declared_bankruptcy } is_at_war = no }
+    } trigger_else = { always = no }
+}
+
+nesnd_india_revolt_won = {
+    custom_tooltip = { text = nesnd_ui_india_revolt_negotiation_ended_tt has_variable = nesnd_india_revolt_negotiation_ended }
+    custom_tooltip = { text = nesnd_ui_not_india_revolt_failed_tt NOT = { has_variable = nesnd_india_revolt_failed } }
+    is_subject = no
+    trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_india_revolt_origin_tt exists = var:nesnd_india_revolt_origin } }
+        any_scope_state = { state_region = prev.var:nesnd_india_revolt_origin }
+    } trigger_else = { always = no }
+}

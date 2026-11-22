@@ -1,9 +1,31 @@
-﻿nesnd_india_state = { OR = { region = sr:region_north_india region = sr:region_south_india } }
+﻿# ==== Identity, monthly refresh and the reform journals (formerly nesnd_india_core.txt) ====
+nesnd_india_state = { OR = { region = sr:region_north_india region = sr:region_south_india } }
 nesnd_india_country = { is_country_alive = yes NOT = { is_country_type = decentralized } any_scope_state = { nesnd_india_state = yes state_population > 0 } }
 nesnd_india_empire = { nesnd_india_country = yes OR = { c:MUG ?= this c:BHT ?= this c:DRA ?= this custom_tooltip = { text = nesnd_ui_india_imperial_line_tt has_variable = nesnd_india_imperial_line } } }
 nesnd_india_prince = { nesnd_india_country = yes NOT = { nesnd_india_empire = yes } OR = { c:ALW ?= this c:ASM ?= this c:AWA ?= this c:BAG ?= this c:BAS ?= this c:BER ?= this c:BHO ?= this c:BHV ?= this c:BHW ?= this c:BIK ?= this c:BUN ?= this c:COC ?= this c:COO ?= this c:DHA ?= this c:GAR ?= this c:GWA ?= this c:HYD ?= this c:IDA ?= this c:IND ?= this c:JAI ?= this c:JAS ?= this c:JEY ?= this c:JHN ?= this c:JOD ?= this c:JUN ?= this c:KHP ?= this c:KNO ?= this c:KOT ?= this c:KUT ?= this c:MEW ?= this c:MNP ?= this c:MYB ?= this c:NAG ?= this c:NAR ?= this c:NAW ?= this c:PAN ?= this c:PLP ?= this c:PTA ?= this c:PTN ?= this c:SAT ?= this c:SIN ?= this c:SUR ?= this c:TRA ?= this custom_tooltip = { text = nesnd_ui_india_local_state_tt has_variable = nesnd_india_local_state } } }
 nesnd_india_reform_live = { nesnd_india_empire = yes custom_tooltip = { text = nesnd_ui_not_india_reform_done_tt NOT = { has_variable = nesnd_india_reform_done } } }
 nesnd_india_reform_safe = { bureaucracy >= 0 in_default = no NOT = { has_modifier = declared_bankruptcy } }
+# In default, or has declared bankruptcy.
+nesnd_india_broke = { OR = { in_default = yes has_modifier = declared_bankruptcy } }
+# Country scope. Can pay the sum SUM now: gold reserves, no default, no declared bankruptcy. TEXT names who pays.
+nesnd_india_can_pay = {
+    custom_tooltip = {
+        text = $TEXT$
+        gold_reserves >= $SUM$
+        in_default = no
+        NOT = { has_modifier = declared_bankruptcy }
+    }
+}
+# Any scope. FIRST and SECOND could sign a defensive pact binding for YEARS years today.
+nesnd_india_defence_possible = {
+    can_create_treaty = {
+        first_country = $FIRST$
+        second_country = $SECOND$
+        is_draft = no
+        binding_period = { years = $YEARS$ }
+        articles_to_create = { { article = defensive_pact } }
+    }
+}
 nesnd_india_schools_ready = {
     has_technology_researched = academia
     institution_investment_level = { institution = institution_schools value >= 2 }
@@ -33,9 +55,9 @@ nesnd_india_caste_ready = {
 }
 nesnd_india_usm_live = { c:USM ?= this is_subject = no NOT = { exists = c:TZ1 } any_scope_state = { nesnd_tianzhu_region = yes state_population > 0 } }
 
-nesnd_india_schools_available = { nesnd_india_reform_live = yes custom_tooltip = { text = nesnd_ui_not_india_schools_done_tt NOT = { has_variable = nesnd_india_schools_done } } trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_india_priority } } nesnd_india_priority_value = 1 } trigger_else = { always = no } }
-nesnd_india_industry_available = { nesnd_india_reform_live = yes custom_tooltip = { text = nesnd_ui_not_india_industry_done_tt NOT = { has_variable = nesnd_india_industry_done } } trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_india_priority } } nesnd_india_priority_value = 2 } trigger_else = { always = no } }
+# T is schools or industry. The reform track T is open now (PRIORITY is the choice that opens it: 1 schools, 2 industry).
+nesnd_india_track_available = { nesnd_india_reform_live = yes custom_tooltip = { text = nesnd_ui_not_india_$T$_done_tt NOT = { has_variable = nesnd_india_$T$_done } } trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_india_priority } } nesnd_india_priority_value = $PRIORITY$ } trigger_else = { always = no } }
+# The reform track T is shown once either track has been chosen.
+nesnd_india_track_visible = { nesnd_india_reform_live = yes custom_tooltip = { text = nesnd_ui_not_india_$T$_done_tt NOT = { has_variable = nesnd_india_$T$_done } } OR = { nesnd_india_priority_value = 1 nesnd_india_priority_value = 2 } }
 
-nesnd_india_schools_visible = { nesnd_india_reform_live = yes custom_tooltip = { text = nesnd_ui_not_india_schools_done_tt NOT = { has_variable = nesnd_india_schools_done } } OR = { nesnd_india_priority_value = 1 nesnd_india_priority_value = 2 } }
 
-nesnd_india_industry_visible = { nesnd_india_reform_live = yes custom_tooltip = { text = nesnd_ui_not_india_industry_done_tt NOT = { has_variable = nesnd_india_industry_done } } OR = { nesnd_india_priority_value = 1 nesnd_india_priority_value = 2 } }

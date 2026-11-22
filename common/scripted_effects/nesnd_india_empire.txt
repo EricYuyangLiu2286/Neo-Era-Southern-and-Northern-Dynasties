@@ -1,0 +1,554 @@
+﻿# ==== The centre and the states (formerly nesnd_india_order.txt) ====
+# The journal nesnd_india_order. See common/scripted_triggers/nesnd_india_empire.txt for the three
+# matters and common/script_values/nesnd_india_empire.txt for the variables.
+#
+# Order of things:
+#   nesnd_india_order_choose     a button or the AI settles a matter one way; what this journal built
+#                                for the other way is cleared first
+#   nesnd_india_order_apply      monthly and after each choice: Mughal's own modifiers, then each Indian
+#                                subject gets the treaties and modifiers it does not have yet
+#   nesnd_india_order_leave      a subject that left (or whose Mughal no longer holds the journal) is
+#                                cleared from its own monthly refresh
+#   nesnd_india_order_end        Mughal no longer holds the journal: everything this journal set is cleared
+# Only treaties marked on the subject (nesnd_india_order_*_pact) are ever removed; treaties of the same
+# kind made by the player or by other scripts are left alone.
+
+# Any country, monthly from nesnd_india_refresh.
+nesnd_india_order_upkeep = {
+    if = { limit = { nesnd_india_order_left = yes } nesnd_india_order_leave = yes }
+    if = { limit = { nesnd_india_order_live = yes }
+        if = { limit = { NOT = { has_journal_entry = nesnd_india_order } } add_journal_entry = { type = nesnd_india_order } }
+        nesnd_india_order_apply = yes
+    }
+    else_if = {
+        limit = { OR = { has_variable = nesnd_india_order_tax has_variable = nesnd_india_order_army has_variable = nesnd_india_order_school } }
+        nesnd_india_order_end = yes
+    }
+}
+
+# Mughal scope.
+nesnd_india_order_apply = {
+    save_scope_as = india_order_lord
+    nesnd_india_order_home = yes
+    every_subject_or_below = {
+        limit = { nesnd_india_order_member = { LORD = scope:india_order_lord } }
+        save_scope_as = india_order_member
+        # Marks left by another Mughal are cleared before this one's are set.
+        if = { limit = { exists = var:nesnd_india_order_lord NOT = { var:nesnd_india_order_lord = scope:india_order_lord } } nesnd_india_order_leave = yes }
+        set_variable = { name = nesnd_india_order_lord value = scope:india_order_lord }
+        nesnd_india_order_build = yes
+    }
+}
+
+# Mughal scope. Its own modifiers follow its choices.
+nesnd_india_order_home = {
+    if = { limit = { nesnd_india_order_is = { ISSUE = tax END = 1 } }
+        if = { limit = { NOT = { has_modifier = nesnd_india_order_tax_central } } add_modifier = { name = nesnd_india_order_tax_central } }
+    }
+    else_if = { limit = { has_modifier = nesnd_india_order_tax_central } remove_modifier = nesnd_india_order_tax_central }
+    if = { limit = { nesnd_india_order_is = { ISSUE = army END = 1 } }
+        if = { limit = { NOT = { has_modifier = nesnd_india_order_army_central } } add_modifier = { name = nesnd_india_order_army_central } }
+    }
+    else_if = { limit = { has_modifier = nesnd_india_order_army_central } remove_modifier = nesnd_india_order_army_central }
+    if = { limit = { nesnd_india_order_is = { ISSUE = school END = 1 } }
+        if = { limit = { NOT = { has_modifier = nesnd_india_order_school_central } } add_modifier = { name = nesnd_india_order_school_central } }
+    }
+    else_if = { limit = { has_modifier = nesnd_india_order_school_central } remove_modifier = nesnd_india_order_school_central }
+}
+
+# Subject scope, with scope:india_order_lord and scope:india_order_member saved. Builds what is missing.
+# A treaty is marked only once it stands; one the engine would not create is tried again next month.
+nesnd_india_order_build = {
+    # tax
+    if = {
+        limit = {
+            scope:india_order_lord = { nesnd_india_order_is = { ISSUE = tax END = 1 } }
+            NOT = { has_variable = nesnd_india_order_tax_pact }
+            nesnd_india_order_can_raise = yes
+        }
+        scope:india_order_lord = { create_diplomatic_pact = { country = scope:india_order_member type = raise_payments } }
+        if = { limit = { scope:india_order_lord = { has_diplomatic_pact = { who = scope:india_order_member type = raise_payments is_initiator = yes } } }
+            set_variable = { name = nesnd_india_order_tax_pact value = 1 }
+        }
+    }
+    else_if = {
+        limit = {
+            scope:india_order_lord = { nesnd_india_order_is = { ISSUE = tax END = 2 } }
+            NOT = { has_variable = nesnd_india_order_tax_pact }
+            nesnd_india_order_can_decrease = yes
+        }
+        scope:india_order_lord = { create_diplomatic_pact = { country = scope:india_order_member type = decrease_payments } }
+        if = { limit = { scope:india_order_lord = { has_diplomatic_pact = { who = scope:india_order_member type = decrease_payments is_initiator = yes } } }
+            set_variable = { name = nesnd_india_order_tax_pact value = 2 }
+        }
+    }
+    # army
+    if = { limit = { scope:india_order_lord = { nesnd_india_order_is = { ISSUE = army END = 1 } } }
+        if = { limit = { NOT = { has_modifier = nesnd_india_order_army_subject } } add_modifier = { name = nesnd_india_order_army_subject } }
+    }
+    else_if = { limit = { has_modifier = nesnd_india_order_army_subject } remove_modifier = nesnd_india_order_army_subject }
+    if = {
+        limit = {
+            scope:india_order_lord = { nesnd_india_order_is = { ISSUE = army END = 2 } }
+            NOT = { has_variable = nesnd_india_order_army_pact }
+            nesnd_india_order_can_exempt = yes
+        }
+        scope:india_order_lord = { create_diplomatic_pact = { country = scope:india_order_member type = exempt_from_service } }
+        if = { limit = { scope:india_order_lord = { has_diplomatic_pact = { who = scope:india_order_member type = exempt_from_service is_initiator = yes } } }
+            set_variable = { name = nesnd_india_order_army_pact value = 2 }
+        }
+    }
+    # school
+    if = {
+        limit = {
+            scope:india_order_lord = { nesnd_india_order_is = { ISSUE = school END = 1 } }
+            NOT = { has_variable = nesnd_india_order_school_pact }
+            nesnd_india_order_can_share = yes
+        }
+        scope:india_order_lord = { create_diplomatic_pact = { country = scope:india_order_member type = da_knowledge_sharing } }
+        if = { limit = { scope:india_order_lord = { has_diplomatic_pact = { who = scope:india_order_member type = da_knowledge_sharing is_initiator = yes } } }
+            set_variable = { name = nesnd_india_order_school_pact value = 1 }
+        }
+    }
+    if = { limit = { scope:india_order_lord = { nesnd_india_order_is = { ISSUE = school END = 2 } } }
+        if = { limit = { NOT = { has_modifier = nesnd_india_order_school_subject } } add_modifier = { name = nesnd_india_order_school_subject } }
+    }
+    else_if = { limit = { has_modifier = nesnd_india_order_school_subject } remove_modifier = nesnd_india_order_school_subject }
+}
+
+# Subject scope, with scope:india_order_member saved. LORD is the Mughal whose marks these are.
+# Removes this journal's treaty in one matter (if it still stands), its marker and its modifier.
+# The marker goes only once the treaty is gone: a treaty still in its forced duration may survive the
+# removal, and keeping the marker lets the next monthly pass try again.
+nesnd_india_order_clear_tax = {
+    if = {
+        limit = { exists = $LORD$ nesnd_india_order_tax_pact_value = 1 $LORD$ = { has_diplomatic_pact = { who = scope:india_order_member type = raise_payments is_initiator = yes } } }
+        $LORD$ = { remove_diplomatic_pact = { country = scope:india_order_member type = raise_payments } }
+    }
+    if = {
+        limit = { exists = $LORD$ nesnd_india_order_tax_pact_value = 2 $LORD$ = { has_diplomatic_pact = { who = scope:india_order_member type = decrease_payments is_initiator = yes } } }
+        $LORD$ = { remove_diplomatic_pact = { country = scope:india_order_member type = decrease_payments } }
+    }
+    if = {
+        limit = {
+            NOR = {
+                AND = { exists = $LORD$ nesnd_india_order_tax_pact_value = 1 $LORD$ = { has_diplomatic_pact = { who = scope:india_order_member type = raise_payments is_initiator = yes } } }
+                AND = { exists = $LORD$ nesnd_india_order_tax_pact_value = 2 $LORD$ = { has_diplomatic_pact = { who = scope:india_order_member type = decrease_payments is_initiator = yes } } }
+            }
+        }
+        remove_variable = nesnd_india_order_tax_pact
+    }
+}
+nesnd_india_order_clear_army = {
+    if = {
+        limit = { exists = $LORD$ has_variable = nesnd_india_order_army_pact $LORD$ = { has_diplomatic_pact = { who = scope:india_order_member type = exempt_from_service is_initiator = yes } } }
+        $LORD$ = { remove_diplomatic_pact = { country = scope:india_order_member type = exempt_from_service } }
+    }
+    if = {
+        limit = { NAND = { exists = $LORD$ $LORD$ = { has_diplomatic_pact = { who = scope:india_order_member type = exempt_from_service is_initiator = yes } } } }
+        remove_variable = nesnd_india_order_army_pact
+    }
+    if = { limit = { has_modifier = nesnd_india_order_army_subject } remove_modifier = nesnd_india_order_army_subject }
+}
+nesnd_india_order_clear_school = {
+    if = {
+        limit = { exists = $LORD$ has_variable = nesnd_india_order_school_pact $LORD$ = { has_diplomatic_pact = { who = scope:india_order_member type = da_knowledge_sharing is_initiator = yes } } }
+        $LORD$ = { remove_diplomatic_pact = { country = scope:india_order_member type = da_knowledge_sharing } }
+    }
+    if = {
+        limit = { NAND = { exists = $LORD$ $LORD$ = { has_diplomatic_pact = { who = scope:india_order_member type = da_knowledge_sharing is_initiator = yes } } } }
+        remove_variable = nesnd_india_order_school_pact
+    }
+    if = { limit = { has_modifier = nesnd_india_order_school_subject } remove_modifier = nesnd_india_order_school_subject }
+}
+
+# Subject scope. Everything this journal gave it, cleared; the treaties go if the engine has not already
+# broken them.
+nesnd_india_order_leave = {
+    save_scope_as = india_order_member
+    clear_saved_scope = india_order_old_lord
+    if = { limit = { exists = var:nesnd_india_order_lord } var:nesnd_india_order_lord = { save_scope_as = india_order_old_lord } }
+    nesnd_india_order_clear_tax = { LORD = scope:india_order_old_lord }
+    nesnd_india_order_clear_army = { LORD = scope:india_order_old_lord }
+    nesnd_india_order_clear_school = { LORD = scope:india_order_old_lord }
+    # A treaty that outlived its removal keeps the subject on this list, and the removal is tried again next month.
+    if = { limit = { NOR = { has_variable = nesnd_india_order_tax_pact has_variable = nesnd_india_order_army_pact has_variable = nesnd_india_order_school_pact } } remove_variable = nesnd_india_order_lord }
+}
+
+# Mughal scope. It no longer holds the journal.
+nesnd_india_order_end = {
+    save_scope_as = india_order_lord
+    every_subject_or_below = {
+        limit = { exists = var:nesnd_india_order_lord var:nesnd_india_order_lord = scope:india_order_lord }
+        nesnd_india_order_leave = yes
+    }
+    remove_variable = nesnd_india_order_tax remove_variable = nesnd_india_order_tax_wait
+    remove_variable = nesnd_india_order_army remove_variable = nesnd_india_order_army_wait
+    remove_variable = nesnd_india_order_school remove_variable = nesnd_india_order_school_wait
+    if = { limit = { has_modifier = nesnd_india_order_tax_central } remove_modifier = nesnd_india_order_tax_central }
+    if = { limit = { has_modifier = nesnd_india_order_army_central } remove_modifier = nesnd_india_order_army_central }
+    if = { limit = { has_modifier = nesnd_india_order_school_central } remove_modifier = nesnd_india_order_school_central }
+}
+
+# Mughal scope. ISSUE is tax, army or school; END 1 central, 2 local.
+nesnd_india_order_choose = {
+    if = { limit = { nesnd_india_order_can_choose = { ISSUE = $ISSUE$ END = $END$ } }
+        save_scope_as = india_order_lord
+        every_subject_or_below = {
+            limit = { nesnd_india_order_member = { LORD = scope:india_order_lord } }
+            save_scope_as = india_order_member
+            nesnd_india_order_clear_$ISSUE$ = { LORD = scope:india_order_lord }
+        }
+        set_variable = { name = nesnd_india_order_$ISSUE$ value = $END$ }
+        set_variable = { name = nesnd_india_order_$ISSUE$_wait months = 60 }
+        nesnd_india_order_apply = yes
+    }
+}
+
+# Mughal scope, monthly from the journal. An AI settles an open matter now and then, and later turns to
+# the local arrangement when most of its Indian subjects are restless.
+nesnd_india_order_ai = {
+    if = { limit = { is_ai = yes nesnd_india_order_live = yes }
+        # tax
+        if = { limit = { NOT = { has_variable = nesnd_india_order_tax } nesnd_india_order_free = { ISSUE = tax } }
+            random = { chance = 10
+                if = { limit = { net_fixed_income < 0 } random_list = { 70 = { nesnd_india_order_choose = { ISSUE = tax END = 1 } } 30 = { nesnd_india_order_choose = { ISSUE = tax END = 2 } } } }
+                else = { random_list = { 50 = { nesnd_india_order_choose = { ISSUE = tax END = 1 } } 50 = { nesnd_india_order_choose = { ISSUE = tax END = 2 } } } }
+            }
+        }
+        else_if = { limit = { nesnd_india_order_is = { ISSUE = tax END = 1 } nesnd_india_order_free = { ISSUE = tax } nesnd_india_order_ai_restless = yes }
+            random = { chance = 5 nesnd_india_order_choose = { ISSUE = tax END = 2 } }
+        }
+        # army
+        if = { limit = { NOT = { has_variable = nesnd_india_order_army } nesnd_india_order_free = { ISSUE = army } }
+            random = { chance = 10
+                if = { limit = { is_at_war = yes } random_list = { 70 = { nesnd_india_order_choose = { ISSUE = army END = 1 } } 30 = { nesnd_india_order_choose = { ISSUE = army END = 2 } } } }
+                else = { random_list = { 40 = { nesnd_india_order_choose = { ISSUE = army END = 1 } } 60 = { nesnd_india_order_choose = { ISSUE = army END = 2 } } } }
+            }
+        }
+        else_if = { limit = { nesnd_india_order_is = { ISSUE = army END = 1 } nesnd_india_order_free = { ISSUE = army } nesnd_india_order_ai_restless = yes }
+            random = { chance = 5 nesnd_india_order_choose = { ISSUE = army END = 2 } }
+        }
+        # school
+        if = { limit = { NOT = { has_variable = nesnd_india_order_school } nesnd_india_order_free = { ISSUE = school } }
+            random = { chance = 10
+                if = { limit = { literacy_rate < 0.3 } random_list = { 60 = { nesnd_india_order_choose = { ISSUE = school END = 1 } } 40 = { nesnd_india_order_choose = { ISSUE = school END = 2 } } } }
+                else = { random_list = { 50 = { nesnd_india_order_choose = { ISSUE = school END = 1 } } 50 = { nesnd_india_order_choose = { ISSUE = school END = 2 } } } }
+            }
+        }
+        else_if = { limit = { nesnd_india_order_is = { ISSUE = school END = 1 } nesnd_india_order_free = { ISSUE = school } nesnd_india_order_ai_restless = yes }
+            random = { chance = 5 nesnd_india_order_choose = { ISSUE = school END = 2 } }
+        }
+    }
+}
+
+# ==== Mughal's old agreement, the council of princes, famine relief (formerly nesnd_india_mughal.txt) ====
+# Mughal's own affairs. "Mughal" is only the country holding nesnd_india_mughal_court; a prince that
+# forms BHT or DRA does not get them. Variables and sums: common/script_values/nesnd_india_empire.txt.
+#
+#   The old agreement with the overlord (journal nesnd_mug_france):
+#     a loan        matter kind 7 to the overlord; on agreement nesnd_mug_lend. Repaid by a money
+#                   transfer treaty (or, if the treaty cannot be created, by script each month).
+#                   Monthly nesnd_mug_loan_tick: default, repayment, or the treaty gone.
+#     redemption    matter kind 8 to the overlord; on agreement Mughal pays and becomes independent.
+#   The council of princes (journal nesnd_mug_council, events nesnd_mug.11 to .13).
+#   Famine (events nesnd_mug.21 to .24): Mughal or a prince relieves its struck states, or a prince asks
+#     Mughal or its overlord (matter kind 9).
+
+# ---------------------------------------------------------------------------------------------
+# Monthly, from nesnd_india_refresh
+# ---------------------------------------------------------------------------------------------
+nesnd_mug_upkeep = {
+    if = { limit = { nesnd_mug_france_live = yes NOT = { has_journal_entry = nesnd_mug_france } } add_journal_entry = { type = nesnd_mug_france } }
+    if = { limit = { nesnd_mug_council_live = yes NOT = { has_journal_entry = nesnd_mug_council } } add_journal_entry = { type = nesnd_mug_council } }
+    if = { limit = { has_variable = nesnd_mug_loan_from } nesnd_mug_loan_tick = yes }
+    if = { limit = { nesnd_mug_famine_due = yes } nesnd_mug_famine_start = yes }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The loan (Mughal scope)
+# ---------------------------------------------------------------------------------------------
+nesnd_mug_ask = {
+    if = { limit = { nesnd_mug_can_ask_$WHAT$ = yes exists = overlord }
+        nesnd_india_matter_send = { KIND = $KIND$ TO = overlord AMOUNT = $AMOUNT$ }
+    }
+}
+
+# Any scope. The creditor pays the sum; the debtor records the loan and signs the repayment treaty.
+# If the engine will not create the treaty, the debtor pays by script each month instead.
+nesnd_mug_lend = {
+    $CREDITOR$ = { add_treasury = { value = nesnd_mug_loan_sum multiply = -1 } }
+    $DEBTOR$ = {
+        add_treasury = nesnd_mug_loan_sum
+        set_variable = { name = nesnd_mug_loan_from value = $CREDITOR$ }
+        set_variable = { name = nesnd_mug_loan_term days = 1825 }
+        remove_variable = nesnd_mug_loan_by_script
+    }
+    if = { limit = { nesnd_mug_loan_possible = { DEBTOR = $DEBTOR$ CREDITOR = $CREDITOR$ } }
+        create_treaty = {
+            first_country = $DEBTOR$
+            second_country = $CREDITOR$
+            is_draft = no
+            binding_period = { years = 5 }
+            articles_to_create = {
+                { article = money_transfer source_country = $DEBTOR$ target_country = $CREDITOR$ inputs = { { quantity = 460 } } }
+            }
+        }
+    }
+    $DEBTOR$ = {
+        if = { limit = { NOT = { nesnd_mug_loan_treaty = { PARTNER = $CREDITOR$ } } } set_variable = nesnd_mug_loan_by_script }
+    }
+}
+
+nesnd_mug_loan_forget = {
+    remove_variable = nesnd_mug_loan_from
+    remove_variable = nesnd_mug_loan_term
+    remove_variable = nesnd_mug_loan_by_script
+}
+# scope:mug_loan_debtor and scope:mug_loan_creditor saved. We leave the repayment treaty without the
+# penalties of breaking it.
+nesnd_mug_loan_withdraw = {
+    scope:mug_loan_debtor = {
+        every_scope_treaty = {
+            limit = {
+                binds = scope:mug_loan_creditor
+                any_scope_article = { nesnd_mug_loan_article = yes }
+            }
+            withdraw = { country = scope:mug_loan_debtor apply_break_penalties = no }
+        }
+    }
+}
+
+# Monthly.
+nesnd_mug_loan_tick = {
+    save_scope_as = mug_loan_debtor
+    if = { limit = { OR = { NOT = { exists = var:nesnd_mug_loan_from } var:nesnd_mug_loan_from = { is_country_alive = no } } }
+        nesnd_mug_loan_forget = yes
+    }
+    else = {
+        var:nesnd_mug_loan_from = { save_scope_as = mug_loan_creditor }
+        if = { limit = { nesnd_india_broke = yes } nesnd_mug_loan_default = yes }
+        else_if = { limit = { NOT = { has_variable = nesnd_mug_loan_term } } nesnd_mug_loan_repaid = yes }
+        else_if = { limit = { has_variable = nesnd_mug_loan_by_script }
+            add_treasury = { value = nesnd_mug_loan_monthly multiply = -1 }
+            scope:mug_loan_creditor = { add_treasury = nesnd_mug_loan_monthly }
+        }
+        else_if = { limit = { NOT = { nesnd_mug_loan_treaty = { PARTNER = scope:mug_loan_creditor } } } nesnd_mug_loan_lost = yes }
+    }
+}
+# Default during repayment: the treaty is left, what is unpaid is not pursued, and we grant the
+# creditor a trade privilege for ten years. If that treaty cannot be created, relations fall instead.
+nesnd_mug_loan_default = {
+    nesnd_mug_loan_withdraw = yes
+    if = { limit = { nesnd_mug_trade_possible = { DEBTOR = scope:mug_loan_debtor CREDITOR = scope:mug_loan_creditor } }
+        create_treaty = {
+            first_country = scope:mug_loan_debtor
+            second_country = scope:mug_loan_creditor
+            is_draft = no
+            binding_period = { years = 10 }
+            articles_to_create = {
+                { article = trade_privilege source_country = scope:mug_loan_debtor target_country = scope:mug_loan_creditor }
+            }
+        }
+        save_scope_value_as = { name = mug_loan_result value = 1 }
+    }
+    else = {
+        change_relations = { country = scope:mug_loan_creditor value = -50 }
+        save_scope_value_as = { name = mug_loan_result value = 2 }
+    }
+    nesnd_mug_loan_forget = yes
+    trigger_event = { id = nesnd_mug.3 popup = yes }
+    scope:mug_loan_creditor = { trigger_event = { id = nesnd_mug.3 popup = yes } }
+}
+nesnd_mug_loan_repaid = {
+    nesnd_mug_loan_withdraw = yes
+    nesnd_mug_loan_forget = yes
+    change_relations = { country = scope:mug_loan_creditor value = 20 }
+    trigger_event = { id = nesnd_mug.4 popup = yes }
+    scope:mug_loan_creditor = { trigger_event = { id = nesnd_mug.4 popup = yes } }
+}
+# The repayment treaty ended before its term in some other way (one side left it).
+nesnd_mug_loan_lost = {
+    nesnd_mug_loan_forget = yes
+    trigger_event = { id = nesnd_mug.5 popup = yes }
+}
+
+# ---------------------------------------------------------------------------------------------
+# Answering a matter of kinds 7 to 9 (answering scope, from nesnd_india_matter_accept)
+# scope:india_matter_me answers, scope:india_matter_holder asked.
+# ---------------------------------------------------------------------------------------------
+nesnd_mug_matter_accept = {
+    if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
+        nesnd_mug_lend = { DEBTOR = scope:india_matter_holder CREDITOR = scope:india_matter_me }
+    }
+    else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
+        scope:india_matter_holder = { add_treasury = { value = nesnd_mug_redeem_price multiply = -1 } }
+        add_treasury = nesnd_mug_redeem_price
+        scope:india_matter_holder = { make_independent = yes }
+    }
+    else = {
+        add_treasury = { value = nesnd_india_matter_quote multiply = -1 }
+        scope:india_matter_holder = {
+            set_variable = { name = nesnd_mug_famine_paid value = nesnd_india_matter_amount_value days = 60 }
+            nesnd_mug_relieve_states = yes
+            change_relations = { country = scope:india_matter_me value = 25 }
+        }
+        if = { limit = { has_variable = nesnd_india_mughal_court } scope:india_matter_holder = { set_variable = { name = nesnd_mug_council_attended months = 120 } } }
+    }
+    scope:india_matter_holder = {
+        nesnd_india_matter_save_names = yes
+        if = { limit = { nesnd_india_matter_kind_value = 9 } trigger_event = { id = nesnd_mug.23 popup = yes } }
+        else = { trigger_event = { id = nesnd_mug.1 popup = yes } }
+        nesnd_india_matter_clear = yes
+    }
+}
+# Holder scope, from nesnd_india_matter_fail (scope:india_matter_result is saved).
+nesnd_mug_matter_fail = {
+    if = { limit = { nesnd_india_matter_kind_value = 9 } trigger_event = { id = nesnd_mug.24 popup = yes } }
+    else = { trigger_event = { id = nesnd_mug.2 popup = yes } }
+    nesnd_india_matter_clear = yes
+}
+# What the answering government is shown on the accept button. Tooltips only.
+nesnd_mug_accept_tooltips = {
+    if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
+        custom_tooltip = nesnd_mug_accept_loan_tt
+        show_as_tooltip = { add_treasury = { value = nesnd_mug_loan_sum multiply = -1 } }
+    }
+    else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
+        custom_tooltip = nesnd_mug_accept_redeem_tt
+        show_as_tooltip = { add_treasury = nesnd_mug_redeem_price }
+    }
+    else = {
+        custom_tooltip = nesnd_mug_accept_aid_tt
+        show_as_tooltip = { add_treasury = { value = nesnd_india_matter_quote multiply = -1 } }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# AI on the journal nesnd_mug_france (monthly). Hard limits are in the ask triggers.
+# ---------------------------------------------------------------------------------------------
+nesnd_mug_france_ai = {
+    if = { limit = { is_ai = yes nesnd_mug_can_ask_loan = yes }
+        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_loan_ask_chance }
+        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = loan KIND = 7 AMOUNT = nesnd_mug_loan_sum } }
+    }
+    if = { limit = { is_ai = yes nesnd_mug_can_ask_redeem = yes }
+        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_redeem_ask_chance }
+        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = redeem KIND = 8 AMOUNT = nesnd_mug_redeem_price } }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The council of princes (Mughal scope)
+# ---------------------------------------------------------------------------------------------
+nesnd_mug_council_ai = {
+    if = { limit = { is_ai = yes nesnd_mug_can_call_council = yes }
+        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_council_ask_chance }
+        random = { chance = scope:mug_ai_chance trigger_event = { id = nesnd_mug.11 popup = yes } }
+    }
+}
+# From event .11. TOPIC is 1 railways, 2 famine relief, 3 common defence. The ten years start now.
+# Up to eight princes, those with the best relations with us first, are invited.
+nesnd_mug_open_council = {
+    if = { limit = { nesnd_mug_can_call_council = yes }
+        save_scope_as = mug_council_convener
+        set_variable = { name = nesnd_mug_council_topic value = $TOPIC$ days = 45 }
+        set_variable = { name = nesnd_mug_council_wait months = 120 }
+        ordered_country = {
+            limit = { nesnd_mug_council_guest = { CONVENER = scope:mug_council_convener } }
+            order_by = relations:root
+            min = 0
+            max = 7
+            check_range_bounds = no
+            set_variable = { name = nesnd_mug_council_invite value = scope:mug_council_convener days = 60 }
+            remove_variable = nesnd_mug_council_answer
+            trigger_event = { id = nesnd_mug.12 popup = yes }
+        }
+        trigger_event = { id = nesnd_mug.13 days = 30 popup = yes }
+    }
+}
+# From event .13, thirty days later. Princes that have not answered count as declining.
+nesnd_mug_settle_council = {
+    save_scope_as = mug_council_convener
+    set_variable = { name = nesnd_mug_council_yes value = 0 }
+    set_variable = { name = nesnd_mug_council_no value = 0 }
+    set_variable = { name = nesnd_mug_council_unsigned value = 0 }
+    clear_saved_scope = mug_council_topic
+    if = { limit = { has_variable = nesnd_mug_council_topic } save_scope_value_as = { name = mug_council_topic value = var:nesnd_mug_council_topic } }
+    else = { save_scope_value_as = { name = mug_council_topic value = 1 } }
+    set_variable = { name = nesnd_mug_council_last value = scope:mug_council_topic }
+    every_country = {
+        limit = { has_variable = nesnd_mug_council_invite var:nesnd_mug_council_invite ?= scope:mug_council_convener }
+        if = { limit = { has_variable = nesnd_mug_council_answer var:nesnd_mug_council_answer = 1 is_country_alive = yes NOT = { has_war_with = scope:mug_council_convener } }
+            scope:mug_council_convener = { change_variable = { name = nesnd_mug_council_yes add = 1 } }
+            set_variable = { name = nesnd_mug_council_attended months = 120 }
+            if = { limit = { scope:mug_council_topic = 1 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_rail } }
+            else_if = { limit = { scope:mug_council_topic = 2 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_relief } }
+            else = {
+                save_scope_as = mug_council_member
+                if = { limit = { nesnd_india_defence_possible = { FIRST = scope:mug_council_convener SECOND = scope:mug_council_member YEARS = 5 } }
+                    create_treaty = {
+                        first_country = scope:mug_council_convener
+                        second_country = scope:mug_council_member
+                        is_draft = no
+                        binding_period = { years = 5 }
+                        articles_to_create = { { article = defensive_pact } }
+                    }
+                }
+                else = { scope:mug_council_convener = { change_variable = { name = nesnd_mug_council_unsigned add = 1 } } }
+            }
+        }
+        else = { scope:mug_council_convener = { change_variable = { name = nesnd_mug_council_no add = 1 } } }
+        remove_variable = nesnd_mug_council_invite
+        remove_variable = nesnd_mug_council_answer
+    }
+    if = { limit = { var:nesnd_mug_council_yes > 0 }
+        if = { limit = { scope:mug_council_topic = 1 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_rail } }
+        else_if = { limit = { scope:mug_council_topic = 2 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_relief } }
+    }
+    remove_variable = nesnd_mug_council_topic
+}
+nesnd_mug_council_modifier = {
+    if = { limit = { has_modifier = $NAME$ } remove_modifier = $NAME$ }
+    add_modifier = { name = $NAME$ months = 120 }
+}
+
+# ---------------------------------------------------------------------------------------------
+# Famine
+# ---------------------------------------------------------------------------------------------
+# Country scope. Mark the struck states and tell the government; nothing more for 24 months.
+nesnd_mug_famine_start = {
+    every_scope_state = {
+        limit = { nesnd_mug_famine_struck = yes }
+        set_variable = { name = nesnd_mug_famine_state days = 120 }
+    }
+    set_variable = { name = nesnd_mug_famine_wait months = 24 }
+    if = { limit = { has_variable = nesnd_india_mughal_court } trigger_event = { id = nesnd_mug.21 popup = yes } }
+    else = {
+        clear_saved_scope = mug_famine_mughal
+        random_country = { limit = { has_variable = nesnd_india_mughal_court is_country_alive = yes } save_scope_as = mug_famine_mughal }
+        trigger_event = { id = nesnd_mug.22 popup = yes }
+    }
+}
+# Country scope. The relief modifier on each marked state; the marks are cleared.
+nesnd_mug_relieve_states = {
+    every_scope_state = {
+        limit = { has_variable = nesnd_mug_famine_state }
+        if = { limit = { has_modifier = nesnd_mug_famine_relief } remove_modifier = nesnd_mug_famine_relief }
+        add_modifier = { name = nesnd_mug_famine_relief months = 12 }
+        remove_variable = nesnd_mug_famine_state
+    }
+}
+# Country scope. We pay for it ourselves.
+nesnd_mug_self_relief = {
+    if = { limit = { nesnd_mug_famine_states > 0 }
+        add_treasury = { value = nesnd_mug_famine_cost multiply = -1 }
+        nesnd_mug_relieve_states = yes
+    }
+}
+# Prince scope. TO is Mughal or our overlord.
+nesnd_mug_ask_aid = {
+    if = { limit = { exists = $TO$ nesnd_mug_matter_free = yes nesnd_mug_famine_states > 0 }
+        nesnd_india_matter_send = { KIND = 9 TO = $TO$ AMOUNT = nesnd_mug_famine_cost }
+    }
+}

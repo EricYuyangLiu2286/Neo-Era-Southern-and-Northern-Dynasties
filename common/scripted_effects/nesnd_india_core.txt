@@ -1,21 +1,26 @@
-﻿nesnd_india_schools_tick = {
-    if = { limit = { nesnd_india_schools_available = yes }
+﻿# ==== Identity, monthly refresh and the reform journals (formerly nesnd_india_core.txt) ====
+nesnd_india_schools_tick = {
+    if = { limit = { nesnd_india_track_available = { T = schools PRIORITY = 1 } }
         if = { limit = { NOT = { has_variable = nesnd_india_schools_months } } set_variable = { name = nesnd_india_schools_months value = 0 } }
         if = { limit = { nesnd_india_schools_ready = yes } change_variable = { name = nesnd_india_schools_months add = 1 } }
         clamp_variable = { name = nesnd_india_schools_months min = 0 max = 12 }
-        nesnd_india_sync_schools = yes
+        nesnd_india_sync_bar = { JE = nesnd_india_schools BAR = nesnd_india_schools_bar VALUE = nesnd_india_schools_months_value }
     }
 }
 nesnd_india_industry_tick = {
-    if = { limit = { nesnd_india_industry_available = yes }
+    if = { limit = { nesnd_india_track_available = { T = industry PRIORITY = 2 } }
         if = { limit = { NOT = { has_variable = nesnd_india_industry_months } } set_variable = { name = nesnd_india_industry_months value = 0 } }
         if = { limit = { nesnd_india_industry_ready = { COUNTRY = root } } change_variable = { name = nesnd_india_industry_months add = 1 } }
         clamp_variable = { name = nesnd_india_industry_months min = 0 max = 12 }
-        nesnd_india_sync_industry = yes
+        nesnd_india_sync_bar = { JE = nesnd_india_industry BAR = nesnd_india_industry_bar VALUE = nesnd_india_industry_months_value }
     }
 }
-nesnd_india_dynasty_tick = { change_variable = { name = nesnd_india_dynasty add = nesnd_india_dynasty_delta } clamp_variable = { name = nesnd_india_dynasty min = 0 max = 100 } nesnd_india_sync_dynasty = yes }
-nesnd_india_community_tick = { change_variable = { name = nesnd_india_community add = nesnd_india_community_delta } clamp_variable = { name = nesnd_india_community min = 0 max = 100 } nesnd_india_sync_community = yes }
+# Country scope. Moves the 0-100 meter nesnd_india_<V> by nesnd_india_<V>_delta and shows it on bar BAR of journal JE.
+nesnd_india_meter_tick = {
+    change_variable = { name = nesnd_india_$V$ add = nesnd_india_$V$_delta }
+    clamp_variable = { name = nesnd_india_$V$ min = 0 max = 100 }
+    nesnd_india_sync_bar = { JE = $JE$ BAR = $BAR$ VALUE = nesnd_india_$V$ }
+}
 nesnd_india_initialize = {
     # The government that began as Mughal keeps this through any change of name (BHT, DRA); the
     # Mughal-only rewards of nesnd_india_schools and nesnd_india_industry read it.
@@ -29,8 +34,8 @@ nesnd_india_initialize = {
 nesnd_india_refresh = {
     nesnd_india_initialize = yes
     if = { limit = { nesnd_india_reform_live = yes NOT = { has_journal_entry = nesnd_india_reform } } add_journal_entry = { type = nesnd_india_reform } }
-    if = { limit = { nesnd_india_schools_visible = yes NOT = { has_journal_entry = nesnd_india_schools } } if = { limit = { NOR = { has_journal_entry = nesnd_india_schools has_variable = nesnd_jeq_nesnd_india_schools } } set_variable = { name = nesnd_jeq_nesnd_india_schools days = 3 } add_journal_entry = { type = nesnd_india_schools } } }
-    if = { limit = { nesnd_india_industry_visible = yes NOT = { has_journal_entry = nesnd_india_industry } } if = { limit = { NOR = { has_journal_entry = nesnd_india_industry has_variable = nesnd_jeq_nesnd_india_industry } } set_variable = { name = nesnd_jeq_nesnd_india_industry days = 3 } add_journal_entry = { type = nesnd_india_industry } } }
+    if = { limit = { nesnd_india_track_visible = { T = schools } NOT = { has_journal_entry = nesnd_india_schools } } if = { limit = { NOR = { has_journal_entry = nesnd_india_schools has_variable = nesnd_jeq_nesnd_india_schools } } set_variable = { name = nesnd_jeq_nesnd_india_schools days = 3 } add_journal_entry = { type = nesnd_india_schools } } }
+    if = { limit = { nesnd_india_track_visible = { T = industry } NOT = { has_journal_entry = nesnd_india_industry } } if = { limit = { NOR = { has_journal_entry = nesnd_india_industry has_variable = nesnd_jeq_nesnd_india_industry } } set_variable = { name = nesnd_jeq_nesnd_india_industry days = 3 } add_journal_entry = { type = nesnd_india_industry } } }
     if = { limit = { nesnd_india_society_live = yes NOT = { has_journal_entry = nesnd_india_society } } add_journal_entry = { type = nesnd_india_society } }
     if = { limit = { nesnd_india_caste_live = yes NOT = { has_journal_entry = nesnd_india_caste } } add_journal_entry = { type = nesnd_india_caste } }
     if = { limit = { nesnd_india_prince = yes NOT = { has_journal_entry = nesnd_india_princes } } add_journal_entry = { type = nesnd_india_princes } }
@@ -52,33 +57,11 @@ nesnd_india_refresh = {
     if = { limit = { nesnd_india_society_live = yes country_has_monarchy_law = yes NOT = { has_journal_entry = nesnd_india_dynasty_journal } } add_journal_entry = { type = nesnd_india_dynasty_journal } }
 }
 
-nesnd_india_sync_schools = {
+# Country scope. Shows VALUE (a script value read on this country) on the progress bar BAR of the journal JE.
+nesnd_india_sync_bar = {
     save_scope_as = india_display_country
-    if = { limit = { exists = scope:india_display_country has_journal_entry = nesnd_india_schools }
-        je:nesnd_india_schools = { set_bar_progress = { name = nesnd_india_schools_bar value = scope:india_display_country.nesnd_india_schools_months_value } }
+    if = { limit = { exists = scope:india_display_country has_journal_entry = $JE$ }
+        je:$JE$ = { set_bar_progress = { name = $BAR$ value = scope:india_display_country.$VALUE$ } }
     }
 }
-nesnd_india_sync_industry = {
-    save_scope_as = india_display_country
-    if = { limit = { exists = scope:india_display_country has_journal_entry = nesnd_india_industry }
-        je:nesnd_india_industry = { set_bar_progress = { name = nesnd_india_industry_bar value = scope:india_display_country.nesnd_india_industry_months_value } }
-    }
-}
-nesnd_india_sync_dynasty = {
-    save_scope_as = india_display_country
-    if = { limit = { exists = scope:india_display_country has_journal_entry = nesnd_india_dynasty_journal }
-        je:nesnd_india_dynasty_journal = { set_bar_progress = { name = nesnd_india_dynasty_bar value = scope:india_display_country.nesnd_india_dynasty } }
-    }
-}
-nesnd_india_sync_community = {
-    save_scope_as = india_display_country
-    if = { limit = { exists = scope:india_display_country has_journal_entry = nesnd_india_society }
-        je:nesnd_india_society = { set_bar_progress = { name = nesnd_india_community_bar value = scope:india_display_country.nesnd_india_community } }
-    }
-}
-nesnd_india_sync_contact = {
-    save_scope_as = india_display_country
-    if = { limit = { exists = scope:india_display_country has_journal_entry = nesnd_india_uprising }
-        je:nesnd_india_uprising = { set_bar_progress = { name = nesnd_india_contact_bar value = scope:india_display_country.nesnd_india_contact_progress } }
-    }
-}
+

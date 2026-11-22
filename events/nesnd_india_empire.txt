@@ -1,0 +1,345 @@
+﻿namespace = nesnd_mug
+
+# ==== Mughal's old agreement, the council of princes, famine relief (formerly nesnd_india_mughal.txt) ====
+# Mughal's own affairs (common/scripted_effects/nesnd_india_empire.txt).
+#   .1 to .5    the loan and redemption (to Mughal; .3 and .4 also to the creditor)
+#   .11 to .13  the council of princes (.11 and .13 to Mughal, .12 to each invited prince)
+#   .21 to .24  famine (.21 to Mughal, .22 to .24 to a prince)
+
+# The overlord agreed. To Mughal.
+nesnd_mug.1 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_mug.1.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 8 } desc = nesnd_mug.1.d_redeem }
+            triggered_desc = { trigger = { has_variable = nesnd_mug_loan_by_script } desc = nesnd_mug.1.d_loan_script }
+            desc = nesnd_mug.1.d_loan
+        }
+    }
+    flavor = nesnd_mug.1.f
+    trigger = { exists = scope:india_matter_to }
+    cancellation_trigger = { NOT = { exists = scope:india_matter_to } }
+    option = {
+        name = nesnd_india_diplomacy_ack
+        default_option = yes
+        if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 8 } custom_tooltip = nesnd_mug_redeemed_tt }
+        else_if = { limit = { has_variable = nesnd_mug_loan_by_script } custom_tooltip = nesnd_mug_loan_signed_script_tt }
+        else = { custom_tooltip = nesnd_mug_loan_signed_tt }
+    }
+}
+
+# No agreement. To Mughal.
+nesnd_mug.2 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_mug.2.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to exists = scope:india_matter_kind scope:india_matter_kind = 8 } desc = nesnd_mug.2.d_redeem_decline }
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to } desc = nesnd_mug.2.d_loan_decline }
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 exists = scope:india_matter_to } desc = nesnd_mug.2.d_silent }
+            desc = nesnd_mug.2.d_void
+        }
+    }
+    flavor = nesnd_mug.2.f
+    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_mug_unchanged_tt }
+}
+
+# Default during repayment. To Mughal and to the creditor.
+nesnd_mug.3 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_mug.3.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { this = scope:mug_loan_debtor exists = scope:mug_loan_result scope:mug_loan_result = 1 } desc = nesnd_mug.3.d_debtor_trade }
+            triggered_desc = { trigger = { this = scope:mug_loan_debtor } desc = nesnd_mug.3.d_debtor_relations }
+            triggered_desc = { trigger = { exists = scope:mug_loan_result scope:mug_loan_result = 1 } desc = nesnd_mug.3.d_creditor_trade }
+            desc = nesnd_mug.3.d_creditor_relations
+        }
+    }
+    flavor = nesnd_mug.3.f
+    trigger = { exists = scope:mug_loan_debtor exists = scope:mug_loan_creditor }
+    option = {
+        name = nesnd_india_diplomacy_ack
+        default_option = yes
+        if = { limit = { exists = scope:mug_loan_result scope:mug_loan_result = 1 } custom_tooltip = nesnd_mug_default_trade_tt }
+        else = { custom_tooltip = nesnd_mug_default_relations_tt }
+    }
+}
+
+# The loan repaid. To Mughal and to the creditor.
+nesnd_mug.4 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_mug.4.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { this = scope:mug_loan_debtor } desc = nesnd_mug.4.d_debtor }
+            desc = nesnd_mug.4.d_creditor
+        }
+    }
+    flavor = nesnd_mug.4.f
+    trigger = { exists = scope:mug_loan_debtor exists = scope:mug_loan_creditor }
+    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_mug_repaid_tt }
+}
+
+# The repayment treaty ended before its term in some other way. To Mughal.
+nesnd_mug.5 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_mug.5.t
+    desc = nesnd_mug.5.d
+    flavor = nesnd_mug.5.f
+    trigger = { exists = scope:mug_loan_creditor }
+    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_mug_lost_tt }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The council of princes
+# ---------------------------------------------------------------------------------------------
+# Mughal chooses the topic.
+nesnd_mug.11 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_mug.11.t
+    desc = nesnd_mug.11.d
+    flavor = nesnd_mug.11.f
+    trigger = { nesnd_mug_can_call_council = yes }
+    cancellation_trigger = { NOT = { nesnd_mug_can_call_council = yes } }
+    option = {
+        name = nesnd_mug.11.a
+        ai_chance = {
+            base = 50
+            modifier = { trigger = { OR = { is_at_war = yes any_scope_state = { nesnd_mug_famine_struck = yes } } } add = -30 }
+        }
+        custom_tooltip = nesnd_mug_council_rail_tt
+        custom_tooltip = nesnd_mug_council_invite_tt
+        hidden_effect = { nesnd_mug_open_council = { TOPIC = 1 } }
+    }
+    option = {
+        name = nesnd_mug.11.b
+        ai_chance = {
+            base = 25
+            modifier = { trigger = { any_scope_state = { nesnd_mug_famine_struck = yes } } add = 35 }
+            modifier = { trigger = { is_at_war = yes NOT = { any_scope_state = { nesnd_mug_famine_struck = yes } } } add = -5 }
+        }
+        custom_tooltip = nesnd_mug_council_relief_tt
+        custom_tooltip = nesnd_mug_council_invite_tt
+        hidden_effect = { nesnd_mug_open_council = { TOPIC = 2 } }
+    }
+    option = {
+        name = nesnd_mug.11.c
+        ai_chance = {
+            base = 25
+            modifier = { trigger = { is_at_war = yes NOT = { any_scope_state = { nesnd_mug_famine_struck = yes } } } add = 35 }
+            modifier = { trigger = { any_scope_state = { nesnd_mug_famine_struck = yes } } add = -5 }
+        }
+        custom_tooltip = nesnd_mug_council_defence_tt
+        custom_tooltip = nesnd_mug_council_invite_tt
+        hidden_effect = { nesnd_mug_open_council = { TOPIC = 3 } }
+    }
+    option = {
+        name = nesnd_mug.11.e
+        default_option = yes
+        ai_chance = { base = 0 }
+        custom_tooltip = nesnd_mug_council_later_tt
+    }
+}
+
+# Each invited prince attends or declines.
+nesnd_mug.12 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_mug.12.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_mug_council_topic_is = { T = 1 } } desc = nesnd_mug.12.d_rail }
+            triggered_desc = { trigger = { nesnd_mug_council_topic_is = { T = 2 } } desc = nesnd_mug.12.d_relief }
+            desc = nesnd_mug.12.d_defence
+        }
+    }
+    flavor = nesnd_mug.12.f
+    trigger = { exists = var:nesnd_mug_council_invite }
+    cancellation_trigger = { NOT = { exists = var:nesnd_mug_council_invite } }
+    immediate = {
+        remove_variable = nesnd_mug_council_ai_yes
+        if = { limit = { is_ai = yes }
+            save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_council_attend_chance }
+            random = { chance = scope:mug_ai_chance set_variable = { name = nesnd_mug_council_ai_yes days = 60 } }
+        }
+    }
+    option = {
+        name = nesnd_mug.12.a
+        ai_chance = { base = 0 modifier = { trigger = { has_variable = nesnd_mug_council_ai_yes } add = 100 } }
+        if = { limit = { nesnd_mug_council_topic_is = { T = 1 } } custom_tooltip = nesnd_mug_attend_rail_tt }
+        else_if = { limit = { nesnd_mug_council_topic_is = { T = 2 } } custom_tooltip = nesnd_mug_attend_relief_tt }
+        else = { custom_tooltip = nesnd_mug_attend_defence_tt }
+        hidden_effect = {
+            set_variable = { name = nesnd_mug_council_answer value = 1 days = 60 }
+            remove_variable = nesnd_mug_council_ai_yes
+        }
+    }
+    option = {
+        name = nesnd_mug.12.b
+        default_option = yes
+        ai_chance = { base = 0 modifier = { trigger = { NOT = { has_variable = nesnd_mug_council_ai_yes } } add = 100 } }
+        custom_tooltip = nesnd_mug_decline_council_tt
+        hidden_effect = {
+            set_variable = { name = nesnd_mug_council_answer value = 2 days = 60 }
+            remove_variable = nesnd_mug_council_ai_yes
+        }
+    }
+}
+
+# Thirty days later: the council is settled and Mughal is told what came of it.
+nesnd_mug.13 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_mug.13.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_mug_council_yes_value = 0 } desc = nesnd_mug.13.d_none }
+            triggered_desc = { trigger = { has_variable = nesnd_mug_council_last var:nesnd_mug_council_last = 1 } desc = nesnd_mug.13.d_rail }
+            triggered_desc = { trigger = { has_variable = nesnd_mug_council_last var:nesnd_mug_council_last = 2 } desc = nesnd_mug.13.d_relief }
+            triggered_desc = { trigger = { nesnd_mug_council_unsigned_value > 0 } desc = nesnd_mug.13.d_defence_unsigned }
+            desc = nesnd_mug.13.d_defence
+        }
+    }
+    flavor = nesnd_mug.13.f
+    immediate = { nesnd_mug_settle_council = yes }
+    option = {
+        name = nesnd_india_diplomacy_ack
+        default_option = yes
+        if = { limit = { nesnd_mug_council_yes_value = 0 } custom_tooltip = nesnd_mug_council_none_tt }
+        else = { custom_tooltip = nesnd_mug_council_done_tt }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# Famine
+# ---------------------------------------------------------------------------------------------
+# Mughal's own states are struck.
+nesnd_mug.21 = {
+    type = country_event
+    event_image = { video = "asia_dead_cattle_poor_harvest" }
+    title = nesnd_mug.21.t
+    desc = nesnd_mug.21.d
+    flavor = nesnd_mug.21.f
+    option = {
+        name = nesnd_mug.21.a
+        trigger = { nesnd_mug_can_relieve = yes }
+        ai_chance = { base = 70 }
+        custom_tooltip = nesnd_mug_relief_tt
+        show_as_tooltip = { add_treasury = { value = nesnd_mug_famine_cost multiply = -1 } }
+        hidden_effect = { nesnd_mug_self_relief = yes }
+    }
+    option = {
+        name = nesnd_mug.21.b
+        default_option = yes
+        ai_chance = { base = 30 }
+        custom_tooltip = nesnd_mug_no_relief_tt
+        hidden_effect = { every_scope_state = { limit = { has_variable = nesnd_mug_famine_state } remove_variable = nesnd_mug_famine_state } }
+    }
+}
+
+# A prince's states are struck.
+nesnd_mug.22 = {
+    type = country_event
+    event_image = { video = "asia_dead_cattle_poor_harvest" }
+    title = nesnd_mug.22.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:mug_famine_mughal } desc = nesnd_mug.22.d }
+            desc = nesnd_mug.22.d_alone
+        }
+    }
+    flavor = nesnd_mug.22.f
+    option = {
+        name = nesnd_mug.22.a
+        trigger = { nesnd_mug_can_relieve = yes }
+        ai_chance = { base = 70 }
+        custom_tooltip = nesnd_mug_relief_tt
+        show_as_tooltip = { add_treasury = { value = nesnd_mug_famine_cost multiply = -1 } }
+        hidden_effect = { nesnd_mug_self_relief = yes }
+    }
+    option = {
+        name = nesnd_mug.22.b
+        show_as_unavailable = { exists = scope:mug_famine_mughal }
+        trigger = { nesnd_mug_can_ask_mughal = yes }
+        ai_chance = { base = 60 modifier = { trigger = { nesnd_mug_can_relieve = yes } factor = 0.25 } }
+        custom_tooltip = nesnd_mug_ask_mughal_tt
+        custom_tooltip = nesnd_mug_aid_wait_tt
+        hidden_effect = { nesnd_mug_ask_aid = { TO = scope:mug_famine_mughal } }
+    }
+    option = {
+        name = nesnd_mug.22.c
+        show_as_unavailable = { nesnd_mug_overlord_option_shown = yes }
+        trigger = { nesnd_mug_overlord_option_shown = yes nesnd_mug_can_ask_overlord = yes }
+        ai_chance = { base = 40 modifier = { trigger = { nesnd_mug_can_relieve = yes } factor = 0.25 } }
+        custom_tooltip = nesnd_mug_ask_overlord_tt
+        custom_tooltip = nesnd_mug_aid_wait_tt
+        hidden_effect = { nesnd_mug_ask_aid = { TO = overlord } }
+    }
+    option = {
+        name = nesnd_mug.22.e
+        default_option = yes
+        ai_chance = { base = 5 }
+        custom_tooltip = nesnd_mug_no_relief_tt
+        hidden_effect = { every_scope_state = { limit = { has_variable = nesnd_mug_famine_state } remove_variable = nesnd_mug_famine_state } }
+    }
+}
+
+# Aid granted. To the prince.
+nesnd_mug.23 = {
+    type = country_event
+    event_image = { video = "asia_farmers_market" }
+    title = nesnd_mug.23.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:india_matter_to scope:india_matter_to = { has_variable = nesnd_india_mughal_court } } desc = nesnd_mug.23.d_mughal }
+            desc = nesnd_mug.23.d_overlord
+        }
+    }
+    flavor = nesnd_mug.23.f
+    trigger = { exists = scope:india_matter_to }
+    cancellation_trigger = { NOT = { exists = scope:india_matter_to } }
+    option = {
+        name = nesnd_india_diplomacy_ack
+        default_option = yes
+        custom_tooltip = nesnd_mug_aid_given_tt
+    }
+}
+
+# Aid refused, forbidden or unanswered. The prince may still relieve its states itself.
+nesnd_mug.24 = {
+    type = country_event
+    event_image = { video = "asia_dead_cattle_poor_harvest" }
+    title = nesnd_mug.24.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 1 exists = scope:india_matter_permit } desc = nesnd_mug.24.d_forbid }
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to } desc = nesnd_mug.24.d_decline }
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 exists = scope:india_matter_to } desc = nesnd_mug.24.d_silent }
+            desc = nesnd_mug.24.d_void
+        }
+    }
+    flavor = nesnd_mug.24.f
+    option = {
+        name = nesnd_mug.22.a
+        trigger = { nesnd_mug_can_relieve = yes }
+        ai_chance = { base = 70 }
+        custom_tooltip = nesnd_mug_relief_tt
+        show_as_tooltip = { add_treasury = { value = nesnd_mug_famine_cost multiply = -1 } }
+        hidden_effect = { nesnd_mug_self_relief = yes }
+    }
+    option = {
+        name = nesnd_mug.22.e
+        default_option = yes
+        ai_chance = { base = 30 }
+        custom_tooltip = nesnd_mug_no_relief_tt
+        hidden_effect = { every_scope_state = { limit = { has_variable = nesnd_mug_famine_state } remove_variable = nesnd_mug_famine_state } }
+    }
+}

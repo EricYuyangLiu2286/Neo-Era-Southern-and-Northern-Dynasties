@@ -1,4 +1,5 @@
-﻿# Indian affairs. See common/script_values/nesnd_india_matters.txt for the variables.
+﻿# ==== Indian affairs: one government asks, another answers (formerly nesnd_india_matters.txt) ====
+# Indian affairs. See common/script_values/nesnd_india_matters.txt for the variables.
 #
 # Order of a matter:
 #   nesnd_india_matter_send          the asking country names the kind, the other government and the sum
@@ -9,7 +10,7 @@
 #   -> nesnd_india_matter_accept hands over to the kind (nesnd_india_project_accept, nesnd_india_frontier_accept,
 #      nesnd_mug_matter_accept, nesnd_india_overseas_accept)
 #   Kind 6 has no answer of its own: once every consent is given, nesnd_india_union_handoff sends the
-#   invitation or the request into the request channel (nesnd_india_diplomacy.txt) and the matter ends.
+#   invitation or the request into the request channel (nesnd_india_princes.txt) and the matter ends.
 # Thirty days without an answer count as no answer (nesnd_india_matter_lapse). A government deals with
 # one matter at a time; a matter for a busy government waits and is delivered at a later monthly check.
 
@@ -125,16 +126,11 @@ nesnd_india_matter_permit = {
         }
     }
 }
-nesnd_india_matter_forbid = {
-    if = { limit = { nesnd_india_matter_consent_role = yes exists = var:nesnd_india_matter_from }
+# An overlord refuses its consent (ROLE consent, RESULT 1), or the other government declines (ROLE answer, RESULT 2).
+nesnd_india_matter_refuse = {
+    if = { limit = { nesnd_india_matter_$ROLE$_role = yes exists = var:nesnd_india_matter_from }
         set_variable = nesnd_india_matter_answered
-        var:nesnd_india_matter_from = { nesnd_india_matter_fail = { RESULT = 1 } }
-    }
-}
-nesnd_india_matter_decline = {
-    if = { limit = { nesnd_india_matter_answer_role = yes exists = var:nesnd_india_matter_from }
-        set_variable = nesnd_india_matter_answered
-        var:nesnd_india_matter_from = { nesnd_india_matter_fail = { RESULT = 2 } }
+        var:nesnd_india_matter_from = { nesnd_india_matter_fail = { RESULT = $RESULT$ } }
     }
 }
 nesnd_india_matter_accept = {
@@ -163,7 +159,7 @@ nesnd_india_matter_ai_answer = {
         save_temporary_scope_value_as = { name = india_matter_chance value = nesnd_india_matter_consent_chance }
         random = { chance = scope:india_matter_chance set_variable = nesnd_india_matter_ai_yes }
         if = { limit = { has_variable = nesnd_india_matter_ai_yes } nesnd_india_matter_permit = yes }
-        else = { nesnd_india_matter_forbid = yes }
+        else = { nesnd_india_matter_refuse = { ROLE = consent RESULT = 1 } }
     }
     else_if = { limit = { nesnd_india_matter_answer_role = yes }
         if = { limit = { nesnd_india_matter_can_accept = yes }
@@ -171,7 +167,7 @@ nesnd_india_matter_ai_answer = {
             random = { chance = scope:india_matter_chance set_variable = nesnd_india_matter_ai_yes }
         }
         if = { limit = { has_variable = nesnd_india_matter_ai_yes } nesnd_india_matter_accept = yes }
-        else = { nesnd_india_matter_decline = yes }
+        else = { nesnd_india_matter_refuse = { ROLE = answer RESULT = 2 } }
     }
     remove_variable = nesnd_india_matter_ai_yes
 }

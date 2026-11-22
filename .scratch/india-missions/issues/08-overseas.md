@@ -30,6 +30,12 @@ Evidence: 工作台 `reports/2026-11-21-india-development/海外通商/交付记
 
 领土、保护关系、驻军；外交博弈和战争目标；喜马拉雅方向；买船造船；改原版国际认可；已有玩家文字里的「德里」等代称（七个键，列在交付记录第八节）。
 
-## 代码无法证实
+## 已按代码核验（原「代码无法证实」三项）
 
-条约港条约退约后港口是否交还（文档与原版注释相反）；`withdraw` 效果是否检查条款的 can_withdraw；日志里由变量链取对方身上变量的到期日能否显示。见交付记录第七节。
+2026-11-22 收尾批读代码定下，依据见 工作台 reports/2026-11-21-india-development/收尾/审阅/待实机核验.md「四问」。
+
+1. 条约港条约退约后港口是否交还：不交还。条约作废后港口成为接收方的普通州，让出方只得到该州区的宣称（原版 concept_treaty_port_desc、RENEGE_TREATY_PORTS_WITH 与条款 on_withdrawal）。effects.log 那句「returning the ports」是过时说明。现行文字与此一致，不改。
+2. `withdraw` 是否检查条款的 can_withdraw：代码无法证实（原版没有一处脚本退带 can_withdraw 的条款）。本 MOD 由接收港口的印度国家退约，can_withdraw 只限让出方，两种情况下都能退成，不改。
+3. 日志里由变量链取对方身上变量的到期日：能显示。数据类型文档里链上每一步都回到 Scope，状态行已用 exists 把关，不改。
+
+另：附属国在宗主国市场之内，不能给出或收到贸易特权（原版 25_trade_privilege.txt 的 visible、can_ratify）。收尾给请求加了具名提示 nesnd_india_own_markets_tt。
