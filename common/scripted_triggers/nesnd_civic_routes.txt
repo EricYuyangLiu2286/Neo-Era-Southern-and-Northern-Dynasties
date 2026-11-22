@@ -37,11 +37,88 @@ nesnd_c2_italy_foundations_commercial_credit_candidate = { state_population > 0 
 nesnd_c2_italy_foundations_commercial_credit_available = { nesnd_c2_italy_foundations_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_italy_foundations_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_italian_target_tt exists = var:nesnd_c2_italy_foundations_commercial_credit_target var:nesnd_c2_italy_foundations_commercial_credit_target ?= { owner = prev nesnd_c2_italy_foundations_commercial_credit_candidate = yes } }  }
 nesnd_c2_italy_foundations_local_partnerships_candidate = { state_population > 0 state_region = { is_in_geographic_region = geographic_region_italy_old } }
 nesnd_c2_italy_foundations_local_partnerships_available = { nesnd_c2_italy_foundations_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_italy_foundations_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_italian_target_tt exists = var:nesnd_c2_italy_foundations_local_partnerships_target var:nesnd_c2_italy_foundations_local_partnerships_target ?= { owner = prev nesnd_c2_italy_foundations_local_partnerships_candidate = yes } }  }
-nesnd_c2_italy_foundations_operating = { nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_italy_foundations_target } trigger_if = { limit = { has_variable = nesnd_c2_italy_foundations_choice has_variable = nesnd_c2_italy_foundations_baseline exists = var:nesnd_c2_italy_foundations_target } 
-  nesnd_c2_italy_foundations_target_valid = yes in_default = no
-  trigger_if = { limit = { exists = var:nesnd_c2_italy_foundations_target } var:nesnd_c2_italy_foundations_target = { market_access >= 0.8 } } trigger_else = { always = no }
-  OR = { AND = { var:nesnd_c2_italy_foundations_choice = 1 var:nesnd_c2_italy_foundations_target ?= { any_scope_building = { OR = { is_building_type = building_tooling_workshop is_building_type = building_arms_industry } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_italy_foundations_operating_levels >= nesnd_c2_italy_foundations_goal } } } AND = { var:nesnd_c2_italy_foundations_choice = 2 var:nesnd_c2_italy_foundations_target ?= { any_scope_building = { OR = { is_building_type = building_textile_mill is_building_type = building_food_industry is_building_type = building_tooling_workshop } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_italy_foundations_operating_levels >= nesnd_c2_italy_foundations_goal } } } AND = { var:nesnd_c2_italy_foundations_choice = 3 var:nesnd_c2_italy_foundations_target ?= { any_scope_building = { OR = { is_building_type = building_university } level >= 1 occupancy >= 0.5 } owner = { institution_investment_level = { institution = institution_schools value >= 1 } } } } }
-    } trigger_else = { always = no } }
+nesnd_c2_italy_foundations_operating = {
+    custom_tooltip = {
+        text = nesnd_project_peace_tt
+        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_italy_foundations_target }
+    }
+    trigger_if = {
+        limit = {
+            hidden_trigger = { has_variable = nesnd_c2_italy_foundations_choice }
+            hidden_trigger = { has_variable = nesnd_c2_italy_foundations_baseline }
+            hidden_trigger = { exists = var:nesnd_c2_italy_foundations_target }
+        }
+        custom_tooltip = { text = nesnd_it_owned_site_tt nesnd_c2_italy_foundations_target_valid = yes }
+        in_default = no
+        trigger_if = {
+            limit = { hidden_trigger = { exists = var:nesnd_c2_italy_foundations_target } }
+            var:nesnd_c2_italy_foundations_target = { market_access >= 0.8 }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_foundations_public_works
+                    var:nesnd_c2_italy_foundations_choice = 1
+                }
+            }
+            var:nesnd_c2_italy_foundations_target ?= {
+                any_scope_building = {
+                    OR = { is_building_type = building_tooling_workshop is_building_type = building_arms_industry }
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_italy_foundations_levels_1_tt
+                        nesnd_c2_italy_foundations_operating_levels >= nesnd_c2_italy_foundations_goal
+                    }
+                }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_foundations_commercial_credit
+                    var:nesnd_c2_italy_foundations_choice = 2
+                }
+            }
+            var:nesnd_c2_italy_foundations_target ?= {
+                any_scope_building = {
+                    OR = {
+                        is_building_type = building_textile_mill
+                        is_building_type = building_food_industry
+                        is_building_type = building_tooling_workshop
+                    }
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_italy_foundations_levels_2_tt
+                        nesnd_c2_italy_foundations_operating_levels >= nesnd_c2_italy_foundations_goal
+                    }
+                }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_foundations_local_partnerships
+                    var:nesnd_c2_italy_foundations_choice = 3
+                }
+            }
+            var:nesnd_c2_italy_foundations_target ?= {
+                any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 }
+                owner = { institution_investment_level = { institution = institution_schools value >= 1 } }
+            }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+    }
+    trigger_else = { hidden_trigger = { always = no } }
+}
 nesnd_c2_italy_common_budget_open = { nesnd_italy_country = yes OR = { custom_tooltip = { text = is_italy_tt c:ITA ?= this } custom_tooltip = { text = nesnd_ui_c2_two_partners_tt nesnd_c2_two_italian_partners = yes } } hidden_trigger = { NOT = { has_variable = nesnd_c2_italy_common_budget_done } } }
 nesnd_c2_italy_common_budget_target_valid = { trigger_if = { limit = { exists = var:nesnd_c2_italy_common_budget_target } var:nesnd_c2_italy_common_budget_target = { owner = prev state_population > 0 state_region = { is_in_geographic_region = geographic_region_italy_old } } } trigger_else = { always = no } }
 nesnd_c2_italy_common_budget_fiscal_union_candidate = { state_population > 0 state_region = { is_in_geographic_region = geographic_region_italy_old } }
@@ -50,11 +127,94 @@ nesnd_c2_italy_common_budget_federal_councils_candidate = { state_population > 0
 nesnd_c2_italy_common_budget_federal_councils_available = { nesnd_c2_italy_common_budget_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_italy_common_budget_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_italian_target_tt exists = var:nesnd_c2_italy_common_budget_federal_councils_target var:nesnd_c2_italy_common_budget_federal_councils_target ?= { owner = prev nesnd_c2_italy_common_budget_federal_councils_candidate = yes } } nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie } }
 nesnd_c2_italy_common_budget_military_accounts_candidate = { state_population > 0 state_region = { is_in_geographic_region = geographic_region_italy_old } }
 nesnd_c2_italy_common_budget_military_accounts_available = { nesnd_c2_italy_common_budget_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_italy_common_budget_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_italian_target_tt exists = var:nesnd_c2_italy_common_budget_military_accounts_target var:nesnd_c2_italy_common_budget_military_accounts_target ?= { owner = prev nesnd_c2_italy_common_budget_military_accounts_candidate = yes } } nesnd_c2_political_authority = { IG = ig_armed_forces } }
-nesnd_c2_italy_common_budget_operating = { nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_italy_common_budget_target } trigger_if = { limit = { has_variable = nesnd_c2_italy_common_budget_choice has_variable = nesnd_c2_italy_common_budget_baseline exists = var:nesnd_c2_italy_common_budget_target } 
-  nesnd_c2_italy_common_budget_target_valid = yes in_default = no
-  trigger_if = { limit = { exists = var:nesnd_c2_italy_common_budget_target } var:nesnd_c2_italy_common_budget_target = { market_access >= 0.8 } } trigger_else = { always = no }
-  OR = { AND = { var:nesnd_c2_italy_common_budget_choice = 1 var:nesnd_c2_italy_common_budget_target ?= { any_scope_building = { OR = { is_building_type = building_government_administration } level >= 1 occupancy >= 0.5 } } } AND = { var:nesnd_c2_italy_common_budget_choice = 2 var:nesnd_c2_italy_common_budget_target ?= { any_scope_building = { OR = { is_building_type = building_university } level >= 1 occupancy >= 0.5 } owner = { institution_investment_level = { institution = institution_schools value >= 1 } } } } AND = { var:nesnd_c2_italy_common_budget_choice = 3 var:nesnd_c2_italy_common_budget_target ?= { any_scope_building = { OR = { is_building_type = building_barrack } level >= 1 occupancy >= 0.5 } } } }
-   OR = { AND = { var:nesnd_c2_italy_common_budget_choice = 1 nesnd_c2_political_authority = { IG = ig_industrialists } } AND = { var:nesnd_c2_italy_common_budget_choice = 2 nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie } } AND = { var:nesnd_c2_italy_common_budget_choice = 3 nesnd_c2_political_authority = { IG = ig_armed_forces } } }  } trigger_else = { always = no } }
+nesnd_c2_italy_common_budget_operating = {
+    custom_tooltip = {
+        text = nesnd_project_peace_tt
+        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_italy_common_budget_target }
+    }
+    trigger_if = {
+        limit = {
+            hidden_trigger = { has_variable = nesnd_c2_italy_common_budget_choice }
+            hidden_trigger = { has_variable = nesnd_c2_italy_common_budget_baseline }
+            hidden_trigger = { exists = var:nesnd_c2_italy_common_budget_target }
+        }
+        custom_tooltip = { text = nesnd_it_owned_site_tt nesnd_c2_italy_common_budget_target_valid = yes }
+        in_default = no
+        trigger_if = {
+            limit = { hidden_trigger = { exists = var:nesnd_c2_italy_common_budget_target } }
+            var:nesnd_c2_italy_common_budget_target = { market_access >= 0.8 }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_common_budget_fiscal_union
+                    var:nesnd_c2_italy_common_budget_choice = 1
+                }
+            }
+            var:nesnd_c2_italy_common_budget_target ?= {
+                any_scope_building = {
+                    is_building_type = building_government_administration
+                    level >= 1
+                    occupancy >= 0.5
+                }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_common_budget_federal_councils
+                    var:nesnd_c2_italy_common_budget_choice = 2
+                }
+            }
+            var:nesnd_c2_italy_common_budget_target ?= {
+                any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 }
+                owner = { institution_investment_level = { institution = institution_schools value >= 1 } }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_common_budget_military_accounts
+                    var:nesnd_c2_italy_common_budget_choice = 3
+                }
+            }
+            var:nesnd_c2_italy_common_budget_target ?= {
+                any_scope_building = { is_building_type = building_barrack level >= 1 occupancy >= 0.5 }
+            }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_common_budget_fiscal_union
+                    var:nesnd_c2_italy_common_budget_choice = 1
+                }
+            }
+            nesnd_c2_political_authority = { IG = ig_industrialists }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_common_budget_federal_councils
+                    var:nesnd_c2_italy_common_budget_choice = 2
+                }
+            }
+            nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_italy_common_budget_military_accounts
+                    var:nesnd_c2_italy_common_budget_choice = 3
+                }
+            }
+            nesnd_c2_political_authority = { IG = ig_armed_forces }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+    }
+    trigger_else = { hidden_trigger = { always = no } }
+}
 nesnd_c2_hus_transport_open = { nesnd_hus_civic_country = yes hidden_trigger = { NOT = { has_variable = nesnd_c2_hus_transport_done } } }
 nesnd_c2_hus_transport_target_valid = { trigger_if = { limit = { exists = var:nesnd_c2_hus_transport_target } var:nesnd_c2_hus_transport_target = { owner = prev state_population > 0  } } trigger_else = { always = no } }
 nesnd_c2_hus_transport_chartered_contractors_candidate = {
@@ -90,21 +250,45 @@ nesnd_c2_hus_transport_local_transport_candidate = {
 }
 nesnd_c2_hus_transport_local_transport_available = { nesnd_c2_hus_transport_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_hus_transport_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_hus_transport_local_transport_target var:nesnd_c2_hus_transport_local_transport_target ?= { owner = prev nesnd_c2_hus_transport_local_transport_candidate = yes } }  }
 nesnd_c2_hus_transport_operating = {
-    has_variable = nesnd_c2_hus_transport_choice
-    has_variable = nesnd_c2_hus_transport_baseline
+    hidden_trigger = { has_variable = nesnd_c2_hus_transport_choice }
+    hidden_trigger = { has_variable = nesnd_c2_hus_transport_baseline }
     nesnd_c2_hus_transport_target_valid = yes
     in_default = no
-    nesnd_hus_road_site_peace = yes
-    nesnd_hus_road_market_ready = yes
-    nesnd_hus_road_link_ready = yes
-    trigger_if = { limit = { has_variable = nesnd_c2_hus_transport_choice }
-        OR = {
-            AND = { var:nesnd_c2_hus_transport_choice = 1 nesnd_hus_road_charter_capacity = yes }
-            AND = { var:nesnd_c2_hus_transport_choice = 2 nesnd_hus_road_tender_capacity = yes }
-            AND = { var:nesnd_c2_hus_transport_choice = 3 nesnd_hus_road_local_capacity = yes }
+    custom_tooltip = { text = nesnd_hus_road_peace_tt nesnd_hus_road_site_peace = yes }
+    custom_tooltip = { text = nesnd_hus_road_access_tt nesnd_hus_road_market_ready = yes }
+    custom_tooltip = { text = nesnd_hus_road_link_tt nesnd_hus_road_link_ready = yes }
+    trigger_if = {
+        limit = { hidden_trigger = { has_variable = nesnd_c2_hus_transport_choice } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_hus_transport_chartered_contractors
+                    var:nesnd_c2_hus_transport_choice = 1
+                }
+            }
+            custom_tooltip = { text = nesnd_project_road_charter_levels_tt nesnd_hus_road_charter_capacity = yes }
         }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_hus_transport_open_tenders
+                    var:nesnd_c2_hus_transport_choice = 2
+                }
+            }
+            custom_tooltip = { text = nesnd_hus_road_tender_capacity_tt nesnd_hus_road_tender_capacity = yes }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_hus_transport_local_transport
+                    var:nesnd_c2_hus_transport_choice = 3
+                }
+            }
+            custom_tooltip = { text = nesnd_hus_road_local_capacity_tt nesnd_hus_road_local_capacity = yes }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
     }
-    trigger_else = { always = no }
+    trigger_else = { hidden_trigger = { always = no } }
 }
 nesnd_c2_hus_frontier_open = { nesnd_hus_civic_country = yes custom_tooltip = { text = nesnd_ui_c2_hus_transport_completed_tt has_variable = nesnd_c2_hus_transport_done } hidden_trigger = { NOT = { has_variable = nesnd_c2_hus_frontier_done } } }
 nesnd_c2_hus_frontier_target_valid = { trigger_if = { limit = { exists = var:nesnd_c2_hus_frontier_target } var:nesnd_c2_hus_frontier_target = { owner = prev state_population > 0 any_scope_pop = { culture = cu:mongol } } } trigger_else = { always = no } }
@@ -116,24 +300,72 @@ nesnd_c2_hus_frontier_frontier_garrisons_candidate = { state_population > 0 any_
 nesnd_c2_hus_frontier_frontier_garrisons_available = { nesnd_c2_hus_frontier_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_hus_frontier_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_mongol_target_tt exists = var:nesnd_c2_hus_frontier_frontier_garrisons_target var:nesnd_c2_hus_frontier_frontier_garrisons_target ?= { owner = prev nesnd_c2_hus_frontier_frontier_garrisons_candidate = yes } } nesnd_c2_political_authority = { IG = ig_armed_forces } }
 nesnd_c2_hus_frontier_operating = {
     trigger_if = {
-        limit = { custom_tooltip = { text = nesnd_ui_c2_hus_frontier_choice_tt has_variable = nesnd_c2_hus_frontier_choice } custom_tooltip = { text = nesnd_ui_c2_hus_frontier_baseline_tt has_variable = nesnd_c2_hus_frontier_baseline } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_c2_hus_frontier_target_tt exists = var:nesnd_c2_hus_frontier_target } }
-        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_hus_frontier_target }
+        limit = {
+            custom_tooltip = {
+                text = nesnd_ui_c2_hus_frontier_choice_tt
+                has_variable = nesnd_c2_hus_frontier_choice
+            }
+            custom_tooltip = {
+                text = nesnd_ui_c2_hus_frontier_baseline_tt
+                has_variable = nesnd_c2_hus_frontier_baseline
+            }
+            custom_tooltip = {
+                text = nesnd_ui_exists_eq_var_nesnd_c2_hus_frontier_target_tt
+                exists = var:nesnd_c2_hus_frontier_target
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_project_peace_tt
+            nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_hus_frontier_target }
+        }
         custom_tooltip = { text = nesnd_ui_c2_target_tt nesnd_c2_hus_frontier_target_valid = yes }
         in_default = no
         var:nesnd_c2_hus_frontier_target = { market_access >= 0.8 }
         trigger_if = {
-            limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_c2_hus_frontier_choice_eq_1_tt var:nesnd_c2_hus_frontier_choice = 1 } }
-            var:nesnd_c2_hus_frontier_target ?= { any_scope_building = { OR = { is_building_type = building_railway } level >= 1 occupancy >= 0.5 } }
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_ui_var_nesnd_c2_hus_frontier_choice_eq_1_tt
+                    var:nesnd_c2_hus_frontier_choice = 1
+                }
+            }
+            var:nesnd_c2_hus_frontier_target ?= {
+                any_scope_building = { is_building_type = building_railway level >= 1 occupancy >= 0.5 }
+            }
             nesnd_c2_political_authority = { IG = ig_rural_folk }
         }
         trigger_else_if = {
-            limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_c2_hus_frontier_choice_eq_2_tt var:nesnd_c2_hus_frontier_choice = 2 } }
-            var:nesnd_c2_hus_frontier_target ?= { any_scope_building = { OR = { is_building_type = building_iron_mine is_building_type = building_logging_camp } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_hus_frontier_operating_levels >= nesnd_c2_hus_frontier_goal } }
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_ui_var_nesnd_c2_hus_frontier_choice_eq_2_tt
+                    var:nesnd_c2_hus_frontier_choice = 2
+                }
+            }
+            var:nesnd_c2_hus_frontier_target ?= {
+                any_scope_building = {
+                    OR = { is_building_type = building_iron_mine is_building_type = building_logging_camp }
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_hus_frontier_levels_tt
+                        nesnd_c2_hus_frontier_operating_levels >= nesnd_c2_hus_frontier_goal
+                    }
+                }
+            }
             nesnd_c2_political_authority = { IG = ig_industrialists }
         }
         trigger_else_if = {
-            limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_c2_hus_frontier_choice_eq_3_tt var:nesnd_c2_hus_frontier_choice = 3 } }
-            var:nesnd_c2_hus_frontier_target ?= { any_scope_building = { OR = { is_building_type = building_barrack } level >= 1 occupancy >= 0.5 } }
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_ui_var_nesnd_c2_hus_frontier_choice_eq_3_tt
+                    var:nesnd_c2_hus_frontier_choice = 3
+                }
+            }
+            var:nesnd_c2_hus_frontier_target ?= {
+                any_scope_building = { is_building_type = building_barrack level >= 1 occupancy >= 0.5 }
+            }
             nesnd_c2_political_authority = { IG = ig_armed_forces }
         }
         trigger_else = { hidden_trigger = { always = no } }
@@ -148,19 +380,54 @@ nesnd_c2_hus_citizenship_public_accounts_candidate = { state_population > 0  }
 nesnd_c2_hus_citizenship_public_accounts_available = { nesnd_c2_hus_citizenship_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_hus_citizenship_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_hus_citizenship_public_accounts_target var:nesnd_c2_hus_citizenship_public_accounts_target ?= { owner = prev nesnd_c2_hus_citizenship_public_accounts_candidate = yes } } nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie } }
 nesnd_c2_hus_citizenship_operating = {
     trigger_if = {
-        limit = { custom_tooltip = { text = nesnd_ui_c2_hus_citizenship_choice_tt has_variable = nesnd_c2_hus_citizenship_choice } custom_tooltip = { text = nesnd_ui_c2_hus_citizenship_baseline_tt has_variable = nesnd_c2_hus_citizenship_baseline } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_c2_hus_citizenship_target_tt exists = var:nesnd_c2_hus_citizenship_target } }
-        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_hus_citizenship_target }
+        limit = {
+            custom_tooltip = {
+                text = nesnd_ui_c2_hus_citizenship_choice_tt
+                has_variable = nesnd_c2_hus_citizenship_choice
+            }
+            custom_tooltip = {
+                text = nesnd_ui_c2_hus_citizenship_baseline_tt
+                has_variable = nesnd_c2_hus_citizenship_baseline
+            }
+            custom_tooltip = {
+                text = nesnd_ui_exists_eq_var_nesnd_c2_hus_citizenship_target_tt
+                exists = var:nesnd_c2_hus_citizenship_target
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_project_peace_tt
+            nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_hus_citizenship_target }
+        }
         custom_tooltip = { text = nesnd_ui_c2_target_tt nesnd_c2_hus_citizenship_target_valid = yes }
         in_default = no
         var:nesnd_c2_hus_citizenship_target = { market_access >= 0.8 }
         trigger_if = {
-            limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_c2_hus_citizenship_choice_eq_1_tt var:nesnd_c2_hus_citizenship_choice = 1 } }
-            var:nesnd_c2_hus_citizenship_target ?= { any_scope_building = { OR = { is_building_type = building_university } level >= 1 occupancy >= 0.5 } owner = { institution_investment_level = { institution = institution_schools value >= 1 } } }
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_ui_var_nesnd_c2_hus_citizenship_choice_eq_1_tt
+                    var:nesnd_c2_hus_citizenship_choice = 1
+                }
+            }
+            var:nesnd_c2_hus_citizenship_target ?= {
+                any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 }
+                owner = { institution_investment_level = { institution = institution_schools value >= 1 } }
+            }
             nesnd_c2_political_authority = { IG = ig_intelligentsia }
         }
         trigger_else_if = {
-            limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_c2_hus_citizenship_choice_eq_2_tt var:nesnd_c2_hus_citizenship_choice = 2 } }
-            var:nesnd_c2_hus_citizenship_target ?= { any_scope_building = { OR = { is_building_type = building_government_administration } level >= 1 occupancy >= 0.5 } }
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_ui_var_nesnd_c2_hus_citizenship_choice_eq_2_tt
+                    var:nesnd_c2_hus_citizenship_choice = 2
+                }
+            }
+            var:nesnd_c2_hus_citizenship_target ?= {
+                any_scope_building = {
+                    is_building_type = building_government_administration
+                    level >= 1
+                    occupancy >= 0.5
+                }
+            }
             nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie }
         }
         trigger_else = { hidden_trigger = { always = no } }
@@ -177,24 +444,88 @@ nesnd_c2_hus_oil_oil_oversight_candidate = { state_population > 0  }
 nesnd_c2_hus_oil_oil_oversight_available = { nesnd_c2_hus_oil_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_hus_oil_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_hus_oil_oil_oversight_target var:nesnd_c2_hus_oil_oil_oversight_target ?= { owner = prev nesnd_c2_hus_oil_oil_oversight_candidate = yes } } nesnd_c2_political_authority = { IG = ig_trade_unions } }
 nesnd_c2_hus_oil_operating = {
     trigger_if = {
-        limit = { custom_tooltip = { text = nesnd_ui_c2_hus_oil_choice_tt has_variable = nesnd_c2_hus_oil_choice } custom_tooltip = { text = nesnd_ui_c2_hus_oil_baseline_tt has_variable = nesnd_c2_hus_oil_baseline } custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_c2_hus_oil_target_tt exists = var:nesnd_c2_hus_oil_target } }
-        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_hus_oil_target }
+        limit = {
+            custom_tooltip = { text = nesnd_ui_c2_hus_oil_choice_tt has_variable = nesnd_c2_hus_oil_choice }
+            custom_tooltip = { text = nesnd_ui_c2_hus_oil_baseline_tt has_variable = nesnd_c2_hus_oil_baseline }
+            custom_tooltip = {
+                text = nesnd_ui_exists_eq_var_nesnd_c2_hus_oil_target_tt
+                exists = var:nesnd_c2_hus_oil_target
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_project_peace_tt
+            nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_hus_oil_target }
+        }
         custom_tooltip = { text = nesnd_ui_c2_target_tt nesnd_c2_hus_oil_target_valid = yes }
         in_default = no
         var:nesnd_c2_hus_oil_target = { market_access >= 0.8 }
         trigger_if = {
-            limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_c2_hus_oil_choice_eq_1_tt var:nesnd_c2_hus_oil_choice = 1 } }
-            var:nesnd_c2_hus_oil_target ?= { any_scope_building = { OR = { is_building_type = building_oil_rig } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_hus_oil_operating_levels >= nesnd_c2_hus_oil_goal } }
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_ui_var_nesnd_c2_hus_oil_choice_eq_1_tt
+                    var:nesnd_c2_hus_oil_choice = 1
+                }
+            }
+            var:nesnd_c2_hus_oil_target ?= {
+                any_scope_building = {
+                    is_building_type = building_oil_rig
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_hus_oil_levels_tt
+                        nesnd_c2_hus_oil_operating_levels >= nesnd_c2_hus_oil_goal
+                    }
+                }
+            }
             nesnd_c2_political_authority = { IG = ig_industrialists }
         }
         trigger_else_if = {
-            limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_c2_hus_oil_choice_eq_2_tt var:nesnd_c2_hus_oil_choice = 2 } }
-            var:nesnd_c2_hus_oil_target ?= { any_scope_building = { OR = { is_building_type = building_oil_rig } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_hus_oil_operating_levels >= nesnd_c2_hus_oil_goal } }
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_ui_var_nesnd_c2_hus_oil_choice_eq_2_tt
+                    var:nesnd_c2_hus_oil_choice = 2
+                }
+            }
+            var:nesnd_c2_hus_oil_target ?= {
+                any_scope_building = {
+                    is_building_type = building_oil_rig
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_hus_oil_levels_tt
+                        nesnd_c2_hus_oil_operating_levels >= nesnd_c2_hus_oil_goal
+                    }
+                }
+            }
             nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie }
         }
         trigger_else_if = {
-            limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_c2_hus_oil_choice_eq_3_tt var:nesnd_c2_hus_oil_choice = 3 } }
-            var:nesnd_c2_hus_oil_target ?= { any_scope_building = { OR = { is_building_type = building_oil_rig } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_hus_oil_operating_levels >= nesnd_c2_hus_oil_goal } }
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_ui_var_nesnd_c2_hus_oil_choice_eq_3_tt
+                    var:nesnd_c2_hus_oil_choice = 3
+                }
+            }
+            var:nesnd_c2_hus_oil_target ?= {
+                any_scope_building = {
+                    is_building_type = building_oil_rig
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_hus_oil_levels_tt
+                        nesnd_c2_hus_oil_operating_levels >= nesnd_c2_hus_oil_goal
+                    }
+                }
+            }
             nesnd_c2_political_authority = { IG = ig_trade_unions }
         }
         trigger_else = { hidden_trigger = { always = no } }
@@ -209,22 +540,147 @@ nesnd_c2_usm_constitution_practical_franchise_candidate = { state_population > 0
 nesnd_c2_usm_constitution_practical_franchise_available = { institution_investment_level = { institution = institution_schools value >= 1 } any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 } nesnd_c2_usm_constitution_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_usm_constitution_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_usm_constitution_practical_franchise_target var:nesnd_c2_usm_constitution_practical_franchise_target ?= { owner = prev nesnd_c2_usm_constitution_practical_franchise_candidate = yes } } nesnd_c2_political_authority = { IG = ig_intelligentsia } }
 nesnd_c2_usm_constitution_local_franchise_candidate = { state_population > 0  }
 nesnd_c2_usm_constitution_local_franchise_available = { institution_investment_level = { institution = institution_schools value >= 1 } any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 } nesnd_c2_usm_constitution_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_usm_constitution_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_usm_constitution_local_franchise_target var:nesnd_c2_usm_constitution_local_franchise_target ?= { owner = prev nesnd_c2_usm_constitution_local_franchise_candidate = yes } } nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie } }
-nesnd_c2_usm_constitution_operating = { nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_constitution_target } trigger_if = { limit = { has_variable = nesnd_c2_usm_constitution_choice has_variable = nesnd_c2_usm_constitution_baseline exists = var:nesnd_c2_usm_constitution_target } 
-  nesnd_c2_usm_constitution_target_valid = yes in_default = no
-  trigger_if = { limit = { exists = var:nesnd_c2_usm_constitution_target } var:nesnd_c2_usm_constitution_target = { market_access >= 0.8 } } trigger_else = { always = no }
-  OR = { AND = { var:nesnd_c2_usm_constitution_choice = 1 var:nesnd_c2_usm_constitution_target ?= { any_scope_building = { OR = { is_building_type = building_government_administration } level >= 1 occupancy >= 0.5 } } } AND = { var:nesnd_c2_usm_constitution_choice = 2 var:nesnd_c2_usm_constitution_target ?= { any_scope_building = { OR = { is_building_type = building_university } level >= 1 occupancy >= 0.5 } owner = { institution_investment_level = { institution = institution_schools value >= 1 } } } } AND = { var:nesnd_c2_usm_constitution_choice = 3 var:nesnd_c2_usm_constitution_target ?= { any_scope_building = { OR = { is_building_type = building_university } level >= 1 occupancy >= 0.5 } owner = { institution_investment_level = { institution = institution_schools value >= 1 } } } } }
-   OR = { AND = { var:nesnd_c2_usm_constitution_choice = 1 nesnd_c2_political_authority = { IG = ig_landowners } } AND = { var:nesnd_c2_usm_constitution_choice = 2 nesnd_c2_political_authority = { IG = ig_intelligentsia } } AND = { var:nesnd_c2_usm_constitution_choice = 3 nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie } } }  } trigger_else = { always = no } }
+nesnd_c2_usm_constitution_operating = {
+    custom_tooltip = {
+        text = nesnd_project_peace_tt
+        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_constitution_target }
+    }
+    trigger_if = {
+        limit = {
+            hidden_trigger = { has_variable = nesnd_c2_usm_constitution_choice }
+            hidden_trigger = { has_variable = nesnd_c2_usm_constitution_baseline }
+            hidden_trigger = { exists = var:nesnd_c2_usm_constitution_target }
+        }
+        custom_tooltip = { text = nesnd_hus_road_site_tt nesnd_c2_usm_constitution_target_valid = yes }
+        in_default = no
+        trigger_if = {
+            limit = { hidden_trigger = { exists = var:nesnd_c2_usm_constitution_target } }
+            var:nesnd_c2_usm_constitution_target = { market_access >= 0.8 }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_constitution_classical_franchise
+                    var:nesnd_c2_usm_constitution_choice = 1
+                }
+            }
+            var:nesnd_c2_usm_constitution_target ?= {
+                any_scope_building = {
+                    is_building_type = building_government_administration
+                    level >= 1
+                    occupancy >= 0.5
+                }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_constitution_practical_franchise
+                    var:nesnd_c2_usm_constitution_choice = 2
+                }
+            }
+            var:nesnd_c2_usm_constitution_target ?= {
+                any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 }
+                owner = { institution_investment_level = { institution = institution_schools value >= 1 } }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_constitution_local_franchise
+                    var:nesnd_c2_usm_constitution_choice = 3
+                }
+            }
+            var:nesnd_c2_usm_constitution_target ?= {
+                any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 }
+                owner = { institution_investment_level = { institution = institution_schools value >= 1 } }
+            }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_constitution_classical_franchise
+                    var:nesnd_c2_usm_constitution_choice = 1
+                }
+            }
+            nesnd_c2_political_authority = { IG = ig_landowners }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_constitution_practical_franchise
+                    var:nesnd_c2_usm_constitution_choice = 2
+                }
+            }
+            nesnd_c2_political_authority = { IG = ig_intelligentsia }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_constitution_local_franchise
+                    var:nesnd_c2_usm_constitution_choice = 3
+                }
+            }
+            nesnd_c2_political_authority = { IG = ig_petty_bourgeoisie }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+    }
+    trigger_else = { hidden_trigger = { always = no } }
+}
 nesnd_c2_usm_schools_open = { nesnd_usm_civic_country = yes custom_tooltip = { text = nesnd_ui_c2_usm_constitution_completed_tt has_variable = nesnd_c2_usm_constitution_done } custom_tooltip = { text = nesnd_c2_usm_schools_cooldown_tt NOT = { has_variable = nesnd_c2_usm_schools_cooldown } } }
 nesnd_c2_usm_schools_target_valid = { trigger_if = { limit = { exists = var:nesnd_c2_usm_schools_target } var:nesnd_c2_usm_schools_target = { owner = prev state_population > 0  } } trigger_else = { always = no } }
 nesnd_c2_usm_schools_practical_schools_candidate = { state_population > 0  }
 nesnd_c2_usm_schools_practical_schools_available = { nesnd_c2_usm_schools_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_usm_schools_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_usm_schools_practical_schools_target var:nesnd_c2_usm_schools_practical_schools_target ?= { owner = prev nesnd_c2_usm_schools_practical_schools_candidate = yes } }  }
 nesnd_c2_usm_schools_provincial_schools_candidate = { state_population > 0  }
 nesnd_c2_usm_schools_provincial_schools_available = { nesnd_c2_usm_schools_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_usm_schools_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_usm_schools_provincial_schools_target var:nesnd_c2_usm_schools_provincial_schools_target ?= { owner = prev nesnd_c2_usm_schools_provincial_schools_candidate = yes } }  }
-nesnd_c2_usm_schools_operating = { nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_schools_target } trigger_if = { limit = { has_variable = nesnd_c2_usm_schools_choice has_variable = nesnd_c2_usm_schools_baseline exists = var:nesnd_c2_usm_schools_target } 
-  nesnd_c2_usm_schools_target_valid = yes in_default = no
-  trigger_if = { limit = { exists = var:nesnd_c2_usm_schools_target } var:nesnd_c2_usm_schools_target = { market_access >= 0.8 } } trigger_else = { always = no }
-  OR = { AND = { var:nesnd_c2_usm_schools_choice = 1 var:nesnd_c2_usm_schools_target ?= { any_scope_building = { OR = { is_building_type = building_university } level >= 1 occupancy >= 0.5 } owner = { institution_investment_level = { institution = institution_schools value >= 1 } } } } AND = { var:nesnd_c2_usm_schools_choice = 2 var:nesnd_c2_usm_schools_target ?= { any_scope_building = { OR = { is_building_type = building_university } level >= 1 occupancy >= 0.5 } owner = { institution_investment_level = { institution = institution_schools value >= 1 } } } } }
-    } trigger_else = { always = no } }
+nesnd_c2_usm_schools_operating = {
+    custom_tooltip = {
+        text = nesnd_project_peace_tt
+        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_schools_target }
+    }
+    trigger_if = {
+        limit = {
+            hidden_trigger = { has_variable = nesnd_c2_usm_schools_choice }
+            hidden_trigger = { has_variable = nesnd_c2_usm_schools_baseline }
+            hidden_trigger = { exists = var:nesnd_c2_usm_schools_target }
+        }
+        custom_tooltip = { text = nesnd_hus_road_site_tt nesnd_c2_usm_schools_target_valid = yes }
+        in_default = no
+        trigger_if = {
+            limit = { hidden_trigger = { exists = var:nesnd_c2_usm_schools_target } }
+            var:nesnd_c2_usm_schools_target = { market_access >= 0.8 }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_schools_practical_schools
+                    var:nesnd_c2_usm_schools_choice = 1
+                }
+            }
+            var:nesnd_c2_usm_schools_target ?= {
+                any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 }
+                owner = { institution_investment_level = { institution = institution_schools value >= 1 } }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_schools_provincial_schools
+                    var:nesnd_c2_usm_schools_choice = 2
+                }
+            }
+            var:nesnd_c2_usm_schools_target ?= {
+                any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 }
+                owner = { institution_investment_level = { institution = institution_schools value >= 1 } }
+            }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+    }
+    trigger_else = { hidden_trigger = { always = no } }
+}
 nesnd_c2_usm_industry_open = { nesnd_usm_civic_country = yes custom_tooltip = { text = nesnd_ui_c2_usm_constitution_completed_tt has_variable = nesnd_c2_usm_constitution_done } custom_tooltip = { text = nesnd_c2_usm_industry_cooldown_tt NOT = { has_variable = nesnd_c2_usm_industry_cooldown } } }
 nesnd_c2_usm_industry_target_valid = { trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_c2_usm_industry_target_tt exists = var:nesnd_c2_usm_industry_target } } var:nesnd_c2_usm_industry_target = { owner = prev state_population > 0  } } trigger_else = { always = no } }
 nesnd_c2_usm_industry_coastal_industry_candidate = { state_population > 0  is_coastal = yes }
@@ -251,11 +707,82 @@ nesnd_c2_usm_industry_inland_industry_available = {
  }
  trigger_else = { nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_usm_industry_inland_industry_target var:nesnd_c2_usm_industry_inland_industry_target ?= { owner = prev nesnd_c2_usm_industry_inland_industry_candidate = yes } }  }
 }
-nesnd_c2_usm_industry_operating = { has_variable = nesnd_c2_usm_industry_funder nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_industry_target } trigger_if = { limit = { has_variable = nesnd_c2_usm_industry_choice has_variable = nesnd_c2_usm_industry_baseline exists = var:nesnd_c2_usm_industry_target } 
-  nesnd_c2_usm_industry_target_valid = yes in_default = no
-  trigger_if = { limit = { exists = var:nesnd_c2_usm_industry_target } var:nesnd_c2_usm_industry_target = { market_access >= 0.8 } } trigger_else = { always = no }
-  OR = { AND = { var:nesnd_c2_usm_industry_choice = 1 var:nesnd_c2_usm_industry_target ?= { any_scope_building = { OR = { is_building_type = building_textile_mill is_building_type = building_shipyard is_building_type = building_paper_mill } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_usm_industry_operating_levels >= nesnd_c2_usm_industry_goal } } } AND = { var:nesnd_c2_usm_industry_choice = 2 var:nesnd_c2_usm_industry_target ?= { any_scope_building = { OR = { is_building_type = building_tooling_workshop is_building_type = building_food_industry is_building_type = building_iron_mine is_building_type = building_coal_mine } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_usm_industry_operating_levels >= nesnd_c2_usm_industry_goal } } } }
-    } trigger_else = { always = no } }
+nesnd_c2_usm_industry_operating = {
+    custom_tooltip = { text = nesnd_project_industry_funded has_variable = nesnd_c2_usm_industry_funder }
+    custom_tooltip = {
+        text = nesnd_project_peace_tt
+        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_industry_target }
+    }
+    trigger_if = {
+        limit = {
+            hidden_trigger = { has_variable = nesnd_c2_usm_industry_choice }
+            hidden_trigger = { has_variable = nesnd_c2_usm_industry_baseline }
+            hidden_trigger = { exists = var:nesnd_c2_usm_industry_target }
+        }
+        custom_tooltip = { text = nesnd_hus_road_site_tt nesnd_c2_usm_industry_target_valid = yes }
+        in_default = no
+        trigger_if = {
+            limit = { hidden_trigger = { exists = var:nesnd_c2_usm_industry_target } }
+            var:nesnd_c2_usm_industry_target = { market_access >= 0.8 }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_industry_coastal_industry
+                    var:nesnd_c2_usm_industry_choice = 1
+                }
+            }
+            var:nesnd_c2_usm_industry_target ?= {
+                any_scope_building = {
+                    OR = {
+                        is_building_type = building_textile_mill
+                        is_building_type = building_shipyard
+                        is_building_type = building_paper_mill
+                    }
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_usm_industry_levels_1_tt
+                        nesnd_c2_usm_industry_operating_levels >= nesnd_c2_usm_industry_goal
+                    }
+                }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_industry_inland_industry
+                    var:nesnd_c2_usm_industry_choice = 2
+                }
+            }
+            var:nesnd_c2_usm_industry_target ?= {
+                any_scope_building = {
+                    OR = {
+                        is_building_type = building_tooling_workshop
+                        is_building_type = building_food_industry
+                        is_building_type = building_iron_mine
+                        is_building_type = building_coal_mine
+                    }
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_usm_industry_levels_2_tt
+                        nesnd_c2_usm_industry_operating_levels >= nesnd_c2_usm_industry_goal
+                    }
+                }
+            }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+    }
+    trigger_else = { hidden_trigger = { always = no } }
+}
 nesnd_c2_usm_distribution_open = { nesnd_usm_civic_country = yes custom_tooltip = { text = nesnd_ui_c2_usm_schools_completed_tt has_variable = nesnd_c2_usm_schools_done } custom_tooltip = { text = nesnd_ui_c2_usm_industry_completed_tt has_variable = nesnd_c2_usm_industry_done } hidden_trigger = { NOT = { has_variable = nesnd_c2_usm_distribution_done } } }
 nesnd_c2_usm_distribution_target_valid = {
  trigger_if = {
@@ -289,20 +816,128 @@ nesnd_c2_usm_distribution_provincial_balance_authority = {
 nesnd_c2_usm_distribution_provincial_balance_available = { nesnd_c2_usm_distribution_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_usm_distribution_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_usm_two_provinces_tt nesnd_c2_usm_distribution_provincial_balance_pair_valid = yes } nesnd_c2_usm_distribution_provincial_balance_authority = yes }
 nesnd_c2_usm_distribution_scholars_franchise_candidate = { state_population > 0  }
 nesnd_c2_usm_distribution_scholars_franchise_available = { nesnd_c2_usm_distribution_open = yes custom_tooltip = { text = nesnd_ui_c2_no_active_plan_tt NOT = { has_variable = nesnd_c2_usm_distribution_active } } nesnd_c2_can_budget = yes custom_tooltip = { text = nesnd_ui_c2_target_tt exists = var:nesnd_c2_usm_distribution_scholars_franchise_target var:nesnd_c2_usm_distribution_scholars_franchise_target ?= { owner = prev nesnd_c2_usm_distribution_scholars_franchise_candidate = yes } } nesnd_c2_political_authority = { IG = ig_intelligentsia } }
-nesnd_c2_usm_distribution_operating = { nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_distribution_target } trigger_if = { limit = { has_variable = nesnd_c2_usm_distribution_choice has_variable = nesnd_c2_usm_distribution_baseline exists = var:nesnd_c2_usm_distribution_target } 
-  nesnd_c2_usm_distribution_target_valid = yes in_default = no
-  trigger_if = { limit = { exists = var:nesnd_c2_usm_distribution_target } var:nesnd_c2_usm_distribution_target = { market_access >= 0.8 } } trigger_else = { always = no }
-  OR = { AND = { var:nesnd_c2_usm_distribution_choice = 1 var:nesnd_c2_usm_distribution_target ?= { any_scope_building = { OR = { is_building_type = building_textile_mill is_building_type = building_shipyard is_building_type = building_tooling_workshop } level >= 1 occupancy >= 0.75 weekly_profit > 0 } owner = { nesnd_c2_usm_distribution_operating_levels >= nesnd_c2_usm_distribution_goal } } } AND = {
-   var:nesnd_c2_usm_distribution_choice = 2
-   var:nesnd_c2_usm_distribution_target ?= { any_scope_building = { is_building_type = building_government_administration level >= 1 occupancy >= 0.5 } }
-   # Existing single-province contracts finish under their original grant.
-   trigger_if = {
-    limit = { has_variable = nesnd_c2_usm_distribution_mandate_pending }
-    nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_distribution_partner }
-    var:nesnd_c2_usm_distribution_partner ?= { market_access >= 0.8 any_scope_building = { is_building_type = building_government_administration level >= 1 occupancy >= 0.5 } }
-   }
-  } AND = { var:nesnd_c2_usm_distribution_choice = 3 var:nesnd_c2_usm_distribution_target ?= { any_scope_building = { OR = { is_building_type = building_university } level >= 1 occupancy >= 0.5 } owner = { institution_investment_level = { institution = institution_schools value >= 1 } } } } }
-   OR = { AND = { var:nesnd_c2_usm_distribution_choice = 1 nesnd_c2_political_authority = { IG = ig_industrialists } } AND = { var:nesnd_c2_usm_distribution_choice = 2 nesnd_c2_usm_distribution_provincial_balance_authority = yes } AND = { var:nesnd_c2_usm_distribution_choice = 3 nesnd_c2_political_authority = { IG = ig_intelligentsia } } }  } trigger_else = { always = no } }
+nesnd_c2_usm_distribution_operating = {
+    custom_tooltip = {
+        text = nesnd_project_peace_tt
+        nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_distribution_target }
+    }
+    trigger_if = {
+        limit = {
+            hidden_trigger = { has_variable = nesnd_c2_usm_distribution_choice }
+            hidden_trigger = { has_variable = nesnd_c2_usm_distribution_baseline }
+            hidden_trigger = { exists = var:nesnd_c2_usm_distribution_target }
+        }
+        custom_tooltip = {
+            text = nesnd_project_distribution_sites_tt
+            nesnd_c2_usm_distribution_target_valid = yes
+        }
+        in_default = no
+        trigger_if = {
+            limit = { hidden_trigger = { exists = var:nesnd_c2_usm_distribution_target } }
+            var:nesnd_c2_usm_distribution_target = { market_access >= 0.8 }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_distribution_commercial_empire
+                    var:nesnd_c2_usm_distribution_choice = 1
+                }
+            }
+            var:nesnd_c2_usm_distribution_target ?= {
+                any_scope_building = {
+                    OR = {
+                        is_building_type = building_textile_mill
+                        is_building_type = building_shipyard
+                        is_building_type = building_tooling_workshop
+                    }
+                    level >= 1
+                    occupancy >= 0.75
+                    weekly_profit > 0
+                }
+                owner = {
+                    custom_tooltip = {
+                        text = nesnd_project_usm_distribution_levels_tt
+                        nesnd_c2_usm_distribution_operating_levels >= nesnd_c2_usm_distribution_goal
+                    }
+                }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_distribution_provincial_balance
+                    var:nesnd_c2_usm_distribution_choice = 2
+                }
+            }
+            var:nesnd_c2_usm_distribution_target ?= {
+                any_scope_building = {
+                    is_building_type = building_government_administration
+                    level >= 1
+                    occupancy >= 0.5
+                }
+            }
+            # Existing single-province contracts finish under their original grant.
+            trigger_if = {
+                limit = { hidden_trigger = { has_variable = nesnd_c2_usm_distribution_mandate_pending } }
+                custom_tooltip = {
+                    text = nesnd_project_peace_tt
+                    nesnd_c2_project_theatre_peace = { TARGET = var:nesnd_c2_usm_distribution_partner }
+                }
+                var:nesnd_c2_usm_distribution_partner ?= {
+                    market_access >= 0.8
+                    any_scope_building = {
+                        is_building_type = building_government_administration
+                        level >= 1
+                        occupancy >= 0.5
+                    }
+                }
+            }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_distribution_scholars_franchise
+                    var:nesnd_c2_usm_distribution_choice = 3
+                }
+            }
+            var:nesnd_c2_usm_distribution_target ?= {
+                any_scope_building = { is_building_type = building_university level >= 1 occupancy >= 0.5 }
+                owner = { institution_investment_level = { institution = institution_schools value >= 1 } }
+            }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+        trigger_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_distribution_commercial_empire
+                    var:nesnd_c2_usm_distribution_choice = 1
+                }
+            }
+            nesnd_c2_political_authority = { IG = ig_industrialists }
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_distribution_provincial_balance
+                    var:nesnd_c2_usm_distribution_choice = 2
+                }
+            }
+            nesnd_c2_usm_distribution_provincial_balance_authority = yes
+        }
+        trigger_else_if = {
+            limit = {
+                custom_tooltip = {
+                    text = nesnd_c2_usm_distribution_scholars_franchise
+                    var:nesnd_c2_usm_distribution_choice = 3
+                }
+            }
+            nesnd_c2_political_authority = { IG = ig_intelligentsia }
+        }
+        trigger_else = { hidden_trigger = { always = no } }
+    }
+    trigger_else = { hidden_trigger = { always = no } }
+}
 
 nesnd_c2_italian_request_free = {
  custom_tooltip = { text = nesnd_ui_c2_no_pending_request_tt NOR = { has_variable = nesnd_c2_compact_clock has_variable = nesnd_c2_compact_incoming has_variable = nesnd_canon_request_clock has_variable = nesnd_india_request_clock has_variable = nesnd_external_pending } }
