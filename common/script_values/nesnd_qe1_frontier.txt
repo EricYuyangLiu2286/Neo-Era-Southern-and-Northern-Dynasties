@@ -207,36 +207,41 @@ nesnd_qe1_fr_enemy_count = {
 }
 nesnd_qe1_fr_resolve_value = { value = nesnd_qe1_fr_enemy_count multiply = 20 }
 
-# —— 波斯将军府「将军府的忠心」：0 亲秦，100 自立。Root = 波斯 ——
+# —— 波斯将军府「将军府的忠心」：100 最忠于西秦，0 自立。Root = 波斯 ——
 nesnd_per_stance_value = { value = 50 if = { limit = { has_variable = nesnd_per_stance } value = var:nesnd_per_stance } }
 nesnd_per_stance_qin_weak = {
 	value = 0
-	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_unity var:nesnd_qe1_unity < 50 } } add = 0.2 }
-	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_unity var:nesnd_qe1_unity < 25 } } add = 0.2 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_unity var:nesnd_qe1_unity < 50 } } add = -0.2 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_unity var:nesnd_qe1_unity < 25 } } add = -0.2 }
 }
 nesnd_per_stance_risings = {
 	value = 0
-	every_country = { limit = { nesnd_qe1_fr_enemy = yes } add = 0.3 }
-	max = 0.9
+	every_country = { limit = { nesnd_qe1_fr_enemy = yes } add = -0.3 }
+	min = -0.9
 }
 nesnd_per_stance_losses = {
 	value = 0
-	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_afg_lost } } add = 0.3 }
-	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_kaz_lost } } add = 0.2 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_afg_lost } } add = -0.3 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_kaz_lost } } add = -0.2 }
 }
 nesnd_per_stance_victories = {
 	value = 0
-	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_afg_quiet } } add = -0.4 }
-	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_kaz_quiet } } add = -0.3 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_afg_quiet } } add = 0.4 }
+	if = { limit = { exists = c:QE1 c:QE1 = { has_variable = nesnd_qe1_fr_kaz_quiet } } add = 0.3 }
 }
 nesnd_per_stance_route = {
 	value = 0
-	if = { limit = { has_variable = nesnd_per_route_covert NOT = { has_variable = nesnd_per_route_aid } } add = 0.3 }
-	else_if = { limit = { has_variable = nesnd_per_route_aid } add = -0.15 }
+	if = { limit = { has_variable = nesnd_per_route_covert NOT = { has_variable = nesnd_per_route_aid } } add = -0.3 }
+	else_if = { limit = { has_variable = nesnd_per_route_aid } add = 0.15 }
 }
 nesnd_per_stance_home = {
 	value = 0
-	if = { limit = { has_variable = nesnd_per_tension var:nesnd_per_tension >= 60 } add = -0.2 }
+	if = { limit = { has_variable = nesnd_per_tension var:nesnd_per_tension >= 60 } add = 0.2 }
+}
+# 幕府的方略：两枚按钮切换。默认（AI 不切换）为接见边地使者，每月降低忠心。
+nesnd_per_stance_policy = {
+	value = -0.5
+	if = { limit = { has_variable = nesnd_per_stance_loyal } value = 0.5 }
 }
 nesnd_per_stance_delta = {
 	value = nesnd_per_stance_qin_weak
@@ -245,11 +250,12 @@ nesnd_per_stance_delta = {
 	add = nesnd_per_stance_victories
 	add = nesnd_per_stance_route
 	add = nesnd_per_stance_home
+	add = nesnd_per_stance_policy
 }
 nesnd_qe1_fr_enfeoff_cost_double = { value = nesnd_qe1_fr_enfeoff_cost multiply = 2 }
-# 什叶派教师：波斯将军府倾向自立（忠心 60 以上）时，向阿富汗的哈扎拉人和赫拉特派出教师。
+# 什叶派教师：波斯将军府倾向自立（忠心 40 以下）时，向阿富汗的哈扎拉人和赫拉特派出教师。
 nesnd_qe1_fr_afg_shia = {
 	value = 0
-	if = { limit = { exists = c:PER c:PER = { has_variable = nesnd_per_stance var:nesnd_per_stance >= 60 } } value = 0.05 }
+	if = { limit = { exists = c:PER c:PER = { has_variable = nesnd_per_stance var:nesnd_per_stance <= 40 } } value = 0.05 }
 }
 nesnd_qe1_fr_afg_shown_shia = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_afg_shia } }

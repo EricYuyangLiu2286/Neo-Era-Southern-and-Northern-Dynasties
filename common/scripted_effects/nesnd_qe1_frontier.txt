@@ -468,7 +468,7 @@ nesnd_qe1_fr_close = {
 }
 
 # —— 波斯将军府「将军府的忠心」。Root = 波斯 ——
-# 这条取代了原先的「近西帝国的未来」：方略不再开局掷骰，而由忠心走到哪一端决定。
+# 这条取代了原先的「近西帝国的未来」：方略不再开局掷骰，而由忠心走到哪一端决定。忠心 100 最忠于西秦，0 自立。
 nesnd_per_stance_init = {
 	if = { limit = { NOT = { has_variable = nesnd_per_stance } } set_variable = { name = nesnd_per_stance value = 50 } }
 	nesnd_per_stance_sync = yes
@@ -493,14 +493,14 @@ nesnd_per_stance_monthly = {
 			10 = { trigger = { NOT = { has_modifier = nesnd_per_aid_legitimacy } } trigger_event = { id = nesnd_per.3 popup = yes } }
 		}
 	}
-	# 忠心落到 20 以下：方略定为助秦西进。
+	# 忠心升到 80 以上：方略定为助秦西进。
 	if = {
-		limit = { var:nesnd_per_stance <= 20 NOT = { has_variable = nesnd_per_future_done } }
+		limit = { var:nesnd_per_stance >= 80 NOT = { has_variable = nesnd_per_future_done } }
 		nesnd_per_settle_route = { ROUTE = aid }
 	}
-	# 自立一端：脱离朝贡，方略定为东向。
+	# 自立一端（忠心 0）：脱离朝贡，方略定为东向。
 	if = {
-		limit = { var:nesnd_per_stance >= 100 exists = c:QE1 is_subject_of = c:QE1 is_at_war = no }
+		limit = { var:nesnd_per_stance <= 0 exists = c:QE1 is_subject_of = c:QE1 is_at_war = no }
 		make_independent = yes
 		c:QE1 = {
 			change_variable = { name = nesnd_qe1_unity add = -5 }
@@ -509,17 +509,17 @@ nesnd_per_stance_monthly = {
 		}
 		nesnd_per_settle_route = { ROUTE = covert }
 	}
-	# 助秦一端：有叛军与西秦交战时出兵助剿，忠心回到 30。三年内不重复。
+	# 助秦一端（忠心 100）：有叛军与西秦交战时出兵助剿，忠心回到 70。三年内不重复。
 	if = {
 		limit = {
-			var:nesnd_per_stance <= 0
+			var:nesnd_per_stance >= 100
 			exists = c:QE1
 			is_subject_of = c:QE1
 			NOT = { has_variable = nesnd_per_stance_aided }
 			any_country = { nesnd_qe1_fr_enemy = yes }
 		}
 		set_variable = { name = nesnd_per_stance_aided years = 3 }
-		set_variable = { name = nesnd_per_stance value = 30 }
+		set_variable = { name = nesnd_per_stance value = 70 }
 		c:QE1 = {
 			add_modifier = { name = nesnd_qe1_fr_persian_aid years = 3 }
 			if = { limit = { has_variable = nesnd_qe1_fr_afg nesnd_qe1_fr_afg_active = yes } change_variable = { name = nesnd_qe1_fr_afg add = -20 } }
