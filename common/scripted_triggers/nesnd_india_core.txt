@@ -95,3 +95,149 @@ nesnd_india_indep_policy_ready = {
 }
 
 nesnd_india_indep_earning = { is_subject = yes in_default = no NOT = { has_modifier = declared_bankruptcy } }
+
+# Subject-country scope. State panels also use these two direct-overlord checks.
+nesnd_india_indep_has_anti_lobby = {
+    save_temporary_scope_as = indep_lobby_owner
+    any_political_lobby = { is_political_lobby_type = lobby_anti_overlord target = scope:indep_lobby_owner.overlord }
+}
+nesnd_india_indep_has_pro_lobby = {
+    save_temporary_scope_as = indep_lobby_owner
+    any_political_lobby = { is_political_lobby_type = lobby_pro_overlord target = scope:indep_lobby_owner.overlord }
+}
+# Interest-group scope; the user requires membership in no lobby at all.
+nesnd_india_indep_free_lobby_member = {
+    NOT = { any_political_lobby = { always = yes } }
+}
+nesnd_india_indep_founding_lobby_member = {
+    ig_counts_as_marginal = no
+    nesnd_india_indep_free_lobby_member = yes
+}
+nesnd_india_indep_lobby_country_ready = {
+    is_subject = yes exists = overlord
+    NOT = { is_country_type = decentralized }
+    is_revolutionary = no
+    overlord = { is_revolutionary = no }
+}
+nesnd_india_indep_can_back_anti = {
+    custom_tooltip = { text = nesnd_india_indep_peace_tt nesnd_india_indep_peaceful_contact = yes }
+    custom_tooltip = { text = nesnd_india_indep_economy_50_tt nesnd_india_indep_economy >= 50 }
+    custom_tooltip = { text = nesnd_india_indep_anti_ready_tt
+        nesnd_india_indep_lobby_country_ready = yes
+        save_temporary_scope_as = indep_lobby_owner
+        OR = {
+            AND = { nesnd_india_indep_has_anti_lobby = yes
+                OR = {
+                    any_interest_group = { nesnd_india_indep_free_lobby_member = yes }
+                    any_political_lobby = { is_political_lobby_type = lobby_anti_overlord target = scope:indep_lobby_owner.overlord appeasement < 10 }
+                }
+            }
+            AND = { nesnd_india_indep_has_anti_lobby = no any_interest_group = { nesnd_india_indep_founding_lobby_member = yes } }
+        }
+    }
+}
+nesnd_india_indep_can_invest_domestic = {
+    custom_tooltip = { text = nesnd_india_indep_peace_tt nesnd_india_indep_peaceful_contact = yes }
+    custom_tooltip = { text = nesnd_india_indep_economy_50_tt nesnd_india_indep_economy >= 50 }
+}
+# State scope; adding a fixed two levels must not overwrite an existing ownership stake.
+nesnd_india_indep_investment_site = {
+    NOT = { has_building = building_tooling_workshop }
+    can_construct_building = building_tooling_workshop
+}
+
+nesnd_india_indep_policy_target_1 = {
+    is_direct_subject_of = scope:indep_lord
+    has_journal_entry = nesnd_india_indep
+    nesnd_india_indep_lobby_country_ready = yes
+    OR = {
+        AND = { nesnd_india_indep_has_pro_lobby = no any_interest_group = { nesnd_india_indep_founding_lobby_member = yes } }
+        any_political_lobby = { is_political_lobby_type = lobby_pro_overlord target = scope:indep_lord appeasement < 10 }
+    }
+}
+nesnd_india_indep_policy_payer_ready_1 = {
+    hidden_trigger = { has_journal_entry = nesnd_india_indep_overlord }
+    gold_reserves >= 20000
+    nesnd_india_indep_policy_ready = { POLICY = conciliate }
+}
+nesnd_india_indep_can_choose_policy_1 = {
+    save_temporary_scope_as = indep_lord
+    nesnd_india_indep_policy_payer_ready_1 = yes
+    custom_tooltip = { text = nesnd_india_indep_policy_1_target_tt
+        any_subject_or_below = { nesnd_india_indep_policy_target_1 = yes }
+    }
+}
+
+nesnd_india_indep_policy_target_2 = {
+    is_direct_subject_of = scope:indep_lord
+    has_journal_entry = nesnd_india_indep
+}
+nesnd_india_indep_policy_payer_ready_2 = {
+    hidden_trigger = { has_journal_entry = nesnd_india_indep_overlord }
+    nesnd_india_indep_policy_ready = { POLICY = coerce }
+}
+nesnd_india_indep_can_choose_policy_2 = {
+    save_temporary_scope_as = indep_lord
+    nesnd_india_indep_policy_payer_ready_2 = yes
+    custom_tooltip = { text = nesnd_india_indep_policy_2_target_tt
+        any_subject_or_below = { nesnd_india_indep_policy_target_2 = yes }
+    }
+}
+
+nesnd_india_indep_policy_target_3 = {
+    is_direct_subject_of = scope:indep_lord
+    has_journal_entry = nesnd_india_indep
+    NOT = { has_war_with = scope:indep_lord }
+    any_scope_state = { nesnd_india_indep_investment_site = yes }
+}
+nesnd_india_indep_policy_payer_ready_3 = {
+    hidden_trigger = { has_journal_entry = nesnd_india_indep_overlord }
+    gold_reserves >= 20000
+    custom_tooltip = { text = nesnd_india_indep_invest_subject_wait_tt NOT = { has_variable = nesnd_india_indep_invest_subject_wait } }
+}
+nesnd_india_indep_can_choose_policy_3 = {
+    save_temporary_scope_as = indep_lord
+    nesnd_india_indep_policy_payer_ready_3 = yes
+    custom_tooltip = { text = nesnd_india_indep_policy_3_target_tt
+        any_subject_or_below = { nesnd_india_indep_policy_target_3 = yes }
+    }
+}
+
+nesnd_india_indep_policy_target_4 = {
+    is_direct_subject_of = scope:indep_lord
+    has_journal_entry = nesnd_india_indep
+    save_temporary_scope_as = indep_regime_target
+    government_legitimacy < 75
+    NOT = { has_war_with = scope:indep_lord }
+    NOT = { is_diplomatic_play_enemy_of = scope:indep_lord }
+    scope:indep_lord = {
+        NOT = { has_diplomatic_pact = { who = scope:indep_regime_target type = da_support_regime } }
+        can_create_diplomatic_pact = { target = scope:indep_regime_target type = da_support_regime }
+    }
+}
+nesnd_india_indep_policy_payer_ready_4 = {
+    hidden_trigger = { has_journal_entry = nesnd_india_indep_overlord }
+}
+nesnd_india_indep_can_choose_policy_4 = {
+    save_temporary_scope_as = indep_lord
+    nesnd_india_indep_policy_payer_ready_4 = yes
+    custom_tooltip = { text = nesnd_india_indep_policy_4_target_tt
+        any_subject_or_below = { nesnd_india_indep_policy_target_4 = yes }
+    }
+}
+
+nesnd_india_indep_policy_target = {
+    trigger_if = { limit = { scope:indep_policy = 1 } nesnd_india_indep_policy_target_1 = yes }
+    trigger_else_if = { limit = { scope:indep_policy = 2 } nesnd_india_indep_policy_target_2 = yes }
+    trigger_else_if = { limit = { scope:indep_policy = 3 } nesnd_india_indep_policy_target_3 = yes }
+    trigger_else_if = { limit = { scope:indep_policy = 4 } nesnd_india_indep_policy_target_4 = yes }
+    trigger_else = { always = no }
+}
+
+nesnd_india_indep_policy_payer_ready = {
+    trigger_if = { limit = { scope:indep_policy = 1 } nesnd_india_indep_policy_payer_ready_1 = yes }
+    trigger_else_if = { limit = { scope:indep_policy = 2 } nesnd_india_indep_policy_payer_ready_2 = yes }
+    trigger_else_if = { limit = { scope:indep_policy = 3 } nesnd_india_indep_policy_payer_ready_3 = yes }
+    trigger_else_if = { limit = { scope:indep_policy = 4 } nesnd_india_indep_policy_payer_ready_4 = yes }
+    trigger_else = { always = no }
+}

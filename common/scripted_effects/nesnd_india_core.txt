@@ -143,22 +143,12 @@ nesnd_india_indep_fund = {
             add_modifier = { name = nesnd_india_indep_funded months = 24 }
             set_variable = { name = nesnd_india_indep_last_funding value = scope:indep_receipt months = 24 }
         }
-        set_variable = { name = nesnd_india_indep_share_count value = { value = nesnd_india_indep_shares add = 1 max = 3 } months = 24 }
-        set_variable = { name = nesnd_india_indep_backing_receipt value = scope:indep_receipt }
-        nesnd_india_indep_set_backing = yes
-        trigger_event = { id = nesnd_india_indep.9 months = 24 }
-        add_liberty_desire = 5
         save_scope_value_as = { name = indep_kind value = 1 }
         nesnd_india_indep_discovery = yes
     }
 }
-# A later investigation changes the multiplier, but the original award's delayed expiry still applies.
-nesnd_india_indep_set_backing = {
-    if = { limit = { has_modifier = nesnd_india_indep_backing } remove_modifier = nesnd_india_indep_backing }
-    if = { limit = { nesnd_india_indep_shares > 0 }
-        add_modifier = { name = nesnd_india_indep_backing months = 24 multiplier = nesnd_india_indep_shares }
-    }
-}
+
+
 nesnd_india_indep_store = {
     save_scope_as = indep_actor
     overlord = { save_scope_as = indep_lord }
@@ -192,12 +182,6 @@ nesnd_india_indep_investigate = {
                 remove_variable = nesnd_india_indep_last_funding
             }
         }
-        scope:indep_actor = {
-            if = { limit = { nesnd_india_indep_shares > 0 }
-                change_variable = { name = nesnd_india_indep_share_count subtract = 1 }
-                nesnd_india_indep_set_backing = yes
-            }
-        }
     }
 }
 nesnd_india_indep_muster = {
@@ -210,13 +194,19 @@ nesnd_india_indep_muster = {
 }
 nesnd_india_indep_subject_ai = {
     if = { limit = { liberty_desire >= 25 nesnd_india_indep_peaceful_contact = yes }
-        if = { limit = { nesnd_india_indep_shares >= 3 nesnd_india_indep_can_store = yes } nesnd_india_indep_store = yes }
-        else_if = { limit = { nesnd_india_indep_shares < 3 nesnd_india_indep_can_fund = { TRACK = economy } }
+        if = { limit = { nesnd_india_indep_can_back_anti = yes
+                NOT = { any_political_lobby = { is_political_lobby_type = lobby_anti_overlord target = root.overlord appeasement >= 4 } }
+            } nesnd_india_indep_back_anti = yes }
+        else_if = { limit = { nesnd_india_indep_can_invest_domestic = yes economic_dependence = { target = overlord value > 1 } }
+            nesnd_india_indep_invest_domestic = yes
+        }
+        else_if = { limit = { nesnd_india_indep_can_fund = { TRACK = economy } }
             nesnd_india_indep_choose_movement = { TRACK = economy SUPPORT = wealth INDEX = 1 }
         }
-        else_if = { limit = { nesnd_india_indep_shares < 3 nesnd_india_indep_can_fund = { TRACK = military } }
+        else_if = { limit = { nesnd_india_indep_can_fund = { TRACK = military } }
             nesnd_india_indep_choose_movement = { TRACK = military SUPPORT = military INDEX = 2 }
         }
+        else_if = { limit = { nesnd_india_indep_can_store = yes } nesnd_india_indep_store = yes }
     }
 }
 
@@ -264,31 +254,51 @@ nesnd_india_indep_rank_subjects = {
     if = { limit = { exists = scope:indep_subject_1 } set_variable = { name = nesnd_india_indep_leader value = scope:indep_subject_1 } }
 }
 nesnd_india_indep_approach = {
-    if = { limit = { exists = scope:indep_target scope:indep_target = { is_direct_subject_of = scope:indep_lord has_journal_entry = nesnd_india_indep } }
-        if = { limit = { scope:indep_policy = 1 gold_reserves >= 20000 nesnd_india_indep_policy_ready = { POLICY = conciliate } }
+    if = { limit = { exists = scope:indep_target
+            nesnd_india_indep_policy_payer_ready = yes
+            scope:indep_target = { nesnd_india_indep_policy_target = yes }
+        }
+        if = { limit = { scope:indep_policy = 1 }
             add_treasury = -20000
             set_variable = { name = nesnd_india_indep_conciliate_wait months = 12 }
             scope:indep_target = {
-                add_treasury = 20000
-                add_liberty_desire = -15
-                je:nesnd_india_indep = {
-                    add_progress = { name = nesnd_india_indep_economy_bar value = -25 }
-                    add_progress = { name = nesnd_india_indep_military_bar value = -25 }
-                }
+                nesnd_india_indep_back_pro = yes
                 trigger_event = { id = nesnd_india_indep.6 popup = yes }
             }
         }
-        else_if = { limit = { scope:indep_policy = 2 nesnd_india_indep_policy_ready = { POLICY = coerce } }
+        else_if = { limit = { scope:indep_policy = 2 }
             set_variable = { name = nesnd_india_indep_coerce_wait months = 12 }
             change_relations = { country = scope:indep_target value = -30 }
             scope:indep_target = {
                 remove_variable = nesnd_india_indep_stock
-                add_liberty_desire = 5
                 je:nesnd_india_indep = {
                     add_progress = { name = nesnd_india_indep_economy_bar value = -50 }
                     add_progress = { name = nesnd_india_indep_military_bar value = -50 }
                 }
                 trigger_event = { id = nesnd_india_indep.7 popup = yes }
+            }
+        }
+        else_if = { limit = { scope:indep_policy = 3 }
+            clear_saved_scope = indep_investment_site
+            scope:indep_target = {
+                ordered_scope_state = { limit = { nesnd_india_indep_investment_site = yes }
+                    order_by = state_population position = 0 check_range_bounds = no save_scope_as = indep_investment_site
+                }
+            }
+            if = { limit = { exists = scope:indep_investment_site }
+                add_treasury = -20000
+                set_variable = { name = nesnd_india_indep_invest_subject_wait months = 12 }
+                # New site only: never write an absolute ownership level over an existing investor's stake.
+                scope:indep_investment_site = {
+                    create_building = { building = building_tooling_workshop add_ownership = { country = { country = scope:indep_lord levels = 2 } } }
+                }
+                scope:indep_target = { trigger_event = { id = nesnd_india_indep.8 popup = yes } }
+            }
+        }
+        else_if = { limit = { scope:indep_policy = 4 }
+            create_diplomatic_pact = { country = scope:indep_target type = da_support_regime }
+            if = { limit = { has_diplomatic_pact = { who = scope:indep_target type = da_support_regime is_initiator = yes } }
+                scope:indep_target = { trigger_event = { id = nesnd_india_indep.10 popup = yes } }
             }
         }
         nesnd_india_indep_rank_subjects = yes
@@ -299,11 +309,18 @@ nesnd_india_indep_lord_ai = {
     if = { limit = { nesnd_india_indep_funded_count >= 2 gold_reserves >= 10000 nesnd_india_indep_policy_ready = { POLICY = purge } } nesnd_india_indep_purge = yes }
     if = { limit = { scope:indep_subject_1 ?= { liberty_desire >= 75 } }
         scope:indep_subject_1 = { save_scope_as = indep_target }
-        if = { limit = { army_size < { value = scope:indep_target.army_size multiply = 3 } }
-            save_scope_value_as = { name = indep_policy value = 1 }
-        }
-        else = { save_scope_value_as = { name = indep_policy value = 2 } }
-        nesnd_india_indep_approach = yes
+        clear_saved_scope = indep_policy
+        if = { limit = { nesnd_india_indep_policy_payer_ready_3 = yes
+                scope:indep_target = { economic_dependence = { target = scope:indep_lord value < 1 } nesnd_india_indep_policy_target_3 = yes }
+            } save_scope_value_as = { name = indep_policy value = 3 } }
+        else_if = { limit = { army_size >= scope:indep_target.nesnd_india_indep_triple_army
+                nesnd_india_indep_policy_payer_ready_2 = yes
+                scope:indep_target = { nesnd_india_indep_policy_target_2 = yes }
+            } save_scope_value_as = { name = indep_policy value = 2 } }
+        else_if = { limit = { nesnd_india_indep_policy_payer_ready_1 = yes
+                scope:indep_target = { nesnd_india_indep_policy_target_1 = yes }
+            } save_scope_value_as = { name = indep_policy value = 1 } }
+        if = { limit = { exists = scope:indep_policy } nesnd_india_indep_approach = yes }
     }
 }
 
@@ -312,5 +329,78 @@ nesnd_india_indep_raise_army = {
         type = army
         hq_region = capital.region
         combat_unit = { type = unit_type:combat_unit_type_irregular_infantry state_region = capital.state_region count = $COUNT$ }
+    }
+}
+
+# New lobbies start with the native on_created appeasement. Existing lobbies gain four points.
+nesnd_india_indep_pick_lobby_member = {
+    clear_saved_scope = indep_lobby_member
+    ordered_interest_group = {
+        limit = { nesnd_india_indep_founding_lobby_member = yes }
+        order_by = ig_clout position = 0 check_range_bounds = no save_scope_as = indep_lobby_member
+    }
+}
+nesnd_india_indep_back_anti = {
+    if = { limit = { nesnd_india_indep_can_back_anti = yes }
+        save_scope_as = indep_actor
+        overlord = { save_scope_as = indep_lord }
+        je:nesnd_india_indep = { add_progress = { name = nesnd_india_indep_economy_bar value = -50 } }
+        if = { limit = { nesnd_india_indep_has_anti_lobby = yes }
+            clear_saved_scope = indep_lobby_member
+            ordered_interest_group = {
+                limit = { nesnd_india_indep_free_lobby_member = yes }
+                order_by = ig_clout position = 0 check_range_bounds = no save_scope_as = indep_lobby_member
+            }
+            random_political_lobby = {
+                limit = { is_political_lobby_type = lobby_anti_overlord target = scope:indep_lord }
+                change_appeasement = { amount = 4 factor = appeasement_lobby_pleased }
+                if = { limit = { exists = scope:indep_lobby_member } add_lobby_member = scope:indep_lobby_member }
+            }
+        }
+        else = {
+            nesnd_india_indep_pick_lobby_member = yes
+            create_political_lobby = { type = lobby_anti_overlord target = scope:indep_lord add_interest_group = scope:indep_lobby_member lobby_formation_reason = diplomacy }
+        }
+    }
+}
+nesnd_india_indep_back_pro = {
+    if = { limit = { nesnd_india_indep_has_pro_lobby = yes }
+        random_political_lobby = {
+            limit = { is_political_lobby_type = lobby_pro_overlord target = scope:indep_lord }
+            change_appeasement = { amount = 4 factor = appeasement_lobby_pleased }
+        }
+    }
+    else = {
+        nesnd_india_indep_pick_lobby_member = yes
+        create_political_lobby = { type = lobby_pro_overlord target = scope:indep_lord add_interest_group = scope:indep_lobby_member lobby_formation_reason = diplomacy }
+    }
+}
+nesnd_india_indep_invest_domestic = {
+    if = { limit = { nesnd_india_indep_can_invest_domestic = yes }
+        je:nesnd_india_indep = { add_progress = { name = nesnd_india_indep_economy_bar value = -50 } }
+        add_investment_pool = nesnd_india_indep_domestic_capital
+    }
+}
+# Pick the highest-liberty eligible subjects, not three invalid subjects ahead of a valid fourth.
+nesnd_india_indep_choose_policy = {
+    save_scope_as = indep_lord
+    save_scope_value_as = { name = indep_policy value = $MODE$ }
+    if = { limit = { nesnd_india_indep_policy_payer_ready = yes }
+        clear_saved_scope = indep_subject_1
+        clear_saved_scope = indep_subject_2
+        clear_saved_scope = indep_subject_3
+        ordered_subject_or_below = {
+            limit = { nesnd_india_indep_policy_target = yes }
+            order_by = liberty_desire position = 0 check_range_bounds = no save_scope_as = indep_subject_1
+        }
+        ordered_subject_or_below = {
+            limit = { nesnd_india_indep_policy_target = yes }
+            order_by = liberty_desire position = 1 check_range_bounds = no save_scope_as = indep_subject_2
+        }
+        ordered_subject_or_below = {
+            limit = { nesnd_india_indep_policy_target = yes }
+            order_by = liberty_desire position = 2 check_range_bounds = no save_scope_as = indep_subject_3
+        }
+        if = { limit = { exists = scope:indep_subject_1 } trigger_event = { id = nesnd_india_indep.5 popup = yes } }
     }
 }
