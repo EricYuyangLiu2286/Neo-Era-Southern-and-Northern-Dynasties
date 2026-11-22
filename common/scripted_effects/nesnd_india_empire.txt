@@ -273,10 +273,10 @@ nesnd_india_order_ai = {
 # forms BHT or DRA does not get them. Variables and sums: common/script_values/nesnd_india_empire.txt.
 #
 #   The old agreement with the overlord (journal nesnd_mug_france):
-#     a loan        matter kind 7 to the overlord; on agreement nesnd_mug_lend. Repaid by a money
-#                   transfer treaty (or, if the treaty cannot be created, by script each month).
-#                   Monthly nesnd_mug_loan_tick: default, repayment, or the treaty gone.
-#     redemption    matter kind 8 to the overlord; on agreement Mughal pays and becomes independent.
+#     a sale        matter kind 7 to the overlord; on agreement the overlord pays and one level of a
+#                   building we hold becomes its own (nesnd_mug_deal).
+#     a buyback     matter kind 8 to the overlord; on agreement we pay and one level it holds here
+#                   becomes ours. No independence is bought: liberty desire stays vanilla's.
 #   The council of princes (journal nesnd_mug_council, events nesnd_mug.11 to .13).
 #   Famine (events nesnd_mug.21 to .24): Mughal or a prince relieves its struck states, or a prince asks
 #     Mughal or its overlord (matter kind 9).
@@ -287,7 +287,6 @@ nesnd_india_order_ai = {
 nesnd_mug_upkeep = {
     if = { limit = { nesnd_mug_france_live = yes NOT = { has_journal_entry = nesnd_mug_france } } add_journal_entry = { type = nesnd_mug_france } }
     if = { limit = { nesnd_mug_council_live = yes NOT = { has_journal_entry = nesnd_mug_council } } add_journal_entry = { type = nesnd_mug_council } }
-    if = { limit = { has_variable = nesnd_mug_loan_from } nesnd_mug_loan_tick = yes }
     # A plea for famine aid still on its way (it waits while the government asked is busy with another
     # matter, at most 90 days from sending): the struck states stay marked, so that the aid reaches them
     # when it is granted. Once the 90 days are over the marks run out on their own.
@@ -302,7 +301,7 @@ nesnd_mug_upkeep = {
 }
 
 # ---------------------------------------------------------------------------------------------
-# The loan (Mughal scope)
+# The property deals (Mughal scope)
 # ---------------------------------------------------------------------------------------------
 nesnd_mug_ask = {
     if = { limit = { nesnd_mug_can_ask_$WHAT$ = yes exists = overlord }
@@ -310,109 +309,907 @@ nesnd_mug_ask = {
     }
 }
 
-# Any scope. The creditor pays the sum; the debtor records the loan and signs the repayment treaty.
-# If the engine will not create the treaty, the debtor pays by script each month instead.
-nesnd_mug_lend = {
-    $CREDITOR$ = { add_treasury = { value = nesnd_mug_loan_sum multiply = -1 } }
-    $DEBTOR$ = {
-        add_treasury = nesnd_mug_loan_sum
-        set_variable = { name = nesnd_mug_loan_from value = $CREDITOR$ }
-        set_variable = { name = nesnd_mug_loan_term days = 1825 }
-        remove_variable = nesnd_mug_loan_by_script
-    }
-    if = { limit = { nesnd_mug_loan_possible = { DEBTOR = $DEBTOR$ CREDITOR = $CREDITOR$ } }
-        create_treaty = {
-            first_country = $DEBTOR$
-            second_country = $CREDITOR$
-            is_draft = no
-            binding_period = { years = 5 }
-            articles_to_create = {
-                { article = money_transfer source_country = $DEBTOR$ target_country = $CREDITOR$ inputs = { { quantity = 460 } } }
-            }
+# Any scope. One level of the smallest building in HOLDER's states that is held wholly by OLD passes to
+# NEW. There is no effect that moves ownership, so the building is removed and rebuilt at once with the
+# new owners and its production methods switched back on (method: workshop mod 3032185644,
+# more_unique_companies_events_deutsche_reichsbahn.txt, studied, not copied). scope:mug_deal_site is
+# the state, for the reply event; scope:mug_deal_done is set when a building was found.
+nesnd_mug_deal = {
+    $NEW$ = { save_scope_as = mug_deal_new }
+    $OLD$ = { save_scope_as = mug_deal_old }
+    clear_saved_scope = mug_deal_building
+    $HOLDER$ = {
+        ordered_scope_building = {
+            limit = { nesnd_mug_deal_site = { OWNER = scope:mug_deal_old } }
+            order_by = nesnd_mug_deal_order
+            position = 0
+            check_range_bounds = no
+            save_scope_as = mug_deal_building
         }
     }
-    $DEBTOR$ = {
-        if = { limit = { NOT = { nesnd_mug_loan_treaty = { PARTNER = $CREDITOR$ } } } set_variable = nesnd_mug_loan_by_script }
+    if = { limit = { exists = scope:mug_deal_building }
+        scope:mug_deal_building.state = {
+            save_scope_as = mug_deal_site
+            set_variable = { name = nesnd_mug_deal_level value = scope:mug_deal_building.level }
+            nesnd_mug_deal_rebuild = yes
+        }
+        save_scope_value_as = { name = mug_deal_done value = 1 }
     }
 }
 
-nesnd_mug_loan_forget = {
-    remove_variable = nesnd_mug_loan_from
-    remove_variable = nesnd_mug_loan_term
-    remove_variable = nesnd_mug_loan_by_script
-}
-# scope:mug_loan_debtor and scope:mug_loan_creditor saved. We leave the repayment treaty without the
-# penalties of breaking it.
-nesnd_mug_loan_withdraw = {
-    scope:mug_loan_debtor = {
-        every_scope_treaty = {
-            limit = {
-                binds = scope:mug_loan_creditor
-                any_scope_article = { nesnd_mug_loan_article = yes }
-            }
-            withdraw = { country = scope:mug_loan_debtor apply_break_penalties = no }
+# ==== Generated by nesnd-workbench reports/2026-11-21-india-development/莫卧儿产业买卖/gen_deal.py ====
+# State scope, with scope:mug_deal_building, scope:mug_deal_new, scope:mug_deal_old saved and the
+# state variable nesnd_mug_deal_level set. The active production methods are noted on the state,
+# the building is removed and rebuilt with the new ownership, and the methods are switched back on.
+nesnd_mug_deal_rebuild = {
+    save_scope_as = mug_deal_state
+    if = { limit = { scope:mug_deal_building = { is_building_type = building_food_industry } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_bakery } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_bakery } }
+            if = { limit = { has_active_production_method = pm_sweeteners } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_sweeteners } }
+            if = { limit = { has_active_production_method = pm_baking_powder } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_baking_powder } }
+            if = { limit = { has_active_production_method = pm_disabled_canning } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_disabled_canning } }
+            if = { limit = { has_active_production_method = pm_cannery } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_cannery } }
+            if = { limit = { has_active_production_method = pm_cannery_fish } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_cannery_fish } }
+            if = { limit = { has_active_production_method = pm_vacuum_canning } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_vacuum_canning } }
+            if = { limit = { has_active_production_method = pm_vacuum_canning_principle_3 } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_vacuum_canning_principle_3 } }
+            if = { limit = { has_active_production_method = pm_disabled_distillery } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_disabled_distillery } }
+            if = { limit = { has_active_production_method = pm_pot_stills } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_pot_stills } }
+            if = { limit = { has_active_production_method = pm_patent_stills } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_patent_stills } }
+            if = { limit = { has_active_production_method = pm_manual_dough_processing } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_manual_dough_processing } }
+            if = { limit = { has_active_production_method = pm_automated_bakery } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automated_bakery } }
         }
+        nesnd_mug_deal_recreate = { TYPE = building_food_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_bakery } activate_production_method = { building_type = building_food_industry production_method = pm_bakery } remove_variable = nesnd_mug_pm_pm_bakery }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_sweeteners } activate_production_method = { building_type = building_food_industry production_method = pm_sweeteners } remove_variable = nesnd_mug_pm_pm_sweeteners }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_baking_powder } activate_production_method = { building_type = building_food_industry production_method = pm_baking_powder } remove_variable = nesnd_mug_pm_pm_baking_powder }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_disabled_canning } activate_production_method = { building_type = building_food_industry production_method = pm_disabled_canning } remove_variable = nesnd_mug_pm_pm_disabled_canning }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_cannery } activate_production_method = { building_type = building_food_industry production_method = pm_cannery } remove_variable = nesnd_mug_pm_pm_cannery }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_cannery_fish } activate_production_method = { building_type = building_food_industry production_method = pm_cannery_fish } remove_variable = nesnd_mug_pm_pm_cannery_fish }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_vacuum_canning } activate_production_method = { building_type = building_food_industry production_method = pm_vacuum_canning } remove_variable = nesnd_mug_pm_pm_vacuum_canning }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_vacuum_canning_principle_3 } activate_production_method = { building_type = building_food_industry production_method = pm_vacuum_canning_principle_3 } remove_variable = nesnd_mug_pm_pm_vacuum_canning_principle_3 }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_disabled_distillery } activate_production_method = { building_type = building_food_industry production_method = pm_disabled_distillery } remove_variable = nesnd_mug_pm_pm_disabled_distillery }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_pot_stills } activate_production_method = { building_type = building_food_industry production_method = pm_pot_stills } remove_variable = nesnd_mug_pm_pm_pot_stills }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_patent_stills } activate_production_method = { building_type = building_food_industry production_method = pm_patent_stills } remove_variable = nesnd_mug_pm_pm_patent_stills }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_manual_dough_processing } activate_production_method = { building_type = building_food_industry production_method = pm_manual_dough_processing } remove_variable = nesnd_mug_pm_pm_manual_dough_processing }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automated_bakery } activate_production_method = { building_type = building_food_industry production_method = pm_automated_bakery } remove_variable = nesnd_mug_pm_pm_automated_bakery }
     }
-}
-
-# Monthly. A loan whose term has run out is repaid, even if we fell into default since the last check.
-nesnd_mug_loan_tick = {
-    save_scope_as = mug_loan_debtor
-    clear_saved_scope = mug_loan_creditor
-    if = { limit = { NOT = { exists = var:nesnd_mug_loan_from } } nesnd_mug_loan_forget = yes }
-    else_if = { limit = { var:nesnd_mug_loan_from = { is_country_alive = no } }
-        # The lender no longer exists: the record is cleared and we are told.
-        nesnd_mug_loan_forget = yes
-        save_scope_value_as = { name = mug_loan_gone value = 1 }
-        trigger_event = { id = nesnd_mug.5 popup = yes }
-    }
-    else = {
-        var:nesnd_mug_loan_from = { save_scope_as = mug_loan_creditor }
-        if = { limit = { NOT = { has_variable = nesnd_mug_loan_term } } nesnd_mug_loan_repaid = yes }
-        else_if = { limit = { nesnd_india_broke = yes } nesnd_mug_loan_default = yes }
-        else_if = { limit = { has_variable = nesnd_mug_loan_by_script }
-            add_treasury = { value = nesnd_mug_loan_monthly multiply = -1 }
-            scope:mug_loan_creditor = { add_treasury = nesnd_mug_loan_monthly }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_textile_mill } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_handsewn_clothes } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_handsewn_clothes } }
+            if = { limit = { has_active_production_method = pm_dye_workshops } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_dye_workshops } }
+            if = { limit = { has_active_production_method = pm_sewing_machines } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_sewing_machines } }
+            if = { limit = { has_active_production_method = pm_electric_sewing_machines } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_electric_sewing_machines } }
+            if = { limit = { has_active_production_method = pm_no_luxury_clothes } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_luxury_clothes } }
+            if = { limit = { has_active_production_method = pm_craftsman_sewing } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_craftsman_sewing } }
+            if = { limit = { has_active_production_method = pm_elastics } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_elastics } }
+            if = { limit = { has_active_production_method = pm_traditional_looms } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_traditional_looms } }
+            if = { limit = { has_active_production_method = pm_mechanized_looms } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_mechanized_looms } }
+            if = { limit = { has_active_production_method = pm_automatic_power_looms } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automatic_power_looms } }
         }
-        else_if = { limit = { NOT = { nesnd_mug_loan_treaty = { PARTNER = scope:mug_loan_creditor } } } nesnd_mug_loan_lost = yes }
+        nesnd_mug_deal_recreate = { TYPE = building_textile_mill }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_handsewn_clothes } activate_production_method = { building_type = building_textile_mill production_method = pm_handsewn_clothes } remove_variable = nesnd_mug_pm_pm_handsewn_clothes }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_dye_workshops } activate_production_method = { building_type = building_textile_mill production_method = pm_dye_workshops } remove_variable = nesnd_mug_pm_pm_dye_workshops }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_sewing_machines } activate_production_method = { building_type = building_textile_mill production_method = pm_sewing_machines } remove_variable = nesnd_mug_pm_pm_sewing_machines }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_electric_sewing_machines } activate_production_method = { building_type = building_textile_mill production_method = pm_electric_sewing_machines } remove_variable = nesnd_mug_pm_pm_electric_sewing_machines }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_luxury_clothes } activate_production_method = { building_type = building_textile_mill production_method = pm_no_luxury_clothes } remove_variable = nesnd_mug_pm_pm_no_luxury_clothes }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_craftsman_sewing } activate_production_method = { building_type = building_textile_mill production_method = pm_craftsman_sewing } remove_variable = nesnd_mug_pm_pm_craftsman_sewing }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_elastics } activate_production_method = { building_type = building_textile_mill production_method = pm_elastics } remove_variable = nesnd_mug_pm_pm_elastics }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_traditional_looms } activate_production_method = { building_type = building_textile_mill production_method = pm_traditional_looms } remove_variable = nesnd_mug_pm_pm_traditional_looms }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_mechanized_looms } activate_production_method = { building_type = building_textile_mill production_method = pm_mechanized_looms } remove_variable = nesnd_mug_pm_pm_mechanized_looms }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automatic_power_looms } activate_production_method = { building_type = building_textile_mill production_method = pm_automatic_power_looms } remove_variable = nesnd_mug_pm_pm_automatic_power_looms }
     }
-}
-# Default during repayment: the treaty is left, what is unpaid is not pursued, and we grant the
-# creditor a trade privilege for ten years. If that treaty cannot be created, relations fall instead.
-nesnd_mug_loan_default = {
-    nesnd_mug_loan_withdraw = yes
-    if = { limit = { nesnd_mug_trade_possible = { DEBTOR = scope:mug_loan_debtor CREDITOR = scope:mug_loan_creditor } }
-        create_treaty = {
-            first_country = scope:mug_loan_debtor
-            second_country = scope:mug_loan_creditor
-            is_draft = no
-            binding_period = { years = 10 }
-            articles_to_create = {
-                { article = trade_privilege source_country = scope:mug_loan_debtor target_country = scope:mug_loan_creditor }
-            }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_furniture_manufactory } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_handcrafted_furniture } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_handcrafted_furniture } }
+            if = { limit = { has_active_production_method = pm_lathe } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_lathe } }
+            if = { limit = { has_active_production_method = pm_mechanized_workshops } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_mechanized_workshops } }
+            if = { limit = { has_active_production_method = pm_no_luxuries } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_luxuries } }
+            if = { limit = { has_active_production_method = pm_luxury_furniture } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_luxury_furniture } }
+            if = { limit = { has_active_production_method = pm_precision_tools } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_precision_tools } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_watertube_boiler_building_furniture_manufactory } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_watertube_boiler_building_furniture_manufactory } }
+            if = { limit = { has_active_production_method = pm_rotary_valve_engine_building_furniture_manufactory } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_furniture_manufactory } }
+            if = { limit = { has_active_production_method = pm_assembly_lines_building_furniture_manufactory } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_assembly_lines_building_furniture_manufactory } }
         }
-        save_scope_value_as = { name = mug_loan_result value = 1 }
+        nesnd_mug_deal_recreate = { TYPE = building_furniture_manufactory }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_handcrafted_furniture } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_handcrafted_furniture } remove_variable = nesnd_mug_pm_pm_handcrafted_furniture }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_lathe } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_lathe } remove_variable = nesnd_mug_pm_pm_lathe }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_mechanized_workshops } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_mechanized_workshops } remove_variable = nesnd_mug_pm_pm_mechanized_workshops }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_luxuries } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_no_luxuries } remove_variable = nesnd_mug_pm_pm_no_luxuries }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_luxury_furniture } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_luxury_furniture } remove_variable = nesnd_mug_pm_pm_luxury_furniture }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_precision_tools } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_precision_tools } remove_variable = nesnd_mug_pm_pm_precision_tools }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_watertube_boiler_building_furniture_manufactory } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_watertube_boiler_building_furniture_manufactory } remove_variable = nesnd_mug_pm_pm_watertube_boiler_building_furniture_manufactory }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_furniture_manufactory } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_rotary_valve_engine_building_furniture_manufactory } remove_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_furniture_manufactory }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_assembly_lines_building_furniture_manufactory } activate_production_method = { building_type = building_furniture_manufactory production_method = pm_assembly_lines_building_furniture_manufactory } remove_variable = nesnd_mug_pm_pm_assembly_lines_building_furniture_manufactory }
     }
-    else = {
-        change_relations = { country = scope:mug_loan_creditor value = -50 }
-        save_scope_value_as = { name = mug_loan_result value = 2 }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_glassworks } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_forest_glass } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_forest_glass } }
+            if = { limit = { has_active_production_method = pm_leaded_glass } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_leaded_glass } }
+            if = { limit = { has_active_production_method = pm_crystal_glass } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_crystal_glass } }
+            if = { limit = { has_active_production_method = pm_houseware_plastics } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_houseware_plastics } }
+            if = { limit = { has_active_production_method = pm_disabled_ceramics } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_disabled_ceramics } }
+            if = { limit = { has_active_production_method = pm_ceramics } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_ceramics } }
+            if = { limit = { has_active_production_method = pm_bone_china } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_bone_china } }
+            if = { limit = { has_active_production_method = pm_manual_glassblowing } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_manual_glassblowing } }
+            if = { limit = { has_active_production_method = pm_automatic_bottle_blowers } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automatic_bottle_blowers } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_glassworks }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_forest_glass } activate_production_method = { building_type = building_glassworks production_method = pm_forest_glass } remove_variable = nesnd_mug_pm_pm_forest_glass }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_leaded_glass } activate_production_method = { building_type = building_glassworks production_method = pm_leaded_glass } remove_variable = nesnd_mug_pm_pm_leaded_glass }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_crystal_glass } activate_production_method = { building_type = building_glassworks production_method = pm_crystal_glass } remove_variable = nesnd_mug_pm_pm_crystal_glass }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_houseware_plastics } activate_production_method = { building_type = building_glassworks production_method = pm_houseware_plastics } remove_variable = nesnd_mug_pm_pm_houseware_plastics }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_disabled_ceramics } activate_production_method = { building_type = building_glassworks production_method = pm_disabled_ceramics } remove_variable = nesnd_mug_pm_pm_disabled_ceramics }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_ceramics } activate_production_method = { building_type = building_glassworks production_method = pm_ceramics } remove_variable = nesnd_mug_pm_pm_ceramics }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_bone_china } activate_production_method = { building_type = building_glassworks production_method = pm_bone_china } remove_variable = nesnd_mug_pm_pm_bone_china }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_manual_glassblowing } activate_production_method = { building_type = building_glassworks production_method = pm_manual_glassblowing } remove_variable = nesnd_mug_pm_pm_manual_glassblowing }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automatic_bottle_blowers } activate_production_method = { building_type = building_glassworks production_method = pm_automatic_bottle_blowers } remove_variable = nesnd_mug_pm_pm_automatic_bottle_blowers }
     }
-    nesnd_mug_loan_forget = yes
-    trigger_event = { id = nesnd_mug.3 popup = yes }
-    scope:mug_loan_creditor = { trigger_event = { id = nesnd_mug.3 popup = yes } }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_tooling_workshop } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_crude_tools } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_crude_tools } }
+            if = { limit = { has_active_production_method = pm_pig_iron } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_pig_iron } }
+            if = { limit = { has_active_production_method = pm_steel } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steel } }
+            if = { limit = { has_active_production_method = pm_rubber_grips } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rubber_grips } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_watertube_boiler_building_tooling_workshop } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_watertube_boiler_building_tooling_workshop } }
+            if = { limit = { has_active_production_method = pm_rotary_valve_engine_building_tooling_workshop } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_tooling_workshop } }
+            if = { limit = { has_active_production_method = pm_assembly_lines_building_tooling_workshop } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_assembly_lines_building_tooling_workshop } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_tooling_workshop }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_crude_tools } activate_production_method = { building_type = building_tooling_workshop production_method = pm_crude_tools } remove_variable = nesnd_mug_pm_pm_crude_tools }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_pig_iron } activate_production_method = { building_type = building_tooling_workshop production_method = pm_pig_iron } remove_variable = nesnd_mug_pm_pm_pig_iron }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steel } activate_production_method = { building_type = building_tooling_workshop production_method = pm_steel } remove_variable = nesnd_mug_pm_pm_steel }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rubber_grips } activate_production_method = { building_type = building_tooling_workshop production_method = pm_rubber_grips } remove_variable = nesnd_mug_pm_pm_rubber_grips }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_tooling_workshop production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_watertube_boiler_building_tooling_workshop } activate_production_method = { building_type = building_tooling_workshop production_method = pm_watertube_boiler_building_tooling_workshop } remove_variable = nesnd_mug_pm_pm_watertube_boiler_building_tooling_workshop }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_tooling_workshop } activate_production_method = { building_type = building_tooling_workshop production_method = pm_rotary_valve_engine_building_tooling_workshop } remove_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_tooling_workshop }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_assembly_lines_building_tooling_workshop } activate_production_method = { building_type = building_tooling_workshop production_method = pm_assembly_lines_building_tooling_workshop } remove_variable = nesnd_mug_pm_pm_assembly_lines_building_tooling_workshop }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_paper_mill } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_pulp_pressing } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_pulp_pressing } }
+            if = { limit = { has_active_production_method = pm_sulfite_pulping } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_sulfite_pulping } }
+            if = { limit = { has_active_production_method = pm_bleached_paper } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_bleached_paper } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_watertube_boiler_building_paper_mill } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_watertube_boiler_building_paper_mill } }
+            if = { limit = { has_active_production_method = pm_rotary_valve_engine_building_paper_mill } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_paper_mill } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_paper_mill }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_pulp_pressing } activate_production_method = { building_type = building_paper_mill production_method = pm_pulp_pressing } remove_variable = nesnd_mug_pm_pm_pulp_pressing }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_sulfite_pulping } activate_production_method = { building_type = building_paper_mill production_method = pm_sulfite_pulping } remove_variable = nesnd_mug_pm_pm_sulfite_pulping }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_bleached_paper } activate_production_method = { building_type = building_paper_mill production_method = pm_bleached_paper } remove_variable = nesnd_mug_pm_pm_bleached_paper }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_paper_mill production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_watertube_boiler_building_paper_mill } activate_production_method = { building_type = building_paper_mill production_method = pm_watertube_boiler_building_paper_mill } remove_variable = nesnd_mug_pm_pm_watertube_boiler_building_paper_mill }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_paper_mill } activate_production_method = { building_type = building_paper_mill production_method = pm_rotary_valve_engine_building_paper_mill } remove_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_paper_mill }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_chemical_plant } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_artificial_fertilizers } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_artificial_fertilizers } }
+            if = { limit = { has_active_production_method = pm_improved_fertilizer } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_improved_fertilizer } }
+            if = { limit = { has_active_production_method = pm_nitrogen_fixation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_nitrogen_fixation } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_chemical_plant }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_artificial_fertilizers } activate_production_method = { building_type = building_chemical_plant production_method = pm_artificial_fertilizers } remove_variable = nesnd_mug_pm_pm_artificial_fertilizers }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_improved_fertilizer } activate_production_method = { building_type = building_chemical_plant production_method = pm_improved_fertilizer } remove_variable = nesnd_mug_pm_pm_improved_fertilizer }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_nitrogen_fixation } activate_production_method = { building_type = building_chemical_plant production_method = pm_nitrogen_fixation } remove_variable = nesnd_mug_pm_pm_nitrogen_fixation }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_explosives_factory } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_leblanc_process } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_leblanc_process } }
+            if = { limit = { has_active_production_method = pm_ammonia-soda_process } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_ammonia-soda_process } }
+            if = { limit = { has_active_production_method = pm_vacuum_evaporation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_vacuum_evaporation } }
+            if = { limit = { has_active_production_method = pm_brine_electrolysis } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_brine_electrolysis } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_explosives_factory }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_leblanc_process } activate_production_method = { building_type = building_explosives_factory production_method = pm_leblanc_process } remove_variable = nesnd_mug_pm_pm_leblanc_process }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_ammonia-soda_process } activate_production_method = { building_type = building_explosives_factory production_method = pm_ammonia-soda_process } remove_variable = nesnd_mug_pm_pm_ammonia-soda_process }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_vacuum_evaporation } activate_production_method = { building_type = building_explosives_factory production_method = pm_vacuum_evaporation } remove_variable = nesnd_mug_pm_pm_vacuum_evaporation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_brine_electrolysis } activate_production_method = { building_type = building_explosives_factory production_method = pm_brine_electrolysis } remove_variable = nesnd_mug_pm_pm_brine_electrolysis }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_synthetics_plant } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_dye_production } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_dye_production } }
+            if = { limit = { has_active_production_method = pm_no_artificial_fibers } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_artificial_fibers } }
+            if = { limit = { has_active_production_method = pm_rayon } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rayon } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_synthetics_plant }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_dye_production } activate_production_method = { building_type = building_synthetics_plant production_method = pm_dye_production } remove_variable = nesnd_mug_pm_pm_dye_production }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_artificial_fibers } activate_production_method = { building_type = building_synthetics_plant production_method = pm_no_artificial_fibers } remove_variable = nesnd_mug_pm_pm_no_artificial_fibers }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rayon } activate_production_method = { building_type = building_synthetics_plant production_method = pm_rayon } remove_variable = nesnd_mug_pm_pm_rayon }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_steel_mill } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_blister_steel_process } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_blister_steel_process } }
+            if = { limit = { has_active_production_method = pm_bessemer_process } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_bessemer_process } }
+            if = { limit = { has_active_production_method = pm_open_hearth_process } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_open_hearth_process } }
+            if = { limit = { has_active_production_method = pm_electric_arc_process } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_electric_arc_process } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_watertube_boiler_building_steel_mill } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_watertube_boiler_building_steel_mill } }
+            if = { limit = { has_active_production_method = pm_rotary_valve_engine_building_steel_mill } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_steel_mill } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_steel_mill }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_blister_steel_process } activate_production_method = { building_type = building_steel_mill production_method = pm_blister_steel_process } remove_variable = nesnd_mug_pm_pm_blister_steel_process }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_bessemer_process } activate_production_method = { building_type = building_steel_mill production_method = pm_bessemer_process } remove_variable = nesnd_mug_pm_pm_bessemer_process }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_open_hearth_process } activate_production_method = { building_type = building_steel_mill production_method = pm_open_hearth_process } remove_variable = nesnd_mug_pm_pm_open_hearth_process }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_electric_arc_process } activate_production_method = { building_type = building_steel_mill production_method = pm_electric_arc_process } remove_variable = nesnd_mug_pm_pm_electric_arc_process }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_steel_mill production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_watertube_boiler_building_steel_mill } activate_production_method = { building_type = building_steel_mill production_method = pm_watertube_boiler_building_steel_mill } remove_variable = nesnd_mug_pm_pm_watertube_boiler_building_steel_mill }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_steel_mill } activate_production_method = { building_type = building_steel_mill production_method = pm_rotary_valve_engine_building_steel_mill } remove_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_steel_mill }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_motor_industry } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_steam_engines } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_engines } }
+            if = { limit = { has_active_production_method = pm_electric_engines } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_electric_engines } }
+            if = { limit = { has_active_production_method = pm_diesel_engines } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_diesel_engines } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_watertube_boiler_building_motor_industry } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_watertube_boiler_building_motor_industry } }
+            if = { limit = { has_active_production_method = pm_rotary_valve_engine_building_motor_industry } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_motor_industry } }
+            if = { limit = { has_active_production_method = pm_assembly_lines_building_motor_industry } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_assembly_lines_building_motor_industry } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_motor_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_engines } activate_production_method = { building_type = building_motor_industry production_method = pm_steam_engines } remove_variable = nesnd_mug_pm_pm_steam_engines }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_electric_engines } activate_production_method = { building_type = building_motor_industry production_method = pm_electric_engines } remove_variable = nesnd_mug_pm_pm_electric_engines }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_diesel_engines } activate_production_method = { building_type = building_motor_industry production_method = pm_diesel_engines } remove_variable = nesnd_mug_pm_pm_diesel_engines }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_motor_industry production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_watertube_boiler_building_motor_industry } activate_production_method = { building_type = building_motor_industry production_method = pm_watertube_boiler_building_motor_industry } remove_variable = nesnd_mug_pm_pm_watertube_boiler_building_motor_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_motor_industry } activate_production_method = { building_type = building_motor_industry production_method = pm_rotary_valve_engine_building_motor_industry } remove_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_motor_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_assembly_lines_building_motor_industry } activate_production_method = { building_type = building_motor_industry production_method = pm_assembly_lines_building_motor_industry } remove_variable = nesnd_mug_pm_pm_assembly_lines_building_motor_industry }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_shipyard } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_basic_shipbuilding } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_basic_shipbuilding } }
+            if = { limit = { has_active_production_method = pm_complex_shipbuilding } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_complex_shipbuilding } }
+            if = { limit = { has_active_production_method = pm_metal_shipbuilding } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_metal_shipbuilding } }
+            if = { limit = { has_active_production_method = pm_arc_welding_shipbuilding } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_arc_welding_shipbuilding } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_shipyard }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_basic_shipbuilding } activate_production_method = { building_type = building_shipyard production_method = pm_basic_shipbuilding } remove_variable = nesnd_mug_pm_pm_basic_shipbuilding }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_complex_shipbuilding } activate_production_method = { building_type = building_shipyard production_method = pm_complex_shipbuilding } remove_variable = nesnd_mug_pm_pm_complex_shipbuilding }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_metal_shipbuilding } activate_production_method = { building_type = building_shipyard production_method = pm_metal_shipbuilding } remove_variable = nesnd_mug_pm_pm_metal_shipbuilding }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_arc_welding_shipbuilding } activate_production_method = { building_type = building_shipyard production_method = pm_arc_welding_shipbuilding } remove_variable = nesnd_mug_pm_pm_arc_welding_shipbuilding }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_automotive_industry } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_automobile_production } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automobile_production } }
+            if = { limit = { has_active_production_method = pm_mass_automobile_production } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_mass_automobile_production } }
+            if = { limit = { has_active_production_method = pm_no_aeroplane_production } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_aeroplane_production } }
+            if = { limit = { has_active_production_method = pm_aeroplane_production } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_aeroplane_production } }
+            if = { limit = { has_active_production_method = pm_no_tank_production } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_tank_production } }
+            if = { limit = { has_active_production_method = pm_tank_production } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tank_production } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_assembly_lines_building_automotive_industry } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_assembly_lines_building_automotive_industry } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_automotive_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automobile_production } activate_production_method = { building_type = building_automotive_industry production_method = pm_automobile_production } remove_variable = nesnd_mug_pm_pm_automobile_production }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_mass_automobile_production } activate_production_method = { building_type = building_automotive_industry production_method = pm_mass_automobile_production } remove_variable = nesnd_mug_pm_pm_mass_automobile_production }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_aeroplane_production } activate_production_method = { building_type = building_automotive_industry production_method = pm_no_aeroplane_production } remove_variable = nesnd_mug_pm_pm_no_aeroplane_production }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_aeroplane_production } activate_production_method = { building_type = building_automotive_industry production_method = pm_aeroplane_production } remove_variable = nesnd_mug_pm_pm_aeroplane_production }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_tank_production } activate_production_method = { building_type = building_automotive_industry production_method = pm_no_tank_production } remove_variable = nesnd_mug_pm_pm_no_tank_production }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tank_production } activate_production_method = { building_type = building_automotive_industry production_method = pm_tank_production } remove_variable = nesnd_mug_pm_pm_tank_production }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_automotive_industry production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_assembly_lines_building_automotive_industry } activate_production_method = { building_type = building_automotive_industry production_method = pm_assembly_lines_building_automotive_industry } remove_variable = nesnd_mug_pm_pm_assembly_lines_building_automotive_industry }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_electrics_industry } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_telephones } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_telephones } }
+            if = { limit = { has_active_production_method = pm_no_radios } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_radios } }
+            if = { limit = { has_active_production_method = pm_radios } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_radios } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_electrics_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_telephones } activate_production_method = { building_type = building_electrics_industry production_method = pm_telephones } remove_variable = nesnd_mug_pm_pm_telephones }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_radios } activate_production_method = { building_type = building_electrics_industry production_method = pm_no_radios } remove_variable = nesnd_mug_pm_pm_no_radios }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_radios } activate_production_method = { building_type = building_electrics_industry production_method = pm_radios } remove_variable = nesnd_mug_pm_pm_radios }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_arms_industry } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_muskets } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_muskets } }
+            if = { limit = { has_active_production_method = pm_rifles } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rifles } }
+            if = { limit = { has_active_production_method = pm_repeaters } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_repeaters } }
+            if = { limit = { has_active_production_method = pm_bolt_action_rifles } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_bolt_action_rifles } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_rotary_valve_engine_building_arms_industry } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_arms_industry } }
+            if = { limit = { has_active_production_method = pm_assembly_lines_building_arms_industry } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_assembly_lines_building_arms_industry } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_arms_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_muskets } activate_production_method = { building_type = building_arms_industry production_method = pm_muskets } remove_variable = nesnd_mug_pm_pm_muskets }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rifles } activate_production_method = { building_type = building_arms_industry production_method = pm_rifles } remove_variable = nesnd_mug_pm_pm_rifles }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_repeaters } activate_production_method = { building_type = building_arms_industry production_method = pm_repeaters } remove_variable = nesnd_mug_pm_pm_repeaters }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_bolt_action_rifles } activate_production_method = { building_type = building_arms_industry production_method = pm_bolt_action_rifles } remove_variable = nesnd_mug_pm_pm_bolt_action_rifles }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_arms_industry production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_arms_industry } activate_production_method = { building_type = building_arms_industry production_method = pm_rotary_valve_engine_building_arms_industry } remove_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_arms_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_assembly_lines_building_arms_industry } activate_production_method = { building_type = building_arms_industry production_method = pm_assembly_lines_building_arms_industry } remove_variable = nesnd_mug_pm_pm_assembly_lines_building_arms_industry }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_artillery_foundry } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_cannons } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_cannons } }
+            if = { limit = { has_active_production_method = pm_bronze_cannons } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_bronze_cannons } }
+            if = { limit = { has_active_production_method = pm_smoothbores } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_smoothbores } }
+            if = { limit = { has_active_production_method = pm_bronze_smoothbores } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_bronze_smoothbores } }
+            if = { limit = { has_active_production_method = pm_breech_loaders } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_breech_loaders } }
+            if = { limit = { has_active_production_method = pm_recoiled_barrels } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_recoiled_barrels } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_rotary_valve_engine_building_arms_industry } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_arms_industry } }
+            if = { limit = { has_active_production_method = pm_assembly_lines_building_arms_industry } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_assembly_lines_building_arms_industry } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_artillery_foundry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_cannons } activate_production_method = { building_type = building_artillery_foundry production_method = pm_cannons } remove_variable = nesnd_mug_pm_pm_cannons }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_bronze_cannons } activate_production_method = { building_type = building_artillery_foundry production_method = pm_bronze_cannons } remove_variable = nesnd_mug_pm_pm_bronze_cannons }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_smoothbores } activate_production_method = { building_type = building_artillery_foundry production_method = pm_smoothbores } remove_variable = nesnd_mug_pm_pm_smoothbores }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_bronze_smoothbores } activate_production_method = { building_type = building_artillery_foundry production_method = pm_bronze_smoothbores } remove_variable = nesnd_mug_pm_pm_bronze_smoothbores }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_breech_loaders } activate_production_method = { building_type = building_artillery_foundry production_method = pm_breech_loaders } remove_variable = nesnd_mug_pm_pm_breech_loaders }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_recoiled_barrels } activate_production_method = { building_type = building_artillery_foundry production_method = pm_recoiled_barrels } remove_variable = nesnd_mug_pm_pm_recoiled_barrels }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_artillery_foundry production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_arms_industry } activate_production_method = { building_type = building_artillery_foundry production_method = pm_rotary_valve_engine_building_arms_industry } remove_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_arms_industry }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_assembly_lines_building_arms_industry } activate_production_method = { building_type = building_artillery_foundry production_method = pm_assembly_lines_building_arms_industry } remove_variable = nesnd_mug_pm_pm_assembly_lines_building_arms_industry }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_munition_plant } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_percussion_caps } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_percussion_caps } }
+            if = { limit = { has_active_production_method = pm_explosive_shells } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_explosive_shells } }
+            if = { limit = { has_active_production_method = pm_automation_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_automation_disabled } }
+            if = { limit = { has_active_production_method = pm_rotary_valve_engine_building_munition_plant } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_munition_plant } }
+            if = { limit = { has_active_production_method = pm_assembly_lines_building_munition_plant } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_assembly_lines_building_munition_plant } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_munition_plant }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_percussion_caps } activate_production_method = { building_type = building_munition_plant production_method = pm_percussion_caps } remove_variable = nesnd_mug_pm_pm_percussion_caps }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_explosive_shells } activate_production_method = { building_type = building_munition_plant production_method = pm_explosive_shells } remove_variable = nesnd_mug_pm_pm_explosive_shells }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_automation_disabled } activate_production_method = { building_type = building_munition_plant production_method = pm_automation_disabled } remove_variable = nesnd_mug_pm_pm_automation_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_munition_plant } activate_production_method = { building_type = building_munition_plant production_method = pm_rotary_valve_engine_building_munition_plant } remove_variable = nesnd_mug_pm_pm_rotary_valve_engine_building_munition_plant }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_assembly_lines_building_munition_plant } activate_production_method = { building_type = building_munition_plant production_method = pm_assembly_lines_building_munition_plant } remove_variable = nesnd_mug_pm_pm_assembly_lines_building_munition_plant }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_rye_farm } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_simple_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_simple_farming } }
+            if = { limit = { has_active_production_method = pm_soil_enriching_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_soil_enriching_farming } }
+            if = { limit = { has_active_production_method = pm_fertilization } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_fertilization } }
+            if = { limit = { has_active_production_method = pm_chemical_fertilizer } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_chemical_fertilizer } }
+            if = { limit = { has_active_production_method = pm_no_secondary } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_secondary } }
+            if = { limit = { has_active_production_method = pm_potatoes } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_potatoes } }
+            if = { limit = { has_active_production_method = pm_apple_orchards } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_apple_orchards } }
+            if = { limit = { has_active_production_method = pm_sugar_beets } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_sugar_beets } }
+            if = { limit = { has_active_production_method = pm_tools_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools_disabled } }
+            if = { limit = { has_active_production_method = pm_tools } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools } }
+            if = { limit = { has_active_production_method = pm_steam_threshers } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_threshers } }
+            if = { limit = { has_active_production_method = pm_tractors } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tractors } }
+            if = { limit = { has_active_production_method = pm_compression_ignition_tractors } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_compression_ignition_tractors } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_rye_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_simple_farming } activate_production_method = { building_type = building_rye_farm production_method = pm_simple_farming } remove_variable = nesnd_mug_pm_pm_simple_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_soil_enriching_farming } activate_production_method = { building_type = building_rye_farm production_method = pm_soil_enriching_farming } remove_variable = nesnd_mug_pm_pm_soil_enriching_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_fertilization } activate_production_method = { building_type = building_rye_farm production_method = pm_fertilization } remove_variable = nesnd_mug_pm_pm_fertilization }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_chemical_fertilizer } activate_production_method = { building_type = building_rye_farm production_method = pm_chemical_fertilizer } remove_variable = nesnd_mug_pm_pm_chemical_fertilizer }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_secondary } activate_production_method = { building_type = building_rye_farm production_method = pm_no_secondary } remove_variable = nesnd_mug_pm_pm_no_secondary }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_potatoes } activate_production_method = { building_type = building_rye_farm production_method = pm_potatoes } remove_variable = nesnd_mug_pm_pm_potatoes }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_apple_orchards } activate_production_method = { building_type = building_rye_farm production_method = pm_apple_orchards } remove_variable = nesnd_mug_pm_pm_apple_orchards }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_sugar_beets } activate_production_method = { building_type = building_rye_farm production_method = pm_sugar_beets } remove_variable = nesnd_mug_pm_pm_sugar_beets }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools_disabled } activate_production_method = { building_type = building_rye_farm production_method = pm_tools_disabled } remove_variable = nesnd_mug_pm_pm_tools_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools } activate_production_method = { building_type = building_rye_farm production_method = pm_tools } remove_variable = nesnd_mug_pm_pm_tools }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_threshers } activate_production_method = { building_type = building_rye_farm production_method = pm_steam_threshers } remove_variable = nesnd_mug_pm_pm_steam_threshers }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tractors } activate_production_method = { building_type = building_rye_farm production_method = pm_tractors } remove_variable = nesnd_mug_pm_pm_tractors }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_compression_ignition_tractors } activate_production_method = { building_type = building_rye_farm production_method = pm_compression_ignition_tractors } remove_variable = nesnd_mug_pm_pm_compression_ignition_tractors }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_wheat_farm } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_simple_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_simple_farming } }
+            if = { limit = { has_active_production_method = pm_herring_meal_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_herring_meal_farming } }
+            if = { limit = { has_active_production_method = pm_soil_enriching_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_soil_enriching_farming } }
+            if = { limit = { has_active_production_method = pm_fertilization } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_fertilization } }
+            if = { limit = { has_active_production_method = pm_chemical_fertilizer } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_chemical_fertilizer } }
+            if = { limit = { has_active_production_method = pm_no_secondary } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_secondary } }
+            if = { limit = { has_active_production_method = pm_citrus_orchards } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_citrus_orchards } }
+            if = { limit = { has_active_production_method = pm_sugar_beets } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_sugar_beets } }
+            if = { limit = { has_active_production_method = pm_tools_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools_disabled } }
+            if = { limit = { has_active_production_method = pm_tools } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools } }
+            if = { limit = { has_active_production_method = pm_steam_threshers } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_threshers } }
+            if = { limit = { has_active_production_method = pm_tractors } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tractors } }
+            if = { limit = { has_active_production_method = pm_compression_ignition_tractors } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_compression_ignition_tractors } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_wheat_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_simple_farming } activate_production_method = { building_type = building_wheat_farm production_method = pm_simple_farming } remove_variable = nesnd_mug_pm_pm_simple_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_herring_meal_farming } activate_production_method = { building_type = building_wheat_farm production_method = pm_herring_meal_farming } remove_variable = nesnd_mug_pm_pm_herring_meal_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_soil_enriching_farming } activate_production_method = { building_type = building_wheat_farm production_method = pm_soil_enriching_farming } remove_variable = nesnd_mug_pm_pm_soil_enriching_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_fertilization } activate_production_method = { building_type = building_wheat_farm production_method = pm_fertilization } remove_variable = nesnd_mug_pm_pm_fertilization }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_chemical_fertilizer } activate_production_method = { building_type = building_wheat_farm production_method = pm_chemical_fertilizer } remove_variable = nesnd_mug_pm_pm_chemical_fertilizer }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_secondary } activate_production_method = { building_type = building_wheat_farm production_method = pm_no_secondary } remove_variable = nesnd_mug_pm_pm_no_secondary }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_citrus_orchards } activate_production_method = { building_type = building_wheat_farm production_method = pm_citrus_orchards } remove_variable = nesnd_mug_pm_pm_citrus_orchards }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_sugar_beets } activate_production_method = { building_type = building_wheat_farm production_method = pm_sugar_beets } remove_variable = nesnd_mug_pm_pm_sugar_beets }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools_disabled } activate_production_method = { building_type = building_wheat_farm production_method = pm_tools_disabled } remove_variable = nesnd_mug_pm_pm_tools_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools } activate_production_method = { building_type = building_wheat_farm production_method = pm_tools } remove_variable = nesnd_mug_pm_pm_tools }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_threshers } activate_production_method = { building_type = building_wheat_farm production_method = pm_steam_threshers } remove_variable = nesnd_mug_pm_pm_steam_threshers }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tractors } activate_production_method = { building_type = building_wheat_farm production_method = pm_tractors } remove_variable = nesnd_mug_pm_pm_tractors }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_compression_ignition_tractors } activate_production_method = { building_type = building_wheat_farm production_method = pm_compression_ignition_tractors } remove_variable = nesnd_mug_pm_pm_compression_ignition_tractors }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_rice_farm } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_simple_farming_building_rice_farm } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_simple_farming_building_rice_farm } }
+            if = { limit = { has_active_production_method = pm_herring_meal_farming_building_rice_farm } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_herring_meal_farming_building_rice_farm } }
+            if = { limit = { has_active_production_method = pm_soil_enriching_farming_building_rice_farm } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_soil_enriching_farming_building_rice_farm } }
+            if = { limit = { has_active_production_method = pm_fertilization_building_rice_farm } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_fertilization_building_rice_farm } }
+            if = { limit = { has_active_production_method = pm_chemical_fertilizer_building_rice_farm } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_chemical_fertilizer_building_rice_farm } }
+            if = { limit = { has_active_production_method = pm_no_secondary } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_secondary } }
+            if = { limit = { has_active_production_method = pm_fig_orchards_building_rice_farm } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_fig_orchards_building_rice_farm } }
+            if = { limit = { has_active_production_method = pm_tools_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools_disabled } }
+            if = { limit = { has_active_production_method = pm_tools_building_rice_farm } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools_building_rice_farm } }
+            if = { limit = { has_active_production_method = pm_steam_threshers_building_rice_farm } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_threshers_building_rice_farm } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_rice_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_simple_farming_building_rice_farm } activate_production_method = { building_type = building_rice_farm production_method = pm_simple_farming_building_rice_farm } remove_variable = nesnd_mug_pm_pm_simple_farming_building_rice_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_herring_meal_farming_building_rice_farm } activate_production_method = { building_type = building_rice_farm production_method = pm_herring_meal_farming_building_rice_farm } remove_variable = nesnd_mug_pm_pm_herring_meal_farming_building_rice_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_soil_enriching_farming_building_rice_farm } activate_production_method = { building_type = building_rice_farm production_method = pm_soil_enriching_farming_building_rice_farm } remove_variable = nesnd_mug_pm_pm_soil_enriching_farming_building_rice_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_fertilization_building_rice_farm } activate_production_method = { building_type = building_rice_farm production_method = pm_fertilization_building_rice_farm } remove_variable = nesnd_mug_pm_pm_fertilization_building_rice_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_chemical_fertilizer_building_rice_farm } activate_production_method = { building_type = building_rice_farm production_method = pm_chemical_fertilizer_building_rice_farm } remove_variable = nesnd_mug_pm_pm_chemical_fertilizer_building_rice_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_secondary } activate_production_method = { building_type = building_rice_farm production_method = pm_no_secondary } remove_variable = nesnd_mug_pm_pm_no_secondary }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_fig_orchards_building_rice_farm } activate_production_method = { building_type = building_rice_farm production_method = pm_fig_orchards_building_rice_farm } remove_variable = nesnd_mug_pm_pm_fig_orchards_building_rice_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools_disabled } activate_production_method = { building_type = building_rice_farm production_method = pm_tools_disabled } remove_variable = nesnd_mug_pm_pm_tools_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools_building_rice_farm } activate_production_method = { building_type = building_rice_farm production_method = pm_tools_building_rice_farm } remove_variable = nesnd_mug_pm_pm_tools_building_rice_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_threshers_building_rice_farm } activate_production_method = { building_type = building_rice_farm production_method = pm_steam_threshers_building_rice_farm } remove_variable = nesnd_mug_pm_pm_steam_threshers_building_rice_farm }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_maize_farm } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_simple_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_simple_farming } }
+            if = { limit = { has_active_production_method = pm_soil_enriching_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_soil_enriching_farming } }
+            if = { limit = { has_active_production_method = pm_fertilization } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_fertilization } }
+            if = { limit = { has_active_production_method = pm_chemical_fertilizer } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_chemical_fertilizer } }
+            if = { limit = { has_active_production_method = pm_no_secondary } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_secondary } }
+            if = { limit = { has_active_production_method = pm_citrus_orchards } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_citrus_orchards } }
+            if = { limit = { has_active_production_method = pm_tools_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools_disabled } }
+            if = { limit = { has_active_production_method = pm_tools } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools } }
+            if = { limit = { has_active_production_method = pm_steam_threshers } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_threshers } }
+            if = { limit = { has_active_production_method = pm_tractors } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tractors } }
+            if = { limit = { has_active_production_method = pm_compression_ignition_tractors } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_compression_ignition_tractors } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_maize_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_simple_farming } activate_production_method = { building_type = building_maize_farm production_method = pm_simple_farming } remove_variable = nesnd_mug_pm_pm_simple_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_soil_enriching_farming } activate_production_method = { building_type = building_maize_farm production_method = pm_soil_enriching_farming } remove_variable = nesnd_mug_pm_pm_soil_enriching_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_fertilization } activate_production_method = { building_type = building_maize_farm production_method = pm_fertilization } remove_variable = nesnd_mug_pm_pm_fertilization }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_chemical_fertilizer } activate_production_method = { building_type = building_maize_farm production_method = pm_chemical_fertilizer } remove_variable = nesnd_mug_pm_pm_chemical_fertilizer }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_secondary } activate_production_method = { building_type = building_maize_farm production_method = pm_no_secondary } remove_variable = nesnd_mug_pm_pm_no_secondary }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_citrus_orchards } activate_production_method = { building_type = building_maize_farm production_method = pm_citrus_orchards } remove_variable = nesnd_mug_pm_pm_citrus_orchards }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools_disabled } activate_production_method = { building_type = building_maize_farm production_method = pm_tools_disabled } remove_variable = nesnd_mug_pm_pm_tools_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools } activate_production_method = { building_type = building_maize_farm production_method = pm_tools } remove_variable = nesnd_mug_pm_pm_tools }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_threshers } activate_production_method = { building_type = building_maize_farm production_method = pm_steam_threshers } remove_variable = nesnd_mug_pm_pm_steam_threshers }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tractors } activate_production_method = { building_type = building_maize_farm production_method = pm_tractors } remove_variable = nesnd_mug_pm_pm_tractors }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_compression_ignition_tractors } activate_production_method = { building_type = building_maize_farm production_method = pm_compression_ignition_tractors } remove_variable = nesnd_mug_pm_pm_compression_ignition_tractors }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_millet_farm } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_simple_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_simple_farming } }
+            if = { limit = { has_active_production_method = pm_soil_enriching_farming } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_soil_enriching_farming } }
+            if = { limit = { has_active_production_method = pm_fertilization } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_fertilization } }
+            if = { limit = { has_active_production_method = pm_chemical_fertilizer } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_chemical_fertilizer } }
+            if = { limit = { has_active_production_method = pm_no_secondary } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_secondary } }
+            if = { limit = { has_active_production_method = pm_fig_orchards } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_fig_orchards } }
+            if = { limit = { has_active_production_method = pm_tools_disabled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools_disabled } }
+            if = { limit = { has_active_production_method = pm_tools } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tools } }
+            if = { limit = { has_active_production_method = pm_steam_threshers } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_threshers } }
+            if = { limit = { has_active_production_method = pm_tractors } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_tractors } }
+            if = { limit = { has_active_production_method = pm_compression_ignition_tractors } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_compression_ignition_tractors } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_millet_farm }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_simple_farming } activate_production_method = { building_type = building_millet_farm production_method = pm_simple_farming } remove_variable = nesnd_mug_pm_pm_simple_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_soil_enriching_farming } activate_production_method = { building_type = building_millet_farm production_method = pm_soil_enriching_farming } remove_variable = nesnd_mug_pm_pm_soil_enriching_farming }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_fertilization } activate_production_method = { building_type = building_millet_farm production_method = pm_fertilization } remove_variable = nesnd_mug_pm_pm_fertilization }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_chemical_fertilizer } activate_production_method = { building_type = building_millet_farm production_method = pm_chemical_fertilizer } remove_variable = nesnd_mug_pm_pm_chemical_fertilizer }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_secondary } activate_production_method = { building_type = building_millet_farm production_method = pm_no_secondary } remove_variable = nesnd_mug_pm_pm_no_secondary }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_fig_orchards } activate_production_method = { building_type = building_millet_farm production_method = pm_fig_orchards } remove_variable = nesnd_mug_pm_pm_fig_orchards }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools_disabled } activate_production_method = { building_type = building_millet_farm production_method = pm_tools_disabled } remove_variable = nesnd_mug_pm_pm_tools_disabled }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tools } activate_production_method = { building_type = building_millet_farm production_method = pm_tools } remove_variable = nesnd_mug_pm_pm_tools }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_threshers } activate_production_method = { building_type = building_millet_farm production_method = pm_steam_threshers } remove_variable = nesnd_mug_pm_pm_steam_threshers }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_tractors } activate_production_method = { building_type = building_millet_farm production_method = pm_tractors } remove_variable = nesnd_mug_pm_pm_tractors }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_compression_ignition_tractors } activate_production_method = { building_type = building_millet_farm production_method = pm_compression_ignition_tractors } remove_variable = nesnd_mug_pm_pm_compression_ignition_tractors }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_livestock_ranch } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_open_air_stockyards } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_open_air_stockyards } }
+            if = { limit = { has_active_production_method = pm_butchering_tools } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_butchering_tools } }
+            if = { limit = { has_active_production_method = pm_slaughterhouses } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_slaughterhouses } }
+            if = { limit = { has_active_production_method = pm_mechanized_slaughtering } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_mechanized_slaughtering } }
+            if = { limit = { has_active_production_method = pm_simple_ranch } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_simple_ranch } }
+            if = { limit = { has_active_production_method = pm_sheep_farms } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_sheep_farms } }
+            if = { limit = { has_active_production_method = pm_intensive_grazing_ranch } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_intensive_grazing_ranch } }
+            if = { limit = { has_active_production_method = pm_standard_fences } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_standard_fences } }
+            if = { limit = { has_active_production_method = pm_barbed_wire_fences } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_barbed_wire_fences } }
+            if = { limit = { has_active_production_method = pm_electric_fencing } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_electric_fencing } }
+            if = { limit = { has_active_production_method = pm_unrefrigerated } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_unrefrigerated } }
+            if = { limit = { has_active_production_method = pm_refrigerated_storage_building_livestock_ranch } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_refrigerated_storage_building_livestock_ranch } }
+            if = { limit = { has_active_production_method = pm_refrigerated_rail_cars_building_livestock_ranch } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_refrigerated_rail_cars_building_livestock_ranch } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_livestock_ranch }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_open_air_stockyards } activate_production_method = { building_type = building_livestock_ranch production_method = pm_open_air_stockyards } remove_variable = nesnd_mug_pm_pm_open_air_stockyards }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_butchering_tools } activate_production_method = { building_type = building_livestock_ranch production_method = pm_butchering_tools } remove_variable = nesnd_mug_pm_pm_butchering_tools }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_slaughterhouses } activate_production_method = { building_type = building_livestock_ranch production_method = pm_slaughterhouses } remove_variable = nesnd_mug_pm_pm_slaughterhouses }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_mechanized_slaughtering } activate_production_method = { building_type = building_livestock_ranch production_method = pm_mechanized_slaughtering } remove_variable = nesnd_mug_pm_pm_mechanized_slaughtering }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_simple_ranch } activate_production_method = { building_type = building_livestock_ranch production_method = pm_simple_ranch } remove_variable = nesnd_mug_pm_pm_simple_ranch }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_sheep_farms } activate_production_method = { building_type = building_livestock_ranch production_method = pm_sheep_farms } remove_variable = nesnd_mug_pm_pm_sheep_farms }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_intensive_grazing_ranch } activate_production_method = { building_type = building_livestock_ranch production_method = pm_intensive_grazing_ranch } remove_variable = nesnd_mug_pm_pm_intensive_grazing_ranch }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_standard_fences } activate_production_method = { building_type = building_livestock_ranch production_method = pm_standard_fences } remove_variable = nesnd_mug_pm_pm_standard_fences }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_barbed_wire_fences } activate_production_method = { building_type = building_livestock_ranch production_method = pm_barbed_wire_fences } remove_variable = nesnd_mug_pm_pm_barbed_wire_fences }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_electric_fencing } activate_production_method = { building_type = building_livestock_ranch production_method = pm_electric_fencing } remove_variable = nesnd_mug_pm_pm_electric_fencing }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_unrefrigerated } activate_production_method = { building_type = building_livestock_ranch production_method = pm_unrefrigerated } remove_variable = nesnd_mug_pm_pm_unrefrigerated }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_refrigerated_storage_building_livestock_ranch } activate_production_method = { building_type = building_livestock_ranch production_method = pm_refrigerated_storage_building_livestock_ranch } remove_variable = nesnd_mug_pm_pm_refrigerated_storage_building_livestock_ranch }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_refrigerated_rail_cars_building_livestock_ranch } activate_production_method = { building_type = building_livestock_ranch production_method = pm_refrigerated_rail_cars_building_livestock_ranch } remove_variable = nesnd_mug_pm_pm_refrigerated_rail_cars_building_livestock_ranch }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_coal_mine } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_picks_and_shovels_building_coal_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_picks_and_shovels_building_coal_mine } }
+            if = { limit = { has_active_production_method = pm_atmospheric_engine_pump_building_coal_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_coal_mine } }
+            if = { limit = { has_active_production_method = pm_condensing_engine_pump_building_coal_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_coal_mine } }
+            if = { limit = { has_active_production_method = pm_diesel_pump_building_coal_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_diesel_pump_building_coal_mine } }
+            if = { limit = { has_active_production_method = pm_no_explosives } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_explosives } }
+            if = { limit = { has_active_production_method = pm_nitroglycerin_building_coal_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_nitroglycerin_building_coal_mine } }
+            if = { limit = { has_active_production_method = pm_dynamite_building_coal_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_dynamite_building_coal_mine } }
+            if = { limit = { has_active_production_method = pm_no_steam_automation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_steam_automation } }
+            if = { limit = { has_active_production_method = pm_steam_donkey_building_coal_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_donkey_building_coal_mine } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_rail_transport_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rail_transport_mine } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_coal_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_picks_and_shovels_building_coal_mine } activate_production_method = { building_type = building_coal_mine production_method = pm_picks_and_shovels_building_coal_mine } remove_variable = nesnd_mug_pm_pm_picks_and_shovels_building_coal_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_coal_mine } activate_production_method = { building_type = building_coal_mine production_method = pm_atmospheric_engine_pump_building_coal_mine } remove_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_coal_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_coal_mine } activate_production_method = { building_type = building_coal_mine production_method = pm_condensing_engine_pump_building_coal_mine } remove_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_coal_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_diesel_pump_building_coal_mine } activate_production_method = { building_type = building_coal_mine production_method = pm_diesel_pump_building_coal_mine } remove_variable = nesnd_mug_pm_pm_diesel_pump_building_coal_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_explosives } activate_production_method = { building_type = building_coal_mine production_method = pm_no_explosives } remove_variable = nesnd_mug_pm_pm_no_explosives }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_nitroglycerin_building_coal_mine } activate_production_method = { building_type = building_coal_mine production_method = pm_nitroglycerin_building_coal_mine } remove_variable = nesnd_mug_pm_pm_nitroglycerin_building_coal_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_dynamite_building_coal_mine } activate_production_method = { building_type = building_coal_mine production_method = pm_dynamite_building_coal_mine } remove_variable = nesnd_mug_pm_pm_dynamite_building_coal_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_steam_automation } activate_production_method = { building_type = building_coal_mine production_method = pm_no_steam_automation } remove_variable = nesnd_mug_pm_pm_no_steam_automation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_donkey_building_coal_mine } activate_production_method = { building_type = building_coal_mine production_method = pm_steam_donkey_building_coal_mine } remove_variable = nesnd_mug_pm_pm_steam_donkey_building_coal_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_coal_mine production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rail_transport_mine } activate_production_method = { building_type = building_coal_mine production_method = pm_rail_transport_mine } remove_variable = nesnd_mug_pm_pm_rail_transport_mine }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_iron_mine } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_picks_and_shovels_building_iron_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_picks_and_shovels_building_iron_mine } }
+            if = { limit = { has_active_production_method = pm_atmospheric_engine_pump_building_iron_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_iron_mine } }
+            if = { limit = { has_active_production_method = pm_condensing_engine_pump_building_iron_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_iron_mine } }
+            if = { limit = { has_active_production_method = pm_diesel_pump_building_iron_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_diesel_pump_building_iron_mine } }
+            if = { limit = { has_active_production_method = pm_no_explosives } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_explosives } }
+            if = { limit = { has_active_production_method = pm_nitroglycerin_building_iron_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_nitroglycerin_building_iron_mine } }
+            if = { limit = { has_active_production_method = pm_dynamite_building_iron_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_dynamite_building_iron_mine } }
+            if = { limit = { has_active_production_method = pm_no_steam_automation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_steam_automation } }
+            if = { limit = { has_active_production_method = pm_steam_donkey_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_donkey_mine } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_rail_transport_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rail_transport_mine } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_iron_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_picks_and_shovels_building_iron_mine } activate_production_method = { building_type = building_iron_mine production_method = pm_picks_and_shovels_building_iron_mine } remove_variable = nesnd_mug_pm_pm_picks_and_shovels_building_iron_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_iron_mine } activate_production_method = { building_type = building_iron_mine production_method = pm_atmospheric_engine_pump_building_iron_mine } remove_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_iron_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_iron_mine } activate_production_method = { building_type = building_iron_mine production_method = pm_condensing_engine_pump_building_iron_mine } remove_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_iron_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_diesel_pump_building_iron_mine } activate_production_method = { building_type = building_iron_mine production_method = pm_diesel_pump_building_iron_mine } remove_variable = nesnd_mug_pm_pm_diesel_pump_building_iron_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_explosives } activate_production_method = { building_type = building_iron_mine production_method = pm_no_explosives } remove_variable = nesnd_mug_pm_pm_no_explosives }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_nitroglycerin_building_iron_mine } activate_production_method = { building_type = building_iron_mine production_method = pm_nitroglycerin_building_iron_mine } remove_variable = nesnd_mug_pm_pm_nitroglycerin_building_iron_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_dynamite_building_iron_mine } activate_production_method = { building_type = building_iron_mine production_method = pm_dynamite_building_iron_mine } remove_variable = nesnd_mug_pm_pm_dynamite_building_iron_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_steam_automation } activate_production_method = { building_type = building_iron_mine production_method = pm_no_steam_automation } remove_variable = nesnd_mug_pm_pm_no_steam_automation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_donkey_mine } activate_production_method = { building_type = building_iron_mine production_method = pm_steam_donkey_mine } remove_variable = nesnd_mug_pm_pm_steam_donkey_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_iron_mine production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rail_transport_mine } activate_production_method = { building_type = building_iron_mine production_method = pm_rail_transport_mine } remove_variable = nesnd_mug_pm_pm_rail_transport_mine }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_lead_mine } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_picks_and_shovels_building_lead_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_picks_and_shovels_building_lead_mine } }
+            if = { limit = { has_active_production_method = pm_atmospheric_engine_pump_building_lead_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_lead_mine } }
+            if = { limit = { has_active_production_method = pm_condensing_engine_pump_building_lead_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_lead_mine } }
+            if = { limit = { has_active_production_method = pm_diesel_pump_building_lead_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_diesel_pump_building_lead_mine } }
+            if = { limit = { has_active_production_method = pm_no_explosives } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_explosives } }
+            if = { limit = { has_active_production_method = pm_nitroglycerin_building_lead_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_nitroglycerin_building_lead_mine } }
+            if = { limit = { has_active_production_method = pm_dynamite_building_lead_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_dynamite_building_lead_mine } }
+            if = { limit = { has_active_production_method = pm_no_steam_automation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_steam_automation } }
+            if = { limit = { has_active_production_method = pm_steam_donkey_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_donkey_mine } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_rail_transport_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rail_transport_mine } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_lead_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_picks_and_shovels_building_lead_mine } activate_production_method = { building_type = building_lead_mine production_method = pm_picks_and_shovels_building_lead_mine } remove_variable = nesnd_mug_pm_pm_picks_and_shovels_building_lead_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_lead_mine } activate_production_method = { building_type = building_lead_mine production_method = pm_atmospheric_engine_pump_building_lead_mine } remove_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_lead_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_lead_mine } activate_production_method = { building_type = building_lead_mine production_method = pm_condensing_engine_pump_building_lead_mine } remove_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_lead_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_diesel_pump_building_lead_mine } activate_production_method = { building_type = building_lead_mine production_method = pm_diesel_pump_building_lead_mine } remove_variable = nesnd_mug_pm_pm_diesel_pump_building_lead_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_explosives } activate_production_method = { building_type = building_lead_mine production_method = pm_no_explosives } remove_variable = nesnd_mug_pm_pm_no_explosives }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_nitroglycerin_building_lead_mine } activate_production_method = { building_type = building_lead_mine production_method = pm_nitroglycerin_building_lead_mine } remove_variable = nesnd_mug_pm_pm_nitroglycerin_building_lead_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_dynamite_building_lead_mine } activate_production_method = { building_type = building_lead_mine production_method = pm_dynamite_building_lead_mine } remove_variable = nesnd_mug_pm_pm_dynamite_building_lead_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_steam_automation } activate_production_method = { building_type = building_lead_mine production_method = pm_no_steam_automation } remove_variable = nesnd_mug_pm_pm_no_steam_automation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_donkey_mine } activate_production_method = { building_type = building_lead_mine production_method = pm_steam_donkey_mine } remove_variable = nesnd_mug_pm_pm_steam_donkey_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_lead_mine production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rail_transport_mine } activate_production_method = { building_type = building_lead_mine production_method = pm_rail_transport_mine } remove_variable = nesnd_mug_pm_pm_rail_transport_mine }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_sulfur_mine } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_picks_and_shovels_building_sulfur_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_picks_and_shovels_building_sulfur_mine } }
+            if = { limit = { has_active_production_method = pm_atmospheric_engine_pump_building_sulfur_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_sulfur_mine } }
+            if = { limit = { has_active_production_method = pm_condensing_engine_pump_building_sulfur_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_sulfur_mine } }
+            if = { limit = { has_active_production_method = pm_diesel_pump_building_sulfur_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_diesel_pump_building_sulfur_mine } }
+            if = { limit = { has_active_production_method = pm_no_explosives } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_explosives } }
+            if = { limit = { has_active_production_method = pm_nitroglycerin_building_sulfur_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_nitroglycerin_building_sulfur_mine } }
+            if = { limit = { has_active_production_method = pm_dynamite_building_sulfur_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_dynamite_building_sulfur_mine } }
+            if = { limit = { has_active_production_method = pm_no_steam_automation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_steam_automation } }
+            if = { limit = { has_active_production_method = pm_steam_donkey_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_donkey_mine } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_rail_transport_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rail_transport_mine } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_sulfur_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_picks_and_shovels_building_sulfur_mine } activate_production_method = { building_type = building_sulfur_mine production_method = pm_picks_and_shovels_building_sulfur_mine } remove_variable = nesnd_mug_pm_pm_picks_and_shovels_building_sulfur_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_sulfur_mine } activate_production_method = { building_type = building_sulfur_mine production_method = pm_atmospheric_engine_pump_building_sulfur_mine } remove_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_sulfur_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_sulfur_mine } activate_production_method = { building_type = building_sulfur_mine production_method = pm_condensing_engine_pump_building_sulfur_mine } remove_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_sulfur_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_diesel_pump_building_sulfur_mine } activate_production_method = { building_type = building_sulfur_mine production_method = pm_diesel_pump_building_sulfur_mine } remove_variable = nesnd_mug_pm_pm_diesel_pump_building_sulfur_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_explosives } activate_production_method = { building_type = building_sulfur_mine production_method = pm_no_explosives } remove_variable = nesnd_mug_pm_pm_no_explosives }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_nitroglycerin_building_sulfur_mine } activate_production_method = { building_type = building_sulfur_mine production_method = pm_nitroglycerin_building_sulfur_mine } remove_variable = nesnd_mug_pm_pm_nitroglycerin_building_sulfur_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_dynamite_building_sulfur_mine } activate_production_method = { building_type = building_sulfur_mine production_method = pm_dynamite_building_sulfur_mine } remove_variable = nesnd_mug_pm_pm_dynamite_building_sulfur_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_steam_automation } activate_production_method = { building_type = building_sulfur_mine production_method = pm_no_steam_automation } remove_variable = nesnd_mug_pm_pm_no_steam_automation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_donkey_mine } activate_production_method = { building_type = building_sulfur_mine production_method = pm_steam_donkey_mine } remove_variable = nesnd_mug_pm_pm_steam_donkey_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_sulfur_mine production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rail_transport_mine } activate_production_method = { building_type = building_sulfur_mine production_method = pm_rail_transport_mine } remove_variable = nesnd_mug_pm_pm_rail_transport_mine }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_gold_mine } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_picks_and_shovels_building_gold_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_picks_and_shovels_building_gold_mine } }
+            if = { limit = { has_active_production_method = pm_atmospheric_engine_pump_building_gold_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_gold_mine } }
+            if = { limit = { has_active_production_method = pm_condensing_engine_pump_building_gold_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_gold_mine } }
+            if = { limit = { has_active_production_method = pm_diesel_pump_building_gold_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_diesel_pump_building_gold_mine } }
+            if = { limit = { has_active_production_method = pm_no_explosives } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_explosives } }
+            if = { limit = { has_active_production_method = pm_nitroglycerin_building_gold_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_nitroglycerin_building_gold_mine } }
+            if = { limit = { has_active_production_method = pm_dynamite_building_gold_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_dynamite_building_gold_mine } }
+            if = { limit = { has_active_production_method = pm_no_steam_automation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_steam_automation } }
+            if = { limit = { has_active_production_method = pm_steam_donkey_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_donkey_mine } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_rail_transport_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rail_transport_mine } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_gold_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_picks_and_shovels_building_gold_mine } activate_production_method = { building_type = building_gold_mine production_method = pm_picks_and_shovels_building_gold_mine } remove_variable = nesnd_mug_pm_pm_picks_and_shovels_building_gold_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_gold_mine } activate_production_method = { building_type = building_gold_mine production_method = pm_atmospheric_engine_pump_building_gold_mine } remove_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_gold_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_gold_mine } activate_production_method = { building_type = building_gold_mine production_method = pm_condensing_engine_pump_building_gold_mine } remove_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_gold_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_diesel_pump_building_gold_mine } activate_production_method = { building_type = building_gold_mine production_method = pm_diesel_pump_building_gold_mine } remove_variable = nesnd_mug_pm_pm_diesel_pump_building_gold_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_explosives } activate_production_method = { building_type = building_gold_mine production_method = pm_no_explosives } remove_variable = nesnd_mug_pm_pm_no_explosives }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_nitroglycerin_building_gold_mine } activate_production_method = { building_type = building_gold_mine production_method = pm_nitroglycerin_building_gold_mine } remove_variable = nesnd_mug_pm_pm_nitroglycerin_building_gold_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_dynamite_building_gold_mine } activate_production_method = { building_type = building_gold_mine production_method = pm_dynamite_building_gold_mine } remove_variable = nesnd_mug_pm_pm_dynamite_building_gold_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_steam_automation } activate_production_method = { building_type = building_gold_mine production_method = pm_no_steam_automation } remove_variable = nesnd_mug_pm_pm_no_steam_automation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_donkey_mine } activate_production_method = { building_type = building_gold_mine production_method = pm_steam_donkey_mine } remove_variable = nesnd_mug_pm_pm_steam_donkey_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_gold_mine production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rail_transport_mine } activate_production_method = { building_type = building_gold_mine production_method = pm_rail_transport_mine } remove_variable = nesnd_mug_pm_pm_rail_transport_mine }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_copper_mine } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = pm_picks_and_shovels_building_copper_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_picks_and_shovels_building_copper_mine } }
+            if = { limit = { has_active_production_method = pm_atmospheric_engine_pump_building_copper_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_copper_mine } }
+            if = { limit = { has_active_production_method = pm_condensing_engine_pump_building_copper_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_copper_mine } }
+            if = { limit = { has_active_production_method = pm_diesel_pump_building_copper_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_diesel_pump_building_copper_mine } }
+            if = { limit = { has_active_production_method = pm_no_explosives } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_explosives } }
+            if = { limit = { has_active_production_method = pm_nitroglycerin_building_copper_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_nitroglycerin_building_copper_mine } }
+            if = { limit = { has_active_production_method = pm_dynamite_building_copper_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_dynamite_building_copper_mine } }
+            if = { limit = { has_active_production_method = pm_no_steam_automation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_no_steam_automation } }
+            if = { limit = { has_active_production_method = pm_steam_donkey_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_donkey_mine } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_rail_transport_mine } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_rail_transport_mine } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_copper_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_picks_and_shovels_building_copper_mine } activate_production_method = { building_type = building_copper_mine production_method = pm_picks_and_shovels_building_copper_mine } remove_variable = nesnd_mug_pm_pm_picks_and_shovels_building_copper_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_copper_mine } activate_production_method = { building_type = building_copper_mine production_method = pm_atmospheric_engine_pump_building_copper_mine } remove_variable = nesnd_mug_pm_pm_atmospheric_engine_pump_building_copper_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_copper_mine } activate_production_method = { building_type = building_copper_mine production_method = pm_condensing_engine_pump_building_copper_mine } remove_variable = nesnd_mug_pm_pm_condensing_engine_pump_building_copper_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_diesel_pump_building_copper_mine } activate_production_method = { building_type = building_copper_mine production_method = pm_diesel_pump_building_copper_mine } remove_variable = nesnd_mug_pm_pm_diesel_pump_building_copper_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_explosives } activate_production_method = { building_type = building_copper_mine production_method = pm_no_explosives } remove_variable = nesnd_mug_pm_pm_no_explosives }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_nitroglycerin_building_copper_mine } activate_production_method = { building_type = building_copper_mine production_method = pm_nitroglycerin_building_copper_mine } remove_variable = nesnd_mug_pm_pm_nitroglycerin_building_copper_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_dynamite_building_copper_mine } activate_production_method = { building_type = building_copper_mine production_method = pm_dynamite_building_copper_mine } remove_variable = nesnd_mug_pm_pm_dynamite_building_copper_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_no_steam_automation } activate_production_method = { building_type = building_copper_mine production_method = pm_no_steam_automation } remove_variable = nesnd_mug_pm_pm_no_steam_automation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_donkey_mine } activate_production_method = { building_type = building_copper_mine production_method = pm_steam_donkey_mine } remove_variable = nesnd_mug_pm_pm_steam_donkey_mine }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_copper_mine production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_rail_transport_mine } activate_production_method = { building_type = building_copper_mine production_method = pm_rail_transport_mine } remove_variable = nesnd_mug_pm_pm_rail_transport_mine }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_coffee_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = coffee_plantation_dry_process } scope:mug_deal_state = { set_variable = nesnd_mug_pm_coffee_plantation_dry_process } }
+            if = { limit = { has_active_production_method = coffee_plantation_wet_process_manual } scope:mug_deal_state = { set_variable = nesnd_mug_pm_coffee_plantation_wet_process_manual } }
+            if = { limit = { has_active_production_method = coffee_plantation_wet_process_mechanical } scope:mug_deal_state = { set_variable = nesnd_mug_pm_coffee_plantation_wet_process_mechanical } }
+            if = { limit = { has_active_production_method = coffee_plantation_patio_drying } scope:mug_deal_state = { set_variable = nesnd_mug_pm_coffee_plantation_patio_drying } }
+            if = { limit = { has_active_production_method = coffee_plantation_mechanical_drying } scope:mug_deal_state = { set_variable = nesnd_mug_pm_coffee_plantation_mechanical_drying } }
+            if = { limit = { has_active_production_method = slave_exploitation_coffee } scope:mug_deal_state = { set_variable = nesnd_mug_pm_slave_exploitation_coffee } }
+            if = { limit = { has_active_production_method = worker_exploitation_coffee } scope:mug_deal_state = { set_variable = nesnd_mug_pm_worker_exploitation_coffee } }
+            if = { limit = { has_active_production_method = default_labour } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_labour } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_coffee_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_coffee_plantation_dry_process } activate_production_method = { building_type = building_coffee_plantation production_method = coffee_plantation_dry_process } remove_variable = nesnd_mug_pm_coffee_plantation_dry_process }
+        if = { limit = { has_variable = nesnd_mug_pm_coffee_plantation_wet_process_manual } activate_production_method = { building_type = building_coffee_plantation production_method = coffee_plantation_wet_process_manual } remove_variable = nesnd_mug_pm_coffee_plantation_wet_process_manual }
+        if = { limit = { has_variable = nesnd_mug_pm_coffee_plantation_wet_process_mechanical } activate_production_method = { building_type = building_coffee_plantation production_method = coffee_plantation_wet_process_mechanical } remove_variable = nesnd_mug_pm_coffee_plantation_wet_process_mechanical }
+        if = { limit = { has_variable = nesnd_mug_pm_coffee_plantation_patio_drying } activate_production_method = { building_type = building_coffee_plantation production_method = coffee_plantation_patio_drying } remove_variable = nesnd_mug_pm_coffee_plantation_patio_drying }
+        if = { limit = { has_variable = nesnd_mug_pm_coffee_plantation_mechanical_drying } activate_production_method = { building_type = building_coffee_plantation production_method = coffee_plantation_mechanical_drying } remove_variable = nesnd_mug_pm_coffee_plantation_mechanical_drying }
+        if = { limit = { has_variable = nesnd_mug_pm_slave_exploitation_coffee } activate_production_method = { building_type = building_coffee_plantation production_method = slave_exploitation_coffee } remove_variable = nesnd_mug_pm_slave_exploitation_coffee }
+        if = { limit = { has_variable = nesnd_mug_pm_worker_exploitation_coffee } activate_production_method = { building_type = building_coffee_plantation production_method = worker_exploitation_coffee } remove_variable = nesnd_mug_pm_worker_exploitation_coffee }
+        if = { limit = { has_variable = nesnd_mug_pm_default_labour } activate_production_method = { building_type = building_coffee_plantation production_method = default_labour } remove_variable = nesnd_mug_pm_default_labour }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_coffee_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_coffee_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_cotton_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = default_building_cotton_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_building_cotton_plantation } }
+            if = { limit = { has_active_production_method = automatic_irrigation_building_cotton_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_automatic_irrigation_building_cotton_plantation } }
+            if = { limit = { has_active_production_method = slave_exploitation_cotton } scope:mug_deal_state = { set_variable = nesnd_mug_pm_slave_exploitation_cotton } }
+            if = { limit = { has_active_production_method = worker_exploitation_cotton } scope:mug_deal_state = { set_variable = nesnd_mug_pm_worker_exploitation_cotton } }
+            if = { limit = { has_active_production_method = default_labour } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_labour } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_cotton_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_default_building_cotton_plantation } activate_production_method = { building_type = building_cotton_plantation production_method = default_building_cotton_plantation } remove_variable = nesnd_mug_pm_default_building_cotton_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_automatic_irrigation_building_cotton_plantation } activate_production_method = { building_type = building_cotton_plantation production_method = automatic_irrigation_building_cotton_plantation } remove_variable = nesnd_mug_pm_automatic_irrigation_building_cotton_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_slave_exploitation_cotton } activate_production_method = { building_type = building_cotton_plantation production_method = slave_exploitation_cotton } remove_variable = nesnd_mug_pm_slave_exploitation_cotton }
+        if = { limit = { has_variable = nesnd_mug_pm_worker_exploitation_cotton } activate_production_method = { building_type = building_cotton_plantation production_method = worker_exploitation_cotton } remove_variable = nesnd_mug_pm_worker_exploitation_cotton }
+        if = { limit = { has_variable = nesnd_mug_pm_default_labour } activate_production_method = { building_type = building_cotton_plantation production_method = default_labour } remove_variable = nesnd_mug_pm_default_labour }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_cotton_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_cotton_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_dye_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = default_building_dye_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_building_dye_plantation } }
+            if = { limit = { has_active_production_method = automatic_irrigation_building_dye_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_automatic_irrigation_building_dye_plantation } }
+            if = { limit = { has_active_production_method = slave_exploitation_dye } scope:mug_deal_state = { set_variable = nesnd_mug_pm_slave_exploitation_dye } }
+            if = { limit = { has_active_production_method = worker_exploitation_dye } scope:mug_deal_state = { set_variable = nesnd_mug_pm_worker_exploitation_dye } }
+            if = { limit = { has_active_production_method = default_labour } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_labour } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_dye_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_default_building_dye_plantation } activate_production_method = { building_type = building_dye_plantation production_method = default_building_dye_plantation } remove_variable = nesnd_mug_pm_default_building_dye_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_automatic_irrigation_building_dye_plantation } activate_production_method = { building_type = building_dye_plantation production_method = automatic_irrigation_building_dye_plantation } remove_variable = nesnd_mug_pm_automatic_irrigation_building_dye_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_slave_exploitation_dye } activate_production_method = { building_type = building_dye_plantation production_method = slave_exploitation_dye } remove_variable = nesnd_mug_pm_slave_exploitation_dye }
+        if = { limit = { has_variable = nesnd_mug_pm_worker_exploitation_dye } activate_production_method = { building_type = building_dye_plantation production_method = worker_exploitation_dye } remove_variable = nesnd_mug_pm_worker_exploitation_dye }
+        if = { limit = { has_variable = nesnd_mug_pm_default_labour } activate_production_method = { building_type = building_dye_plantation production_method = default_labour } remove_variable = nesnd_mug_pm_default_labour }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_dye_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_dye_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_opium_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = default_building_opium_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_building_opium_plantation } }
+            if = { limit = { has_active_production_method = automatic_irrigation_building_opium_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_automatic_irrigation_building_opium_plantation } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_opium_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_default_building_opium_plantation } activate_production_method = { building_type = building_opium_plantation production_method = default_building_opium_plantation } remove_variable = nesnd_mug_pm_default_building_opium_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_automatic_irrigation_building_opium_plantation } activate_production_method = { building_type = building_opium_plantation production_method = automatic_irrigation_building_opium_plantation } remove_variable = nesnd_mug_pm_automatic_irrigation_building_opium_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_opium_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_opium_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_tea_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = default_building_tea_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_building_tea_plantation } }
+            if = { limit = { has_active_production_method = automatic_irrigation_building_tea_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_automatic_irrigation_building_tea_plantation } }
+            if = { limit = { has_active_production_method = slave_exploitation_tea } scope:mug_deal_state = { set_variable = nesnd_mug_pm_slave_exploitation_tea } }
+            if = { limit = { has_active_production_method = worker_exploitation_tea } scope:mug_deal_state = { set_variable = nesnd_mug_pm_worker_exploitation_tea } }
+            if = { limit = { has_active_production_method = default_labour } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_labour } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_tea_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_default_building_tea_plantation } activate_production_method = { building_type = building_tea_plantation production_method = default_building_tea_plantation } remove_variable = nesnd_mug_pm_default_building_tea_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_automatic_irrigation_building_tea_plantation } activate_production_method = { building_type = building_tea_plantation production_method = automatic_irrigation_building_tea_plantation } remove_variable = nesnd_mug_pm_automatic_irrigation_building_tea_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_slave_exploitation_tea } activate_production_method = { building_type = building_tea_plantation production_method = slave_exploitation_tea } remove_variable = nesnd_mug_pm_slave_exploitation_tea }
+        if = { limit = { has_variable = nesnd_mug_pm_worker_exploitation_tea } activate_production_method = { building_type = building_tea_plantation production_method = worker_exploitation_tea } remove_variable = nesnd_mug_pm_worker_exploitation_tea }
+        if = { limit = { has_variable = nesnd_mug_pm_default_labour } activate_production_method = { building_type = building_tea_plantation production_method = default_labour } remove_variable = nesnd_mug_pm_default_labour }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_tea_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_tea_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_tobacco_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = default_building_tobacco_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_building_tobacco_plantation } }
+            if = { limit = { has_active_production_method = automatic_irrigation_building_tobacco_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_automatic_irrigation_building_tobacco_plantation } }
+            if = { limit = { has_active_production_method = hand_rolled } scope:mug_deal_state = { set_variable = nesnd_mug_pm_hand_rolled } }
+            if = { limit = { has_active_production_method = molds } scope:mug_deal_state = { set_variable = nesnd_mug_pm_molds } }
+            if = { limit = { has_active_production_method = electric_rollers } scope:mug_deal_state = { set_variable = nesnd_mug_pm_electric_rollers } }
+            if = { limit = { has_active_production_method = worker_exploitation_tobacco } scope:mug_deal_state = { set_variable = nesnd_mug_pm_worker_exploitation_tobacco } }
+            if = { limit = { has_active_production_method = default_labour_tobacco } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_labour_tobacco } }
+            if = { limit = { has_active_production_method = lectors_tobacco } scope:mug_deal_state = { set_variable = nesnd_mug_pm_lectors_tobacco } }
+            if = { limit = { has_active_production_method = radio_stations_tobacco } scope:mug_deal_state = { set_variable = nesnd_mug_pm_radio_stations_tobacco } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_tobacco_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_default_building_tobacco_plantation } activate_production_method = { building_type = building_tobacco_plantation production_method = default_building_tobacco_plantation } remove_variable = nesnd_mug_pm_default_building_tobacco_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_automatic_irrigation_building_tobacco_plantation } activate_production_method = { building_type = building_tobacco_plantation production_method = automatic_irrigation_building_tobacco_plantation } remove_variable = nesnd_mug_pm_automatic_irrigation_building_tobacco_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_hand_rolled } activate_production_method = { building_type = building_tobacco_plantation production_method = hand_rolled } remove_variable = nesnd_mug_pm_hand_rolled }
+        if = { limit = { has_variable = nesnd_mug_pm_molds } activate_production_method = { building_type = building_tobacco_plantation production_method = molds } remove_variable = nesnd_mug_pm_molds }
+        if = { limit = { has_variable = nesnd_mug_pm_electric_rollers } activate_production_method = { building_type = building_tobacco_plantation production_method = electric_rollers } remove_variable = nesnd_mug_pm_electric_rollers }
+        if = { limit = { has_variable = nesnd_mug_pm_worker_exploitation_tobacco } activate_production_method = { building_type = building_tobacco_plantation production_method = worker_exploitation_tobacco } remove_variable = nesnd_mug_pm_worker_exploitation_tobacco }
+        if = { limit = { has_variable = nesnd_mug_pm_default_labour_tobacco } activate_production_method = { building_type = building_tobacco_plantation production_method = default_labour_tobacco } remove_variable = nesnd_mug_pm_default_labour_tobacco }
+        if = { limit = { has_variable = nesnd_mug_pm_lectors_tobacco } activate_production_method = { building_type = building_tobacco_plantation production_method = lectors_tobacco } remove_variable = nesnd_mug_pm_lectors_tobacco }
+        if = { limit = { has_variable = nesnd_mug_pm_radio_stations_tobacco } activate_production_method = { building_type = building_tobacco_plantation production_method = radio_stations_tobacco } remove_variable = nesnd_mug_pm_radio_stations_tobacco }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_tobacco_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_tobacco_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_sugar_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = default_building_sugar_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_building_sugar_plantation } }
+            if = { limit = { has_active_production_method = automatic_irrigation_building_sugar_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_automatic_irrigation_building_sugar_plantation } }
+            if = { limit = { has_active_production_method = ox_driven_rollers_sugar } scope:mug_deal_state = { set_variable = nesnd_mug_pm_ox_driven_rollers_sugar } }
+            if = { limit = { has_active_production_method = vacuum_pan_sugar } scope:mug_deal_state = { set_variable = nesnd_mug_pm_vacuum_pan_sugar } }
+            if = { limit = { has_active_production_method = steam_powered_evaporation_sugar } scope:mug_deal_state = { set_variable = nesnd_mug_pm_steam_powered_evaporation_sugar } }
+            if = { limit = { has_active_production_method = centrifugal_machine_sugar } scope:mug_deal_state = { set_variable = nesnd_mug_pm_centrifugal_machine_sugar } }
+            if = { limit = { has_active_production_method = slave_exploitation_sugar } scope:mug_deal_state = { set_variable = nesnd_mug_pm_slave_exploitation_sugar } }
+            if = { limit = { has_active_production_method = worker_exploitation_sugar } scope:mug_deal_state = { set_variable = nesnd_mug_pm_worker_exploitation_sugar } }
+            if = { limit = { has_active_production_method = default_labour } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_labour } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_sugar_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_default_building_sugar_plantation } activate_production_method = { building_type = building_sugar_plantation production_method = default_building_sugar_plantation } remove_variable = nesnd_mug_pm_default_building_sugar_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_automatic_irrigation_building_sugar_plantation } activate_production_method = { building_type = building_sugar_plantation production_method = automatic_irrigation_building_sugar_plantation } remove_variable = nesnd_mug_pm_automatic_irrigation_building_sugar_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_ox_driven_rollers_sugar } activate_production_method = { building_type = building_sugar_plantation production_method = ox_driven_rollers_sugar } remove_variable = nesnd_mug_pm_ox_driven_rollers_sugar }
+        if = { limit = { has_variable = nesnd_mug_pm_vacuum_pan_sugar } activate_production_method = { building_type = building_sugar_plantation production_method = vacuum_pan_sugar } remove_variable = nesnd_mug_pm_vacuum_pan_sugar }
+        if = { limit = { has_variable = nesnd_mug_pm_steam_powered_evaporation_sugar } activate_production_method = { building_type = building_sugar_plantation production_method = steam_powered_evaporation_sugar } remove_variable = nesnd_mug_pm_steam_powered_evaporation_sugar }
+        if = { limit = { has_variable = nesnd_mug_pm_centrifugal_machine_sugar } activate_production_method = { building_type = building_sugar_plantation production_method = centrifugal_machine_sugar } remove_variable = nesnd_mug_pm_centrifugal_machine_sugar }
+        if = { limit = { has_variable = nesnd_mug_pm_slave_exploitation_sugar } activate_production_method = { building_type = building_sugar_plantation production_method = slave_exploitation_sugar } remove_variable = nesnd_mug_pm_slave_exploitation_sugar }
+        if = { limit = { has_variable = nesnd_mug_pm_worker_exploitation_sugar } activate_production_method = { building_type = building_sugar_plantation production_method = worker_exploitation_sugar } remove_variable = nesnd_mug_pm_worker_exploitation_sugar }
+        if = { limit = { has_variable = nesnd_mug_pm_default_labour } activate_production_method = { building_type = building_sugar_plantation production_method = default_labour } remove_variable = nesnd_mug_pm_default_labour }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_sugar_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_sugar_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_banana_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = default_building_banana_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_building_banana_plantation } }
+            if = { limit = { has_active_production_method = automatic_irrigation_building_banana_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_automatic_irrigation_building_banana_plantation } }
+            if = { limit = { has_active_production_method = slave_exploitation_banana } scope:mug_deal_state = { set_variable = nesnd_mug_pm_slave_exploitation_banana } }
+            if = { limit = { has_active_production_method = worker_exploitation_banana } scope:mug_deal_state = { set_variable = nesnd_mug_pm_worker_exploitation_banana } }
+            if = { limit = { has_active_production_method = default_labour } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_labour } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_banana_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_default_building_banana_plantation } activate_production_method = { building_type = building_banana_plantation production_method = default_building_banana_plantation } remove_variable = nesnd_mug_pm_default_building_banana_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_automatic_irrigation_building_banana_plantation } activate_production_method = { building_type = building_banana_plantation production_method = automatic_irrigation_building_banana_plantation } remove_variable = nesnd_mug_pm_automatic_irrigation_building_banana_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_slave_exploitation_banana } activate_production_method = { building_type = building_banana_plantation production_method = slave_exploitation_banana } remove_variable = nesnd_mug_pm_slave_exploitation_banana }
+        if = { limit = { has_variable = nesnd_mug_pm_worker_exploitation_banana } activate_production_method = { building_type = building_banana_plantation production_method = worker_exploitation_banana } remove_variable = nesnd_mug_pm_worker_exploitation_banana }
+        if = { limit = { has_variable = nesnd_mug_pm_default_labour } activate_production_method = { building_type = building_banana_plantation production_method = default_labour } remove_variable = nesnd_mug_pm_default_labour }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_banana_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_banana_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
+    else_if = { limit = { scope:mug_deal_building = { is_building_type = building_silk_plantation } }
+        scope:mug_deal_building = {
+            if = { limit = { has_active_production_method = default_building_silk_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_default_building_silk_plantation } }
+            if = { limit = { has_active_production_method = automatic_irrigation_building_silk_plantation } scope:mug_deal_state = { set_variable = nesnd_mug_pm_automatic_irrigation_building_silk_plantation } }
+            if = { limit = { has_active_production_method = pm_road_carts } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_road_carts } }
+            if = { limit = { has_active_production_method = pm_steam_rail_transport } scope:mug_deal_state = { set_variable = nesnd_mug_pm_pm_steam_rail_transport } }
+        }
+        nesnd_mug_deal_recreate = { TYPE = building_silk_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_default_building_silk_plantation } activate_production_method = { building_type = building_silk_plantation production_method = default_building_silk_plantation } remove_variable = nesnd_mug_pm_default_building_silk_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_automatic_irrigation_building_silk_plantation } activate_production_method = { building_type = building_silk_plantation production_method = automatic_irrigation_building_silk_plantation } remove_variable = nesnd_mug_pm_automatic_irrigation_building_silk_plantation }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_road_carts } activate_production_method = { building_type = building_silk_plantation production_method = pm_road_carts } remove_variable = nesnd_mug_pm_pm_road_carts }
+        if = { limit = { has_variable = nesnd_mug_pm_pm_steam_rail_transport } activate_production_method = { building_type = building_silk_plantation production_method = pm_steam_rail_transport } remove_variable = nesnd_mug_pm_pm_steam_rail_transport }
+    }
 }
-nesnd_mug_loan_repaid = {
-    nesnd_mug_loan_withdraw = yes
-    nesnd_mug_loan_forget = yes
-    change_relations = { country = scope:mug_loan_creditor value = 20 }
-    trigger_event = { id = nesnd_mug.4 popup = yes }
-    scope:mug_loan_creditor = { trigger_event = { id = nesnd_mug.4 popup = yes } }
-}
-# The repayment treaty ended before its term in some other way (one side left it). Both are told.
-nesnd_mug_loan_lost = {
-    nesnd_mug_loan_forget = yes
-    trigger_event = { id = nesnd_mug.5 popup = yes }
-    scope:mug_loan_creditor = { trigger_event = { id = nesnd_mug.5 popup = yes } }
+# One level passes from scope:mug_deal_old to scope:mug_deal_new; the old owner keeps the rest.
+nesnd_mug_deal_recreate = {
+    remove_building = $TYPE$
+    if = { limit = { var:nesnd_mug_deal_level = 1 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 2 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 1 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 3 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 2 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 4 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 3 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 5 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 4 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 6 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 5 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 7 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 6 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 8 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 7 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 9 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 8 } } }
+    }
+    else_if = { limit = { var:nesnd_mug_deal_level = 10 }
+        create_building = { building = $TYPE$ reserves = 1 add_ownership = { country = { country = scope:mug_deal_new levels = 1 } country = { country = scope:mug_deal_old levels = 9 } } }
+    }
+    remove_variable = nesnd_mug_deal_level
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -421,12 +1218,18 @@ nesnd_mug_loan_lost = {
 # ---------------------------------------------------------------------------------------------
 nesnd_mug_matter_accept = {
     if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
-        nesnd_mug_lend = { DEBTOR = scope:india_matter_holder CREDITOR = scope:india_matter_me }
+        nesnd_mug_deal = { HOLDER = scope:india_matter_holder NEW = scope:india_matter_me OLD = scope:india_matter_holder }
+        if = { limit = { exists = scope:mug_deal_done }
+            add_treasury = { value = nesnd_mug_sale_price multiply = -1 }
+            scope:india_matter_holder = { add_treasury = nesnd_mug_sale_price }
+        }
     }
     else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
-        scope:india_matter_holder = { add_treasury = { value = nesnd_mug_redeem_price multiply = -1 } }
-        add_treasury = nesnd_mug_redeem_price
-        scope:india_matter_holder = { make_independent = yes }
+        nesnd_mug_deal = { HOLDER = scope:india_matter_holder NEW = scope:india_matter_holder OLD = scope:india_matter_me }
+        if = { limit = { exists = scope:mug_deal_done }
+            scope:india_matter_holder = { add_treasury = { value = nesnd_mug_buyback_price multiply = -1 } }
+            add_treasury = nesnd_mug_buyback_price
+        }
     }
     else = {
         add_treasury = { value = nesnd_india_matter_quote multiply = -1 }
@@ -452,12 +1255,12 @@ nesnd_mug_matter_fail = {
 # What the answering government is shown on the accept button. Tooltips only.
 nesnd_mug_accept_tooltips = {
     if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
-        custom_tooltip = nesnd_mug_accept_loan_tt
-        show_as_tooltip = { add_treasury = { value = nesnd_mug_loan_sum multiply = -1 } }
+        custom_tooltip = nesnd_mug_accept_sell_tt
+        show_as_tooltip = { add_treasury = { value = nesnd_mug_sale_price multiply = -1 } }
     }
     else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
-        custom_tooltip = nesnd_mug_accept_redeem_tt
-        show_as_tooltip = { add_treasury = nesnd_mug_redeem_price }
+        custom_tooltip = nesnd_mug_accept_buyback_tt
+        show_as_tooltip = { add_treasury = nesnd_mug_buyback_price }
     }
     else = {
         custom_tooltip = nesnd_mug_accept_aid_tt
@@ -469,13 +1272,13 @@ nesnd_mug_accept_tooltips = {
 # AI on the journal nesnd_mug_france (monthly). Hard limits are in the ask triggers.
 # ---------------------------------------------------------------------------------------------
 nesnd_mug_france_ai = {
-    if = { limit = { is_ai = yes nesnd_mug_can_ask_loan = yes }
-        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_loan_ask_chance }
-        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = loan KIND = 7 AMOUNT = nesnd_mug_loan_sum } }
+    if = { limit = { is_ai = yes nesnd_mug_can_ask_sell = yes }
+        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_sell_ask_chance }
+        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = sell KIND = 7 AMOUNT = nesnd_mug_sale_price } }
     }
-    if = { limit = { is_ai = yes nesnd_mug_can_ask_redeem = yes }
-        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_redeem_ask_chance }
-        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = redeem KIND = 8 AMOUNT = nesnd_mug_redeem_price } }
+    if = { limit = { is_ai = yes nesnd_mug_can_ask_buyback = yes }
+        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_buyback_ask_chance }
+        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = buyback KIND = 8 AMOUNT = nesnd_mug_buyback_price } }
     }
 }
 

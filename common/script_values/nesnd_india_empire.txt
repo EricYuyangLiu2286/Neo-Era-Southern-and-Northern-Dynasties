@@ -110,9 +110,6 @@ nesnd_india_order_school_influence = { value = nesnd_india_order_members multipl
 # nesnd_india_initialize; it stays through BHT or DRA). See common/scripted_effects/nesnd_india_empire.txt.
 #
 # Variables on Mughal:
-#   nesnd_mug_loan_from        the government that lent the money (the overlord at the time)
-#   nesnd_mug_loan_term        runs out on the day the last instalment falls due (five years)
-#   nesnd_mug_loan_by_script   the repayment treaty could not be created; we pay each month by script
 #   nesnd_mug_council_wait     ten years before the next council
 #   nesnd_mug_council_topic    while a council sits: 1 railways, 2 famine relief, 3 common defence
 #   nesnd_mug_council_yes, _no, _unsigned   the count of the last council, read by its report
@@ -123,18 +120,16 @@ nesnd_india_order_school_influence = { value = nesnd_india_order_members multipl
 # On any Indian government that received a famine event: nesnd_mug_famine_wait (24 months).
 # On a state struck by a harvest condition that cuts food: nesnd_mug_famine_state (120 days).
 #
-# Matter kinds of Indian affairs (common/script_values/nesnd_india_matters.txt): 7 Mughal asks its
-# overlord for a loan, 8 Mughal asks to redeem its subject status, 9 a prince asks for famine aid.
+# Matter kinds of Indian affairs (common/script_values/nesnd_india_matters.txt): 7 Mughal offers its
+# overlord one building level, 8 Mughal buys back one level the overlord holds, 9 a prince asks for
+# famine aid.
 # Default sums and chances; to be tuned after in-game tests.
 
-nesnd_mug_loan_sum = 100000
-# Paid back over five years by a money transfer treaty, each week.
-nesnd_mug_loan_weekly = 460
-# The treaty inputs in nesnd_mug_loan_possible and nesnd_mug_lend write 460 as a number; change all three together.
-nesnd_mug_loan_total = 120000
-# Paid back by script each month when the treaty could not be created (60 months).
-nesnd_mug_loan_monthly = 2000
-nesnd_mug_redeem_price = 250000
+# A property deal moves one building level (common/scripted_effects/nesnd_india_empire.txt, nesnd_mug_deal).
+nesnd_mug_sale_price = 25000
+nesnd_mug_buyback_price = 40000
+# Building scope. Ordering for nesnd_mug_deal: the smallest eligible building comes first.
+nesnd_mug_deal_order = { value = level multiply = -1 }
 nesnd_mug_relief_per_state = 10000
 
 # Mughal scope. Building levels in our states held by our overlord (its government or its
@@ -182,25 +177,25 @@ nesnd_mug_council_unsigned_value = { value = 0 if = { limit = { has_variable = n
 # like those of common/script_values/nesnd_india_foreign.txt.
 # ---------------------------------------------------------------------------------------------
 # Mughal scope, each month.
-nesnd_mug_loan_ask_chance = {
+nesnd_mug_sell_ask_chance = {
     value = 0.5
     if = { limit = { net_fixed_income < 0 } value = 5 }
 }
-nesnd_mug_redeem_ask_chance = {
+nesnd_mug_buyback_ask_chance = {
     value = 0
-    if = { limit = { gold_reserves >= { value = nesnd_mug_redeem_price multiply = 1.2 } liberty_desire >= 25 } value = 2 }
+    if = { limit = { gold_reserves >= { value = nesnd_mug_buyback_price multiply = 1.5 } } value = 2 }
 }
 nesnd_mug_council_ask_chance = 2
 
 # Answering government scope (nesnd_india_matter_from is the asking country).
-nesnd_mug_loan_answer_chance = {
+nesnd_mug_sell_answer_chance = {
     value = 60
     if = { limit = { OR = { in_default = yes net_fixed_income < 0 } } add = -40 }
     if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 20 } } add = 20 }
     min = 5
     max = 95
 }
-nesnd_mug_redeem_answer_chance = {
+nesnd_mug_buyback_answer_chance = {
     value = 30
     if = { limit = { is_at_war = yes } add = 30 }
     if = { limit = { net_fixed_income < 0 } add = 20 }

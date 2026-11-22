@@ -2,7 +2,7 @@
 
 # ==== Mughal's old agreement, the council of princes, famine relief (formerly nesnd_india_mughal.txt) ====
 # Mughal's own affairs (common/scripted_effects/nesnd_india_empire.txt).
-#   .1 to .5    the loan and redemption (to Mughal; .3 and .4 also to the creditor)
+#   .1 and .2   the property deals (to Mughal)
 #   .11 to .13  the council of princes (.11 and .13 to Mughal, .12 to each invited prince)
 #   .21 to .24  famine (.21 to Mughal, .22 to .24 to a prince)
 
@@ -13,9 +13,9 @@ nesnd_mug.1 = {
     title = nesnd_mug.1.t
     desc = {
         first_valid = {
-            triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 8 } desc = nesnd_mug.1.d_redeem }
-            triggered_desc = { trigger = { has_variable = nesnd_mug_loan_by_script } desc = nesnd_mug.1.d_loan_script }
-            desc = nesnd_mug.1.d_loan
+            triggered_desc = { trigger = { NOT = { exists = scope:mug_deal_site } } desc = nesnd_mug.1.d_none }
+            triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 8 } desc = nesnd_mug.1.d_buyback }
+            desc = nesnd_mug.1.d_sell
         }
     }
     flavor = nesnd_mug.1.f
@@ -24,9 +24,9 @@ nesnd_mug.1 = {
     option = {
         name = nesnd_india_diplomacy_ack
         default_option = yes
-        if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 8 } custom_tooltip = nesnd_mug_redeemed_tt }
-        else_if = { limit = { has_variable = nesnd_mug_loan_by_script } custom_tooltip = nesnd_mug_loan_signed_script_tt }
-        else = { custom_tooltip = nesnd_mug_loan_signed_tt }
+        if = { limit = { NOT = { exists = scope:mug_deal_site } } custom_tooltip = nesnd_mug_unchanged_tt }
+        else_if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 8 } custom_tooltip = nesnd_mug_bought_tt }
+        else = { custom_tooltip = nesnd_mug_sold_tt }
     }
 }
 
@@ -37,79 +37,14 @@ nesnd_mug.2 = {
     title = nesnd_mug.2.t
     desc = {
         first_valid = {
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to exists = scope:india_matter_kind scope:india_matter_kind = 8 } desc = nesnd_mug.2.d_redeem_decline }
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to } desc = nesnd_mug.2.d_loan_decline }
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to exists = scope:india_matter_kind scope:india_matter_kind = 8 } desc = nesnd_mug.2.d_buyback_decline }
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to } desc = nesnd_mug.2.d_sell_decline }
             triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 exists = scope:india_matter_to } desc = nesnd_mug.2.d_silent }
             desc = nesnd_mug.2.d_void
         }
     }
     flavor = nesnd_mug.2.f
     option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_mug_unchanged_tt }
-}
-
-# Default during repayment. To Mughal and to the creditor.
-nesnd_mug.3 = {
-    type = country_event
-    event_image = { video = "unspecific_signed_contract" }
-    title = nesnd_mug.3.t
-    desc = {
-        first_valid = {
-            triggered_desc = { trigger = { this = scope:mug_loan_debtor exists = scope:mug_loan_result scope:mug_loan_result = 1 } desc = nesnd_mug.3.d_debtor_trade }
-            triggered_desc = { trigger = { this = scope:mug_loan_debtor } desc = nesnd_mug.3.d_debtor_relations }
-            triggered_desc = { trigger = { exists = scope:mug_loan_result scope:mug_loan_result = 1 } desc = nesnd_mug.3.d_creditor_trade }
-            desc = nesnd_mug.3.d_creditor_relations
-        }
-    }
-    flavor = nesnd_mug.3.f
-    trigger = { exists = scope:mug_loan_debtor exists = scope:mug_loan_creditor }
-    option = {
-        name = nesnd_india_diplomacy_ack
-        default_option = yes
-        if = { limit = { exists = scope:mug_loan_result scope:mug_loan_result = 1 } custom_tooltip = nesnd_mug_default_trade_tt }
-        else = { custom_tooltip = nesnd_mug_default_relations_tt }
-    }
-}
-
-# The loan repaid. To Mughal and to the creditor.
-nesnd_mug.4 = {
-    type = country_event
-    event_image = { video = "unspecific_signed_contract" }
-    title = nesnd_mug.4.t
-    desc = {
-        first_valid = {
-            triggered_desc = { trigger = { this = scope:mug_loan_debtor } desc = nesnd_mug.4.d_debtor }
-            desc = nesnd_mug.4.d_creditor
-        }
-    }
-    flavor = nesnd_mug.4.f
-    trigger = { exists = scope:mug_loan_debtor exists = scope:mug_loan_creditor }
-    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_mug_repaid_tt }
-}
-
-# The repayment treaty ended before its term in some other way. To Mughal and to the creditor.
-# The creditor no longer exists (scope:mug_loan_gone). To Mughal.
-nesnd_mug.5 = {
-    type = country_event
-    event_image = { video = "unspecific_signed_contract" }
-    title = nesnd_mug.5.t
-    desc = {
-        first_valid = {
-            triggered_desc = { trigger = { exists = scope:mug_loan_gone } desc = nesnd_mug.5.d_gone }
-            triggered_desc = { trigger = { trigger_if = { limit = { exists = scope:mug_loan_debtor } NOT = { this = scope:mug_loan_debtor } } trigger_else = { always = no } } desc = nesnd_mug.5.d_creditor }
-            desc = nesnd_mug.5.d
-        }
-    }
-    flavor = nesnd_mug.5.f
-    trigger = { OR = { exists = scope:mug_loan_creditor exists = scope:mug_loan_gone } }
-    option = {
-        name = nesnd_india_diplomacy_ack
-        default_option = yes
-        if = { limit = { exists = scope:mug_loan_debtor }
-            if = { limit = { NOT = { this = scope:mug_loan_debtor } } custom_tooltip = nesnd_mug_lost_creditor_tt }
-            else = { custom_tooltip = nesnd_mug_lost_tt }
-        }
-        else = { custom_tooltip = nesnd_mug_lost_tt }
-    }
 }
 
 # ---------------------------------------------------------------------------------------------
