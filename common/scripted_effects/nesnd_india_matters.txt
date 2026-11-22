@@ -7,7 +7,7 @@
 #   -> nesnd_india_matter_deliver    the government asked gets the journal nesnd_india_foreign_affairs
 #   -> it answers: nesnd_india_matter_permit / _forbid as overlord, _accept / _decline as the other government
 #   -> nesnd_india_matter_accept hands over to the kind (nesnd_india_project_accept, nesnd_india_frontier_accept,
-#      nesnd_mug_matter_accept)
+#      nesnd_mug_matter_accept, nesnd_india_overseas_accept)
 #   Kind 6 has no answer of its own: once every consent is given, nesnd_india_union_handoff sends the
 #   invitation or the request into the request channel (nesnd_india_diplomacy.txt) and the matter ends.
 # Thirty days without an answer count as no answer (nesnd_india_matter_lapse). A government deals with
@@ -25,8 +25,8 @@ nesnd_india_matter_clear = {
 }
 
 # KIND as listed in the script values, TO the other government, AMOUNT the sum named.
-# A request of our own (kinds 1 to 3, and Mughal's loan or redemption, 7 and 8) starts the six months
-# before another negotiation; a renewal or a plea for famine aid does not.
+# A request of our own (kinds 1 to 3, Mughal's loan or redemption, 7 and 8, and an overseas request,
+# 10 and 11) starts the six months before another negotiation; a renewal or a plea for famine aid does not.
 nesnd_india_matter_send = {
     set_variable = { name = nesnd_india_matter_kind value = $KIND$ }
     set_variable = { name = nesnd_india_matter_to value = $TO$ }
@@ -34,7 +34,7 @@ nesnd_india_matter_send = {
     set_variable = { name = nesnd_india_matter_clock days = 60 }
     remove_variable = nesnd_india_matter_ok_own
     remove_variable = nesnd_india_matter_ok_other
-    if = { limit = { OR = { nesnd_india_matter_kind_value <= 3 nesnd_india_matter_kind_value = 7 nesnd_india_matter_kind_value = 8 } } set_variable = { name = nesnd_india_request_cooldown months = 6 } }
+    if = { limit = { OR = { nesnd_india_matter_kind_value <= 3 nesnd_india_matter_kind_value = 7 nesnd_india_matter_kind_value = 8 nesnd_india_matter_kind_value = 10 nesnd_india_matter_kind_value = 11 } } set_variable = { name = nesnd_india_request_cooldown months = 6 } }
     nesnd_india_matter_next = yes
 }
 
@@ -84,6 +84,7 @@ nesnd_india_matter_fail = {
         nesnd_india_project_clear = yes
     }
     else_if = { limit = { nesnd_india_matter_kind_value = 6 } nesnd_india_union_matter_fail = yes }
+    else_if = { limit = { nesnd_india_matter_kind_value >= 10 } nesnd_india_overseas_matter_fail = yes }
     else_if = { limit = { nesnd_india_matter_kind_value >= 7 } nesnd_mug_matter_fail = yes }
     else = {
         trigger_event = { id = nesnd_india_frontier.2 popup = yes }
@@ -143,6 +144,7 @@ nesnd_india_matter_accept = {
         var:nesnd_india_matter_from = { save_scope_as = india_matter_holder }
         if = { limit = { nesnd_india_matter_is = { KIND = 1 } } nesnd_india_project_accept = yes }
         else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 7 } nesnd_india_matter_is = { KIND = 8 } nesnd_india_matter_is = { KIND = 9 } } } nesnd_mug_matter_accept = yes }
+        else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 10 } nesnd_india_matter_is = { KIND = 11 } nesnd_india_matter_is = { KIND = 12 } nesnd_india_matter_is = { KIND = 13 } } } nesnd_india_overseas_accept = yes }
         else = { nesnd_india_frontier_accept = yes }
     }
 }

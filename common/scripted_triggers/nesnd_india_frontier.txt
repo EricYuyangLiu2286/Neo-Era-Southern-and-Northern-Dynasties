@@ -47,23 +47,31 @@ nesnd_india_frontier_access_possible = {
         }
     }
 }
-# Bhutan or Nepal scope. The treaty in force between us and PARTNER. PARTNER is saved first: written
-# inside the treaty loop, var: and prev would be read from the treaty instead.
-nesnd_india_frontier_trade_treaty = {
+# Scope of the country that keeps the record. The treaty in force between us and PARTNER that holds
+# ARTICLE; SOURCE and TARGET are small (us) or partner. PARTNER is saved first: written inside the
+# treaty loop, var: and prev would be read from the treaty instead.
+nesnd_india_frontier_article_with = {
     save_temporary_scope_as = india_frontier_small
     $PARTNER$ = { save_temporary_scope_as = india_frontier_partner }
     any_scope_treaty = {
         binds = scope:india_frontier_partner
-        any_scope_article = { nesnd_canon_directed_article = { TYPE = trade_privilege SOURCE = scope:india_frontier_partner TARGET = scope:india_frontier_small } }
+        any_scope_article = { nesnd_canon_directed_article = { TYPE = $ARTICLE$ SOURCE = scope:india_frontier_$SOURCE$ TARGET = scope:india_frontier_$TARGET$ } }
     }
 }
-nesnd_india_frontier_access_treaty = {
-    save_temporary_scope_as = india_frontier_small
-    $PARTNER$ = { save_temporary_scope_as = india_frontier_partner }
-    any_scope_treaty = {
-        binds = scope:india_frontier_partner
-        any_scope_article = { nesnd_canon_directed_article = { TYPE = military_access SOURCE = scope:india_frontier_small TARGET = scope:india_frontier_partner } }
-    }
+# One per kind of record (T): nesnd_india_frontier_<T>_treaty. Bhutan or Nepal keeps trade and access.
+nesnd_india_frontier_trade_treaty = { nesnd_india_frontier_article_with = { PARTNER = $PARTNER$ ARTICLE = trade_privilege SOURCE = partner TARGET = small } }
+nesnd_india_frontier_access_treaty = { nesnd_india_frontier_article_with = { PARTNER = $PARTNER$ ARTICLE = military_access SOURCE = small TARGET = partner } }
+# The local government of the overseas journal (nesnd_india_overseas.txt) keeps overseas_trade and
+# overseas_port: it grants the article, the Indian state (PARTNER) receives it.
+nesnd_india_frontier_overseas_trade_treaty = { nesnd_india_frontier_article_with = { PARTNER = $PARTNER$ ARTICLE = trade_privilege SOURCE = small TARGET = partner } }
+nesnd_india_frontier_overseas_port_treaty = { nesnd_india_frontier_article_with = { PARTNER = $PARTNER$ ARTICLE = treaty_port SOURCE = small TARGET = partner } }
+
+# Scope of the country that keeps the record. ASK is the side asked whether to renew: small (us) or
+# empire (the partner). That side has no matter of its own open.
+nesnd_india_frontier_free_small = { has_variable = nesnd_india_frontier_$T$_with NOT = { has_variable = nesnd_india_matter_kind } }
+nesnd_india_frontier_free_empire = {
+    trigger_if = { limit = { exists = var:nesnd_india_frontier_$T$_with } var:nesnd_india_frontier_$T$_with = { NOT = { has_variable = nesnd_india_matter_kind } } }
+    trigger_else = { always = no }
 }
 # Bhutan or Nepal scope. T is trade or access. We have such a treaty with PARTNER on record.
 nesnd_india_frontier_record_with = {

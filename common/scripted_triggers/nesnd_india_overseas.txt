@@ -1,0 +1,317 @@
+﻿# The overseas journal (nesnd_india_overseas): an Indian state asks the local governments of three
+# directions for a trade privilege (matter kind 10) or a treaty port (kind 11). Answers go through the
+# Indian affairs layer (nesnd_india_matters.txt); renewal (kinds 12 and 13) and expiry use the records of
+# nesnd_india_frontier.txt, kept by the local government (T overseas_trade or overseas_port) with the
+# Indian state as partner. Variables are listed in common/script_values/nesnd_india_overseas.txt.
+
+# The Indian state: an Indian imperial government, recognised, and not a puppet.
+nesnd_india_overseas_holder = {
+    nesnd_india_empire = yes
+    NOT = { is_country_type = unrecognized }
+    NOT = { is_subject_type = subject_type_puppet }
+}
+
+# ---------------------------------------------------------------------------------------------
+# Directions (state scope)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_overseas_state_1 = { region = sr:region_indonesia }
+# The land states whose port opens on the sea region region_persian_gulf (naval_exit_id 3046 in
+# map_data/state_regions/08_middle_east.txt of the source directory).
+nesnd_india_overseas_state_2 = {
+    OR = {
+        state_region = s:STATE_BASRA
+        state_region = s:STATE_KHUZESTAN
+        state_region = s:STATE_FARS
+        state_region = s:STATE_LARISTAN
+        state_region = s:STATE_ABU_DHABI
+        state_region = s:STATE_NEJD
+        state_region = s:STATE_HAIL
+    }
+}
+nesnd_india_overseas_state_3 = { region = sr:region_east_africa }
+
+# Country scope. A local government of direction DIR: its capital lies there, or it holds a peopled
+# state there. Decentralized nations sign no treaties and are left out.
+nesnd_india_overseas_local = {
+    is_country_alive = yes
+    NOT = { is_country_type = decentralized }
+    OR = {
+        trigger_if = { limit = { exists = capital } capital = { nesnd_india_overseas_state_$DIR$ = yes } }
+        trigger_else = { always = no }
+        any_scope_state = { nesnd_india_overseas_state_$DIR$ = yes state_population > 0 }
+    }
+}
+# Indian state scope. Direction DIR has a local government other than us.
+nesnd_india_overseas_has_local = {
+    custom_tooltip = {
+        text = nesnd_india_overseas_has_local_tt
+        save_temporary_scope_as = india_overseas_asker
+        any_country = { NOT = { this = scope:india_overseas_asker } nesnd_india_overseas_local = { DIR = $DIR$ } }
+    }
+}
+
+# State scope. A state the local government could cede as a treaty port to TAKER: in direction DIR,
+# with a port, able to become TAKER's treaty port, and not one already.
+nesnd_india_overseas_port_state = {
+    nesnd_india_overseas_state_$DIR$ = yes
+    any_scope_building = { is_building_type = building_port level >= 1 }
+    is_potential_treaty_port = $TAKER$
+    is_treaty_port = no
+}
+# Local government scope. It has such a state.
+nesnd_india_overseas_has_port_state = {
+    any_scope_state = { nesnd_india_overseas_port_state = { DIR = $DIR$ TAKER = $TAKER$ } }
+}
+
+# State scope. Another country than the owner claims this state, or Persia's journal of the western
+# campaign aims at it. Shown on the treaty port option; it forbids nothing.
+nesnd_india_overseas_port_claimed = {
+    custom_tooltip = {
+        text = nesnd_india_overseas_port_claimed_tt
+        save_temporary_scope_as = india_overseas_claimed_state
+        OR = {
+            any_country = {
+                NOT = { this = scope:india_overseas_claimed_state.owner }
+                has_claim = scope:india_overseas_claimed_state.state_region
+            }
+            AND = {
+                OR = { state_region = s:STATE_ABU_DHABI state_region = s:STATE_HAIL state_region = s:STATE_NEJD }
+                any_country = { has_journal_entry = nesnd_per_west_journal }
+            }
+        }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# What the Indian state must have (B1-B3; only its own country is read)
+# ---------------------------------------------------------------------------------------------
+# Country scope. Naval power projection among the first N of the world: fewer than N countries ahead.
+nesnd_india_overseas_navy_top = {
+    save_temporary_scope_as = india_overseas_navy_self
+    NOT = {
+        any_country = {
+            naval_power_projection > scope:india_overseas_navy_self.naval_power_projection
+            count >= $N$
+        }
+    }
+}
+nesnd_india_overseas_ports_for_trade = { country_has_building_type_levels = { target = bt:building_port value >= 3 } }
+nesnd_india_overseas_ports_for_port = { country_has_building_type_levels = { target = bt:building_port value >= 5 } }
+nesnd_india_overseas_navy_for_port = {
+    custom_tooltip = { text = nesnd_india_overseas_navy_top_20_tt nesnd_india_overseas_navy_top = { N = 20 } }
+}
+# KIND trade or port.
+nesnd_india_overseas_ready_trade = { nesnd_india_overseas_ports_for_trade = yes }
+nesnd_india_overseas_ready_port = { nesnd_india_overseas_ports_for_port = yes nesnd_india_overseas_navy_for_port = yes }
+
+# Country scope. TEXT names who pays, SUM the sum.
+nesnd_india_overseas_can_pay = {
+    custom_tooltip = {
+        text = $TEXT$
+        gold_reserves >= $SUM$
+        in_default = no
+        NOT = { has_modifier = declared_bankruptcy }
+    }
+}
+
+# Indian state scope, a button of direction DIR for KIND (trade or port).
+nesnd_india_overseas_can_ask = {
+    hidden_trigger = { nesnd_india_overseas_holder = yes }
+    nesnd_india_channel_free = yes
+    nesnd_india_overseas_ready_$KIND$ = yes
+    nesnd_india_overseas_can_pay = { TEXT = nesnd_india_overseas_we_can_pay_$KIND$_tt SUM = nesnd_india_overseas_$KIND$_payment }
+    nesnd_india_overseas_has_local = { DIR = $DIR$ }
+}
+
+# ---------------------------------------------------------------------------------------------
+# One local government (Indian state scope; LOCAL is the local government)
+# ---------------------------------------------------------------------------------------------
+# We hold a treaty of KIND (trade or port) from LOCAL: on record, or in force by any other way.
+nesnd_india_overseas_holds = {
+    save_temporary_scope_as = india_overseas_taker
+    $LOCAL$ = {
+        OR = {
+            var:nesnd_india_frontier_overseas_$KIND$_with ?= scope:india_overseas_taker
+            nesnd_india_frontier_overseas_$KIND$_treaty = { PARTNER = scope:india_overseas_taker }
+        }
+    }
+}
+# LOCAL keeps one record of each KIND (nesnd_india_frontier_record): it has not granted this kind of
+# treaty, through this journal, to another Indian state.
+nesnd_india_overseas_record_free = {
+    custom_tooltip = {
+        text = nesnd_india_overseas_record_free_$KIND$_tt
+        save_temporary_scope_as = india_overseas_taker
+        $LOCAL$ = {
+            OR = {
+                NOT = { has_variable = nesnd_india_frontier_overseas_$KIND$_with }
+                var:nesnd_india_frontier_overseas_$KIND$_with ?= scope:india_overseas_taker
+            }
+        }
+    }
+}
+# We can put a request of KIND in direction DIR to LOCAL. Each condition names what is missing.
+nesnd_india_overseas_can_ask_local = {
+    trigger_if = { limit = { exists = $LOCAL$ }
+        $LOCAL$ = { is_country_alive = yes }
+        NOT = { has_war_with = $LOCAL$ }
+        custom_tooltip = { text = nesnd_india_overseas_no_such_treaty_$KIND$_tt NOT = { nesnd_india_overseas_holds = { LOCAL = $LOCAL$ KIND = $KIND$ } } }
+        nesnd_india_overseas_record_free = { LOCAL = $LOCAL$ KIND = $KIND$ }
+        nesnd_india_overseas_local_fits_$KIND$ = { LOCAL = $LOCAL$ DIR = $DIR$ }
+        custom_tooltip = { text = nesnd_india_overseas_treaty_possible_tt nesnd_india_overseas_treaty_possible_$KIND$ = { LOCAL = $LOCAL$ DIR = $DIR$ } }
+    }
+    trigger_else = { always = no }
+}
+nesnd_india_overseas_local_fits_trade = { custom_tooltip = { text = nesnd_india_overseas_still_local_tt $LOCAL$ = { nesnd_india_overseas_local = { DIR = $DIR$ } } } }
+nesnd_india_overseas_local_fits_port = {
+    save_temporary_scope_as = india_overseas_taker
+    custom_tooltip = { text = nesnd_india_overseas_still_local_tt $LOCAL$ = { nesnd_india_overseas_local = { DIR = $DIR$ } } }
+    custom_tooltip = { text = nesnd_india_overseas_has_port_state_tt $LOCAL$ = { nesnd_india_overseas_has_port_state = { DIR = $DIR$ TAKER = scope:india_overseas_taker } } }
+    custom_tooltip = { text = nesnd_india_overseas_rank_fits_tt $LOCAL$ = { country_rank <= scope:india_overseas_taker.country_rank } }
+}
+# The engine would let the two sign it today (the article's own conditions). Indian state scope;
+# LOCAL is still a local government of direction DIR.
+nesnd_india_overseas_treaty_possible_trade = {
+    $LOCAL$ = { nesnd_india_overseas_local = { DIR = $DIR$ } }
+    can_create_treaty = {
+        first_country = this
+        second_country = $LOCAL$
+        is_draft = no
+        binding_period = { years = 10 }
+        articles_to_create = {
+            { article = trade_privilege source_country = $LOCAL$ target_country = this }
+        }
+    }
+}
+nesnd_india_overseas_treaty_possible_port = {
+    save_temporary_scope_as = india_overseas_taker
+    $LOCAL$ = {
+        any_scope_state = {
+            nesnd_india_overseas_port_state = { DIR = $DIR$ TAKER = scope:india_overseas_taker }
+            save_temporary_scope_as = india_overseas_port_try
+            scope:india_overseas_taker = {
+                can_create_treaty = {
+                    first_country = this
+                    second_country = $LOCAL$
+                    is_draft = no
+                    binding_period = { years = 10 }
+                    articles_to_create = {
+                        { article = treaty_port source_country = $LOCAL$ target_country = this inputs = { { state = scope:india_overseas_port_try } } }
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Indian state scope, an option of event .1 or the AI's choice: PICK can be asked what
+# scope:india_overseas_kind (10 or 11) names, in direction scope:india_overseas_dir.
+nesnd_india_overseas_option_ok = {
+    trigger_if = { limit = { exists = $PICK$ exists = scope:india_overseas_dir exists = scope:india_overseas_kind }
+        trigger_if = { limit = { scope:india_overseas_kind = 10 scope:india_overseas_dir = 1 } nesnd_india_overseas_can_ask = { DIR = 1 KIND = trade } nesnd_india_overseas_can_ask_local = { LOCAL = $PICK$ KIND = trade DIR = 1 } }
+        trigger_else_if = { limit = { scope:india_overseas_kind = 10 scope:india_overseas_dir = 2 } nesnd_india_overseas_can_ask = { DIR = 2 KIND = trade } nesnd_india_overseas_can_ask_local = { LOCAL = $PICK$ KIND = trade DIR = 2 } }
+        trigger_else_if = { limit = { scope:india_overseas_kind = 10 } nesnd_india_overseas_can_ask = { DIR = 3 KIND = trade } nesnd_india_overseas_can_ask_local = { LOCAL = $PICK$ KIND = trade DIR = 3 } }
+        trigger_else_if = { limit = { scope:india_overseas_dir = 1 } nesnd_india_overseas_can_ask = { DIR = 1 KIND = port } nesnd_india_overseas_can_ask_local = { LOCAL = $PICK$ KIND = port DIR = 1 } }
+        trigger_else_if = { limit = { scope:india_overseas_dir = 2 } nesnd_india_overseas_can_ask = { DIR = 2 KIND = port } nesnd_india_overseas_can_ask_local = { LOCAL = $PICK$ KIND = port DIR = 2 } }
+        trigger_else = { nesnd_india_overseas_can_ask = { DIR = 3 KIND = port } nesnd_india_overseas_can_ask_local = { LOCAL = $PICK$ KIND = port DIR = 3 } }
+    }
+    trigger_else = { always = no }
+}
+
+# ---------------------------------------------------------------------------------------------
+# What a matter of kind 10 to 13 adds to nesnd_india_matter_valid (Indian state scope)
+# ---------------------------------------------------------------------------------------------
+# A request (10, 11) needs the Indian state still to hold the journal, the other government still to be
+# a local government of the direction, and no such treaty between them; for a treaty port, a port to cede.
+# A renewal (12, 13) needs the treaty still on the local government's record with us.
+nesnd_india_overseas_matter_valid = {
+    save_temporary_scope_as = india_overseas_taker
+    trigger_if = { limit = { exists = var:nesnd_india_matter_to }
+        trigger_if = { limit = { nesnd_india_matter_kind_value = 12 } var:nesnd_india_matter_to = { nesnd_india_frontier_record_with = { T = overseas_trade PARTNER = scope:india_overseas_taker } } }
+        trigger_else_if = { limit = { nesnd_india_matter_kind_value = 13 } var:nesnd_india_matter_to = { nesnd_india_frontier_record_with = { T = overseas_port PARTNER = scope:india_overseas_taker } } }
+        trigger_else_if = { limit = { nesnd_india_overseas_dir_value >= 1 nesnd_india_overseas_dir_value <= 3 }
+            nesnd_india_overseas_holder = yes
+            trigger_if = { limit = { nesnd_india_overseas_dir_value = 1 } var:nesnd_india_matter_to = { nesnd_india_overseas_local = { DIR = 1 } } }
+            trigger_else_if = { limit = { nesnd_india_overseas_dir_value = 2 } var:nesnd_india_matter_to = { nesnd_india_overseas_local = { DIR = 2 } } }
+            trigger_else = { var:nesnd_india_matter_to = { nesnd_india_overseas_local = { DIR = 3 } } }
+            trigger_if = { limit = { nesnd_india_matter_kind_value = 10 }
+                NOT = { nesnd_india_overseas_holds = { LOCAL = var:nesnd_india_matter_to KIND = trade } }
+                nesnd_india_overseas_record_free = { LOCAL = var:nesnd_india_matter_to KIND = trade }
+            }
+            trigger_else = {
+                NOT = { nesnd_india_overseas_holds = { LOCAL = var:nesnd_india_matter_to KIND = port } }
+                nesnd_india_overseas_record_free = { LOCAL = var:nesnd_india_matter_to KIND = port }
+                nesnd_india_overseas_matter_port_left = yes
+            }
+        }
+        trigger_else = { always = no }
+    }
+    trigger_else = { always = no }
+}
+# Indian state scope, kind 11: the other government still has a port it could cede in the direction.
+nesnd_india_overseas_matter_port_left = {
+    save_temporary_scope_as = india_overseas_taker
+    trigger_if = { limit = { nesnd_india_overseas_dir_value = 1 } var:nesnd_india_matter_to = { nesnd_india_overseas_has_port_state = { DIR = 1 TAKER = scope:india_overseas_taker } } }
+    trigger_else_if = { limit = { nesnd_india_overseas_dir_value = 2 } var:nesnd_india_matter_to = { nesnd_india_overseas_has_port_state = { DIR = 2 TAKER = scope:india_overseas_taker } } }
+    trigger_else = { var:nesnd_india_matter_to = { nesnd_india_overseas_has_port_state = { DIR = 3 TAKER = scope:india_overseas_taker } } }
+}
+
+# ---------------------------------------------------------------------------------------------
+# The local government that answers (answering scope, nesnd_india_matter_from is the Indian state)
+# ---------------------------------------------------------------------------------------------
+# It can sign today, or renew. A renewal needs the treaty still in force; a new treaty needs the Indian
+# state able to pay and the engine willing to let the treaty be made.
+nesnd_india_overseas_can_grant = {
+    save_temporary_scope_as = india_overseas_granter
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from }
+        trigger_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 12 } nesnd_india_matter_is = { KIND = 13 } } }
+            custom_tooltip = {
+                text = nesnd_india_frontier_treaty_stands_tt
+                trigger_if = { limit = { nesnd_india_matter_is = { KIND = 12 } } nesnd_india_frontier_overseas_trade_treaty = { PARTNER = var:nesnd_india_matter_from } }
+                trigger_else = { nesnd_india_frontier_overseas_port_treaty = { PARTNER = var:nesnd_india_matter_from } }
+            }
+        }
+        trigger_else_if = { limit = { nesnd_india_matter_is = { KIND = 10 } }
+            var:nesnd_india_matter_from = {
+                nesnd_india_overseas_can_pay = { TEXT = nesnd_india_overseas_they_can_pay_trade_tt SUM = nesnd_india_overseas_trade_payment }
+                custom_tooltip = {
+                    text = nesnd_india_overseas_treaty_possible_tt
+                    trigger_if = { limit = { nesnd_india_overseas_dir_value = 1 } nesnd_india_overseas_treaty_possible_trade = { LOCAL = scope:india_overseas_granter DIR = 1 } }
+                    trigger_else_if = { limit = { nesnd_india_overseas_dir_value = 2 } nesnd_india_overseas_treaty_possible_trade = { LOCAL = scope:india_overseas_granter DIR = 2 } }
+                    trigger_else = { nesnd_india_overseas_treaty_possible_trade = { LOCAL = scope:india_overseas_granter DIR = 3 } }
+                }
+            }
+        }
+        trigger_else = {
+            var:nesnd_india_matter_from = {
+                nesnd_india_overseas_can_pay = { TEXT = nesnd_india_overseas_they_can_pay_port_tt SUM = nesnd_india_overseas_port_payment }
+                custom_tooltip = {
+                    text = nesnd_india_overseas_treaty_possible_tt
+                    trigger_if = { limit = { nesnd_india_overseas_dir_value = 1 } nesnd_india_overseas_treaty_possible_port = { LOCAL = scope:india_overseas_granter DIR = 1 } }
+                    trigger_else_if = { limit = { nesnd_india_overseas_dir_value = 2 } nesnd_india_overseas_treaty_possible_port = { LOCAL = scope:india_overseas_granter DIR = 2 } }
+                    trigger_else = { nesnd_india_overseas_treaty_possible_port = { LOCAL = scope:india_overseas_granter DIR = 3 } }
+                }
+            }
+        }
+    }
+    trigger_else = { always = no }
+}
+
+# What moves an AI government. These only weigh; none of them forbids.
+# Answering local government scope: it is a member of the small states' system and is itself waiting
+# on another negotiation.
+nesnd_india_overseas_ai_member_busy = {
+    nesnd_small_state_country = yes
+    OR = { has_variable = nesnd_canon_request_clock has_variable = nesnd_india_matter_clock }
+}
+# Answering scope: the Indian state asking is among the first ten by naval power projection.
+nesnd_india_overseas_ai_asker_navy_top = {
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { nesnd_india_overseas_navy_top = { N = 10 } } }
+    trigger_else = { always = no }
+}
+# Answering scope: the Indian state asking is on bad terms with us.
+nesnd_india_overseas_ai_asker_hostile = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { "relations(scope:india_matter_me)" < 0 } }
+    trigger_else = { always = no }
+}

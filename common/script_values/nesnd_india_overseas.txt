@@ -1,0 +1,147 @@
+﻿# The overseas journal (nesnd_india_overseas). Here and below, the Indian state is a country for which
+# nesnd_india_overseas_holder holds; directions are 1 Indonesia (region_indonesia), 2 the Persian Gulf
+# coast (states whose port opens on region_persian_gulf), 3 East Africa (region_east_africa).
+#
+# Variables on the Indian state:
+#   nesnd_india_overseas_dir              the direction of the matter it has open (kinds 10 and 11)
+#   nesnd_india_overseas_show_<D>_<K>     one local government of direction D with which it holds a treaty
+#                                         of kind K (trade or port), shown in the journal; set monthly
+#   nesnd_india_overseas_count_<D>_<K>    how many such treaties it holds in direction D
+# Variables on the local government, besides the shared records nesnd_india_frontier_overseas_<K>_*
+# (common/script_values/nesnd_india_frontier.txt):
+#   nesnd_india_overseas_<K>_dir          the direction in which the treaty of kind K was asked for
+# Default sums and chances; to be tuned after in-game tests.
+
+# Paid once by the Indian state to the local government when the treaty is signed.
+nesnd_india_overseas_trade_payment = 20000
+nesnd_india_overseas_port_payment = 60000
+
+# Days of the shared records (nesnd_india_frontier_record): ten years, and 180 days before that.
+nesnd_india_frontier_overseas_trade_days = 3650
+nesnd_india_frontier_overseas_trade_notice_days = 3470
+nesnd_india_frontier_overseas_port_days = 3650
+nesnd_india_frontier_overseas_port_notice_days = 3470
+
+# ---------------------------------------------------------------------------------------------
+# Readings (country scope)
+# ---------------------------------------------------------------------------------------------
+# Levels of every port the country owns.
+nesnd_india_overseas_port_levels = {
+    value = 0
+    every_scope_state = {
+        every_scope_building = {
+            limit = { is_building_type = building_port }
+            add = this.level
+        }
+    }
+}
+# Incorporated states, and those of them with a railway.
+nesnd_india_overseas_incorporated_states = {
+    value = 0
+    every_scope_state = { limit = { is_incorporated = yes } add = 1 }
+}
+nesnd_india_overseas_rail_states = {
+    value = 0
+    every_scope_state = {
+        limit = { is_incorporated = yes any_scope_building = { is_building_type = building_railway level >= 1 } }
+        add = 1
+    }
+}
+# Levels of every steel mill the country owns, and those levels counted at the share of their mill's
+# places that are filled, taken in steps of a tenth (occupancy can be compared but not read as a number).
+nesnd_india_overseas_steel_levels = {
+    value = 0
+    every_scope_state = {
+        every_scope_building = {
+            limit = { is_building_type = building_steel_mill }
+            add = this.level
+        }
+    }
+}
+nesnd_india_overseas_steel_staffed = {
+    value = 0
+    every_scope_state = {
+        every_scope_building = {
+            limit = { is_building_type = building_steel_mill occupancy >= 0.1 }
+            if = { limit = { occupancy >= 1 } add = this.level }
+            else_if = { limit = { occupancy >= 0.9 } add = { value = this.level multiply = 0.9 } }
+            else_if = { limit = { occupancy >= 0.8 } add = { value = this.level multiply = 0.8 } }
+            else_if = { limit = { occupancy >= 0.7 } add = { value = this.level multiply = 0.7 } }
+            else_if = { limit = { occupancy >= 0.6 } add = { value = this.level multiply = 0.6 } }
+            else_if = { limit = { occupancy >= 0.5 } add = { value = this.level multiply = 0.5 } }
+            else_if = { limit = { occupancy >= 0.4 } add = { value = this.level multiply = 0.4 } }
+            else_if = { limit = { occupancy >= 0.3 } add = { value = this.level multiply = 0.3 } }
+            else_if = { limit = { occupancy >= 0.2 } add = { value = this.level multiply = 0.2 } }
+            else = { add = { value = this.level multiply = 0.1 } }
+        }
+    }
+}
+# The filled share in per cent, in steps of ten.
+nesnd_india_overseas_steel_staffed_percent = {
+    value = 0
+    if = { limit = { nesnd_india_overseas_steel_levels > 0 }
+        value = nesnd_india_overseas_steel_staffed
+        divide = nesnd_india_overseas_steel_levels
+        multiply = 10
+        floor = yes
+        multiply = 10
+    }
+}
+# World position by naval power projection: one more than the countries ahead of us.
+nesnd_india_overseas_navy_rank = {
+    value = 1
+    save_temporary_scope_as = india_overseas_navy_self
+    every_country = {
+        limit = { naval_power_projection > scope:india_overseas_navy_self.naval_power_projection }
+        add = 1
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
+# Numbers read in the journal
+# ---------------------------------------------------------------------------------------------
+nesnd_india_overseas_dir_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_dir } value = var:nesnd_india_overseas_dir } }
+nesnd_india_overseas_count_1_trade_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_1_trade } value = var:nesnd_india_overseas_count_1_trade } }
+nesnd_india_overseas_count_1_port_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_1_port } value = var:nesnd_india_overseas_count_1_port } }
+nesnd_india_overseas_count_2_trade_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_2_trade } value = var:nesnd_india_overseas_count_2_trade } }
+nesnd_india_overseas_count_2_port_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_2_port } value = var:nesnd_india_overseas_count_2_port } }
+nesnd_india_overseas_count_3_trade_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_3_trade } value = var:nesnd_india_overseas_count_3_trade } }
+nesnd_india_overseas_count_3_port_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_3_port } value = var:nesnd_india_overseas_count_3_port } }
+# The treaties held beyond the one named in the journal.
+nesnd_india_overseas_more_1_trade = { value = nesnd_india_overseas_count_1_trade_value subtract = 1 min = 0 }
+nesnd_india_overseas_more_1_port = { value = nesnd_india_overseas_count_1_port_value subtract = 1 min = 0 }
+nesnd_india_overseas_more_2_trade = { value = nesnd_india_overseas_count_2_trade_value subtract = 1 min = 0 }
+nesnd_india_overseas_more_2_port = { value = nesnd_india_overseas_count_2_port_value subtract = 1 min = 0 }
+nesnd_india_overseas_more_3_trade = { value = nesnd_india_overseas_count_3_trade_value subtract = 1 min = 0 }
+nesnd_india_overseas_more_3_port = { value = nesnd_india_overseas_count_3_port_value subtract = 1 min = 0 }
+
+# ---------------------------------------------------------------------------------------------
+# AI (weights only; the hard limits are in the triggers)
+# ---------------------------------------------------------------------------------------------
+# Indian state scope, per cent a month for each direction: a trade privilege. A treaty port is asked for
+# at half that, written in nesnd_india_overseas_ai_dir as 1 per cent and then 50 per cent.
+nesnd_india_overseas_trade_ask_chance = 1
+
+# Answering local government scope, per cent: a trade privilege asked for, or its renewal.
+nesnd_india_overseas_trade_answer_chance = {
+    value = 40
+    if = { limit = { nesnd_india_frontier_ai_asker_relations = { VALUE = 20 } } add = 20 }
+    if = { limit = { nesnd_india_overseas_ai_member_busy = yes } add = -20 }
+    min = 5
+    max = 95
+}
+# Answering local government scope, per cent: a treaty port asked for, or its renewal.
+nesnd_india_overseas_port_answer_chance = {
+    value = 15
+    if = { limit = { nesnd_india_frontier_ai_asker_relations = { VALUE = 50 } } add = 20 }
+    if = { limit = { nesnd_india_overseas_ai_asker_navy_top = yes } add = 15 }
+    min = 5
+    max = 95
+}
+# Answering overlord scope, per cent: consent to its subject's treaty with the Indian state.
+nesnd_india_overseas_consent_chance = {
+    value = 30
+    if = { limit = { nesnd_india_overseas_ai_asker_hostile = yes } add = -30 }
+    min = 5
+    max = 95
+}
