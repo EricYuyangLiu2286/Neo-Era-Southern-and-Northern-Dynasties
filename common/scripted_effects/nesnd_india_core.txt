@@ -278,23 +278,6 @@ nesnd_india_indep_approach = {
                 trigger_event = { id = nesnd_india_indep.7 popup = yes }
             }
         }
-        else_if = { limit = { scope:indep_policy = 3 }
-            clear_saved_scope = indep_investment_site
-            scope:indep_target = {
-                ordered_scope_state = { limit = { nesnd_india_indep_investment_site = yes }
-                    order_by = state_population position = 0 check_range_bounds = no save_scope_as = indep_investment_site
-                }
-            }
-            if = { limit = { exists = scope:indep_investment_site }
-                add_treasury = -20000
-                set_variable = { name = nesnd_india_indep_invest_subject_wait months = 12 }
-                # New site only: never write an absolute ownership level over an existing investor's stake.
-                scope:indep_investment_site = {
-                    create_building = { building = building_tooling_workshop add_ownership = { country = { country = scope:indep_lord levels = 2 } } }
-                }
-                scope:indep_target = { trigger_event = { id = nesnd_india_indep.8 popup = yes } }
-            }
-        }
         else_if = { limit = { scope:indep_policy = 4 }
             create_diplomatic_pact = { country = scope:indep_target type = da_support_regime }
             if = { limit = { has_diplomatic_pact = { who = scope:indep_target type = da_support_regime is_initiator = yes } }
@@ -310,13 +293,20 @@ nesnd_india_indep_lord_ai = {
     if = { limit = { scope:indep_subject_1 ?= { liberty_desire >= 75 } }
         scope:indep_subject_1 = { save_scope_as = indep_target }
         clear_saved_scope = indep_policy
-        if = { limit = { nesnd_india_indep_policy_payer_ready_3 = yes
-                scope:indep_target = { economic_dependence = { target = scope:indep_lord value < 1 } nesnd_india_indep_policy_target_3 = yes }
-            } save_scope_value_as = { name = indep_policy value = 3 } }
-        else_if = { limit = { army_size >= scope:indep_target.nesnd_india_indep_triple_army
-                nesnd_india_indep_policy_payer_ready_2 = yes
-                scope:indep_target = { nesnd_india_indep_policy_target_2 = yes }
-            } save_scope_value_as = { name = indep_policy value = 2 } }
+        # Military superiority fixes the policy: wait out coercion's cooldown without switching tracks.
+        if = { limit = { army_size >= scope:indep_target.nesnd_india_indep_triple_army }
+            if = { limit = { nesnd_india_indep_policy_payer_ready_2 = yes
+                    scope:indep_target = { nesnd_india_indep_policy_target_2 = yes }
+                } save_scope_value_as = { name = indep_policy value = 2 } }
+        }
+        else_if = { limit = { scope:indep_target = {
+                has_variable = nesnd_india_indep_pro_backer
+                var:nesnd_india_indep_pro_backer ?= scope:indep_lord
+            } }
+            if = { limit = { nesnd_india_indep_policy_payer_ready_4 = yes
+                    scope:indep_target = { nesnd_india_indep_policy_target_4 = yes }
+                } save_scope_value_as = { name = indep_policy value = 4 } }
+        }
         else_if = { limit = { nesnd_india_indep_policy_payer_ready_1 = yes
                 scope:indep_target = { nesnd_india_indep_policy_target_1 = yes }
             } save_scope_value_as = { name = indep_policy value = 1 } }
@@ -373,6 +363,11 @@ nesnd_india_indep_back_pro = {
     else = {
         nesnd_india_indep_pick_lobby_member = yes
         create_political_lobby = { type = lobby_pro_overlord target = scope:indep_lord add_interest_group = scope:indep_lobby_member lobby_formation_reason = diplomacy }
+    }
+    # Only a completed action counts, and it belongs to the overlord who performed it.
+    # A pre-existing lobby alone does not let a new overlord skip this action.
+    if = { limit = { nesnd_india_indep_has_pro_lobby = yes }
+        set_variable = { name = nesnd_india_indep_pro_backer value = scope:indep_lord }
     }
 }
 nesnd_india_indep_invest_domestic = {
