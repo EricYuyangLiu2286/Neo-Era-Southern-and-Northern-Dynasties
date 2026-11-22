@@ -70,6 +70,7 @@ nesnd_qe1_fr_afg_delta = {
 		add = nesnd_qe1_fr_afg_persia
 		add = nesnd_qe1_fr_afg_shia
 		add = nesnd_qe1_fr_afg_policy
+		add = nesnd_qe1_fr_land_loss
 	}
 }
 
@@ -112,6 +113,7 @@ nesnd_qe1_fr_kaz_delta = {
 		add = nesnd_qe1_fr_kaz_precedent
 		add = nesnd_qe1_fr_kaz_nationalism
 		add = nesnd_qe1_fr_kaz_policy
+		add = nesnd_qe1_fr_land_loss
 	}
 }
 
@@ -180,6 +182,19 @@ nesnd_qe1_unity_frontier = {
 	if = { limit = { has_variable = nesnd_qe1_fr_afg_lost } add = 0.1 }
 	if = { limit = { has_variable = nesnd_qe1_fr_kaz_lost } add = 0.1 }
 }
+
+# —— 失地：比西秦有过的最多州数少几个州。最多州数由两条日志的月度效果记下（nesnd_qe1_record_peak_states）——
+nesnd_qe1_state_count = { value = 0 every_scope_state = { add = 1 } }
+nesnd_qe1_lost_states = {
+	value = 0
+	if = { limit = { has_variable = nesnd_qe1_peak_states } value = var:nesnd_qe1_peak_states subtract = nesnd_qe1_state_count min = 0 }
+}
+# 帝国的稳定：每少一州每月 -0.1，最多 -1.0。
+nesnd_qe1_unity_land_loss = { value = nesnd_qe1_lost_states multiply = -0.1 min = -1 }
+# 边疆诸部：每少一州每月 +0.05，最多 +0.5。
+nesnd_qe1_fr_land_loss = { value = nesnd_qe1_lost_states multiply = 0.05 max = 0.5 }
+nesnd_qe1_fr_afg_shown_land_loss = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_land_loss } }
+nesnd_qe1_fr_kaz_shown_land_loss = { value = 0 if = { limit = { nesnd_qe1_fr_kaz_active = yes } value = nesnd_qe1_fr_land_loss } }
 
 # —— 进度条明细用：地区条不在上涨时各项显示为 0 ——
 nesnd_qe1_fr_afg_shown_base = { value = 0 if = { limit = { nesnd_qe1_fr_afg_active = yes } value = nesnd_qe1_fr_base_afg } }
