@@ -23,8 +23,7 @@ nesnd_india_order_live = {
 # Country scope. One of Mughal's Indian subjects (any subject type). LORD is Mughal.
 nesnd_india_order_member = { nesnd_india_country = yes is_direct_subject_of = $LORD$ }
 
-# Mughal scope. ISSUE is tax, army or school; true when that matter has been settled one way.
-nesnd_india_order_chosen = { has_variable = nesnd_india_order_$ISSUE$ }
+# Mughal scope. ISSUE is tax, army or school; END 1 central, 2 local. True when that matter is settled that way.
 nesnd_india_order_is = { nesnd_india_order_$ISSUE$_value = $END$ }
 # Mughal scope. The five years since the last choice in that matter have run out.
 nesnd_india_order_free = {
@@ -45,6 +44,24 @@ nesnd_india_order_can_raise = { scope:india_order_lord = { can_create_diplomatic
 nesnd_india_order_can_decrease = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = decrease_payments } } }
 nesnd_india_order_can_exempt = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = exempt_from_service } } }
 nesnd_india_order_can_share = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = da_knowledge_sharing } } }
+
+# Subject scope. LORD is its Mughal. In tax, the treaty of the end LORD has chosen now stands between
+# LORD (as initiator) and us, whoever made it.
+nesnd_india_order_tax_stands = {
+    save_temporary_scope_as = india_order_counted
+    OR = {
+        $LORD$ = { nesnd_india_order_is = { ISSUE = tax END = 1 } has_diplomatic_pact = { who = scope:india_order_counted type = raise_payments is_initiator = yes } }
+        $LORD$ = { nesnd_india_order_is = { ISSUE = tax END = 2 } has_diplomatic_pact = { who = scope:india_order_counted type = decrease_payments is_initiator = yes } }
+    }
+}
+# Subject scope. Our tax marker is for the end LORD has chosen now. A marker for the other end is one
+# whose treaty outlived its removal when the matter was changed.
+nesnd_india_order_tax_marked = {
+    OR = {
+        AND = { nesnd_india_order_tax_pact_value = 1 $LORD$ = { nesnd_india_order_is = { ISSUE = tax END = 1 } } }
+        AND = { nesnd_india_order_tax_pact_value = 2 $LORD$ = { nesnd_india_order_is = { ISSUE = tax END = 2 } } }
+    }
+}
 
 # Subject scope, from its own monthly refresh. It was given something by this journal and is no longer
 # an Indian subject of a Mughal that holds the journal.
@@ -68,14 +85,24 @@ nesnd_india_order_ai_restless = { nesnd_india_order_restless_count > nesnd_india
 # ---------------------------------------------------------------------------------------------
 # Who holds the two journals
 # ---------------------------------------------------------------------------------------------
-# The old agreement with the overlord: Mughal is a subject, and its overlord is not an Indian country.
+# Country scope. We are a subject, and the capital of our overlord is not in an Indian state. France
+# holds Indian states, but its capital is outside India, so it is such an overlord. Used by the journal
+# nesnd_mug_france, its loan and redemption, and the matters of kinds 7 and 8.
+nesnd_mug_foreign_overlord = {
+    trigger_if = { limit = { is_subject = yes exists = overlord }
+        overlord = {
+            trigger_if = { limit = { exists = capital } capital = { NOT = { nesnd_india_state = yes } } }
+            trigger_else = { always = no }
+        }
+    }
+    trigger_else = { always = no }
+}
+# The old agreement with the overlord: Mughal is a subject of a foreign overlord.
 nesnd_mug_france_live = {
     hidden_trigger = {
         is_country_alive = yes
         has_variable = nesnd_india_mughal_court
-        is_subject = yes
-        exists = overlord
-        overlord = { NOT = { nesnd_india_country = yes } }
+        nesnd_mug_foreign_overlord = yes
     }
 }
 # The council of princes: Mughal has finished its reform.
@@ -140,13 +167,15 @@ nesnd_mug_can_ask_loan = {
     nesnd_india_channel_free = yes
     custom_tooltip = { text = nesnd_mug_no_loan_tt NOT = { has_variable = nesnd_mug_loan_from } }
     custom_tooltip = { text = nesnd_mug_not_in_default_tt NOT = { nesnd_india_broke = yes } }
-    trigger_if = { limit = { exists = overlord } NOT = { has_war_with = overlord } }
+    trigger_if = { limit = { is_subject = yes exists = overlord } NOT = { has_war_with = overlord } }
+    trigger_else = { always = no }
 }
 nesnd_mug_can_ask_redeem = {
     nesnd_mug_france_live = yes
     nesnd_india_channel_free = yes
     custom_tooltip = { text = nesnd_mug_can_pay_redeem_tt gold_reserves >= nesnd_mug_redeem_price }
-    trigger_if = { limit = { exists = overlord } NOT = { has_war_with = overlord } }
+    trigger_if = { limit = { is_subject = yes exists = overlord } NOT = { has_war_with = overlord } }
+    trigger_else = { always = no }
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -186,6 +215,8 @@ nesnd_mug_famine_due = {
         nesnd_mug_famine_asker = yes
     }
     NOT = { has_variable = nesnd_mug_famine_wait }
+    # A plea for famine aid of ours is still on its way (matter kind 9): no new famine events until it is answered.
+    NOT = { nesnd_india_matter_kind_value = 9 }
     any_scope_state = { nesnd_mug_famine_struck = yes }
 }
 # Country scope. We can pay the relief of our struck states ourselves.
@@ -209,25 +240,30 @@ nesnd_mug_can_ask_mughal = {
     nesnd_mug_matter_free = yes
     custom_tooltip = {
         text = nesnd_mug_mughal_at_peace_tt
-        exists = scope:mug_famine_mughal
-        scope:mug_famine_mughal = { is_country_alive = yes }
-        NOT = { has_war_with = scope:mug_famine_mughal }
+        trigger_if = { limit = { exists = scope:mug_famine_mughal }
+            scope:mug_famine_mughal = { is_country_alive = yes }
+            NOT = { has_war_with = scope:mug_famine_mughal }
+        }
+        trigger_else = { always = no }
     }
 }
 nesnd_mug_can_ask_overlord = {
     nesnd_mug_matter_free = yes
     custom_tooltip = {
         text = nesnd_mug_overlord_at_peace_tt
-        exists = overlord
-        NOT = { overlord = { has_variable = nesnd_india_mughal_court } }
-        NOT = { has_war_with = overlord }
+        trigger_if = { limit = { is_subject = yes exists = overlord }
+            NOT = { overlord = { has_variable = nesnd_india_mughal_court } }
+            NOT = { has_war_with = overlord }
+        }
+        trigger_else = { always = no }
     }
 }
 # Prince scope. Shown only to a subject of another country than Mughal.
 nesnd_mug_overlord_option_shown = {
-    is_subject = yes
-    exists = overlord
-    NOT = { overlord = { has_variable = nesnd_india_mughal_court } }
+    trigger_if = { limit = { is_subject = yes exists = overlord }
+        NOT = { overlord = { has_variable = nesnd_india_mughal_court } }
+    }
+    trigger_else = { always = no }
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -239,6 +275,13 @@ nesnd_mug_council_guest = {
     nesnd_india_prince = yes
     is_at_war = no
     NOT = { has_war_with = $CONVENER$ }
+}
+# Country scope. A prince CONVENER can invite to a council on common defence: the two could sign the
+# defensive pact today (the treaty's own conditions decide). The others are not invited to it.
+nesnd_mug_council_defence_guest = {
+    nesnd_mug_council_guest = { CONVENER = $CONVENER$ }
+    save_temporary_scope_as = mug_council_candidate
+    nesnd_india_defence_possible = { FIRST = $CONVENER$ SECOND = scope:mug_council_candidate YEARS = 5 }
 }
 nesnd_mug_can_call_council = {
     nesnd_mug_council_live = yes
@@ -300,6 +343,12 @@ nesnd_mug_can_accept = {
     trigger_else = {
         custom_tooltip = { text = nesnd_mug_we_can_aid_tt gold_reserves >= nesnd_india_matter_quote in_default = no }
     }
+}
+# Answering scope, for the AI. The asking country's relations with us are below zero.
+nesnd_mug_ai_asker_hostile = {
+    save_temporary_scope_as = india_matter_me
+    trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { "relations(scope:india_matter_me)" < 0 } }
+    trigger_else = { always = no }
 }
 # Answering scope, for the AI. Our overlord's holdings in Mughal are large.
 nesnd_mug_ai_many_levels = {

@@ -13,6 +13,8 @@
 #   invitation or the request into the request channel (nesnd_india_princes.txt) and the matter ends.
 # Thirty days without an answer count as no answer (nesnd_india_matter_lapse). A government deals with
 # one matter at a time; a matter for a busy government waits and is delivered at a later monthly check.
+# A plea for famine aid (kind 9) that is still waiting for a busy government does not lapse: its clock
+# is set again every month until the government takes it up (nesnd_india_matter_maintenance).
 
 # ---------------------------------------------------------------------------------------------
 # The asking country (holder scope)
@@ -96,6 +98,7 @@ nesnd_india_matter_fail = {
 # Monthly, from nesnd_india_refresh.
 nesnd_india_matter_maintenance = {
     if = { limit = { nesnd_india_matter_waiting = yes }
+        if = { limit = { nesnd_india_matter_kind_value = 9 nesnd_india_matter_undelivered = yes } set_variable = { name = nesnd_india_matter_clock days = 60 } }
         if = { limit = { NOT = { has_variable = nesnd_india_matter_clock } } nesnd_india_matter_fail = { RESULT = 3 } }
         else_if = { limit = { NOT = { nesnd_india_matter_valid = yes } } nesnd_india_matter_fail = { RESULT = 5 } }
         else = { nesnd_india_matter_deliver = yes }
@@ -119,7 +122,13 @@ nesnd_india_matter_permit = {
         save_scope_as = india_matter_me
         set_variable = nesnd_india_matter_answered
         var:nesnd_india_matter_from = {
-            if = { limit = { nesnd_india_matter_side_value = 1 } set_variable = { name = nesnd_india_matter_ok_own value = scope:india_matter_me } }
+            if = { limit = { nesnd_india_matter_side_value = 1 }
+                set_variable = { name = nesnd_india_matter_ok_own value = scope:india_matter_me }
+                # We are the other government's overlord as well: this consent answers for both sides.
+                if = { limit = { nesnd_india_matter_other_consent_needed = yes exists = var:nesnd_india_matter_to var:nesnd_india_matter_to = { overlord ?= scope:india_matter_me } }
+                    set_variable = { name = nesnd_india_matter_ok_other value = scope:india_matter_me }
+                }
+            }
             else = { set_variable = { name = nesnd_india_matter_ok_other value = scope:india_matter_me } }
             set_variable = { name = nesnd_india_matter_clock days = 60 }
             nesnd_india_matter_next = yes
@@ -140,7 +149,7 @@ nesnd_india_matter_accept = {
         var:nesnd_india_matter_from = { save_scope_as = india_matter_holder }
         if = { limit = { nesnd_india_matter_is = { KIND = 1 } } nesnd_india_project_accept = yes }
         else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 7 } nesnd_india_matter_is = { KIND = 8 } nesnd_india_matter_is = { KIND = 9 } } } nesnd_mug_matter_accept = yes }
-        else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 10 } nesnd_india_matter_is = { KIND = 11 } nesnd_india_matter_is = { KIND = 12 } nesnd_india_matter_is = { KIND = 13 } } } nesnd_india_overseas_accept = yes }
+        else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 10 } nesnd_india_matter_is = { KIND = 11 } nesnd_india_matter_is = { KIND = 12 } } } nesnd_india_overseas_accept = yes }
         else = { nesnd_india_frontier_accept = yes }
     }
 }

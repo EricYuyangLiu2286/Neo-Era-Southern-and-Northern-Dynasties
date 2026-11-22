@@ -158,13 +158,14 @@ nesnd_india_invite_union = {
     }
 }
 # Empire scope. One more pension is owed; the ten years run again from today for all of them.
-# The count starts over once the previous pensions have run out.
+# The count starts over once the previous pensions have run out, and stops at nesnd_india_pension_cap:
+# a prince taken in after that restarts the ten years without adding a pension.
 nesnd_india_add_pension = {
     if = {
         limit = { OR = { NOT = { has_variable = nesnd_india_pension_count } NOT = { has_modifier = nesnd_india_princely_pensions } } }
         set_variable = { name = nesnd_india_pension_count value = 0 }
     }
-    change_variable = { name = nesnd_india_pension_count add = 1 }
+    if = { limit = { nesnd_india_pension_count_value < nesnd_india_pension_cap } change_variable = { name = nesnd_india_pension_count add = 1 } }
     if = { limit = { has_modifier = nesnd_india_princely_pensions } remove_modifier = nesnd_india_princely_pensions }
     add_modifier = { name = nesnd_india_princely_pensions months = 120 multiplier = nesnd_india_pension_count_value }
 }
@@ -398,7 +399,13 @@ nesnd_india_project_maintenance = {
                 nesnd_india_project_clear = yes
             }
             else_if = { limit = { NOT = { nesnd_india_project_site_owned = yes } } nesnd_india_project_clear = yes }
-            else_if = { limit = { NOT = { has_variable = nesnd_india_project_build_clock } } nesnd_india_project_clear = yes }
+            # Three years and no new level: the prince is told before the project is dropped (result 6, project.5).
+            else_if = { limit = { NOT = { has_variable = nesnd_india_project_build_clock } }
+                nesnd_india_project_save_names = yes
+                save_scope_value_as = { name = india_matter_result value = 6 }
+                trigger_event = { id = nesnd_india_project.5 popup = yes }
+                nesnd_india_project_clear = yes
+            }
         }
     }
     # five-year agreements that have run out
@@ -422,19 +429,15 @@ nesnd_india_project_maintenance = {
 # State region scope.
 nesnd_india_deal_forget = {
     remove_variable = nesnd_india_deal_host remove_variable = nesnd_india_deal_funder
-    remove_variable = nesnd_india_deal_permit remove_variable = nesnd_india_deal_quote
-    remove_variable = nesnd_india_deal_kind remove_variable = nesnd_india_deal_term
+    remove_variable = nesnd_india_deal_term
 }
 # State scope, with scope:india_project_owner and scope:india_project_payer saved.
-# Who pays, who benefits, who agreed, how much, and five years during which the site takes no other agreement.
+# Who benefits, who pays, and five years during which the site takes no other agreement.
 nesnd_india_deal_record = {
     state_region = {
         nesnd_india_deal_forget = yes
         set_variable = { name = nesnd_india_deal_host value = scope:india_project_owner }
         set_variable = { name = nesnd_india_deal_funder value = scope:india_project_payer }
-        set_variable = { name = nesnd_india_deal_quote value = scope:india_project_owner.nesnd_india_matter_amount_value }
-        set_variable = { name = nesnd_india_deal_kind value = scope:india_project_owner.nesnd_india_project_type_value }
-        if = { limit = { exists = scope:india_project_owner.var:nesnd_india_matter_ok_own } set_variable = { name = nesnd_india_deal_permit value = scope:india_project_owner.var:nesnd_india_matter_ok_own } }
         set_variable = { name = nesnd_india_deal_term days = 1825 }
     }
 }
@@ -636,6 +639,7 @@ nesnd_india_close_case = {
     nesnd_india_contact_release_sponsor = yes
     remove_variable = nesnd_india_case_sponsor remove_variable = nesnd_india_case_owner remove_variable = nesnd_india_case_state
     remove_variable = nesnd_india_case_stage remove_variable = nesnd_india_case_progress remove_variable = nesnd_india_case_play remove_variable = nesnd_india_case_retries
+    remove_variable = nesnd_india_case_original_provinces
     set_variable = { name = nesnd_india_case_cooldown months = 36 }
 }
 # The uprising in one state region: R its name, STATE its state region, TAG the country formed there, HQ its strategic region.
@@ -670,7 +674,8 @@ nesnd_india_case_create_play = {
         if = { limit = { exists = scope:india_case_region exists = scope:india_case_owner exists = scope:india_case_local }
             add_claim = scope:india_case_owner
             scope:india_case_owner = {
-                if = { limit = { is_at_war = no is_active_in_diplomatic_play = no NOT = { has_war_with = scope:india_case_local } NOT = { has_truce_with = scope:india_case_local } }
+                # A war or another play of the owner does not stop a new play (lookup/engine-facts.md:61).
+                if = { limit = { NOT = { has_war_with = scope:india_case_local } NOT = { has_truce_with = scope:india_case_local } }
                     create_diplomatic_play = { name = dp_nesnd_india_$R$ type = dp_nesnd_india_$R$ target_country = scope:india_case_local target_state = s:$STATE$.region_state:$TAG$ escalation = 80
                         add_war_goal = { holder = scope:india_case_local type = humiliation target_country = scope:india_case_owner primary_demand = yes }
                     }
@@ -679,7 +684,6 @@ nesnd_india_case_create_play = {
                     if = { limit = { exists = scope:india_case_created_play }
                         scope:india_case_region = { set_variable = { name = nesnd_india_case_play value = scope:india_case_created_play } set_variable = { name = nesnd_india_case_stage value = 5 } }
                         scope:india_case_created_play = {
-                            set_variable = { name = nesnd_india_revolt_region value = scope:india_case_region }
                             if = { limit = { scope:india_case_region = { exists = var:nesnd_india_case_sponsor } }
                                 scope:india_case_region.var:nesnd_india_case_sponsor = { if = { limit = { is_country_alive = yes is_subject = no is_at_war = no NOT = { this = scope:india_case_owner } } save_scope_as = india_case_backer } }
                                 if = { limit = { exists = scope:india_case_backer } add_target_backers = { scope:india_case_backer } }

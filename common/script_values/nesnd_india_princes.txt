@@ -20,6 +20,8 @@ nesnd_india_regime = {
 }
 
 nesnd_india_pension_count_value = { value = 0 if = { limit = { has_variable = nesnd_india_pension_count } value = var:nesnd_india_pension_count } }
+# The most pensions the princely pensions modifier is multiplied by.
+nesnd_india_pension_cap = 6
 
 # Mission grants are quoted in pounds. This rate applies only to workshop ownership.
 nesnd_india_workshop_pounds_per_level = 25000
@@ -126,17 +128,22 @@ nesnd_india_union_consent_chance = {
 }
 
 # Country scope. Populated Indian states held by this country and its subjects, and in all the world.
+# Only states held by countries whose capital lies in an Indian state count, on both sides of the share:
+# a foreign holder (FRA, POR, GBR and the like) is left out of the numerator and the denominator.
 nesnd_india_held_states = {
     value = 0
-    every_scope_state = { limit = { nesnd_india_state = yes state_population > 0 } add = 1 }
+    if = { limit = { capital ?= { nesnd_india_state = yes } }
+        every_scope_state = { limit = { nesnd_india_state = yes state_population > 0 } add = 1 }
+    }
     every_subject_or_below = {
+        limit = { capital ?= { nesnd_india_state = yes } }
         every_scope_state = { limit = { nesnd_india_state = yes state_population > 0 } add = 1 }
     }
 }
 nesnd_india_all_states = {
     value = 0
     every_country = {
-        limit = { is_country_alive = yes }
+        limit = { is_country_alive = yes capital ?= { nesnd_india_state = yes } }
         every_scope_state = { limit = { nesnd_india_state = yes state_population > 0 } add = 1 }
     }
 }

@@ -13,8 +13,9 @@ nesnd_india_diplomacy.1 = {
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 3 } desc = nesnd_india_diplomacy.1.d3 }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 4 } desc = nesnd_india_diplomacy.1.d4 }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 5 } desc = nesnd_india_diplomacy.1.d5 }
-            triggered_desc = { trigger = { nesnd_india_incoming_kind = 6 NOT = { nesnd_india_union_dominion_open = yes } } desc = nesnd_india_diplomacy.1.d6_own }
+            triggered_desc = { trigger = { nesnd_india_incoming_kind = 6 nesnd_india_union_ai_own_subject = yes } desc = nesnd_india_diplomacy.1.d6_own }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 6 nesnd_india_union_compensation_due = yes } desc = nesnd_india_diplomacy.1.d6_former }
+            triggered_desc = { trigger = { nesnd_india_incoming_kind = 6 NOT = { nesnd_india_union_dominion_open = yes } } desc = nesnd_india_diplomacy.1.d6_merge_only }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 6 } desc = nesnd_india_diplomacy.1.d6 }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 8 scope:india_sender = { nesnd_india_union_mode_value = 2 } } desc = nesnd_india_diplomacy.1.d8_dominion }
             triggered_desc = { trigger = { nesnd_india_incoming_kind = 8 } desc = nesnd_india_diplomacy.1.d8_merge }
@@ -57,6 +58,7 @@ nesnd_india_diplomacy.1 = {
             if = { limit = { scope:india_sender = { nesnd_india_union_mode_value = 2 } } custom_tooltip = nesnd_india_union_reply_take_dominion_tt }
             else = { custom_tooltip = nesnd_india_union_reply_take_merge_tt }
             custom_tooltip = nesnd_india_union_reply_take_pay_tt
+            if = { limit = { nesnd_india_pension_full = yes } custom_tooltip = nesnd_india_pension_full_tt }
             if = { limit = { nesnd_india_union_compensation_due = yes } custom_tooltip = nesnd_india_union_reply_take_compensation_tt }
         }
         else_if = { limit = { nesnd_india_reply_valid = yes nesnd_india_incoming_kind = 7 } custom_tooltip = nesnd_india_reply_independence_tt }
@@ -77,7 +79,7 @@ nesnd_india_diplomacy.1 = {
         hidden_effect = { nesnd_india_union_accept = { MODE = merge } }
     }
     option = { name = nesnd_india_diplomacy.1.dominion
-        show_as_unavailable = { nesnd_india_incoming_kind = 6 nesnd_india_union_dominion_open = yes }
+        show_as_unavailable = { nesnd_india_incoming_kind = 6 }
         trigger = { nesnd_india_incoming_kind = 6 nesnd_india_union_dominion_open = yes nesnd_india_reply_can_accept = yes }
         ai_chance = { base = 20
             modifier = { trigger = { nesnd_india_union_ai_close = yes } add = 20 }
@@ -186,6 +188,7 @@ nesnd_india_diplomacy.4 = {
         trigger = { nesnd_india_officer_presend = yes }
         ai_chance = { base = 1 }
         custom_tooltip = nesnd_india_mission_request_tt
+        custom_tooltip = nesnd_india_officer_upkeep_tt
         show_as_tooltip = { add_modifier = { name = nesnd_india_french_officers months = 48 } }
         hidden_effect = {
             if = {
@@ -361,6 +364,7 @@ nesnd_india_project.5 = {
     title = nesnd_india_project.5.t
     desc = {
         first_valid = {
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 6 exists = scope:india_project_site } desc = nesnd_india_project.5.d_expired }
             triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 1 exists = scope:india_matter_permit exists = scope:india_matter_to } desc = nesnd_india_project.5.d_forbid }
             triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to } desc = nesnd_india_project.5.d_decline }
             triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 } desc = nesnd_india_project.5.d_silent }
@@ -368,7 +372,10 @@ nesnd_india_project.5 = {
         }
     }
     flavor = nesnd_india_project.5.f
-    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_india_project_failed_tt }
+    option = { name = nesnd_india_diplomacy_ack default_option = yes
+        if = { limit = { exists = scope:india_matter_result scope:india_matter_result = 6 } custom_tooltip = nesnd_india_project_expired_tt }
+        else = { custom_tooltip = nesnd_india_project_failed_tt }
+    }
 }
 
 # The building stands.
@@ -497,6 +504,7 @@ nesnd_india_union.4 = {
     }
     option = {
         name = nesnd_india_union.4.dominion
+        show_as_unavailable = { always = yes }
         trigger = {
             custom_tooltip = { text = nesnd_india_union_ask_not_own_subject_tt nesnd_india_union_own_subject = no }
             trigger_if = { limit = { exists = scope:india_union_host } nesnd_india_union_dominion_possible = { EMPIRE = scope:india_union_host PRINCE = root } }

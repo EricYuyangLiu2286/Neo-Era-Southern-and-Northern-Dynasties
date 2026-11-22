@@ -1,4 +1,4 @@
-# 莫卧儿：与法兰西的旧约、王公会议、饥荒
+# 莫卧儿：与宗主国的旧约（原名「与法兰西的旧约」）、王公会议、饥荒
 
 Execution: completed  
 Validation: STATIC_PASS  
@@ -13,9 +13,9 @@ Evidence: 工作台 `reports/2026-11-21-india-development/莫卧儿/交付记录
 
 改动：「印度事务」一层（`nesnd_india_matters.txt` 四个文件和日志 `nesnd_india_foreign_affairs`）加事务种类 7、8、9；`nesnd_india_refresh` 调 `nesnd_mug_upkeep`；on_action 的范围加 `has_variable = nesnd_mug_loan_from`；土邦受邀加入时成为自治领的 AI 权重，带 `nesnd_mug_council_attended` 的加 10（`events/nesnd_india_diplomacy.txt`）。
 
-## 与法兰西的旧约（日志 `nesnd_mug_france`）
+## 与宗主国的旧约（日志 `nesnd_mug_france`，修复08 起改名，键不变）
 
-持有条件 `nesnd_mug_france_live`：莫卧儿、是附属国、宗主国不是印度国家。不再成立时不显示地结束。
+持有条件 `nesnd_mug_france_live`：莫卧儿、是附属国、宗主国是外国（`nesnd_mug_foreign_overlord`：宗主国首都不在印度的州里，修复08 起；原为「宗主国不是印度国家」，法兰西开局在印度有州，日志开局不出现）。不再成立时不显示地结束。
 
 - 请求借款：事务种类 7 送宗主国。同意时宗主国付 £100,000，两国订 money_transfer 条约，莫卧儿每周付 £460，约束期五年（约 £120,000）。条约建不成时，莫卧儿改为每月由脚本直接付 £2,000，共 60 个月。
 - 借款记录：`nesnd_mug_loan_from`（债权国）、`nesnd_mug_loan_term`（1825 日）、`nesnd_mug_loan_by_script`（按月付）。每月 `nesnd_mug_loan_tick`：陷入债务违约或宣布破产即违约，退出还款条约、清记录，莫卧儿给债权国贸易特权十年（签不成则关系 −50）；到期则退出条约、清记录、关系 +20；条约被别的方式终止则清记录并通知。附属关系变了或莫卧儿独立，借款照常。

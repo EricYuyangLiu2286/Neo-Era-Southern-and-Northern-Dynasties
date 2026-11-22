@@ -28,42 +28,36 @@ nesnd_india_order_restless_count = {
     every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root liberty_desire >= 50 } add = 1 }
 }
 
-# Mughal scope. In each matter: subjects where the chosen treaty stands, where it was built and has
-# since been broken, and where it could not be built.
+# Mughal scope. In each matter, for the end chosen now: subjects where its treaty stands (made by this
+# journal, or by us in some other way), where this journal made it and it has since been broken, and
+# where it is not in force (it could not be made, or the treaty of the other end is still being
+# removed). The three add up to nesnd_india_order_members. The army counts are read only when army
+# is local, the school counts only when schools are central.
 nesnd_india_order_tax_in = {
     value = 0
     every_subject_or_below = {
-        limit = {
-            nesnd_india_country = yes is_direct_subject_of = root
-            OR = {
-                AND = { nesnd_india_order_tax_pact_value = 1 root = { has_diplomatic_pact = { who = prev type = raise_payments is_initiator = yes } } }
-                AND = { nesnd_india_order_tax_pact_value = 2 root = { has_diplomatic_pact = { who = prev type = decrease_payments is_initiator = yes } } }
-            }
-        }
+        limit = { nesnd_india_country = yes is_direct_subject_of = root nesnd_india_order_tax_stands = { LORD = root } }
         add = 1
     }
 }
 nesnd_india_order_tax_dropped = {
     value = 0
     every_subject_or_below = {
-        limit = {
-            nesnd_india_country = yes is_direct_subject_of = root has_variable = nesnd_india_order_tax_pact
-            NOR = {
-                AND = { nesnd_india_order_tax_pact_value = 1 root = { has_diplomatic_pact = { who = prev type = raise_payments is_initiator = yes } } }
-                AND = { nesnd_india_order_tax_pact_value = 2 root = { has_diplomatic_pact = { who = prev type = decrease_payments is_initiator = yes } } }
-            }
-        }
+        limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { nesnd_india_order_tax_stands = { LORD = root } } nesnd_india_order_tax_marked = { LORD = root } }
         add = 1
     }
 }
 nesnd_india_order_tax_unable = {
     value = 0
-    every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { has_variable = nesnd_india_order_tax_pact } } add = 1 }
+    every_subject_or_below = {
+        limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { nesnd_india_order_tax_stands = { LORD = root } } NOT = { nesnd_india_order_tax_marked = { LORD = root } } }
+        add = 1
+    }
 }
 nesnd_india_order_army_in = {
     value = 0
     every_subject_or_below = {
-        limit = { nesnd_india_country = yes is_direct_subject_of = root has_variable = nesnd_india_order_army_pact root = { has_diplomatic_pact = { who = prev type = exempt_from_service is_initiator = yes } } }
+        limit = { nesnd_india_country = yes is_direct_subject_of = root root = { has_diplomatic_pact = { who = prev type = exempt_from_service is_initiator = yes } } }
         add = 1
     }
 }
@@ -76,12 +70,15 @@ nesnd_india_order_army_dropped = {
 }
 nesnd_india_order_army_unable = {
     value = 0
-    every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { has_variable = nesnd_india_order_army_pact } } add = 1 }
+    every_subject_or_below = {
+        limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { has_variable = nesnd_india_order_army_pact } NOT = { root = { has_diplomatic_pact = { who = prev type = exempt_from_service is_initiator = yes } } } }
+        add = 1
+    }
 }
 nesnd_india_order_school_in = {
     value = 0
     every_subject_or_below = {
-        limit = { nesnd_india_country = yes is_direct_subject_of = root has_variable = nesnd_india_order_school_pact root = { has_diplomatic_pact = { who = prev type = da_knowledge_sharing is_initiator = yes } } }
+        limit = { nesnd_india_country = yes is_direct_subject_of = root root = { has_diplomatic_pact = { who = prev type = da_knowledge_sharing is_initiator = yes } } }
         add = 1
     }
 }
@@ -94,8 +91,18 @@ nesnd_india_order_school_dropped = {
 }
 nesnd_india_order_school_unable = {
     value = 0
-    every_subject_or_below = { limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { has_variable = nesnd_india_order_school_pact } } add = 1 }
+    every_subject_or_below = {
+        limit = { nesnd_india_country = yes is_direct_subject_of = root NOT = { has_variable = nesnd_india_order_school_pact } NOT = { root = { has_diplomatic_pact = { who = prev type = da_knowledge_sharing is_initiator = yes } } } }
+        add = 1
+    }
 }
+
+# Mughal scope (root). Influence the centralising treaties would take if signed with every Indian
+# subject: raise_payments costs its first country 25, da_knowledge_sharing 50
+# (GAME common/diplomatic_actions/32_subjects_raise_payments.txt and 40_subjects_knowledge_sharing.txt, pact cost).
+# For the AI only.
+nesnd_india_order_tax_influence = { value = nesnd_india_order_members multiply = 25 }
+nesnd_india_order_school_influence = { value = nesnd_india_order_members multiply = 50 }
 
 # ==== Mughal's old agreement, the council of princes, famine relief (formerly nesnd_india_mughal.txt) ====
 # Mughal's own affairs: the old agreement with its overlord, the council of princes, and famine.
@@ -181,7 +188,7 @@ nesnd_mug_loan_ask_chance = {
 }
 nesnd_mug_redeem_ask_chance = {
     value = 0
-    if = { limit = { gold_reserves >= { value = nesnd_mug_redeem_price multiply = 2 } liberty_desire >= 50 } value = 2 }
+    if = { limit = { gold_reserves >= { value = nesnd_mug_redeem_price multiply = 1.2 } liberty_desire >= 25 } value = 2 }
 }
 nesnd_mug_council_ask_chance = 2
 
@@ -194,7 +201,7 @@ nesnd_mug_loan_answer_chance = {
     max = 95
 }
 nesnd_mug_redeem_answer_chance = {
-    value = 15
+    value = 30
     if = { limit = { is_at_war = yes } add = 30 }
     if = { limit = { net_fixed_income < 0 } add = 20 }
     if = { limit = { nesnd_mug_ai_many_levels = yes } add = -20 }
@@ -207,6 +214,25 @@ nesnd_mug_aid_answer_chance = {
     if = { limit = { net_fixed_income < 0 } add = -30 }
     min = 5
     max = 95
+}
+# Overlord scope, per cent. Our subject (nesnd_india_matter_from) asks Mughal for famine aid and needs
+# our consent first (read by nesnd_india_matter_consent_chance for kind 9). It rests mostly on our
+# relations with that subject.
+nesnd_mug_aid_consent_chance = {
+    value = 50
+    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 50 } } add = 30 }
+    else_if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 20 } } add = 15 }
+    if = { limit = { nesnd_mug_ai_asker_hostile = yes } add = -35 }
+    min = 5
+    max = 95
+}
+# Mughal scope (root). Influence our side of the defensive pacts of a council on common defence would
+# take if every prince that can sign one today were invited and attended (at most eight). A defensive
+# pact takes 100 from each party (GAME common/treaty_articles/01_defensive_pact.txt cost, kind mutual).
+nesnd_mug_council_defence_influence = {
+    value = 0
+    every_country = { limit = { nesnd_mug_council_defence_guest = { CONVENER = root } } add = 100 }
+    max = 800
 }
 # Prince scope, invited to a council (event nesnd_mug.12).
 nesnd_mug_council_attend_chance = {

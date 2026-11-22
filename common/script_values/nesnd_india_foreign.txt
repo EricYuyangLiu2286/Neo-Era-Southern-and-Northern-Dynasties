@@ -6,14 +6,17 @@
 #   nesnd_india_frontier_T_asked    the renewal question has been put for this term
 #   nesnd_india_frontier_T_renewed  Mughal agreed to renew: at expiry the term starts again for five years
 #   nesnd_india_frontier_empire     the Mughal government Bhutan or Nepal deals with (the richest), set monthly
+#   nesnd_india_frontier_asker      the Mughal government whose request for military access was last put
+#                                   to Bhutan or Nepal, shown in the journal while that request is open
 # Default sums and chances; to be tuned after in-game tests.
 
 # Paid once by Mughal to Bhutan or Nepal when either treaty is signed.
 nesnd_india_frontier_payment = 10000
+# Paid by Mughal to Bhutan or Nepal when either treaty is renewed: half the sum paid on signing.
+nesnd_india_frontier_renew_payment = { value = nesnd_india_frontier_payment multiply = 0.5 }
 
 # Days of a record T (nesnd_india_frontier_record): the term runs to expiry, the notice to 180 days
-# before it. The overseas journal's records (overseas_trade, overseas_port) are in
-# common/script_values/nesnd_india_foreign.txt.
+# before it. The overseas journal's record overseas_trade is further down in this file.
 nesnd_india_frontier_trade_days = 1825
 nesnd_india_frontier_trade_notice_days = 1645
 nesnd_india_frontier_access_days = 1825
@@ -51,6 +54,16 @@ nesnd_india_frontier_access_chance = {
     min = 5
     max = 95
 }
+# Answering government scope, per cent. Mughal asked by Bhutan or Nepal to renew the military access
+# they grant it (matter kind 5): the base and relations of a trade privilege request, and more while the
+# treaty is still in force between the two.
+nesnd_india_frontier_access_renew_chance = {
+    value = 60
+    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 20 } } add = 20 }
+    if = { limit = { exists = var:nesnd_india_matter_from var:nesnd_india_matter_from = { nesnd_india_frontier_access_treaty = { PARTNER = prev } } } add = 30 }
+    min = 5
+    max = 95
+}
 
 # ==== Overseas trade (formerly nesnd_india_overseas.txt) ====
 # The overseas journal (nesnd_india_overseas). Here and below, the Indian state is a country for which
@@ -62,20 +75,24 @@ nesnd_india_frontier_access_chance = {
 #   nesnd_india_overseas_show_<D>_<K>     one local government of direction D with which it holds a treaty
 #                                         of kind K (trade or port), shown in the journal; set monthly
 #   nesnd_india_overseas_count_<D>_<K>    how many such treaties it holds in direction D
-# Variables on the local government, besides the shared records nesnd_india_frontier_overseas_<K>_*
-# (common/script_values/nesnd_india_foreign.txt):
+# Variables on the local government:
+#   nesnd_india_frontier_overseas_trade_*   the shared records of a trade privilege (nesnd_india_frontier_T_*
+#                                           above), with the Indian state as partner
+#   nesnd_india_frontier_overseas_port_with the Indian state to which it ceded a treaty port. A treaty port has
+#                                           no term: there is no expiry, renewal or withdrawal by script
 #   nesnd_india_overseas_<K>_dir          the direction in which the treaty of kind K was asked for
 # Default sums and chances; to be tuned after in-game tests.
 
 # Paid once by the Indian state to the local government when the treaty is signed.
 nesnd_india_overseas_trade_payment = 20000
 nesnd_india_overseas_port_payment = 60000
+# Paid by the Indian state to the local government when a trade privilege is renewed: half the sum above.
+nesnd_india_overseas_trade_renew_payment = { value = nesnd_india_overseas_trade_payment multiply = 0.5 }
 
-# Days of the shared records (nesnd_india_frontier_record): ten years, and 180 days before that.
+# Days of the shared record of a trade privilege (nesnd_india_frontier_record): ten years, and 180 days
+# before that.
 nesnd_india_frontier_overseas_trade_days = 3650
 nesnd_india_frontier_overseas_trade_notice_days = 3470
-nesnd_india_frontier_overseas_port_days = 3650
-nesnd_india_frontier_overseas_port_notice_days = 3470
 
 # ---------------------------------------------------------------------------------------------
 # Readings (country scope)
@@ -185,7 +202,7 @@ nesnd_india_overseas_trade_answer_chance = {
     min = 5
     max = 95
 }
-# Answering local government scope, per cent: a treaty port asked for, or its renewal.
+# Answering local government scope, per cent: a treaty port asked for.
 nesnd_india_overseas_port_answer_chance = {
     value = 15
     if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 50 } } add = 20 }

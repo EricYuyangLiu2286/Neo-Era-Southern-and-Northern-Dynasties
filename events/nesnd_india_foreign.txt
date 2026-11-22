@@ -51,8 +51,8 @@ nesnd_india_frontier.2 = {
     }
 }
 
-# 180 days before a treaty expires. To Bhutan or Nepal; for the overseas journal's treaties
-# (kinds 10 and 11), to the Indian state that receives the trade privilege or the treaty port.
+# 180 days before a treaty expires. To Bhutan or Nepal; for the overseas journal's trade privilege
+# (kind 10), to the Indian state that receives it. A treaty port has no term and is never asked about.
 nesnd_india_frontier.3 = {
     type = country_event
     event_image = { video = "unspecific_signed_contract" }
@@ -61,7 +61,6 @@ nesnd_india_frontier.3 = {
         first_valid = {
             triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } desc = nesnd_india_frontier.3.d_trade }
             triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 10 } desc = nesnd_india_frontier.3.d_overseas_trade }
-            triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 11 } desc = nesnd_india_frontier.3.d_overseas_port }
             desc = nesnd_india_frontier.3.d_access
         }
     }
@@ -74,22 +73,24 @@ nesnd_india_frontier.3 = {
             base = 1
             modifier = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } add = 2 }
             modifier = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 } add = 2 }
-            modifier = { trigger = { exists = scope:india_frontier_empire "relations(scope:india_frontier_empire)" >= 50 } add = 1 }
+            # The other side of the treaty: the local government for the overseas journal, Mughal otherwise.
+            modifier = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 exists = scope:india_frontier_small "relations(scope:india_frontier_small)" >= 50 } add = 1 }
+            modifier = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind < 10 exists = scope:india_frontier_empire "relations(scope:india_frontier_empire)" >= 50 } add = 1 }
         }
         if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 } custom_tooltip = nesnd_india_overseas_renew_tt }
         else = { custom_tooltip = nesnd_india_frontier_renew_tt }
+        # The renewal of an overseas trade privilege (kind 12) still asks the overlords; a Himalayan
+        # renewal (kinds 4 and 5) asks none, as the overlords consented when the treaty was first signed.
         if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 exists = scope:india_frontier_small }
             if = { limit = { nesnd_india_consent_needed = { OTHER = scope:india_frontier_small GRANTS = no } } custom_tooltip = nesnd_india_frontier_consent_own_tt }
-            if = { limit = { scope:india_frontier_kind = 11 scope:india_frontier_small = { nesnd_india_consent_needed = { OTHER = root GRANTS = yes } } } custom_tooltip = nesnd_india_overseas_renew_consent_tt }
-            else_if = { limit = { scope:india_frontier_small = { nesnd_india_consent_needed = { OTHER = root GRANTS = no } } } custom_tooltip = nesnd_india_overseas_renew_consent_tt }
+            if = { limit = { scope:india_frontier_small = { nesnd_india_consent_needed = { OTHER = root GRANTS = no } } } custom_tooltip = nesnd_india_overseas_renew_consent_tt }
         }
-        else_if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 3 exists = scope:india_frontier_empire nesnd_india_consent_needed = { OTHER = scope:india_frontier_empire GRANTS = yes } } custom_tooltip = nesnd_india_frontier_consent_own_tt }
-        else_if = { limit = { exists = scope:india_frontier_empire nesnd_india_consent_needed = { OTHER = scope:india_frontier_empire GRANTS = no } } custom_tooltip = nesnd_india_frontier_consent_own_tt }
+        # Another matter of ours is open: the request cannot go now, and the question is put again later.
+        if = { limit = { has_variable = nesnd_india_matter_kind } custom_tooltip = nesnd_india_frontier_renew_later_tt }
         hidden_effect = {
-            if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } nesnd_india_frontier_renew = { T = trade KIND = 4 } }
-            else_if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 10 } nesnd_india_frontier_renew = { T = overseas_trade KIND = 12 } }
-            else_if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 11 } nesnd_india_frontier_renew = { T = overseas_port KIND = 13 } }
-            else = { nesnd_india_frontier_renew = { T = access KIND = 5 } }
+            if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } nesnd_india_frontier_renew = { T = trade KIND = 4 AMOUNT = nesnd_india_frontier_renew_payment } }
+            else_if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 10 } nesnd_india_frontier_renew = { T = overseas_trade KIND = 12 AMOUNT = nesnd_india_overseas_trade_renew_payment } }
+            else = { nesnd_india_frontier_renew = { T = access KIND = 5 AMOUNT = nesnd_india_frontier_renew_payment } }
         }
     }
     option = {
@@ -102,7 +103,7 @@ nesnd_india_frontier.3 = {
 }
 
 # A treaty not renewed has expired and the side that keeps the record (Bhutan or Nepal, or the overseas
-# local government) has withdrawn. To both governments.
+# local government of a trade privilege) has withdrawn. To both governments.
 nesnd_india_frontier.4 = {
     type = country_event
     event_image = { video = "unspecific_signed_contract" }
@@ -111,7 +112,6 @@ nesnd_india_frontier.4 = {
         first_valid = {
             triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } desc = nesnd_india_frontier.4.d_trade }
             triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 10 } desc = nesnd_india_frontier.4.d_overseas_trade }
-            triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 11 } desc = nesnd_india_frontier.4.d_overseas_port }
             desc = nesnd_india_frontier.4.d_access
         }
     }
@@ -120,8 +120,7 @@ nesnd_india_frontier.4 = {
     option = {
         name = nesnd_india_diplomacy_ack
         default_option = yes
-        if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 11 } custom_tooltip = nesnd_india_frontier_expired_port_tt }
-        else = { custom_tooltip = nesnd_india_frontier_expired_tt }
+        custom_tooltip = nesnd_india_frontier_expired_tt
     }
 }
 
@@ -190,7 +189,9 @@ nesnd_india_overseas.1 = {
     }
 }
 
-# The local government agreed: a treaty signed, or a renewal agreed. To the Indian state.
+# The local government agreed: a treaty signed, or the renewal of a trade privilege agreed. To the Indian
+# state. A treaty port (kind 11) always has scope:india_overseas_port_signed here: nesnd_india_overseas_accept
+# ends the matter instead when no port is left.
 nesnd_india_overseas.2 = {
     type = country_event
     event_image = { video = "unspecific_signed_contract" }
@@ -198,9 +199,8 @@ nesnd_india_overseas.2 = {
     desc = {
         first_valid = {
             triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 10 } desc = nesnd_india_overseas.2.d_trade }
-            triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 11 exists = scope:india_overseas_port_signed } desc = nesnd_india_overseas.2.d_port }
             triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 12 } desc = nesnd_india_overseas.2.d_renew_trade }
-            desc = nesnd_india_overseas.2.d_renew_port
+            desc = nesnd_india_overseas.2.d_port
         }
     }
     flavor = nesnd_india_overseas.2.f
@@ -210,9 +210,8 @@ nesnd_india_overseas.2 = {
         name = nesnd_india_diplomacy_ack
         default_option = yes
         if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 10 } custom_tooltip = nesnd_india_overseas_signed_trade_tt }
-        else_if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 11 } custom_tooltip = nesnd_india_overseas_signed_port_tt }
         else_if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 12 } custom_tooltip = nesnd_india_overseas_renewed_trade_tt }
-        else = { custom_tooltip = nesnd_india_overseas_renewed_port_tt }
+        else = { custom_tooltip = nesnd_india_overseas_signed_port_tt }
     }
 }
 
@@ -224,8 +223,8 @@ nesnd_india_overseas.3 = {
     desc = {
         first_valid = {
             triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 1 exists = scope:india_matter_permit } desc = nesnd_india_overseas.3.d_forbid }
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_kind scope:india_matter_kind >= 12 exists = scope:india_matter_to } desc = nesnd_india_overseas.3.d_renew_decline }
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 exists = scope:india_matter_kind scope:india_matter_kind >= 12 } desc = nesnd_india_overseas.3.d_renew_silent }
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_kind scope:india_matter_kind = 12 exists = scope:india_matter_to } desc = nesnd_india_overseas.3.d_renew_decline }
+            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 exists = scope:india_matter_kind scope:india_matter_kind = 12 } desc = nesnd_india_overseas.3.d_renew_silent }
             triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to } desc = nesnd_india_overseas.3.d_decline }
             triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 } desc = nesnd_india_overseas.3.d_silent }
             desc = nesnd_india_overseas.3.d_void
@@ -235,7 +234,7 @@ nesnd_india_overseas.3 = {
     option = {
         name = nesnd_india_diplomacy_ack
         default_option = yes
-        if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind >= 12 } custom_tooltip = nesnd_india_overseas_lapse_tt }
+        if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 12 } custom_tooltip = nesnd_india_overseas_lapse_tt }
         else = { custom_tooltip = nesnd_india_overseas_failed_tt }
     }
 }

@@ -1,35 +1,47 @@
 ﻿# ==== Identity, monthly refresh and the reform journals (formerly nesnd_india_core.txt) ====
-nesnd_india_schools_tick = {
-    if = { limit = { nesnd_india_track_available = { T = schools PRIORITY = 1 } }
-        if = { limit = { NOT = { has_variable = nesnd_india_schools_months } } set_variable = { name = nesnd_india_schools_months value = 0 } }
-        if = { limit = { nesnd_india_schools_ready = yes } change_variable = { name = nesnd_india_schools_months add = 1 } }
-        clamp_variable = { name = nesnd_india_schools_months min = 0 max = 12 }
-        nesnd_india_sync_bar = { JE = nesnd_india_schools BAR = nesnd_india_schools_bar VALUE = nesnd_india_schools_months_value }
-    }
-}
-nesnd_india_industry_tick = {
-    if = { limit = { nesnd_india_track_available = { T = industry PRIORITY = 2 } }
-        if = { limit = { NOT = { has_variable = nesnd_india_industry_months } } set_variable = { name = nesnd_india_industry_months value = 0 } }
-        if = { limit = { nesnd_india_industry_ready = { COUNTRY = root } } change_variable = { name = nesnd_india_industry_months add = 1 } }
-        clamp_variable = { name = nesnd_india_industry_months min = 0 max = 12 }
-        nesnd_india_sync_bar = { JE = nesnd_india_industry BAR = nesnd_india_industry_bar VALUE = nesnd_india_industry_months_value }
-    }
-}
-# Country scope. Moves the 0-100 meter nesnd_india_<V> by nesnd_india_<V>_delta and shows it on bar BAR of journal JE.
-nesnd_india_meter_tick = {
-    change_variable = { name = nesnd_india_$V$ add = nesnd_india_$V$_delta }
-    clamp_variable = { name = nesnd_india_$V$ min = 0 max = 100 }
-    nesnd_india_sync_bar = { JE = $JE$ BAR = $BAR$ VALUE = nesnd_india_$V$ }
-}
+# The months counted by the two reform tracks, the national community and the dynasty's support are
+# kept on the progress bars of their journals (common/scripted_progress_bars/nesnd_india_core.txt) and
+# read from them (common/script_values/nesnd_india_core.txt). Nothing here counts them a second time.
 nesnd_india_initialize = {
     # The government that began as Mughal keeps this through any change of name (BHT, DRA); the
     # Mughal-only rewards of nesnd_india_schools and nesnd_india_industry read it.
     if = { limit = { c:MUG ?= this NOT = { has_variable = nesnd_india_mughal_court } } set_variable = nesnd_india_mughal_court }
-    if = { limit = { nesnd_india_empire = yes }
-        set_variable = nesnd_india_imperial_line
-        if = { limit = { NOT = { has_variable = nesnd_india_dynasty } } set_variable = { name = nesnd_india_dynasty value = 50 } }
-        if = { limit = { NOT = { has_variable = nesnd_india_community } } set_variable = { name = nesnd_india_community value = 25 } }
+    if = { limit = { nesnd_india_empire = yes } set_variable = nesnd_india_imperial_line }
+}
+# Country scope, from the buttons nesnd_india_dynastic_constitution and nesnd_india_republican_settlement.
+# Census voting replaces a distribution of power law less progressive than it (progressiveness below 50
+# in GAME common/laws/00_distribution_of_power.txt). A law at or above it is kept.
+nesnd_india_settlement_power_law = {
+    if = {
+        limit = {
+            OR = {
+                has_law_or_variant = law_type:law_autocracy
+                has_law = law_type:law_technocracy
+                has_law_or_variant = law_type:law_oligarchy
+                has_law = law_type:law_elder_council
+                has_law = law_type:law_landed_voting
+                has_law = law_type:law_wealth_voting
+            }
+        }
+        activate_law = law_type:law_census_voting
     }
+    else = { custom_tooltip = nesnd_india_keep_power_law_tt }
+}
+# Country scope, from nesnd_india_republican_settlement. A monarchy, chiefdom, theocracy or colonial
+# administration becomes a presidential republic. Any other form of government is kept.
+nesnd_india_settlement_republic = {
+    if = {
+        limit = {
+            OR = {
+                country_has_monarchy_law = yes
+                has_law = law_type:law_chiefdom
+                has_law = law_type:law_theocracy
+                has_law = law_type:law_colonial_administration
+            }
+        }
+        activate_law = law_type:law_presidential_republic
+    }
+    else = { custom_tooltip = nesnd_india_keep_governance_tt }
 }
 nesnd_india_refresh = {
     nesnd_india_initialize = yes

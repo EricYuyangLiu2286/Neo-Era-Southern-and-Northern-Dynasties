@@ -86,15 +86,30 @@ nesnd_mug.4 = {
     option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_mug_repaid_tt }
 }
 
-# The repayment treaty ended before its term in some other way. To Mughal.
+# The repayment treaty ended before its term in some other way. To Mughal and to the creditor.
+# The creditor no longer exists (scope:mug_loan_gone). To Mughal.
 nesnd_mug.5 = {
     type = country_event
     event_image = { video = "unspecific_signed_contract" }
     title = nesnd_mug.5.t
-    desc = nesnd_mug.5.d
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:mug_loan_gone } desc = nesnd_mug.5.d_gone }
+            triggered_desc = { trigger = { trigger_if = { limit = { exists = scope:mug_loan_debtor } NOT = { this = scope:mug_loan_debtor } } trigger_else = { always = no } } desc = nesnd_mug.5.d_creditor }
+            desc = nesnd_mug.5.d
+        }
+    }
     flavor = nesnd_mug.5.f
-    trigger = { exists = scope:mug_loan_creditor }
-    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_mug_lost_tt }
+    trigger = { OR = { exists = scope:mug_loan_creditor exists = scope:mug_loan_gone } }
+    option = {
+        name = nesnd_india_diplomacy_ack
+        default_option = yes
+        if = { limit = { exists = scope:mug_loan_debtor }
+            if = { limit = { NOT = { this = scope:mug_loan_debtor } } custom_tooltip = nesnd_mug_lost_creditor_tt }
+            else = { custom_tooltip = nesnd_mug_lost_tt }
+        }
+        else = { custom_tooltip = nesnd_mug_lost_tt }
+    }
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -132,10 +147,13 @@ nesnd_mug.11 = {
     }
     option = {
         name = nesnd_mug.11.c
+        trigger = { custom_tooltip = { text = nesnd_mug_council_defence_guests_tt any_country = { nesnd_mug_council_defence_guest = { CONVENER = root } } } }
         ai_chance = {
             base = 25
             modifier = { trigger = { is_at_war = yes NOT = { any_scope_state = { nesnd_mug_famine_struck = yes } } } add = 35 }
             modifier = { trigger = { any_scope_state = { nesnd_mug_famine_struck = yes } } add = -5 }
+            # Too little influence left for the pacts this council could sign.
+            modifier = { trigger = { influence < nesnd_mug_council_defence_influence } factor = 0.1 }
         }
         custom_tooltip = nesnd_mug_council_defence_tt
         custom_tooltip = nesnd_mug_council_invite_tt

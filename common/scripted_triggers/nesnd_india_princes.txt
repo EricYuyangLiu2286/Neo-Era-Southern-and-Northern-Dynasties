@@ -62,7 +62,8 @@ nesnd_india_can_address_mission = {
     trigger_if = {
         limit = { exists = $PARTNER$ }
         $PARTNER$ = {
-            nesnd_india_mission_partner = { SENDER = prev }
+            # Who may be asked is already settled by the button's visible block.
+            hidden_trigger = { nesnd_india_mission_partner = { SENDER = prev } }
             is_at_war = no
             nesnd_india_can_pay = { TEXT = nesnd_india_partner_can_fund_tt SUM = prev.nesnd_india_grant }
         }
@@ -228,6 +229,8 @@ nesnd_india_reply_can_accept = {
         }
         trigger_if = { limit = { nesnd_india_incoming_kind = 5 } nesnd_india_defence_possible = { FIRST = scope:india_sender SECOND = scope:india_partner YEARS = 3 } }
         trigger_if = { limit = { nesnd_india_union_reply = yes } nesnd_india_union_can_pay = yes }
+        # A prince that asked to become a dominion: Mughal must still be able to take a dominion today.
+        trigger_if = { limit = { nesnd_india_incoming_kind = 8 scope:india_sender = { nesnd_india_union_mode_value = 2 } } nesnd_india_union_dominion_open = yes }
     } trigger_else = { always = no }
 }
 
@@ -365,9 +368,27 @@ nesnd_india_project_offer_ok = {
                 NOT = { has_modifier = declared_bankruptcy }
             }
         }
+        # A survey: the prince pays the fee on our consent, so it must still have it.
+        trigger_else = {
+            custom_tooltip = {
+                text = nesnd_india_matter_fee_tt
+                var:nesnd_india_matter_from = { gold_reserves >= nesnd_india_matter_amount_value }
+            }
+        }
         custom_tooltip = {
             text = nesnd_india_matter_site_tt
             var:nesnd_india_matter_from = { nesnd_india_project_site_valid = yes }
+        }
+        # A workshop or a railway gives us one new level at once: none may have been built there meanwhile.
+        trigger_if = { limit = { OR = { nesnd_india_project_offer_is = { TYPE = 2 } nesnd_india_project_offer_is = { TYPE = 3 } } }
+            custom_tooltip = {
+                text = nesnd_india_matter_site_fresh_tt
+                var:nesnd_india_matter_from = {
+                    trigger_if = { limit = { nesnd_india_project_type_value = 2 exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { NOT = { has_building = building_tooling_workshop } } }
+                    trigger_else_if = { limit = { exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { NOT = { has_building = building_railway } } }
+                    trigger_else = { always = no }
+                }
+            }
         }
     }
     trigger_else = { always = no }
@@ -435,7 +456,7 @@ nesnd_india_union_host = {
     hidden_trigger = { nesnd_india_empire = yes }
     custom_tooltip = { text = nesnd_india_union_host_free_tt is_subject = no }
     custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done }
-    nesnd_india_community >= 60
+    custom_tooltip = { text = nesnd_india_union_community_tt nesnd_india_community >= 60 }
 }
 
 # Prince scope. The prince can ask the government in nesnd_india_union_host (the richest Mughal,
@@ -497,7 +518,7 @@ nesnd_india_union_dominion_open = {
         nesnd_india_union_dominion_possible = { EMPIRE = scope:india_sender PRINCE = scope:india_partner }
     }
     trigger_else_if = { limit = { nesnd_india_incoming_kind = 8 exists = scope:india_partner exists = scope:india_sender }
-        custom_tooltip = { text = nesnd_india_union_not_own_subject_tt scope:india_sender = { NAND = { is_subject = yes overlord ?= scope:india_partner } } }
+        custom_tooltip = { text = nesnd_india_union_sender_not_subject_tt scope:india_sender = { NAND = { is_subject = yes overlord ?= scope:india_partner } } }
         nesnd_india_union_dominion_possible = { EMPIRE = scope:india_partner PRINCE = scope:india_sender }
     }
     trigger_else = { always = no }
@@ -508,7 +529,15 @@ nesnd_india_union_dominion_possible = {
     custom_tooltip = {
         text = nesnd_india_union_dominion_rank_tt
         $EMPIRE$ = { OR = { is_country_type = recognized is_country_type = colonial } country_rank >= rank_value:minor_power country_rank > $PRINCE$.country_rank }
+        # valid_subject_ranks of the dominion: minor power and below (ce_subject_types.txt:109-114).
+        $PRINCE$ = { country_rank <= rank_value:minor_power }
     }
+}
+# Empire scope. The princely pensions already count nesnd_india_pension_cap shares: one more prince
+# only restarts the ten years (nesnd_india_add_pension).
+nesnd_india_pension_full = {
+    has_modifier = nesnd_india_princely_pensions
+    nesnd_india_pension_count_value >= nesnd_india_pension_cap
 }
 # Mughal can pay the quote, and the compensation as well when it is due.
 nesnd_india_union_can_pay = {
@@ -576,7 +605,7 @@ nesnd_india_union_ai_prince_restless = {
 nesnd_india_colonial_owner = {
     OR = { c:USM ?= this AND = { c:TZ1 ?= this trigger_if = { limit = { exists = c:USM } is_subject_of = c:USM } trigger_else = { always = no } } }
 }
-nesnd_india_uprising_strength = { nesnd_india_empire = yes custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done } has_technology_researched = nationalism OR = { is_subject = no AND = { army_size >= 60 government_legitimacy >= 50 } } }
+nesnd_india_uprising_strength = { nesnd_india_empire = yes custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done } has_technology_researched = nationalism OR = { is_subject = no AND = { army_size_including_conscripts >= 60 government_legitimacy >= 50 } } }
 nesnd_india_contact_safe = { nesnd_india_uprising_strength = yes is_at_war = no is_active_in_diplomatic_play = no custom_tooltip = { text = nesnd_ui_not_india_contact_region_tt NOT = { has_variable = nesnd_india_contact_region } } }
 nesnd_india_colonial_state = {
     state_population >= 300000 owner = { nesnd_india_colonial_owner = yes is_at_war = no is_active_in_diplomatic_play = no }
@@ -604,6 +633,32 @@ nesnd_india_case_launch_ready = {
 nesnd_india_uprising_available = { nesnd_india_empire = yes OR = { custom_tooltip = { text = nesnd_ui_india_contact_region_tt has_variable = nesnd_india_contact_region } AND = { nesnd_india_uprising_strength = yes OR = { nesnd_india_case_target = { STATE = STATE_CIRCARS TAG = IR1 } nesnd_india_case_target = { STATE = STATE_KURNOOL TAG = IR2 } nesnd_india_case_target = { STATE = STATE_MADRAS TAG = IR3 } nesnd_india_case_target = { STATE = STATE_MYSORE TAG = IR4 } nesnd_india_case_target = { STATE = STATE_TRAVANCORE TAG = IR5 } nesnd_india_case_target = { STATE = STATE_GUJARAT TAG = IR6 } } } } }
 
 nesnd_india_case_unrest = { OR = { turmoil >= 0.15 average_sol < 10 } }
+# State region scope. An organisation there is still preparing (stage 1 to 3) in a state of root's.
+nesnd_india_case_against_root = {
+    trigger_if = { limit = { exists = var:nesnd_india_case_owner has_variable = nesnd_india_case_stage } var:nesnd_india_case_owner = root nesnd_india_case_stage_value <= 3 }
+    trigger_else = { always = no }
+}
+# Colonial owner scope. The suppression buttons hang on the journals nesnd_india_usm and nesnd_tianzhu_governance;
+# when neither is open (USM once TZ1 exists, TZ1 once its governance is done), they hang on
+# nesnd_india_case_watch instead.
+nesnd_india_case_watch_live = {
+    hidden_trigger = {
+        nesnd_india_colonial_owner = yes
+        NOT = { nesnd_india_usm_live = yes }
+        NOT = { nesnd_tianzhu_governance_live = yes }
+    }
+    custom_tooltip = {
+        text = nesnd_india_case_watch_open_tt
+        OR = {
+            s:STATE_CIRCARS = { nesnd_india_case_against_root = yes }
+            s:STATE_KURNOOL = { nesnd_india_case_against_root = yes }
+            s:STATE_MADRAS = { nesnd_india_case_against_root = yes }
+            s:STATE_MYSORE = { nesnd_india_case_against_root = yes }
+            s:STATE_TRAVANCORE = { nesnd_india_case_against_root = yes }
+            s:STATE_GUJARAT = { nesnd_india_case_against_root = yes }
+        }
+    }
+}
 nesnd_india_case_can_advance = {
     trigger_if = { limit = { exists = var:nesnd_india_case_state exists = var:nesnd_india_case_sponsor }
         nesnd_india_case_stage_value = 1
