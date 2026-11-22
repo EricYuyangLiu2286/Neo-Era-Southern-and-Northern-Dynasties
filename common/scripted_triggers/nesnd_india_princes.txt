@@ -134,6 +134,9 @@ nesnd_india_reply_valid = {
         trigger_if = { limit = { is_subject = yes } overlord = scope:india_partner_patron } trigger_else = { this = scope:india_partner_patron }
         scope:india_sender = {
             trigger_if = { limit = { nesnd_india_request_kind <= 3 } nesnd_india_mission_country = yes }
+            trigger_else_if = { limit = { nesnd_india_request_kind = 4 }
+                OR = { nesnd_india_diplomacy_live = yes has_journal_entry = nesnd_india_indep }
+            }
             trigger_else = { nesnd_india_diplomacy_live = yes }
             is_at_war = no
             custom_tooltip = { text = nesnd_ui_india_request_clock_tt has_variable = nesnd_india_request_clock }
@@ -674,4 +677,62 @@ nesnd_india_revolt_won = {
     trigger_if = { limit = { custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_india_revolt_origin_tt exists = var:nesnd_india_revolt_origin } }
         any_scope_state = { state_region = prev.var:nesnd_india_revolt_origin }
     } trigger_else = { always = no }
+}
+
+# ==== Seeking independence: public confrontation ====
+# GAME 00_subject_types.txt and MOD ce_subject_types.txt / nesnd_egypt_subject_types.txt.
+# The remaining types cannot start their own plays, even after an autonomy refusal.
+nesnd_india_indep_can_play_as_subject = {
+    OR = {
+        is_subject_type = subject_type_protectorate
+        is_subject_type = subject_type_tributary
+        is_subject_type = subject_type_dominion
+        is_subject_type = subject_type_chartered_company
+        is_subject_type = subject_type_nesnd_egypt_protectorate
+    }
+}
+nesnd_india_indep_autonomy_ready = {
+    hidden_trigger = { has_journal_entry = nesnd_india_indep is_subject = yes exists = overlord }
+    is_at_war = no
+    overlord = { is_at_war = no }
+    liberty_desire >= 75
+    can_increase_autonomy = yes
+    trigger_if = { limit = { nesnd_small_state_country = yes }
+        nesnd_small_can_request = { KIND = 6 RECEIVER = overlord }
+    }
+    trigger_else = {
+        nesnd_india_channel_free = yes
+        overlord = { is_country_alive = yes }
+        NOT = { has_war_with = overlord }
+    }
+}
+nesnd_india_indep_play_visible = {
+    has_journal_entry = nesnd_india_indep
+    is_subject = yes exists = overlord
+    nesnd_india_indep_can_play_as_subject = yes
+    liberty_desire >= 90
+    OR = {
+        can_increase_autonomy = no
+        any_diplomatic_catalyst = { is_diplomatic_catalyst_type = catalyst_autonomy_increase_denied target = root.overlord }
+    }
+}
+nesnd_india_indep_play_ready = {
+    hidden_trigger = { nesnd_india_indep_play_visible = yes }
+    is_at_war = no
+    is_active_in_diplomatic_play = no
+    NOT = { is_country_type = decentralized }
+    NOT = { has_law_or_variant = law_type:law_isolationism }
+    custom_tooltip = { text = nesnd_india_indep_play_cooldown_tt NOT = { has_variable = nesnd_india_indep_play_lock } }
+    custom_tooltip = { text = nesnd_india_indep_no_pending_tt
+        NOR = { has_variable = nesnd_india_request_clock has_variable = nesnd_canon_request_clock has_variable = nesnd_india_matter_clock has_variable = nesnd_external_pending }
+    }
+    trigger_if = { limit = { is_subject = yes exists = overlord }
+        NOT = { has_truce_with = overlord }
+        NOT = { has_war_with = overlord }
+        overlord = { is_country_alive = yes is_active_in_diplomatic_play = no "relations(root)" < relations_threshold:cordial }
+        trigger_if = { limit = { overlord = { is_subject = yes } }
+            overlord.overlord = { "relations(root)" < relations_threshold:cordial }
+        }
+    }
+    trigger_else = { always = no }
 }

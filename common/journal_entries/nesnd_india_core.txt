@@ -259,3 +259,73 @@ nesnd_india_dynasty_journal = {
     weight = 600
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
+
+# ==== Independence and the direct overlord ====
+nesnd_india_indep = {
+    icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+    group = je_group_historical_content
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    weight = 650
+    immediate = { nesnd_india_indep_showdown_init = yes }
+    scripted_progress_bar = nesnd_india_indep_economy_bar
+    scripted_progress_bar = nesnd_india_indep_military_bar
+    scripted_button = nesnd_india_indep_fund_economy_button
+    scripted_button = nesnd_india_indep_fund_military_button
+    scripted_button = nesnd_india_indep_store_button
+    scripted_button = nesnd_india_indep_autonomy
+    scripted_button = nesnd_india_indep_play
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { is_subject_type = subject_type_puppet } desc = nesnd_india_indep_goal_protectorate }
+            triggered_desc = { trigger = { nesnd_india_indep_can_play_as_subject = no } desc = nesnd_india_indep_goal_autonomy }
+            desc = nesnd_india_indep_goal_independence
+        }
+    }
+    on_monthly_pulse = {
+        effect = {
+            if = { limit = { is_subject = yes }
+                if = { limit = { has_variable = nesnd_india_indep_stock has_war_with = overlord } nesnd_india_indep_muster = yes }
+                if = { limit = { is_ai = yes } nesnd_india_indep_subject_ai = yes }
+                nesnd_india_indep_showdown_monthly = yes
+            }
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_indep_conclusion
+        trigger = { is_subject = no }
+        effect = { remove_variable = nesnd_india_indep_stock remove_variable = nesnd_india_indep_was_puppet remove_variable = nesnd_india_indep_play_lock }
+    }
+}
+nesnd_india_indep_overlord = {
+    icon = "gfx/interface/icons/event_icons/nesnd_india_theodolite.dds"
+    group = je_group_historical_content
+    can_revolution_inherit = no
+    weight = 650
+    immediate = { nesnd_india_indep_rank_subjects = yes }
+    scripted_button = nesnd_india_indep_watch_button
+    scripted_button = nesnd_india_indep_purge_button
+    scripted_button = nesnd_india_indep_conciliate_button
+    scripted_button = nesnd_india_indep_coerce_button
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = var:nesnd_india_indep_leader var:nesnd_india_indep_leader ?= { is_direct_subject_of = root has_journal_entry = nesnd_india_indep } } desc = nesnd_india_indep_lord_status }
+            desc = nesnd_india_indep_lord_no_leader
+        }
+    }
+    on_monthly_pulse = {
+        effect = {
+            nesnd_india_indep_rank_subjects = yes
+            if = { limit = { is_ai = yes } nesnd_india_indep_lord_ai = yes }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = { nesnd_india_indep_has_subject = no }
+        effect = { remove_variable = nesnd_india_indep_leader }
+    }
+}

@@ -27,3 +27,42 @@ nesnd_india_case_decay = { value = 0 if = { limit = { nesnd_india_case_stage_val
 nesnd_india_case_monthly = { value = 0 add = nesnd_india_case_organisation add = nesnd_india_case_unrest_growth add = nesnd_india_case_transport add = nesnd_india_case_foreign_training add = nesnd_india_case_decay }
 nesnd_tianzhu_held_regions = { value = 0 every_scope_state = { limit = { nesnd_tianzhu_held_state = yes } add = 1 } max = 8 }
 nesnd_tianzhu_regions_bar_delta = { value = 0 if = { limit = { has_journal_entry = nesnd_india_usm } value = nesnd_tianzhu_held_regions subtract = "je:nesnd_india_usm.scripted_bar_progress(nesnd_tianzhu_regions_bar)" } }
+
+# ==== Independence and the direct overlord ====
+nesnd_india_indep_manufactures = {
+    value = 0
+    every_scope_building = { limit = { is_building_group = bg_manufacturing } add = this.level }
+    divide = 10
+    max = 4
+}
+nesnd_india_indep_arms = {
+    value = 0
+    every_scope_building = {
+        limit = { OR = { is_building_type = building_arms_industry is_building_type = building_artillery_foundry is_building_type = building_munition_plant } }
+        add = this.level
+    }
+    divide = 3
+    max = 4
+}
+nesnd_india_indep_economy = {
+    value = 0
+    if = { limit = { has_journal_entry = nesnd_india_indep } value = "je:nesnd_india_indep.scripted_bar_progress(nesnd_india_indep_economy_bar)" }
+}
+nesnd_india_indep_military = {
+    value = 0
+    if = { limit = { has_journal_entry = nesnd_india_indep } value = "je:nesnd_india_indep.scripted_bar_progress(nesnd_india_indep_military_bar)" }
+}
+nesnd_india_indep_price = {
+    value = 50
+    if = { limit = { overlord ?= { has_revolution = yes } } value = 25 }
+}
+nesnd_india_indep_exposure = {
+    value = 25
+    if = { limit = { has_revolution = yes } value = 10 }
+    else_if = { limit = { has_variable = nesnd_india_indep_watch_wait } value = 50 }
+}
+nesnd_india_indep_shares = { value = 0 if = { limit = { has_variable = nesnd_india_indep_share_count } value = var:nesnd_india_indep_share_count } }
+nesnd_india_indep_stores = { value = 0 if = { limit = { has_variable = nesnd_india_indep_stock } value = var:nesnd_india_indep_stock } }
+nesnd_india_indep_funded_count = { value = 0 every_political_movement = { limit = { has_modifier = nesnd_india_indep_funded } add = 1 } }
+nesnd_india_indep_above_75 = { value = 0 every_subject_or_below = { limit = { is_direct_subject_of = root has_journal_entry = nesnd_india_indep liberty_desire >= 75 } add = 1 } }
+nesnd_india_indep_above_90 = { value = 0 every_subject_or_below = { limit = { is_direct_subject_of = root has_journal_entry = nesnd_india_indep liberty_desire >= 90 } add = 1 } }

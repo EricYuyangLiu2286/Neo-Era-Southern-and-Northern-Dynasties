@@ -16,7 +16,8 @@ nesnd_india_clear_request = {
     remove_variable = nesnd_india_union_mode
 }
 nesnd_india_send_request = {
-    if = { limit = { nesnd_india_mission_country = yes nesnd_india_channel_free = yes exists = scope:india_partner }
+    save_scope_value_as = { name = india_request_kind_to_send value = $KIND$ }
+    if = { limit = { OR = { nesnd_india_mission_country = yes AND = { scope:india_request_kind_to_send = 4 has_journal_entry = nesnd_india_indep is_subject = yes can_increase_autonomy = yes } } nesnd_india_channel_free = yes exists = scope:india_partner }
         if = { limit = { scope:india_partner = { is_country_alive = yes } NOT = { this = scope:india_partner } NOT = { has_war_with = scope:india_partner } }
             save_scope_as = india_sender
             save_scope_value_as = { name = india_sender_regime value = nesnd_india_regime }
@@ -50,6 +51,11 @@ nesnd_india_refuse_request = {
     else_if = { limit = { nesnd_india_reply_valid = yes }
         scope:india_sender = {
             if = { limit = { OR = { nesnd_india_request_kind = 4 nesnd_india_request_kind = 7 } } add_liberty_desire = 10 }
+            if = { limit = { nesnd_india_request_kind = 4 }
+                change_relations = { country = scope:india_partner value = -30 }
+                create_diplomatic_catalyst = { type = catalyst_autonomy_increase_denied target = scope:india_partner }
+                scope:india_partner = { create_diplomatic_catalyst = { type = catalyst_autonomy_increase_requested target = scope:india_sender } }
+            }
             trigger_event = { id = nesnd_india_diplomacy.3 popup = yes }
             nesnd_india_clear_request = yes
         }
@@ -209,7 +215,10 @@ nesnd_india_remove_advisers = {
     remove_variable = nesnd_india_adviser_partner remove_variable = nesnd_india_adviser_patron
 }
 nesnd_india_diplomacy_maintenance = {
-    if = { limit = { NOT = { nesnd_india_mission_country = yes } } nesnd_india_clear_request = yes nesnd_india_remove_advisers = yes }
+    if = { limit = { NOT = { nesnd_india_mission_country = yes } }
+        if = { limit = { NOT = { AND = { has_journal_entry = nesnd_india_indep nesnd_india_request_kind = 4 } } } nesnd_india_clear_request = yes }
+        nesnd_india_remove_advisers = yes
+    }
 
     if = { limit = { has_variable = nesnd_india_request_partner NOT = { has_variable = nesnd_india_request_clock } } nesnd_india_clear_request = yes }
     if = { limit = { has_variable = nesnd_india_incoming_union_sender NOT = { has_variable = nesnd_india_incoming_union_clock } } remove_variable = nesnd_india_incoming_union_sender }
@@ -809,4 +818,97 @@ nesnd_india_migrate_commission_case = {
             }
         }
     }
+}
+
+# ==== Seeking independence: the public confrontation ====
+# Uses the existing two autonomy request channels, with all their existing safeguards.
+nesnd_india_indep_request_autonomy = {
+    if = { limit = { nesnd_india_indep_autonomy_ready = yes }
+        if = { limit = { nesnd_small_state_country = yes }
+            overlord = { save_scope_as = small_receiver }
+            nesnd_small_send_request = { KIND = 6 }
+        }
+        else = {
+            clear_saved_scope = india_partner
+            overlord = { save_scope_as = india_partner }
+            nesnd_india_send_request = { KIND = 4 }
+        }
+    }
+}
+nesnd_india_indep_launch_play = {
+    if = { limit = { nesnd_india_indep_play_ready = yes }
+        save_scope_as = india_indep_seeker
+        overlord = { save_scope_as = india_indep_overlord }
+        create_diplomatic_play = {
+            target_country = scope:india_indep_overlord
+            type = dp_independence
+            add_war_goal = { holder = scope:india_indep_overlord target_country = scope:india_indep_seeker type = humiliation }
+        }
+        set_variable = { name = nesnd_india_indep_play_lock months = 6 }
+    }
+}
+# Observe type changes from either existing request channel or an ordinary diplomatic action.
+nesnd_india_indep_showdown_init = {
+    if = { limit = { is_subject_type = subject_type_puppet }
+        set_variable = { name = nesnd_india_indep_was_puppet value = yes }
+    }
+    else = { remove_variable = nesnd_india_indep_was_puppet }
+}
+nesnd_india_indep_showdown_monthly = {
+    if = { limit = { has_variable = nesnd_india_indep_was_puppet is_subject_type = subject_type_protectorate }
+        overlord = { save_scope_as = india_indep_overlord }
+        trigger_event = { id = nesnd_india_diplomacy.10 popup = yes }
+    }
+    nesnd_india_indep_showdown_init = yes
+    if = { limit = { is_ai = yes }
+        if = { limit = { nesnd_india_indep_play_ready = yes } nesnd_india_indep_launch_play = yes }
+        else_if = { limit = { nesnd_india_indep_autonomy_ready = yes } nesnd_india_indep_request_autonomy = yes }
+    }
+}
+
+# ==== Overlord case files: three slots, newest first ====
+# Called on discovery, before the reply. Actor and movement therefore describe the incident,
+# even if its political movement disappears before the overlord chooses an option.
+nesnd_india_indep_file_case = {
+    # Literal slot names also make the archive readable to the static variable index.
+    if = { limit = { has_variable = nesnd_india_indep_case_head var:nesnd_india_indep_case_head = 1 }
+        set_variable = { name = nesnd_india_indep_case_head value = 2 }
+        set_variable = { name = nesnd_india_indep_case_2_actor value = scope:indep_actor }
+        set_variable = { name = nesnd_india_indep_case_2_definition value = scope:indep_actor.country_definition }
+        set_variable = { name = nesnd_india_indep_case_2_kind value = scope:indep_kind }
+        set_variable = { name = nesnd_india_indep_case_2_clock days = 100000 }
+        remove_variable = nesnd_india_indep_case_2_movement
+        remove_variable = nesnd_india_indep_case_2_type
+        if = { limit = { scope:indep_kind = 1 exists = scope:indep_movement }
+            set_variable = { name = nesnd_india_indep_case_2_movement value = scope:indep_movement }
+            set_variable = { name = nesnd_india_indep_case_2_type value = scope:indep_movement.type }
+        }
+    }
+    else_if = { limit = { has_variable = nesnd_india_indep_case_head var:nesnd_india_indep_case_head = 2 }
+        set_variable = { name = nesnd_india_indep_case_head value = 3 }
+        set_variable = { name = nesnd_india_indep_case_3_actor value = scope:indep_actor }
+        set_variable = { name = nesnd_india_indep_case_3_definition value = scope:indep_actor.country_definition }
+        set_variable = { name = nesnd_india_indep_case_3_kind value = scope:indep_kind }
+        set_variable = { name = nesnd_india_indep_case_3_clock days = 100000 }
+        remove_variable = nesnd_india_indep_case_3_movement
+        remove_variable = nesnd_india_indep_case_3_type
+        if = { limit = { scope:indep_kind = 1 exists = scope:indep_movement }
+            set_variable = { name = nesnd_india_indep_case_3_movement value = scope:indep_movement }
+            set_variable = { name = nesnd_india_indep_case_3_type value = scope:indep_movement.type }
+        }
+    }
+    else = {
+        set_variable = { name = nesnd_india_indep_case_head value = 1 }
+        set_variable = { name = nesnd_india_indep_case_1_actor value = scope:indep_actor }
+        set_variable = { name = nesnd_india_indep_case_1_definition value = scope:indep_actor.country_definition }
+        set_variable = { name = nesnd_india_indep_case_1_kind value = scope:indep_kind }
+        set_variable = { name = nesnd_india_indep_case_1_clock days = 100000 }
+        remove_variable = nesnd_india_indep_case_1_movement
+        remove_variable = nesnd_india_indep_case_1_type
+        if = { limit = { scope:indep_kind = 1 exists = scope:indep_movement }
+            set_variable = { name = nesnd_india_indep_case_1_movement value = scope:indep_movement }
+            set_variable = { name = nesnd_india_indep_case_1_type value = scope:indep_movement.type }
+        }
+    }
+    set_variable = { name = nesnd_india_indep_recent_case months = 12 }
 }

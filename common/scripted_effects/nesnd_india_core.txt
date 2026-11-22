@@ -77,3 +77,240 @@ nesnd_india_sync_bar = {
     }
 }
 
+
+# ==== Independence and the direct overlord ====
+nesnd_india_indep_admit = {
+    if = { limit = { NOT = { has_journal_entry = nesnd_india_indep } }
+        add_journal_entry = { type = nesnd_india_indep }
+    }
+    overlord = {
+        if = { limit = { NOT = { has_journal_entry = nesnd_india_indep_overlord } }
+            add_journal_entry = { type = nesnd_india_indep_overlord }
+        }
+    }
+}
+# The button and the monthly AI share the same price and eligibility. The event spends only on selection.
+nesnd_india_indep_choose_movement = {
+    save_scope_as = indep_actor
+    save_scope_value_as = { name = indep_track value = $INDEX$ }
+    overlord = {
+        save_scope_as = indep_lord
+        clear_saved_scope = indep_choice_1
+        ordered_political_movement = {
+            order_by = political_movement_$SUPPORT$_support
+            position = 0
+            check_range_bounds = no
+            save_scope_as = indep_choice_1
+        }
+        clear_saved_scope = indep_choice_2
+        ordered_political_movement = {
+            order_by = political_movement_$SUPPORT$_support
+            position = 1
+            check_range_bounds = no
+            save_scope_as = indep_choice_2
+        }
+        clear_saved_scope = indep_choice_3
+        ordered_political_movement = {
+            order_by = political_movement_$SUPPORT$_support
+            position = 2
+            check_range_bounds = no
+            save_scope_as = indep_choice_3
+        }
+    }
+    if = { limit = { exists = scope:indep_choice_1 }
+        if = { limit = { is_ai = yes }
+            scope:indep_choice_1 = { save_scope_as = indep_movement }
+            nesnd_india_indep_fund = { TRACK = $TRACK$ }
+        }
+        else = { trigger_event = { id = nesnd_india_indep.1 popup = yes } }
+    }
+}
+nesnd_india_indep_fund = {
+    if = {
+        limit = {
+            nesnd_india_indep_can_fund = { TRACK = $TRACK$ }
+            overlord = scope:indep_lord
+            scope:indep_movement.owner ?= scope:indep_lord
+        }
+        save_scope_value_as = { name = indep_cost value = { value = nesnd_india_indep_price multiply = -1 } }
+        je:nesnd_india_indep = { add_progress = { name = nesnd_india_indep_$TRACK$_bar value = scope:indep_cost } }
+        # A receipt is unique across donors and survives a change of overlord.
+        if = { limit = { NOT = { has_global_variable = nesnd_india_indep_serial } } set_global_variable = { name = nesnd_india_indep_serial value = 0 } }
+        change_global_variable = { name = nesnd_india_indep_serial add = 1 }
+        save_scope_value_as = { name = indep_receipt value = global_var:nesnd_india_indep_serial }
+        scope:indep_movement = {
+            if = { limit = { has_modifier = nesnd_india_indep_funded } remove_modifier = nesnd_india_indep_funded }
+            add_modifier = { name = nesnd_india_indep_funded months = 24 }
+            set_variable = { name = nesnd_india_indep_last_funding value = scope:indep_receipt months = 24 }
+        }
+        set_variable = { name = nesnd_india_indep_share_count value = { value = nesnd_india_indep_shares add = 1 max = 3 } months = 24 }
+        set_variable = { name = nesnd_india_indep_backing_receipt value = scope:indep_receipt }
+        nesnd_india_indep_set_backing = yes
+        trigger_event = { id = nesnd_india_indep.9 months = 24 }
+        add_liberty_desire = 5
+        save_scope_value_as = { name = indep_kind value = 1 }
+        nesnd_india_indep_discovery = yes
+    }
+}
+# A later investigation changes the multiplier, but the original award's delayed expiry still applies.
+nesnd_india_indep_set_backing = {
+    if = { limit = { has_modifier = nesnd_india_indep_backing } remove_modifier = nesnd_india_indep_backing }
+    if = { limit = { nesnd_india_indep_shares > 0 }
+        add_modifier = { name = nesnd_india_indep_backing months = 24 multiplier = nesnd_india_indep_shares }
+    }
+}
+nesnd_india_indep_store = {
+    save_scope_as = indep_actor
+    overlord = { save_scope_as = indep_lord }
+    clear_saved_scope = indep_movement
+    save_scope_value_as = { name = indep_kind value = 2 }
+    je:nesnd_india_indep = { add_progress = { name = nesnd_india_indep_military_bar value = -50 } }
+    set_variable = { name = nesnd_india_indep_stock value = { value = nesnd_india_indep_stores add = 1 max = 3 } }
+    nesnd_india_indep_discovery = yes
+}
+nesnd_india_indep_discovery = {
+    scope:indep_lord = {
+        random = {
+            chance = nesnd_india_indep_exposure
+            nesnd_india_indep_file_case = yes
+            trigger_event = { id = nesnd_india_indep.2 popup = yes }
+        }
+    }
+}
+nesnd_india_indep_investigate = {
+    change_relations = { country = scope:indep_actor value = -30 }
+    if = { limit = { scope:indep_kind = 2 }
+        scope:indep_actor = {
+            if = { limit = { nesnd_india_indep_stores > 1 } change_variable = { name = nesnd_india_indep_stock subtract = 1 } }
+            else = { remove_variable = nesnd_india_indep_stock }
+        }
+    }
+    else = {
+        scope:indep_movement ?= {
+            if = { limit = { var:nesnd_india_indep_last_funding ?= scope:indep_receipt }
+                if = { limit = { has_modifier = nesnd_india_indep_funded } remove_modifier = nesnd_india_indep_funded }
+                remove_variable = nesnd_india_indep_last_funding
+            }
+        }
+        scope:indep_actor = {
+            if = { limit = { nesnd_india_indep_shares > 0 }
+                change_variable = { name = nesnd_india_indep_share_count subtract = 1 }
+                nesnd_india_indep_set_backing = yes
+            }
+        }
+    }
+}
+nesnd_india_indep_muster = {
+    if = { limit = { nesnd_india_indep_stores > 0 exists = capital }
+        if = { limit = { nesnd_india_indep_stores = 1 } nesnd_india_indep_raise_army = { COUNT = 2 } }
+        else_if = { limit = { nesnd_india_indep_stores = 2 } nesnd_india_indep_raise_army = { COUNT = 4 } }
+        else = { nesnd_india_indep_raise_army = { COUNT = 6 } }
+        remove_variable = nesnd_india_indep_stock
+    }
+}
+nesnd_india_indep_subject_ai = {
+    if = { limit = { liberty_desire >= 25 nesnd_india_indep_peaceful_contact = yes }
+        if = { limit = { nesnd_india_indep_shares >= 3 nesnd_india_indep_can_store = yes } nesnd_india_indep_store = yes }
+        else_if = { limit = { nesnd_india_indep_shares < 3 nesnd_india_indep_can_fund = { TRACK = economy } }
+            nesnd_india_indep_choose_movement = { TRACK = economy SUPPORT = wealth INDEX = 1 }
+        }
+        else_if = { limit = { nesnd_india_indep_shares < 3 nesnd_india_indep_can_fund = { TRACK = military } }
+            nesnd_india_indep_choose_movement = { TRACK = military SUPPORT = military INDEX = 2 }
+        }
+    }
+}
+
+# ==== Independence and the direct overlord ====
+nesnd_india_indep_watch = {
+    add_treasury = -10000
+    set_variable = { name = nesnd_india_indep_watch_wait months = 24 }
+}
+nesnd_india_indep_purge = {
+    add_treasury = -10000
+    every_political_movement = {
+        limit = { has_modifier = nesnd_india_indep_funded }
+        remove_modifier = nesnd_india_indep_funded
+        remove_variable = nesnd_india_indep_last_funding
+    }
+    set_variable = { name = nesnd_india_indep_purge_wait months = 12 }
+}
+nesnd_india_indep_rank_subjects = {
+    save_scope_as = indep_lord
+    clear_saved_scope = indep_subject_1
+    ordered_subject_or_below = {
+        limit = { is_direct_subject_of = scope:indep_lord has_journal_entry = nesnd_india_indep }
+        order_by = liberty_desire
+        position = 0
+        check_range_bounds = no
+        save_scope_as = indep_subject_1
+    }
+    clear_saved_scope = indep_subject_2
+    ordered_subject_or_below = {
+        limit = { is_direct_subject_of = scope:indep_lord has_journal_entry = nesnd_india_indep }
+        order_by = liberty_desire
+        position = 1
+        check_range_bounds = no
+        save_scope_as = indep_subject_2
+    }
+    clear_saved_scope = indep_subject_3
+    ordered_subject_or_below = {
+        limit = { is_direct_subject_of = scope:indep_lord has_journal_entry = nesnd_india_indep }
+        order_by = liberty_desire
+        position = 2
+        check_range_bounds = no
+        save_scope_as = indep_subject_3
+    }
+    remove_variable = nesnd_india_indep_leader
+    if = { limit = { exists = scope:indep_subject_1 } set_variable = { name = nesnd_india_indep_leader value = scope:indep_subject_1 } }
+}
+nesnd_india_indep_approach = {
+    if = { limit = { exists = scope:indep_target scope:indep_target = { is_direct_subject_of = scope:indep_lord has_journal_entry = nesnd_india_indep } }
+        if = { limit = { scope:indep_policy = 1 gold_reserves >= 20000 nesnd_india_indep_policy_ready = { POLICY = conciliate } }
+            add_treasury = -20000
+            set_variable = { name = nesnd_india_indep_conciliate_wait months = 12 }
+            scope:indep_target = {
+                add_treasury = 20000
+                add_liberty_desire = -15
+                je:nesnd_india_indep = {
+                    add_progress = { name = nesnd_india_indep_economy_bar value = -25 }
+                    add_progress = { name = nesnd_india_indep_military_bar value = -25 }
+                }
+                trigger_event = { id = nesnd_india_indep.6 popup = yes }
+            }
+        }
+        else_if = { limit = { scope:indep_policy = 2 nesnd_india_indep_policy_ready = { POLICY = coerce } }
+            set_variable = { name = nesnd_india_indep_coerce_wait months = 12 }
+            change_relations = { country = scope:indep_target value = -30 }
+            scope:indep_target = {
+                remove_variable = nesnd_india_indep_stock
+                add_liberty_desire = 5
+                je:nesnd_india_indep = {
+                    add_progress = { name = nesnd_india_indep_economy_bar value = -50 }
+                    add_progress = { name = nesnd_india_indep_military_bar value = -50 }
+                }
+                trigger_event = { id = nesnd_india_indep.7 popup = yes }
+            }
+        }
+        nesnd_india_indep_rank_subjects = yes
+    }
+}
+nesnd_india_indep_lord_ai = {
+    if = { limit = { has_variable = nesnd_india_indep_recent_case gold_reserves >= 10000 nesnd_india_indep_policy_ready = { POLICY = watch } } nesnd_india_indep_watch = yes }
+    if = { limit = { nesnd_india_indep_funded_count >= 2 gold_reserves >= 10000 nesnd_india_indep_policy_ready = { POLICY = purge } } nesnd_india_indep_purge = yes }
+    if = { limit = { scope:indep_subject_1 ?= { liberty_desire >= 75 } }
+        scope:indep_subject_1 = { save_scope_as = indep_target }
+        if = { limit = { army_size < { value = scope:indep_target.army_size multiply = 3 } }
+            save_scope_value_as = { name = indep_policy value = 1 }
+        }
+        else = { save_scope_value_as = { name = indep_policy value = 2 } }
+        nesnd_india_indep_approach = yes
+    }
+}
+
+nesnd_india_indep_raise_army = {
+    create_military_formation = {
+        type = army
+        hq_region = capital.region
+        combat_unit = { type = unit_type:combat_unit_type_irregular_infantry state_region = capital.state_region count = $COUNT$ }
+    }
+}

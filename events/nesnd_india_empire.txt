@@ -363,3 +363,190 @@ nesnd_mug.24 = {
         hidden_effect = { every_scope_state = { limit = { has_variable = nesnd_mug_famine_state } remove_variable = nesnd_mug_famine_state } }
     }
 }
+
+namespace = nesnd_india_indep
+
+nesnd_india_indep.1 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.1.t
+    desc = nesnd_india_indep.1.d
+    flavor = nesnd_india_indep.1.f
+    cancellation_trigger = { NOT = { overlord ?= scope:indep_lord } }
+    option = {
+        name = nesnd_india_indep_movement_1
+        trigger = {
+            hidden_trigger = { exists = scope:indep_choice_1 scope:indep_choice_1.owner ?= scope:indep_lord }
+            trigger_if = { limit = { scope:indep_track = 1 } nesnd_india_indep_can_fund = { TRACK = economy } }
+            trigger_else = { nesnd_india_indep_can_fund = { TRACK = military } }
+        }
+        custom_tooltip = nesnd_india_indep_fund_tt
+        hidden_effect = {
+            scope:indep_choice_1 = { save_scope_as = indep_movement }
+            if = { limit = { scope:indep_track = 1 } nesnd_india_indep_fund = { TRACK = economy } }
+            else = { nesnd_india_indep_fund = { TRACK = military } }
+        }
+    }
+    option = {
+        name = nesnd_india_indep_movement_2
+        trigger = {
+            hidden_trigger = { exists = scope:indep_choice_2 scope:indep_choice_2.owner ?= scope:indep_lord }
+            trigger_if = { limit = { scope:indep_track = 1 } nesnd_india_indep_can_fund = { TRACK = economy } }
+            trigger_else = { nesnd_india_indep_can_fund = { TRACK = military } }
+        }
+        custom_tooltip = nesnd_india_indep_fund_tt
+        hidden_effect = {
+            scope:indep_choice_2 = { save_scope_as = indep_movement }
+            if = { limit = { scope:indep_track = 1 } nesnd_india_indep_fund = { TRACK = economy } }
+            else = { nesnd_india_indep_fund = { TRACK = military } }
+        }
+    }
+    option = {
+        name = nesnd_india_indep_movement_3
+        trigger = {
+            hidden_trigger = { exists = scope:indep_choice_3 scope:indep_choice_3.owner ?= scope:indep_lord }
+            trigger_if = { limit = { scope:indep_track = 1 } nesnd_india_indep_can_fund = { TRACK = economy } }
+            trigger_else = { nesnd_india_indep_can_fund = { TRACK = military } }
+        }
+        custom_tooltip = nesnd_india_indep_fund_tt
+        hidden_effect = {
+            scope:indep_choice_3 = { save_scope_as = indep_movement }
+            if = { limit = { scope:indep_track = 1 } nesnd_india_indep_fund = { TRACK = economy } }
+            else = { nesnd_india_indep_fund = { TRACK = military } }
+        }
+    }
+    option = { name = nesnd_india_indep_defer default_option = yes custom_tooltip = nesnd_india_indep_defer_tt }
+}
+
+nesnd_india_indep.2 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.2.t
+    desc = { first_valid = {
+        triggered_desc = { trigger = { scope:indep_kind = 2 } desc = nesnd_india_indep.2.d_arms }
+        triggered_desc = { trigger = { exists = scope:indep_movement } desc = nesnd_india_indep.2.d_funding }
+        desc = nesnd_india_indep.2.d_gone
+    } }
+    flavor = nesnd_india_indep.2.f
+    cancellation_trigger = { NOT = { exists = scope:indep_actor } }
+    option = {
+        name = nesnd_india_indep.2.a
+        ai_chance = { base = 70 modifier = { trigger = { has_revolution = yes } add = -40 } }
+        if = { limit = { scope:indep_kind = 2 } custom_tooltip = nesnd_india_indep_impound_tt }
+        else = { custom_tooltip = nesnd_india_indep_trace_tt }
+        hidden_effect = {
+            nesnd_india_indep_investigate = yes
+            scope:indep_actor ?= { trigger_event = { id = nesnd_india_indep.3 popup = yes } }
+        }
+    }
+    option = {
+        name = nesnd_india_indep.2.b
+        default_option = yes
+        ai_chance = { base = 30 modifier = { trigger = { has_revolution = yes } add = 40 } }
+        custom_tooltip = nesnd_india_indep_file_only_tt
+        hidden_effect = { scope:indep_actor ?= { trigger_event = { id = nesnd_india_indep.4 popup = yes } } }
+    }
+}
+
+nesnd_india_indep.5 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.5.t
+    desc = { first_valid = {
+        triggered_desc = { trigger = { scope:indep_policy = 1 } desc = nesnd_india_indep.5.d_conciliate }
+        desc = nesnd_india_indep.5.d_coerce
+    } }
+    flavor = nesnd_india_indep.5.f
+    option = {
+        name = nesnd_india_indep_target_1
+        trigger = {
+            hidden_trigger = { scope:indep_subject_1 ?= { is_direct_subject_of = root has_journal_entry = nesnd_india_indep } }
+            trigger_if = { limit = { scope:indep_policy = 1 } gold_reserves >= 20000 nesnd_india_indep_policy_ready = { POLICY = conciliate } }
+            trigger_else = { nesnd_india_indep_policy_ready = { POLICY = coerce } }
+        }
+        if = { limit = { scope:indep_policy = 1 } custom_tooltip = nesnd_india_indep_conciliate_terms }
+        else = { custom_tooltip = nesnd_india_indep_coerce_terms }
+        hidden_effect = {
+            scope:indep_subject_1 = { save_scope_as = indep_target }
+            nesnd_india_indep_approach = yes
+        }
+    }
+    option = {
+        name = nesnd_india_indep_target_2
+        trigger = {
+            hidden_trigger = { scope:indep_subject_2 ?= { is_direct_subject_of = root has_journal_entry = nesnd_india_indep } }
+            trigger_if = { limit = { scope:indep_policy = 1 } gold_reserves >= 20000 nesnd_india_indep_policy_ready = { POLICY = conciliate } }
+            trigger_else = { nesnd_india_indep_policy_ready = { POLICY = coerce } }
+        }
+        if = { limit = { scope:indep_policy = 1 } custom_tooltip = nesnd_india_indep_conciliate_terms }
+        else = { custom_tooltip = nesnd_india_indep_coerce_terms }
+        hidden_effect = {
+            scope:indep_subject_2 = { save_scope_as = indep_target }
+            nesnd_india_indep_approach = yes
+        }
+    }
+    option = {
+        name = nesnd_india_indep_target_3
+        trigger = {
+            hidden_trigger = { scope:indep_subject_3 ?= { is_direct_subject_of = root has_journal_entry = nesnd_india_indep } }
+            trigger_if = { limit = { scope:indep_policy = 1 } gold_reserves >= 20000 nesnd_india_indep_policy_ready = { POLICY = conciliate } }
+            trigger_else = { nesnd_india_indep_policy_ready = { POLICY = coerce } }
+        }
+        if = { limit = { scope:indep_policy = 1 } custom_tooltip = nesnd_india_indep_conciliate_terms }
+        else = { custom_tooltip = nesnd_india_indep_coerce_terms }
+        hidden_effect = {
+            scope:indep_subject_3 = { save_scope_as = indep_target }
+            nesnd_india_indep_approach = yes
+        }
+    }
+    option = { name = nesnd_india_indep_defer default_option = yes custom_tooltip = nesnd_india_indep_defer_tt }
+}
+
+nesnd_india_indep.3 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.3.t
+    desc = nesnd_india_indep.3.d
+    flavor = nesnd_india_indep.3.f
+    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_india_indep.3.result }
+}
+
+nesnd_india_indep.4 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.4.t
+    desc = nesnd_india_indep.4.d
+    flavor = nesnd_india_indep.4.f
+    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_india_indep.4.result }
+}
+
+nesnd_india_indep.6 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.6.t
+    desc = nesnd_india_indep.6.d
+    flavor = nesnd_india_indep.6.f
+    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_india_indep.6.result }
+}
+
+nesnd_india_indep.7 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.7.t
+    desc = nesnd_india_indep.7.d
+    flavor = nesnd_india_indep.7.f
+    option = { name = nesnd_india_diplomacy_ack default_option = yes custom_tooltip = nesnd_india_indep.7.result }
+}
+
+# If a share was seized and its multiplier reissued, still remove it on the date of the latest grant.
+nesnd_india_indep.9 = {
+    type = country_event
+    hidden = yes
+    immediate = {
+        if = { limit = { var:nesnd_india_indep_backing_receipt ?= scope:indep_receipt }
+            if = { limit = { has_modifier = nesnd_india_indep_backing } remove_modifier = nesnd_india_indep_backing }
+            remove_variable = nesnd_india_indep_backing_receipt
+            remove_variable = nesnd_india_indep_share_count
+        }
+    }
+}
