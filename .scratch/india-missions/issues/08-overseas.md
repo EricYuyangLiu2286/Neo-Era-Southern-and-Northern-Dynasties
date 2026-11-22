@@ -12,7 +12,7 @@ Evidence: 工作台 `reports/2026-11-21-india-development/海外通商/交付记
 新文件：`common/scripted_triggers|scripted_effects|script_values|scripted_buttons|journal_entries/nesnd_india_overseas.txt`，`events/nesnd_india_overseas.txt`（命名空间 `nesnd_india_overseas`），`localization/*/replace/nesnd_india_overseas_l_*.yml`。日志和本地化由工作台 `海外通商/build_overseas.py` 生成。
 
 改动：
-- 「不丹、尼泊尔的条约」那一套改成参数，供两条线共用：期限读脚本值 `nesnd_india_frontier_<T>_days`、`_notice_days`；付款与记录 `nesnd_india_frontier_settle = { HOLDER PARTNER T AMOUNT }`；退约 `nesnd_india_frontier_withdraw_article = { PARTNER ARTICLE SOURCE TARGET BY }`；每月检查 `nesnd_india_frontier_tick` 加 `ASK = small|empire`；续约 `nesnd_india_frontier_renew` 发给条约另一方；事件 `nesnd_india_frontier.3`、`.4` 按种类分段，`.3.f` 不再写年数。
+- 记录、到期、续约那一套改成参数：期限读脚本值 `nesnd_india_frontier_<T>_days`、`_notice_days`；付款与记录 `nesnd_india_frontier_settle = { HOLDER PARTNER T AMOUNT }`；退约 `nesnd_india_frontier_withdraw_article = { PARTNER ARTICLE SOURCE TARGET BY }`；每月检查 `nesnd_india_frontier_tick` 加 `ASK = small|empire`；续约 `nesnd_india_frontier_renew` 发给条约另一方；事件 `nesnd_india_frontier.3`、`.4` 按种类分段，`.3.f` 不再写年数。
 - 「印度事务」加事务种类 10 贸易特权、11 条约港、12 和 13 两者的续约（`nesnd_india_matters.txt` 四个文件和日志 `nesnd_india_foreign_affairs`）。11、13 算对方给出，凡附属国都要宗主国许可；10、12 只有傀儡国要。10、11 占六个月冷却。
 - `nesnd_india_refresh` 调 `nesnd_india_overseas_upkeep`；on_action 的范围加 `has_variable = nesnd_india_frontier_overseas_trade_with`、`_port_with`（持有记录的当地政府每月检查到期）。
 
@@ -28,7 +28,7 @@ Evidence: 工作台 `reports/2026-11-21-india-development/海外通商/交付记
 
 ## 没有做
 
-领土、保护关系、驻军；外交博弈和战争目标；喜马拉雅方向；买船造船；改原版国际认可；已有玩家文字里的「德里」等代称（七个键，列在交付记录第八节）。
+领土、保护关系、驻军；外交博弈和战争目标；买船造船；改原版国际认可；已有玩家文字里的「德里」等代称（七个键，列在交付记录第八节）。
 
 ## 已按代码核验（原「代码无法证实」三项）
 
