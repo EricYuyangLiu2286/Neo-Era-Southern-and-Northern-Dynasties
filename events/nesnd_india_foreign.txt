@@ -1,69 +1,17 @@
 ﻿namespace = nesnd_india_frontier
 namespace = nesnd_india_overseas
 
-# ==== Treaties in the Himalayas (formerly nesnd_india_frontier.txt) ====
-# The other government agreed: a treaty signed, or a renewal agreed. To the asking country.
-nesnd_india_frontier.1 = {
-    type = country_event
-    event_image = { video = "unspecific_signed_contract" }
-    title = nesnd_india_frontier.1.t
-    desc = {
-        first_valid = {
-            triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 2 } desc = nesnd_india_frontier.1.d_trade }
-            triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 3 } desc = nesnd_india_frontier.1.d_access }
-            triggered_desc = { trigger = { exists = scope:india_matter_kind scope:india_matter_kind = 4 } desc = nesnd_india_frontier.1.d_renew_trade }
-            desc = nesnd_india_frontier.1.d_renew_access
-        }
-    }
-    flavor = nesnd_india_frontier.1.f
-    trigger = { exists = scope:india_matter_to }
-    cancellation_trigger = { NOT = { exists = scope:india_matter_to } }
-    option = {
-        name = nesnd_india_diplomacy_ack
-        default_option = yes
-        if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 2 } custom_tooltip = nesnd_india_frontier_signed_trade_tt }
-        else_if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 3 } custom_tooltip = nesnd_india_frontier_signed_access_tt }
-        else = { custom_tooltip = nesnd_india_frontier_renewed_tt }
-    }
-}
+# ==== Shared treaty records (formerly nesnd_india_frontier.txt) ====
+# The events of the Himalayan treaties (Bhutan and Nepal with Mughal) were removed; .3 and .4 serve the
+# overseas journal's trade privilege (kind 10).
 
-# No agreement. To the asking country.
-nesnd_india_frontier.2 = {
-    type = country_event
-    event_image = { video = "unspecific_signed_contract" }
-    title = nesnd_india_frontier.2.t
-    desc = {
-        first_valid = {
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 1 exists = scope:india_matter_permit } desc = nesnd_india_frontier.2.d_forbid }
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_kind scope:india_matter_kind >= 4 exists = scope:india_matter_to } desc = nesnd_india_frontier.2.d_renew_decline }
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 exists = scope:india_matter_kind scope:india_matter_kind >= 4 } desc = nesnd_india_frontier.2.d_renew_silent }
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to } desc = nesnd_india_frontier.2.d_decline }
-            triggered_desc = { trigger = { exists = scope:india_matter_result scope:india_matter_result = 3 } desc = nesnd_india_frontier.2.d_silent }
-            desc = nesnd_india_frontier.2.d_void
-        }
-    }
-    flavor = nesnd_india_frontier.2.f
-    option = {
-        name = nesnd_india_diplomacy_ack
-        default_option = yes
-        if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind >= 4 } custom_tooltip = nesnd_india_frontier_lapse_tt }
-        else = { custom_tooltip = nesnd_india_frontier_failed_tt }
-    }
-}
-
-# 180 days before a treaty expires. To Bhutan or Nepal; for the overseas journal's trade privilege
-# (kind 10), to the Indian state that receives it. A treaty port has no term and is never asked about.
+# 180 days before a trade privilege of the overseas journal expires. To the Indian state that receives it.
+# A treaty port has no term and is never asked about.
 nesnd_india_frontier.3 = {
     type = country_event
     event_image = { video = "unspecific_signed_contract" }
     title = nesnd_india_frontier.3.t
-    desc = {
-        first_valid = {
-            triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } desc = nesnd_india_frontier.3.d_trade }
-            triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 10 } desc = nesnd_india_frontier.3.d_overseas_trade }
-            desc = nesnd_india_frontier.3.d_access
-        }
-    }
+    desc = nesnd_india_frontier.3.d_overseas_trade
     flavor = nesnd_india_frontier.3.f
     trigger = { exists = scope:india_frontier_empire }
     cancellation_trigger = { NOT = { exists = scope:india_frontier_empire } }
@@ -71,16 +19,12 @@ nesnd_india_frontier.3 = {
         name = nesnd_india_frontier.3.a
         ai_chance = {
             base = 1
-            modifier = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } add = 2 }
             modifier = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 } add = 2 }
-            # The other side of the treaty: the local government for the overseas journal, Mughal otherwise.
+            # The other side of the treaty: the local government.
             modifier = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 exists = scope:india_frontier_small "relations(scope:india_frontier_small)" >= 50 } add = 1 }
-            modifier = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind < 10 exists = scope:india_frontier_empire "relations(scope:india_frontier_empire)" >= 50 } add = 1 }
         }
-        if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 } custom_tooltip = nesnd_india_overseas_renew_tt }
-        else = { custom_tooltip = nesnd_india_frontier_renew_tt }
-        # The renewal of an overseas trade privilege (kind 12) still asks the overlords; a Himalayan
-        # renewal (kinds 4 and 5) asks none, as the overlords consented when the treaty was first signed.
+        custom_tooltip = nesnd_india_overseas_renew_tt
+        # The renewal of an overseas trade privilege (kind 12) still asks the overlords.
         if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 exists = scope:india_frontier_small }
             if = { limit = { nesnd_india_consent_needed = { OTHER = scope:india_frontier_small GRANTS = no } } custom_tooltip = nesnd_india_frontier_consent_own_tt }
             if = { limit = { scope:india_frontier_small = { nesnd_india_consent_needed = { OTHER = root GRANTS = no } } } custom_tooltip = nesnd_india_overseas_renew_consent_tt }
@@ -88,33 +32,24 @@ nesnd_india_frontier.3 = {
         # Another matter of ours is open: the request cannot go now, and the question is put again later.
         if = { limit = { has_variable = nesnd_india_matter_kind } custom_tooltip = nesnd_india_frontier_renew_later_tt }
         hidden_effect = {
-            if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } nesnd_india_frontier_renew = { T = trade KIND = 4 AMOUNT = nesnd_india_frontier_renew_payment } }
-            else_if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind = 10 } nesnd_india_frontier_renew = { T = overseas_trade KIND = 12 AMOUNT = nesnd_india_overseas_trade_renew_payment } }
-            else = { nesnd_india_frontier_renew = { T = access KIND = 5 AMOUNT = nesnd_india_frontier_renew_payment } }
+            nesnd_india_frontier_renew = { T = overseas_trade KIND = 12 AMOUNT = nesnd_india_overseas_trade_renew_payment }
         }
     }
     option = {
         name = nesnd_india_frontier.3.b
         default_option = yes
         ai_chance = { base = 1 }
-        if = { limit = { exists = scope:india_frontier_kind scope:india_frontier_kind >= 10 } custom_tooltip = nesnd_india_overseas_let_lapse_tt }
-        else = { custom_tooltip = nesnd_india_frontier_let_lapse_tt }
+        custom_tooltip = nesnd_india_overseas_let_lapse_tt
     }
 }
 
-# A treaty not renewed has expired and the side that keeps the record (Bhutan or Nepal, or the overseas
-# local government of a trade privilege) has withdrawn. To both governments.
+# A trade privilege of the overseas journal not renewed has expired and the local government that keeps the
+# record has withdrawn. To both governments.
 nesnd_india_frontier.4 = {
     type = country_event
     event_image = { video = "unspecific_signed_contract" }
     title = nesnd_india_frontier.4.t
-    desc = {
-        first_valid = {
-            triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 2 } desc = nesnd_india_frontier.4.d_trade }
-            triggered_desc = { trigger = { exists = scope:india_frontier_kind scope:india_frontier_kind = 10 } desc = nesnd_india_frontier.4.d_overseas_trade }
-            desc = nesnd_india_frontier.4.d_access
-        }
-    }
+    desc = nesnd_india_frontier.4.d_overseas_trade
     flavor = nesnd_india_frontier.4.f
     trigger = { exists = scope:india_frontier_small exists = scope:india_frontier_empire }
     option = {

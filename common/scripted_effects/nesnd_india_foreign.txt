@@ -1,39 +1,15 @@
-﻿# ==== Treaties in the Himalayas (formerly nesnd_india_frontier.txt) ====
-# Bhutan and Nepal with Mughal. See common/scripted_triggers/nesnd_india_foreign.txt.
-#
-#   Bhutan or Nepal asks Mughal for the trade privilege     matter kind 2, nesnd_india_frontier_ask_trade
-#   Mughal asks Bhutan or Nepal for military access         matter kind 3, nesnd_india_frontier_ask_access
-#   180 days before expiry Bhutan or Nepal is asked whether to renew (event .3); renewing is matter
-#   kind 4 or 5, answered by Mughal, who pays half the sum of signing when it agrees. A treaty not renewed
-#   is withdrawn from in the month it expires.
-#
-# The records, the payment on signing (nesnd_india_frontier_settle), the monthly tick, renewal (event .3)
-# and expiry (event .4) are shared with the trade privileges of the overseas journal (further down in this
-# file), whose local government keeps the record (T overseas_trade) and whose Indian state is asked to
-# renew. A treaty port of the overseas journal has no term and keeps only who ceded it to whom.
+﻿# ==== Shared treaty records (formerly nesnd_india_frontier.txt) ====
+# The treaties of Bhutan and Nepal with Mughal (matter kinds 2 to 5) were removed; those treaties are left
+# to the game's own diplomacy. What remains here serves the trade privileges of the overseas journal
+# (further down in this file): the payment on signing (nesnd_india_frontier_settle), the records, the
+# monthly tick, renewal (event nesnd_india_frontier.3) and expiry (event nesnd_india_frontier.4). The local
+# government keeps the record (T overseas_trade) and the Indian state is asked to renew. A treaty port of
+# the overseas journal has no term and keeps only who ceded it to whom.
 
-# ---------------------------------------------------------------------------------------------
-# Asking
-# ---------------------------------------------------------------------------------------------
-# Bhutan or Nepal scope.
-nesnd_india_frontier_ask_trade = {
-    if = { limit = { nesnd_india_frontier_can_ask_trade = yes exists = var:nesnd_india_frontier_empire }
-        nesnd_india_matter_send = { KIND = 2 TO = var:nesnd_india_frontier_empire AMOUNT = nesnd_india_frontier_payment }
-    }
-}
-# Mughal scope. SMALL is Bhutan or Nepal, which keeps the name of the asking Mughal government for its journal.
-nesnd_india_frontier_ask_access = {
-    if = { limit = { nesnd_india_frontier_can_ask_access = { SMALL = $SMALL$ } }
-        nesnd_india_matter_send = { KIND = 3 TO = $SMALL$ AMOUNT = nesnd_india_frontier_payment }
-        save_scope_as = india_frontier_asker
-        $SMALL$ = { set_variable = { name = nesnd_india_frontier_asker value = scope:india_frontier_asker } }
-    }
-}
 # From event .3, in the scope of the government asked whether to renew. scope:india_frontier_small keeps
-# the record, scope:india_frontier_empire is its partner. T is the kind of record (trade or access for
-# Bhutan and Nepal, KIND 4 or 5; overseas_trade for the overseas journal, KIND 12), AMOUNT the sum paid on
-# renewal. The renewal is put to the other side of the treaty. While the side asked has another matter
-# open, nothing is sent and the question is put again at a later monthly check.
+# the record, scope:india_frontier_empire is its partner. T is the kind of record (overseas_trade, KIND 12),
+# AMOUNT the sum paid on renewal. The renewal is put to the other side of the treaty. While the side asked
+# has another matter open, nothing is sent and the question is put again at a later monthly check.
 nesnd_india_frontier_renew = {
     if = { limit = { exists = scope:india_frontier_small scope:india_frontier_small = { exists = var:nesnd_india_frontier_$T$_with } NOT = { has_variable = nesnd_india_matter_kind } }
         if = { limit = { this = scope:india_frontier_small } nesnd_india_matter_send = { KIND = $KIND$ TO = var:nesnd_india_frontier_$T$_with AMOUNT = $AMOUNT$ } }
@@ -44,50 +20,6 @@ nesnd_india_frontier_renew = {
     }
 }
 
-# What the asking country is shown. Tooltips only.
-nesnd_india_frontier_ask_trade_tooltips = {
-    custom_tooltip = nesnd_india_frontier_ask_trade_tt
-    custom_tooltip = nesnd_india_treaty_upkeep_ours_trade_tt
-    if = { limit = { exists = var:nesnd_india_frontier_empire nesnd_india_consent_needed = { OTHER = var:nesnd_india_frontier_empire GRANTS = no } } custom_tooltip = nesnd_india_frontier_consent_own_tt }
-    if = { limit = { exists = var:nesnd_india_frontier_empire var:nesnd_india_frontier_empire = { nesnd_india_consent_needed = { OTHER = prev GRANTS = no } } } custom_tooltip = nesnd_india_frontier_consent_empire_tt }
-    custom_tooltip = nesnd_india_project_wait_tt
-}
-# SMALL is Bhutan or Nepal, TAG its tag in lower case for the text that names it.
-nesnd_india_frontier_ask_access_tooltips = {
-    custom_tooltip = nesnd_india_frontier_ask_access_$TAG$_tt
-    custom_tooltip = nesnd_india_treaty_upkeep_ours_access_tt
-    if = { limit = { exists = $SMALL$ nesnd_india_consent_needed = { OTHER = $SMALL$ GRANTS = no } } custom_tooltip = nesnd_india_frontier_consent_own_tt }
-    if = { limit = { exists = $SMALL$ $SMALL$ = { nesnd_india_consent_needed = { OTHER = prev GRANTS = yes } } } custom_tooltip = nesnd_india_frontier_consent_their_$TAG$_tt }
-    custom_tooltip = nesnd_india_project_wait_tt
-}
-
-# ---------------------------------------------------------------------------------------------
-# Signing (from nesnd_india_frontier_accept)
-# ---------------------------------------------------------------------------------------------
-nesnd_india_frontier_sign_trade = {
-    create_treaty = {
-        first_country = $EMPIRE$
-        second_country = $SMALL$
-        is_draft = no
-        binding_period = { years = 5 }
-        articles_to_create = {
-            { article = trade_privilege source_country = $EMPIRE$ target_country = $SMALL$ }
-        }
-    }
-    nesnd_india_frontier_settle = { HOLDER = $SMALL$ PARTNER = $EMPIRE$ T = trade AMOUNT = nesnd_india_frontier_payment }
-}
-nesnd_india_frontier_sign_access = {
-    create_treaty = {
-        first_country = $EMPIRE$
-        second_country = $SMALL$
-        is_draft = no
-        binding_period = { years = 5 }
-        articles_to_create = {
-            { article = military_access source_country = $SMALL$ target_country = $EMPIRE$ }
-        }
-    }
-    nesnd_india_frontier_settle = { HOLDER = $SMALL$ PARTNER = $EMPIRE$ T = access AMOUNT = nesnd_india_frontier_payment }
-}
 # PAYER pays RECEIVER the sum AMOUNT once: on signing, or on renewal.
 nesnd_india_frontier_pay = {
     $PAYER$ = { add_treasury = { value = $AMOUNT$ multiply = -1 } }
@@ -100,9 +32,9 @@ nesnd_india_frontier_settle = {
 }
 
 # ---------------------------------------------------------------------------------------------
-# Records, kept by one side of the treaty: Bhutan or Nepal (T is trade or access), or the local
-# government of the overseas journal (T is overseas_trade). The term and the notice are the script
-# values nesnd_india_frontier_<T>_days and nesnd_india_frontier_<T>_notice_days.
+# Records, kept by one side of the treaty: the local government of the overseas journal (T is
+# overseas_trade). The term and the notice are the script values nesnd_india_frontier_<T>_days and
+# nesnd_india_frontier_<T>_notice_days.
 # ---------------------------------------------------------------------------------------------
 nesnd_india_frontier_record = {
     set_variable = { name = nesnd_india_frontier_$T$_with value = $PARTNER$ }
@@ -132,8 +64,6 @@ nesnd_india_frontier_withdraw_article = {
     }
 }
 # One per kind of record (T): nesnd_india_frontier_<T>_withdraw.
-nesnd_india_frontier_trade_withdraw = { nesnd_india_frontier_withdraw_article = { PARTNER = $PARTNER$ ARTICLE = trade_privilege SOURCE = other TARGET = leaver BY = leaver } }
-nesnd_india_frontier_access_withdraw = { nesnd_india_frontier_withdraw_article = { PARTNER = $PARTNER$ ARTICLE = military_access SOURCE = leaver TARGET = other BY = leaver } }
 nesnd_india_frontier_overseas_trade_withdraw = { nesnd_india_frontier_withdraw_article = { PARTNER = $PARTNER$ ARTICLE = trade_privilege SOURCE = leaver TARGET = other BY = leaver } }
 # The term is over and the treaty was not renewed: we withdraw, and both governments are told.
 nesnd_india_frontier_expire = {
@@ -147,11 +77,11 @@ nesnd_india_frontier_expire = {
 }
 
 # Monthly, in the scope of the country that keeps the record. KIND is the kind of matter that made the
-# treaty (2 trade, 3 access; 10 for the overseas journal's trade privilege). ASK is the side asked whether
-# to renew: small (the record keeper, Bhutan or Nepal) or empire (its partner, the overseas Indian state).
+# treaty (10, the overseas journal's trade privilege). ASK is the side asked whether to renew: empire (the
+# partner, the overseas Indian state).
 nesnd_india_frontier_tick = {
     if = { limit = { has_variable = nesnd_india_frontier_$T$_with }
-        # Mughal is gone: only the record is cleared.
+        # The partner is gone: only the record is cleared.
         if = { limit = { OR = { NOT = { exists = var:nesnd_india_frontier_$T$_with } var:nesnd_india_frontier_$T$_with = { is_country_alive = no } } }
             nesnd_india_frontier_forget = { T = $T$ }
         }
@@ -176,82 +106,6 @@ nesnd_india_frontier_tick = {
             save_scope_value_as = { name = india_frontier_kind value = $KIND$ }
             scope:india_frontier_$ASK$ = { trigger_event = { id = nesnd_india_frontier.3 popup = yes } }
         }
-    }
-}
-
-# Monthly, from nesnd_india_refresh.
-nesnd_india_frontier_upkeep = {
-    if = { limit = { nesnd_india_frontier_holder = yes NOT = { has_journal_entry = nesnd_india_frontier } } add_journal_entry = { type = nesnd_india_frontier } }
-    if = { limit = { nesnd_india_himalaya_country = yes }
-        remove_variable = nesnd_india_frontier_empire
-        clear_saved_scope = india_frontier_pick
-        ordered_country = { limit = { nesnd_india_empire = yes } order_by = gdp position = 0 check_range_bounds = no save_scope_as = india_frontier_pick }
-        if = { limit = { exists = scope:india_frontier_pick } set_variable = { name = nesnd_india_frontier_empire value = scope:india_frontier_pick } }
-        # The Mughal government that asked us for military access no longer has that request open.
-        if = { limit = { has_variable = nesnd_india_frontier_asker NOT = { nesnd_india_frontier_asker_waiting = yes } } remove_variable = nesnd_india_frontier_asker }
-        nesnd_india_frontier_tick = { T = trade KIND = 2 ASK = small }
-        nesnd_india_frontier_tick = { T = access KIND = 3 ASK = small }
-    }
-}
-
-# Monthly, on the journal: an AI government asks now and then. Hard limits are in the ask triggers.
-nesnd_india_frontier_ai_asks = {
-    if = { limit = { is_ai = yes nesnd_india_himalaya_country = yes nesnd_india_frontier_can_ask_trade = yes }
-        save_temporary_scope_value_as = { name = india_frontier_chance value = nesnd_india_frontier_trade_ask_chance }
-        random = { chance = scope:india_frontier_chance nesnd_india_frontier_ask_trade = yes }
-    }
-    if = { limit = { is_ai = yes nesnd_india_empire = yes }
-        save_scope_as = india_frontier_asker
-        save_temporary_scope_value_as = { name = india_frontier_chance value = nesnd_india_frontier_access_ask_chance }
-        every_country = {
-            limit = { nesnd_india_himalaya_country = yes }
-            save_scope_as = india_frontier_target
-            scope:india_frontier_asker = {
-                if = { limit = { nesnd_india_frontier_can_ask_access = { SMALL = scope:india_frontier_target } }
-                    random = { chance = scope:india_frontier_chance nesnd_india_frontier_ask_access = { SMALL = scope:india_frontier_target } }
-                }
-            }
-        }
-    }
-}
-
-# ---------------------------------------------------------------------------------------------
-# The government that answers (answering scope, from nesnd_india_matter_accept)
-# ---------------------------------------------------------------------------------------------
-# scope:india_matter_me answers, scope:india_matter_holder asked.
-nesnd_india_frontier_accept = {
-    if = { limit = { nesnd_india_matter_is = { KIND = 2 } } nesnd_india_frontier_sign_trade = { SMALL = scope:india_matter_holder EMPIRE = scope:india_matter_me } }
-    else_if = { limit = { nesnd_india_matter_is = { KIND = 3 } } nesnd_india_frontier_sign_access = { SMALL = scope:india_matter_me EMPIRE = scope:india_matter_holder } }
-    # A renewal: Mughal (answering) pays Bhutan or Nepal half the sum of signing.
-    else_if = { limit = { nesnd_india_matter_is = { KIND = 4 } }
-        scope:india_matter_holder = { set_variable = nesnd_india_frontier_trade_renewed }
-        nesnd_india_frontier_pay = { PAYER = scope:india_matter_me RECEIVER = scope:india_matter_holder AMOUNT = nesnd_india_frontier_renew_payment }
-    }
-    else_if = { limit = { nesnd_india_matter_is = { KIND = 5 } }
-        scope:india_matter_holder = { set_variable = nesnd_india_frontier_access_renewed }
-        nesnd_india_frontier_pay = { PAYER = scope:india_matter_me RECEIVER = scope:india_matter_holder AMOUNT = nesnd_india_frontier_renew_payment }
-    }
-    scope:india_matter_holder = {
-        nesnd_india_matter_save_names = yes
-        trigger_event = { id = nesnd_india_frontier.1 popup = yes }
-        nesnd_india_matter_clear = yes
-    }
-}
-# What the answering government is shown on the button. Tooltips only.
-nesnd_india_frontier_accept_tooltips = {
-    if = { limit = { nesnd_india_matter_is = { KIND = 2 } }
-        custom_tooltip = nesnd_india_frontier_accept_trade_tt
-        show_as_tooltip = { add_treasury = { value = nesnd_india_matter_quote multiply = -1 } }
-        custom_tooltip = nesnd_india_treaty_upkeep_theirs_trade_tt
-    }
-    else_if = { limit = { nesnd_india_matter_is = { KIND = 3 } }
-        custom_tooltip = nesnd_india_frontier_accept_access_tt
-        show_as_tooltip = { add_treasury = nesnd_india_matter_quote }
-        custom_tooltip = nesnd_india_treaty_upkeep_theirs_access_tt
-    }
-    else = {
-        custom_tooltip = nesnd_india_frontier_accept_renew_tt
-        show_as_tooltip = { add_treasury = { value = nesnd_india_matter_quote multiply = -1 } }
     }
 }
 

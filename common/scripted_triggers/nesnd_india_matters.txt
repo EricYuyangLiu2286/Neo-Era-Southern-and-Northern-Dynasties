@@ -1,8 +1,7 @@
 ﻿# ==== Indian affairs: one government asks, another answers (formerly nesnd_india_matters.txt) ====
 # Indian affairs: the layer through which one government asks another and gets an answer.
-# Used by the princes' local projects (nesnd_india_princes.txt), by the treaties of Bhutan and
-# Nepal with Mughal (nesnd_india_foreign.txt), and by an overlord's consent before its subject joins
-# Mughal (nesnd_india_princes.txt), by Mughal's own loan, redemption and famine aid
+# Used by the princes' local projects (nesnd_india_princes.txt), by an overlord's consent before its
+# subject joins Mughal (nesnd_india_princes.txt), by Mughal's own loan, redemption and famine aid
 # (nesnd_india_empire.txt), and by the overseas journal's trade privileges and treaty ports
 # (nesnd_india_foreign.txt). Variables are listed in
 # common/script_values/nesnd_india_matters.txt; the order of a matter in
@@ -14,7 +13,8 @@
 # Country scope. OTHER is the other government in the matter. GRANTS is yes when this country lets
 # OTHER take ownership in it or march its armies through it.
 # A puppet needs its overlord's consent for anything it agrees with another government; any other
-# subject only when it grants ownership or military access. Nothing is asked when OTHER is the overlord.
+# subject only when it grants ownership or a treaty port, or leaves its overlord. Nothing is asked when
+# OTHER is the overlord.
 nesnd_india_consent_needed = {
     trigger_if = { limit = { is_subject = yes exists = overlord exists = $OTHER$ }
         NOT = { overlord = $OTHER$ }
@@ -35,15 +35,13 @@ nesnd_india_matter_grants_own = {
         nesnd_india_matter_kind_value = 6
     }
 }
-# The other government grants something to the asking country: military access, or (kind 6) the
-# invited prince leaves its overlord, or (kind 11) a treaty port for the overseas journal.
-nesnd_india_matter_grants_other = { OR = { nesnd_india_matter_kind_value = 3 nesnd_india_matter_kind_value = 6 nesnd_india_matter_kind_value = 11 } }
+# The other government grants something to the asking country: (kind 6) the invited prince leaves its
+# overlord, or (kind 11) a treaty port for the overseas journal.
+nesnd_india_matter_grants_other = { OR = { nesnd_india_matter_kind_value = 6 nesnd_india_matter_kind_value = 11 } }
 
-# The renewal of a treaty of Bhutan or Nepal with Mughal (kinds 4 and 5) asks no overlord. The overlords
-# consented when the treaty was first signed.
 # Holder scope. Our own overlord must agree.
 nesnd_india_matter_own_consent_needed = {
-    trigger_if = { limit = { exists = var:nesnd_india_matter_to NOR = { nesnd_india_matter_kind_value = 4 nesnd_india_matter_kind_value = 5 } }
+    trigger_if = { limit = { exists = var:nesnd_india_matter_to }
         trigger_if = { limit = { nesnd_india_matter_grants_own = yes } nesnd_india_consent_needed = { OTHER = var:nesnd_india_matter_to GRANTS = yes } }
         trigger_else = { nesnd_india_consent_needed = { OTHER = var:nesnd_india_matter_to GRANTS = no } }
     }
@@ -51,7 +49,7 @@ nesnd_india_matter_own_consent_needed = {
 }
 # Holder scope. The other government's overlord must agree.
 nesnd_india_matter_other_consent_needed = {
-    trigger_if = { limit = { exists = var:nesnd_india_matter_to NOR = { nesnd_india_matter_kind_value = 4 nesnd_india_matter_kind_value = 5 } }
+    trigger_if = { limit = { exists = var:nesnd_india_matter_to }
         trigger_if = { limit = { nesnd_india_matter_grants_other = yes } var:nesnd_india_matter_to = { nesnd_india_consent_needed = { OTHER = prev GRANTS = yes } } }
         trigger_else = { var:nesnd_india_matter_to = { nesnd_india_consent_needed = { OTHER = prev GRANTS = no } } }
     }
@@ -76,7 +74,8 @@ nesnd_india_matter_undelivered = {
 # The matter still stands: both governments exist and are at peace with each other, every consent
 # that is needed today was given by the overlord who holds that place today, a consent still awaited
 # is still needed, and the kind's own conditions hold. Kinds above 12 are not used: the renewal of a
-# treaty port (kind 13) was withdrawn when treaty ports stopped having a term.
+# treaty port (kind 13) was withdrawn when treaty ports stopped having a term. Kinds 2 to 5 (the removed
+# Himalayan treaties) no longer stand.
 nesnd_india_matter_valid = {
     is_country_alive = yes
     nesnd_india_matter_kind_value <= 12
@@ -111,7 +110,7 @@ nesnd_india_matter_valid = {
         # A loan or a redemption is asked of a foreign overlord: one whose capital is not in an Indian state.
         trigger_if = { limit = { nesnd_india_matter_kind_value <= 8 } nesnd_mug_foreign_overlord = yes }
     }
-    trigger_else = { nesnd_india_frontier_matter_valid = yes }
+    trigger_else = { always = no }
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -177,8 +176,7 @@ nesnd_india_matter_can_accept = {
         trigger_else_if = { limit = { nesnd_india_matter_is = { KIND = 6 } } always = no }
         trigger_else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 7 } nesnd_india_matter_is = { KIND = 8 } nesnd_india_matter_is = { KIND = 9 } } } nesnd_mug_can_accept = yes }
         trigger_else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 10 } nesnd_india_matter_is = { KIND = 11 } nesnd_india_matter_is = { KIND = 12 } } } nesnd_india_overseas_can_grant = yes }
-        trigger_else_if = { limit = { OR = { nesnd_india_matter_is = { KIND = 3 } nesnd_india_matter_is = { KIND = 5 } } } nesnd_india_frontier_can_grant_access = yes }
-        trigger_else = { nesnd_india_frontier_can_grant_trade = yes }
+        trigger_else = { always = no }
     }
     trigger_else = { always = no }
 }

@@ -1,71 +1,4 @@
-﻿# ==== Treaties in the Himalayas (formerly nesnd_india_frontier.txt) ====
-# Bhutan and Nepal with Mughal. Records on Bhutan or Nepal, one set per treaty (T is trade or access):
-#   nesnd_india_frontier_T_with     the Mughal party of the treaty
-#   nesnd_india_frontier_T_term     runs out on the day the treaty expires (five years after signing)
-#   nesnd_india_frontier_T_notice   runs out 180 days before that day
-#   nesnd_india_frontier_T_asked    the renewal question has been put for this term
-#   nesnd_india_frontier_T_renewed  Mughal agreed to renew: at expiry the term starts again for five years
-#   nesnd_india_frontier_empire     the Mughal government Bhutan or Nepal deals with (the richest), set monthly
-#   nesnd_india_frontier_asker      the Mughal government whose request for military access was last put
-#                                   to Bhutan or Nepal, shown in the journal while that request is open
-# Default sums and chances; to be tuned after in-game tests.
-
-# Paid once by Mughal to Bhutan or Nepal when either treaty is signed.
-nesnd_india_frontier_payment = 10000
-# Paid by Mughal to Bhutan or Nepal when either treaty is renewed: half the sum paid on signing.
-nesnd_india_frontier_renew_payment = { value = nesnd_india_frontier_payment multiply = 0.5 }
-
-# Days of a record T (nesnd_india_frontier_record): the term runs to expiry, the notice to 180 days
-# before it. The overseas journal's record overseas_trade is further down in this file.
-nesnd_india_frontier_trade_days = 1825
-nesnd_india_frontier_trade_notice_days = 1645
-nesnd_india_frontier_access_days = 1825
-nesnd_india_frontier_access_notice_days = 1645
-
-# Bhutan or Nepal scope, per cent a month: an AI asks Mughal for the trade privilege.
-nesnd_india_frontier_trade_ask_chance = {
-    value = 3
-    if = { limit = { exists = var:nesnd_india_frontier_empire is_adjacent_to_country = var:nesnd_india_frontier_empire } value = 6 }
-}
-# Mughal scope, per cent a month for each country: an AI asks for military access.
-nesnd_india_frontier_access_ask_chance = 1
-
-# Answering government scope, per cent. Mughal asked for the trade privilege, or to renew a treaty.
-nesnd_india_frontier_trade_chance = {
-    value = 60
-    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 20 } } add = 20 }
-    min = 5
-    max = 95
-}
-# Answering government scope, per cent. An overlord asked to consent.
-nesnd_india_frontier_consent_chance = {
-    value = 40
-    if = { limit = { nesnd_india_frontier_ai_empire_friendly = yes } add = 20 }
-    if = { limit = { nesnd_india_frontier_ai_empire_hostile = yes } add = -30 }
-    if = { limit = { nesnd_india_frontier_ai_subject_restless = yes } add = -10 }
-    min = 5
-    max = 95
-}
-# Answering government scope, per cent. Bhutan or Nepal asked for military access.
-nesnd_india_frontier_access_chance = {
-    value = 25
-    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 50 } } add = 25 }
-    if = { limit = { nesnd_india_frontier_ai_has_trade = yes } add = 15 }
-    min = 5
-    max = 95
-}
-# Answering government scope, per cent. Mughal asked by Bhutan or Nepal to renew the military access
-# they grant it (matter kind 5): the base and relations of a trade privilege request, and more while the
-# treaty is still in force between the two.
-nesnd_india_frontier_access_renew_chance = {
-    value = 60
-    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 20 } } add = 20 }
-    if = { limit = { exists = var:nesnd_india_matter_from var:nesnd_india_matter_from = { nesnd_india_frontier_access_treaty = { PARTNER = prev } } } add = 30 }
-    min = 5
-    max = 95
-}
-
-# ==== Overseas trade (formerly nesnd_india_overseas.txt) ====
+﻿# ==== Overseas trade (formerly nesnd_india_overseas.txt) ====
 # The overseas journal (nesnd_india_overseas). Here and below, the Indian state is a country for which
 # nesnd_india_overseas_holder holds; directions are 1 Indonesia (region_indonesia), 2 the Persian Gulf
 # coast (states whose port opens on region_persian_gulf), 3 East Africa (region_east_africa).
@@ -76,8 +9,12 @@ nesnd_india_frontier_access_renew_chance = {
 #                                         of kind K (trade or port), shown in the journal; set monthly
 #   nesnd_india_overseas_count_<D>_<K>    how many such treaties it holds in direction D
 # Variables on the local government:
-#   nesnd_india_frontier_overseas_trade_*   the shared records of a trade privilege (nesnd_india_frontier_T_*
-#                                           above), with the Indian state as partner
+#   nesnd_india_frontier_overseas_trade_*   the shared records of a trade privilege (nesnd_india_frontier_record
+#                                           in common/scripted_effects/nesnd_india_foreign.txt), with the
+#                                           Indian state as partner: _with the Indian state, _term runs out on
+#                                           the day the treaty expires, _notice 180 days before that day,
+#                                           _asked the renewal question has been put for this term, _renewed
+#                                           the Indian state agreed to renew and the term starts again
 #   nesnd_india_frontier_overseas_port_with the Indian state to which it ceded a treaty port. A treaty port has
 #                                           no term: there is no expiry, renewal or withdrawal by script
 #   nesnd_india_overseas_<K>_dir          the direction in which the treaty of kind K was asked for
