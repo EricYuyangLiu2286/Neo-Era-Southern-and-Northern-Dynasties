@@ -142,7 +142,8 @@ nesnd_hus_west_can_press = {
     nesnd_hus_west_press_window = yes
 }
 
-# A region's original American provinces must all be held under settled territorial awards.
+# STATE_REGION scope. A region's original American provinces must all be held under settled
+# territorial awards. Provinces cannot hold variables: awards are kept in region lists.
 nesnd_hus_west_region_won = {
     any_in_list = { variable = nesnd_hus_west_land always = yes }
     NOT = {
@@ -150,11 +151,17 @@ nesnd_hus_west_region_won = {
             variable = nesnd_hus_west_land
             OR = {
                 NOT = { owner ?= c:HUS }
-                NOT = { has_variable = nesnd_hus_west_awarded }
-                var:nesnd_hus_west_pending_play ?= {
-                    is_war = yes
-                    NOT = { has_variable = nesnd_hus_west_peace_signed }
-                }
+                prev = { NOT = { has_variable_list = nesnd_hus_west_awarded_land is_target_in_variable_list = { name = nesnd_hus_west_awarded_land target = prev } } }
+            }
+        }
+    }
+    trigger_if = {
+        limit = { has_variable_list = nesnd_hus_west_award_plays }
+        NOT = {
+            any_in_list = {
+                variable = nesnd_hus_west_award_plays
+                is_war = yes
+                NOT = { has_variable = nesnd_hus_west_peace_signed }
             }
         }
     }

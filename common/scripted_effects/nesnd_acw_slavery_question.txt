@@ -72,36 +72,50 @@ nesnd_hus_west_cleanup = {
     remove_variable = nesnd_hus_west_policy_cooldown
     every_in_list = {
         variable = nesnd_hus_west_claims
-        every_in_list = {
-            variable = nesnd_hus_west_land
-            remove_variable = nesnd_hus_west_giver
-            remove_variable = nesnd_hus_west_recent_giver
-            remove_variable = nesnd_hus_west_awarded
-            remove_variable = nesnd_hus_west_pending_play
-        }
         clear_variable_list = nesnd_hus_west_land
+        clear_variable_list = nesnd_hus_west_awarded_land
+        clear_variable_list = nesnd_hus_west_award_plays
+    }
+    every_country = {
+        limit = { has_variable_list = nesnd_hus_west_held_land }
+        clear_variable_list = nesnd_hus_west_held_land
     }
     remove_variable = nesnd_hus_west_auto_claim
     remove_variable = nesnd_hus_west_auto_press
     clear_variable_list = nesnd_hus_west_claims
 }
 
-# Province scope. Preserve the outgoing holder for the handover tick:
-# the native transfer and the war goal's scripted effect can run in either order.
+# Province scope, run while iterating a claimed region's nesnd_hus_west_land (PREV is that region).
+# A province cannot hold variables, so its records live in lists:
+# - nesnd_hus_west_held_land on the American country (USA/CSA/FSA) last seen holding it. It stays
+#   there after the province leaves American hands, so the war goal's scripted effect can still
+#   name the giver whichever of it and the native transfer runs first.
+# - nesnd_hus_west_awarded_land on the region, dropped once 东洲 no longer holds the province.
 nesnd_hus_west_observe_owner = {
+    prev = { save_temporary_scope_as = nesnd_hus_west_seen_region }
     if = {
-        limit = { owner ?= { nesnd_hus_west_american_side = yes } }
-        set_variable = { name = nesnd_hus_west_giver value = owner }
-    }
-    else_if = {
-        limit = { exists = var:nesnd_hus_west_giver }
-        set_variable = { name = nesnd_hus_west_recent_giver value = var:nesnd_hus_west_giver days = 1 }
-        remove_variable = nesnd_hus_west_giver
+        limit = {
+            owner ?= {
+                nesnd_hus_west_american_side = yes
+                NOT = { has_variable_list = nesnd_hus_west_held_land is_target_in_variable_list = { name = nesnd_hus_west_held_land target = prev } }
+            }
+        }
+        save_temporary_scope_as = nesnd_hus_west_seen_land
+        every_country = {
+            limit = {
+                nesnd_hus_west_american_side = yes
+                has_variable_list = nesnd_hus_west_held_land is_target_in_variable_list = { name = nesnd_hus_west_held_land target = scope:nesnd_hus_west_seen_land }
+            }
+            remove_list_variable = { name = nesnd_hus_west_held_land target = scope:nesnd_hus_west_seen_land }
+        }
+        owner = { add_to_variable_list = { name = nesnd_hus_west_held_land target = prev } }
     }
     if = {
-        limit = { NOT = { owner ?= c:HUS } }
-        remove_variable = nesnd_hus_west_awarded
-        remove_variable = nesnd_hus_west_pending_play
+        limit = {
+            NOT = { owner ?= c:HUS }
+            scope:nesnd_hus_west_seen_region = { has_variable_list = nesnd_hus_west_awarded_land is_target_in_variable_list = { name = nesnd_hus_west_awarded_land target = prev } }
+        }
+        scope:nesnd_hus_west_seen_region = { remove_list_variable = { name = nesnd_hus_west_awarded_land target = prev } }
     }
 }
 
@@ -117,20 +131,26 @@ nesnd_hus_west_territorial_award = {
         }
         scope:diplomatic_play ?= { set_variable = nesnd_hus_west_has_award }
         scope:target_state.state_region = {
+            save_temporary_scope_as = nesnd_hus_west_award_region
             every_in_list = {
                 variable = nesnd_hus_west_land
                 limit = {
                     OR = { owner ?= scope:target_country owner ?= c:HUS }
                     OR = {
                         owner ?= scope:target_country
-                        hidden_trigger = { var:nesnd_hus_west_giver ?= scope:target_country }
-                        hidden_trigger = { var:nesnd_hus_west_recent_giver ?= scope:target_country }
+                        scope:target_country = { has_variable_list = nesnd_hus_west_held_land is_target_in_variable_list = { name = nesnd_hus_west_held_land target = prev } }
                     }
                 }
-                set_variable = nesnd_hus_west_awarded
                 if = {
-                    limit = { exists = scope:diplomatic_play }
-                    set_variable = { name = nesnd_hus_west_pending_play value = scope:diplomatic_play }
+                    limit = { scope:nesnd_hus_west_award_region = { NOT = { has_variable_list = nesnd_hus_west_awarded_land is_target_in_variable_list = { name = nesnd_hus_west_awarded_land target = prev } } } }
+                    scope:nesnd_hus_west_award_region = { add_to_variable_list = { name = nesnd_hus_west_awarded_land target = prev } }
+                }
+                if = {
+                    limit = {
+                        exists = scope:diplomatic_play
+                        scope:nesnd_hus_west_award_region = { NOT = { has_variable_list = nesnd_hus_west_award_plays is_target_in_variable_list = { name = nesnd_hus_west_award_plays target = scope:diplomatic_play } } }
+                    }
+                    scope:nesnd_hus_west_award_region = { add_to_variable_list = { name = nesnd_hus_west_award_plays target = scope:diplomatic_play } }
                 }
             }
         }
@@ -154,8 +174,11 @@ nesnd_hus_west_make_claim = {
                 state.state_region ?= scope:nesnd_hus_west_region
                 owner ?= { nesnd_hus_west_american_side = yes }
             }
-            set_variable = { name = nesnd_hus_west_giver value = owner }
             scope:nesnd_hus_west_region = { add_to_variable_list = { name = nesnd_hus_west_land target = prev } }
+        }
+        # Record each snapshot province under its American holder.
+        scope:nesnd_hus_west_region = {
+            every_in_list = { variable = nesnd_hus_west_land nesnd_hus_west_observe_owner = yes }
         }
         c:HUS = {
             je:nesnd_hus_west_lever = { add_progress = { name = nesnd_hus_west_claim_bar value = -50 } }
