@@ -36,9 +36,12 @@ nesnd_south_capital_defeat = {
 nesnd_japan_centre_occupied_by_wu_side = {
     owner = c:JAP
     exists = controller
-    c:USM.var:nesnd_japan_jingnan_play.war ?= {
-        is_war_participant = prev.controller
-        NOT = { is_on_defending_side = prev.controller }
+    controller = {
+        any_scope_war = {
+            is_war_participant = prev
+            NOT = { is_on_defending_side = prev }
+            diplomatic_play ?= { nesnd_south_wu_japan_play = yes }
+        }
     }
 }
 nesnd_japan_two_centres_lost = {
@@ -52,12 +55,13 @@ nesnd_japan_collapse_ready = {
         c:USM ?= this
         is_country_alive = yes
         has_variable = tag_WUU_var
-        c:JAP = { is_country_alive = yes has_variable = nesnd_japan_fought_against_wu NOT = { has_variable = nesnd_japan_recovery_created } }
+        c:JAP = { is_country_alive = yes has_variable = nesnd_japan_war_admitted
+            NOR = { has_variable = nesnd_japan_recovery_created has_variable = nesnd_japan_ordinary_independence_done } }
         NOT = { has_global_variable = nesnd_japan_partitioned }
         NOT = { has_global_variable = nesnd_japan_collapse_committed }
         OR = {
             AND = { nesnd_japan_fighting_jingnan = yes nesnd_japan_two_centres_lost = yes }
-            has_variable = nesnd_japan_defeat_confirmed
+            c:JAP = { var:nesnd_japan_war_result ?= 1 }
         }
     }
     trigger_else = { always = no }
@@ -69,7 +73,7 @@ nesnd_japan_collapse_viewer = {
         any_scope_war = {
             is_war_participant = prev
             NOT = { is_on_defending_side = prev }
-            diplomatic_play ?= c:USM.var:nesnd_japan_jingnan_play
+            diplomatic_play ?= { nesnd_south_wu_japan_play = yes }
         }
     }
 }

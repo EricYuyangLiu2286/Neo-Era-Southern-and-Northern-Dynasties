@@ -431,7 +431,17 @@ nesnd_open_japan_jingnan_war = {
             c:JAP = { is_country_alive = yes NOT = { has_war_with = c:USM } }
             NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_nesnd_eastern_intervention OR = { is_war = yes escalation < 100 } } }
         }
-        c:JAP = { if = { limit = { OR = { is_subject = yes is_direct_subject_of = c:USM } } make_independent = yes } }
+        c:JAP = { set_variable = nesnd_japan_war_opening }
+        # Invalidate the old round before independence / play construction, too: no old verdict
+        # may settle the interest journal while the new war is still being admitted.
+        c:JAP = {
+            remove_variable = nesnd_japan_war_admitted
+            remove_variable = nesnd_japan_war_result
+            remove_variable = nesnd_japan_war_verdict
+            remove_variable = nesnd_japan_war_result_pending
+            remove_variable = nesnd_japan_war_result_wait
+            if = { limit = { OR = { is_subject = yes exists = overlord } } make_independent = yes }
+        }
         if = { limit = { c:JAP = { country_has_primary_culture = cu:japanese } }
             clear_saved_scope = nesnd_japan_separate_play
             nesnd_japan_create_eastern_intervention = yes
@@ -440,6 +450,18 @@ nesnd_open_japan_jingnan_war = {
                 save_scope_as = nesnd_japan_separate_play
             }
             if = { limit = { exists = scope:nesnd_japan_separate_play }
+                # Keep humiliation primary; add only Wu's actual Kyushu state(s).
+                s:STATE_KYUSHU = {
+                    every_scope_state = {
+                        limit = { owner = c:USM }
+                        if = { limit = { NOT = { has_claim_by = c:JAP } } state_region = { add_claim = c:JAP } }
+                        save_scope_as = nesnd_japan_kyushu_claim
+                        scope:nesnd_japan_separate_play = {
+                            add_war_goal = { holder = c:JAP target_country = c:USM type = return_state target_state = scope:nesnd_japan_kyushu_claim }
+                        }
+                    }
+                }
+                clear_saved_scope = nesnd_japan_kyushu_claim
                 scope:nesnd_japan_separate_play = { set_variable = nesnd_jingnan_japan_play }
                 c:JAP = { set_variable = { name = nesnd_jingnan_call value = scope:nesnd_japan_separate_play } }
                 scope:nesnd_japan_separate_play = { set_war = yes nesnd_muster_jingnan_war = yes }
@@ -451,6 +473,7 @@ nesnd_open_japan_jingnan_war = {
             s:STATE_KYOTO = { add_claim = c:JAP }
             s:STATE_SHIKOKU = { add_claim = c:JAP }
         }
+        c:JAP = { remove_variable = nesnd_japan_war_opening }
     }
 }
 nesnd_call_jingnan_participant_inner = {
@@ -526,6 +549,13 @@ nesnd_fulfil_jingnan_call = {
                         if = { limit = { nesnd_jingnan_is_intervener = yes } set_variable = { name = nesnd_joined_south_play value = scope:nesnd_jingnan_war_play } }
                         if = { limit = { custom_tooltip = { text = nesnd_ui_usm_opposition_country_tt has_variable = usm_opposition_country } }
                             if = { limit = { c:JAP ?= this }
+                                remove_variable = nesnd_japan_war_admitted
+                                remove_variable = nesnd_japan_war_result
+                                remove_variable = nesnd_japan_war_verdict
+                                remove_variable = nesnd_japan_war_result_pending
+                                remove_variable = nesnd_japan_war_result_wait
+                                c:USM = { remove_variable = nesnd_japan_defeat_confirmed }
+                                set_variable = nesnd_japan_war_admitted
                                 set_variable = nesnd_japan_fought_against_wu
                                 debug_log = "NESND_JAPAN_JOINED_AGAINST_WU [TimeKeeper.GetCurrentDate.GetString]"
                                 c:USM = {

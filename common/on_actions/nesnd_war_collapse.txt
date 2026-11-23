@@ -20,8 +20,8 @@ nesnd_war_collapse_after_battle = {
 }
 # Native callbacks: root is the victorious country; scope:target is the defeated enemy.
 # on_enemy_capitulated_notification also fires when that enemy had no demands against it.
-on_wargoal_enforced = { on_actions = { nesnd_record_wu_defeat } }
-on_enemy_capitulated_notification = { on_actions = { nesnd_record_wu_defeat } }
+on_wargoal_enforced = { on_actions = { nesnd_record_wu_defeat nesnd_record_japan_victory } }
+on_enemy_capitulated_notification = { on_actions = { nesnd_record_wu_defeat nesnd_record_japan_victory } }
 nesnd_record_wu_defeat = {
     effect = {
         if = {
@@ -38,11 +38,40 @@ nesnd_record_wu_defeat = {
             if = {
                 limit = { exists = c:JAP }
                 if = {
-                    limit = { scope:target = c:JAP nesnd_south_wu_japan_callback = yes c:JAP = { is_country_alive = yes } NOT = { has_global_variable = nesnd_japan_partitioned } }
-                    set_variable = nesnd_japan_defeat_confirmed
+                    limit = { scope:target = c:JAP nesnd_south_wu_japan_callback = yes c:JAP = { is_country_alive = yes } }
+                    if = { limit = { c:JAP = { has_variable = nesnd_japan_war_admitted NOT = { has_variable = nesnd_japan_war_result } } }
+                        set_variable = nesnd_japan_defeat_confirmed
+                        c:JAP = { set_variable = { name = nesnd_japan_war_verdict value = 1 } }
+                    }
                 }
             }
             nesnd_queue_war_collapse_check = yes
+        }
+    }
+}
+
+# Reverse enforcement / enemy surrender: Japan wins this intervention, not an unrelated war.
+nesnd_record_japan_victory = {
+    trigger = { c:JAP ?= this scope:target ?= c:USM nesnd_south_wu_japan_callback = yes
+        has_variable = nesnd_japan_war_admitted NOT = { has_variable = nesnd_japan_war_result } }
+    effect = {
+        # A Japanese defeat takes priority if both parties enforced demands in a negotiated peace.
+        if = { limit = { NOT = { var:nesnd_japan_war_verdict ?= 1 } }
+            set_variable = { name = nesnd_japan_war_verdict value = 2 }
+        }
+    }
+}
+on_capitulation = { on_actions = { nesnd_record_japan_war_capitulation } }
+nesnd_record_japan_war_capitulation = {
+    trigger = { OR = { c:JAP ?= this c:USM ?= this } nesnd_south_wu_japan_callback = yes
+        c:JAP ?= { has_variable = nesnd_japan_war_admitted NOT = { has_variable = nesnd_japan_war_result } } }
+    effect = {
+        if = { limit = { c:JAP ?= this }
+            set_variable = { name = nesnd_japan_war_verdict value = 1 }
+            c:USM = { set_variable = nesnd_japan_defeat_confirmed }
+        }
+        else_if = { limit = { c:USM ?= this c:JAP = { NOT = { var:nesnd_japan_war_verdict ?= 1 } } }
+            c:JAP = { set_variable = { name = nesnd_japan_war_verdict value = 2 } }
         }
     }
 }

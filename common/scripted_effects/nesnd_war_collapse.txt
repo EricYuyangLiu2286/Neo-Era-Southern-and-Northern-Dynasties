@@ -2,6 +2,8 @@
 nesnd_japan_commit_war_collapse = {
     if = {
         limit = { nesnd_japan_collapse_ready = yes }
+        # The two-centre occupation exception settles immediately, before annexing the country.
+        c:JAP = { set_variable = { name = nesnd_japan_war_result value = 1 } }
         nesnd_japan_register_annex_target = yes
         c:JAP = { every_scope_character = { limit = { is_character_alive = yes } transfer_character = c:USM } }
         annex_as_civil_war = c:JAP
@@ -57,4 +59,34 @@ nesnd_notify_southern_collapse = {
         exists = scope:usm_opposition_lost_scope
         scope:usm_opposition_lost_scope = { is_country_alive = no }
     } trigger_event = { id = usm_civilwar.24 popup = yes } }
+}
+
+# Japan scope. Only an admitted, ended war can reach this delayed, durable verdict.
+# Result: 1 = Japanese defeat, 2 = Japanese victory, 3 = white peace.
+nesnd_japan_finalize_war_result = {
+    if = { limit = { c:JAP ?= this has_variable = nesnd_japan_war_admitted
+        has_variable = nesnd_japan_war_result_pending
+        NOR = { has_variable = nesnd_japan_war_result_wait has_variable = nesnd_japan_war_result }
+        NOT = { nesnd_japan_fighting_jingnan = yes } }
+        if = { limit = { var:nesnd_japan_war_verdict ?= 1 }
+            set_variable = { name = nesnd_japan_war_result value = 1 }
+        }
+        else_if = { limit = { var:nesnd_japan_war_verdict ?= 2 }
+            set_variable = { name = nesnd_japan_war_result value = 2 }
+        }
+        else = { set_variable = { name = nesnd_japan_war_result value = 3 } }
+        remove_variable = nesnd_japan_war_result_pending
+        c:USM ?= { nesnd_check_war_collapses = yes }
+    }
+}
+# Japan scope. This settlement permanently excludes the collapse/partition chain.
+nesnd_japan_ordinary_independence = {
+    set_variable = nesnd_japan_ordinary_independence_done
+    clear_saved_scope = nesnd_japan_ceded_shikoku
+    if = { limit = { exists = overlord } make_independent = yes }
+    if = { limit = { s:STATE_SHIKOKU = { any_scope_state = { owner = c:JAP } } }
+        s:STATE_SHIKOKU = { every_scope_state = { limit = { owner = c:JAP } set_state_owner = c:USM } }
+        c:USM = { save_scope_as = nesnd_japan_ceded_shikoku trigger_event = { id = usm_civilwar.28 weeks = 1 popup = yes } }
+    }
+    trigger_event = { id = usm_civilwar.27 popup = yes }
 }

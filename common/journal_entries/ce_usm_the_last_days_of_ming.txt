@@ -562,6 +562,13 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 		color = "gold_positive"
 		conclusion_desc = je_standard_completion_conclusion_desc
 		trigger = { c:JAP ?= this is_country_alive = yes
+        trigger_if = { limit = { OR = {
+                has_variable = nesnd_japan_war_opening
+                has_variable = nesnd_japan_war_admitted
+                any_diplomatic_play = { nesnd_south_wu_japan_play = yes OR = { is_war = yes escalation < 100 } }
+            } }
+            custom_tooltip = { text = nesnd_japan_war_result_ready_tt has_variable = nesnd_japan_war_result }
+        }
         NOT = { any_diplomatic_play = { nesnd_south_named_play = yes is_war = yes } }
         AND = {
 			custom_tooltip = { text = nesnd_south_settled_tt has_global_variable = nesnd_south_settled }
@@ -590,7 +597,8 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
                 c:USM ?= { custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var } custom_tooltip = { text = nesnd_ui_usm_government_winner_civilwar_tt has_variable = usm_government_winner_civilwar } }
                 custom_tooltip = { text = nesnd_ui_not_japan_partitioned_tt NOT = { has_global_variable = nesnd_japan_partitioned } }
             }
-            c:USM = { set_variable = nesnd_japan_defeat_confirmed nesnd_queue_war_collapse_check = yes }
+            if = { limit = { var:nesnd_japan_war_result ?= 3 } nesnd_japan_ordinary_independence = yes }
+            # Defeat belongs to the collapse chain; a Japanese victory keeps every state.
         }
         else_if = { limit = {
                 custom_tooltip = { text = nesnd_ui_ce_usm_cw_ally_with_mng_tt has_variable = ce_usm_cw_ally_with_mng } custom_tooltip = { text = nesnd_ui_japan_fought_for_wu_tt has_variable = nesnd_japan_fought_for_wu }
@@ -636,7 +644,15 @@ ce_usm_cw_japanese_interest = { # 历史转折中的和族
 	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
-		trigger = { OR = {
+		trigger = {
+            trigger_if = { limit = { OR = {
+                has_variable = nesnd_japan_war_opening
+                has_variable = nesnd_japan_war_admitted
+                any_diplomatic_play = { nesnd_south_wu_japan_play = yes OR = { is_war = yes escalation < 100 } }
+            } }
+                has_variable = nesnd_japan_war_result
+            }
+            OR = {
             custom_tooltip = { text = nesnd_ui_japan_partitioned_tt has_global_variable = nesnd_japan_partitioned }
             AND = { custom_tooltip = { text = nesnd_ui_south_settled_tt has_global_variable = nesnd_south_settled } custom_tooltip = { text = nesnd_ui_not_usm_civilwar_occured_tt NOT = { has_global_variable = usm_civilwar_occured } } }
         } }

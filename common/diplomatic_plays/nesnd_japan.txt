@@ -11,7 +11,17 @@
     on_weekly_pulse = { }
     # Also Japan's war in the Second Jingnan War (nesnd_open_japan_jingnan_war): the muster enrols Japan there.
     on_war_begins = { nesnd_muster_jingnan_war = yes }
-    on_war_end = { initiator = { set_variable = nesnd_eastern_hostilities_ended } }
+    on_war_end = {
+        initiator = { set_variable = nesnd_eastern_hostilities_ended }
+        # Peace-time enforcement callbacks have no documented ordering relative to this hook.
+        # Wait at least seven days, then let the collapse journal's weekly pulse finalize the result.
+        if = { limit = { nesnd_south_wu_japan_play = yes c:JAP ?= { has_variable = nesnd_japan_war_admitted NOT = { has_variable = nesnd_japan_war_result } } }
+            c:JAP = {
+                set_variable = nesnd_japan_war_result_pending
+                set_variable = { name = nesnd_japan_war_result_wait days = 7 }
+            }
+        }
+    }
 }
 
 # Opened by nesnd_eastern_expedition_open. Wu annexes; that effect adds the return_state goals for Japan.
