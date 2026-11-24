@@ -222,13 +222,40 @@ nesnd_india_princes = {
     icon = "gfx/interface/icons/event_icons/nesnd_india_katar.dds" group = je_group_historical_content
 	activation_description = { always = yes } can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_india_prince = yes } possible = { nesnd_india_prince = yes }
+    # Independent, with three local projects completed (nesnd_india_projects_done). Once.
     outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        effect = { custom_tooltip = nesnd_journal_closures_no_effect_tt }
-        color = "blue_negative"
-        conclusion_desc = nesnd_journal_closures_india_princes_conclusion
-        trigger = { custom_tooltip = { text = nesnd_journal_closures_india_princes_tt NOT = { nesnd_india_prince = yes } } }
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_prince_strong_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_prince = yes NOT = { has_variable = nesnd_india_prince_strong } }
+            is_subject = no
+            custom_tooltip = { text = nesnd_india_prince_projects_tt nesnd_india_projects_done_value >= 3 }
+        }
+        effect = {
+            set_variable = nesnd_india_prince_strong
+            add_modifier = { name = nesnd_india_prince_strong }
+            ig:ig_landowners ?= { add_modifier = { name = nesnd_india_landowners_pleased days = normal_modifier_time } }
+        }
+    }
+    # Joined an Indian empire as a dominion (nesnd_india_prince_become_dominion). The journal does not
+    # come back while the prince stays a subject (nesnd_india_refresh).
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_prince_joined_conclusion
+        trigger = { custom_tooltip = { text = nesnd_india_prince_joined_tt has_variable = nesnd_india_prince_joined } }
+        effect = {
+            custom_tooltip = nesnd_india_prince_joined_effect_tt
+            show_as_tooltip = { add_modifier = { name = nesnd_india_prince_privileges } }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_india_prince = yes } }
     }
     status_desc = {
         first_valid = {
@@ -415,6 +442,8 @@ nesnd_india_indep = {
     on_monthly_pulse = {
         effect = {
             if = { limit = { is_subject = yes }
+                # The overlord, read when the subject becomes independent (outcome below).
+                set_variable = { name = nesnd_india_indep_lord value = overlord }
                 if = { limit = { has_variable = nesnd_india_indep_stock has_war_with = overlord } nesnd_india_indep_muster = yes }
                 if = { limit = { is_ai = yes } nesnd_india_indep_subject_ai = yes }
                 nesnd_india_indep_showdown_monthly = yes
@@ -427,7 +456,14 @@ nesnd_india_indep = {
         color = "gold_positive"
         conclusion_desc = nesnd_india_indep_conclusion
         trigger = { is_subject = no }
-        effect = { remove_variable = nesnd_india_indep_stock remove_variable = nesnd_india_indep_was_puppet remove_variable = nesnd_india_indep_play_lock }
+        effect = {
+            remove_variable = nesnd_india_indep_stock remove_variable = nesnd_india_indep_was_puppet remove_variable = nesnd_india_indep_play_lock
+            remove_variable = nesnd_india_indep_play_open
+            # The former overlord counts the departure (journal nesnd_india_indep_overlord).
+            var:nesnd_india_indep_lord ?= { nesnd_india_indep_record_departure = { WHO = root } }
+            trigger_event = { id = nesnd_india_indep.12 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_indep.12_outcome_tt } } }
     }
 }
 nesnd_india_indep_overlord = {
@@ -435,7 +471,7 @@ nesnd_india_indep_overlord = {
     group = je_group_historical_content
     can_revolution_inherit = no
     weight = 650
-    immediate = { nesnd_india_indep_rank_subjects = yes }
+    immediate = { nesnd_india_indep_rank_subjects = yes nesnd_india_lord_calm_clock = { RESET = no } }
     scripted_button = nesnd_india_indep_watch_button
     scripted_button = nesnd_india_indep_purge_button
     scripted_button = nesnd_india_indep_conciliate_button
@@ -450,12 +486,76 @@ nesnd_india_indep_overlord = {
         effect = {
             nesnd_india_indep_rank_subjects = yes
             if = { limit = { is_ai = yes } nesnd_india_indep_lord_ai = yes }
+            # A subject near independence restarts the ten calm years.
+            if = { limit = { any_subject_or_below = { is_direct_subject_of = root has_journal_entry = nesnd_india_indep liberty_desire >= 75 } } nesnd_india_lord_calm_clock = { RESET = yes } }
         }
     }
+    # Two subjects became independent within ten years (nesnd_india_indep_record_departure).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_lord_scattered_conclusion
+        trigger = { custom_tooltip = { text = nesnd_india_lord_two_left_tt exists = var:nesnd_india_indep_second_departed } }
+        effect = {
+            add_modifier = { name = nesnd_india_lord_scattered days = normal_modifier_time }
+            clear_saved_scope = india_lord_gone_a
+            clear_saved_scope = india_lord_gone_b
+            var:nesnd_india_indep_first_departed ?= { save_scope_as = india_lord_gone_a }
+            var:nesnd_india_indep_second_departed ?= { save_scope_as = india_lord_gone_b }
+            custom_tooltip = {
+                text = nesnd_india_lord_scattered_claims_tt
+                scope:india_lord_gone_a ?= { every_scope_state = { limit = { nesnd_india_state = yes NOT = { has_claim_by = root } } state_region = { add_claim = root } } }
+                scope:india_lord_gone_b ?= { every_scope_state = { limit = { nesnd_india_state = yes NOT = { has_claim_by = root } } state_region = { add_claim = root } } }
+            }
+            # The AI turns against the stronger of the two (GAME events/opium_wars_events.txt:254).
+            custom_tooltip = {
+                text = nesnd_india_lord_scattered_goal_tt
+                if = { limit = { exists = scope:india_lord_gone_a exists = scope:india_lord_gone_b scope:india_lord_gone_a.gdp >= scope:india_lord_gone_b.gdp }
+                    set_secret_goal = { country = scope:india_lord_gone_a secret_goal = antagonize }
+                }
+                else_if = { limit = { exists = scope:india_lord_gone_b }
+                    set_secret_goal = { country = scope:india_lord_gone_b secret_goal = antagonize }
+                }
+            }
+            hidden_effect = { remove_variable = nesnd_india_indep_first_departed remove_variable = nesnd_india_indep_second_departed remove_variable = nesnd_india_indep_leader }
+        }
+    }
+    # Ten years without a subject at 75 liberty desire or more. Ten years before the reward can come
+    # again; the journal itself comes back by nesnd_india_indep_admit while subjects remain.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_lord_calm_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_indep_has_subject = yes }
+            custom_tooltip = { text = nesnd_india_lord_calm_tt nesnd_india_lord_calm_due = yes }
+        }
+        effect = {
+            if = { limit = { NOT = { has_modifier = nesnd_india_lord_calm } } add_modifier = { name = nesnd_india_lord_calm } }
+            custom_tooltip = nesnd_india_lord_calm_cooldown_tt
+            hidden_effect = {
+                set_variable = { name = nesnd_india_lord_calm_cooldown days = 3650 }
+                remove_variable = nesnd_india_lord_calm_since
+                remove_variable = nesnd_india_lord_calm_wait
+                remove_variable = nesnd_india_indep_leader
+            }
+        }
+    }
+    # No subject holds the journal of independence any more, and no former subject still has to report
+    # its departure.
     outcome = {
         flags = { hidden invalid_outcome }
         conclusion_desc = je_standard_completion_conclusion_desc
-        trigger = { nesnd_india_indep_has_subject = no }
-        effect = { remove_variable = nesnd_india_indep_leader }
+        trigger = {
+            nesnd_india_indep_has_subject = no
+            NOT = { any_country = { has_journal_entry = nesnd_india_indep is_subject = no var:nesnd_india_indep_lord ?= root } }
+        }
+        effect = {
+            remove_variable = nesnd_india_indep_leader
+            remove_variable = nesnd_india_lord_calm_since
+            remove_variable = nesnd_india_lord_calm_wait
+        }
     }
 }

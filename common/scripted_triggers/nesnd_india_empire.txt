@@ -178,6 +178,15 @@ nesnd_mug_deal_site = {
     self_ownership_fraction <= 0
     OR = { level <= 1 private_ownership_fraction <= 0 }
 }
+# Building scope. HOLDER asked for a deal: this is the building chosen then (same state, same type).
+# Without the record (a matter sent before India batch 12) any eligible building will do.
+nesnd_mug_deal_chosen = {
+    trigger_if = { limit = { $HOLDER$ = { exists = var:nesnd_mug_deal_state has_variable = nesnd_mug_deal_kind } }
+        state = $HOLDER$.var:nesnd_mug_deal_state
+        nesnd_mug_deal_type_index = $HOLDER$.var:nesnd_mug_deal_kind
+    }
+    trigger_else = { always = yes }
+}
 # Mughal scope. We hold a building that can be sold, or our overlord holds one we can buy back.
 nesnd_mug_has_sale_site = {
     save_temporary_scope_as = mug_site_holder
@@ -202,7 +211,7 @@ nesnd_mug_can_ask_sell = {
 nesnd_mug_can_ask_buyback = {
     nesnd_mug_france_live = yes
     nesnd_india_channel_free = yes
-    custom_tooltip = { text = nesnd_mug_can_pay_buyback_tt gold_reserves >= nesnd_mug_buyback_price }
+    custom_tooltip = { text = nesnd_mug_can_pay_buyback_tt gold_reserves >= nesnd_mug_buyback_quote }
     custom_tooltip = { text = nesnd_mug_buyback_site_tt nesnd_mug_has_buyback_site = yes }
     trigger_if = { limit = { is_subject = yes exists = overlord } NOT = { has_war_with = overlord } }
     trigger_else = { always = no }
@@ -366,10 +375,10 @@ nesnd_mug_matter_valid = {
 # Answering scope: we can agree today.
 nesnd_mug_can_accept = {
     trigger_if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
-        custom_tooltip = { text = nesnd_mug_we_can_buy_tt gold_reserves >= nesnd_mug_sale_price in_default = no }
+        custom_tooltip = { text = nesnd_mug_we_can_buy_tt gold_reserves >= nesnd_india_matter_quote in_default = no }
     }
     trigger_else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
-        custom_tooltip = { text = nesnd_mug_they_can_pay_tt var:nesnd_india_matter_from = { gold_reserves >= nesnd_mug_buyback_price } }
+        custom_tooltip = { text = nesnd_mug_they_can_pay_tt var:nesnd_india_matter_from.gold_reserves >= nesnd_india_matter_quote }
     }
     trigger_else = {
         custom_tooltip = { text = nesnd_mug_we_can_aid_tt gold_reserves >= nesnd_india_matter_quote in_default = no }

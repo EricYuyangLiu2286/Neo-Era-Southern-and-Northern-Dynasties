@@ -50,7 +50,9 @@ nesnd_india_refresh = {
     if = { limit = { nesnd_india_track_visible = { T = industry } NOT = { has_journal_entry = nesnd_india_industry } } if = { limit = { NOR = { has_journal_entry = nesnd_india_industry has_variable = nesnd_jeq_nesnd_india_industry } } set_variable = { name = nesnd_jeq_nesnd_india_industry days = 3 } add_journal_entry = { type = nesnd_india_industry } } }
     if = { limit = { nesnd_india_society_open = yes NOT = { has_journal_entry = nesnd_india_society } } add_journal_entry = { type = nesnd_india_society } }
     if = { limit = { nesnd_india_caste_live = yes NOT = { has_journal_entry = nesnd_india_caste } } add_journal_entry = { type = nesnd_india_caste } }
-    if = { limit = { nesnd_india_prince = yes NOT = { has_journal_entry = nesnd_india_princes } } add_journal_entry = { type = nesnd_india_princes } }
+    # A prince that joined an empire as a dominion keeps no journal of its own until it leaves the empire.
+    if = { limit = { has_variable = nesnd_india_prince_joined is_subject = no } remove_variable = nesnd_india_prince_joined }
+    if = { limit = { nesnd_india_prince = yes NOT = { has_variable = nesnd_india_prince_joined } NOT = { has_journal_entry = nesnd_india_princes } } add_journal_entry = { type = nesnd_india_princes } }
     if = { limit = { nesnd_india_usm_live = yes NOT = { has_journal_entry = nesnd_india_usm } } add_journal_entry = { type = nesnd_india_usm } }
     if = { limit = { nesnd_india_empire = yes OR = { c:BHT ?= this c:DRA ?= this } NOT = { has_variable = nesnd_india_unified_done } NOT = { has_journal_entry = nesnd_india_unified } } add_journal_entry = { type = nesnd_india_unified } }
     if = { limit = { nesnd_tianzhu_governance_live = yes NOT = { has_journal_entry = nesnd_tianzhu_governance } } add_journal_entry = { type = nesnd_tianzhu_governance } }
@@ -230,11 +232,11 @@ nesnd_india_indep_subject_ai = {
 
 # ==== Independence and the direct overlord ====
 nesnd_india_indep_watch = {
-    add_treasury = -10000
+    add_treasury = { value = nesnd_india_indep_watch_price multiply = -1 }
     set_variable = { name = nesnd_india_indep_watch_wait months = 24 }
 }
 nesnd_india_indep_purge = {
-    add_treasury = -10000
+    add_treasury = { value = nesnd_india_indep_watch_price multiply = -1 }
     every_political_movement = {
         limit = { has_modifier = nesnd_india_indep_funded }
         remove_modifier = nesnd_india_indep_funded
@@ -277,7 +279,7 @@ nesnd_india_indep_approach = {
             scope:indep_target = { nesnd_india_indep_policy_target = yes }
         }
         if = { limit = { scope:indep_policy = 1 }
-            add_treasury = -20000
+            add_treasury = { value = scope:indep_target.nesnd_india_indep_conciliate_price multiply = -1 }
             set_variable = { name = nesnd_india_indep_conciliate_wait months = 12 }
             scope:indep_target = {
                 nesnd_india_indep_back_pro = yes
@@ -306,8 +308,8 @@ nesnd_india_indep_approach = {
     }
 }
 nesnd_india_indep_lord_ai = {
-    if = { limit = { has_variable = nesnd_india_indep_recent_case gold_reserves >= 10000 nesnd_india_indep_policy_ready = { POLICY = watch } } nesnd_india_indep_watch = yes }
-    if = { limit = { nesnd_india_indep_funded_count >= 2 gold_reserves >= 10000 nesnd_india_indep_policy_ready = { POLICY = purge } } nesnd_india_indep_purge = yes }
+    if = { limit = { has_variable = nesnd_india_indep_recent_case gold_reserves >= nesnd_india_indep_watch_price nesnd_india_indep_policy_ready = { POLICY = watch } } nesnd_india_indep_watch = yes }
+    if = { limit = { nesnd_india_indep_funded_count >= 2 gold_reserves >= nesnd_india_indep_watch_price nesnd_india_indep_policy_ready = { POLICY = purge } } nesnd_india_indep_purge = yes }
     if = { limit = { scope:indep_subject_1 ?= { liberty_desire >= 75 } }
         scope:indep_subject_1 = { save_scope_as = indep_target }
         clear_saved_scope = indep_policy
@@ -416,4 +418,21 @@ nesnd_india_indep_choose_policy = {
         }
         if = { limit = { exists = scope:indep_subject_1 } trigger_event = { id = nesnd_india_indep.5 popup = yes } }
     }
+}
+# ==== Journal outcomes (India batch 12) ====
+# Overlord scope. The ten calm years of nesnd_india_indep_overlord: started when the journal opens,
+# started again (RESET = yes) while a subject stands at 75 liberty desire or more.
+nesnd_india_lord_calm_clock = {
+    if = { limit = { OR = { NOT = { has_variable = nesnd_india_lord_calm_since } always = $RESET$ } }
+        set_variable = nesnd_india_lord_calm_since
+        set_variable = { name = nesnd_india_lord_calm_wait days = 3650 }
+    }
+}
+# Former overlord scope. WHO became independent: the first departure counts for ten years, a second one
+# within them ends nesnd_india_indep_overlord as "subjects scattered".
+nesnd_india_indep_record_departure = {
+    if = { limit = { exists = var:nesnd_india_indep_first_departed }
+        set_variable = { name = nesnd_india_indep_second_departed value = $WHO$ }
+    }
+    else = { set_variable = { name = nesnd_india_indep_first_departed value = $WHO$ days = 3650 } }
 }

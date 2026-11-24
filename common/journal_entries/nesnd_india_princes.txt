@@ -17,6 +17,31 @@ nesnd_india_foreign = {
     scripted_button = nesnd_india_seek_aus
     scripted_button = nesnd_india_seek_tur
     scripted_button = nesnd_india_seek_overlord
+    # Three grants of aid accepted (nesnd_india_aid_count, donors in nesnd_india_aid_donors). Once. The
+    # journal comes back the next month by nesnd_india_refresh while the country may still send missions.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_aid_bound_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_mission_country = yes NOT = { has_variable = nesnd_india_aid_bound } }
+            custom_tooltip = { text = nesnd_india_aid_three_tt nesnd_india_aid_count_value >= 3 }
+        }
+        effect = {
+            set_variable = nesnd_india_aid_bound
+            custom_tooltip = {
+                text = nesnd_india_aid_bound_tt
+                every_in_list = {
+                    variable = nesnd_india_aid_donors
+                    limit = { is_country_alive = yes NOT = { this = root } }
+                    change_relations = { country = root value = 30 }
+                    if = { limit = { exists = root.capital } add_involvement = { strategic_region = root.capital.region value = 1000 } }
+                }
+            }
+            hidden_effect = { remove_variable = nesnd_india_aid_count clear_variable_list = nesnd_india_aid_donors }
+        }
+    }
     outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header
@@ -78,6 +103,53 @@ nesnd_india_uprising = {
     scripted_button = nesnd_india_gujarat_resume
     scripted_button = nesnd_india_gujarat_launch
     scripted_button = nesnd_india_gujarat_abandon
+    # Every state of the six rising regions is held by a country whose capital is in India. Once.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_south_settled_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_empire = yes NOT = { has_variable = nesnd_india_south_settled } }
+            custom_tooltip = { text = nesnd_india_south_settled_tt nesnd_india_south_in_indian_hands = yes }
+        }
+        effect = {
+            set_variable = nesnd_india_south_settled
+            add_modifier = { name = nesnd_india_south_settled }
+        }
+    }
+    # Three risings we paid for failed and none succeeded (nesnd_india_case_failed, nesnd_india_case_won).
+    # No journal and no new rising for ten years (nesnd_india_uprising_quiet).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_uprising_spent_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_empire = yes }
+            custom_tooltip = { text = nesnd_india_uprising_three_failed_tt nesnd_india_uprising_failures_value >= 3 }
+            custom_tooltip = { text = nesnd_india_uprising_none_won_tt nesnd_india_uprising_successes_value <= 0 }
+        }
+        effect = {
+            add_modifier = { name = nesnd_india_uprising_spent days = normal_modifier_time }
+            # The AI owners of the failed risings turn against us (GAME events/opium_wars_events.txt:254).
+            custom_tooltip = {
+                text = nesnd_india_uprising_spent_goal_tt
+                every_in_list = {
+                    variable = nesnd_india_uprising_failed_owners
+                    limit = { is_country_alive = yes NOT = { this = root } }
+                    set_secret_goal = { country = root secret_goal = antagonize }
+                }
+            }
+            custom_tooltip = nesnd_india_uprising_quiet_tt
+            hidden_effect = {
+                set_variable = { name = nesnd_india_uprising_quiet days = 3650 }
+                remove_variable = nesnd_india_uprising_failures
+                remove_variable = nesnd_india_uprising_successes
+                clear_variable_list = nesnd_india_uprising_failed_owners
+            }
+        }
+    }
     outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header
@@ -182,9 +254,29 @@ nesnd_india_revolt_war = {
                     }
                 }
                 set_variable = nesnd_india_revolt_rewarded
-                add_modifier = { name = nesnd_india_revolt_survived months = 60 }
+                add_modifier = { name = nesnd_india_revolt_survived }
+                # The owner we rose against: a claim on our region, and the empire that paid for the
+                # rising becomes its AI target (R4, R5; GAME events/opium_wars_events.txt:254).
+                clear_saved_scope = india_revolt_former
+                clear_saved_scope = india_revolt_sponsor
+                var:nesnd_india_revolt_former ?= { save_scope_as = india_revolt_former }
+                var:nesnd_india_revolt_sponsor ?= { save_scope_as = india_revolt_sponsor }
+                if = { limit = { exists = scope:india_revolt_former scope:india_revolt_former = { is_country_alive = yes } }
+                    custom_tooltip = {
+                        text = nesnd_india_revolt_former_claim_tt
+                        var:nesnd_india_revolt_origin ?= { add_claim = scope:india_revolt_former }
+                    }
+                    if = { limit = { exists = scope:india_revolt_sponsor scope:india_revolt_sponsor = { is_country_alive = yes } NOT = { scope:india_revolt_sponsor = scope:india_revolt_former } }
+                        custom_tooltip = {
+                            text = nesnd_india_revolt_former_goal_tt
+                            scope:india_revolt_former = { set_secret_goal = { country = scope:india_revolt_sponsor secret_goal = antagonize } }
+                        }
+                    }
+                }
+                trigger_event = { id = nesnd_india_revolt.2 popup = yes }
             }
         }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_revolt.2_outcome_tt } } }
     }
     outcome = {
         header = je_standard_failure_header
@@ -197,6 +289,11 @@ nesnd_india_revolt_war = {
                 has_variable = nesnd_india_revolt_resolved
             }
             NOT = { nesnd_india_revolt_won = yes }
+        }
+        # The radicals were added when the region went back (nesnd_india_case_failed).
+        effect = {
+            custom_tooltip = nesnd_india_revolt_failed_effect_tt
+            hidden_effect = { remove_variable = nesnd_india_revolt_former remove_variable = nesnd_india_revolt_sponsor }
         }
     }
     outcome = {
@@ -220,19 +317,40 @@ nesnd_india_case_watch = {
     group = je_group_historical_content
     activation_description = { always = yes }
     can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_india_case_watch_live = yes }
-    possible = { nesnd_india_case_watch_live = yes }
+    is_shown_when_inactive = { OR = { nesnd_india_case_watch_live = yes nesnd_india_case_watch_calm_ready = yes } }
+    possible = { OR = { nesnd_india_case_watch_live = yes nesnd_india_case_watch_calm_ready = yes } }
     can_deactivate = yes
+    immediate = { nesnd_india_case_watch_clock = { RESET = no } }
     scripted_button = nesnd_india_circars_suppress
     scripted_button = nesnd_india_kurnool_suppress
     scripted_button = nesnd_india_madras_suppress
     scripted_button = nesnd_india_mysore_suppress
     scripted_button = nesnd_india_travancore_suppress
     scripted_button = nesnd_india_gujarat_suppress
+    # Ten years without a rising prepared against us. Ten years before the reward can come again.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_south_calm_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_colonial_owner = yes }
+            custom_tooltip = { text = nesnd_india_south_calm_tt nesnd_india_case_watch_calm = yes }
+        }
+        effect = {
+            if = { limit = { NOT = { has_modifier = nesnd_india_south_calm } } add_modifier = { name = nesnd_india_south_calm } }
+            custom_tooltip = nesnd_india_south_calm_cooldown_tt
+            hidden_effect = {
+                set_variable = { name = nesnd_india_case_watch_cooldown days = 3650 }
+                remove_variable = nesnd_india_case_watch_since
+                remove_variable = nesnd_india_case_watch_wait
+            }
+        }
+    }
     outcome = {
         header = nesnd_journal_closures_header
         effect_header = nesnd_journal_closures_effect_header
-        effect = { custom_tooltip = nesnd_journal_closures_no_effect_tt }
+        effect = { custom_tooltip = nesnd_journal_closures_no_effect_tt hidden_effect = { remove_variable = nesnd_india_case_watch_since remove_variable = nesnd_india_case_watch_wait } }
         color = "blue_negative"
         conclusion_desc = nesnd_india_case_watch_conclusion
         trigger = {

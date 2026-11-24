@@ -537,3 +537,42 @@ nesnd_india_diplomacy.10 = {
         custom_tooltip = nesnd_india_indep_protectorate_tt
     }
 }
+# ==== Journal outcomes (India batch 12) ====
+# The rising held (journal nesnd_india_revolt_war): join the empire that paid for it, or stand alone.
+nesnd_india_revolt.2 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_revolt.2.t
+    desc = nesnd_india_revolt.2.d
+    flavor = nesnd_india_revolt.2.f
+    immediate = {
+        clear_saved_scope = india_revolt_sponsor
+        var:nesnd_india_revolt_sponsor ?= { save_scope_as = india_revolt_sponsor }
+        clear_saved_scope = india_revolt_origin_region
+        var:nesnd_india_revolt_origin ?= { save_scope_as = india_revolt_origin_region }
+    }
+    option = {
+        name = nesnd_india_revolt.2.a
+        trigger = {
+            is_subject = no
+            scope:india_revolt_sponsor ?= { is_country_alive = yes nesnd_india_empire = yes is_subject = no }
+        }
+        ai_chance = {
+            base = 20
+            modifier = { trigger = { "relations(scope:india_revolt_sponsor)" >= 50 } add = 60 }
+        }
+        scope:india_revolt_sponsor = { save_scope_as = india_dominion_lord }
+        custom_tooltip = nesnd_india_revolt.2.a_tt
+        nesnd_india_prince_become_dominion = yes
+    }
+    option = {
+        name = nesnd_india_revolt.2.b
+        default_option = yes
+        ai_chance = { base = 40 }
+        custom_tooltip = {
+            text = nesnd_india_indep_fervor_tt
+            every_primary_culture = { root = { add_fervor_target_modifier = { culture = prev days = stupidly_long_modifier_time multiplier = 10 } } }
+        }
+    }
+    after = { remove_variable = nesnd_india_revolt_former remove_variable = nesnd_india_revolt_sponsor }
+}

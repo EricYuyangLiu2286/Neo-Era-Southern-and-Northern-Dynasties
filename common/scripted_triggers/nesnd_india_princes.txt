@@ -694,7 +694,7 @@ nesnd_india_case_launch_ready = {
     nesnd_india_case_our_case = { STATE = $STATE$ }
     is_at_war = no
     is_active_in_diplomatic_play = no
-    gold_reserves >= 20000
+    gold_reserves >= nesnd_india_launch_price
     NOT = { exists = c:$TAG$ }
     s:$STATE$ = {
         trigger_if = {
@@ -720,6 +720,7 @@ nesnd_india_case_launch_ready = {
 
 nesnd_india_uprising_available = {
     nesnd_india_empire = yes
+    custom_tooltip = { text = nesnd_india_uprising_quiet_cond_tt NOT = { has_variable = nesnd_india_uprising_quiet } }
     OR = {
         custom_tooltip = {
             text = nesnd_ui_india_contact_region_tt
@@ -875,4 +876,33 @@ nesnd_india_indep_play_ready = {
         }
     }
     trigger_else = { always = no }
+}
+# ==== Journal outcomes (India batch 12) ====
+# State region scope. Every state of this region is held by a country whose capital is in India.
+nesnd_india_region_in_indian_hands = {
+    NOT = { any_scope_state = { owner = { capital ?= { NOT = { nesnd_india_state = yes } } } } }
+}
+# The six rising regions (journal nesnd_india_uprising, outcome "the south settled").
+nesnd_india_south_in_indian_hands = {
+    s:STATE_CIRCARS = { nesnd_india_region_in_indian_hands = yes }
+    s:STATE_KURNOOL = { nesnd_india_region_in_indian_hands = yes }
+    s:STATE_MADRAS = { nesnd_india_region_in_indian_hands = yes }
+    s:STATE_MYSORE = { nesnd_india_region_in_indian_hands = yes }
+    s:STATE_TRAVANCORE = { nesnd_india_region_in_indian_hands = yes }
+    s:STATE_GUJARAT = { nesnd_india_region_in_indian_hands = yes }
+}
+# Colonial owner scope. Ten years have passed since nesnd_india_case_watch began or since the last
+# rising was prepared against us, and the reward is not cooling down.
+nesnd_india_case_watch_calm = {
+    has_variable = nesnd_india_case_watch_since
+    NOT = { has_variable = nesnd_india_case_watch_wait }
+    NOT = { has_variable = nesnd_india_case_watch_cooldown }
+}
+nesnd_india_case_watch_calm_ready = {
+    hidden_trigger = {
+        nesnd_india_colonial_owner = yes
+        NOT = { nesnd_india_usm_live = yes }
+        NOT = { nesnd_tianzhu_governance_live = yes }
+    }
+    custom_tooltip = { text = nesnd_india_south_calm_tt nesnd_india_case_watch_calm = yes }
 }

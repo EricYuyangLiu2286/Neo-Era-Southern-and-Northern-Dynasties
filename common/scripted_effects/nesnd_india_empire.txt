@@ -322,9 +322,27 @@ nesnd_mug_upkeep = {
 # ---------------------------------------------------------------------------------------------
 # The property deals (Mughal scope)
 # ---------------------------------------------------------------------------------------------
+# The building is chosen when the price is named: its state and type are kept on Mughal
+# (nesnd_mug_deal_state, nesnd_mug_deal_kind; cleared with the matter) and nesnd_mug_deal looks for it.
 nesnd_mug_ask = {
     if = { limit = { nesnd_mug_can_ask_$WHAT$ = yes exists = overlord }
-        nesnd_india_matter_send = { KIND = $KIND$ TO = overlord AMOUNT = $AMOUNT$ }
+        save_scope_value_as = { name = mug_ask_kind value = $KIND$ }
+        clear_saved_scope = mug_ask_owner
+        if = { limit = { scope:mug_ask_kind = 7 } save_scope_as = mug_ask_owner }
+        else = { overlord = { save_scope_as = mug_ask_owner } }
+        clear_saved_scope = mug_ask_building
+        ordered_scope_building = {
+            limit = { nesnd_mug_deal_site = { OWNER = scope:mug_ask_owner } }
+            order_by = nesnd_mug_deal_order
+            position = 0
+            check_range_bounds = no
+            save_scope_as = mug_ask_building
+        }
+        if = { limit = { exists = scope:mug_ask_building }
+            set_variable = { name = nesnd_mug_deal_state value = scope:mug_ask_building.state }
+            set_variable = { name = nesnd_mug_deal_kind value = scope:mug_ask_building.nesnd_mug_deal_type_index }
+            nesnd_india_matter_send = { KIND = $KIND$ TO = overlord AMOUNT = $AMOUNT$ }
+        }
     }
 }
 
@@ -339,7 +357,7 @@ nesnd_mug_deal = {
     clear_saved_scope = mug_deal_building
     $HOLDER$ = {
         ordered_scope_building = {
-            limit = { nesnd_mug_deal_site = { OWNER = scope:mug_deal_old } }
+            limit = { nesnd_mug_deal_site = { OWNER = scope:mug_deal_old } nesnd_mug_deal_chosen = { HOLDER = $HOLDER$ } }
             order_by = nesnd_mug_deal_order
             position = 0
             check_range_bounds = no
@@ -1236,18 +1254,20 @@ nesnd_mug_deal_recreate = {
 # scope:india_matter_answerer answers, scope:india_matter_holder asked.
 # ---------------------------------------------------------------------------------------------
 nesnd_mug_matter_accept = {
+    # The price named when Mughal asked (kept in the matter), also for the report event nesnd_mug.1.
+    save_scope_value_as = { name = mug_deal_price value = nesnd_india_matter_quote }
     if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
         nesnd_mug_deal = { HOLDER = scope:india_matter_holder NEW = scope:india_matter_answerer OLD = scope:india_matter_holder }
         if = { limit = { exists = scope:mug_deal_done }
-            add_treasury = { value = nesnd_mug_sale_price multiply = -1 }
-            scope:india_matter_holder = { add_treasury = nesnd_mug_sale_price }
+            add_treasury = { value = scope:mug_deal_price multiply = -1 }
+            scope:india_matter_holder = { add_treasury = scope:mug_deal_price }
         }
     }
     else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
         nesnd_mug_deal = { HOLDER = scope:india_matter_holder NEW = scope:india_matter_holder OLD = scope:india_matter_answerer }
         if = { limit = { exists = scope:mug_deal_done }
-            scope:india_matter_holder = { add_treasury = { value = nesnd_mug_buyback_price multiply = -1 } }
-            add_treasury = nesnd_mug_buyback_price
+            scope:india_matter_holder = { add_treasury = { value = scope:mug_deal_price multiply = -1 } }
+            add_treasury = scope:mug_deal_price
         }
     }
     else = {
@@ -1275,11 +1295,11 @@ nesnd_mug_matter_fail = {
 nesnd_mug_accept_tooltips = {
     if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
         custom_tooltip = nesnd_mug_accept_sell_tt
-        show_as_tooltip = { add_treasury = { value = nesnd_mug_sale_price multiply = -1 } }
+        show_as_tooltip = { add_treasury = { value = nesnd_india_matter_quote multiply = -1 } }
     }
     else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
         custom_tooltip = nesnd_mug_accept_buyback_tt
-        show_as_tooltip = { add_treasury = nesnd_mug_buyback_price }
+        show_as_tooltip = { add_treasury = nesnd_india_matter_quote }
     }
     else = {
         custom_tooltip = nesnd_mug_accept_aid_tt
@@ -1293,11 +1313,11 @@ nesnd_mug_accept_tooltips = {
 nesnd_mug_france_ai = {
     if = { limit = { is_ai = yes nesnd_mug_can_ask_sell = yes }
         save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_sell_ask_chance }
-        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = sell KIND = 7 AMOUNT = nesnd_mug_sale_price } }
+        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = sell KIND = 7 AMOUNT = nesnd_mug_sale_quote } }
     }
     if = { limit = { is_ai = yes nesnd_mug_can_ask_buyback = yes }
         save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_buyback_ask_chance }
-        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = buyback KIND = 8 AMOUNT = nesnd_mug_buyback_price } }
+        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = buyback KIND = 8 AMOUNT = nesnd_mug_buyback_quote } }
     }
 }
 

@@ -67,6 +67,9 @@ nesnd_india_accept_request = {
             add_treasury = { value = scope:india_sender.nesnd_india_request_quote multiply = -1 }
             scope:india_sender = {
                 add_treasury = nesnd_india_request_quote
+                # Counted for the outcome "aid bound" of nesnd_india_foreign.
+                set_variable = { name = nesnd_india_aid_count value = { value = nesnd_india_aid_count_value add = 1 } }
+                if = { limit = { NOT = { is_target_in_variable_list = { name = nesnd_india_aid_donors target = scope:india_partner } } } add_to_variable_list = { name = nesnd_india_aid_donors target = scope:india_partner } }
                 add_modifier = { name = nesnd_india_french_advisers months = 48 }
                 set_variable = { name = nesnd_india_aid_lock months = 48 }
                 set_variable = { name = nesnd_india_adviser_partner value = scope:india_partner }
@@ -207,7 +210,19 @@ nesnd_india_union_finish_merge = {
 # The prince keeps its states, government, laws, treasury and army, and becomes Mughal's dominion.
 nesnd_india_union_finish_dominion = {
     scope:india_union_prince = { add_treasury = scope:india_union_price }
-    create_diplomatic_pact = { country = scope:india_union_prince type = dominion }
+    save_scope_as = india_dominion_lord
+    scope:india_union_prince = { nesnd_india_prince_become_dominion = yes }
+}
+# Prince scope, with scope:india_dominion_lord. The dominion pact, and the privileges the prince keeps
+# (permanent). Also used when a risen country joins the empire that paid for it (nesnd_india_revolt.2).
+nesnd_india_prince_become_dominion = {
+    scope:india_dominion_lord = { create_diplomatic_pact = { country = prev type = dominion } }
+    if = { limit = { NOT = { has_modifier = nesnd_india_prince_privileges } } add_modifier = { name = nesnd_india_prince_privileges } }
+    set_variable = nesnd_india_prince_joined
+}
+# Prince scope. One more local project completed (journal nesnd_india_princes, outcome "self-reliant").
+nesnd_india_project_count = {
+    set_variable = { name = nesnd_india_projects_done value = { value = nesnd_india_projects_done_value add = 1 } }
 }
 nesnd_india_remove_advisers = {
     if = { limit = { has_modifier = nesnd_india_french_advisers } remove_modifier = nesnd_india_french_advisers } if = { limit = { has_modifier = nesnd_india_french_teachers } remove_modifier = nesnd_india_french_teachers } if = { limit = { has_modifier = nesnd_india_french_engineers } remove_modifier = nesnd_india_french_engineers } if = { limit = { has_modifier = nesnd_india_french_officers } remove_modifier = nesnd_india_french_officers }
@@ -402,6 +417,7 @@ nesnd_india_project_maintenance = {
         if = { limit = { nesnd_india_matter_stage_value = 0 NOT = { has_variable = nesnd_india_project_choice } } nesnd_india_project_clear = yes }
         else_if = { limit = { nesnd_india_matter_stage_value = 4 }
             if = { limit = { nesnd_india_project_built = yes }
+                nesnd_india_project_count = yes
                 nesnd_india_project_save_names = yes
                 trigger_event = { id = nesnd_india_project.6 popup = yes }
                 nesnd_india_project_clear = yes
@@ -476,9 +492,11 @@ nesnd_india_project_accept = {
                     nesnd_india_deal_record = yes
                     if = { limit = { scope:india_project_owner.nesnd_india_project_type_value = 2 }
                         create_building = { building = building_tooling_workshop add_ownership = { country = { country = scope:india_project_payer levels = 1 } } }
+                        scope:india_project_owner = { nesnd_india_project_count = yes }
                     }
                     else_if = { limit = { scope:india_project_owner.nesnd_india_project_type_value = 3 }
                         create_building = { building = building_railway add_ownership = { country = { country = scope:india_project_payer levels = 1 } } }
+                        scope:india_project_owner = { nesnd_india_project_count = yes }
                     }
                 }
             }
@@ -659,6 +677,40 @@ nesnd_india_contact_release_sponsor = {
     }
 }
 
+# State region scope, from nesnd_india_case_maintain, before nesnd_india_close_case. The rising failed:
+# the sponsor counts it and notes the owner it rose against (journal nesnd_india_uprising), and in the
+# states of this region held again by that owner the rising's cultures turn radical.
+nesnd_india_case_failed = {
+    save_scope_as = india_failed_region
+    clear_saved_scope = india_failed_owner
+    var:nesnd_india_case_owner ?= { save_scope_as = india_failed_owner }
+    var:nesnd_india_case_sponsor ?= {
+        set_variable = { name = nesnd_india_uprising_failures value = { value = nesnd_india_uprising_failures_value add = 1 } }
+        if = { limit = { exists = scope:india_failed_owner NOT = { is_target_in_variable_list = { name = nesnd_india_uprising_failed_owners target = scope:india_failed_owner } } }
+            add_to_variable_list = { name = nesnd_india_uprising_failed_owners target = scope:india_failed_owner }
+        }
+    }
+    if = { limit = { exists = scope:india_failed_owner }
+        every_scope_state = {
+            limit = { owner = scope:india_failed_owner }
+            save_scope_as = india_failed_state
+            scope:india_failed_region = {
+                every_in_list = {
+                    variable = nesnd_india_case_cultures
+                    scope:india_failed_state = { add_radicals_in_state = { culture = prev value = 0.2 } }
+                }
+            }
+        }
+    }
+    clear_variable_list = nesnd_india_case_cultures
+}
+# State region scope, from nesnd_india_case_maintain. The rising held: the sponsor counts it.
+nesnd_india_case_won = {
+    var:nesnd_india_case_sponsor ?= {
+        set_variable = { name = nesnd_india_uprising_successes value = { value = nesnd_india_uprising_successes_value add = 1 } }
+    }
+    clear_variable_list = nesnd_india_case_cultures
+}
 nesnd_india_close_case = {
     nesnd_india_contact_release_sponsor = yes
     remove_variable = nesnd_india_case_sponsor
@@ -678,9 +730,9 @@ nesnd_india_case_start = {
         limit = {
             nesnd_india_contact_safe = yes
             nesnd_india_case_target = { STATE = $STATE$ TAG = $TAG$ }
-            gold_reserves >= 5000
+            gold_reserves >= nesnd_india_contact_price
         }
-        add_treasury = -5000
+        add_treasury = { value = nesnd_india_contact_price multiply = -1 }
         set_variable = { name = nesnd_india_contact_region value = s:$STATE$ }
         add_modifier = { name = nesnd_india_contact_cost }
         save_scope_as = india_sponsor
@@ -705,6 +757,7 @@ nesnd_india_case_start = {
                     }
                     set_variable = { name = nesnd_india_case_state value = scope:india_case_state }
                     set_variable = { name = nesnd_india_case_owner value = scope:india_case_owner }
+                    scope:india_case_owner = { nesnd_india_case_watch_clock = { RESET = yes } }
                 }
             }
         }
@@ -807,6 +860,7 @@ nesnd_india_case_launch = {
             nesnd_india_case_launch_ready = { STATE = $STATE$ TAG = $TAG$ }
         }
         save_scope_as = india_sponsor
+        save_scope_value_as = { name = india_launch_sum value = nesnd_india_launch_price }
         clear_saved_scope = india_case_backer
         if = {
             limit = { exists = scope:india_sponsor }
@@ -874,14 +928,25 @@ nesnd_india_case_launch = {
                     if = {
                         limit = { exists = c:$TAG$ }
                         scope:india_sponsor = {
-                            add_treasury = -20000
+                            add_treasury = { value = scope:india_launch_sum multiply = -1 }
                             if = {
                                 limit = { has_modifier = nesnd_india_contact_cost }
                                 remove_modifier = nesnd_india_contact_cost
                             }
                         }
+                        # Who paid for the rising and whom it rose against, for the outcomes of
+                        # nesnd_india_revolt_war (cleared there); the rising's cultures, for its failure.
                         c:$TAG$ = {
-                            add_treasury = 20000
+                            set_variable = { name = nesnd_india_revolt_sponsor value = scope:india_sponsor }
+                            set_variable = { name = nesnd_india_revolt_former value = scope:india_case_owner }
+                            every_primary_culture = {
+                                s:$STATE$ = {
+                                    if = { limit = { NOT = { is_target_in_variable_list = { name = nesnd_india_case_cultures target = prev } } } add_to_variable_list = { name = nesnd_india_case_cultures target = prev } }
+                                }
+                            }
+                        }
+                        c:$TAG$ = {
+                            add_treasury = scope:india_launch_sum
                             if = {
                                 limit = {
                                     army_size < 1
@@ -1033,6 +1098,7 @@ nesnd_india_case_maintain = {
                     set_variable = nesnd_india_revolt_failed
                     set_variable = nesnd_india_revolt_resolved
                 }
+                nesnd_india_case_failed = yes
                 nesnd_india_close_case = yes
             }
         }
@@ -1047,6 +1113,9 @@ nesnd_india_case_maintain = {
                 }
             }
             else = {
+                # The play is over: the rising held if its country is independent and holds a state here.
+                if = { limit = { c:$TAG$ ?= { is_subject = no any_scope_state = { state_region = s:$STATE$ } } } nesnd_india_case_won = yes }
+                else = { nesnd_india_case_failed = yes }
                 c:$TAG$ ?= {
                     set_variable = nesnd_india_revolt_negotiation_ended
                     set_variable = nesnd_india_revolt_resolved
@@ -1161,6 +1230,16 @@ nesnd_india_indep_launch_play = {
             add_war_goal = { holder = scope:india_indep_overlord target_country = scope:india_indep_seeker type = humiliation }
         }
         set_variable = { name = nesnd_india_indep_play_lock months = 6 }
+        # Watched monthly by nesnd_india_indep_play_watch until the play is over.
+        set_variable = nesnd_india_indep_play_open
+    }
+}
+# Subject scope, monthly from nesnd_india_indep_showdown_monthly. Our play for independence is over and
+# we are still a subject: the setback (event nesnd_india_indep.13). The journal goes on.
+nesnd_india_indep_play_watch = {
+    if = { limit = { has_variable = nesnd_india_indep_play_open is_subject = yes is_diplomatic_play_initiator = no NOT = { has_war_with = overlord } }
+        remove_variable = nesnd_india_indep_play_open
+        trigger_event = { id = nesnd_india_indep.13 popup = yes }
     }
 }
 # Observe type changes from either existing request channel or an ordinary diplomatic action.
@@ -1171,6 +1250,7 @@ nesnd_india_indep_showdown_init = {
     else = { remove_variable = nesnd_india_indep_was_puppet }
 }
 nesnd_india_indep_showdown_monthly = {
+    nesnd_india_indep_play_watch = yes
     if = { limit = { has_variable = nesnd_india_indep_was_puppet is_subject_type = subject_type_protectorate }
         overlord = { save_scope_as = india_indep_overlord }
         trigger_event = { id = nesnd_india_diplomacy.10 popup = yes }
@@ -1232,4 +1312,13 @@ nesnd_india_indep_file_case = {
         }
     }
     set_variable = { name = nesnd_india_indep_recent_case months = 12 }
+}
+# ==== Journal outcomes (India batch 12) ====
+# Colonial owner scope. The ten calm years of nesnd_india_case_watch: started when the journal first opens,
+# started again (RESET = yes) when a rising is prepared against us (nesnd_india_case_start).
+nesnd_india_case_watch_clock = {
+    if = { limit = { OR = { NOT = { has_variable = nesnd_india_case_watch_since } always = $RESET$ } }
+        set_variable = nesnd_india_case_watch_since
+        set_variable = { name = nesnd_india_case_watch_wait days = 3650 }
+    }
 }

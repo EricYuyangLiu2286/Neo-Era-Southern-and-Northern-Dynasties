@@ -25,8 +25,14 @@ nesnd_mug.1 = {
         name = nesnd_india_diplomacy_ack
         default_option = yes
         if = { limit = { NOT = { exists = scope:mug_deal_site } } custom_tooltip = nesnd_mug_unchanged_tt }
-        else_if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 8 } custom_tooltip = nesnd_mug_bought_tt }
-        else = { custom_tooltip = nesnd_mug_sold_tt }
+        else_if = { limit = { exists = scope:india_matter_kind scope:india_matter_kind = 8 }
+            custom_tooltip = nesnd_mug_bought_tt
+            if = { limit = { exists = scope:mug_deal_price } show_as_tooltip = { add_treasury = { value = scope:mug_deal_price multiply = -1 } } }
+        }
+        else = {
+            custom_tooltip = nesnd_mug_sold_tt
+            if = { limit = { exists = scope:mug_deal_price } show_as_tooltip = { add_treasury = scope:mug_deal_price } }
+        }
     }
 }
 
@@ -405,7 +411,11 @@ nesnd_india_indep.5 = {
                 scope:indep_subject_1 ?= { nesnd_india_indep_policy_target = yes }
             }
         }
-        if = { limit = { scope:indep_policy = 1 } custom_tooltip = nesnd_india_indep_conciliate_terms }
+        if = { limit = { scope:indep_policy = 1 }
+            custom_tooltip = nesnd_india_indep_conciliate_terms
+            scope:indep_subject_1 ?= { save_scope_as = indep_price_target }
+            show_as_tooltip = { add_treasury = { value = scope:indep_price_target.nesnd_india_indep_conciliate_price multiply = -1 } }
+        }
         else_if = { limit = { scope:indep_policy = 4 } custom_tooltip = nesnd_india_indep_support_regime_terms }
         else_if = { limit = { scope:indep_policy = 2 } custom_tooltip = nesnd_india_indep_coerce_terms }
         hidden_effect = {
@@ -422,7 +432,11 @@ nesnd_india_indep.5 = {
                 scope:indep_subject_2 ?= { nesnd_india_indep_policy_target = yes }
             }
         }
-        if = { limit = { scope:indep_policy = 1 } custom_tooltip = nesnd_india_indep_conciliate_terms }
+        if = { limit = { scope:indep_policy = 1 }
+            custom_tooltip = nesnd_india_indep_conciliate_terms
+            scope:indep_subject_2 ?= { save_scope_as = indep_price_target }
+            show_as_tooltip = { add_treasury = { value = scope:indep_price_target.nesnd_india_indep_conciliate_price multiply = -1 } }
+        }
         else_if = { limit = { scope:indep_policy = 4 } custom_tooltip = nesnd_india_indep_support_regime_terms }
         else_if = { limit = { scope:indep_policy = 2 } custom_tooltip = nesnd_india_indep_coerce_terms }
         hidden_effect = {
@@ -439,7 +453,11 @@ nesnd_india_indep.5 = {
                 scope:indep_subject_3 ?= { nesnd_india_indep_policy_target = yes }
             }
         }
-        if = { limit = { scope:indep_policy = 1 } custom_tooltip = nesnd_india_indep_conciliate_terms }
+        if = { limit = { scope:indep_policy = 1 }
+            custom_tooltip = nesnd_india_indep_conciliate_terms
+            scope:indep_subject_3 ?= { save_scope_as = indep_price_target }
+            show_as_tooltip = { add_treasury = { value = scope:indep_price_target.nesnd_india_indep_conciliate_price multiply = -1 } }
+        }
         else_if = { limit = { scope:indep_policy = 4 } custom_tooltip = nesnd_india_indep_support_regime_terms }
         else_if = { limit = { scope:indep_policy = 2 } custom_tooltip = nesnd_india_indep_coerce_terms }
         hidden_effect = {
@@ -519,4 +537,98 @@ nesnd_india_indep.11 = {
         hidden_effect = { nesnd_india_indep_choose_policy = { MODE = 4 } }
     }
     option = { name = nesnd_india_indep_defer default_option = yes custom_tooltip = nesnd_india_indep_defer_tt }
+}
+# ==== Journal outcomes (India batch 12) ====
+# The subject became independent (journal nesnd_india_indep): which way the new state turns.
+nesnd_india_indep.12 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.12.t
+    desc = nesnd_india_indep.12.d
+    flavor = nesnd_india_indep.12.f
+    immediate = {
+        clear_saved_scope = india_free_lord
+        var:nesnd_india_indep_lord ?= { save_scope_as = india_free_lord }
+        save_scope_as = india_free_state
+        clear_saved_scope = india_free_empire
+        ordered_country = {
+            limit = { nesnd_india_empire = yes is_subject = no NOT = { this = root } }
+            order_by = "relations(scope:india_free_state)"
+            position = 0
+            check_range_bounds = no
+            save_scope_as = india_free_empire
+        }
+        # The great or major power on the worst terms with our former overlord.
+        clear_saved_scope = india_free_rival
+        if = { limit = { exists = scope:india_free_lord }
+            ordered_country = {
+                limit = {
+                    country_rank >= rank_value:major_power
+                    is_subject = no
+                    NOT = { this = root }
+                    NOT = { this = scope:india_free_lord }
+                }
+                order_by = { value = "relations(scope:india_free_lord)" multiply = -1 }
+                position = 0
+                check_range_bounds = no
+                save_scope_as = india_free_rival
+            }
+        }
+    }
+    option = {
+        name = nesnd_india_indep.12.a
+        trigger = { exists = scope:india_free_empire }
+        ai_chance = {
+            base = 20
+            modifier = { trigger = { "relations(scope:india_free_empire)" >= 50 } add = 50 }
+        }
+        change_relations = { country = scope:india_free_empire value = 30 }
+    }
+    option = {
+        name = nesnd_india_indep.12.b
+        default_option = yes
+        ai_chance = { base = 30 }
+        add_modifier = { name = nesnd_india_indep_self_reliant }
+        custom_tooltip = {
+            text = nesnd_india_indep_fervor_tt
+            every_primary_culture = { root = { add_fervor_target_modifier = { culture = prev days = stupidly_long_modifier_time multiplier = 10 } } }
+        }
+    }
+    option = {
+        name = nesnd_india_indep.12.c
+        trigger = { exists = scope:india_free_rival }
+        ai_chance = {
+            base = 20
+            modifier = { trigger = { "relations(scope:india_free_rival)" >= 50 } add = 50 }
+        }
+        change_relations = { country = scope:india_free_rival value = 30 }
+        if = { limit = { exists = capital }
+            custom_tooltip = {
+                text = nesnd_india_indep_rival_involvement_tt
+                scope:india_free_rival = { add_involvement = { strategic_region = root.capital.region value = 1000 } }
+            }
+        }
+    }
+    after = { remove_variable = nesnd_india_indep_lord }
+}
+
+# The play for independence ended and we are still a subject (nesnd_india_indep_play_watch).
+nesnd_india_indep.13 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_indep.13.t
+    desc = nesnd_india_indep.13.d
+    flavor = nesnd_india_indep.13.f
+    option = {
+        name = nesnd_india_indep.13.a
+        default_option = yes
+        custom_tooltip = nesnd_india_indep.13.a_tt
+        hidden_effect = {
+            je:nesnd_india_indep ?= {
+                add_progress = { name = nesnd_india_indep_economy_bar value = { value = "scripted_bar_progress(nesnd_india_indep_economy_bar)" multiply = -0.5 } }
+                add_progress = { name = nesnd_india_indep_military_bar value = { value = "scripted_bar_progress(nesnd_india_indep_military_bar)" multiply = -0.5 } }
+            }
+        }
+        capital ?= { add_radicals_in_state = { value = 0.1 } }
+    }
 }
