@@ -69,11 +69,22 @@ nesnd_ottoman_eastern_frontier_held = {
         s:STATE_BALKH = { any_scope_state = { owner = c:QE1 } }
     }
 }
-nesnd_ottoman_turkish_majority_unhomed = {
-    # State scope: incorporated, Turks are the majority, and the region is not yet a Turkish homeland (event nesnd_ottoman_recovery.7).
-    is_incorporated = yes
-    culture_percent_state = { target = cu:turkish value >= 0.5 }
-    state_region = { NOT = { is_homeland = cu:turkish } }
+nesnd_ottoman_tanzimat_settled = {
+    # Country scope: the vanilla closing event (sick_man.2 or sick_man.3) has been answered. sick_man.1 sets sick_man_var at the start
+    # (GAME events/sick_man_events.txt:25-28); both closing events set sick_man_complete in immediate (:93, :200) and remove
+    # sick_man_var in their after block via je_sick_man_main_cleanup (:174-175, :252-254; 00_victoria_cleanup_scripted_effects.txt:1694-1697).
+    has_variable = sick_man_complete
+    NOT = { has_variable = sick_man_var }
+}
+nesnd_ottoman_qin_reform_known = {
+    # Country scope: the Qin-style army reform has been carried out at least once. The last three branches cover saves from before
+    # nesnd_ottoman_qin_reform_begun existed (reform running now, or a Qinist leader event from B1 has fired).
+    OR = {
+        has_variable = nesnd_ottoman_qin_reform_begun
+        nesnd_ottoman_reform_active = yes
+        any_interest_group = { has_variable = nesnd_qinist_allowed }
+        any_interest_group = { leader ?= { has_variable = nesnd_qinist_allowed } }
+    }
 }
 nesnd_ottoman_non_turkish_majority = {
     # State scope: Turks are under half of the state population (event nesnd_ottoman_recovery.8).

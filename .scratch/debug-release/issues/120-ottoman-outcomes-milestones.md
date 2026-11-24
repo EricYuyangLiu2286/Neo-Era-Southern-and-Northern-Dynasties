@@ -27,3 +27,5 @@ Evidence: 备份 `nesnd-workbench/backups/pre-change-ottoman-b2-20261124T185237Z
 
 - 宣称购买没有记录，失败时撤掉的是 72 个按钮州上的全部奥斯曼宣称，包括非购买来的。
 - `nesnd_ottoman_route_lean` 目前只写不读，B3、B6、B8 读。
+
+B2 修复（2026-11-24）：诸民同心改为对各州最大的非主要文化加永久接纳度；里程碑等原版收尾（nesnd_ottoman_tanzimat_settled：有 sick_man_complete、无 sick_man_var）；军改首次开始设 nesnd_ottoman_qin_reform_begun，路线两事件按它分两版正文；玩家文字修 8 处；on_action 合并。记录见交付记录-B2.md「B2 修复」。
