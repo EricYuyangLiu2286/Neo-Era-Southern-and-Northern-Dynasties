@@ -1,25 +1,12 @@
 ﻿# 「伊犁的朝议」的朝争条与朝中一时偏向。Root = country。
 
-nesnd_qe1_intrigue_sync = {
-	if = {
-		limit = { has_journal_entry = nesnd_qe1_court_journal }
-		je:nesnd_qe1_court_journal = { set_bar_progress = { name = nesnd_qe1_intrigue_bar value = root.var:nesnd_qe1_intrigue } }
-	}
-}
-
+# 朝争由朝争条自己逐月累加（scripted_progress_bars/nesnd_qe1_intrigue.txt），这里只在满 100 时归零并引出朝争事件。
 nesnd_qe1_intrigue_month = {
 	hidden_effect = {
 		if = {
-			limit = { nesnd_qe1_court_live = yes }
-			if = { limit = { NOT = { has_variable = nesnd_qe1_intrigue } } set_variable = { name = nesnd_qe1_intrigue value = 0 } }
-			change_variable = { name = nesnd_qe1_intrigue add = nesnd_qe1_intrigue_monthly }
-			clamp_variable = { name = nesnd_qe1_intrigue min = 0 max = 100 }
-			if = {
-				limit = { var:nesnd_qe1_intrigue >= 100 }
-				set_variable = { name = nesnd_qe1_intrigue value = 0 }
-				nesnd_qe1_fire_court_event = yes
-			}
-			nesnd_qe1_intrigue_sync = yes
+			limit = { nesnd_qe1_court_live = yes nesnd_qe1_intrigue_at_least = { V = 100 } }
+			je:nesnd_qe1_court_journal = { set_bar_progress = { name = nesnd_qe1_intrigue_bar value = 0 } }
+			nesnd_qe1_fire_court_event = yes
 		}
 	}
 }
@@ -43,7 +30,7 @@ nesnd_qe1_sway_add = {
 			years = 3
 		}
 	}
-	hidden_effect = { set_variable = nesnd_qe1_power_recalculate nesnd_qe1_compute_court = yes }
+	hidden_effect = { nesnd_qe1_compute_court = yes }
 }
 nesnd_qe1_sway_sub = {
 	custom_tooltip = {
@@ -54,13 +41,11 @@ nesnd_qe1_sway_sub = {
 			years = 3
 		}
 	}
-	hidden_effect = { set_variable = nesnd_qe1_power_recalculate nesnd_qe1_compute_court = yes }
+	hidden_effect = { nesnd_qe1_compute_court = yes }
 }
 nesnd_qe1_intrigue_change = {
 	custom_tooltip = {
 		text = nesnd_qe1_intrigue_$DIR$_$AMT$_tt
-		change_variable = { name = nesnd_qe1_intrigue $DIR$ = $AMT$ }
-		clamp_variable = { name = nesnd_qe1_intrigue min = 0 max = 100 }
+		je:nesnd_qe1_court_journal ?= { add_progress = { name = nesnd_qe1_intrigue_bar value = { $DIR$ = $AMT$ } } }
 	}
-	hidden_effect = { nesnd_qe1_intrigue_sync = yes }
 }

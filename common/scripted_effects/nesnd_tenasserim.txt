@@ -6,7 +6,7 @@
     set_variable = { name = nesnd_ten_working_hungry value = 1 }
     set_variable = { name = nesnd_ten_sol value = 0 }
     set_variable = { name = nesnd_ten_access value = 0 }
-    if = { limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_ten_workforce_gt_0_tt var:nesnd_ten_workforce > 0 } }
+    if = { limit = { var:nesnd_ten_workforce > 0 }
         set_variable = { name = nesnd_ten_unemployment value = { value = nesnd_ten_unemployed_sum divide = var:nesnd_ten_workforce } }
         set_variable = { name = nesnd_ten_starving value = { value = nesnd_ten_starving_sum divide = var:nesnd_ten_workforce } }
         set_variable = { name = nesnd_ten_working_hungry value = { value = nesnd_ten_working_hungry_sum divide = var:nesnd_ten_workforce } }
@@ -17,34 +17,18 @@
     }
     set_variable = { name = nesnd_ten_training_quote value = nesnd_ten_training_cost }
     set_variable = { name = nesnd_ten_compromise_quote value = nesnd_ten_compromise_cost }
-    set_variable = { name = nesnd_ten_score value = 0 }
-    if = { limit = { nesnd_ten_jobs_ready = yes } change_variable = { name = nesnd_ten_score add = 1 } }
-    if = { limit = { nesnd_ten_livelihood_ready = yes } change_variable = { name = nesnd_ten_score add = 1 } }
-    if = { limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_ten_access_ge_0_85_tt var:nesnd_ten_access >= 0.85 } } change_variable = { name = nesnd_ten_score add = 1 } }
-    if = { limit = { is_at_war = no NOT = { has_modifier = declared_bankruptcy } } change_variable = { name = nesnd_ten_score add = 1 } }
 }
+# 达标项数（nesnd_ten_score_value）直接写入条；连续月数条由 nesnd_ten_month 自己加减，不在这里写。
 nesnd_ten_display = {
 	save_scope_as = nesnd_ten_display_country
 	if = {
 		limit = {
 			exists = scope:nesnd_ten_display_country
 		}
-		if = {
-			limit = {
-				scope:nesnd_ten_display_country = {
-					hidden_trigger = { has_variable = nesnd_ten_score }
-					hidden_trigger = { has_variable = nesnd_ten_good_months }
-				}
-			}
-			je:nesnd_tenasserim_recovery ?= {
-				set_bar_progress = {
-					name = nesnd_ten_conditions_bar
-					value = scope:nesnd_ten_display_country.var:nesnd_ten_score
-				}
-				set_bar_progress = {
-					name = nesnd_ten_continuity_bar
-					value = scope:nesnd_ten_display_country.var:nesnd_ten_good_months
-				}
+		je:nesnd_tenasserim_recovery ?= {
+			set_bar_progress = {
+				name = nesnd_ten_conditions_bar
+				value = scope:nesnd_ten_display_country.nesnd_ten_score_value
 			}
 		}
 	}
@@ -55,7 +39,6 @@ nesnd_ten_initialize = {
         set_variable = { name = nesnd_ten_orders value = 0 }
         set_variable = { name = nesnd_ten_samples value = 0 }
     }
-    set_variable = { name = nesnd_ten_good_months value = 0 }
     set_variable = { name = nesnd_ten_bad_months value = 0 }
     set_variable = { name = nesnd_ten_target value = s:STATE_TENASSERIM.region_state:DEI }
     nesnd_ten_measure = yes nesnd_ten_display = yes
@@ -64,9 +47,9 @@ nesnd_ten_month = {
     if = { limit = { nesnd_ten_active = yes }
         change_variable = { name = nesnd_ten_samples add = 1 }
         nesnd_ten_measure = yes
-        if = { limit = { nesnd_ten_healthy = yes } change_variable = { name = nesnd_ten_good_months add = 1 } }
-        else = { set_variable = { name = nesnd_ten_good_months value = 0 } }
-        clamp_variable = { name = nesnd_ten_good_months min = 0 max = 6 }
+        # 连续达标月数就是条 nesnd_ten_continuity_bar 的读数（条上限 6）。
+        if = { limit = { nesnd_ten_healthy = yes } je:nesnd_tenasserim_recovery ?= { add_progress = { name = nesnd_ten_continuity_bar value = 1 } } }
+        else = { je:nesnd_tenasserim_recovery ?= { set_bar_progress = { name = nesnd_ten_continuity_bar value = 0 } } }
         if = { limit = { nesnd_ten_distress = yes } change_variable = { name = nesnd_ten_bad_months add = 1 } }
         else = { set_variable = { name = nesnd_ten_bad_months value = 0 } }
         if = { limit = { var:nesnd_ten_samples >= 24 var:nesnd_ten_bad_months >= 12 NOT = { has_variable = nesnd_ten_review_seen } }
@@ -106,5 +89,4 @@ nesnd_ten_cleanup = {
         var:nesnd_ten_target = { if = { limit = { has_modifier = nesnd_ten_training } remove_modifier = nesnd_ten_training } }
     }
     remove_variable = nesnd_ten_target
-    set_variable = { name = nesnd_ten_good_months value = 0 }
 }

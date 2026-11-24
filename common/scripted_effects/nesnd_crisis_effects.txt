@@ -67,9 +67,9 @@ nesnd_land_success = {
         set_variable = nesnd_land_succeeded
         # 完成的那一刻身上有任一让步修正：奖励换成减半的“不完全的改革”（flavorCNE.3 读此变量）。
         if = { limit = { nesnd_cne_has_concession = yes } set_variable = nesnd_cne_reform_conceded }
-        if = { limit = { custom_tooltip = { text = nesnd_ui_var_nesnd_land_months_le_48_tt var:nesnd_land_months <= 48 } hidden_trigger = { var:nesnd_reform_good_months >= 24 } custom_tooltip = { text = nesnd_ui_var_cne_landreform_failure_tracker_lt_30_tt var:cne_landreform_failure_tracker < 30 } }
+        if = { limit = { var:nesnd_land_months <= 48 hidden_trigger = { var:nesnd_reform_good_months >= 24 } var:cne_landreform_failure_tracker < 30 }
             set_variable = nesnd_land_rapid_success
-            if = { limit = { custom_tooltip = { text = nesnd_ui_cne_reform_conceded_tt has_variable = nesnd_cne_reform_conceded } } add_modifier = { name = nesnd_cne_incomplete_reform_rapid months = 360 } }
+            if = { limit = { has_variable = nesnd_cne_reform_conceded } add_modifier = { name = nesnd_cne_incomplete_reform_rapid months = 360 } }
             else = { add_modifier = { name = nesnd_land_rapid months = 120 } }
         }
         nesnd_land_cleanup = yes
@@ -412,7 +412,7 @@ nesnd_recruit_jingnan_officer = {
 # Japan against Wu never joins a mainland play: it gets its own (author's rule, 2026-11-17). When the mainland war
 # ended, Japan left with it undefeated and the collapse journal closed.
 nesnd_call_jingnan_participant = {
-    if = { limit = { c:JAP ?= this custom_tooltip = { text = nesnd_ui_usm_opposition_country_tt has_variable = usm_opposition_country } NOT = { nesnd_jingnan_wu_ally = yes }
+    if = { limit = { c:JAP ?= this has_variable = usm_opposition_country NOT = { nesnd_jingnan_wu_ally = yes }
             $PLAY$ = { NOT = { target_is = c:JAP } } }
         c:USM ?= { nesnd_open_japan_jingnan_war = yes }
     }
@@ -547,7 +547,7 @@ nesnd_fulfil_jingnan_call = {
                     scope:nesnd_jingnan_recruit = {
                         remove_variable = nesnd_jingnan_call
                         if = { limit = { nesnd_jingnan_is_intervener = yes } set_variable = { name = nesnd_joined_south_play value = scope:nesnd_jingnan_war_play } }
-                        if = { limit = { custom_tooltip = { text = nesnd_ui_usm_opposition_country_tt has_variable = usm_opposition_country } }
+                        if = { limit = { has_variable = usm_opposition_country }
                             if = { limit = { c:JAP ?= this }
                                 remove_variable = nesnd_japan_war_admitted
                                 remove_variable = nesnd_japan_war_result
@@ -568,7 +568,7 @@ nesnd_fulfil_jingnan_call = {
                             }
                             set_variable = { name = nesnd_holdout_enrolled_round value = nesnd_south_round_value }
                             remove_variable = nesnd_holdout_resistance_pending
-                            if = { limit = { custom_tooltip = { text = nesnd_ui_not_have_seen_dierci_jingnan_tt NOT = { has_variable = have_seen_dierci_jingnan } } }
+                            if = { limit = { NOT = { has_variable = have_seen_dierci_jingnan } }
                                 trigger_event = { id = usm_civilwar.2 days = 1 popup = yes }
                             }
                         }

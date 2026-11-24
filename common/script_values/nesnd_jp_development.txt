@@ -6,6 +6,8 @@ nesnd_jp_conversion_fraction_japanese = {
 nesnd_jp_conversion_fraction_jiangnan = {
     value = 0.1 divide = { value = 1 subtract = "culture_percent_state(cu:ce_wuu)" min = 0.00001 } min = 0 max = 1
 }
+# 上次月结以来生活水平的变化。进度条先于日志月度脉冲结算，此时 nesnd_jp_sol_previous 仍是上次月结时的值。
+nesnd_jp_sol_change_value = { value = 0 if = { limit = { has_variable = nesnd_jp_sol_previous } value = average_sol subtract = var:nesnd_jp_sol_previous } }
 nesnd_jp_cohesion_order = {
     value = 0
     if = {
@@ -21,9 +23,9 @@ nesnd_jp_cohesion_living = {
         value = 0
         if = { limit = { average_sol >= 15 } add = 0.25 }
         if = { limit = { average_sol < 9 } add = -0.5 }
-        if = { limit = { has_variable = nesnd_jp_sol_change }
-            if = { limit = { var:nesnd_jp_sol_change >= 0.05 } add = 0.25 }
-            if = { limit = { var:nesnd_jp_sol_change <= -0.05 } add = -0.4 }
+        if = { limit = { has_variable = nesnd_jp_sol_previous }
+            if = { limit = { nesnd_jp_sol_change_value >= 0.05 } add = 0.25 }
+            if = { limit = { nesnd_jp_sol_change_value <= -0.05 } add = -0.4 }
         }
         if = { limit = { has_modifier = declared_bankruptcy } add = -1 }
 
@@ -49,7 +51,8 @@ nesnd_jp_cohesion_conflict = {
         value = 0
         if = { limit = { radical_population_fraction >= 0.2 } add = -0.4 }
         if = { limit = { is_at_war = yes } add = -0.25
-            if = { limit = { has_variable = nesnd_jp_war_months } if = { limit = { var:nesnd_jp_war_months >= 12 } add = -0.25 } }
+            # 进度条先于日志月度脉冲结算，此时 nesnd_jp_war_months 还没计入本月，11 即本月满 12 个月。
+            if = { limit = { has_variable = nesnd_jp_war_months } if = { limit = { var:nesnd_jp_war_months >= 11 } add = -0.25 } }
         }
         if = { limit = { has_variable = nesnd_jp_diplomatic_humiliation } add = -0.2 }
 
@@ -128,7 +131,8 @@ nesnd_jp_cohesion_delta = { value = nesnd_jp_cohesion_order add = nesnd_jp_cohes
 nesnd_jp_negotiation_cost = { value = net_fixed_income multiply = 2 min = 5000 max = 100000 }
 nesnd_jp_industrial_grant = { value = net_fixed_income multiply = 4 min = 25000 max = 150000 }
 
-nesnd_jp_cohesion_value = { value = 70 if = { limit = { has_variable = nesnd_jp_cohesion } value = var:nesnd_jp_cohesion } }
+# 国民团结：进度条 nesnd_jp_cohesion_bar 的读数，由条的 monthly_progress 逐月累加。日志不在时取开局值 70。
+nesnd_jp_cohesion_value = { value = 70 if = { limit = { has_journal_entry = nesnd_jp_cohesion } value = "je:nesnd_jp_cohesion.scripted_bar_progress(nesnd_jp_cohesion_bar)" } }
 # Preview size for the journal: the same saved plan and formula as nesnd_jp_settle_culture_plan.
 nesnd_jp_next_size = {
     value = 0

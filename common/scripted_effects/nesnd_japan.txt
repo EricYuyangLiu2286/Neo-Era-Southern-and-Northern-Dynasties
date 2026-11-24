@@ -18,13 +18,13 @@ nesnd_partition_japan = {
                     is_country_alive = yes
                 }
             }
-            if = { limit = { c:USM = { custom_tooltip = { text = nesnd_ui_eastern_submission_accepted_tt has_variable = nesnd_eastern_submission_accepted } } NOT = { has_law = law_type:law_monarchy } }
+            if = { limit = { c:USM = { has_variable = nesnd_eastern_submission_accepted } NOT = { has_law = law_type:law_monarchy } }
                 activate_law = law_type:law_monarchy
             }
             if = { limit = { OR = {
                     exists = scope:nesnd_partition_tokugawa_incumbent
                     exists = scope:nesnd_partition_yamato_incumbent
-                    AND = { c:USM = { custom_tooltip = { text = nesnd_ui_eastern_submission_accepted_tt has_variable = nesnd_eastern_submission_accepted } } NOT = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_toyotomi } } } }
+                    AND = { c:USM = { has_variable = nesnd_eastern_submission_accepted } NOT = { ruler ?= { nesnd_character_of_dynasty = { HOUSE = house_toyotomi } } } }
                 } }
                 nesnd_japan_seat_partition_incumbent = yes
             }
@@ -140,7 +140,7 @@ nesnd_partition_japan_create_tokugawa = {
                 if = {
                     limit = {
                         c:JAP ?= {
-                            custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            has_variable = nesnd_japan_recovery_created
                         }
                     }
                     set_variable = nesnd_japan_recovery_created
@@ -220,7 +220,7 @@ nesnd_partition_japan_create_yamato = {
                 if = {
                     limit = {
                         c:JAP ?= {
-                            custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            has_variable = nesnd_japan_recovery_created
                         }
                     }
                     set_variable = nesnd_japan_recovery_created
@@ -392,7 +392,7 @@ nesnd_partition_japan_give_yamato = {
                 OR = {
                     NOT = {
                         c:JAP ?= {
-                            custom_tooltip = { text = nesnd_ui_japan_recovery_created_tt has_variable = nesnd_japan_recovery_created }
+                            has_variable = nesnd_japan_recovery_created
                         }
                     }
                     p:xB03EF0 = {
@@ -450,9 +450,9 @@ nesnd_partition_japan_give_wu = {
 nesnd_partition_japan_toyotomi_remnant = {
     if = {
         limit = {
-            custom_tooltip = { text = nesnd_ui_not_japan_partition_state_tt NOT = {
+            NOT = {
                 has_variable = nesnd_japan_partition_state
-            } }
+            }
         }
         set_capital = STATE_CHUGOKU
         activate_law = law_type:law_autocracy
@@ -502,9 +502,9 @@ nesnd_partition_japan_finalize = {
     if = {
         limit = {
             OR = {
-                custom_tooltip = { text = nesnd_ui_not_japan_recovery_created_tt NOT = {
+                NOT = {
                     has_variable = nesnd_japan_recovery_created
-                } }
+                }
                 AND = {
                     c:JAP ?= {
                         is_country_alive = yes
@@ -602,7 +602,7 @@ nesnd_japan_seat_partition_incumbent = {
 }
 nesnd_japan_grant_partition_claims = {
     if = {
-        limit = { custom_tooltip = { text = nesnd_ui_japan_partitioned_tt has_global_variable = nesnd_japan_partitioned } hidden_trigger = { NOT = { has_global_variable = nesnd_japan_partition_claims_considered } } }
+        limit = { has_global_variable = nesnd_japan_partitioned hidden_trigger = { NOT = { has_global_variable = nesnd_japan_partition_claims_considered } } }
         set_global_variable = nesnd_japan_partition_claims_considered
         if = { limit = { exists = c:JAP exists = c:JTK exists = c:JIM }
             if = { limit = { c:JTK = { owns_entire_state_region = STATE_KANTO } }
@@ -743,7 +743,7 @@ nesnd_japan_launch_intervention = {
 
 # Wu scope. Close the case before partition creates any subject pacts of its own.
 nesnd_eastern_settle_submission = {
-    if = { limit = { custom_tooltip = { text = nesnd_ui_not_japan_dossier_closed_tt NOT = { has_global_variable = nesnd_japan_dossier_closed } } }
+    if = { limit = { NOT = { has_global_variable = nesnd_japan_dossier_closed } }
         set_variable = nesnd_eastern_submission_accepted
         set_global_variable = nesnd_japan_dossier_closed
         c:JAP = { nesnd_partition_japan = yes }
@@ -754,8 +754,8 @@ nesnd_eastern_settle_submission = {
 nesnd_japan_eastern_failure = {
     if = {
         limit = {
-            custom_tooltip = { text = nesnd_ui_tag_wuu_var_tt has_variable = tag_WUU_var }
-            custom_tooltip = { text = nesnd_ui_not_japan_dossier_closed_tt NOT = { has_global_variable = nesnd_japan_dossier_closed } }
+            has_variable = tag_WUU_var
+            NOT = { has_global_variable = nesnd_japan_dossier_closed }
             nesnd_eastern_target_valid = yes
         }
         save_scope_as = eastern_wu
@@ -765,9 +765,7 @@ nesnd_japan_eastern_failure = {
             add_modifier = { name = nesnd_eastern_vindication years = 30 }
             every_interest_group = { add_modifier = { name = nesnd_eastern_ig_confidence years = 30 } }
             nesnd_jp_initialize = yes
-            change_variable = { name = nesnd_jp_cohesion add = 25 }
-            clamp_variable = { name = nesnd_jp_cohesion min = 0 max = 100 }
-            nesnd_jp_sync_cohesion = yes
+            je:nesnd_jp_cohesion ?= { add_progress = { name = nesnd_jp_cohesion_bar value = 25 } }
 
             # move_pop transfers whole Pops. Count people first, then fit whole communities to the quota.
             set_local_variable = { name = eastern_refugees_remaining value = 0 }

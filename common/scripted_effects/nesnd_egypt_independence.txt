@@ -51,24 +51,18 @@ nesnd_egypt_replace_lost_investor = {
 nesnd_egypt_initialize = {
     if = { limit = { NOT = { has_variable = nesnd_egypt_started } }
         set_variable = nesnd_egypt_started
-        set_variable = { name = nesnd_egypt_independence value = 100 }
         set_variable = { name = nesnd_egypt_generation years = 30 }
         set_variable = { name = nesnd_egypt_sponsor_mode value = 0 }
         set_variable = { name = nesnd_egypt_foreign_gdp value = nesnd_egypt_foreign_gdp_sample }
     }
 }
-nesnd_egypt_sync = {
-    if = { limit = { has_journal_entry = nesnd_egypt_independence } je:nesnd_egypt_independence = { set_bar_progress = { name = nesnd_egypt_independence_bar value = owner.nesnd_egypt_independence_value } } }
-}
+# 独立度由进度条自己逐月累加，先于本月脉冲；这里只按读数处理。
 nesnd_egypt_monthly = {
     if = { limit = { nesnd_egypt_independence_open = yes has_journal_entry = nesnd_egypt_independence }
         nesnd_egypt_initialize = yes nesnd_egypt_replace_lost_investor = yes
         set_variable = { name = nesnd_egypt_foreign_gdp value = nesnd_egypt_foreign_gdp_sample }
-        change_variable = { name = nesnd_egypt_independence add = nesnd_egypt_monthly_delta }
-        clamp_variable = { name = nesnd_egypt_independence min = 0 max = 100 }
         if = { limit = { nesnd_egypt_independence_value <= 0 } nesnd_egypt_settle_dependence = yes }
         else = { nesnd_egypt_refresh_investment = yes }
-        nesnd_egypt_sync = yes
     }
 }
 nesnd_egypt_finish = {
@@ -84,7 +78,7 @@ nesnd_egypt_clear_legacy_settlement = {
     remove_variable = nesnd_egypt_standard_attempted remove_variable = nesnd_egypt_pending_explained
 }
 nesnd_egypt_fail_guarantees = {
-    if = { limit = { c:EGY ?= this is_country_alive = yes is_subject = no custom_tooltip = { text = nesnd_ui_not_egypt_finished_tt NOT = { has_variable = nesnd_egypt_finished } } }
+    if = { limit = { c:EGY ?= this is_country_alive = yes is_subject = no NOT = { has_variable = nesnd_egypt_finished } }
         set_variable = nesnd_egypt_guarantees_failed
         nesnd_egypt_finish = yes
         add_modifier = { name = nesnd_egypt_unsecured_independence months = 60 }
@@ -92,7 +86,7 @@ nesnd_egypt_fail_guarantees = {
     }
 }
 nesnd_egypt_confirm_protection = {
-    if = { limit = { nesnd_egypt_protectorate_confirmed = yes custom_tooltip = { text = nesnd_ui_not_egypt_finished_tt NOT = { has_variable = nesnd_egypt_finished } } }
+    if = { limit = { nesnd_egypt_protectorate_confirmed = yes NOT = { has_variable = nesnd_egypt_finished } }
         if = { limit = { hidden_trigger = { exists = var:nesnd_egypt_investor } }
             set_variable = { name = nesnd_egypt_final_patron value = var:nesnd_egypt_investor }
             set_variable = nesnd_egypt_protected nesnd_egypt_finish = yes
@@ -101,13 +95,13 @@ nesnd_egypt_confirm_protection = {
     }
 }
 nesnd_egypt_end_external_subjection = {
-    if = { limit = { c:EGY ?= this is_country_alive = yes is_subject = yes custom_tooltip = { text = nesnd_ui_not_egypt_finished_tt NOT = { has_variable = nesnd_egypt_finished } } }
+    if = { limit = { c:EGY ?= this is_country_alive = yes is_subject = yes NOT = { has_variable = nesnd_egypt_finished } }
         set_variable = nesnd_egypt_external_subjugation nesnd_egypt_finish = yes
         trigger_event = { id = nesnd_egypt.6 popup = yes }
     }
 }
 nesnd_egypt_settle_dependence = {
-    if = { limit = { c:EGY ?= this is_country_alive = yes custom_tooltip = { text = nesnd_ui_not_egypt_finished_tt NOT = { has_variable = nesnd_egypt_finished } } }
+    if = { limit = { c:EGY ?= this is_country_alive = yes NOT = { has_variable = nesnd_egypt_finished } }
         nesnd_egypt_clear_investment = yes
         if = { limit = { nesnd_egypt_protectorate_confirmed = yes }
             nesnd_egypt_confirm_protection = yes
@@ -133,7 +127,7 @@ nesnd_egypt_settle_dependence = {
                     else = { set_variable = nesnd_egypt_guarantees_unworkable }
                 }
             }
-            if = { limit = { is_subject = no custom_tooltip = { text = nesnd_ui_not_egypt_finished_tt NOT = { has_variable = nesnd_egypt_finished } } } nesnd_egypt_fail_guarantees = yes }
+            if = { limit = { is_subject = no NOT = { has_variable = nesnd_egypt_finished } } nesnd_egypt_fail_guarantees = yes }
         }
     }
 }

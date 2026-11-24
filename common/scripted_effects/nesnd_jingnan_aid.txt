@@ -53,16 +53,13 @@ nesnd_wu_resolve_refresh = {
             set_variable = nesnd_wu_resolve_counted
             set_variable = { name = nesnd_wu_resolve_fresh value = 2 }
         }
+        # The modifier reads the bar itself; no copy is kept.
         if = {
-            limit = { exists = scope:journal_entry }
-            set_variable = { name = nesnd_wu_resolve value = "scope:journal_entry.scripted_bar_progress(nesnd_wu_resolve_bar)" }
-        }
-        if = {
-            limit = { has_variable = nesnd_wu_resolve var:nesnd_wu_resolve > 50 }
+            limit = { scope:journal_entry ?= { scripted_bar_progress = { name = nesnd_wu_resolve_bar value > 50 } } }
             add_modifier = { name = nesnd_wu_resolve_high multiplier = nesnd_wu_resolve_high_mult }
         }
         else_if = {
-            limit = { has_variable = nesnd_wu_resolve var:nesnd_wu_resolve < 50 }
+            limit = { scope:journal_entry ?= { scripted_bar_progress = { name = nesnd_wu_resolve_bar value < 50 } } }
             add_modifier = { name = nesnd_wu_resolve_low multiplier = nesnd_wu_resolve_low_mult }
         }
     }
@@ -75,7 +72,6 @@ nesnd_wu_resolve_refresh = {
 # Any outcome of ce_usm_suppress_rebellion.
 nesnd_wu_resolve_cleanup = {
     nesnd_wu_resolve_remove_modifiers = yes
-    remove_variable = nesnd_wu_resolve
     remove_variable = nesnd_wu_resolve_months
     every_country = {
         limit = { OR = { hidden_trigger = { has_variable = nesnd_wu_resolve_counted } hidden_trigger = { has_variable = nesnd_wu_resolve_fresh } } }

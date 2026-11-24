@@ -45,16 +45,15 @@ nesnd_supply_initialize = {
     nesnd_supply_save_sponsor = yes
     set_variable = { name = nesnd_supply_market value = capital.market }
     set_variable = { name = nesnd_supply_score value = 0 }
-    set_variable = { name = nesnd_supply_weeks value = 0 }
     nesnd_supply_refresh = yes
 }
 nesnd_supply_refresh = {
     nesnd_supply_measure_workforce = yes
     if = {
         limit = {
-            custom_tooltip = { text = nesnd_ui_not_supply_pending_tt NOT = {
+            NOT = {
                 has_variable = nesnd_supply_pending
-            } }
+            }
         }
         remove_variable = nesnd_supply_pending_sponsor
     }
@@ -62,7 +61,7 @@ nesnd_supply_refresh = {
         limit = {
             trigger_if = {
                 limit = {
-                    custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_supply_sponsor_tt exists = var:nesnd_supply_sponsor }
+                    exists = var:nesnd_supply_sponsor
                 }
                 NOT = {
                     OR = {
@@ -85,7 +84,7 @@ nesnd_supply_refresh = {
     }
     if = {
         limit = {
-            custom_tooltip = { text = nesnd_ui_supply_partner_tt has_variable = nesnd_supply_partner }
+            has_variable = nesnd_supply_partner
             NOT = {
                 nesnd_supply_partner_valid = yes
             }
@@ -106,10 +105,7 @@ nesnd_supply_refresh = {
                 always = yes
             }
         }
-        set_variable = {
-            name = nesnd_supply_weeks
-            value = 0
-        }
+        nesnd_supply_reset_weeks = yes
         set_variable = {
             name = nesnd_supply_market
             value = capital.market
@@ -162,18 +158,21 @@ nesnd_supply_refresh = {
                 nesnd_supply_all_ready = yes
             }
         }
-        set_variable = {
-            name = nesnd_supply_weeks
-            value = 0
-        }
+        nesnd_supply_reset_weeks = yes
     }
     nesnd_supply_update_display = yes
+}
+# 连续达标周数就是条 nesnd_supply_continuity_bar 的读数（条上限 12），不另存变量；读数用 nesnd_supply_weeks_value。
+# 两个日志（nesnd_supply_preparations、nesnd_supply_hus_preparations）各国只会有其一。
+nesnd_supply_reset_weeks = {
+    je:nesnd_supply_preparations ?= { set_bar_progress = { name = nesnd_supply_continuity_bar value = 0 } }
+    je:nesnd_supply_hus_preparations ?= { set_bar_progress = { name = nesnd_supply_continuity_bar value = 0 } }
 }
 nesnd_supply_week = {
     nesnd_supply_refresh = yes
     if = { limit = { nesnd_supply_all_ready = yes }
-        change_variable = { name = nesnd_supply_weeks add = 1 }
-        clamp_variable = { name = nesnd_supply_weeks min = 0 max = 12 }
+        je:nesnd_supply_preparations ?= { add_progress = { name = nesnd_supply_continuity_bar value = 1 } }
+        je:nesnd_supply_hus_preparations ?= { add_progress = { name = nesnd_supply_continuity_bar value = 1 } }
     }
     nesnd_supply_update_display = yes
 }
@@ -181,7 +180,7 @@ nesnd_supply_reward_jingnan_muster = {
     if = {
         limit = {
             OR = { c:HNA ?= this c:SIH ?= this c:GNG ?= this }
-            custom_tooltip = { text = nesnd_ui_supply_done_tt has_variable = nesnd_supply_done }
+            has_variable = nesnd_supply_done
             nesnd_jingnan_may_receive_rebel_journal = yes
         }
         add_modifier = { name = nesnd_jingnan_muster months = 12 }
@@ -194,7 +193,6 @@ nesnd_supply_cleanup = {
     remove_variable = nesnd_supply_sponsor
     remove_variable = nesnd_supply_self_reliance
     remove_variable = nesnd_supply_score
-    remove_variable = nesnd_supply_weeks
     remove_variable = nesnd_supply_workforce_metrics_v1
     remove_variable = nesnd_supply_workforce
     remove_variable = nesnd_supply_unemployed
@@ -205,7 +203,7 @@ nesnd_supply_cleanup = {
 nesnd_supply_save_pending_sponsor = {
     if = {
         limit = {
-            custom_tooltip = { text = nesnd_ui_exists_eq_var_nesnd_supply_pending_tt exists = var:nesnd_supply_pending }
+            exists = var:nesnd_supply_pending
         }
         if = {
             limit = {
@@ -231,7 +229,7 @@ nesnd_supply_save_pending_sponsor = {
 nesnd_supply_measure_workforce = {
     if = { limit = { hidden_trigger = { NOT = { has_variable = nesnd_supply_workforce_metrics_v1 } } }
         set_variable = nesnd_supply_workforce_metrics_v1
-        set_variable = { name = nesnd_supply_weeks value = 0 }
+        nesnd_supply_reset_weeks = yes
     }
     set_variable = { name = nesnd_supply_workforce value = nesnd_supply_workforce_sum }
     set_variable = { name = nesnd_supply_unemployed value = nesnd_supply_unemployed_sum }
@@ -249,19 +247,11 @@ nesnd_supply_update_display = {
                 name = nesnd_supply_readiness_bar
                 value = scope:nesnd_supply_display.nesnd_supply_score_value
             }
-            set_bar_progress = {
-                name = nesnd_supply_continuity_bar
-                value = scope:nesnd_supply_display.nesnd_supply_weeks_value
-            }
         }
         je:nesnd_supply_hus_preparations ?= {
             set_bar_progress = {
                 name = nesnd_supply_readiness_bar
                 value = scope:nesnd_supply_display.nesnd_supply_score_value
-            }
-            set_bar_progress = {
-                name = nesnd_supply_continuity_bar
-                value = scope:nesnd_supply_display.nesnd_supply_weeks_value
             }
         }
     }

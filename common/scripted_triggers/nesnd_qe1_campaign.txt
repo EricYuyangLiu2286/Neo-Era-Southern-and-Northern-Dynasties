@@ -1,6 +1,9 @@
 ﻿nesnd_qe1_country = { custom_tooltip = { text = nesnd_qe1_condition_country trigger_if = { limit = { exists = c:QE1 } c:QE1 = this is_country_alive = yes } trigger_else = { always = no } } }
 nesnd_qe1_agenda_eligible = { nesnd_qe1_country = yes custom_tooltip = { text = nesnd_qe1_condition_states_4 num_states >= 4 } custom_tooltip = { text = nesnd_qe1_condition_agenda_open NOT = { has_variable = nesnd_qe1_agenda_done } } }
 nesnd_qe1_agenda_live = { nesnd_qe1_agenda_eligible = yes has_journal_entry = nesnd_qe1_agenda_journal }
+# 势力平衡点就是进度条 nesnd_qe1_balance_bar 的读数（-50 经济一端，50 军队一端），不另存变量。日志不在时为否。
+nesnd_qe1_balance_at_least = { je:nesnd_qe1_agenda_journal ?= { scripted_bar_progress = { name = nesnd_qe1_balance_bar value >= $V$ } } }
+nesnd_qe1_balance_at_most = { je:nesnd_qe1_agenda_journal ?= { scripted_bar_progress = { name = nesnd_qe1_balance_bar value <= $V$ } } }
 nesnd_qe1_economy_ready = {
 	has_law_or_variant = law_type:law_commercialized_agriculture
 	has_law_or_variant = law_type:law_laissez_faire
@@ -19,15 +22,15 @@ nesnd_qe1_army_ready = {
     trigger_else = { custom_tooltip = { text = nesnd_qe1_condition_barracks always = no } }
 }
 nesnd_qe1_economic_victory = {
-    trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_qe1_balance } }
-        custom_tooltip = { text = nesnd_qe1_condition_econ_endpoint var:nesnd_qe1_balance <= -50 }
+    trigger_if = { limit = { hidden_trigger = { has_journal_entry = nesnd_qe1_agenda_journal } }
+        custom_tooltip = { text = nesnd_qe1_condition_econ_endpoint nesnd_qe1_balance_at_most = { V = -50 } }
         custom_tooltip = { text = nesnd_qe1_condition_econ_held has_variable = nesnd_qe1_econ_edge NOT = { has_variable = nesnd_qe1_econ_wait } }
     }
     trigger_else = { hidden_trigger = { always = no } }
 }
 nesnd_qe1_military_victory = {
-    trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_qe1_balance } }
-        custom_tooltip = { text = nesnd_qe1_condition_army_endpoint var:nesnd_qe1_balance >= 50 }
+    trigger_if = { limit = { hidden_trigger = { has_journal_entry = nesnd_qe1_agenda_journal } }
+        custom_tooltip = { text = nesnd_qe1_condition_army_endpoint nesnd_qe1_balance_at_least = { V = 50 } }
         custom_tooltip = { text = nesnd_qe1_condition_army_held has_variable = nesnd_qe1_army_edge NOT = { has_variable = nesnd_qe1_army_wait } }
     }
     trigger_else = { hidden_trigger = { always = no } }

@@ -6,7 +6,7 @@
 
     if = { limit = { nesnd_jp_country = yes }
         set_variable = nesnd_jp_managed
-        if = { limit = { custom_tooltip = { text = nesnd_ui_not_jp_statistics_ready_tt NOT = { has_variable = nesnd_jp_statistics_ready } } hidden_trigger = { NOT = { has_variable = nesnd_jp_statistics_pending } } }
+        if = { limit = { NOT = { has_variable = nesnd_jp_statistics_ready } hidden_trigger = { NOT = { has_variable = nesnd_jp_statistics_pending } } }
             set_variable = { name = nesnd_jp_statistics_pending days = 3 }
             trigger_event = { id = nesnd_jp_court.3 days = 2 }
         }
@@ -15,22 +15,14 @@
             if = { limit = { c:JAP ?= this any_scope_state = { hidden_trigger = { has_variable = nesnd_jp_political_receipt_JAP } } } set_variable = nesnd_jp_political_done }
             if = { limit = { c:JTK ?= this any_scope_state = { hidden_trigger = { has_variable = nesnd_jp_political_receipt_JTK } } } set_variable = nesnd_jp_political_done }
             if = { limit = { c:JIM ?= this any_scope_state = { hidden_trigger = { has_variable = nesnd_jp_political_receipt_JIM } } } set_variable = nesnd_jp_political_done }
-            if = { limit = { hidden_trigger = { NOT = { has_variable = nesnd_jp_cohesion } } } set_variable = { name = nesnd_jp_cohesion value = 70 } }
             set_variable = { name = nesnd_jp_war_months value = 0 }
             set_variable = { name = nesnd_jp_sol_previous value = average_sol }
-            set_variable = { name = nesnd_jp_sol_change value = 0 }
         }
         if = { limit = { c:JIM ?= this }
             add_primary_culture = cu:japanese
             add_primary_culture = cu:ce_wuu
             set_variable = nesnd_jp_jiangnan_policy
         }
-    }
-}
-nesnd_jp_sync_cohesion = {
-    save_scope_as = jp_bar_owner
-    if = { limit = { has_journal_entry = nesnd_jp_cohesion exists = scope:jp_bar_owner }
-        je:nesnd_jp_cohesion = { set_bar_progress = { name = nesnd_jp_cohesion_bar value = scope:jp_bar_owner.nesnd_jp_cohesion_value } }
     }
 }
 # 国民团结高于 50 时各融合度人口的激进化减缓，低于 50 时加快。档位变化时才重挂修正。
@@ -51,20 +43,17 @@ nesnd_jp_update_unity_mood = {
 nesnd_jp_cohesion_monthly = {
     if = { limit = { nesnd_jp_cohesion_live = yes has_variable = nesnd_jp_statistics_ready }
         nesnd_jp_initialize = yes
-        set_variable = { name = nesnd_jp_sol_change value = { value = average_sol subtract = var:nesnd_jp_sol_previous } }
+        # 本月的团结增减已由进度条 nesnd_jp_cohesion_bar 先行计入；这里记下本月的生活水平与战月，供下月进度条使用。
         set_variable = { name = nesnd_jp_sol_previous value = average_sol }
         if = { limit = { is_at_war = yes } change_variable = { name = nesnd_jp_war_months add = 1 } }
         else = { set_variable = { name = nesnd_jp_war_months value = 0 } }
-        change_variable = { name = nesnd_jp_cohesion add = nesnd_jp_cohesion_delta }
-        clamp_variable = { name = nesnd_jp_cohesion min = 0 max = 100 }
         nesnd_jp_update_unity_mood = yes
-        if = { limit = { var:nesnd_jp_cohesion < 25 }
+        if = { limit = { nesnd_jp_cohesion_value < 25 }
             if = { limit = { NOT = { has_modifier = nesnd_jp_divided_councils } } add_modifier = { name = nesnd_jp_divided_councils } }
         } else = { if = { limit = { has_modifier = nesnd_jp_divided_councils } remove_modifier = nesnd_jp_divided_councils } }
         nesnd_jp_settle_culture_plan = yes
         nesnd_jp_reset_culture_plan = yes
         nesnd_jp_prepare_culture_plan = yes
-        nesnd_jp_sync_cohesion = yes
     } else = { nesnd_jp_reset_culture_plan = yes }
 }
 
@@ -83,7 +72,7 @@ nesnd_jp_prepare_culture_plan = {
     if = {
         limit = {
             nesnd_jp_cohesion_live = yes
-            custom_tooltip = { text = nesnd_ui_jp_statistics_ready_tt has_variable = nesnd_jp_statistics_ready }
+            has_variable = nesnd_jp_statistics_ready
             hidden_trigger = { NOT = { has_variable = nesnd_jp_next_mode } }
         }
         set_variable = { name = nesnd_jp_next_mode value = 0 }
@@ -181,6 +170,5 @@ nesnd_jp_bootstrap = {
         nesnd_jp_ensure_politics = yes
         nesnd_jp_ensure_foreign = yes
         nesnd_jp_ensure_korea = yes
-        nesnd_jp_sync_cohesion = yes
     }
 }

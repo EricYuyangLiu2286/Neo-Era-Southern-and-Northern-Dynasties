@@ -1,31 +1,25 @@
 ﻿nesnd_qe1_compute_court = {
 	if = { limit = { nesnd_qe1_court_live = yes }
-		nesnd_qe1_calculate_power_values = yes
-
-
-
-
-
+		# 先按本次算出的份额摘掉不足 40 的扶持，再按摘后的局面重算，写进三条份额条。份额只存在进度条里，读它用 nesnd_qe1_power_at_least。
 		nesnd_qe1_prune_patronage = yes
-		if = { limit = { has_variable = nesnd_qe1_power_recalculate } remove_variable = nesnd_qe1_power_recalculate nesnd_qe1_calculate_power_values = yes }
 		je:nesnd_qe1_court_journal = {
-			set_bar_progress = { name = nesnd_qe1_crown_bar value = root.var:nesnd_qe1_power_crown }
-			set_bar_progress = { name = nesnd_qe1_literati_bar value = root.var:nesnd_qe1_power_literati }
-			set_bar_progress = { name = nesnd_qe1_army_bar value = root.var:nesnd_qe1_power_army }
+			set_bar_progress = { name = nesnd_qe1_crown_bar value = root.nesnd_qe1_preview_first_crown }
+			set_bar_progress = { name = nesnd_qe1_literati_bar value = root.nesnd_qe1_preview_first_literati }
+			set_bar_progress = { name = nesnd_qe1_army_bar value = root.nesnd_qe1_preview_first_army }
 		}
 		nesnd_qe1_refresh_court_modifiers = yes
 	}
 	else = { nesnd_qe1_clear_court_modifiers = yes }
 }
-# 三方份额修正：份额 >= 50 挂 _high，< 50 挂 _low，份额尚未算出时两个都不挂。先判 has_modifier 再加，换挂时先摘另一个。
+# 三方份额修正：份额 >= 50 挂 _high，< 50 挂 _low，日志不在时两个都不挂。先判 has_modifier 再加，换挂时先摘另一个。
 nesnd_qe1_refresh_court_modifiers = {
 	nesnd_qe1_court_modifier_side = { WHO = crown }
 	nesnd_qe1_court_modifier_side = { WHO = literati }
 	nesnd_qe1_court_modifier_side = { WHO = army }
 }
 nesnd_qe1_court_modifier_side = {
-	if = { limit = { has_variable = nesnd_qe1_power_$WHO$ }
-		if = { limit = { var:nesnd_qe1_power_$WHO$ >= 50 }
+	if = { limit = { has_journal_entry = nesnd_qe1_court_journal }
+		if = { limit = { nesnd_qe1_power_at_least = { WHO = $WHO$ V = 50 } }
 			if = { limit = { has_modifier = nesnd_qe1_$WHO$_low } remove_modifier = nesnd_qe1_$WHO$_low }
 			if = { limit = { NOT = { has_modifier = nesnd_qe1_$WHO$_high } } add_modifier = { name = nesnd_qe1_$WHO$_high } }
 		}
@@ -49,22 +43,16 @@ nesnd_qe1_clear_patronage = {
 	remove_variable = nesnd_qe1_patron_crown remove_variable = nesnd_qe1_patron_literati remove_variable = nesnd_qe1_patron_army
 	if = { limit = { has_modifier = nesnd_qe1_patronage_crown } remove_modifier = nesnd_qe1_patronage_crown } if = { limit = { has_modifier = nesnd_qe1_patronage_literati } remove_modifier = nesnd_qe1_patronage_literati } if = { limit = { has_modifier = nesnd_qe1_patronage_army } remove_modifier = nesnd_qe1_patronage_army }
 }
+# 扶持只在被扶持的一方份额不低于 40 时保留。同一时间只有一方受扶持。
 nesnd_qe1_prune_patronage = {
-	if = { limit = { has_variable = nesnd_qe1_patron_crown has_variable = nesnd_qe1_power_crown }
-		if = { limit = { var:nesnd_qe1_power_crown < 40 } set_variable = nesnd_qe1_power_recalculate remove_variable = nesnd_qe1_patron_crown if = { limit = { has_modifier = nesnd_qe1_patronage_crown } remove_modifier = nesnd_qe1_patronage_crown } }
+	if = { limit = { has_variable = nesnd_qe1_patron_crown }
+		if = { limit = { nesnd_qe1_preview_first_crown < 40 } remove_variable = nesnd_qe1_patron_crown if = { limit = { has_modifier = nesnd_qe1_patronage_crown } remove_modifier = nesnd_qe1_patronage_crown } }
 	}
-	if = { limit = { has_variable = nesnd_qe1_patron_literati has_variable = nesnd_qe1_power_literati }
-		if = { limit = { var:nesnd_qe1_power_literati < 40 } set_variable = nesnd_qe1_power_recalculate remove_variable = nesnd_qe1_patron_literati if = { limit = { has_modifier = nesnd_qe1_patronage_literati } remove_modifier = nesnd_qe1_patronage_literati } }
+	if = { limit = { has_variable = nesnd_qe1_patron_literati }
+		if = { limit = { nesnd_qe1_preview_first_literati < 40 } remove_variable = nesnd_qe1_patron_literati if = { limit = { has_modifier = nesnd_qe1_patronage_literati } remove_modifier = nesnd_qe1_patronage_literati } }
 	}
-	if = { limit = { has_variable = nesnd_qe1_patron_army has_variable = nesnd_qe1_power_army }
-		if = { limit = { var:nesnd_qe1_power_army < 40 } set_variable = nesnd_qe1_power_recalculate remove_variable = nesnd_qe1_patron_army if = { limit = { has_modifier = nesnd_qe1_patronage_army } remove_modifier = nesnd_qe1_patronage_army } }
+	if = { limit = { has_variable = nesnd_qe1_patron_army }
+		if = { limit = { nesnd_qe1_preview_first_army < 40 } remove_variable = nesnd_qe1_patron_army if = { limit = { has_modifier = nesnd_qe1_patronage_army } remove_modifier = nesnd_qe1_patronage_army } }
 	}
 }
 nesnd_qe1_archive_court = { set_variable = nesnd_qe1_court_archived nesnd_qe1_clear_patronage = yes nesnd_qe1_clear_court_modifiers = yes }
-
-nesnd_qe1_calculate_power_values = {
-	set_variable = { name = nesnd_qe1_power_total value = { value = nesnd_qe1_crown_raw add = nesnd_qe1_literati_raw add = nesnd_qe1_army_raw } }
-	set_variable = { name = nesnd_qe1_power_crown value = { value = nesnd_qe1_crown_raw divide = var:nesnd_qe1_power_total multiply = 100 } }
-	set_variable = { name = nesnd_qe1_power_literati value = { value = nesnd_qe1_literati_raw divide = var:nesnd_qe1_power_total multiply = 100 } }
-	set_variable = { name = nesnd_qe1_power_army value = { value = nesnd_qe1_army_raw divide = var:nesnd_qe1_power_total multiply = 100 } }
-}

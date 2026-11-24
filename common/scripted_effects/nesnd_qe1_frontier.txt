@@ -1,20 +1,11 @@
 ﻿# 西秦「边疆诸部」的效果。Root = country（西秦），另注明者除外。
 
-nesnd_qe1_fr_init = {
-	if = { limit = { NOT = { has_variable = nesnd_qe1_fr_afg } } set_variable = { name = nesnd_qe1_fr_afg value = 20 } }
-	if = { limit = { NOT = { has_variable = nesnd_qe1_fr_kaz } } set_variable = { name = nesnd_qe1_fr_kaz value = 10 } }
-	nesnd_qe1_fr_sync = yes
-}
-nesnd_qe1_fr_sync = {
-	clamp_variable = { name = nesnd_qe1_fr_afg min = 0 max = 100 }
-	clamp_variable = { name = nesnd_qe1_fr_kaz min = 0 max = 100 }
+# 两条地区条由进度条自己逐月累加（scripted_progress_bars/nesnd_qe1_frontier.txt），按钮与事件用 add_progress 推动，不另存变量；读它们用 nesnd_qe1_fr_bar_at_least。
+# 老秦战意条只作读数：按交战的敌国数写入（每个 20 点）。
+nesnd_qe1_fr_resolve_sync = {
 	if = {
 		limit = { has_journal_entry = nesnd_qe1_frontier_journal }
-		je:nesnd_qe1_frontier_journal = {
-			set_bar_progress = { name = nesnd_qe1_fr_afg_bar value = root.var:nesnd_qe1_fr_afg }
-			set_bar_progress = { name = nesnd_qe1_fr_kaz_bar value = root.var:nesnd_qe1_fr_kaz }
-			set_bar_progress = { name = nesnd_qe1_fr_resolve_bar value = root.nesnd_qe1_fr_resolve_value }
-		}
+		je:nesnd_qe1_frontier_journal = { set_bar_progress = { name = nesnd_qe1_fr_resolve_bar value = root.nesnd_qe1_fr_resolve_value } }
 	}
 }
 
@@ -28,15 +19,13 @@ nesnd_qe1_fr_monthly = {
 	if = {
 		limit = { nesnd_qe1_frontier_live = yes }
 		nesnd_qe1_record_peak_states = yes
-		change_variable = { name = nesnd_qe1_fr_afg add = nesnd_qe1_fr_afg_delta }
-		change_variable = { name = nesnd_qe1_fr_kaz add = nesnd_qe1_fr_kaz_delta }
 
 		# 阿富汗：1842 年起，条到 40 即有运动。
 		if = {
 			limit = {
 				nesnd_qe1_fr_afg_active = yes
 				NOT = { has_variable = nesnd_qe1_fr_afg_stirring }
-				var:nesnd_qe1_fr_afg >= 40
+				nesnd_qe1_fr_bar_at_least = { WHO = afg V = 40 }
 				game_date >= 1842.1.1
 			}
 			set_variable = nesnd_qe1_fr_afg_stirring
@@ -66,7 +55,7 @@ nesnd_qe1_fr_monthly = {
 			limit = {
 				nesnd_qe1_fr_kaz_active = yes
 				NOT = { has_variable = nesnd_qe1_fr_kaz_stirring }
-				var:nesnd_qe1_fr_kaz >= 40
+				nesnd_qe1_fr_bar_at_least = { WHO = kaz V = 40 }
 				game_date >= 1842.1.1
 				NOT = { has_variable = nesnd_qe1_fr_recent_rising }
 				NOT = { has_variable = nesnd_qe1_fr_afg_risen }
@@ -95,11 +84,11 @@ nesnd_qe1_fr_monthly = {
 		}
 		# 条落回 25 以下，运动散去。
 		if = {
-			limit = { has_variable = nesnd_qe1_fr_afg_stirring NOT = { has_variable = nesnd_qe1_fr_afg_risen } var:nesnd_qe1_fr_afg < 25 }
+			limit = { has_variable = nesnd_qe1_fr_afg_stirring NOT = { has_variable = nesnd_qe1_fr_afg_risen } NOT = { nesnd_qe1_fr_bar_at_least = { WHO = afg V = 25 } } }
 			remove_variable = nesnd_qe1_fr_afg_stirring
 		}
 		if = {
-			limit = { has_variable = nesnd_qe1_fr_kaz_stirring NOT = { has_variable = nesnd_qe1_fr_kaz_risen } var:nesnd_qe1_fr_kaz < 25 }
+			limit = { has_variable = nesnd_qe1_fr_kaz_stirring NOT = { has_variable = nesnd_qe1_fr_kaz_risen } NOT = { nesnd_qe1_fr_bar_at_least = { WHO = kaz V = 25 } } }
 			remove_variable = nesnd_qe1_fr_kaz_stirring
 		}
 
@@ -107,7 +96,7 @@ nesnd_qe1_fr_monthly = {
 		if = {
 			limit = { has_variable = nesnd_qe1_fr_afg_stirring NOT = { has_variable = nesnd_qe1_fr_afg_risen } }
 			if = {
-				limit = { var:nesnd_qe1_fr_afg >= 70 }
+				limit = { nesnd_qe1_fr_bar_at_least = { WHO = afg V = 70 } }
 				random_list = { 75 = { } 25 = { nesnd_qe1_fr_revert = { REGION = nesnd_qe1_fr_afg_region } } }
 			}
 			else = { random_list = { 85 = { } 15 = { nesnd_qe1_fr_revert = { REGION = nesnd_qe1_fr_afg_region } } } }
@@ -115,7 +104,7 @@ nesnd_qe1_fr_monthly = {
 		if = {
 			limit = { has_variable = nesnd_qe1_fr_kaz_stirring NOT = { has_variable = nesnd_qe1_fr_kaz_risen } }
 			if = {
-				limit = { var:nesnd_qe1_fr_kaz >= 70 }
+				limit = { nesnd_qe1_fr_bar_at_least = { WHO = kaz V = 70 } }
 				random_list = { 75 = { } 25 = { nesnd_qe1_fr_revert = { REGION = nesnd_qe1_fr_kaz_region } } }
 			}
 			else = { random_list = { 85 = { } 15 = { nesnd_qe1_fr_revert = { REGION = nesnd_qe1_fr_kaz_region } } } }
@@ -125,7 +114,7 @@ nesnd_qe1_fr_monthly = {
 		nesnd_qe1_fr_settle_afg = yes
 		nesnd_qe1_fr_settle_kaz = yes
 		nesnd_qe1_fr_chain = yes
-		nesnd_qe1_fr_sync = yes
+		nesnd_qe1_fr_resolve_sync = yes
 	}
 }
 
@@ -400,7 +389,6 @@ nesnd_qe1_fr_autonomy_afg = {
 	remove_variable = nesnd_qe1_fr_afg_stirring
 	set_variable = nesnd_qe1_fr_afg_lost
 	change_variable = { name = nesnd_qe1_unity add = 5 }
-	nesnd_qe1_fr_sync = yes
 }
 nesnd_qe1_fr_autonomy_kaz = {
 	nesnd_qe1_fr_release = { TAG = UZB REGION = nesnd_qe1_fr_kaz_region }
@@ -412,7 +400,6 @@ nesnd_qe1_fr_autonomy_kaz = {
 	remove_variable = nesnd_qe1_fr_kaz_stirring
 	set_variable = nesnd_qe1_fr_kaz_lost
 	change_variable = { name = nesnd_qe1_unity add = 5 }
-	nesnd_qe1_fr_sync = yes
 }
 
 # 战果：开战后才判定。新国家还在而战争已停，地区失去。新国家已不存在，平定。
@@ -435,7 +422,7 @@ nesnd_qe1_fr_settle_afg = {
 			remove_variable = nesnd_qe1_fr_afg_risen
 			remove_variable = nesnd_qe1_fr_afg_stirring
 			set_variable = { name = nesnd_qe1_fr_afg_quiet years = 10 }
-			set_variable = { name = nesnd_qe1_fr_afg value = 20 }
+			je:nesnd_qe1_frontier_journal ?= { set_bar_progress = { name = nesnd_qe1_fr_afg_bar value = 20 } }
 			change_variable = { name = nesnd_qe1_unity add = 10 }
 			trigger_event = { id = nesnd_qe1_frontier.7 popup = yes }
 		}
@@ -460,7 +447,7 @@ nesnd_qe1_fr_settle_kaz = {
 			remove_variable = nesnd_qe1_fr_kaz_risen
 			remove_variable = nesnd_qe1_fr_kaz_stirring
 			set_variable = { name = nesnd_qe1_fr_kaz_quiet years = 10 }
-			set_variable = { name = nesnd_qe1_fr_kaz value = 20 }
+			je:nesnd_qe1_frontier_journal ?= { set_bar_progress = { name = nesnd_qe1_fr_kaz_bar value = 20 } }
 			change_variable = { name = nesnd_qe1_unity add = 10 }
 			trigger_event = { id = nesnd_qe1_frontier.8 popup = yes }
 		}
@@ -498,7 +485,7 @@ nesnd_per_stance_monthly = {
 		make_independent = yes
 		c:QE1 = {
 			change_variable = { name = nesnd_qe1_unity add = -5 }
-			if = { limit = { has_variable = nesnd_qe1_fr_afg nesnd_qe1_fr_afg_active = yes } change_variable = { name = nesnd_qe1_fr_afg add = 10 } }
+			if = { limit = { nesnd_qe1_fr_afg_active = yes } je:nesnd_qe1_frontier_journal ?= { add_progress = { name = nesnd_qe1_fr_afg_bar value = 10 } } }
 			trigger_event = { id = nesnd_per_stance.2 popup = yes }
 		}
 		nesnd_per_settle_route = { ROUTE = covert }
@@ -516,7 +503,7 @@ nesnd_per_stance_monthly = {
 		je:nesnd_per_stance_journal = { set_bar_progress = { name = nesnd_per_stance_bar value = 70 } }
 		c:QE1 = {
 			add_modifier = { name = nesnd_qe1_fr_persian_aid years = 3 }
-			if = { limit = { has_variable = nesnd_qe1_fr_afg nesnd_qe1_fr_afg_active = yes } change_variable = { name = nesnd_qe1_fr_afg add = -20 } }
+			if = { limit = { nesnd_qe1_fr_afg_active = yes } je:nesnd_qe1_frontier_journal ?= { add_progress = { name = nesnd_qe1_fr_afg_bar value = -20 } } }
 			trigger_event = { id = nesnd_per_stance.3 popup = yes }
 		}
 	}

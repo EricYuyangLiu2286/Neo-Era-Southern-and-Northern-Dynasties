@@ -2,7 +2,6 @@
 	if = { limit = { nesnd_qe1_country = yes }
 		if = { limit = { NOT = { has_variable = nesnd_qe1_campaign_v1 } }
 			set_variable = nesnd_qe1_campaign_v1
-			set_variable = { name = nesnd_qe1_balance value = 0 }
 			set_variable = { name = nesnd_qe1_barracks_goal value = 107 }
 			set_variable = nesnd_qe1_barracks_snapshot_pending
 			trigger_event = { id = nesnd_qe1.90 days = 1 popup = no }
@@ -38,25 +37,20 @@ nesnd_qe1_ensure_agenda_children = {
 		if = { limit = { NOT = { has_journal_entry = nesnd_qe1_army_journal } } if = { limit = { NOR = { has_journal_entry = nesnd_qe1_army_journal has_variable = nesnd_jeq_nesnd_qe1_army_journal } } set_variable = { name = nesnd_jeq_nesnd_qe1_army_journal days = 3 } add_journal_entry = { type = nesnd_qe1_army_journal } } }
 	}
 }
-nesnd_qe1_agenda_sync = {
-	clamp_variable = { name = nesnd_qe1_balance min = -50 max = 50 }
-	if = { limit = { has_journal_entry = nesnd_qe1_agenda_journal } je:nesnd_qe1_agenda_journal = { set_bar_progress = { name = nesnd_qe1_balance_bar value = root.var:nesnd_qe1_balance } } }
-}
+# 势力平衡点就是进度条 nesnd_qe1_balance_bar 的读数，由条的 monthly_progress 逐月累加，按钮用 add_progress 推动；读它用 nesnd_qe1_balance_at_least / _at_most。
 nesnd_qe1_watch_endpoints = {
 	if = { limit = { nesnd_qe1_agenda_live = yes }
-		clamp_variable = { name = nesnd_qe1_balance min = -50 max = 50 }
-		if = { limit = { var:nesnd_qe1_balance <= -50 }
+		if = { limit = { nesnd_qe1_balance_at_most = { V = -50 } }
 			if = { limit = { NOT = { has_variable = nesnd_qe1_econ_edge } } set_variable = nesnd_qe1_econ_edge set_variable = { name = nesnd_qe1_econ_wait days = 29 } }
 		} else = { remove_variable = nesnd_qe1_econ_edge remove_variable = nesnd_qe1_econ_wait }
-		if = { limit = { var:nesnd_qe1_balance >= 50 }
+		if = { limit = { nesnd_qe1_balance_at_least = { V = 50 } }
 			if = { limit = { NOT = { has_variable = nesnd_qe1_army_edge } } set_variable = nesnd_qe1_army_edge set_variable = { name = nesnd_qe1_army_wait days = 29 } }
 		} else = { remove_variable = nesnd_qe1_army_edge remove_variable = nesnd_qe1_army_wait }
 	}
 }
 nesnd_qe1_agenda_monthly = {
 	if = { limit = { nesnd_qe1_agenda_live = yes }
-		change_variable = { name = nesnd_qe1_balance add = nesnd_qe1_agenda_delta }
-		nesnd_qe1_watch_endpoints = yes nesnd_qe1_agenda_sync = yes
+		nesnd_qe1_watch_endpoints = yes
 		nesnd_qe1_check_civil_conflict = yes
 	}
 }

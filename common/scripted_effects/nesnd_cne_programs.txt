@@ -494,9 +494,9 @@ nesnd_cne_officer_cleanup = {
 	if = { limit = { has_modifier = nesnd_cne_camp_zhili_officers } remove_modifier = nesnd_cne_camp_zhili_officers }
 	remove_variable = nesnd_cne_officer_affected
 }
-nesnd_cne_land_start = { if = { limit = { nesnd_cne_land_start_ready = yes custom_tooltip = { text = nesnd_ui_not_cne_land_program_tt NOT = { has_variable = nesnd_cne_land_program } } } set_variable = nesnd_cne_land_program add_modifier = { name = nesnd_cne_land_commercialization } } }
+nesnd_cne_land_start = { if = { limit = { nesnd_cne_land_start_ready = yes NOT = { has_variable = nesnd_cne_land_program } } set_variable = nesnd_cne_land_program add_modifier = { name = nesnd_cne_land_commercialization } } }
 nesnd_cne_land_stop = { remove_variable = nesnd_cne_land_program if = { limit = { has_modifier = nesnd_cne_land_commercialization } remove_modifier = nesnd_cne_land_commercialization } }
-nesnd_cne_urban_start = { if = { limit = { nesnd_cne_urban_start_ready = yes custom_tooltip = { text = nesnd_ui_not_cne_urban_program_tt NOT = { has_variable = nesnd_cne_urban_program } } } set_variable = nesnd_cne_urban_program add_modifier = { name = nesnd_cne_national_urbanization } } }
+nesnd_cne_urban_start = { if = { limit = { nesnd_cne_urban_start_ready = yes NOT = { has_variable = nesnd_cne_urban_program } } set_variable = nesnd_cne_urban_program add_modifier = { name = nesnd_cne_national_urbanization } } }
 nesnd_cne_urban_stop = { remove_variable = nesnd_cne_urban_program if = { limit = { has_modifier = nesnd_cne_national_urbanization } remove_modifier = nesnd_cne_national_urbanization } }
 nesnd_cne_stop_all_programs = {
 	nesnd_cne_land_stop = yes
@@ -712,8 +712,8 @@ nesnd_cne_programs_maintenance = {
 			}
 		}
 		nesnd_cne_refresh_camp_count = yes
-		if = { limit = { custom_tooltip = { text = nesnd_ui_cne_land_program_tt has_variable = nesnd_cne_land_program } NOT = { nesnd_cne_land_foundation = yes } } nesnd_cne_land_stop = yes }
-		if = { limit = { custom_tooltip = { text = nesnd_ui_cne_urban_program_tt has_variable = nesnd_cne_urban_program } NOT = { nesnd_cne_urban_foundation = yes } } nesnd_cne_urban_stop = yes }
+		if = { limit = { has_variable = nesnd_cne_land_program NOT = { nesnd_cne_land_foundation = yes } } nesnd_cne_land_stop = yes }
+		if = { limit = { has_variable = nesnd_cne_urban_program NOT = { nesnd_cne_urban_foundation = yes } } nesnd_cne_urban_stop = yes }
 		if = { limit = { is_ai = yes }
 			# Coup guard (2026-11-16). Every camp costs all commanders 1 loyalty and the army 1 approval. A commander
 			# below 25 can start a coup (GAME ip4_coup.1), and a coup that succeeds fails the reform. The AI closes its
@@ -721,9 +721,9 @@ nesnd_cne_programs_maintenance = {
 			if = { limit = { nesnd_cne_active_camp_count > 0 nesnd_cne_ai_coup_risk = { LOYALTY = 25 } }
 				nesnd_cne_stop_all_camps = yes set_variable = { name = nesnd_cne_ai_camp_wait months = 6 }
 			}
-			if = { limit = { OR = { custom_tooltip = { text = nesnd_ui_var_cne_landreform_failure_tracker_ge_65_tt var:cne_landreform_failure_tracker >= 65 } ig:ig_armed_forces = { ig_approval <= -8 } } }
+			if = { limit = { OR = { var:cne_landreform_failure_tracker >= 65 ig:ig_armed_forces = { ig_approval <= -8 } } }
 				nesnd_cne_stop_all_programs = yes set_variable = { name = nesnd_cne_ai_recovery_wait months = 6 }
-			} else_if = { limit = { custom_tooltip = { text = nesnd_ui_var_cne_landreform_failure_tracker_le_45_tt var:cne_landreform_failure_tracker <= 45 } hidden_trigger = { NOT = { has_variable = nesnd_cne_ai_recovery_wait } } }
+			} else_if = { limit = { var:cne_landreform_failure_tracker <= 45 hidden_trigger = { NOT = { has_variable = nesnd_cne_ai_recovery_wait } } }
 				nesnd_cne_land_start = yes nesnd_cne_urban_start = yes
 				# A new camp needs every commander at loyalty 40 or more. One camp costs commanders 1 loyalty directly
 				# and army commanders more through 1 army approval (define LOYALTY_FROM_IG_APPROVAL), so they stay above 25.
@@ -755,7 +755,7 @@ nesnd_cne_programs_maintenance = {
 				}
 			}
 		}
-	} else_if = { limit = { custom_tooltip = { text = nesnd_ui_cne_programs_running_tt has_variable = nesnd_cne_programs_running } } nesnd_cne_programs_cleanup = yes }
+	} else_if = { limit = { has_variable = nesnd_cne_programs_running } nesnd_cne_programs_cleanup = yes }
 }
 
 nesnd_cne_cleanup_inherited_programs = {

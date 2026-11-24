@@ -7,8 +7,6 @@
         set_variable = { name = nesnd_phi_active_route value = 0 }
         set_variable = { name = nesnd_phi_last_route value = 1 }
         set_variable = { name = nesnd_phi_quote value = 0 }
-        set_variable = { name = nesnd_phi_score value = 0 }
-        set_variable = { name = nesnd_phi_good_months value = 0 }
         set_variable = { name = nesnd_phi_finish_reason value = 0 }
         set_variable = { name = nesnd_phi_unemployment value = 0 }
         set_variable = { name = nesnd_phi_starving value = 0 }
@@ -26,34 +24,18 @@ nesnd_phi_measure = {
         set_variable = { name = nesnd_phi_unemployment value = { value = nesnd_phi_unemployed divide = nesnd_phi_workforce } }
         set_variable = { name = nesnd_phi_starving value = { value = nesnd_phi_starving divide = nesnd_phi_workforce } }
     }
-    set_variable = { name = nesnd_phi_score value = 0 }
-    if = { limit = { nesnd_phi_fiscal_ready = yes } change_variable = { name = nesnd_phi_score add = 1 } }
-    if = { limit = { army_size >= 35 } change_variable = { name = nesnd_phi_score add = 1 } }
-    if = { limit = { nesnd_phi_fleet_ready = yes } change_variable = { name = nesnd_phi_score add = 1 } }
-    if = { limit = { nesnd_phi_households_ready = yes } change_variable = { name = nesnd_phi_score add = 1 } }
 }
+# 达标项数（nesnd_phi_score_value）直接写入条；连续月数条由 nesnd_phi_month 自己加减，不在这里写。
 nesnd_phi_display = {
 	save_scope_as = nesnd_phi_display_country
 	if = {
 		limit = {
 			exists = scope:nesnd_phi_display_country
 		}
-		if = {
-			limit = {
-				scope:nesnd_phi_display_country = {
-					has_variable = nesnd_phi_score
-					has_variable = nesnd_phi_good_months
-				}
-			}
-			je:nesnd_phi_service_recovery ?= {
-				set_bar_progress = {
-					name = nesnd_phi_service_bar
-					value = scope:nesnd_phi_display_country.var:nesnd_phi_score
-				}
-				set_bar_progress = {
-					name = nesnd_phi_continuity_bar
-					value = scope:nesnd_phi_display_country.var:nesnd_phi_good_months
-				}
+		je:nesnd_phi_service_recovery ?= {
+			set_bar_progress = {
+				name = nesnd_phi_service_bar
+				value = scope:nesnd_phi_display_country.nesnd_phi_score_value
 			}
 		}
 	}
@@ -348,9 +330,11 @@ nesnd_phi_finish_creation = {
 		id = nesnd_phi_finance.9
 		months = 12
 	}
-	set_variable = {
-		name = nesnd_phi_good_months
-		value = 0
+	je:nesnd_phi_service_recovery ?= {
+		set_bar_progress = {
+			name = nesnd_phi_continuity_bar
+			value = 0
+		}
 	}
 	c:USM = {
 		set_variable = {
@@ -460,9 +444,11 @@ nesnd_phi_clear_active = {
 		name = nesnd_phi_stage
 		value = 0
 	}
-	set_variable = {
-		name = nesnd_phi_good_months
-		value = 0
+	je:nesnd_phi_service_recovery ?= {
+		set_bar_progress = {
+			name = nesnd_phi_continuity_bar
+			value = 0
+		}
 	}
 	set_variable = {
 		name = nesnd_phi_cooldown
@@ -560,11 +546,11 @@ nesnd_phi_month = {
         nesnd_phi_clear_pending = yes set_variable = { name = nesnd_phi_cooldown days = 30 }
     }
     nesnd_phi_measure = yes
-    if = { limit = { var:nesnd_phi_score = 4 is_at_war = no }
-        change_variable = { name = nesnd_phi_good_months add = 1 }
+    # 连续达标月数就是条 nesnd_phi_continuity_bar 的读数（条上限 3）。
+    if = { limit = { nesnd_phi_score_value >= 4 is_at_war = no }
+        je:nesnd_phi_service_recovery ?= { add_progress = { name = nesnd_phi_continuity_bar value = 1 } }
     }
-    else = { set_variable = { name = nesnd_phi_good_months value = 0 } }
-    clamp_variable = { name = nesnd_phi_good_months min = 0 max = 3 }
+    else = { je:nesnd_phi_service_recovery ?= { set_bar_progress = { name = nesnd_phi_continuity_bar value = 0 } } }
     nesnd_phi_display = yes
 }
 # Payer-side death/term guard: recipient monthly events may no longer run after annexation.
