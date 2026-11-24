@@ -1,0 +1,144 @@
+﻿namespace = nesnd_india_core
+
+# ==== Journal outcomes on the empire side (India batch 11) ====
+# Events that follow the outcomes of the empire's journals (common/journal_entries/nesnd_india_core.txt
+# and nesnd_india_empire.txt). Each outcome that triggers one describes it with event_outcome_desc.
+#   .1  the reform settled (nesnd_india_reform): central or local; sets nesnd_india_reform_path
+#   .2  the national community formed (nesnd_india_society): dynastic charter or republican settlement
+#   .3  the dynasty in crisis (nesnd_india_dynasty_journal): abdication or repression
+#   .4  the central settlement (nesnd_india_order): annex or keep each member, one at a time
+#   .6  the new order falls (from nesnd_india_unified_watch, monthly)
+# Default numbers; to be tuned after in-game tests.
+
+nesnd_india_core.1 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_india_core.1.t
+    desc = nesnd_india_core.1.d
+    flavor = nesnd_india_core.1.f
+    option = {
+        name = nesnd_india_core.1.a
+        default_option = yes
+        ai_chance = { base = 50 }
+        add_modifier = { name = nesnd_india_reform_central }
+        ig:ig_landowners ?= { add_modifier = { name = nesnd_india_landowners_slighted days = normal_modifier_time } }
+        custom_tooltip = nesnd_india_core.1.a_tt
+        hidden_effect = {
+            set_variable = { name = nesnd_india_reform_path value = 1 }
+            nesnd_india_order_default = yes
+        }
+    }
+    option = {
+        name = nesnd_india_core.1.b
+        ai_chance = { base = 50 }
+        ig:ig_landowners ?= { add_modifier = { name = nesnd_india_landowners_pleased days = normal_modifier_time } }
+        save_scope_as = india_lobby_lord
+        every_subject_or_below = {
+            limit = { is_direct_subject_of = scope:india_lobby_lord }
+            change_relations = { country = scope:india_lobby_lord value = 20 }
+            custom_tooltip = { text = nesnd_india_back_empire_lobby_tt nesnd_india_back_empire_lobby = yes }
+        }
+        custom_tooltip = nesnd_india_core.1.b_tt
+        hidden_effect = {
+            set_variable = { name = nesnd_india_reform_path value = 2 }
+            nesnd_india_order_default = yes
+        }
+    }
+}
+
+nesnd_india_core.2 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_india_core.2.t
+    desc = nesnd_india_core.2.d
+    flavor = nesnd_india_core.2.f
+    option = {
+        name = nesnd_india_core.2.a
+        trigger = { country_has_monarchy_law = yes }
+        default_option = yes
+        ai_chance = { base = 50 }
+        add_modifier = { name = nesnd_india_dynastic_charter }
+        if = { limit = { nesnd_india_dynasty_open = yes NOT = { has_journal_entry = nesnd_india_dynasty_journal } } add_journal_entry = { type = nesnd_india_dynasty_journal } }
+        else = { custom_tooltip = nesnd_india_core.2.a_tt }
+    }
+    option = {
+        name = nesnd_india_core.2.b
+        ai_chance = { base = 50 }
+        ig:ig_intelligentsia ?= { add_modifier = { name = nesnd_india_intelligentsia_pleased days = normal_modifier_time } }
+        add_modifier = { name = nesnd_india_republican_enactment days = long_modifier_time }
+    }
+}
+
+nesnd_india_core.3 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_india_core.3.t
+    desc = nesnd_india_core.3.d
+    flavor = nesnd_india_core.3.f
+    option = {
+        name = nesnd_india_core.3.a
+        ai_chance = { base = 30 }
+        add_modifier = { name = nesnd_india_dynasty_crisis days = normal_modifier_time }
+        if = { limit = { NOT = { has_law = law_type:law_presidential_republic } } start_enactment = law_type:law_presidential_republic }
+        else = { custom_tooltip = nesnd_india_core.3.a_tt }
+    }
+    option = {
+        name = nesnd_india_core.3.b
+        default_option = yes
+        ai_chance = { base = 70 }
+        add_modifier = { name = nesnd_india_dynasty_crisis days = normal_modifier_time }
+        add_radicals = { interest_group = ig:ig_landowners value = 0.1 }
+    }
+}
+
+# One member at a time from the list nesnd_india_order_annex_queue; the event comes back while the list
+# holds anyone. The AI annexes a member it is on good terms with.
+nesnd_india_core.4 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_core.4.t
+    desc = nesnd_india_core.4.d
+    flavor = nesnd_india_core.4.f
+    immediate = {
+        clear_saved_scope = india_annex_candidate
+        random_in_list = { variable = nesnd_india_order_annex_queue save_scope_as = india_annex_candidate }
+    }
+    option = {
+        name = nesnd_india_core.4.a
+        trigger = { scope:india_annex_candidate ?= { is_country_alive = yes is_subject_of = root } }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { "relations(scope:india_annex_candidate)" >= 50 } add = 80 }
+        }
+        annex = scope:india_annex_candidate
+    }
+    option = {
+        name = nesnd_india_core.4.b
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_india_core.4.b_tt
+    }
+    after = {
+        scope:india_annex_candidate ?= { root = { remove_list_variable = { name = nesnd_india_order_annex_queue target = prev } } }
+        if = { limit = { any_in_list = { variable = nesnd_india_order_annex_queue always = yes } } trigger_event = { id = nesnd_india_core.4 days = 1 popup = yes } }
+        else = { clear_variable_list = nesnd_india_order_annex_queue }
+    }
+}
+
+nesnd_india_core.6 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_india_core.6.t
+    desc = nesnd_india_core.6.d
+    flavor = nesnd_india_core.6.f
+    option = {
+        name = nesnd_india_core.6.a
+        default_option = yes
+        add_modifier = { name = nesnd_india_unified_fallen days = normal_modifier_time }
+        custom_tooltip = {
+            text = nesnd_india_core.6.a_tt
+            every_in_list = { variable = nesnd_india_unified_claims remove_claim = root }
+        }
+        hidden_effect = { clear_variable_list = nesnd_india_unified_claims }
+    }
+}

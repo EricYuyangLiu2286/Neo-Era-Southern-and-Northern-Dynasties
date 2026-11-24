@@ -16,9 +16,9 @@ nesnd_india_schools = {
                 set_variable = nesnd_india_schools_done
                 if = {
                     limit = { has_variable = nesnd_india_mughal_court }
-                    add_modifier = { name = nesnd_mug_provincial_schools months = 120 }
+                    add_modifier = { name = nesnd_india_mug_schools_lasting }
                 }
-                else = { add_modifier = { name = nesnd_india_school_service months = 120 } }
+                else = { add_modifier = { name = nesnd_india_school_service } }
             }
         }
     }
@@ -48,9 +48,13 @@ nesnd_india_industry = {
                 set_variable = nesnd_india_industry_done
                 if = {
                     limit = { has_variable = nesnd_india_mughal_court }
-                    add_modifier = { name = nesnd_mug_arms_and_rail months = 120 }
+                    add_modifier = { name = nesnd_india_mug_arms_lasting }
                 }
-                else = { add_modifier = { name = nesnd_india_industrial_service months = 120 } }
+                else = { add_modifier = { name = nesnd_india_industrial_service } }
+                # Half of an era-2 technology (10000, GAME common/technology/eras): Bessemer first, then mechanized workshops.
+                if = { limit = { NOT = { has_technology_researched = bessemer_process } } add_technology_progress = { progress = 5000 technology = bessemer_process } }
+                else_if = { limit = { NOT = { has_technology_researched = mechanized_workshops } } add_technology_progress = { progress = 5000 technology = mechanized_workshops } }
+                else = { custom_tooltip = nesnd_india_industry_tech_known_tt }
             }
         }
     }
@@ -74,7 +78,27 @@ nesnd_india_reform = {
     	color = "gold_positive"
     	conclusion_desc = je_standard_completion_conclusion_desc
     	trigger = { hidden_trigger = { nesnd_india_reform_live = yes } custom_tooltip = { text = nesnd_india_schools_completed_tt has_variable = nesnd_india_schools_done } custom_tooltip = { text = nesnd_india_industry_completed_tt has_variable = nesnd_india_industry_done } }
-    	effect = { if = { limit = { nesnd_india_reform_live = yes } set_variable = nesnd_india_reform_done remove_variable = nesnd_india_priority } }
+    	effect = {
+    	    set_variable = nesnd_india_reform_done
+    	    remove_variable = nesnd_india_priority
+    	    trigger_event = { id = nesnd_india_core.1 popup = yes }
+    	}
+    	event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_core.1_outcome_tt } } }
+    }
+    # The reform lapses: default or bankruptcy while a track is open. Ten years before it can begin again.
+    outcome = {
+    	header = je_standard_failure_header
+    	effect_header = je_standard_on_failure_header
+    	color = "blue_negative"
+    	conclusion_desc = nesnd_india_reform_lapse_conclusion
+    	trigger = { hidden_trigger = { nesnd_india_reform_live = yes has_variable = nesnd_india_priority } nesnd_india_broke = yes }
+    	effect = {
+    	    add_modifier = { name = nesnd_india_reform_lapsed days = normal_modifier_time }
+    	    ig:ig_intelligentsia ?= { add_modifier = { name = nesnd_india_intelligentsia_dismayed days = normal_modifier_time } }
+    	    custom_tooltip = nesnd_india_reform_lapse_effect_tt
+    	    set_variable = { name = nesnd_india_reform_lapse months = 120 }
+    	    remove_variable = nesnd_india_priority
+    	}
     }
     outcome = {
     	flags = { hidden invalid_outcome }
@@ -91,18 +115,49 @@ nesnd_india_reform = {
 nesnd_india_society = {
     icon = "gfx/interface/icons/event_icons/nesnd_india_chhatri.dds" group = je_group_historical_content
 	activation_description = { always = yes } can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_india_society_live = yes } possible = { nesnd_india_society_live = yes }
+    is_shown_when_inactive = { nesnd_india_society_open = yes } possible = { nesnd_india_society_open = yes }
     scripted_progress_bar = nesnd_india_community_bar
     scripted_button = nesnd_unity_material_subsidy
     scripted_button = nesnd_unity_political_subsidy
     scripted_button = nesnd_india_dynastic_constitution scripted_button = nesnd_india_republican_settlement
+    # The community forms: the event nesnd_india_core.2 asks for a dynastic charter or a republican settlement.
     outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        effect = { custom_tooltip = nesnd_journal_closures_no_effect_tt }
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_society_formed_conclusion
+        trigger = { hidden_trigger = { nesnd_india_society_open = yes } custom_tooltip = { text = nesnd_india_community_full_tt nesnd_india_community >= 100 } }
+        effect = {
+            set_variable = nesnd_india_society_done
+            trigger_event = { id = nesnd_india_core.2 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_core.2_outcome_tt } } }
+    }
+    # The community breaks.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
         color = "blue_negative"
-        conclusion_desc = nesnd_journal_closures_india_society_conclusion
-        trigger = { custom_tooltip = { text = nesnd_journal_closures_india_society_tt NOT = { nesnd_india_society_live = yes } } }
+        conclusion_desc = nesnd_india_society_broken_conclusion
+        trigger = { hidden_trigger = { nesnd_india_society_open = yes } custom_tooltip = { text = nesnd_india_community_empty_tt nesnd_india_community <= 0 } }
+        effect = {
+            set_variable = nesnd_india_society_done
+            add_modifier = { name = nesnd_india_community_broken days = normal_modifier_time }
+            custom_tooltip = {
+                text = nesnd_india_community_broken_radicals_tt
+                every_scope_culture = {
+                    limit = { has_discrimination_trait_group = heritage_group_south_asian NOT = { is_primary_culture_of = root } }
+                    save_scope_as = india_broken_culture
+                    root = { every_scope_state = { add_radicals_in_state = { value = 0.1 culture = scope:india_broken_culture } } }
+                }
+            }
+        }
+    }
+    # No longer the empire past the reform: the journal has no subject left.
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_india_society_open = yes } }
     }
     status_desc = {
         first_valid = {
@@ -126,13 +181,38 @@ nesnd_india_caste = {
     	color = "gold_positive"
     	conclusion_desc = je_standard_completion_conclusion_desc
     	trigger = { hidden_trigger = { nesnd_india_caste_live = yes } nesnd_india_caste_ready = yes }
-    	effect = { if = { limit = { nesnd_india_caste_live = yes } set_variable = nesnd_india_caste_done add_modifier = { name = nesnd_india_equal_service months = 120 } } }
+    	effect = {
+    	    set_variable = nesnd_india_caste_done
+    	    remove_variable = nesnd_india_caste_law_held
+    	    add_modifier = { name = nesnd_india_equal_service }
+    	    add_loyalists = { strata = lower value = 0.1 }
+    	}
+    }
+    # The old order strikes back: the devout govern and the religious law the journal asks for has been repealed.
+    outcome = {
+    	header = je_standard_failure_header
+    	effect_header = je_standard_on_failure_header
+    	color = "blue_negative"
+    	conclusion_desc = nesnd_india_caste_reaction_conclusion
+    	trigger = {
+    	    hidden_trigger = { nesnd_india_caste_live = yes }
+    	    custom_tooltip = { text = nesnd_india_caste_law_lost_tt has_variable = nesnd_india_caste_law_held NOT = { nesnd_india_caste_religion_law = yes } }
+    	    ig:ig_devout ?= { is_in_government = yes }
+    	}
+    	effect = {
+    	    set_variable = nesnd_india_caste_done
+    	    remove_variable = nesnd_india_caste_law_held
+    	    add_radicals = { strata = lower value = 0.1 }
+    	}
     }
     outcome = {
     	flags = { hidden invalid_outcome }
     	conclusion_desc = je_standard_failure_conclusion_desc
     	trigger = { NOT = { nesnd_india_caste_live = yes } }
+    	effect = { remove_variable = nesnd_india_caste_law_held }
     }
+    # Remembers that the religious law was once held, so that its repeal can be seen.
+    on_monthly_pulse = { effect = { if = { limit = { nesnd_india_caste_religion_law = yes NOT = { has_variable = nesnd_india_caste_law_held } } set_variable = nesnd_india_caste_law_held } } }
     weight = 700
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
@@ -230,7 +310,29 @@ nesnd_india_unified = {
     	    OR = { has_law = law_type:law_freedom_of_conscience has_law = law_type:law_total_separation }
     	    custom_tooltip = { text = nesnd_india_unified_share_tt nesnd_india_held_share >= nesnd_india_unified_share_needed }
     	}
-    	effect = { set_variable = nesnd_india_unified_done add_modifier = { name = nesnd_india_unified_reward months = 120 } }
+    	effect = {
+    	    set_variable = nesnd_india_unified_done
+    	    add_modifier = { name = nesnd_india_unified_reward }
+    	    # The seat of the new order; holding no state of this region any more counts as losing the capital.
+    	    capital ?= { root = { set_variable = { name = nesnd_india_unified_seat value = prev.state_region } } }
+    	    custom_tooltip = {
+    	        text = nesnd_india_unified_claims_tt
+    	        every_state = {
+    	            limit = { nesnd_india_state = yes NOT = { has_claim_by = root } owner = { capital ?= { NOT = { nesnd_india_state = yes } } } }
+    	            root = { add_to_variable_list = { name = nesnd_india_unified_claims target = prev.state_region } }
+    	            state_region = { add_claim = root }
+    	        }
+    	    }
+    	    add_involvement = { strategic_region = sr:region_north_india value = 2500 }
+    	    add_involvement = { strategic_region = sr:region_south_india value = 2500 }
+    	    custom_tooltip = {
+    	        text = nesnd_india_unified_fervor_tt
+    	        every_primary_culture = {
+    	            limit = { has_discrimination_trait_group = heritage_group_south_asian }
+    	            root = { add_fervor_target_modifier = { culture = prev multiplier = 10 } }
+    	        }
+    	    }
+    	}
     }
     outcome = {
     	flags = { hidden invalid_outcome }
@@ -244,17 +346,44 @@ nesnd_india_unified = {
 nesnd_india_dynasty_journal = {
     icon = "gfx/interface/icons/event_icons/nesnd_india_morchal.dds" group = je_group_historical_content
 	activation_description = { always = yes } can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_india_society_live = yes country_has_monarchy_law = yes }
-    possible = { nesnd_india_society_live = yes country_has_monarchy_law = yes }
+    is_shown_when_inactive = { nesnd_india_dynasty_open = yes }
+    possible = { nesnd_india_dynasty_open = yes }
     immediate = { nesnd_india_initialize = yes }
     scripted_progress_bar = nesnd_india_dynasty_bar
+    # The dynasty is secured.
     outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        effect = { custom_tooltip = nesnd_journal_closures_no_effect_tt }
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_dynasty_secured_conclusion
+        trigger = { hidden_trigger = { nesnd_india_dynasty_open = yes } custom_tooltip = { text = nesnd_india_dynasty_full_tt nesnd_india_dynasty >= 100 } }
+        effect = {
+            set_variable = nesnd_india_dynasty_done
+            add_modifier = { name = nesnd_india_dynasty_secured }
+            ruler ?= {
+                if = { limit = { NOT = { has_trait = charismatic } } add_trait = charismatic }
+                else = { custom_tooltip = nesnd_india_dynasty_trait_known_tt }
+            }
+        }
+    }
+    # The dynasty in crisis: the event nesnd_india_core.3 asks for abdication or repression.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
         color = "blue_negative"
-        conclusion_desc = nesnd_journal_closures_india_dynasty_conclusion
-        trigger = { custom_tooltip = { text = nesnd_journal_closures_india_dynasty_tt OR = { NOT = { nesnd_india_society_live = yes } NOT = { country_has_monarchy_law = yes } } } }
+        conclusion_desc = nesnd_india_dynasty_crisis_conclusion
+        trigger = { hidden_trigger = { nesnd_india_dynasty_open = yes } custom_tooltip = { text = nesnd_india_dynasty_empty_tt nesnd_india_dynasty <= 0 } }
+        effect = {
+            set_variable = nesnd_india_dynasty_done
+            trigger_event = { id = nesnd_india_core.3 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_core.3_outcome_tt } } }
+    }
+    # No longer a monarchy, or no longer the empire past the reform: the dynasty has no throne to hold.
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_india_dynasty_open = yes } }
     }
     weight = 600
     should_be_pinned_by_default_uninvolved_or_context = yes

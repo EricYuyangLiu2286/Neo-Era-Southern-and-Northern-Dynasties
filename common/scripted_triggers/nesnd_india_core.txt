@@ -3,7 +3,7 @@ nesnd_india_state = { OR = { region = sr:region_north_india region = sr:region_s
 nesnd_india_country = { is_country_alive = yes NOT = { is_country_type = decentralized } any_scope_state = { nesnd_india_state = yes state_population > 0 } }
 nesnd_india_empire = { nesnd_india_country = yes OR = { c:MUG ?= this c:BHT ?= this c:DRA ?= this custom_tooltip = { text = nesnd_ui_india_imperial_line_tt has_variable = nesnd_india_imperial_line } } }
 nesnd_india_prince = { nesnd_india_country = yes NOT = { nesnd_india_empire = yes } OR = { c:ALW ?= this c:ASM ?= this c:AWA ?= this c:BAG ?= this c:BAS ?= this c:BER ?= this c:BHO ?= this c:BHV ?= this c:BHW ?= this c:BIK ?= this c:BUN ?= this c:COC ?= this c:COO ?= this c:DHA ?= this c:GAR ?= this c:GWA ?= this c:HYD ?= this c:IDA ?= this c:IND ?= this c:JAI ?= this c:JAS ?= this c:JEY ?= this c:JHN ?= this c:JOD ?= this c:JUN ?= this c:KHP ?= this c:KNO ?= this c:KOT ?= this c:KUT ?= this c:MEW ?= this c:MNP ?= this c:MYB ?= this c:NAG ?= this c:NAR ?= this c:NAW ?= this c:PAN ?= this c:PLP ?= this c:PTA ?= this c:PTN ?= this c:SAT ?= this c:SIN ?= this c:SUR ?= this c:TRA ?= this custom_tooltip = { text = nesnd_ui_india_local_state_tt has_variable = nesnd_india_local_state } } }
-nesnd_india_reform_live = { nesnd_india_empire = yes custom_tooltip = { text = nesnd_ui_not_india_reform_done_tt NOT = { has_variable = nesnd_india_reform_done } } }
+nesnd_india_reform_live = { nesnd_india_empire = yes custom_tooltip = { text = nesnd_ui_not_india_reform_done_tt NOT = { has_variable = nesnd_india_reform_done } } custom_tooltip = { text = nesnd_india_reform_lapse_tt NOT = { has_variable = nesnd_india_reform_lapse } } }
 nesnd_india_reform_safe = { bureaucracy >= 0 in_default = no NOT = { has_modifier = declared_bankruptcy } }
 # In default, or has declared bankruptcy.
 nesnd_india_broke = { OR = { in_default = yes has_modifier = declared_bankruptcy } }
@@ -45,11 +45,17 @@ nesnd_india_industry_ready = {
     army_size >= 40
 }
 nesnd_india_society_live = { nesnd_india_empire = yes custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done } has_technology_researched = nationalism }
+# The journal of the national community is open: it has not yet formed or broken.
+nesnd_india_society_open = { nesnd_india_society_live = yes custom_tooltip = { text = nesnd_india_society_ended_tt NOT = { has_variable = nesnd_india_society_done } } }
+# The journal of the dynasty is open: a monarchy whose dynasty has been neither secured nor shaken.
+nesnd_india_dynasty_open = { nesnd_india_society_live = yes country_has_monarchy_law = yes custom_tooltip = { text = nesnd_india_dynasty_ended_tt NOT = { has_variable = nesnd_india_dynasty_done } } }
+# The religious law that the journal of caste and office asks for.
+nesnd_india_caste_religion_law = { OR = { has_law = law_type:law_freedom_of_conscience has_law = law_type:law_total_separation } }
 nesnd_india_caste_live = { nesnd_india_society_live = yes has_technology_researched = human_rights custom_tooltip = { text = nesnd_ui_not_india_caste_done_tt NOT = { has_variable = nesnd_india_caste_done } } }
 nesnd_india_caste_ready = {
     has_law = law_type:law_slavery_banned
     OR = { has_social_hierarchy = default_social_hierarchy has_law = law_type:law_hindu_caste_not_enforced has_law = law_type:law_affirmative_action }
-    OR = { has_law = law_type:law_freedom_of_conscience has_law = law_type:law_total_separation }
+    nesnd_india_caste_religion_law = yes
     institution_investment_level = { institution = institution_schools value >= 3 }
     literacy_rate >= 0.35
 }

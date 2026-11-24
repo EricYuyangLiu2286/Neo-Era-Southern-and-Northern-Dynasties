@@ -48,7 +48,7 @@ nesnd_india_refresh = {
     if = { limit = { nesnd_india_reform_live = yes NOT = { has_journal_entry = nesnd_india_reform } } add_journal_entry = { type = nesnd_india_reform } }
     if = { limit = { nesnd_india_track_visible = { T = schools } NOT = { has_journal_entry = nesnd_india_schools } } if = { limit = { NOR = { has_journal_entry = nesnd_india_schools has_variable = nesnd_jeq_nesnd_india_schools } } set_variable = { name = nesnd_jeq_nesnd_india_schools days = 3 } add_journal_entry = { type = nesnd_india_schools } } }
     if = { limit = { nesnd_india_track_visible = { T = industry } NOT = { has_journal_entry = nesnd_india_industry } } if = { limit = { NOR = { has_journal_entry = nesnd_india_industry has_variable = nesnd_jeq_nesnd_india_industry } } set_variable = { name = nesnd_jeq_nesnd_india_industry days = 3 } add_journal_entry = { type = nesnd_india_industry } } }
-    if = { limit = { nesnd_india_society_live = yes NOT = { has_journal_entry = nesnd_india_society } } add_journal_entry = { type = nesnd_india_society } }
+    if = { limit = { nesnd_india_society_open = yes NOT = { has_journal_entry = nesnd_india_society } } add_journal_entry = { type = nesnd_india_society } }
     if = { limit = { nesnd_india_caste_live = yes NOT = { has_journal_entry = nesnd_india_caste } } add_journal_entry = { type = nesnd_india_caste } }
     if = { limit = { nesnd_india_prince = yes NOT = { has_journal_entry = nesnd_india_princes } } add_journal_entry = { type = nesnd_india_princes } }
     if = { limit = { nesnd_india_usm_live = yes NOT = { has_journal_entry = nesnd_india_usm } } add_journal_entry = { type = nesnd_india_usm } }
@@ -65,7 +65,26 @@ nesnd_india_refresh = {
     nesnd_india_overseas_upkeep = yes
     if = { limit = { nesnd_india_mission_country = yes NOT = { has_journal_entry = nesnd_india_foreign } } add_journal_entry = { type = nesnd_india_foreign } }
     if = { limit = { nesnd_india_uprising_available = yes NOT = { has_journal_entry = nesnd_india_uprising } } add_journal_entry = { type = nesnd_india_uprising } }
-    if = { limit = { nesnd_india_society_live = yes country_has_monarchy_law = yes NOT = { has_journal_entry = nesnd_india_dynasty_journal } } add_journal_entry = { type = nesnd_india_dynasty_journal } }
+    if = { limit = { nesnd_india_dynasty_open = yes NOT = { has_journal_entry = nesnd_india_dynasty_journal } } add_journal_entry = { type = nesnd_india_dynasty_journal } }
+    nesnd_india_unified_watch = yes
+}
+
+# Country scope, monthly. After the new order, the country becomes a subject or holds no state of the
+# region of its capital at the time (nesnd_india_unified_seat): the event nesnd_india_core.6 takes back
+# the claims of the new order (the list nesnd_india_unified_claims). Once only.
+nesnd_india_unified_watch = {
+    if = {
+        limit = {
+            has_variable = nesnd_india_unified_done
+            NOT = { has_variable = nesnd_india_unified_fell }
+            OR = {
+                is_subject = yes
+                AND = { exists = var:nesnd_india_unified_seat NOT = { any_scope_state = { state_region = root.var:nesnd_india_unified_seat } } }
+            }
+        }
+        set_variable = nesnd_india_unified_fell
+        trigger_event = { id = nesnd_india_core.6 popup = yes }
+    }
 }
 
 # Country scope. Shows VALUE (a script value read on this country) on the progress bar BAR of the journal JE.

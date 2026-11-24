@@ -17,7 +17,9 @@
 nesnd_india_order_upkeep = {
     if = { limit = { nesnd_india_order_left = yes } nesnd_india_order_leave = yes }
     if = { limit = { nesnd_india_order_live = yes }
-        if = { limit = { NOT = { has_journal_entry = nesnd_india_order } } add_journal_entry = { type = nesnd_india_order } }
+        # Once settled (nesnd_india_order_settled), the arrangement stays and the journal does not come back.
+        if = { limit = { NOT = { has_journal_entry = nesnd_india_order } NOT = { has_variable = nesnd_india_order_settled } } add_journal_entry = { type = nesnd_india_order } }
+        nesnd_india_order_default = yes
         nesnd_india_order_apply = yes
     }
     else_if = {
@@ -189,6 +191,18 @@ nesnd_india_order_leave = {
     save_scope_as = india_order_member
     clear_saved_scope = india_order_old_lord
     if = { limit = { exists = var:nesnd_india_order_lord } var:nesnd_india_order_lord = { save_scope_as = india_order_old_lord } }
+    # A member that left as an independent country is remembered by its old Mughal for ten years; a
+    # second one within them ends the journal (outcome "the union scatters").
+    if = { limit = { is_subject = no exists = scope:india_order_old_lord }
+        scope:india_order_old_lord = {
+            if = { limit = { exists = var:nesnd_india_order_first_departed NOT = { var:nesnd_india_order_first_departed = scope:india_order_member } }
+                set_variable = { name = nesnd_india_order_second_departed value = scope:india_order_member }
+            }
+            else_if = { limit = { NOT = { exists = var:nesnd_india_order_first_departed } }
+                set_variable = { name = nesnd_india_order_first_departed value = scope:india_order_member days = 3650 }
+            }
+        }
+    }
     nesnd_india_order_clear_tax = { LORD = scope:india_order_old_lord }
     nesnd_india_order_clear_army = { LORD = scope:india_order_old_lord }
     nesnd_india_order_clear_school = { LORD = scope:india_order_old_lord }
@@ -207,6 +221,9 @@ nesnd_india_order_end = {
     remove_variable = nesnd_india_order_tax
     remove_variable = nesnd_india_order_army
     remove_variable = nesnd_india_order_school
+    remove_variable = nesnd_india_order_central_since
+    remove_variable = nesnd_india_order_local_since
+    remove_variable = nesnd_india_order_clock_wait
     if = { limit = { has_modifier = nesnd_india_order_tax_central } remove_modifier = nesnd_india_order_tax_central }
     if = { limit = { has_modifier = nesnd_india_order_army_central } remove_modifier = nesnd_india_order_army_central }
     if = { limit = { has_modifier = nesnd_india_order_school_central } remove_modifier = nesnd_india_order_school_central }
@@ -286,6 +303,8 @@ nesnd_india_order_ai = {
 # ---------------------------------------------------------------------------------------------
 nesnd_mug_upkeep = {
     if = { limit = { nesnd_mug_france_live = yes NOT = { has_journal_entry = nesnd_mug_france } } add_journal_entry = { type = nesnd_mug_france } }
+    # The overlord of the old agreement, for the outcome "the old agreement ends".
+    if = { limit = { nesnd_mug_france_live = yes } set_variable = { name = nesnd_mug_france_lord value = overlord } }
     if = { limit = { nesnd_mug_council_live = yes NOT = { has_journal_entry = nesnd_mug_council } } add_journal_entry = { type = nesnd_mug_council } }
     # A plea for famine aid still on its way (it waits while the government asked is busy with another
     # matter, at most 90 days from sending): the struck states stay marked, so that the aid reaches them
@@ -1355,7 +1374,14 @@ nesnd_mug_settle_council = {
     if = { limit = { var:nesnd_mug_council_yes > 0 }
         if = { limit = { scope:mug_council_topic = 1 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_rail } }
         else_if = { limit = { scope:mug_council_topic = 2 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_relief } }
+        # For the outcomes of the journal nesnd_mug_council: councils agreed, and the topics agreed at least once.
+        change_variable = { name = nesnd_mug_council_agreed add = 1 }
+        if = { limit = { scope:mug_council_topic = 1 } set_variable = nesnd_mug_council_did_rail }
+        else_if = { limit = { scope:mug_council_topic = 2 } set_variable = nesnd_mug_council_did_relief }
+        else = { set_variable = nesnd_mug_council_did_defence }
+        remove_variable = nesnd_mug_council_empty
     }
+    else = { change_variable = { name = nesnd_mug_council_empty add = 1 } }
     remove_variable = nesnd_mug_council_topic
 }
 nesnd_mug_council_modifier = {
@@ -1400,5 +1426,67 @@ nesnd_mug_self_relief = {
 nesnd_mug_ask_aid = {
     if = { limit = { exists = $TO$ nesnd_mug_matter_free = yes nesnd_mug_famine_states > 0 }
         nesnd_india_matter_send = { KIND = 9 TO = $TO$ AMOUNT = nesnd_mug_famine_cost }
+    }
+}
+
+# ==== Journal outcomes on the empire side (India batch 11) ====
+# Mughal scope. The first time the journal nesnd_india_order is held after the reform, the three matters
+# start the way the reform went (nesnd_india_reform_path: 1 central, 2 local). Without that path, or once
+# any matter is settled, nothing changes. Also from the event nesnd_india_core.1.
+nesnd_india_order_default = {
+    if = {
+        limit = {
+            exists = var:nesnd_india_reform_path
+            NOT = { has_variable = nesnd_india_order_defaulted }
+            NOR = { has_variable = nesnd_india_order_tax has_variable = nesnd_india_order_army has_variable = nesnd_india_order_school }
+        }
+        set_variable = nesnd_india_order_defaulted
+        set_variable = { name = nesnd_india_order_tax value = var:nesnd_india_reform_path }
+        set_variable = { name = nesnd_india_order_army value = var:nesnd_india_order_tax }
+        set_variable = { name = nesnd_india_order_school value = var:nesnd_india_order_tax }
+    }
+}
+# Mughal scope, monthly from the journal. Ten years with all three matters central (or all local) settle
+# the journal. nesnd_india_order_clock_wait runs the ten years; any other arrangement stops the clock.
+nesnd_india_order_clock = {
+    if = {
+        limit = { nesnd_india_order_is = { ISSUE = tax END = 1 } nesnd_india_order_is = { ISSUE = army END = 1 } nesnd_india_order_is = { ISSUE = school END = 1 } }
+        remove_variable = nesnd_india_order_local_since
+        if = { limit = { NOT = { has_variable = nesnd_india_order_central_since } }
+            set_variable = nesnd_india_order_central_since
+            set_variable = { name = nesnd_india_order_clock_wait days = 3650 }
+        }
+    }
+    else_if = {
+        limit = { nesnd_india_order_is = { ISSUE = tax END = 2 } nesnd_india_order_is = { ISSUE = army END = 2 } nesnd_india_order_is = { ISSUE = school END = 2 } }
+        remove_variable = nesnd_india_order_central_since
+        if = { limit = { NOT = { has_variable = nesnd_india_order_local_since } }
+            set_variable = nesnd_india_order_local_since
+            set_variable = { name = nesnd_india_order_clock_wait days = 3650 }
+        }
+    }
+    else = {
+        remove_variable = nesnd_india_order_central_since
+        remove_variable = nesnd_india_order_local_since
+        remove_variable = nesnd_india_order_clock_wait
+    }
+}
+# Subject scope, with scope:india_lobby_lord saved (its overlord). A lobby for the overlord: an existing
+# one is pleased, otherwise the strongest free interest group founds one (as nesnd_india_indep_back_pro,
+# without the marks of the independence journal).
+nesnd_india_back_empire_lobby = {
+    if = { limit = { nesnd_india_indep_lobby_country_ready = yes }
+        if = { limit = { any_political_lobby = { is_political_lobby_type = lobby_pro_overlord target = scope:india_lobby_lord } }
+            random_political_lobby = {
+                limit = { is_political_lobby_type = lobby_pro_overlord target = scope:india_lobby_lord }
+                change_appeasement = { amount = 4 factor = appeasement_lobby_pleased }
+            }
+        }
+        else = {
+            nesnd_india_indep_pick_lobby_member = yes
+            if = { limit = { exists = scope:indep_lobby_member }
+                create_political_lobby = { type = lobby_pro_overlord target = scope:india_lobby_lord add_interest_group = scope:indep_lobby_member lobby_formation_reason = diplomacy }
+            }
+        }
     }
 }

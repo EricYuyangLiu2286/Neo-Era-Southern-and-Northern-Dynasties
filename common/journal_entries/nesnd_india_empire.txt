@@ -152,18 +152,98 @@ nesnd_india_order = {
     scripted_button = nesnd_india_order_school_central_button
     scripted_button = nesnd_india_order_school_local_button
 
+    # Ten years with all three matters central. The arrangement stays as it is and the journal does not
+    # come back (nesnd_india_order_settled). The event nesnd_india_core.4 asks, member by member, to annex it or keep it.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_order_central_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_order_live = yes }
+            custom_tooltip = { text = nesnd_india_order_central_ten_tt has_variable = nesnd_india_order_central_since NOT = { has_variable = nesnd_india_order_clock_wait } }
+        }
+        effect = {
+            set_variable = { name = nesnd_india_order_settled value = 1 }
+            remove_variable = nesnd_india_order_central_since
+            add_modifier = { name = nesnd_india_order_central_settled }
+            save_scope_as = india_order_lord
+            every_subject_or_below = {
+                limit = { nesnd_india_order_member = { LORD = scope:india_order_lord } }
+                root = { add_to_variable_list = { name = nesnd_india_order_annex_queue target = prev } }
+            }
+            trigger_event = { id = nesnd_india_core.4 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_core.4_outcome_tt } } }
+    }
+    # Ten years with all three matters local.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_order_federal_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_order_live = yes }
+            custom_tooltip = { text = nesnd_india_order_local_ten_tt has_variable = nesnd_india_order_local_since NOT = { has_variable = nesnd_india_order_clock_wait } }
+        }
+        effect = {
+            set_variable = { name = nesnd_india_order_settled value = 2 }
+            remove_variable = nesnd_india_order_local_since
+            add_modifier = { name = nesnd_india_order_federal_settled }
+            save_scope_as = india_lobby_lord
+            every_subject_or_below = {
+                limit = { nesnd_india_order_member = { LORD = scope:india_lobby_lord } }
+                change_relations = { country = scope:india_lobby_lord value = 30 }
+                custom_tooltip = { text = nesnd_india_back_empire_lobby_tt nesnd_india_back_empire_lobby = yes }
+            }
+        }
+    }
+    # Two members left as independent countries within ten years.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_order_scattered_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_order_live = yes }
+            custom_tooltip = { text = nesnd_india_order_two_left_tt exists = var:nesnd_india_order_second_departed }
+        }
+        effect = {
+            add_modifier = { name = nesnd_india_order_scattered days = normal_modifier_time }
+            clear_saved_scope = india_order_gone_a
+            clear_saved_scope = india_order_gone_b
+            var:nesnd_india_order_first_departed ?= { save_scope_as = india_order_gone_a }
+            var:nesnd_india_order_second_departed ?= { save_scope_as = india_order_gone_b }
+            custom_tooltip = {
+                text = nesnd_india_order_scattered_claims_tt
+                scope:india_order_gone_a ?= { every_scope_state = { limit = { nesnd_india_state = yes NOT = { has_claim_by = root } } state_region = { add_claim = root } } }
+                scope:india_order_gone_b ?= { every_scope_state = { limit = { nesnd_india_state = yes NOT = { has_claim_by = root } } state_region = { add_claim = root } } }
+            }
+            # The AI turns against the stronger of the two (GAME events/opium_wars_events.txt:254).
+            custom_tooltip = {
+                text = nesnd_india_order_scattered_goal_tt
+                if = { limit = { exists = scope:india_order_gone_a exists = scope:india_order_gone_b scope:india_order_gone_a.gdp >= scope:india_order_gone_b.gdp }
+                    set_secret_goal = { country = scope:india_order_gone_a secret_goal = antagonize }
+                }
+                else_if = { limit = { exists = scope:india_order_gone_b }
+                    set_secret_goal = { country = scope:india_order_gone_b secret_goal = antagonize }
+                }
+            }
+            remove_variable = nesnd_india_order_first_departed
+            remove_variable = nesnd_india_order_second_departed
+            nesnd_india_order_end = yes
+        }
+    }
     # Mughal no longer holds it (no Indian subject left, or no longer Mughal): everything is cleared.
     # The journal comes back by nesnd_india_order_upkeep once Mughal holds it again.
     outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        color = "blue_negative"
+        flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_india_order_void_conclusion
-        trigger = { custom_tooltip = { text = nesnd_india_order_closure_tt NOT = { nesnd_india_order_live = yes } } }
-        effect = { custom_tooltip = nesnd_journal_closures_india_order_effect_tt nesnd_india_order_end = yes }
+        trigger = { NOT = { nesnd_india_order_live = yes } }
+        effect = { nesnd_india_order_end = yes }
     }
 
-    on_monthly_pulse = { effect = { nesnd_india_order_ai = yes } }
+    on_monthly_pulse = { effect = { nesnd_india_order_ai = yes nesnd_india_order_clock = yes } }
 }
 
 # ==== Mughal's old agreement, the council of princes, famine relief (formerly nesnd_india_mughal.txt) ====
@@ -192,13 +272,22 @@ nesnd_mug_france = {
     scripted_button = nesnd_mug_buyback_button
 
     # No longer a subject, or the overlord's capital is now in an Indian state (nesnd_mug_foreign_overlord).
+    # The old overlord is the one remembered by nesnd_mug_upkeep.
     outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        effect = { custom_tooltip = nesnd_journal_closures_no_effect_tt }
-        color = "blue_negative"
-        conclusion_desc = nesnd_mug_france_void_conclusion
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_mug_france_ended_conclusion
         trigger = { custom_tooltip = { text = nesnd_mug_france_closure_tt NOT = { nesnd_mug_france_live = yes } } }
+        effect = {
+            add_modifier = { name = nesnd_mug_old_agreement_ended }
+            if = { limit = { exists = var:nesnd_mug_france_lord var:nesnd_mug_france_lord = { is_country_alive = yes } }
+                var:nesnd_mug_france_lord = { save_scope_as = mug_old_lord }
+                change_relations = { country = scope:mug_old_lord value = -30 }
+            }
+            else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
+            remove_variable = nesnd_mug_france_lord
+        }
     }
 
     on_monthly_pulse = { effect = { nesnd_mug_france_ai = yes } }
@@ -223,13 +312,50 @@ nesnd_mug_council = {
 
     scripted_button = nesnd_mug_council_button
 
+    # Three councils agreed: the council becomes an institution and is not called again.
     outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        effect = { custom_tooltip = nesnd_journal_closures_no_effect_tt }
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_mug_council_settled_conclusion
+        trigger = { hidden_trigger = { nesnd_mug_council_live = yes } custom_tooltip = { text = nesnd_mug_council_three_agreed_tt nesnd_mug_council_agreed_value >= 3 } }
+        effect = {
+            set_variable = nesnd_mug_council_settled
+            add_modifier = { name = nesnd_mug_council_established }
+            if = { limit = { has_variable = nesnd_mug_council_did_rail } add_modifier = { name = nesnd_mug_council_rail_lasting } }
+            if = { limit = { has_variable = nesnd_mug_council_did_relief } add_modifier = { name = nesnd_mug_council_relief_lasting } }
+            if = { limit = { has_variable = nesnd_mug_council_did_defence } add_modifier = { name = nesnd_mug_council_defence_lasting } }
+            save_scope_as = mug_council_convener
+            every_country = {
+                limit = { has_variable = nesnd_mug_council_attended nesnd_india_prince = yes }
+                change_relations = { country = scope:mug_council_convener value = 20 }
+            }
+            remove_variable = nesnd_mug_council_agreed
+            remove_variable = nesnd_mug_council_empty
+            remove_variable = nesnd_mug_council_did_rail
+            remove_variable = nesnd_mug_council_did_relief
+            remove_variable = nesnd_mug_council_did_defence
+        }
+    }
+    # Three councils in a row that no prince attended: no council for three years, then the journal returns.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
         color = "blue_negative"
+        conclusion_desc = nesnd_mug_council_failed_conclusion
+        trigger = { hidden_trigger = { nesnd_mug_council_live = yes } custom_tooltip = { text = nesnd_mug_council_three_empty_tt nesnd_mug_council_empty_value >= 3 } }
+        effect = {
+            add_modifier = { name = nesnd_mug_council_failed days = 1095 }
+            custom_tooltip = nesnd_mug_council_closed_tt
+            set_variable = { name = nesnd_mug_council_closed months = 36 }
+            remove_variable = nesnd_mug_council_empty
+        }
+    }
+    # No longer Mughal past the reform.
+    outcome = {
+        flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_mug_council_void_conclusion
-        trigger = { custom_tooltip = { text = nesnd_mug_council_closure_tt NOT = { nesnd_mug_council_live = yes } } }
+        trigger = { NOT = { nesnd_mug_council_live = yes } }
     }
 
     on_monthly_pulse = { effect = { nesnd_mug_council_ai = yes } }
