@@ -171,6 +171,7 @@ nesnd_ottoman_recovery.5 = {
         scope:nesnd_route_charter_ig ?= { add_modifier = { name = nesnd_ottoman_route_favored } }
         scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted } }
         set_variable = { name = nesnd_ottoman_route_lean value = flag:charter }
+        add_journal_entry = { type = nesnd_ottoman_charter }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_charter_ig ?= { is_powerful = yes } } add = 10 }
@@ -181,6 +182,7 @@ nesnd_ottoman_recovery.5 = {
         scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_favored } }
         scope:nesnd_route_charter_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted } }
         set_variable = { name = nesnd_ottoman_route_lean value = flag:barracks }
+        add_journal_entry = { type = nesnd_ottoman_charter }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_army_ig ?= { is_powerful = yes } } add = 10 }
@@ -324,5 +326,154 @@ nesnd_ottoman_recovery.8 = {
             }
         }
         else = { custom_tooltip = nesnd_ottoman_recovery.8.no_state_tt }
+    }
+}
+# Journal nesnd_ottoman_charter: a group of constitutionalist officials and writers. Fires once.
+nesnd_ottoman_recovery.9 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.9.t
+    desc = nesnd_ottoman_recovery.9.d
+    flavor = nesnd_ottoman_recovery.9.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        has_journal_entry = nesnd_ottoman_charter
+        NOT = { has_variable = nesnd_ottoman_young_ottomans_done }
+        # University in a state: GAME events/agitators_events/agitators_law_events.txt:1966-1968
+        any_scope_state = { has_building = building_university }
+        exists = ig:ig_intelligentsia
+    }
+    immediate = {
+        set_variable = nesnd_ottoman_young_ottomans_done
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+        ig:ig_intelligentsia ?= { save_scope_as = nesnd_charter_ig }
+        ig:ig_armed_forces ?= { save_scope_as = nesnd_route_army_ig }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.9.a
+        default_option = yes
+        create_character = {
+            role = politician
+            interest_group = ig_intelligentsia
+            ideology = ideology_liberal_leader
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_charter_bonus_charter_gain_tt
+            set_variable = { name = nesnd_ottoman_charter_bonus months = 60 }
+        }
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted months = 60 } }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { government_legitimacy >= 50 } add = 10 }
+            modifier = { trigger = { government_legitimacy >= 75 } add = 10 }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.9.b
+        add_radicals = { value = medium_radicals interest_group = scope:nesnd_charter_ig }
+        ai_chance = { base = 10 }
+    }
+}
+# Journal nesnd_ottoman_charter: a Qinist leader asks for the army to keep its own purse and workshops. At most once a year.
+nesnd_ottoman_recovery.10 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.10.t
+    desc = nesnd_ottoman_recovery.10.d
+    flavor = nesnd_ottoman_recovery.10.f
+    event_image = { video = "unspecific_military_parade" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        has_journal_entry = nesnd_ottoman_charter
+        nesnd_ottoman_has_qinist_leader = yes
+        nesnd_ottoman_reform_active = yes
+        NOT = { has_variable = nesnd_ottoman_barracks_cd }
+    }
+    immediate = {
+        set_variable = { name = nesnd_ottoman_barracks_cd months = 12 }
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+        ig:ig_armed_forces ?= { save_scope_as = nesnd_route_army_ig }
+        random_interest_group = {
+            limit = { leader ?= { has_ideology = ideology:ideology_ce_qin_royalist_leader } }
+            save_scope_as = nesnd_barracks_ig
+            leader = { save_scope_as = nesnd_barracks_leader }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.10.a
+        default_option = yes
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_barracks_purse months = 60 } }
+        add_modifier = { name = nesnd_ottoman_barracks_industry months = 60 }
+        add_treasury = { value = nesnd_ottoman_barracks_grant multiply = -1 }
+        custom_tooltip = {
+            text = nesnd_ottoman_charter_bonus_qin_gain_tt
+            set_variable = { name = nesnd_ottoman_qin_bonus months = 60 }
+        }
+        hidden_effect = { set_variable = { name = nesnd_ottoman_barracks_refusals value = 0 } }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { scope:nesnd_route_army_ig ?= { is_in_government = yes } } add = 10 }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.10.b
+        scope:nesnd_barracks_leader ?= { add_modifier = { name = nesnd_ottoman_qinist_rebuffed months = 24 } }
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted months = 24 } }
+        if = {
+            limit = { has_variable = nesnd_ottoman_barracks_refusals var:nesnd_ottoman_barracks_refusals >= 2 }
+            custom_tooltip = nesnd_ottoman_recovery.10.third_tt
+            hidden_effect = { set_variable = { name = nesnd_ottoman_barracks_refusals value = 0 } }
+            # Vanilla coup: create_coup_from_character (GAME common/scripted_effects/00_victoria_ip4_scripted_effects.txt:998),
+            # called for a general who is not busy as in GAME common/decisions/ip4_portugal_decisions.txt:110-150.
+            if = {
+                limit = { scope:nesnd_barracks_leader ?= { has_role_of_type = general is_busy = no } }
+                create_coup_from_character = { CHARACTER = scope:nesnd_barracks_leader }
+            }
+            else = {
+                add_radicals = { value = medium_radicals interest_group = scope:nesnd_route_army_ig }
+                scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_barracks_grievance } }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.10.count_tt
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_ottoman_barracks_refusals } change_variable = { name = nesnd_ottoman_barracks_refusals add = 1 } }
+                else = { set_variable = { name = nesnd_ottoman_barracks_refusals value = 1 } }
+            }
+        }
+        ai_chance = { base = 10 }
+    }
+}
+# Outcome "constitution" of nesnd_ottoman_charter: choose the constitution.
+nesnd_ottoman_recovery.11 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.11.t
+    desc = nesnd_ottoman_recovery.11.d
+    flavor = nesnd_ottoman_recovery.11.f
+    event_image = { video = "unspecific_signed_contract" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    immediate = {
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.11.a
+        default_option = yes
+        if = { limit = { NOT = { has_law = law_type:law_oligarchy } } activate_law = law_type:law_oligarchy }
+        else = { add_modifier = { name = nesnd_ottoman_law_settled } }
+        ai_chance = { base = 10 }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.11.b
+        if = { limit = { NOT = { has_law = law_type:law_landed_voting } } activate_law = law_type:law_landed_voting }
+        else = { add_modifier = { name = nesnd_ottoman_law_settled } }
+        ai_chance = { base = 10 }
     }
 }

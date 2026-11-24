@@ -1,0 +1,111 @@
+﻿# Ottoman success line, block 1: constitutionalists against the Qin-trained officers (two agendas, vanilla shape of
+# je_tenpo_crisis, GAME common/journal_entries/07_tenpo_crisis.txt). Added only by effects (event nesnd_ottoman_recovery.5,
+# on_action nesnd_ottoman_charter_fallback), so it has no possible / is_shown_when_inactive (journal-display §4).
+nesnd_ottoman_charter = {
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    scripted_button = nesnd_ottoman_charter_assembly
+    scripted_button = nesnd_ottoman_charter_discipline
+    on_monthly_pulse = {
+        random_events = {
+            160 = 0
+            10 = nesnd_ottoman_recovery.9
+            10 = nesnd_ottoman_recovery.10
+        }
+    }
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_charter_constitution_conclusion
+        trigger = {
+            calc_true_if = {
+                amount >= 5
+                nesnd_ottoman_charter_c1 = yes
+                nesnd_ottoman_charter_c2 = yes
+                nesnd_ottoman_charter_c3 = yes
+                nesnd_ottoman_charter_c4 = yes
+                nesnd_ottoman_charter_c5 = yes
+                nesnd_ottoman_charter_c6 = yes
+                nesnd_ottoman_charter_c7 = yes
+                nesnd_ottoman_charter_c8 = yes
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_constitution }
+            ig:ig_intelligentsia ?= { add_modifier = { name = nesnd_ottoman_charter_approval } }
+            set_variable = { name = nesnd_ottoman_charter_outcome value = flag:charter }
+            set_variable = nesnd_ottoman_charter_closed
+            trigger_event = { id = nesnd_ottoman_recovery.11 }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_charter_constitution_event_tt }
+            }
+        }
+    }
+    outcome = {
+        # A gain for the player as well: the Qin-style state is the other way to win this contest.
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_charter_qin_conclusion
+        trigger = {
+            calc_true_if = {
+                amount >= 5
+                nesnd_ottoman_charter_q1 = yes
+                nesnd_ottoman_charter_q2 = yes
+                nesnd_ottoman_charter_q3 = yes
+                nesnd_ottoman_charter_q4 = yes
+                nesnd_ottoman_charter_q5 = yes
+                nesnd_ottoman_charter_q6 = yes
+                nesnd_ottoman_charter_q7 = yes
+                nesnd_ottoman_charter_q8 = yes
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_qin_state }
+            if = { limit = { NOT = { has_law = law_type:law_military_bureaucrats } } activate_law = law_type:law_military_bureaucrats }
+            else = { add_modifier = { name = nesnd_ottoman_law_settled } }
+            every_interest_group = {
+                limit = {
+                    leader ?= { has_ideology = ideology:ideology_ce_qin_royalist_leader }
+                    NOT = { has_ideology = ideology:ideology_ce_qin_royalist }
+                }
+                add_ideology = ideology_ce_qin_royalist
+            }
+            hidden_effect = {
+                if = { limit = { exists = c:RUS NOT = { c:RUS = root } } set_secret_goal = { country = c:RUS secret_goal = antagonize } }
+            }
+            set_variable = { name = nesnd_ottoman_charter_outcome value = flag:qin }
+            set_variable = nesnd_ottoman_charter_closed
+        }
+    }
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "blue_negative"
+        flags = { timeout }
+        conclusion_desc = nesnd_ottoman_charter_stalemate_conclusion
+        effect = {
+            add_modifier = { name = nesnd_ottoman_charter_stalemate }
+            set_variable = { name = nesnd_ottoman_charter_outcome value = flag:stalemate }
+            set_variable = nesnd_ottoman_charter_closed
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_ottoman_charter_invalid_conclusion
+        trigger = { OR = { NOT = { c:TUR ?= this } NOT = { nesnd_ottoman_tanzimat_success = yes } } }
+        effect = { }
+    }
+    timeout = 7300
+    status_desc = { first_valid = {
+        triggered_desc = { trigger = { nesnd_ottoman_charter_lead > 0 } desc = nesnd_ottoman_charter_status_charter }
+        triggered_desc = { trigger = { nesnd_ottoman_charter_lead < 0 } desc = nesnd_ottoman_charter_status_qin }
+        desc = nesnd_ottoman_charter_status_even
+    } }
+}
