@@ -3,10 +3,11 @@
     if = { limit = { has_journal_entry = nesnd_ottoman_recovery } value = "je:nesnd_ottoman_recovery.scripted_bar_progress(nesnd_ottoman_enthusiasm_bar)" }
 }
 nesnd_ottoman_claim_cost = 25
+# 扩张热情每月各项。数值按工作台 reports/2026-11-24-ottoman-qinist/sim/ottoman_enthusiasm_sim.py 定（B1）。
 nesnd_ottoman_enthusiasm_base = {
-    value = 1
+    value = 1.25
     if = { limit = { nesnd_ottoman_tanzimat_success = yes } value = 2 }
-    else_if = { limit = { nesnd_ottoman_tanzimat_failed = yes } value = 0.75 }
+    else_if = { limit = { nesnd_ottoman_tanzimat_failed = yes } value = 0 }
 }
 nesnd_ottoman_enthusiasm_army = {
     value = 0
@@ -19,4 +20,116 @@ nesnd_ottoman_enthusiasm_government = {
 nesnd_ottoman_enthusiasm_reform = {
     value = 0
     if = { limit = { nesnd_ottoman_reform_active = yes } add = -0.5 }
+}
+# 推行秦式军改：只在军改期间计入（进度条的 progress_condition）。
+nesnd_ottoman_enthusiasm_qin_reform = {
+    value = -2
+    if = { limit = { nesnd_ottoman_tanzimat_success = yes } value = -1.5 }
+    else_if = { limit = { nesnd_ottoman_tanzimat_failed = yes } value = -2.5 }
+}
+# 秦制主义者：本国持该意识形态的人物，人气相加后除以 50，夹在 −1 与 2 之间。
+nesnd_ottoman_enthusiasm_qinist = {
+    value = 0
+    every_scope_character = {
+        limit = { has_ideology = ideology:ideology_ce_qin_royalist_leader }
+        add = this.popularity
+    }
+    divide = 50
+    min = -1
+    max = 2
+}
+# 法律：每个法组合拍 +0.25、背离 −0.25。合拍与背离按坦志麦特进行中、成功后、失败后三种情况分开，
+# 依据见工作台 reports/2026-11-24-ottoman-qinist/法律组合.md。
+nesnd_ottoman_enthusiasm_law_power = {
+    value = 0
+    if = { limit = { nesnd_ottoman_tanzimat_success = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_oligarchy has_law_or_variant = law_type:law_landed_voting } } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_autocracy } add = -0.25 }
+    }
+    else_if = { limit = { nesnd_ottoman_tanzimat_failed = yes }
+        if = { limit = { has_law_or_variant = law_type:law_autocracy } add = 0.25 }
+        else_if = { limit = { OR = { has_law_or_variant = law_type:law_wealth_voting has_law_or_variant = law_type:law_census_voting has_law_or_variant = law_type:law_universal_suffrage has_law_or_variant = law_type:law_anarchy } } add = -0.25 }
+    }
+    else = {
+        if = { limit = { OR = { has_law_or_variant = law_type:law_autocracy has_law_or_variant = law_type:law_oligarchy } } add = 0.25 }
+        else_if = { limit = { OR = { has_law_or_variant = law_type:law_census_voting has_law_or_variant = law_type:law_universal_suffrage has_law_or_variant = law_type:law_anarchy } } add = -0.25 }
+    }
+}
+nesnd_ottoman_enthusiasm_law_citizenship = {
+    value = 0
+    if = { limit = { nesnd_ottoman_tanzimat_success = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_subjecthood has_law_or_variant = law_type:law_multicultural } } add = 0.25 }
+        else_if = { limit = { OR = { has_law_or_variant = law_type:law_ethnostate has_law_or_variant = law_type:law_national_supremacy has_law_or_variant = law_type:law_racial_segregation } } add = -0.25 }
+    }
+    else_if = { limit = { nesnd_ottoman_tanzimat_failed = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_subjecthood has_law_or_variant = law_type:law_national_supremacy } } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_multicultural } add = -0.25 }
+    }
+    else = {
+        if = { limit = { has_law_or_variant = law_type:law_subjecthood } add = 0.25 }
+        else_if = { limit = { OR = { has_law_or_variant = law_type:law_ethnostate has_law_or_variant = law_type:law_national_supremacy has_law_or_variant = law_type:law_racial_segregation } } add = -0.25 }
+    }
+}
+nesnd_ottoman_enthusiasm_law_church = {
+    value = 0
+    if = { limit = { nesnd_ottoman_tanzimat_success = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_millet_system has_law_or_variant = law_type:law_freedom_of_conscience } } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_state_religion } add = -0.25 }
+    }
+    else_if = { limit = { nesnd_ottoman_tanzimat_failed = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_millet_system has_law_or_variant = law_type:law_state_religion } } add = 0.25 }
+        else_if = { limit = { OR = { has_law_or_variant = law_type:law_freedom_of_conscience has_law_or_variant = law_type:law_total_separation has_law_or_variant = law_type:law_state_atheism } } add = -0.25 }
+    }
+    else = {
+        if = { limit = { has_law_or_variant = law_type:law_millet_system } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_state_religion } add = -0.25 }
+    }
+}
+nesnd_ottoman_enthusiasm_law_bureaucracy = {
+    value = 0
+    if = { limit = { nesnd_ottoman_tanzimat_success = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_appointed_bureaucrats has_law_or_variant = law_type:law_elected_bureaucrats } } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_hereditary_bureaucrats } add = -0.25 }
+    }
+    else_if = { limit = { nesnd_ottoman_tanzimat_failed = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_appointed_bureaucrats has_law_or_variant = law_type:law_military_bureaucrats } } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_elected_bureaucrats } add = -0.25 }
+    }
+    else = {
+        if = { limit = { has_law_or_variant = law_type:law_appointed_bureaucrats } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_hereditary_bureaucrats } add = -0.25 }
+    }
+}
+nesnd_ottoman_enthusiasm_law_army = {
+    value = 0
+    if = { limit = { nesnd_ottoman_tanzimat_success = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_professional_army has_law_or_variant = law_type:law_mass_conscription } } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_peasant_levies } add = -0.25 }
+    }
+    else = {
+        if = { limit = { has_law_or_variant = law_type:law_professional_army } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_peasant_levies } add = -0.25 }
+    }
+}
+nesnd_ottoman_enthusiasm_law_taxation = {
+    value = 0
+    if = { limit = { nesnd_ottoman_tanzimat_failed = yes }
+        if = { limit = { OR = { has_law_or_variant = law_type:law_land_based_taxation has_law_or_variant = law_type:law_per_capita_based_taxation } } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_graduated_taxation } add = -0.25 }
+    }
+    else = {
+        if = { limit = { OR = { has_law_or_variant = law_type:law_per_capita_based_taxation has_law_or_variant = law_type:law_proportional_taxation } } add = 0.25 }
+        else_if = { limit = { OR = { has_law_or_variant = law_type:law_land_based_taxation has_law_or_variant = law_type:law_consumption_based_taxation } } add = -0.25 }
+    }
+}
+nesnd_ottoman_enthusiasm_law_education = {
+    value = 0
+    if = { limit = { nesnd_ottoman_tanzimat_success = yes }
+        if = { limit = { has_law_or_variant = law_type:law_public_schools } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_no_schools } add = -0.25 }
+    }
+    else = {
+        if = { limit = { OR = { has_law_or_variant = law_type:law_religious_schools has_law_or_variant = law_type:law_public_schools } } add = 0.25 }
+        else_if = { limit = { has_law_or_variant = law_type:law_no_schools } add = -0.25 }
+    }
 }
