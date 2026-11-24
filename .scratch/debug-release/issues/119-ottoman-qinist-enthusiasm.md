@@ -39,3 +39,5 @@ Evidence: 备份 `nesnd-workbench/backups/pre-change-ottoman-b1-20261124T154956Z
 - 宣称按钮 visible 要求热情 ≥25（`nesnd_ottoman_claim_target`），本批不动。
 - 原有 `non_interest_group_leader_trigger` 在人物作用域调用集团类型判断（`ideology_bonapartist_valid_trigger`），是原作写法，未改。
 - 设置意识形态后引擎是否会因触发器失效把领袖改回，未实机核实。
+
+B1 修复（2026-11-24）：按审查-B1 修 8 处——flavor 改为点兵告示、正文改为领袖本人的看法并用动态国名（西秦已亡时另一段 desc）、候选排除君主储君、ideology 两处 owner 守卫改为 owner 缺时通过、选项对保存作用域判存在、选项改朝廷口吻；记录见交付记录「B1 修复」。
