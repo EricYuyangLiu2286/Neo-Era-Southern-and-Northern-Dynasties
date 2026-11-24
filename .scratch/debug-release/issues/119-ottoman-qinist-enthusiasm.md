@@ -23,7 +23,7 @@ Evidence: 备份 `nesnd-workbench/backups/pre-change-ottoman-b1-20261124T154956Z
 - `common/scripted_progress_bars/nesnd_ottoman_recovery.txt`：加八行（秦制主义者一行、法组七行），「推行秦式军改」改读按情况分档的脚本值。
 - `common/scripted_buttons/nesnd_ottoman_recovery.txt`：AI 军改权重 1，战时 +40（只动 AI）。
 - `common/journal_entries/nesnd_ottoman_recovery.txt`：加回 `on_monthly_pulse`，只放事件掷骰（95 = 0、5 = 事件）。
-- `events/nesnd_ottoman_recovery.txt`：新事件 `nesnd_ottoman_recovery.2`「从军法到国制」。
+- `events/nesnd_ottoman_recovery.txt`：新事件 `nesnd_ottoman_recovery.2`「从军法到国制」。变量 `nesnd_qinist_allowed` 同时设在领袖和所在集团上（集团领袖触发器的根可能是人物，也可能是集团）。
 - `common/scripted_triggers/nesnd_ottoman_recovery.txt`：`nesnd_ottoman_qinist_candidate`（集团作用域）、`nesnd_qinist_origin_country`（国家作用域，抄自意识形态原有的国别条件）。
 - `common/ideologies/ce_leader_ideologies.txt`：三处触发器各加一条读人物变量 `nesnd_qinist_allowed` 的 OR 分支，原有条件不动；另两处的原有分支加「本国是原来那几国」，防止奥斯曼有了一个带变量的领袖后，其他集团自然刷出秦制主义者。
 - 本地化 `nesnd_ottoman_l_*.yml`（replace）：中英各 12 键。
