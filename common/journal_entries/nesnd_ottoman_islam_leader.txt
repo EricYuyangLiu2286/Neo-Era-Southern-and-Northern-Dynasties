@@ -1,0 +1,120 @@
+﻿# Ottoman success line, block 2: diplomacy and standing as Leader of the Islamic World.
+# Added only by effects (event nesnd_ottoman_recovery.5, on_action nesnd_ottoman_islam_leader_fallback), so it has no possible / is_shown_when_inactive.
+nesnd_ottoman_islam_leader = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    group = je_group_foreign_affairs
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    scripted_button = nesnd_ottoman_fund_tribes
+    scripted_button = nesnd_ottoman_seek_qin_pact
+    scripted_button = nesnd_ottoman_challenge_russia
+
+    immediate = {
+        set_variable = { name = nesnd_ottoman_islam_leader_wait months = 60 }
+        if = {
+            limit = {
+                exists = c:RUS
+                NOT = { c:RUS = root }
+                NOT = { has_secret_goal = { who = c:RUS secret_goal = antagonize } }
+            }
+            set_secret_goal = { country = c:RUS secret_goal = antagonize }
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_islam_leader_win_conclusion
+        trigger = {
+            OR = {
+                custom_tooltip = {
+                    text = nesnd_ottoman_islam_leader_crimea_win_tt
+                    global_var:nesnd_crimea_result ?= flag:ottoman
+                }
+                custom_tooltip = {
+                    text = nesnd_ottoman_islam_leader_order_win_tt
+                    has_modifier = nesnd_ottoman_eastern_order
+                    NOT = { has_variable = nesnd_ottoman_islam_leader_wait }
+                }
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_islam_leader }
+            nesnd_ottoman_claim_caucasus_central_asia = yes
+            set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:leader }
+            set_variable = nesnd_ottoman_islam_leader_closed
+            trigger_event = { id = nesnd_ottoman_recovery.12 }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_islam_leader_win_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_islam_leader_failed_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_islam_leader_failed_crimea_tt
+                global_var:nesnd_crimea_result ?= flag:russia
+            }
+            NOT = { owns_entire_state_region = STATE_BAGHDAD }
+        }
+        effect = {
+            custom_tooltip = {
+                text = nesnd_ottoman_enthusiasm_reset_tt
+                je:nesnd_ottoman_recovery ?= { set_bar_progress = { name = nesnd_ottoman_enthusiasm_bar value = 0 } }
+            }
+            add_modifier = { name = nesnd_ottoman_crimean_humiliation }
+            set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:failed }
+            set_variable = nesnd_ottoman_islam_leader_closed
+            trigger_event = { id = nesnd_ottoman_recovery.13 }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_islam_leader_failed_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "blue_negative"
+        flags = { timeout }
+        conclusion_desc = nesnd_ottoman_islam_leader_timeout_conclusion
+        effect = {
+            add_modifier = { name = nesnd_ottoman_leader_unclaimed }
+            set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:timeout }
+            set_variable = nesnd_ottoman_islam_leader_closed
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_islam_leader_timeout_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_ottoman_islam_leader_invalid_conclusion
+        trigger = { OR = { NOT = { c:TUR ?= this } NOT = { nesnd_ottoman_tanzimat_success = yes } } }
+        effect = { }
+    }
+
+    timeout = 9125
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_global_variable = nesnd_crimea_active } desc = nesnd_ottoman_islam_leader_status_crimea }
+            triggered_desc = { trigger = { has_modifier = nesnd_ottoman_eastern_order } desc = nesnd_ottoman_islam_leader_status_order }
+            desc = nesnd_ottoman_islam_leader_status_ongoing
+        }
+    }
+}

@@ -172,6 +172,7 @@ nesnd_ottoman_recovery.5 = {
         scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted } }
         set_variable = { name = nesnd_ottoman_route_lean value = flag:charter }
         add_journal_entry = { type = nesnd_ottoman_charter }
+        add_journal_entry = { type = nesnd_ottoman_islam_leader }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_charter_ig ?= { is_powerful = yes } } add = 10 }
@@ -183,6 +184,7 @@ nesnd_ottoman_recovery.5 = {
         scope:nesnd_route_charter_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted } }
         set_variable = { name = nesnd_ottoman_route_lean value = flag:barracks }
         add_journal_entry = { type = nesnd_ottoman_charter }
+        add_journal_entry = { type = nesnd_ottoman_islam_leader }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_army_ig ?= { is_powerful = yes } } add = 10 }
@@ -479,5 +481,153 @@ nesnd_ottoman_recovery.11 = {
         if = { limit = { NOT = { has_law = law_type:law_landed_voting } } activate_law = law_type:law_landed_voting }
         else = { add_modifier = { name = nesnd_ottoman_law_settled } }
         ai_chance = { base = 10 }
+    }
+}
+# Outcome "leader" of nesnd_ottoman_islam_leader: Caliphate or European Concert.
+nesnd_ottoman_recovery.12 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.12.t
+    desc = nesnd_ottoman_recovery.12.d
+    flavor = nesnd_ottoman_recovery.12.f
+    event_image = { video = "votp_monarch_holding_court" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    immediate = {
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+        ig:ig_devout ?= { save_scope_as = nesnd_devout_ig }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.12.a
+        default_option = yes
+        add_modifier = { name = nesnd_ottoman_caliphate }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { ig:ig_devout ?= { is_in_government = yes } } add = 10 }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.12.b
+        if = { limit = { exists = c:GBR } change_relations = { country = c:GBR value = 40 } }
+        if = { limit = { exists = c:FRA } change_relations = { country = c:FRA value = 40 } }
+        add_modifier = { name = nesnd_ottoman_concert }
+        if = {
+            limit = {
+                exists = c:GBR
+                exists = c:FRA
+                "relations(c:GBR)" >= "relations(c:FRA)"
+                nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:GBR }
+            }
+            nesnd_crimea_sign_defensive_pact = { PARTNER = c:GBR }
+        }
+        else_if = {
+            limit = { nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:FRA } }
+            nesnd_crimea_sign_defensive_pact = { PARTNER = c:FRA }
+        }
+        else_if = {
+            limit = { nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:GBR } }
+            nesnd_crimea_sign_defensive_pact = { PARTNER = c:GBR }
+        }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { has_variable = nesnd_ottoman_charter_outcome var:nesnd_ottoman_charter_outcome = flag:charter } add = 10 }
+        }
+    }
+}
+# Outcome "failed" of nesnd_ottoman_islam_leader: defeated in Crimea and without Baghdad.
+nesnd_ottoman_recovery.13 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.13.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.13.d
+                trigger = { exists = scope:nesnd_rus_country }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.13.d_plain
+                trigger = { always = yes }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.13.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    immediate = {
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+        c:RUS ?= { save_scope_as = nesnd_rus_country }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.13.a
+        default_option = yes
+        custom_tooltip = nesnd_ottoman_recovery.13.a_tt
+    }
+}
+# Outcome "ottoman win" of nesnd_crimea_tur.
+nesnd_ottoman_recovery.14 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.14.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.14.d
+                trigger = { exists = scope:nesnd_rus_country }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.14.d_plain
+                trigger = { always = yes }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.14.f
+    event_image = { video = "unspecific_military_parade" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    immediate = {
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+        c:RUS ?= { save_scope_as = nesnd_rus_country }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.14.a
+        default_option = yes
+        custom_tooltip = nesnd_ottoman_recovery.14.a_tt
+    }
+}
+# Outcome "russia win" of nesnd_crimea_tur.
+nesnd_ottoman_recovery.15 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.15.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.15.d
+                trigger = { exists = scope:nesnd_rus_country }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.15.d_plain
+                trigger = { always = yes }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.15.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    immediate = {
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+        c:RUS ?= { save_scope_as = nesnd_rus_country }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.15.a
+        default_option = yes
+        custom_tooltip = nesnd_ottoman_recovery.15.a_tt
     }
 }

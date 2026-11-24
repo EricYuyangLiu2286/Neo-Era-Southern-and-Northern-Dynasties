@@ -1,0 +1,46 @@
+﻿# On-actions for the Crimean War: Russia's yearly pre-emptive check and war/play outcome recording.
+on_yearly_pulse_country = { on_actions = { nesnd_crimea_rus_yearly } }
+on_wargoal_enforced = { on_actions = { nesnd_crimea_on_wargoal } }
+on_won_war = { on_actions = { nesnd_crimea_on_won_war } }
+
+nesnd_crimea_rus_yearly = {
+    trigger = { nesnd_crimea_rus_yearly_eligible = yes }
+    effect = { nesnd_crimea_rus_yearly_check = yes }
+}
+
+# Root = country that enforced a war goal; scope:target = country against which it was enforced.
+nesnd_crimea_on_wargoal = {
+    trigger = {
+        has_global_variable = nesnd_crimea_active
+        NOT = { has_global_variable = nesnd_crimea_result }
+    }
+    effect = {
+        if = {
+            limit = { c:TUR ?= this scope:target ?= c:RUS }
+            nesnd_crimea_record_tur_win = yes
+        }
+        else_if = {
+            limit = { c:RUS ?= this scope:target ?= c:TUR }
+            nesnd_crimea_record_rus_win = yes
+        }
+    }
+}
+
+# Root = country that won the war; scope:enemy_country = leader of the opposing side.
+nesnd_crimea_on_won_war = {
+    trigger = {
+        has_global_variable = nesnd_crimea_active
+        NOT = { has_global_variable = nesnd_crimea_result }
+        exists = scope:benefitted_from_wargoal
+    }
+    effect = {
+        if = {
+            limit = { c:TUR ?= this scope:enemy_country ?= c:RUS }
+            nesnd_crimea_record_tur_win = yes
+        }
+        else_if = {
+            limit = { c:RUS ?= this scope:enemy_country ?= c:TUR }
+            nesnd_crimea_record_rus_win = yes
+        }
+    }
+}
