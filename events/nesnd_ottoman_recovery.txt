@@ -49,3 +49,228 @@ nesnd_ottoman_recovery.2 = {
         }
     }
 }
+# Journal outcome "Eastern Order" (nesnd_ottoman_recovery): choose to press east or consolidate.
+nesnd_ottoman_recovery.3 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.3.t
+    desc = nesnd_ottoman_recovery.3.d
+    flavor = nesnd_ottoman_recovery.3.f
+    event_image = { video = "middleeast_courtroom_upheaval" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    option = {
+        name = nesnd_ottoman_recovery.3.a
+        default_option = yes
+        if = { limit = { nesnd_ottoman_eastern_frontier_held = yes }
+            nesnd_ottoman_claim_eastern_frontier = yes
+            hidden_effect = { set_secret_goal = { country = c:QE1 secret_goal = conquer } }
+        }
+        else = { custom_tooltip = nesnd_ottoman_recovery.3.no_frontier_tt }
+        ai_chance = { base = 90 }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.3.b
+        add_modifier = { name = nesnd_ottoman_eastern_consolidation }
+        custom_tooltip = nesnd_ottoman_recovery.3.b_tt
+        ai_chance = { base = 10 }
+    }
+}
+# Journal outcome "End of the Old Order" (nesnd_ottoman_recovery): Eastern Thrace is no longer wholly Ottoman.
+nesnd_ottoman_recovery.4 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.4.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.4.d
+                trigger = { exists = scope:nesnd_thrace_taker }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.4.d_unknown
+                trigger = { always = yes }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.4.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    immediate = {
+        s:STATE_EASTERN_THRACE = {
+            random_scope_state = {
+                limit = { NOT = { owner = root } }
+                owner = { save_scope_as = nesnd_thrace_taker }
+            }
+        }
+        if = { limit = { exists = scope:nesnd_thrace_taker }
+            set_secret_goal = { country = scope:nesnd_thrace_taker secret_goal = antagonize }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.4.a
+        trigger = { s:STATE_ANKARA = { any_scope_state = { owner = root } } }
+        set_capital = STATE_ANKARA
+        ai_chance = { base = 50 }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.4.b
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_thrace_taker
+                any_country = { NOT = { this = root } has_diplomatic_pact = { who = scope:nesnd_thrace_taker type = rivalry } }
+            }
+            every_country = {
+                limit = { NOT = { this = root } has_diplomatic_pact = { who = scope:nesnd_thrace_taker type = rivalry } }
+                change_relations = { country = root value = 30 }
+            }
+        }
+        else = { custom_tooltip = nesnd_ottoman_recovery.4.no_rival_tt }
+        ai_chance = { base = 50 }
+    }
+}
+# Milestone after a successful Tanzimat. Sets the route marker read by the route journals (B3 onward).
+nesnd_ottoman_recovery.5 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.5.t
+    desc = nesnd_ottoman_recovery.5.d
+    flavor = nesnd_ottoman_recovery.5.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = { NOT = { has_variable = nesnd_ottoman_route } nesnd_ottoman_tanzimat_success = yes }
+    immediate = {
+        set_variable = { name = nesnd_ottoman_route value = flag:constitutional }
+        ig:ig_intelligentsia ?= { save_scope_as = nesnd_route_charter_ig }
+        ig:ig_armed_forces ?= { save_scope_as = nesnd_route_army_ig }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.5.a
+        default_option = yes
+        scope:nesnd_route_charter_ig ?= { add_modifier = { name = nesnd_ottoman_route_favored } }
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted } }
+        set_variable = { name = nesnd_ottoman_route_lean value = flag:charter }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { scope:nesnd_route_charter_ig ?= { is_powerful = yes } } add = 10 }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.5.b
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_favored } }
+        scope:nesnd_route_charter_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted } }
+        set_variable = { name = nesnd_ottoman_route_lean value = flag:barracks }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { scope:nesnd_route_army_ig ?= { is_powerful = yes } } add = 10 }
+        }
+    }
+}
+# Milestone after a failed Tanzimat (follows vanilla sick_man.3). Sets the route marker read by the route journals.
+nesnd_ottoman_recovery.6 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.6.t
+    desc = nesnd_ottoman_recovery.6.d
+    flavor = nesnd_ottoman_recovery.6.f
+    event_image = { video = "votp_monarch_holding_court" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = { NOT = { has_variable = nesnd_ottoman_route } nesnd_ottoman_tanzimat_failed = yes }
+    immediate = {
+        set_variable = { name = nesnd_ottoman_route value = flag:sultanic }
+        ig:ig_devout ?= { save_scope_as = nesnd_route_faith_ig }
+        ig:ig_armed_forces ?= { save_scope_as = nesnd_route_army_ig }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.6.a
+        default_option = yes
+        scope:nesnd_route_faith_ig ?= { add_modifier = { name = nesnd_ottoman_route_favored } }
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted } }
+        set_variable = { name = nesnd_ottoman_route_lean value = flag:sultan }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { scope:nesnd_route_faith_ig ?= { is_powerful = yes } } add = 10 }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.6.b
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_favored } }
+        scope:nesnd_route_faith_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted } }
+        set_variable = { name = nesnd_ottoman_route_lean value = flag:barracks }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { scope:nesnd_route_army_ig ?= { is_powerful = yes } } add = 10 }
+        }
+    }
+}
+# Journal outcome "Peoples United" (nesnd_ottoman_unity).
+nesnd_ottoman_recovery.7 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.7.t
+    desc = nesnd_ottoman_recovery.7.d
+    flavor = nesnd_ottoman_recovery.7.f
+    event_image = { video = "unspecific_ruler_speaking_to_people" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+    duration = 3
+    option = {
+        name = nesnd_ottoman_recovery.7.a
+        default_option = yes
+        if = { limit = { any_scope_state = { nesnd_ottoman_turkish_majority_unhomed = yes } }
+            every_scope_state = {
+                limit = { nesnd_ottoman_turkish_majority_unhomed = yes }
+                state_region = { add_homeland = cu:turkish }
+            }
+        }
+        else = { custom_tooltip = nesnd_ottoman_recovery.7.no_state_tt }
+    }
+}
+# Journal outcome "Peoples Estranged" (nesnd_ottoman_unity).
+nesnd_ottoman_recovery.8 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.8.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.8.d
+                trigger = { exists = scope:nesnd_discord_state }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.8.d_none
+                trigger = { always = yes }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.8.f
+    event_image = { video = "votp_agitator_speaking" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_protest.dds"
+    duration = 3
+    immediate = {
+        random_scope_state = {
+            limit = { nesnd_ottoman_non_turkish_majority = yes }
+            save_scope_as = nesnd_discord_state
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.8.a
+        default_option = yes
+        if = { limit = { any_scope_state = { nesnd_ottoman_non_turkish_majority = yes } }
+            every_scope_state = {
+                limit = { nesnd_ottoman_non_turkish_majority = yes }
+                add_radicals_in_state = { value = medium_radicals }
+            }
+        }
+        else = { custom_tooltip = nesnd_ottoman_recovery.8.no_state_tt }
+    }
+}

@@ -41,7 +41,7 @@ nesnd_ottoman_unity_refresh_bands = {
 nesnd_ottoman_unity_bootstrap = {
     if = { limit = { nesnd_ottoman_unity_available = yes }
         nesnd_ottoman_unity_initialize = yes
-        if = { limit = { NOT = { has_journal_entry = nesnd_ottoman_unity } } add_journal_entry = { type = nesnd_ottoman_unity } }
+        if = { limit = { NOT = { has_journal_entry = nesnd_ottoman_unity } NOT = { has_variable = nesnd_ottoman_unity_closed } } add_journal_entry = { type = nesnd_ottoman_unity } }
         nesnd_ottoman_unity_sync = yes
     }
     else = {
@@ -69,4 +69,11 @@ nesnd_ottoman_unity_monthly = {
         nesnd_ottoman_unity_refresh_bands = yes
         nesnd_ottoman_unity_sync = yes
     }
+}
+nesnd_ottoman_unity_count_streaks = {
+    # Country scope, after nesnd_ottoman_unity_monthly in the same pulse.
+    if = { limit = { nesnd_ottoman_unity_value >= 75 } je:nesnd_ottoman_unity ?= { add_progress = { name = nesnd_ottoman_concord_bar value = 1 } } }
+    else = { je:nesnd_ottoman_unity ?= { set_bar_progress = { name = nesnd_ottoman_concord_bar value = 0 } } }
+    if = { limit = { nesnd_ottoman_unity_value < 25 } je:nesnd_ottoman_unity ?= { add_progress = { name = nesnd_ottoman_discord_bar value = 1 } } }
+    else = { je:nesnd_ottoman_unity ?= { set_bar_progress = { name = nesnd_ottoman_discord_bar value = 0 } } }
 }

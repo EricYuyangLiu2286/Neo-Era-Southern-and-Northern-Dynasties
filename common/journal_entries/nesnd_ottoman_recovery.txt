@@ -2,10 +2,11 @@
     group = je_group_historical_content
     activation_description = { always = yes } icon = "gfx/interface/icons/event_icons/event_military.dds"
     should_be_pinned_by_default_uninvolved_or_context = yes can_revolution_inherit = no weight = 1000
-    is_shown_when_inactive = { nesnd_ottoman_recovery_open = yes }
+    is_shown_when_inactive = { nesnd_ottoman_recovery_open = yes NOT = { has_variable = nesnd_ottoman_recovery_closed } }
     possible = { nesnd_ottoman_recovery_open = yes }
     scripted_progress_bar = nesnd_ottoman_enthusiasm_bar
     on_monthly_pulse = {
+        effect = { nesnd_ottoman_route_check = yes }
         random_events = {
             95 = 0
             5 = nesnd_ottoman_recovery.2
@@ -86,9 +87,52 @@
     scripted_button = nesnd_ottoman_claim_yemen
 
     outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_recovery_eastern_order_conclusion
+        trigger = {
+            owns_entire_state_region = STATE_BAGHDAD
+            owns_entire_state_region = STATE_MOSUL
+            owns_entire_state_region = STATE_BASRA
+            owns_entire_state_region = STATE_SYRIA
+            owns_entire_state_region = STATE_ALEPPO
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_eastern_order }
+            set_variable = nesnd_ottoman_recovery_closed
+            trigger_event = { id = nesnd_ottoman_recovery.3 }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_recovery_eastern_order_event_tt }
+            }
+        }
+    }
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
         color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_recovery_old_order_conclusion
+        trigger = { NOT = { owns_entire_state_region = STATE_EASTERN_THRACE } }
+        effect = {
+            custom_tooltip = {
+                text = nesnd_ottoman_enthusiasm_reset_tt
+                je:nesnd_ottoman_recovery ?= { set_bar_progress = { name = nesnd_ottoman_enthusiasm_bar value = 0 } }
+            }
+            custom_tooltip = { text = nesnd_ottoman_claims_voided_tt nesnd_ottoman_void_purchased_claims = yes }
+            add_modifier = { name = nesnd_ottoman_old_order_ended }
+            set_variable = nesnd_ottoman_recovery_closed
+            trigger_event = { id = nesnd_ottoman_recovery.4 }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_recovery_old_order_event_tt }
+            }
+        }
+    }
+    outcome = {
+        flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_journal_closures_ottoman_recovery_conclusion
         trigger = { custom_tooltip = { text = nesnd_journal_closures_ottoman_recovery_tt NOT = { c:TUR ?= this } } }
         effect = { nesnd_ottoman_clear_reform_benefits = yes }

@@ -5,7 +5,7 @@
     can_revolution_inherit = no
     should_be_pinned_by_default_uninvolved_or_context = yes
     weight = 900
-    is_shown_when_inactive = { nesnd_ottoman_unity_country = yes }
+    is_shown_when_inactive = { nesnd_ottoman_unity_country = yes NOT = { has_variable = nesnd_ottoman_unity_closed } }
     possible = {
         hidden_trigger = { nesnd_ottoman_unity_country = yes }
         trigger_if = { limit = { has_variable = nesnd_ottoman_unity_opened } custom_tooltip = { text = nesnd_ottoman_direct_states_27 num_states >= 27 } }
@@ -15,19 +15,60 @@
     scripted_button = nesnd_unity_material_subsidy
     scripted_button = nesnd_unity_political_subsidy
     scripted_progress_bar = nesnd_ottoman_unity_bar
-    on_monthly_pulse = { effect = { nesnd_ottoman_unity_monthly = yes } }
+    scripted_progress_bar = nesnd_ottoman_concord_bar
+    scripted_progress_bar = nesnd_ottoman_discord_bar
+    on_monthly_pulse = { effect = { nesnd_ottoman_unity_monthly = yes nesnd_ottoman_unity_count_streaks = yes } }
     outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        color = "blue_negative"
-        conclusion_desc = nesnd_journal_closures_ottoman_unity_conclusion
-        trigger = { custom_tooltip = { text = nesnd_journal_closures_ottoman_unity_tt NOT = { nesnd_ottoman_unity_country = yes } } }
-        effect = { nesnd_ottoman_unity_clear_bands = yes }
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_unity_concord_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_unity_concord_tt
+                scope:journal_entry = { scripted_bar_progress = { name = nesnd_ottoman_concord_bar value >= 36 } }
+            }
+        }
+        effect = {
+            nesnd_ottoman_unity_clear_bands = yes
+            add_modifier = { name = nesnd_ottoman_concord }
+            set_variable = nesnd_ottoman_unity_closed
+            trigger_event = { id = nesnd_ottoman_recovery.7 }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_unity_concord_event_tt }
+            }
+        }
     }
     outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_unity_discord_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_unity_discord_tt
+                scope:journal_entry = { scripted_bar_progress = { name = nesnd_ottoman_discord_bar value >= 24 } }
+            }
+        }
+        effect = {
+            nesnd_ottoman_unity_clear_bands = yes
+            add_modifier = { name = nesnd_ottoman_discord }
+            set_variable = nesnd_ottoman_unity_closed
+            trigger_event = { id = nesnd_ottoman_recovery.8 }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_unity_discord_event_tt }
+            }
+        }
+    }
+    outcome = {
+        # One invalid outcome per journal: covers both "no longer the Ottoman state" and "too few states for now".
         flags = { hidden invalid_outcome }
-        conclusion_desc = je_standard_failure_conclusion_desc
-        trigger = { nesnd_ottoman_unity_country = yes NOT = { nesnd_ottoman_unity_available = yes } }
+        conclusion_desc = nesnd_journal_closures_ottoman_unity_conclusion
+        trigger = { NOT = { nesnd_ottoman_unity_available = yes } }
         effect = { nesnd_ottoman_unity_clear_bands = yes }
     }
     status_desc = { first_valid = {
