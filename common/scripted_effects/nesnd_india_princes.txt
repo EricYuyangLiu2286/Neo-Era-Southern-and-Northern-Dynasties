@@ -630,160 +630,427 @@ nesnd_india_union_decline = {
 }
 
 # ==== The Indian uprising (formerly nesnd_india_uprising.txt) ====
+
 nesnd_india_contact_release_sponsor = {
-    if = { limit = { exists = var:nesnd_india_case_sponsor }
+    if = {
+        limit = { exists = var:nesnd_india_case_sponsor }
         save_scope_as = india_cleanup_region
-        if = { limit = { exists = scope:india_cleanup_region }
+        if = {
+            limit = { exists = scope:india_cleanup_region }
             var:nesnd_india_case_sponsor = {
-                if = { limit = { exists = var:nesnd_india_contact_region }
-                    if = { limit = { var:nesnd_india_contact_region = scope:india_cleanup_region } remove_variable = nesnd_india_contact_region if = { limit = { has_modifier = nesnd_india_contact_cost } remove_modifier = nesnd_india_contact_cost } nesnd_india_sync_bar = { JE = nesnd_india_uprising BAR = nesnd_india_contact_bar VALUE = nesnd_india_contact_progress } }
+                if = {
+                    limit = { exists = var:nesnd_india_contact_region }
+                    if = {
+                        limit = { var:nesnd_india_contact_region = scope:india_cleanup_region }
+                        remove_variable = nesnd_india_contact_region
+                        if = {
+                            limit = { has_modifier = nesnd_india_contact_cost }
+                            remove_modifier = nesnd_india_contact_cost
+                        }
+                        nesnd_india_sync_bar = {
+                            JE = nesnd_india_uprising
+                            BAR = nesnd_india_contact_bar
+                            VALUE = nesnd_india_contact_progress
+                        }
+                    }
                 }
             }
-
         }
     }
 }
+
 nesnd_india_close_case = {
     nesnd_india_contact_release_sponsor = yes
-    remove_variable = nesnd_india_case_sponsor remove_variable = nesnd_india_case_owner remove_variable = nesnd_india_case_state
-    remove_variable = nesnd_india_case_stage remove_variable = nesnd_india_case_progress remove_variable = nesnd_india_case_play remove_variable = nesnd_india_case_retries
+    remove_variable = nesnd_india_case_sponsor
+    remove_variable = nesnd_india_case_owner
+    remove_variable = nesnd_india_case_state
+    remove_variable = nesnd_india_case_stage
+    remove_variable = nesnd_india_case_progress
+    remove_variable = nesnd_india_case_play
+    remove_variable = nesnd_india_case_retries
     remove_variable = nesnd_india_case_original_provinces
     set_variable = { name = nesnd_india_case_cooldown months = 36 }
 }
+
 # The uprising in one state region: R its name, STATE its state region, TAG the country formed there, HQ its strategic region.
 nesnd_india_case_start = {
-    if = { limit = { nesnd_india_contact_safe = yes nesnd_india_case_target = { STATE = $STATE$ TAG = $TAG$ } gold_reserves >= 5000 }
+    if = {
+        limit = {
+            nesnd_india_contact_safe = yes
+            nesnd_india_case_target = { STATE = $STATE$ TAG = $TAG$ }
+            gold_reserves >= 5000
+        }
         add_treasury = -5000
         set_variable = { name = nesnd_india_contact_region value = s:$STATE$ }
         add_modifier = { name = nesnd_india_contact_cost }
         save_scope_as = india_sponsor
-        if = { limit = { exists = scope:india_sponsor }
+        if = {
+            limit = { exists = scope:india_sponsor }
             s:$STATE$ = {
                 set_variable = { name = nesnd_india_case_sponsor value = scope:india_sponsor }
                 set_variable = { name = nesnd_india_case_progress value = 0 }
                 set_variable = { name = nesnd_india_case_stage value = 1 }
-                ordered_scope_state = { limit = { nesnd_india_colonial_state = yes } order_by = state_population position = 0 check_range_bounds = no save_scope_as = india_case_state owner = { save_scope_as = india_case_owner } }
-                if = { limit = { exists = scope:india_case_state exists = scope:india_case_owner }
-                    set_variable = { name = nesnd_india_case_state value = scope:india_case_state } set_variable = { name = nesnd_india_case_owner value = scope:india_case_owner }
-
+                ordered_scope_state = {
+                    limit = { nesnd_india_colonial_state = yes }
+                    order_by = state_population
+                    position = 0
+                    check_range_bounds = no
+                    save_scope_as = india_case_state
+                    owner = { save_scope_as = india_case_owner }
+                }
+                if = {
+                    limit = {
+                        exists = scope:india_case_state
+                        exists = scope:india_case_owner
+                    }
+                    set_variable = { name = nesnd_india_case_state value = scope:india_case_state }
+                    set_variable = { name = nesnd_india_case_owner value = scope:india_case_owner }
                 }
             }
-
         }
     }
-    nesnd_india_sync_bar = { JE = nesnd_india_uprising BAR = nesnd_india_contact_bar VALUE = nesnd_india_contact_progress }
+    nesnd_india_sync_bar = {
+        JE = nesnd_india_uprising
+        BAR = nesnd_india_contact_bar
+        VALUE = nesnd_india_contact_progress
+    }
 }
+
 nesnd_india_case_create_play = {
     clear_saved_scope = india_case_backer
-
-    if = { limit = { exists = var:nesnd_india_case_owner exists = c:$TAG$ exists = s:$STATE$.region_state:$TAG$ }
-        save_scope_as = india_case_region var:nesnd_india_case_owner = { save_scope_as = india_case_owner }
+    if = {
+        limit = {
+            exists = var:nesnd_india_case_owner
+            exists = c:$TAG$
+            exists = s:$STATE$.region_state:$TAG$
+        }
+        save_scope_as = india_case_region
+        var:nesnd_india_case_owner = { save_scope_as = india_case_owner }
         c:$TAG$ = { save_scope_as = india_case_local }
-        if = { limit = { exists = scope:india_case_region exists = scope:india_case_owner exists = scope:india_case_local }
+        if = {
+            limit = {
+                exists = scope:india_case_region
+                exists = scope:india_case_owner
+                exists = scope:india_case_local
+            }
             add_claim = scope:india_case_owner
             scope:india_case_owner = {
                 # A war or another play of the owner does not stop a new play (lookup/engine-facts.md:61).
-                if = { limit = { NOT = { has_war_with = scope:india_case_local } NOT = { has_truce_with = scope:india_case_local } }
-                    create_diplomatic_play = { name = dp_nesnd_india_$R$ type = dp_nesnd_india_$R$ target_country = scope:india_case_local target_state = s:$STATE$.region_state:$TAG$ escalation = 80
-                        add_war_goal = { holder = scope:india_case_local type = humiliation target_country = scope:india_case_owner primary_demand = yes }
+                if = {
+                    limit = {
+                        NOT = { has_war_with = scope:india_case_local }
+                        NOT = { has_truce_with = scope:india_case_local }
+                    }
+                    create_diplomatic_play = {
+                        name = dp_nesnd_india_$R$
+                        type = dp_nesnd_india_$R$
+                        target_country = scope:india_case_local
+                        target_state = s:$STATE$.region_state:$TAG$
+                        escalation = 80
+                        add_war_goal = {
+                            holder = scope:india_case_local
+                            type = humiliation
+                            target_country = scope:india_case_owner
+                            primary_demand = yes
+                        }
                     }
                     clear_saved_scope = india_case_created_play
-                    random_diplomatic_play = { limit = { is_diplomatic_play_type = dp_nesnd_india_$R$ initiator = scope:india_case_owner target = scope:india_case_local } save_scope_as = india_case_created_play }
-                    if = { limit = { exists = scope:india_case_created_play }
-                        scope:india_case_region = { set_variable = { name = nesnd_india_case_play value = scope:india_case_created_play } set_variable = { name = nesnd_india_case_stage value = 5 } }
+                    random_diplomatic_play = {
+                        limit = {
+                            is_diplomatic_play_type = dp_nesnd_india_$R$
+                            initiator = scope:india_case_owner
+                            target = scope:india_case_local
+                        }
+                        save_scope_as = india_case_created_play
+                    }
+                    if = {
+                        limit = { exists = scope:india_case_created_play }
+                        scope:india_case_region = {
+                            set_variable = {
+                                name = nesnd_india_case_play
+                                value = scope:india_case_created_play
+                            }
+                            set_variable = { name = nesnd_india_case_stage value = 5 }
+                        }
                         scope:india_case_created_play = {
-                            if = { limit = { scope:india_case_region = { exists = var:nesnd_india_case_sponsor } }
-                                scope:india_case_region.var:nesnd_india_case_sponsor = { if = { limit = { is_country_alive = yes is_subject = no is_at_war = no NOT = { this = scope:india_case_owner } } save_scope_as = india_case_backer } }
-                                if = { limit = { exists = scope:india_case_backer } add_target_backers = { scope:india_case_backer } }
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-}
-nesnd_india_case_launch = {
-    if = { limit = { nesnd_india_case_launch_ready = { STATE = $STATE$ TAG = $TAG$ } }
-        save_scope_as = india_sponsor clear_saved_scope = india_case_backer
-        if = { limit = { exists = scope:india_sponsor }
-            s:$STATE$ = {
-                var:nesnd_india_case_state = { save_scope_as = india_case_state } var:nesnd_india_case_owner = { save_scope_as = india_case_owner }
-                if = { limit = { exists = scope:india_case_state exists = scope:india_case_owner }
-                    set_variable = { name = nesnd_india_case_stage value = 4 } set_variable = { name = nesnd_india_case_retries value = 0 }
-                    set_variable = { name = nesnd_india_case_original_provinces value = scope:india_case_state.num_provinces }
-                    save_scope_value_as = { name = india_recruit_count value = { value = 2 if = { limit = { scope:india_case_state = { state_population >= 1000000 } } value = 4 } if = { limit = { scope:india_case_state = { state_population >= 3000000 } } value = 6 } if = { limit = { scope:india_case_state = { state_population >= 6000000 } } value = 8 } } }
-                    scope:india_case_owner = { create_country = { tag = $TAG$ origin = scope:india_case_owner state = scope:india_case_state on_created = {
-                                set_variable = nesnd_india_local_state set_variable = nesnd_india_revolt_actor remove_variable = nesnd_india_revolt_territory_changed set_variable = { name = nesnd_india_revolt_origin value = s:$STATE$ }
-                                activate_law = law_type:law_presidential_republic activate_law = law_type:law_oligarchy set_social_hierarchy = british_indian_caste_system activate_law = law_type:law_hindu_caste_not_enforced
-                                if = { limit = { NOT = { has_technology_researched = democracy } } add_technology_researched = democracy }
-                            }
-                        }
-                    }
-                    if = { limit = { exists = c:$TAG$ }
-                        scope:india_sponsor = { add_treasury = -20000 if = { limit = { has_modifier = nesnd_india_contact_cost } remove_modifier = nesnd_india_contact_cost } }
-                        c:$TAG$ = {
-                            add_treasury = 20000
-                            if = { limit = { army_size < 1 NOT = { has_variable = nesnd_india_initial_recruitment } }
-                                set_variable = nesnd_india_initial_recruitment
-                                if = { limit = { exists = scope:india_recruit_count }
-                                    if = { limit = { scope:india_recruit_count = 2 } create_military_formation = { type = army hq_region = sr:$HQ$ combat_unit = { type = unit_type:combat_unit_type_irregular_infantry state_region = s:$STATE$ count = 2 } } }
-                                    else_if = { limit = { scope:india_recruit_count = 4 } create_military_formation = { type = army hq_region = sr:$HQ$ combat_unit = { type = unit_type:combat_unit_type_irregular_infantry state_region = s:$STATE$ count = 4 } } }
-                                    else_if = { limit = { scope:india_recruit_count = 6 } create_military_formation = { type = army hq_region = sr:$HQ$ combat_unit = { type = unit_type:combat_unit_type_irregular_infantry state_region = s:$STATE$ count = 6 } } }
-                                    else_if = { limit = { scope:india_recruit_count = 8 } create_military_formation = { type = army hq_region = sr:$HQ$ combat_unit = { type = unit_type:combat_unit_type_irregular_infantry state_region = s:$STATE$ count = 8 } } }
+                            if = {
+                                limit = {
+                                    scope:india_case_region = { exists = var:nesnd_india_case_sponsor }
+                                }
+                                scope:india_case_region.var:nesnd_india_case_sponsor = {
+                                    if = {
+                                        limit = {
+                                            is_country_alive = yes
+                                            is_subject = no
+                                            is_at_war = no
+                                            NOT = { this = scope:india_case_owner }
+                                        }
+                                        save_scope_as = india_case_backer
+                                    }
+                                }
+                                if = {
+                                    limit = { exists = scope:india_case_backer }
+                                    add_target_backers = { scope:india_case_backer }
                                 }
                             }
-                            if = { limit = { NOT = { has_journal_entry = nesnd_india_revolt_war } } add_journal_entry = { type = nesnd_india_revolt_war } }
-                            trigger_event = { id = nesnd_india_revolt.1 popup = yes }
                         }
-                        nesnd_india_case_create_play = { R = $R$ STATE = $STATE$ TAG = $TAG$ }
-                    } else = { nesnd_india_close_case = yes }
-
+                    }
                 }
             }
-
         }
     }
 }
-nesnd_india_case_maintain = {
-    if = { limit = { has_variable = nesnd_india_case_stage }
-        if = { limit = { nesnd_india_case_stage_value <= 3 }
-            if = { limit = { exists = var:nesnd_india_case_sponsor exists = var:nesnd_india_case_owner exists = var:nesnd_india_case_state }
-                save_scope_as = india_case_region
-                if = { limit = { exists = scope:india_case_region }
-                    if = { limit = { var:nesnd_india_case_state = { owner = scope:india_case_region.var:nesnd_india_case_owner } var:nesnd_india_case_owner = { nesnd_india_colonial_owner = yes } var:nesnd_india_case_sponsor = { nesnd_india_empire = yes } }
-                        # The sponsoring JE advances preparation; this global pulse only checks ownership and lifecycle.
-                    } else = { nesnd_india_close_case = yes }
 
-                }
-            } else = { nesnd_india_close_case = yes }
+nesnd_india_case_launch = {
+    if = {
+        limit = {
+            nesnd_india_case_launch_ready = { STATE = $STATE$ TAG = $TAG$ }
         }
-        else_if = { limit = { nesnd_india_case_stage_value = 4 }
-            change_variable = { name = nesnd_india_case_retries add = 1 }
-            if = { limit = { nesnd_india_case_retries_value <= 2 } nesnd_india_case_create_play = { R = $R$ STATE = $STATE$ TAG = $TAG$ } }
-            else = {
-                if = { limit = { exists = var:nesnd_india_case_owner exists = c:$TAG$ exists = s:$STATE$.region_state:$TAG$ }
-                    if = { limit = { has_variable = nesnd_india_case_original_provinces }
-                        if = { limit = { has_variable = nesnd_india_case_original_provinces s:$STATE$.region_state:$TAG$ = { num_provinces = prev.var:nesnd_india_case_original_provinces } c:$TAG$ = { num_states = 1 has_variable = nesnd_india_revolt_actor NOT = { has_variable = nesnd_india_revolt_territory_changed } is_at_war = no is_active_in_diplomatic_play = no } }
-                            var:nesnd_india_case_owner = { save_scope_as = india_case_original_owner }
-                            if = { limit = { exists = scope:india_case_original_owner }
-                                s:$STATE$.region_state:$TAG$ = { set_state_owner = scope:india_case_original_owner }
-
+        save_scope_as = india_sponsor
+        clear_saved_scope = india_case_backer
+        if = {
+            limit = { exists = scope:india_sponsor }
+            s:$STATE$ = {
+                var:nesnd_india_case_state = { save_scope_as = india_case_state }
+                var:nesnd_india_case_owner = { save_scope_as = india_case_owner }
+                if = {
+                    limit = {
+                        exists = scope:india_case_state
+                        exists = scope:india_case_owner
+                    }
+                    set_variable = { name = nesnd_india_case_stage value = 4 }
+                    set_variable = { name = nesnd_india_case_retries value = 0 }
+                    set_variable = {
+                        name = nesnd_india_case_original_provinces
+                        value = scope:india_case_state.num_provinces
+                    }
+                    save_scope_value_as = {
+                        name = india_recruit_count
+                        value = {
+                            value = 2
+                            if = {
+                                limit = {
+                                    scope:india_case_state = { state_population >= 1000000 }
+                                }
+                                value = 4
+                            }
+                            if = {
+                                limit = {
+                                    scope:india_case_state = { state_population >= 3000000 }
+                                }
+                                value = 6
+                            }
+                            if = {
+                                limit = {
+                                    scope:india_case_state = { state_population >= 6000000 }
+                                }
+                                value = 8
                             }
                         }
+                    }
+                    scope:india_case_owner = {
+                        create_country = {
+                            tag = $TAG$
+                            origin = scope:india_case_owner
+                            state = scope:india_case_state
+                            on_created = {
+                                set_variable = nesnd_india_local_state
+                                set_variable = nesnd_india_revolt_actor
+                                remove_variable = nesnd_india_revolt_territory_changed
+                                set_variable = { name = nesnd_india_revolt_origin value = s:$STATE$ }
+                                activate_law = law_type:law_presidential_republic
+                                activate_law = law_type:law_oligarchy
+                                set_social_hierarchy = british_indian_caste_system
+                                activate_law = law_type:law_hindu_caste_not_enforced
+                                if = {
+                                    limit = {
+                                        NOT = { has_technology_researched = democracy }
+                                    }
+                                    add_technology_researched = democracy
+                                }
+                            }
+                        }
+                    }
+                    if = {
+                        limit = { exists = c:$TAG$ }
+                        scope:india_sponsor = {
+                            add_treasury = -20000
+                            if = {
+                                limit = { has_modifier = nesnd_india_contact_cost }
+                                remove_modifier = nesnd_india_contact_cost
+                            }
+                        }
+                        c:$TAG$ = {
+                            add_treasury = 20000
+                            if = {
+                                limit = {
+                                    army_size < 1
+                                    NOT = { has_variable = nesnd_india_initial_recruitment }
+                                }
+                                set_variable = nesnd_india_initial_recruitment
+                                if = {
+                                    limit = { exists = scope:india_recruit_count }
+                                    if = {
+                                        limit = { scope:india_recruit_count = 2 }
+                                        create_military_formation = {
+                                            type = army
+                                            hq_region = sr:$HQ$
+                                            combat_unit = {
+                                                type = unit_type:combat_unit_type_irregular_infantry
+                                                state_region = s:$STATE$
+                                                count = 2
+                                            }
+                                        }
+                                    }
+                                    else_if = {
+                                        limit = { scope:india_recruit_count = 4 }
+                                        create_military_formation = {
+                                            type = army
+                                            hq_region = sr:$HQ$
+                                            combat_unit = {
+                                                type = unit_type:combat_unit_type_irregular_infantry
+                                                state_region = s:$STATE$
+                                                count = 4
+                                            }
+                                        }
+                                    }
+                                    else_if = {
+                                        limit = { scope:india_recruit_count = 6 }
+                                        create_military_formation = {
+                                            type = army
+                                            hq_region = sr:$HQ$
+                                            combat_unit = {
+                                                type = unit_type:combat_unit_type_irregular_infantry
+                                                state_region = s:$STATE$
+                                                count = 6
+                                            }
+                                        }
+                                    }
+                                    else_if = {
+                                        limit = { scope:india_recruit_count = 8 }
+                                        create_military_formation = {
+                                            type = army
+                                            hq_region = sr:$HQ$
+                                            combat_unit = {
+                                                type = unit_type:combat_unit_type_irregular_infantry
+                                                state_region = s:$STATE$
+                                                count = 8
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if = {
+                                limit = {
+                                    NOT = { has_journal_entry = nesnd_india_revolt_war }
+                                }
+                                add_journal_entry = { type = nesnd_india_revolt_war }
+                            }
+                            trigger_event = {
+                                id = nesnd_india_revolt.1
+                                popup = yes
+                            }
+                        }
+                        nesnd_india_case_create_play = { R = $R$ STATE = $STATE$ TAG = $TAG$ }
+                    }
+                    else = { nesnd_india_close_case = yes }
+                }
+            }
+        }
+    }
+}
 
+nesnd_india_case_maintain = {
+    if = {
+        limit = { has_variable = nesnd_india_case_stage }
+        if = {
+            limit = { nesnd_india_case_stage_value <= 3 }
+            if = {
+                limit = {
+                    exists = var:nesnd_india_case_sponsor
+                    exists = var:nesnd_india_case_owner
+                    exists = var:nesnd_india_case_state
+                }
+                save_scope_as = india_case_region
+                if = {
+                    limit = { exists = scope:india_case_region }
+                    if = {
+                        limit = {
+                            var:nesnd_india_case_state = {
+                                owner = scope:india_case_region.var:nesnd_india_case_owner
+                            }
+                            var:nesnd_india_case_owner = { nesnd_india_colonial_owner = yes }
+                            var:nesnd_india_case_sponsor = { nesnd_india_empire = yes }
+                        }
+                        # The sponsoring JE advances preparation; this global pulse only checks ownership and lifecycle.
+                    }
+                    else = { nesnd_india_close_case = yes }
+                }
+            }
+            else = { nesnd_india_close_case = yes }
+        }
+        else_if = {
+            limit = { nesnd_india_case_stage_value = 4 }
+            change_variable = { name = nesnd_india_case_retries add = 1 }
+            if = {
+                limit = { nesnd_india_case_retries_value <= 2 }
+                nesnd_india_case_create_play = { R = $R$ STATE = $STATE$ TAG = $TAG$ }
+            }
+            else = {
+                if = {
+                    limit = {
+                        exists = var:nesnd_india_case_owner
+                        exists = c:$TAG$
+                        exists = s:$STATE$.region_state:$TAG$
+                    }
+                    if = {
+                        limit = { has_variable = nesnd_india_case_original_provinces }
+                        if = {
+                            limit = {
+                                has_variable = nesnd_india_case_original_provinces
+                                s:$STATE$.region_state:$TAG$ = {
+                                    num_provinces = prev.var:nesnd_india_case_original_provinces
+                                }
+                                c:$TAG$ = {
+                                    num_states = 1
+                                    has_variable = nesnd_india_revolt_actor
+                                    NOT = { has_variable = nesnd_india_revolt_territory_changed }
+                                    is_at_war = no
+                                    is_active_in_diplomatic_play = no
+                                }
+                            }
+                            var:nesnd_india_case_owner = { save_scope_as = india_case_original_owner }
+                            if = {
+                                limit = { exists = scope:india_case_original_owner }
+                                s:$STATE$.region_state:$TAG$ = {
+                                    set_state_owner = scope:india_case_original_owner
+                                }
+                            }
+                        }
                     }
                 }
-                c:$TAG$ ?= { set_variable = nesnd_india_revolt_failed set_variable = nesnd_india_revolt_resolved }
+                c:$TAG$ ?= {
+                    set_variable = nesnd_india_revolt_failed
+                    set_variable = nesnd_india_revolt_resolved
+                }
                 nesnd_india_close_case = yes
             }
         }
         else = {
-            if = { limit = { exists = var:nesnd_india_case_play }
-                if = { limit = { var:nesnd_india_case_play = { is_war = yes } } set_variable = { name = nesnd_india_case_stage value = 6 } }
-            } else = {
-                c:$TAG$ ?= { set_variable = nesnd_india_revolt_negotiation_ended set_variable = nesnd_india_revolt_resolved }
+            if = {
+                limit = { exists = var:nesnd_india_case_play }
+                if = {
+                    limit = {
+                        var:nesnd_india_case_play = { is_war = yes }
+                    }
+                    set_variable = { name = nesnd_india_case_stage value = 6 }
+                }
+            }
+            else = {
+                c:$TAG$ ?= {
+                    set_variable = nesnd_india_revolt_negotiation_ended
+                    set_variable = nesnd_india_revolt_resolved
+                }
                 nesnd_india_close_case = yes
             }
         }
@@ -791,27 +1058,77 @@ nesnd_india_case_maintain = {
 }
 
 nesnd_india_advance_contact = {
-    if = { limit = { exists = var:nesnd_india_contact_region }
+    if = {
+        limit = { exists = var:nesnd_india_contact_region }
         var:nesnd_india_contact_region = {
-            if = { limit = { has_variable = nesnd_india_case_stage has_variable = nesnd_india_case_progress nesnd_india_case_stage_value <= 3 }
-                if = { limit = { nesnd_india_case_stage_value = 1 NOT = { nesnd_india_case_can_advance = yes } }
+            if = {
+                limit = {
+                    has_variable = nesnd_india_case_stage
+                    has_variable = nesnd_india_case_progress
+                    nesnd_india_case_stage_value <= 3
+                }
+                if = {
+                    limit = {
+                        nesnd_india_case_stage_value = 1
+                        NOT = { nesnd_india_case_can_advance = yes }
+                    }
                     set_variable = { name = nesnd_india_case_stage value = 2 }
-                    var:nesnd_india_case_sponsor ?= { if = { limit = { has_modifier = nesnd_india_contact_cost } remove_modifier = nesnd_india_contact_cost } }
+                    var:nesnd_india_case_sponsor ?= {
+                        if = {
+                            limit = { has_modifier = nesnd_india_contact_cost }
+                            remove_modifier = nesnd_india_contact_cost
+                        }
+                    }
                 }
                 change_variable = { name = nesnd_india_case_progress add = nesnd_india_case_monthly }
-                clamp_variable = { name = nesnd_india_case_progress min = 0 max = 100 }
-                if = { limit = { nesnd_india_case_progress_value >= 100 } set_variable = { name = nesnd_india_case_stage value = 3 } var:nesnd_india_case_sponsor ?= { if = { limit = { has_modifier = nesnd_india_contact_cost } remove_modifier = nesnd_india_contact_cost } } }
+                clamp_variable = {
+                    name = nesnd_india_case_progress
+                    min = 0
+                    max = 100
+                }
+                if = {
+                    limit = { nesnd_india_case_progress_value >= 100 }
+                    set_variable = { name = nesnd_india_case_stage value = 3 }
+                    var:nesnd_india_case_sponsor ?= {
+                        if = {
+                            limit = { has_modifier = nesnd_india_contact_cost }
+                            remove_modifier = nesnd_india_contact_cost
+                        }
+                    }
+                }
             }
         }
     }
-    if = { limit = { has_journal_entry = nesnd_india_uprising } nesnd_india_sync_bar = { JE = nesnd_india_uprising BAR = nesnd_india_contact_bar VALUE = nesnd_india_contact_progress } }
+    if = {
+        limit = { has_journal_entry = nesnd_india_uprising }
+        nesnd_india_sync_bar = {
+            JE = nesnd_india_uprising
+            BAR = nesnd_india_contact_bar
+            VALUE = nesnd_india_contact_progress
+        }
+    }
 }
+
 nesnd_india_migrate_commission_case = {
-    if = { limit = { has_variable = nesnd_india_case_stage exists = var:nesnd_india_case_owner exists = c:USM exists = c:TZ1 }
-        if = { limit = { nesnd_india_case_stage_value <= 3 var:nesnd_india_case_owner = c:USM }
+    if = {
+        limit = {
+            has_variable = nesnd_india_case_stage
+            exists = var:nesnd_india_case_owner
+            exists = c:USM
+            exists = c:TZ1
+        }
+        if = {
+            limit = {
+                nesnd_india_case_stage_value <= 3
+                var:nesnd_india_case_owner = c:USM
+            }
             clear_saved_scope = india_transferred_case_state
-            random_scope_state = { limit = { owner = c:TZ1 } save_scope_as = india_transferred_case_state }
-            if = { limit = { exists = scope:india_transferred_case_state }
+            random_scope_state = {
+                limit = { owner = c:TZ1 }
+                save_scope_as = india_transferred_case_state
+            }
+            if = {
+                limit = { exists = scope:india_transferred_case_state }
                 set_variable = { name = nesnd_india_case_state value = scope:india_transferred_case_state }
                 set_variable = { name = nesnd_india_case_owner value = c:TZ1 }
             }

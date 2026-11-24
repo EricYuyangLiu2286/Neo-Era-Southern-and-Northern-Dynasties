@@ -605,42 +605,160 @@ nesnd_india_union_ai_prince_restless = {
 }
 
 # ==== The Indian uprising (formerly nesnd_india_uprising.txt) ====
+
 nesnd_india_colonial_owner = {
-    OR = { c:USM ?= this AND = { c:TZ1 ?= this trigger_if = { limit = { exists = c:USM } is_subject_of = c:USM } trigger_else = { always = no } } }
+    OR = {
+        c:USM ?= this
+        AND = {
+            c:TZ1 ?= this
+            trigger_if = {
+                limit = { exists = c:USM }
+                is_subject_of = c:USM
+            }
+            trigger_else = { always = no }
+        }
+    }
 }
-nesnd_india_uprising_strength = { nesnd_india_empire = yes custom_tooltip = { text = nesnd_ui_india_reform_done_tt has_variable = nesnd_india_reform_done } has_technology_researched = nationalism OR = { is_subject = no AND = { army_size_including_conscripts >= 60 government_legitimacy >= 50 } } }
-nesnd_india_contact_safe = { nesnd_india_uprising_strength = yes is_at_war = no is_active_in_diplomatic_play = no custom_tooltip = { text = nesnd_ui_not_india_contact_region_tt NOT = { has_variable = nesnd_india_contact_region } } }
+
+nesnd_india_uprising_strength = {
+    nesnd_india_empire = yes
+    custom_tooltip = {
+        text = nesnd_ui_india_reform_done_tt
+        has_variable = nesnd_india_reform_done
+    }
+    has_technology_researched = nationalism
+    OR = {
+        is_subject = no
+        AND = {
+            army_size_including_conscripts >= 60
+            government_legitimacy >= 50
+        }
+    }
+}
+
+nesnd_india_contact_safe = {
+    nesnd_india_uprising_strength = yes
+    is_at_war = no
+    is_active_in_diplomatic_play = no
+    custom_tooltip = {
+        text = nesnd_ui_not_india_contact_region_tt
+        NOT = { has_variable = nesnd_india_contact_region }
+    }
+}
+
 nesnd_india_colonial_state = {
-    state_population >= 300000 owner = { nesnd_india_colonial_owner = yes is_at_war = no is_active_in_diplomatic_play = no }
+    state_population >= 300000
+    owner = {
+        nesnd_india_colonial_owner = yes
+        is_at_war = no
+        is_active_in_diplomatic_play = no
+    }
     controller = owner
 }
+
 # The uprising in one state region: R its name, STATE its state region, TAG the country formed there, HQ its strategic region.
 nesnd_india_case_target = {
     NOT = { exists = c:$TAG$ }
-    s:$STATE$ = { custom_tooltip = { text = nesnd_ui_not_india_case_stage_tt NOT = { has_variable = nesnd_india_case_stage } } custom_tooltip = { text = nesnd_ui_not_india_case_cooldown_tt NOT = { has_variable = nesnd_india_case_cooldown } } any_scope_state = { nesnd_india_colonial_state = yes } }
-}
-nesnd_india_case_our_case = {
-    s:$STATE$ = { trigger_if = { limit = { exists = var:nesnd_india_case_sponsor has_variable = nesnd_india_case_stage } custom_tooltip = { text = nesnd_ui_var_nesnd_india_case_sponsor_eq_root_tt var:nesnd_india_case_sponsor = root } nesnd_india_case_stage_value <= 3 } trigger_else = { always = no } }
-}
-nesnd_india_case_launch_ready = {
-    nesnd_india_uprising_strength = yes nesnd_india_case_our_case = { STATE = $STATE$ } is_at_war = no is_active_in_diplomatic_play = no gold_reserves >= 20000
-    NOT = { exists = c:$TAG$ }
     s:$STATE$ = {
-        trigger_if = { limit = { hidden_trigger = { has_variable = nesnd_india_case_progress } exists = var:nesnd_india_case_state exists = var:nesnd_india_case_owner }
-            nesnd_india_case_progress_value >= 100
-            var:nesnd_india_case_state = { nesnd_india_colonial_state = yes nesnd_india_case_unrest = yes owner = prev.var:nesnd_india_case_owner }
-            var:nesnd_india_case_owner = { NOT = { has_war_with = root } NOT = { has_truce_with = root } }
-        } trigger_else = { always = no }
+        custom_tooltip = {
+            text = nesnd_ui_not_india_case_stage_tt
+            NOT = { has_variable = nesnd_india_case_stage }
+        }
+        custom_tooltip = {
+            text = nesnd_ui_not_india_case_cooldown_tt
+            NOT = { has_variable = nesnd_india_case_cooldown }
+        }
+        any_scope_state = { nesnd_india_colonial_state = yes }
     }
 }
-nesnd_india_uprising_available = { nesnd_india_empire = yes OR = { custom_tooltip = { text = nesnd_ui_india_contact_region_tt has_variable = nesnd_india_contact_region } AND = { nesnd_india_uprising_strength = yes OR = { nesnd_india_case_target = { STATE = STATE_CIRCARS TAG = IR1 } nesnd_india_case_target = { STATE = STATE_KURNOOL TAG = IR2 } nesnd_india_case_target = { STATE = STATE_MADRAS TAG = IR3 } nesnd_india_case_target = { STATE = STATE_MYSORE TAG = IR4 } nesnd_india_case_target = { STATE = STATE_TRAVANCORE TAG = IR5 } nesnd_india_case_target = { STATE = STATE_GUJARAT TAG = IR6 } } } } }
 
-nesnd_india_case_unrest = { OR = { turmoil >= 0.15 average_sol < 10 } }
+nesnd_india_case_our_case = {
+    s:$STATE$ = {
+        trigger_if = {
+            limit = {
+                exists = var:nesnd_india_case_sponsor
+                has_variable = nesnd_india_case_stage
+            }
+            custom_tooltip = {
+                text = nesnd_ui_var_nesnd_india_case_sponsor_eq_root_tt
+                var:nesnd_india_case_sponsor = root
+            }
+            nesnd_india_case_stage_value <= 3
+        }
+        trigger_else = { always = no }
+    }
+}
+
+nesnd_india_case_launch_ready = {
+    nesnd_india_uprising_strength = yes
+    nesnd_india_case_our_case = { STATE = $STATE$ }
+    is_at_war = no
+    is_active_in_diplomatic_play = no
+    gold_reserves >= 20000
+    NOT = { exists = c:$TAG$ }
+    s:$STATE$ = {
+        trigger_if = {
+            limit = {
+                hidden_trigger = { has_variable = nesnd_india_case_progress }
+                exists = var:nesnd_india_case_state
+                exists = var:nesnd_india_case_owner
+            }
+            nesnd_india_case_progress_value >= 100
+            var:nesnd_india_case_state = {
+                nesnd_india_colonial_state = yes
+                nesnd_india_case_unrest = yes
+                owner = prev.var:nesnd_india_case_owner
+            }
+            var:nesnd_india_case_owner = {
+                NOT = { has_war_with = root }
+                NOT = { has_truce_with = root }
+            }
+        }
+        trigger_else = { always = no }
+    }
+}
+
+nesnd_india_uprising_available = {
+    nesnd_india_empire = yes
+    OR = {
+        custom_tooltip = {
+            text = nesnd_ui_india_contact_region_tt
+            has_variable = nesnd_india_contact_region
+        }
+        AND = {
+            nesnd_india_uprising_strength = yes
+            OR = {
+                nesnd_india_case_target = { STATE = STATE_CIRCARS TAG = IR1 }
+                nesnd_india_case_target = { STATE = STATE_KURNOOL TAG = IR2 }
+                nesnd_india_case_target = { STATE = STATE_MADRAS TAG = IR3 }
+                nesnd_india_case_target = { STATE = STATE_MYSORE TAG = IR4 }
+                nesnd_india_case_target = { STATE = STATE_TRAVANCORE TAG = IR5 }
+                nesnd_india_case_target = { STATE = STATE_GUJARAT TAG = IR6 }
+            }
+        }
+    }
+}
+
+nesnd_india_case_unrest = {
+    OR = {
+        turmoil >= 0.15
+        average_sol < 10
+    }
+}
+
 # State region scope. An organisation there is still preparing (stage 1 to 3) in a state of root's.
 nesnd_india_case_against_root = {
-    trigger_if = { limit = { exists = var:nesnd_india_case_owner has_variable = nesnd_india_case_stage } var:nesnd_india_case_owner = root nesnd_india_case_stage_value <= 3 }
+    trigger_if = {
+        limit = {
+            exists = var:nesnd_india_case_owner
+            has_variable = nesnd_india_case_stage
+        }
+        var:nesnd_india_case_owner = root
+        nesnd_india_case_stage_value <= 3
+    }
     trigger_else = { always = no }
 }
+
 # Colonial owner scope. The suppression buttons hang on the journals nesnd_india_usm and nesnd_tianzhu_governance;
 # when neither is open (USM once TZ1 exists, TZ1 once its governance is done), they hang on
 # nesnd_india_case_watch instead.
@@ -662,21 +780,43 @@ nesnd_india_case_watch_live = {
         }
     }
 }
+
 nesnd_india_case_can_advance = {
-    trigger_if = { limit = { exists = var:nesnd_india_case_state exists = var:nesnd_india_case_sponsor }
+    trigger_if = {
+        limit = {
+            exists = var:nesnd_india_case_state
+            exists = var:nesnd_india_case_sponsor
+        }
         nesnd_india_case_stage_value = 1
-        var:nesnd_india_case_state = { nesnd_india_case_unrest = yes state_population >= 300000 }
-        var:nesnd_india_case_sponsor = { nesnd_india_uprising_strength = yes in_default = no NOT = { has_modifier = declared_bankruptcy } is_at_war = no }
-    } trigger_else = { always = no }
+        var:nesnd_india_case_state = {
+            nesnd_india_case_unrest = yes
+            state_population >= 300000
+        }
+        var:nesnd_india_case_sponsor = {
+            nesnd_india_uprising_strength = yes
+            in_default = no
+            NOT = { has_modifier = declared_bankruptcy }
+            is_at_war = no
+        }
+    }
+    trigger_else = { always = no }
 }
 
 nesnd_india_revolt_won = {
-    custom_tooltip = { text = nesnd_ui_india_revolt_negotiation_ended_tt has_variable = nesnd_india_revolt_negotiation_ended }
-    custom_tooltip = { text = nesnd_ui_not_india_revolt_failed_tt NOT = { has_variable = nesnd_india_revolt_failed } }
+    custom_tooltip = {
+        text = nesnd_ui_india_revolt_negotiation_ended_tt
+        has_variable = nesnd_india_revolt_negotiation_ended
+    }
+    custom_tooltip = {
+        text = nesnd_ui_not_india_revolt_failed_tt
+        NOT = { has_variable = nesnd_india_revolt_failed }
+    }
     is_subject = no
-    trigger_if = { limit = { exists = var:nesnd_india_revolt_origin }
+    trigger_if = {
+        limit = { exists = var:nesnd_india_revolt_origin }
         any_scope_state = { state_region = prev.var:nesnd_india_revolt_origin }
-    } trigger_else = { always = no }
+    }
+    trigger_else = { always = no }
 }
 
 # ==== Seeking independence: public confrontation ====
