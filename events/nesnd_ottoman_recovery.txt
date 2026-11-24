@@ -364,7 +364,7 @@ nesnd_ottoman_recovery.9 = {
             text = nesnd_ottoman_charter_bonus_charter_gain_tt
             set_variable = { name = nesnd_ottoman_charter_bonus months = 60 }
         }
-        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted months = 60 } }
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_army_vexed months = 60 } }
         ai_chance = {
             base = 10
             modifier = { trigger = { government_legitimacy >= 50 } add = 10 }
@@ -423,15 +423,19 @@ nesnd_ottoman_recovery.10 = {
     option = {
         name = nesnd_ottoman_recovery.10.b
         scope:nesnd_barracks_leader ?= { add_modifier = { name = nesnd_ottoman_qinist_rebuffed months = 24 } }
-        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_route_slighted months = 24 } }
+        scope:nesnd_route_army_ig ?= { add_modifier = { name = nesnd_ottoman_army_vexed months = 24 } }
         if = {
             limit = { has_variable = nesnd_ottoman_barracks_refusals var:nesnd_ottoman_barracks_refusals >= 2 }
             custom_tooltip = nesnd_ottoman_recovery.10.third_tt
             hidden_effect = { set_variable = { name = nesnd_ottoman_barracks_refusals value = 0 } }
             # Vanilla coup: create_coup_from_character (GAME common/scripted_effects/00_victoria_ip4_scripted_effects.txt:998),
-            # called for a general who is not busy as in GAME common/decisions/ip4_portugal_decisions.txt:110-150.
+            # guarded like GAME common/decisions/ip4_portugal_decisions.txt:73-77 and GAME events/iberia_events/ip4_coup_events.txt:82,97.
             if = {
-                limit = { scope:nesnd_barracks_leader ?= { has_role_of_type = general is_busy = no } }
+                limit = {
+                    NOT = { has_journal_entry = je_ip4_coup }
+                    NOT = { has_variable = coup_event_active }
+                    scope:nesnd_barracks_leader ?= { has_role_of_type = general is_busy = no }
+                }
                 create_coup_from_character = { CHARACTER = scope:nesnd_barracks_leader }
             }
             else = {

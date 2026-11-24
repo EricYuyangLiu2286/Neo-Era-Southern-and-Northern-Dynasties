@@ -27,3 +27,4 @@ Evidence: 备份 `nesnd-workbench/backups/pre-change-ottoman-b3-20261124T193950Z
 ## 4. 遗留问题
 
 - `nesnd_ottoman_charter_outcome` 只写不读，留给 B5 与后续「议会」段。
+- B3 修复：胜负条件增加法律项（c1–c6 / q1–q6）至少 4 项；.9/.10 军队限时代价改用新修正 `nesnd_ottoman_army_vexed`；秦制胜清除三种限时军改修正与 `nesnd_ottoman_reform_pending`/`nesnd_ottoman_reform_term` 并在军改按钮 `possible` 中排除 `nesnd_ottoman_qin_state`；.10 政变分支补 `je_ip4_coup` 与 `coup_event_active` 守卫；修订 .9/.10 首都、标题与措辞。
