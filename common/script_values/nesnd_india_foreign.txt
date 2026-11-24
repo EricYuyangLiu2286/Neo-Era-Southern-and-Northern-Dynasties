@@ -1,156 +1,243 @@
-﻿# ==== Overseas trade (formerly nesnd_india_overseas.txt) ====
-# The overseas journal (nesnd_india_overseas). Here and below, the Indian state is a country for which
-# nesnd_india_overseas_holder holds; directions are 1 Indonesia (region_indonesia), 2 the Persian Gulf
-# coast (states whose port opens on region_persian_gulf), 3 East Africa (region_east_africa).
+﻿# ==== Overseas dealings (India batch 17) ====
+# Five land strategic regions:
+#   1 himalayas   -> sr:region_himalayas
+#   2 indonesia   -> sr:region_indonesia
+#   3 east_africa -> sr:region_east_africa
+#   4 arabia      -> sr:region_arabia
+#   5 persia      -> sr:region_greater_persia
+# Progress is kept solely on the five scripted progress bars (common/scripted_progress_bars/nesnd_india_foreign.txt);
+# no country variable mirrors them.
 #
-# Variables on the Indian state:
-#   nesnd_india_overseas_dir              the direction of the matter it has open (kinds 10 and 11)
-#   nesnd_india_overseas_show_<D>_<K>     one local government of direction D with which it holds a treaty
-#                                         of kind K (trade or port), shown in the journal; set monthly
-#   nesnd_india_overseas_count_<D>_<K>    how many such treaties it holds in direction D
-# Variables on the local government:
-#   nesnd_india_frontier_overseas_trade_*   the shared records of a trade privilege (nesnd_india_frontier_record
-#                                           in common/scripted_effects/nesnd_india_foreign.txt), with the
-#                                           Indian state as partner: _with the Indian state, _term runs out on
-#                                           the day the treaty expires, _notice 180 days before that day,
-#                                           _asked the renewal question has been put for this term, _renewed
-#                                           the Indian state agreed to renew and the term starts again
-#   nesnd_india_frontier_overseas_port_with the Indian state to which it ceded a treaty port. A treaty port has
-#                                           no term: there is no expiry, renewal or withdrawal by script
-#   nesnd_india_overseas_<K>_dir          the direction in which the treaty of kind K was asked for
-# Default sums and chances; to be tuned after in-game tests.
-
-# Paid once by the Indian state to the local government when the treaty is signed.
-nesnd_india_overseas_trade_payment = 20000
-nesnd_india_overseas_port_payment = 60000
-# Paid by the Indian state to the local government when a trade privilege is renewed: half the sum above.
-nesnd_india_overseas_trade_renew_payment = { value = nesnd_india_overseas_trade_payment multiply = 0.5 }
-
-# Days of the shared record of a trade privilege (nesnd_india_frontier_record): ten years, and 180 days
-# before that.
-nesnd_india_frontier_overseas_trade_days = 3650
-nesnd_india_frontier_overseas_trade_notice_days = 3470
+# Variables on the Indian country:
+#   nesnd_india_ocean_trade              one-time milestone "Indian Ocean Trade" has fired
+#   nesnd_india_overseas_above50_<dir>   tracks whether the direction's bar is currently at or above 50
+#   nesnd_india_overseas_warned_<dir>    5-year timed variable list of powers already notified for <dir>
 
 # ---------------------------------------------------------------------------------------------
-# Readings (country scope)
+# Signing price: a quarter of weekly income (13 weeks), floor £10,000.
 # ---------------------------------------------------------------------------------------------
-# Levels of every port the country owns.
-nesnd_india_overseas_port_levels = {
-    value = 0
-    every_scope_state = {
-        every_scope_building = {
-            limit = { is_building_type = building_port }
-            add = this.level
-        }
-    }
+nesnd_india_overseas_fir_cost = {
+	value = income
+	multiply = 13
+	min = 10000
 }
-# Incorporated states, and those of them with a railway.
-nesnd_india_overseas_incorporated_states = {
-    value = 0
-    every_scope_state = { limit = { is_incorporated = yes } add = 1 }
-}
-nesnd_india_overseas_rail_states = {
-    value = 0
-    every_scope_state = {
-        limit = { is_incorporated = yes any_scope_building = { is_building_type = building_railway level >= 1 } }
-        add = 1
-    }
-}
-# Levels of every steel mill the country owns, and those levels counted at the share of their mill's
-# places that are filled, taken in steps of a tenth (occupancy can be compared but not read as a number).
-nesnd_india_overseas_steel_levels = {
-    value = 0
-    every_scope_state = {
-        every_scope_building = {
-            limit = { is_building_type = building_steel_mill }
-            add = this.level
-        }
-    }
-}
-nesnd_india_overseas_steel_staffed = {
-    value = 0
-    every_scope_state = {
-        every_scope_building = {
-            limit = { is_building_type = building_steel_mill occupancy >= 0.1 }
-            if = { limit = { occupancy >= 1 } add = this.level }
-            else_if = { limit = { occupancy >= 0.9 } add = { value = this.level multiply = 0.9 } }
-            else_if = { limit = { occupancy >= 0.8 } add = { value = this.level multiply = 0.8 } }
-            else_if = { limit = { occupancy >= 0.7 } add = { value = this.level multiply = 0.7 } }
-            else_if = { limit = { occupancy >= 0.6 } add = { value = this.level multiply = 0.6 } }
-            else_if = { limit = { occupancy >= 0.5 } add = { value = this.level multiply = 0.5 } }
-            else_if = { limit = { occupancy >= 0.4 } add = { value = this.level multiply = 0.4 } }
-            else_if = { limit = { occupancy >= 0.3 } add = { value = this.level multiply = 0.3 } }
-            else_if = { limit = { occupancy >= 0.2 } add = { value = this.level multiply = 0.2 } }
-            else = { add = { value = this.level multiply = 0.1 } }
-        }
-    }
-}
-# The filled share in per cent, in steps of ten.
-nesnd_india_overseas_steel_staffed_percent = {
-    value = 0
-    if = { limit = { nesnd_india_overseas_steel_levels > 0 }
-        value = nesnd_india_overseas_steel_staffed
-        divide = nesnd_india_overseas_steel_levels
-        multiply = 10
-        floor = yes
-        multiply = 10
-    }
-}
-# World position by naval power projection: one more than the countries ahead of us.
-nesnd_india_overseas_navy_rank = {
-    value = 1
-    save_temporary_scope_as = india_overseas_navy_self
-    every_country = {
-        limit = { naval_power_projection > scope:india_overseas_navy_self.naval_power_projection }
-        add = 1
-    }
+nesnd_india_overseas_ai_reserve = {
+	value = nesnd_india_overseas_fir_cost
+	multiply = 2
 }
 
 # ---------------------------------------------------------------------------------------------
-# Numbers read in the journal
+# Direct bar readings and distance to 50 (country scope)
 # ---------------------------------------------------------------------------------------------
-nesnd_india_overseas_dir_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_dir } value = var:nesnd_india_overseas_dir } }
-nesnd_india_overseas_count_1_trade_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_1_trade } value = var:nesnd_india_overseas_count_1_trade } }
-nesnd_india_overseas_count_1_port_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_1_port } value = var:nesnd_india_overseas_count_1_port } }
-nesnd_india_overseas_count_2_trade_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_2_trade } value = var:nesnd_india_overseas_count_2_trade } }
-nesnd_india_overseas_count_2_port_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_2_port } value = var:nesnd_india_overseas_count_2_port } }
-nesnd_india_overseas_count_3_trade_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_3_trade } value = var:nesnd_india_overseas_count_3_trade } }
-nesnd_india_overseas_count_3_port_value = { value = 0 if = { limit = { has_variable = nesnd_india_overseas_count_3_port } value = var:nesnd_india_overseas_count_3_port } }
-# The treaties held beyond the one named in the journal.
-nesnd_india_overseas_more_1_trade = { value = nesnd_india_overseas_count_1_trade_value subtract = 1 min = 0 }
-nesnd_india_overseas_more_1_port = { value = nesnd_india_overseas_count_1_port_value subtract = 1 min = 0 }
-nesnd_india_overseas_more_2_trade = { value = nesnd_india_overseas_count_2_trade_value subtract = 1 min = 0 }
-nesnd_india_overseas_more_2_port = { value = nesnd_india_overseas_count_2_port_value subtract = 1 min = 0 }
-nesnd_india_overseas_more_3_trade = { value = nesnd_india_overseas_count_3_trade_value subtract = 1 min = 0 }
-nesnd_india_overseas_more_3_port = { value = nesnd_india_overseas_count_3_port_value subtract = 1 min = 0 }
+nesnd_india_overseas_bar_himalayas = {
+	value = 0
+	if = { limit = { has_journal_entry = nesnd_india_overseas } value = "je:nesnd_india_overseas.scripted_bar_progress(nesnd_india_overseas_himalayas_bar)" }
+}
+nesnd_india_overseas_bar_indonesia = {
+	value = 0
+	if = { limit = { has_journal_entry = nesnd_india_overseas } value = "je:nesnd_india_overseas.scripted_bar_progress(nesnd_india_overseas_indonesia_bar)" }
+}
+nesnd_india_overseas_bar_east_africa = {
+	value = 0
+	if = { limit = { has_journal_entry = nesnd_india_overseas } value = "je:nesnd_india_overseas.scripted_bar_progress(nesnd_india_overseas_east_africa_bar)" }
+}
+nesnd_india_overseas_bar_arabia = {
+	value = 0
+	if = { limit = { has_journal_entry = nesnd_india_overseas } value = "je:nesnd_india_overseas.scripted_bar_progress(nesnd_india_overseas_arabia_bar)" }
+}
+nesnd_india_overseas_bar_persia = {
+	value = 0
+	if = { limit = { has_journal_entry = nesnd_india_overseas } value = "je:nesnd_india_overseas.scripted_bar_progress(nesnd_india_overseas_persia_bar)" }
+}
+
+nesnd_india_overseas_need_himalayas = { value = 50 subtract = nesnd_india_overseas_bar_himalayas min = 0 }
+nesnd_india_overseas_need_indonesia = { value = 50 subtract = nesnd_india_overseas_bar_indonesia min = 0 }
+nesnd_india_overseas_need_east_africa = { value = 50 subtract = nesnd_india_overseas_bar_east_africa min = 0 }
+nesnd_india_overseas_need_arabia = { value = 50 subtract = nesnd_india_overseas_bar_arabia min = 0 }
+nesnd_india_overseas_need_persia = { value = 50 subtract = nesnd_india_overseas_bar_persia min = 0 }
 
 # ---------------------------------------------------------------------------------------------
-# AI (weights only; the hard limits are in the triggers)
+# Regional countries with an active treaty with us: counts (for display) and monthly progress (+0.5 each, max +2)
 # ---------------------------------------------------------------------------------------------
-# Indian state scope, per cent a month for each direction: a trade privilege. A treaty port is asked for
-# at half that, written in nesnd_india_overseas_ai_dir as 1 per cent and then 50 per cent.
-nesnd_india_overseas_trade_ask_chance = 1
+nesnd_india_overseas_treaty_count_himalayas = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_himalayas WHO = scope:india_overseas_self }
+			any_scope_treaty = { binds = scope:india_overseas_self }
+		}
+		add = 1
+	}
+}
+nesnd_india_overseas_treaty_count_indonesia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_indonesia WHO = scope:india_overseas_self }
+			any_scope_treaty = { binds = scope:india_overseas_self }
+		}
+		add = 1
+	}
+}
+nesnd_india_overseas_treaty_count_east_africa = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_east_africa WHO = scope:india_overseas_self }
+			any_scope_treaty = { binds = scope:india_overseas_self }
+		}
+		add = 1
+	}
+}
+nesnd_india_overseas_treaty_count_arabia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_arabia WHO = scope:india_overseas_self }
+			any_scope_treaty = { binds = scope:india_overseas_self }
+		}
+		add = 1
+	}
+}
+nesnd_india_overseas_treaty_count_persia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_greater_persia WHO = scope:india_overseas_self }
+			any_scope_treaty = { binds = scope:india_overseas_self }
+		}
+		add = 1
+	}
+}
 
-# Answering local government scope, per cent: a trade privilege asked for, or its renewal.
-nesnd_india_overseas_trade_answer_chance = {
-    value = 40
-    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 20 } } add = 20 }
-    if = { limit = { nesnd_india_overseas_ai_member_busy = yes } add = -20 }
-    min = 5
-    max = 95
+nesnd_india_overseas_treaty_prog_himalayas = { value = nesnd_india_overseas_treaty_count_himalayas multiply = 0.5 max = 2 }
+nesnd_india_overseas_treaty_prog_indonesia = { value = nesnd_india_overseas_treaty_count_indonesia multiply = 0.5 max = 2 }
+nesnd_india_overseas_treaty_prog_east_africa = { value = nesnd_india_overseas_treaty_count_east_africa multiply = 0.5 max = 2 }
+nesnd_india_overseas_treaty_prog_arabia = { value = nesnd_india_overseas_treaty_count_arabia multiply = 0.5 max = 2 }
+nesnd_india_overseas_treaty_prog_persia = { value = nesnd_india_overseas_treaty_count_persia multiply = 0.5 max = 2 }
+
+# ---------------------------------------------------------------------------------------------
+# Regional countries at cordial relations or above: counts (for display) and monthly progress (+0.5 each, max +1.5)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_overseas_cordial_count_himalayas = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_himalayas WHO = scope:india_overseas_self }
+			"relations(scope:india_overseas_self)" >= relations_threshold:cordial
+		}
+		add = 1
+	}
 }
-# Answering local government scope, per cent: a treaty port asked for.
-nesnd_india_overseas_port_answer_chance = {
-    value = 15
-    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 50 } } add = 20 }
-    if = { limit = { nesnd_india_overseas_ai_asker_navy_top = yes } add = 15 }
-    min = 5
-    max = 95
+nesnd_india_overseas_cordial_count_indonesia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_indonesia WHO = scope:india_overseas_self }
+			"relations(scope:india_overseas_self)" >= relations_threshold:cordial
+		}
+		add = 1
+	}
 }
-# Answering overlord scope, per cent: consent to its subject's treaty with the Indian state.
-nesnd_india_overseas_consent_chance = {
-    value = 30
-    if = { limit = { nesnd_india_overseas_ai_asker_hostile = yes } add = -30 }
-    min = 5
-    max = 95
+nesnd_india_overseas_cordial_count_east_africa = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_east_africa WHO = scope:india_overseas_self }
+			"relations(scope:india_overseas_self)" >= relations_threshold:cordial
+		}
+		add = 1
+	}
+}
+nesnd_india_overseas_cordial_count_arabia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_arabia WHO = scope:india_overseas_self }
+			"relations(scope:india_overseas_self)" >= relations_threshold:cordial
+		}
+		add = 1
+	}
+}
+nesnd_india_overseas_cordial_count_persia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = {
+			nesnd_india_overseas_region_country = { REGION = region_greater_persia WHO = scope:india_overseas_self }
+			"relations(scope:india_overseas_self)" >= relations_threshold:cordial
+		}
+		add = 1
+	}
+}
+
+nesnd_india_overseas_cordial_prog_himalayas = { value = nesnd_india_overseas_cordial_count_himalayas multiply = 0.5 max = 1.5 }
+nesnd_india_overseas_cordial_prog_indonesia = { value = nesnd_india_overseas_cordial_count_indonesia multiply = 0.5 max = 1.5 }
+nesnd_india_overseas_cordial_prog_east_africa = { value = nesnd_india_overseas_cordial_count_east_africa multiply = 0.5 max = 1.5 }
+nesnd_india_overseas_cordial_prog_arabia = { value = nesnd_india_overseas_cordial_count_arabia multiply = 0.5 max = 1.5 }
+nesnd_india_overseas_cordial_prog_persia = { value = nesnd_india_overseas_cordial_count_persia multiply = 0.5 max = 1.5 }
+
+# ---------------------------------------------------------------------------------------------
+# Mutual trade value sum across regional countries (country scope)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_overseas_trade_sum_himalayas = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = { nesnd_india_overseas_region_country = { REGION = region_himalayas WHO = scope:india_overseas_self } }
+		add = { value = "mutual_trade_value_with_country(scope:india_overseas_self)" }
+	}
+}
+nesnd_india_overseas_trade_sum_indonesia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = { nesnd_india_overseas_region_country = { REGION = region_indonesia WHO = scope:india_overseas_self } }
+		add = { value = "mutual_trade_value_with_country(scope:india_overseas_self)" }
+	}
+}
+nesnd_india_overseas_trade_sum_east_africa = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = { nesnd_india_overseas_region_country = { REGION = region_east_africa WHO = scope:india_overseas_self } }
+		add = { value = "mutual_trade_value_with_country(scope:india_overseas_self)" }
+	}
+}
+nesnd_india_overseas_trade_sum_arabia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = { nesnd_india_overseas_region_country = { REGION = region_arabia WHO = scope:india_overseas_self } }
+		add = { value = "mutual_trade_value_with_country(scope:india_overseas_self)" }
+	}
+}
+nesnd_india_overseas_trade_sum_persia = {
+	value = 0
+	save_temporary_scope_as = india_overseas_self
+	every_country = {
+		limit = { nesnd_india_overseas_region_country = { REGION = region_greater_persia WHO = scope:india_overseas_self } }
+		add = { value = "mutual_trade_value_with_country(scope:india_overseas_self)" }
+	}
+}
+
+# ---------------------------------------------------------------------------------------------
+# Count of directions meeting the Indian Ocean Trade milestone condition (0-5, for journal status)
+# ---------------------------------------------------------------------------------------------
+nesnd_india_overseas_established_dirs = {
+	value = 0
+	if = { limit = { nesnd_india_overseas_dir_established = { REGION = region_himalayas } } add = 1 }
+	if = { limit = { nesnd_india_overseas_dir_established = { REGION = region_indonesia } } add = 1 }
+	if = { limit = { nesnd_india_overseas_dir_established = { REGION = region_east_africa } } add = 1 }
+	if = { limit = { nesnd_india_overseas_dir_established = { REGION = region_arabia } } add = 1 }
+	if = { limit = { nesnd_india_overseas_dir_established = { REGION = region_greater_persia } } add = 1 }
 }
