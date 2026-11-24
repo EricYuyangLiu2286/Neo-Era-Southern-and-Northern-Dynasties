@@ -28,6 +28,8 @@ Evidence: 备份 `nesnd-workbench/backups/pre-change-ottoman-b1-20261124T154956Z
 - `common/ideologies/ce_leader_ideologies.txt`：三处触发器各加一条读人物变量 `nesnd_qinist_allowed` 的 OR 分支，原有条件不动；另两处的原有分支加「本国是原来那几国」，防止奥斯曼有了一个带变量的领袖后，其他集团自然刷出秦制主义者。
 - 本地化 `nesnd_ottoman_l_*.yml`（replace）：中英各 12 键。
 
+- `common/scripted_triggers/nesnd_ottoman_recovery.txt`：`nesnd_ottoman_tanzimat_success` 改为「有 `sick_man_complete`、没有 `failed_sick_man_main`」。原先还要读 `sick_man_var >= 4`，但原版 sick_man.2 选完后 `je_sick_man_main_cleanup` 删掉这个变量（GAME `common/scripted_effects/00_victoria_cleanup_scripted_effects.txt:1694–1697`），坦志麦特成功的奥斯曼一直被当成失败。
+
 ## 4. 怎么复测
 
 奥斯曼开局，控制台加日志后按「推行秦式军改」，过几个月等事件弹出，看领袖意识形态与热情条明细的秦制主义者、法组七行。坦志麦特成功、失败两档分别看「坦志麦特的进程与成果」与「推行秦式军改」两行的数值。
