@@ -1289,7 +1289,25 @@ nesnd_mug_matter_accept = {
 # Holder scope, from nesnd_india_matter_fail (scope:india_matter_result is saved).
 nesnd_mug_matter_fail = {
     if = { limit = { nesnd_india_matter_kind_value = 9 } trigger_event = { id = nesnd_mug.24 popup = yes } }
-    else = { trigger_event = { id = nesnd_mug.2 popup = yes } }
+    else = {
+        if = {
+            limit = { scope:india_matter_result = 2 exists = scope:india_matter_to }
+            change_relations = { country = scope:india_matter_to value = -15 }
+            create_diplomatic_catalyst = {
+                type = catalyst_event_negative
+                target = scope:india_matter_to
+            }
+        }
+        else_if = {
+            limit = { scope:india_matter_result = 1 exists = scope:india_matter_permit }
+            change_relations = { country = scope:india_matter_permit value = -15 }
+            create_diplomatic_catalyst = {
+                type = catalyst_event_negative
+                target = scope:india_matter_permit
+            }
+        }
+        trigger_event = { id = nesnd_mug.2 popup = yes }
+    }
     nesnd_india_matter_clear = yes
 }
 # What the answering government is shown on the accept button. Tooltips only.

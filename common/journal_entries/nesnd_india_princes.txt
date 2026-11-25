@@ -363,3 +363,95 @@ nesnd_india_case_watch = {
     weight = 650
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
+
+# ==== Princely League (India batch 14) ====
+# Added by nesnd_india_refresh when nesnd_india_union_live holds (no possible / is_shown_when_inactive
+# so the journal can reopen cleanly ten years after a breakup).
+nesnd_india_union = {
+    icon = "gfx/interface/icons/event_icons/nesnd_india_dhal.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    scripted_button = nesnd_india_union_invite_button
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_india_union_is_member = yes } desc = nesnd_india_union_status_member }
+            desc = nesnd_india_union_status_open
+        }
+    }
+    # Three or more living independent princes in nesnd_india_union_members: every member completes.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_union_pact_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_india_union_pact_trigger_tt
+                nesnd_india_union_pact_ready = yes
+            }
+        }
+        effect = {
+            set_variable = nesnd_india_union_formed
+            if = {
+                limit = { NOT = { has_modifier = nesnd_india_union_pact } }
+                add_modifier = { name = nesnd_india_union_pact }
+            }
+            custom_tooltip = {
+                text = nesnd_india_union_pact_protect_tt
+                every_in_global_list = {
+                    variable = nesnd_india_union_members
+                    limit = { is_country_alive = yes is_subject = no NOT = { this = root } }
+                    root = { set_secret_goal = { country = prev secret_goal = protect } }
+                    set_secret_goal = { country = root secret_goal = protect }
+                }
+            }
+            custom_tooltip = nesnd_india_union_pact_resist_tt
+            trigger_event = { id = nesnd_india_union.7 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_union.7_outcome_tt } } }
+    }
+    # The list once held two or more members and now holds fewer than two living independent members.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_union_broken_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_india_union_broken_trigger_tt
+                nesnd_india_union_broken_ready = yes
+            }
+        }
+        effect = {
+            show_as_tooltip = { add_modifier = { name = nesnd_india_union_broken days = long_modifier_time } }
+            custom_tooltip = nesnd_india_union_broken_effect_tt
+            hidden_effect = { nesnd_india_union_break_apply = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_union.8_outcome_tt } } }
+    }
+    # No longer an independent princely state.
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            OR = {
+                NOT = { nesnd_india_prince = yes }
+                is_subject = yes
+            }
+        }
+        effect = {
+            nesnd_india_union_remove_member = { WHO = root }
+        }
+    }
+    on_monthly_pulse = {
+        effect = {
+            if = {
+                limit = { is_ai = yes nesnd_india_union_can_invite = yes }
+                random = { chance = 5 nesnd_india_union_send_invite = yes }
+            }
+        }
+    }
+    weight = 480
+    should_be_pinned_by_default_uninvolved_or_context = yes
+}

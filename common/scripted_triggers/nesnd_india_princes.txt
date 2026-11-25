@@ -930,3 +930,94 @@ nesnd_india_case_watch_calm_ready = {
     }
     custom_tooltip = { text = nesnd_india_south_calm_tt nesnd_india_case_watch_calm = yes }
 }
+
+# ==== Princely League (India batch 14) ====
+# Country scope. Already bound to TARGET by a defensive pact, alliance or guarantee of independence.
+nesnd_india_union_has_defensive_treaty = {
+    any_scope_treaty = {
+        binds = $TARGET$
+        any_scope_article = {
+            OR = {
+                has_type = defensive_pact
+                has_type = alliance
+                has_type = guarantee_independence
+            }
+        }
+    }
+}
+# Country scope. Independent princely state with at least one other independent prince in India,
+# neither already settled in a completed league nor in the ten-year wait after a breakup.
+nesnd_india_union_live = {
+    nesnd_india_prince = yes
+    is_subject = no
+    NOT = { has_variable = nesnd_india_union_formed }
+    NOT = { has_variable = nesnd_india_union_reopen_wait }
+    any_country = {
+        nesnd_india_prince = yes
+        is_subject = no
+        NOT = { this = root }
+    }
+}
+# Candidate country scope. ASKER is the independent prince sending an invitation.
+# Subjects of an empire are not excluded here so the button stays clickable; AI weight 0 declines.
+nesnd_india_union_invite_candidate = {
+    nesnd_india_prince = yes
+    is_country_alive = yes
+    is_at_war = no
+    NOT = { this = $ASKER$ }
+    NOT = { has_war_with = $ASKER$ }
+    NOT = { nesnd_india_union_has_defensive_treaty = { TARGET = $ASKER$ } }
+}
+# Country scope. At least one princely state can receive our mutual-defence invitation.
+nesnd_india_union_has_invite_target = {
+    save_temporary_scope_as = india_league_asker
+    any_country = {
+        nesnd_india_union_invite_candidate = { ASKER = scope:india_league_asker }
+    }
+}
+# Country scope. Shared by the invite button and the monthly AI roll.
+nesnd_india_union_can_invite = {
+    is_subject = no
+    is_at_war = no
+    gold_reserves >= nesnd_india_union_invite_price
+    in_default = no
+    NOT = { has_modifier = declared_bankruptcy }
+    custom_tooltip = {
+        text = nesnd_india_union_invite_cooldown_tt
+        NOT = { has_variable = nesnd_india_union_invite_cooldown }
+    }
+    custom_tooltip = {
+        text = nesnd_india_union_invite_target_tt
+        nesnd_india_union_has_invite_target = yes
+    }
+}
+# Country scope. Currently listed in the Princely League global list.
+nesnd_india_union_is_member = {
+    has_global_variable_list = nesnd_india_union_members
+    is_target_in_global_variable_list = {
+        name = nesnd_india_union_members
+        target = this
+    }
+}
+# Country scope. Outcome "pact formed": this country is a member and >= 3 living independent members stand.
+nesnd_india_union_pact_ready = {
+    nesnd_india_union_is_member = yes
+    nesnd_india_union_member_count >= 3
+}
+# Country scope. Outcome "league broken": the list once held >= 2 members and now fewer than 2 remain.
+nesnd_india_union_broken_ready = {
+    nesnd_india_union_is_member = yes
+    has_global_variable = nesnd_india_union_had_two
+    nesnd_india_union_member_count < 2
+}
+# Country scope (AI chance only). An Indian empire holds a claim on at least one of our states.
+nesnd_india_claimed_by_empire = {
+    save_temporary_scope_as = india_claimed_prince
+    any_country = {
+        nesnd_india_empire = yes
+        save_temporary_scope_as = india_claiming_empire
+        scope:india_claimed_prince = {
+            any_scope_state = { has_claim_by = scope:india_claiming_empire }
+        }
+    }
+}

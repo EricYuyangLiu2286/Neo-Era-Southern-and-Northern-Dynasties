@@ -195,6 +195,7 @@ nesnd_india_settle_union = {
     add_treasury = { value = scope:india_union_price multiply = -1 }
     nesnd_india_add_pension = yes
     scope:india_union_requester = { nesnd_india_clear_request = yes }
+    nesnd_india_union_remove_member = { WHO = scope:india_union_prince }
     nesnd_india_union_finish_$MODE$ = yes
     if = { limit = { exists = scope:india_union_former }
         add_treasury = { value = scope:india_union_price multiply = -1 }
@@ -637,9 +638,56 @@ nesnd_india_union_accept = {
     }
 }
 
-# Answering scope in the reply event, request kinds 6 and 8. Nothing changes; both sides are told.
+# Answering scope in the reply event, request kinds 6 and 8.
+# When a prince declines an empire's invitation (kind 6), the empire gains a claim on the prince's
+# capital state (and on all remaining Indian states on a second refusal within ten years), an AI empire
+# adopts a conquer secret goal, and any fellow Princely League members lose 10 relations with the empire.
 nesnd_india_union_decline = {
     save_scope_as = india_union_decliner
+    clear_saved_scope = india_union_claim_level
+    clear_saved_scope = india_union_pact_backlash
+    if = {
+        limit = { scope:india_sender = { nesnd_india_empire = yes } }
+        if = {
+            limit = { var:nesnd_india_union_refused_empire ?= scope:india_sender }
+            save_scope_value_as = { name = india_union_claim_level value = 2 }
+            every_scope_state = {
+                limit = { nesnd_india_state = yes NOT = { has_claim_by = scope:india_sender } }
+                state_region = { add_claim = scope:india_sender }
+            }
+            set_variable = { name = nesnd_india_union_refused_empire value = scope:india_sender days = 3650 }
+        }
+        else = {
+            save_scope_value_as = { name = india_union_claim_level value = 1 }
+            capital ?= {
+                if = {
+                    limit = { NOT = { has_claim_by = scope:india_sender } }
+                    state_region = { add_claim = scope:india_sender }
+                }
+            }
+            set_variable = { name = nesnd_india_union_refused_empire value = scope:india_sender days = 3650 }
+        }
+        scope:india_sender = {
+            if = {
+                limit = { is_ai = yes }
+                set_secret_goal = { country = scope:india_union_decliner secret_goal = conquer }
+            }
+        }
+        if = {
+            limit = { nesnd_india_union_is_member = yes }
+            save_scope_value_as = { name = india_union_pact_backlash value = 1 }
+            every_in_global_list = {
+                variable = nesnd_india_union_members
+                limit = {
+                    is_country_alive = yes
+                    is_subject = no
+                    NOT = { this = scope:india_union_decliner }
+                    NOT = { this = scope:india_sender }
+                }
+                change_relations = { country = scope:india_sender value = -10 }
+            }
+        }
+    }
     trigger_event = { id = nesnd_india_union.2 popup = yes }
     scope:india_sender = {
         trigger_event = { id = nesnd_india_union.2 popup = yes }
@@ -1320,5 +1368,267 @@ nesnd_india_case_watch_clock = {
     if = { limit = { OR = { NOT = { has_variable = nesnd_india_case_watch_since } always = $RESET$ } }
         set_variable = nesnd_india_case_watch_since
         set_variable = { name = nesnd_india_case_watch_wait days = 3650 }
+    }
+}
+
+# ==== Princely League (India batch 14) ====
+# Independent prince scope. Pays 4 weeks of income (2,000 to 20,000), sets a 12-month cooldown,
+# picks the highest-relations independent prince not yet bound by a defensive treaty (falling back
+# to any eligible prince so the button stays open when only empire subjects remain), and sends
+# the standalone invitation event nesnd_india_union.5.
+nesnd_india_union_send_invite = {
+    if = {
+        limit = { nesnd_india_union_can_invite = yes }
+        add_treasury = { value = nesnd_india_union_invite_price multiply = -1 }
+        set_variable = { name = nesnd_india_union_invite_cooldown months = 12 }
+        save_scope_as = india_league_inviter
+        clear_saved_scope = india_league_target
+        ordered_country = {
+            limit = {
+                is_subject = no
+                nesnd_india_union_invite_candidate = { ASKER = scope:india_league_inviter }
+            }
+            order_by = relations:root
+            position = 0
+            check_range_bounds = no
+            save_scope_as = india_league_target
+        }
+        if = {
+            limit = { NOT = { exists = scope:india_league_target } }
+            ordered_country = {
+                limit = {
+                    nesnd_india_union_invite_candidate = { ASKER = scope:india_league_inviter }
+                }
+                order_by = relations:root
+                position = 0
+                check_range_bounds = no
+                save_scope_as = india_league_target
+            }
+        }
+        scope:india_league_target ?= {
+            trigger_event = { id = nesnd_india_union.5 days = 1 popup = yes }
+        }
+    }
+}
+
+# Invited prince scope (from nesnd_india_union.5 option a). Raises relations by +20 first so neutral
+# princes meet cordial relations, signs the first creatable treaty among defensive_pact, alliance
+# and guarantee_independence, adds living independent princes to nesnd_india_union_members, and
+# notifies the inviter (nesnd_india_union.6).
+nesnd_india_union_accept_invite = {
+    save_scope_as = india_league_target
+    if = {
+        limit = { exists = scope:india_league_inviter scope:india_league_inviter = { is_country_alive = yes } }
+        change_relations = { country = scope:india_league_inviter value = 20 }
+        if = {
+            limit = {
+                can_create_treaty = {
+                    first_country = scope:india_league_inviter
+                    second_country = scope:india_league_target
+                    is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = defensive_pact } }
+                }
+            }
+            create_treaty = {
+                first_country = scope:india_league_inviter
+                second_country = scope:india_league_target
+                is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = defensive_pact } }
+            }
+        }
+        else_if = {
+            limit = {
+                can_create_treaty = {
+                    first_country = scope:india_league_inviter
+                    second_country = scope:india_league_target
+                    is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = alliance } }
+                }
+            }
+            create_treaty = {
+                first_country = scope:india_league_inviter
+                second_country = scope:india_league_target
+                is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = alliance } }
+            }
+        }
+        else_if = {
+            limit = {
+                can_create_treaty = {
+                    first_country = scope:india_league_inviter
+                    second_country = scope:india_league_target
+                    is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = guarantee_independence source_country = scope:india_league_inviter target_country = scope:india_league_target } }
+                }
+            }
+            create_treaty = {
+                first_country = scope:india_league_inviter
+                second_country = scope:india_league_target
+                is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = guarantee_independence source_country = scope:india_league_inviter target_country = scope:india_league_target } }
+            }
+        }
+        else_if = {
+            limit = {
+                can_create_treaty = {
+                    first_country = scope:india_league_target
+                    second_country = scope:india_league_inviter
+                    is_draft = no
+                    binding_period = { years = 5 }
+                    articles_to_create = { { article = guarantee_independence source_country = scope:india_league_target target_country = scope:india_league_inviter } }
+                }
+            }
+            create_treaty = {
+                first_country = scope:india_league_target
+                second_country = scope:india_league_inviter
+                is_draft = no
+                binding_period = { years = 5 }
+                articles_to_create = { { article = guarantee_independence source_country = scope:india_league_target target_country = scope:india_league_inviter } }
+            }
+        }
+        if = {
+            limit = {
+                scope:india_league_inviter = { is_country_alive = yes is_subject = no nesnd_india_prince = yes }
+                NOT = { is_target_in_global_variable_list = { name = nesnd_india_union_members target = scope:india_league_inviter } }
+            }
+            add_to_global_variable_list = { name = nesnd_india_union_members target = scope:india_league_inviter }
+        }
+        if = {
+            limit = {
+                scope:india_league_target = { is_country_alive = yes is_subject = no nesnd_india_prince = yes }
+                NOT = { is_target_in_global_variable_list = { name = nesnd_india_union_members target = scope:india_league_target } }
+            }
+            add_to_global_variable_list = { name = nesnd_india_union_members target = scope:india_league_target }
+        }
+        if = {
+            limit = { nesnd_india_union_member_count >= 2 }
+            set_global_variable = nesnd_india_union_had_two
+        }
+        save_scope_value_as = { name = india_league_reply value = 1 }
+        scope:india_league_inviter = { trigger_event = { id = nesnd_india_union.6 popup = yes } }
+    }
+}
+
+# Invited prince scope (from nesnd_india_union.5 option b). Relations -10 and notify inviter.
+nesnd_india_union_decline_invite = {
+    save_scope_as = india_league_target
+    if = {
+        limit = { exists = scope:india_league_inviter scope:india_league_inviter = { is_country_alive = yes } }
+        change_relations = { country = scope:india_league_inviter value = -10 }
+        save_scope_value_as = { name = india_league_reply value = 2 }
+        scope:india_league_inviter = { trigger_event = { id = nesnd_india_union.6 popup = yes } }
+    }
+}
+
+# Any scope. Removes WHO from nesnd_india_union_members and records it as the last departed member.
+nesnd_india_union_remove_member = {
+    if = {
+        limit = {
+            has_global_variable_list = nesnd_india_union_members
+            is_target_in_global_variable_list = { name = nesnd_india_union_members target = $WHO$ }
+        }
+        $WHO$ = {
+            if = {
+                limit = { is_country_alive = yes }
+                set_global_variable = { name = nesnd_india_union_last_departed value = this days = 3650 }
+            }
+        }
+        remove_list_global_variable = { name = nesnd_india_union_members target = $WHO$ }
+    }
+}
+
+# Remaining lone member scope. Applies the breakup consequences: -30 relations with the departed
+# member if alive, 10-year nesnd_india_union_broken modifier, 10-year wait before reopening the
+# journal, clears league state, and fires the breakup event nesnd_india_union.8.
+nesnd_india_union_break_apply = {
+    save_scope_as = india_league_breaker
+    clear_saved_scope = india_league_departed
+    if = {
+        limit = { exists = global_var:nesnd_india_union_last_departed }
+        global_var:nesnd_india_union_last_departed = {
+            if = {
+                limit = { is_country_alive = yes NOT = { this = scope:india_league_breaker } }
+                save_scope_as = india_league_departed
+            }
+        }
+    }
+    if = {
+        limit = { exists = scope:india_league_departed }
+        change_relations = { country = scope:india_league_departed value = -30 }
+    }
+    add_modifier = { name = nesnd_india_union_broken days = long_modifier_time }
+    set_variable = { name = nesnd_india_union_reopen_wait days = 3650 }
+    remove_variable = nesnd_india_union_formed
+    if = {
+        limit = { nesnd_india_union_is_member = yes }
+        remove_list_global_variable = { name = nesnd_india_union_members target = scope:india_league_breaker }
+    }
+    remove_global_variable = nesnd_india_union_had_two
+    trigger_event = { id = nesnd_india_union.8 popup = yes }
+}
+
+# Global scope, monthly from on_monthly_pulse (nesnd_india_union_global_pulse).
+# Prunes annexed, dead or subjugated members from nesnd_india_union_members in two passes via
+# temporary global lists so nesnd_india_union_members is never mutated while being iterated.
+# Existing treaties follow vanilla rules without script cancellation. If a previously 2+ league
+# drops to 0 members, resets the flag; if 1 lone survivor remains whose journal already ended
+# after pact formation, collects it and applies breakup outside the members loop.
+nesnd_india_union_maintain = {
+    if = {
+        limit = { has_global_variable_list = nesnd_india_union_members }
+        if = {
+            limit = { has_global_variable_list = nesnd_india_union_leaving }
+            clear_global_variable_list = nesnd_india_union_leaving
+        }
+        every_in_global_list = {
+            variable = nesnd_india_union_members
+            limit = { OR = { is_country_alive = no is_subject = yes NOT = { nesnd_india_prince = yes } } }
+            add_to_global_variable_list = { name = nesnd_india_union_leaving target = this }
+        }
+        if = {
+            limit = { has_global_variable_list = nesnd_india_union_leaving }
+            every_in_global_list = {
+                variable = nesnd_india_union_leaving
+                if = {
+                    limit = { is_country_alive = yes }
+                    set_global_variable = { name = nesnd_india_union_last_departed value = this days = 3650 }
+                }
+                remove_list_global_variable = { name = nesnd_india_union_members target = this }
+            }
+            clear_global_variable_list = nesnd_india_union_leaving
+        }
+        if = {
+            limit = { has_global_variable = nesnd_india_union_had_two }
+            if = {
+                limit = { NOT = { any_in_global_list = { variable = nesnd_india_union_members is_country_alive = yes is_subject = no nesnd_india_prince = yes } } }
+                remove_global_variable = nesnd_india_union_had_two
+            }
+            else_if = {
+                limit = { NOT = { any_in_global_list = { variable = nesnd_india_union_members count >= 2 is_country_alive = yes is_subject = no nesnd_india_prince = yes } } }
+                if = {
+                    limit = { has_global_variable_list = nesnd_india_union_breaking }
+                    clear_global_variable_list = nesnd_india_union_breaking
+                }
+                every_in_global_list = {
+                    variable = nesnd_india_union_members
+                    limit = { is_country_alive = yes is_subject = no nesnd_india_prince = yes NOT = { has_journal_entry = nesnd_india_union } }
+                    add_to_global_variable_list = { name = nesnd_india_union_breaking target = this }
+                }
+                if = {
+                    limit = { has_global_variable_list = nesnd_india_union_breaking }
+                    every_in_global_list = {
+                        variable = nesnd_india_union_breaking
+                        nesnd_india_union_break_apply = yes
+                    }
+                    clear_global_variable_list = nesnd_india_union_breaking
+                }
+            }
+        }
     }
 }

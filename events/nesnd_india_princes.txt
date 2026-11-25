@@ -70,6 +70,7 @@ nesnd_india_diplomacy.1 = {
             modifier = { trigger = { nesnd_india_broke = yes } add = 15 }
             modifier = { trigger = { nesnd_india_union_ai_own_subject = yes } add = 10 }
             modifier = { trigger = { nesnd_india_union_ai_large = yes } factor = 0.5 }
+            modifier = { trigger = { has_modifier = nesnd_india_union_pact nesnd_india_union_is_member = yes } factor = 0.25 }
         }
         custom_tooltip = nesnd_india_union_reply_merge_tt
         if = { limit = { nesnd_india_union_compensation_due = yes } custom_tooltip = nesnd_india_union_reply_former_tt }
@@ -82,6 +83,7 @@ nesnd_india_diplomacy.1 = {
             modifier = { trigger = { nesnd_india_union_ai_close = yes } add = 20 }
             # Attended Mughal's council of princes, or received its famine aid (nesnd_india_empire.txt).
             modifier = { trigger = { has_variable = nesnd_mug_council_attended } add = 10 }
+            modifier = { trigger = { has_modifier = nesnd_india_union_pact nesnd_india_union_is_member = yes } factor = 0.25 }
         }
         custom_tooltip = nesnd_india_union_reply_dominion_tt
         if = { limit = { nesnd_india_union_compensation_due = yes } custom_tooltip = nesnd_india_union_reply_former_tt }
@@ -89,7 +91,13 @@ nesnd_india_diplomacy.1 = {
     }
     option = { name = nesnd_india_diplomacy.1.b default_option = yes
         ai_chance = { base = 70 modifier = { trigger = { nesnd_india_incoming_kind = 8 } add = -40 } }
-        if = { limit = { nesnd_india_union_reply = yes } custom_tooltip = nesnd_india_union_reply_decline_tt }
+        if = {
+            limit = { nesnd_india_incoming_kind = 6 }
+            if = { limit = { var:nesnd_india_union_refused_empire ?= scope:india_sender } custom_tooltip = nesnd_india_union_reply_decline_all_claim_tt }
+            else = { custom_tooltip = nesnd_india_union_reply_decline_capital_claim_tt }
+            if = { limit = { nesnd_india_union_is_member = yes } custom_tooltip = nesnd_india_union_reply_decline_pact_tt }
+        }
+        else_if = { limit = { nesnd_india_union_reply = yes } custom_tooltip = nesnd_india_union_reply_decline_tt }
         else = { custom_tooltip = nesnd_india_refusal_tt }
         hidden_effect = { nesnd_india_refuse_request = yes }
     }
@@ -371,6 +379,8 @@ nesnd_india_project.5 = {
     flavor = nesnd_india_project.5.f
     option = { name = nesnd_india_diplomacy_ack default_option = yes
         if = { limit = { exists = scope:india_matter_result scope:india_matter_result = 6 } custom_tooltip = nesnd_india_project_expired_tt }
+        else_if = { limit = { exists = scope:india_matter_result scope:india_matter_result = 2 exists = scope:india_matter_to } custom_tooltip = nesnd_india_project_declined_rift_tt }
+        else_if = { limit = { exists = scope:india_matter_result scope:india_matter_result = 1 exists = scope:india_matter_permit } custom_tooltip = nesnd_india_project_forbid_rift_tt }
         else = { custom_tooltip = nesnd_india_project_failed_tt }
     }
 }
@@ -449,7 +459,20 @@ nesnd_india_union.2 = {
     option = {
         name = nesnd_india_diplomacy_ack
         default_option = yes
-        custom_tooltip = nesnd_india_union_unchanged_tt
+        if = {
+            limit = { scope:india_sender = { nesnd_india_empire = yes } }
+            if = {
+                limit = { this = scope:india_union_decliner }
+                if = { limit = { exists = scope:india_union_claim_level scope:india_union_claim_level = 2 } custom_tooltip = nesnd_india_union_declined_we_all_claim_tt }
+                else = { custom_tooltip = nesnd_india_union_declined_we_capital_claim_tt }
+            }
+            else = {
+                if = { limit = { exists = scope:india_union_claim_level scope:india_union_claim_level = 2 } custom_tooltip = nesnd_india_union_declined_empire_all_claim_tt }
+                else = { custom_tooltip = nesnd_india_union_declined_empire_capital_claim_tt }
+            }
+            if = { limit = { exists = scope:india_union_pact_backlash scope:india_union_pact_backlash = 1 } custom_tooltip = nesnd_india_union_declined_pact_tt }
+        }
+        else = { custom_tooltip = nesnd_india_union_unchanged_tt }
     }
 }
 
@@ -575,4 +598,113 @@ nesnd_india_revolt.2 = {
         }
     }
     after = { remove_variable = nesnd_india_revolt_former remove_variable = nesnd_india_revolt_sponsor }
+}
+
+# ==== Princely League (India batch 14) ====
+# Standalone mutual-defence invitation sent by nesnd_india_union_send_invite.
+nesnd_india_union.5 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_union.5.t
+    desc = nesnd_india_union.5.d
+    flavor = nesnd_india_union.5.f
+    trigger = {
+        is_country_alive = yes
+        exists = scope:india_league_inviter
+        scope:india_league_inviter = { is_country_alive = yes }
+        NOT = { has_war_with = scope:india_league_inviter }
+    }
+    cancellation_trigger = {
+        OR = {
+            NOT = { exists = scope:india_league_inviter }
+            scope:india_league_inviter = { is_country_alive = no }
+            has_war_with = scope:india_league_inviter
+        }
+    }
+    immediate = {
+        save_scope_as = india_league_target
+    }
+    option = {
+        name = nesnd_india_union.5.a
+        ai_chance = {
+            base = 50
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 10 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 20 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 30 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 40 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 50 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 60 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 70 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 80 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 90 } add = 10 }
+            modifier = { trigger = { exists = scope:india_league_inviter "relations(scope:india_league_inviter)" >= 100 } add = 10 }
+            modifier = { trigger = { nesnd_india_claimed_by_empire = yes } add = 30 }
+            modifier = { trigger = { is_subject = yes overlord ?= { nesnd_india_empire = yes } } factor = 0 }
+        }
+        custom_tooltip = nesnd_india_union.5.a_tt
+        hidden_effect = { nesnd_india_union_accept_invite = yes }
+    }
+    option = {
+        name = nesnd_india_union.5.b
+        default_option = yes
+        ai_chance = { base = 50 }
+        custom_tooltip = nesnd_india_union.5.b_tt
+        hidden_effect = { nesnd_india_union_decline_invite = yes }
+    }
+}
+
+# Reply notice to the prince that sent the mutual-defence invitation.
+nesnd_india_union.6 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_union.6.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:india_league_reply scope:india_league_reply = 1 } desc = nesnd_india_union.6.d_accept }
+            desc = nesnd_india_union.6.d_decline
+        }
+    }
+    flavor = nesnd_india_union.6.f
+    trigger = { exists = scope:india_league_target }
+    cancellation_trigger = { NOT = { exists = scope:india_league_target } }
+    option = {
+        name = nesnd_india_diplomacy_ack
+        default_option = yes
+        if = { limit = { exists = scope:india_league_reply scope:india_league_reply = 1 } custom_tooltip = nesnd_india_union.6.accept_tt }
+        else = { custom_tooltip = nesnd_india_union.6.decline_tt }
+    }
+}
+
+# League pact formed (journal nesnd_india_union outcome "pact formed").
+nesnd_india_union.7 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_india_union.7.t
+    desc = nesnd_india_union.7.d
+    flavor = nesnd_india_union.7.f
+    option = {
+        name = nesnd_india_union.7.a
+        default_option = yes
+        custom_tooltip = nesnd_india_union.7.a_tt
+    }
+}
+
+# League broken (journal nesnd_india_union outcome "league broken" or post-pact collapse).
+nesnd_india_union.8 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_union.8.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = scope:india_league_departed } desc = nesnd_india_union.8.d_departed }
+            desc = nesnd_india_union.8.d_gone
+        }
+    }
+    flavor = nesnd_india_union.8.f
+    option = {
+        name = nesnd_india_union.8.a
+        default_option = yes
+        if = { limit = { exists = scope:india_league_departed } custom_tooltip = nesnd_india_union.8.a_departed_tt }
+        else = { custom_tooltip = nesnd_india_union.8.a_gone_tt }
+    }
 }
