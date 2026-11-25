@@ -1,0 +1,36 @@
+﻿# Triggers for Ottoman success line, block 3 ("Academies and the Press") and the labor event. Country scope.
+
+nesnd_ottoman_academy_active = {
+    OR = {
+        has_journal_entry = nesnd_ottoman_academy_1
+        has_journal_entry = nesnd_ottoman_academy_2
+        has_journal_entry = nesnd_ottoman_academy_3
+        has_journal_entry = nesnd_ottoman_academy_4
+    }
+}
+
+nesnd_ottoman_academy_fallback_due = {
+    nesnd_ottoman_recovery_open = yes
+    has_variable = nesnd_ottoman_route
+    var:nesnd_ottoman_route = flag:constitutional
+    nesnd_ottoman_tanzimat_success = yes
+    # Vanilla variable set by je_sick_man_education (GAME common/journal_entries/00_sick_man.txt:355) and never cleared.
+    has_variable = completed_sick_man_education_je
+    NOT = { nesnd_ottoman_academy_active = yes }
+    NOT = { has_variable = nesnd_ottoman_academy_closed }
+}
+
+nesnd_ottoman_labor_event_eligible = {
+    c:TUR ?= this
+    is_country_alive = yes
+    OR = {
+        nesnd_ottoman_academy_active = yes
+        AND = {
+            has_variable = nesnd_ottoman_academy_outcome
+            var:nesnd_ottoman_academy_outcome = flag:complete
+        }
+    }
+    year >= 1870
+    ig:ig_trade_unions ?= { is_marginal = no }
+    NOT = { has_variable = nesnd_ottoman_labor_event_fired }
+}

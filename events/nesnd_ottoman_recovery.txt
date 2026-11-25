@@ -631,3 +631,171 @@ nesnd_ottoman_recovery.15 = {
         custom_tooltip = nesnd_ottoman_recovery.15.a_tt
     }
 }
+# Ring 1 completion of nesnd_ottoman_academy (1860-1888): Namik Kemal, Islamic modernist writer and reformer.
+nesnd_ottoman_recovery.16 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.16.t
+    desc = nesnd_ottoman_recovery.16.d
+    flavor = nesnd_ottoman_recovery.16.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+    duration = 3
+    trigger = {
+        NOT = { has_variable = nesnd_ottoman_namik_kemal_fired }
+    }
+    immediate = {
+        set_variable = nesnd_ottoman_namik_kemal_fired
+        ig:ig_intelligentsia ?= { save_scope_as = nesnd_academy_intel_ig }
+        ig:ig_devout ?= { save_scope_as = nesnd_academy_devout_ig }
+        if = {
+            limit = { year < 1870 }
+            create_character = {
+                first_name = Namik
+                last_name = Kemal
+                historical = yes
+                female = no
+                culture = cu:turkish
+                religion = rel:sunni
+                age = 25
+                role = politician
+                interest_group = ig_intelligentsia
+                ideology = ideology_reformer
+                save_scope_as = nesnd_namik_kemal
+            }
+        }
+        else_if = {
+            limit = { year < 1880 }
+            create_character = {
+                first_name = Namik
+                last_name = Kemal
+                historical = yes
+                female = no
+                culture = cu:turkish
+                religion = rel:sunni
+                age = 35
+                role = politician
+                interest_group = ig_intelligentsia
+                ideology = ideology_reformer
+                save_scope_as = nesnd_namik_kemal
+            }
+        }
+        else = {
+            create_character = {
+                first_name = Namik
+                last_name = Kemal
+                historical = yes
+                female = no
+                culture = cu:turkish
+                religion = rel:sunni
+                age = 45
+                role = politician
+                interest_group = ig_intelligentsia
+                ideology = ideology_reformer
+                save_scope_as = nesnd_namik_kemal
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.16.a
+        default_option = yes
+        scope:nesnd_academy_intel_ig ?= {
+            add_modifier = { name = nesnd_ottoman_modernist_advisor months = 60 }
+            if = {
+                limit = { NOT = { has_ideology = ideology:ideology_modernizer } }
+                add_ideology = ideology_modernizer
+            }
+        }
+        ai_chance = {
+            base = 20
+            modifier = {
+                trigger = {
+                    has_journal_entry = nesnd_ottoman_charter
+                    nesnd_ottoman_charter_lead < 0
+                }
+                add = -15
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.16.b
+        scope:nesnd_academy_devout_ig ?= {
+            add_modifier = { name = nesnd_ottoman_ulema_trial_approval months = 60 }
+        }
+        if = {
+            limit = { exists = scope:nesnd_academy_intel_ig }
+            add_radicals = { value = medium_radicals interest_group = scope:nesnd_academy_intel_ig }
+        }
+        scope:nesnd_namik_kemal ?= {
+            exile_character_with_role_cleanup = yes
+        }
+        ai_chance = {
+            base = 5
+            modifier = {
+                trigger = {
+                    has_journal_entry = nesnd_ottoman_charter
+                    nesnd_ottoman_charter_lead < 0
+                }
+                add = 20
+            }
+        }
+    }
+}
+# Social-left turn (year >= 1870, trade unions not marginal, academy active or complete): Unions and Factories. Fires once.
+nesnd_ottoman_recovery.17 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.17.t
+    desc = nesnd_ottoman_recovery.17.d
+    flavor = nesnd_ottoman_recovery.17.f
+    event_image = { video = "votp_agitator_speaking" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_protest.dds"
+    duration = 3
+    trigger = {
+        NOT = { has_variable = nesnd_ottoman_labor_event_fired }
+    }
+    immediate = {
+        set_variable = nesnd_ottoman_labor_event_fired
+        ig:ig_trade_unions ?= { save_scope_as = nesnd_trade_unions_ig }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.17.a
+        default_option = yes
+        scope:nesnd_trade_unions_ig ?= {
+            add_modifier = { name = nesnd_ottoman_unions_tolerated months = 60 }
+        }
+        if = {
+            limit = { has_journal_entry = nesnd_ottoman_charter }
+            custom_tooltip = {
+                text = nesnd_ottoman_charter_bonus_charter_gain_tt
+                set_variable = { name = nesnd_ottoman_charter_bonus months = 60 }
+            }
+        }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { has_law = law_type:law_right_of_assembly } add = 10 }
+            modifier = { trigger = { has_law = law_type:law_protected_speech } add = 20 }
+            modifier = { trigger = { OR = { has_law = law_type:law_census_voting has_law = law_type:law_universal_suffrage } } add = 10 }
+            modifier = { trigger = { OR = { has_law = law_type:law_censorship has_law = law_type:law_outlawed_dissent } } add = -5 }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.17.b
+        scope:nesnd_trade_unions_ig ?= {
+            add_modifier = { name = nesnd_ottoman_unions_banned_ig months = 60 }
+        }
+        if = {
+            limit = { exists = scope:nesnd_trade_unions_ig }
+            add_radicals = { value = medium_radicals interest_group = scope:nesnd_trade_unions_ig }
+        }
+        add_modifier = { name = nesnd_ottoman_unions_banned_movement months = 60 }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { has_law = law_type:law_censorship } add = 10 }
+            modifier = { trigger = { has_law = law_type:law_outlawed_dissent } add = 20 }
+            modifier = { trigger = { has_law = law_type:law_autocracy } add = 10 }
+        }
+    }
+}
