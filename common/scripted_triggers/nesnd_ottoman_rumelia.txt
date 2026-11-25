@@ -1,0 +1,83 @@
+﻿# Triggers for Ottoman failure line, block 1: "Rumelia" (nesnd_ottoman_rumelia), "Eastern Provinces" (nesnd_ottoman_eastern_provinces),
+# and Russian intervention (nesnd_ottoman_recovery.18). Country scope unless noted.
+
+nesnd_ottoman_rumelia_fallback_due = {
+    nesnd_ottoman_recovery_open = yes
+    has_variable = nesnd_ottoman_route
+    var:nesnd_ottoman_route = flag:sultanic
+    nesnd_ottoman_tanzimat_failed = yes
+    # Vanilla Great Eastern Crisis (GAME common/journal_entries/05_great_eastern_crisis.txt:1; checked in 05_eastern_question.txt:29).
+    has_journal_entry = je_great_eastern_crisis
+    NOT = { has_journal_entry = nesnd_ottoman_rumelia }
+    NOT = { has_variable = nesnd_ottoman_rumelia_closed }
+}
+
+# State scope: one of the three eastern provinces (Erzurum, Diyarbakir, Kars; SRC common/history/states/00_states.txt:6639, :6649, :6826).
+nesnd_ottoman_is_eastern_province = {
+    OR = {
+        state_region = s:STATE_ERZURUM
+        state_region = s:STATE_DIYARBAKIR
+        state_region = s:STATE_KARS
+    }
+}
+
+nesnd_ottoman_holds_eastern_province = {
+    any_scope_state = {
+        nesnd_ottoman_is_eastern_province = yes
+    }
+}
+
+# Country scope: TUR holds at least one of the three eastern provinces with Kurdish or Armenian pops AND has a cultural minority movement of that culture.
+nesnd_ottoman_east_has_minority_movement = {
+    OR = {
+        AND = {
+            any_scope_state = {
+                nesnd_ottoman_is_eastern_province = yes
+                any_scope_pop = { culture = cu:kurdish }
+            }
+            any_political_movement = {
+                is_political_movement_type = movement_cultural_minority
+                culture ?= cu:kurdish
+            }
+        }
+        AND = {
+            any_scope_state = {
+                nesnd_ottoman_is_eastern_province = yes
+                any_scope_pop = { culture = cu:armenian }
+            }
+            any_political_movement = {
+                is_political_movement_type = movement_cultural_minority
+                culture ?= cu:armenian
+            }
+        }
+    }
+}
+
+nesnd_ottoman_eastern_provinces_fallback_due = {
+    nesnd_ottoman_recovery_open = yes
+    has_variable = nesnd_ottoman_route
+    var:nesnd_ottoman_route = flag:sultanic
+    nesnd_ottoman_tanzimat_failed = yes
+    nesnd_ottoman_holds_eastern_province = yes
+    nesnd_ottoman_east_has_minority_movement = yes
+    NOT = { has_journal_entry = nesnd_ottoman_eastern_provinces }
+    NOT = { has_variable = nesnd_ottoman_eastern_provinces_closed }
+}
+
+# Country scope (RUS): preconditions for Russia to launch a dp_humiliation play against TUR in event nesnd_ottoman_recovery.18.
+nesnd_ottoman_rus_can_open_protect_play = {
+    is_subject = no
+    aggressive_diplomatic_plays_permitted = yes
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        is_subject = no
+    }
+    "relations(c:TUR)" < relations_threshold:cordial
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_diplomatic_play_enemy_of = c:TUR }
+    NOT = { is_diplomatic_play_ally_of = c:TUR }
+    NOT = { has_truce_with = c:TUR }
+    NOT = { has_treaty_alliance_with = { TARGET = c:TUR } }
+    NOT = { has_treaty_defensive_pact_with = { TARGET = c:TUR } }
+}

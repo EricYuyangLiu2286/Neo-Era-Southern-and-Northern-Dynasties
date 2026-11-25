@@ -799,3 +799,83 @@ nesnd_ottoman_recovery.17 = {
         }
     }
 }
+# Russian reaction to repeated Ottoman crackdowns in Rumelia or the Eastern Provinces (once per journal).
+nesnd_ottoman_recovery.18 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.18.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = {
+                    exists = scope:nesnd_rus_protect_east_event
+                }
+                desc = nesnd_ottoman_recovery.18.d_east
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.18.d_rumelia
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.18.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_protest.dds"
+    duration = 3
+    trigger = {
+        c:RUS ?= this
+        exists = c:TUR
+        c:TUR = { is_country_alive = yes }
+    }
+    immediate = {
+        c:TUR ?= { save_scope_as = nesnd_tur_country }
+        if = {
+            limit = { has_variable = nesnd_ottoman_rus_protect_east_due }
+            save_scope_as = nesnd_rus_protect_east_event
+            remove_variable = nesnd_ottoman_rus_protect_east_due
+        }
+        else_if = {
+            limit = { has_variable = nesnd_ottoman_rus_protect_rumelia_due }
+            remove_variable = nesnd_ottoman_rus_protect_rumelia_due
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.18.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_rus_can_open_protect_play = yes
+            }
+            create_diplomatic_play = {
+                name = nesnd_ottoman_rus_protect_play
+                type = dp_humiliation
+                target_country = c:TUR
+            }
+        }
+        else = {
+            c:TUR ?= { change_relations = { country = root value = -40 } }
+            if = {
+                limit = {
+                    exists = c:TUR
+                    NOT = { has_secret_goal = { who = c:TUR secret_goal = antagonize } }
+                }
+                set_secret_goal = { country = c:TUR secret_goal = antagonize }
+            }
+        }
+        ai_chance = {
+            base = 70
+            modifier = {
+                trigger = { is_at_war = yes }
+                add = -60
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.18.b
+        c:TUR ?= { change_relations = { country = root value = -20 } }
+        add_modifier = { name = nesnd_ottoman_rus_protest_prestige months = 60 }
+        ai_chance = {
+            base = 30
+        }
+    }
+}

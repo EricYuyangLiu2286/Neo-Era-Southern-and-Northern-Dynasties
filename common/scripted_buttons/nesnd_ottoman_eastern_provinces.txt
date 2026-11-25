@@ -1,0 +1,115 @@
+﻿# Buttons for journal "Eastern Provinces" (nesnd_ottoman_eastern_provinces). Shared 24-month cooldown (nesnd_ottoman_east_cd), separate from Rumelia.
+
+nesnd_ottoman_east_cavalry = {
+    name = nesnd_ottoman_east_cavalry
+    desc = nesnd_ottoman_east_cavalry_desc
+    visible = { has_journal_entry = nesnd_ottoman_eastern_provinces }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_east_cd_tt NOT = { has_variable = nesnd_ottoman_east_cd } }
+        nesnd_ottoman_holds_eastern_province = yes
+    }
+    effect = {
+        add_modifier = { name = nesnd_ottoman_east_cavalry_mod months = 60 }
+        every_scope_state = {
+            limit = { nesnd_ottoman_is_eastern_province = yes }
+            add_radicals_in_state = {
+                culture = cu:armenian
+                value = medium_radicals
+            }
+        }
+        custom_tooltip = nesnd_ottoman_east_cd_set_tt
+        hidden_effect = {
+            if = { limit = { has_variable = nesnd_ottoman_east_cavalry_count } change_variable = { name = nesnd_ottoman_east_cavalry_count add = 1 } }
+            else = { set_variable = { name = nesnd_ottoman_east_cavalry_count value = 1 } }
+            set_variable = { name = nesnd_ottoman_east_cd months = 24 }
+        }
+    }
+    ai_chance = {
+        value = 10
+    }
+}
+
+nesnd_ottoman_east_charter = {
+    name = nesnd_ottoman_east_charter
+    desc = nesnd_ottoman_east_charter_desc
+    visible = { has_journal_entry = nesnd_ottoman_eastern_provinces }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_east_cd_tt NOT = { has_variable = nesnd_ottoman_east_cd } }
+        nesnd_ottoman_holds_eastern_province = yes
+    }
+    effect = {
+        add_culture_acceptance_modifier = {
+            culture = cu:armenian
+            days = normal_modifier_time
+            multiplier = 15
+        }
+        c:RUS ?= { change_relations = { country = root value = 15 } }
+        ig:ig_devout ?= { add_modifier = { name = nesnd_ottoman_east_charter_ig_displeased months = 60 } }
+        custom_tooltip = nesnd_ottoman_east_cd_set_tt
+        hidden_effect = {
+            if = { limit = { has_variable = nesnd_ottoman_east_charter_count } change_variable = { name = nesnd_ottoman_east_charter_count add = 1 } }
+            else = { set_variable = { name = nesnd_ottoman_east_charter_count value = 1 } }
+            set_variable = { name = nesnd_ottoman_east_cd months = 24 }
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                OR = {
+                    has_law = law_type:law_multicultural
+                    has_law = law_type:law_freedom_of_conscience
+                }
+            }
+            add = 10
+        }
+    }
+}
+
+nesnd_ottoman_east_crackdown = {
+    name = nesnd_ottoman_east_crackdown
+    desc = nesnd_ottoman_east_crackdown_desc
+    visible = { has_journal_entry = nesnd_ottoman_eastern_provinces }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_east_cd_tt NOT = { has_variable = nesnd_ottoman_east_cd } }
+        nesnd_ottoman_holds_eastern_province = yes
+    }
+    effect = {
+        every_scope_state = {
+            limit = { nesnd_ottoman_is_eastern_province = yes }
+            add_radicals_in_state = { value = medium_radicals }
+        }
+        change_infamy = 5
+        c:RUS ?= { change_relations = { country = root value = -15 } }
+        c:GBR ?= { change_relations = { country = root value = -15 } }
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_east_crackdown_count
+                var:nesnd_ottoman_east_crackdown_count >= 2
+                NOT = { has_variable = nesnd_ottoman_east_rus_warned }
+                exists = c:RUS
+            }
+            custom_tooltip = nesnd_ottoman_east_crackdown_rus_tt
+        }
+        custom_tooltip = nesnd_ottoman_east_cd_set_tt
+        hidden_effect = {
+            if = { limit = { has_variable = nesnd_ottoman_east_crackdown_count } change_variable = { name = nesnd_ottoman_east_crackdown_count add = 1 } }
+            else = { set_variable = { name = nesnd_ottoman_east_crackdown_count value = 1 } }
+            if = {
+                limit = {
+                    var:nesnd_ottoman_east_crackdown_count >= 3
+                    NOT = { has_variable = nesnd_ottoman_east_rus_warned }
+                }
+                set_variable = nesnd_ottoman_east_rus_warned
+                c:RUS ?= {
+                    set_variable = nesnd_ottoman_rus_protect_east_due
+                    trigger_event = { id = nesnd_ottoman_recovery.18 days = 3 popup = yes }
+                }
+            }
+            set_variable = { name = nesnd_ottoman_east_cd months = 24 }
+        }
+    }
+    ai_chance = {
+        value = 10
+    }
+}

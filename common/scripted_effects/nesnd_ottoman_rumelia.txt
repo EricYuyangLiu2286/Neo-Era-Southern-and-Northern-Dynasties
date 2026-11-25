@@ -1,0 +1,179 @@
+﻿# Effects for Ottoman failure line, block 1: "Rumelia", "Eastern Provinces", and Russian intervention (nesnd_ottoman_recovery.18).
+# Country scope unless noted.
+
+# Rumelia button "Charter": grants 60-month (normal_modifier_time = 1825 days) acceptance modifier to the largest non-primary culture
+# of each TUR Balkan state (pattern: SRC events/nesnd_ottoman_recovery.txt:260-289; GAME 05_russian_civil_war_scripted_effects.txt:2258-2265).
+nesnd_ottoman_rumelia_charter_acceptance = {
+    clear_variable_list = nesnd_rumelia_cultures
+    every_scope_state = {
+        limit = { region = sr:region_balkans }
+        save_temporary_scope_as = nesnd_rumelia_state
+        ordered_scope_culture = {
+            limit = { NOT = { is_primary_culture_of = root } }
+            order_by = "scope:nesnd_rumelia_state.culture_percent_state(this)"
+            position = 0
+            check_range_bounds = no
+            if = {
+                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_rumelia_cultures target = prev } } } }
+                root = { add_to_variable_list = { name = nesnd_rumelia_cultures target = prev } }
+            }
+        }
+    }
+    every_in_list = {
+        variable = nesnd_rumelia_cultures
+        save_temporary_scope_as = nesnd_rumelia_culture
+        root = {
+            add_culture_acceptance_modifier = {
+                culture = scope:nesnd_rumelia_culture
+                days = normal_modifier_time
+                multiplier = 10
+            }
+        }
+    }
+    clear_variable_list = nesnd_rumelia_cultures
+}
+
+# Rumelia button "Autonomy": releases the non-capital TUR Balkan state with the highest turmoil as a dynamic subject (protectorate if TUR is recognized,
+# tributary if unrecognized; GAME 00_colonial_administration_buttons.txt:74-109, 05_russian_civil_war_scripted_effects.txt:2258-2276, algeria_events.txt:1028-1048).
+nesnd_ottoman_rumelia_grant_autonomy = {
+    every_scope_state = {
+        limit = { has_variable = nesnd_rumelia_autonomy_cede }
+        remove_variable = nesnd_rumelia_autonomy_cede
+    }
+    ordered_scope_state = {
+        limit = {
+            region = sr:region_balkans
+            is_capital = no
+            any_scope_culture = { NOT = { is_primary_culture_of = root } }
+        }
+        order_by = turmoil
+        position = 0
+        check_range_bounds = no
+        save_temporary_scope_as = nesnd_autonomy_state
+        set_variable = nesnd_rumelia_autonomy_cede
+        ordered_scope_culture = {
+            limit = { NOT = { is_primary_culture_of = root } }
+            order_by = "scope:nesnd_autonomy_state.culture_percent_state(this)"
+            position = 0
+            check_range_bounds = no
+            save_temporary_scope_as = nesnd_autonomy_culture
+        }
+    }
+    if = {
+        limit = {
+            exists = scope:nesnd_autonomy_state
+            exists = scope:nesnd_autonomy_culture
+        }
+        create_dynamic_country = {
+            origin = root
+            tier = principality
+            culture = scope:nesnd_autonomy_culture
+            religion = scope:nesnd_autonomy_culture.religion
+            capital = scope:nesnd_autonomy_state
+            cede_state_trigger = {
+                has_variable = nesnd_rumelia_autonomy_cede
+            }
+            on_created = {
+                every_scope_state = {
+                    limit = { has_variable = nesnd_rumelia_autonomy_cede }
+                    remove_variable = nesnd_rumelia_autonomy_cede
+                }
+            }
+        }
+        if = {
+            limit = {
+                scope:nesnd_autonomy_state.owner ?= {
+                    NOT = { this = root }
+                }
+            }
+            if = {
+                limit = { is_country_type = recognized }
+                create_diplomatic_pact = {
+                    country = scope:nesnd_autonomy_state.owner
+                    type = protectorate
+                }
+            }
+            else = {
+                create_diplomatic_pact = {
+                    country = scope:nesnd_autonomy_state.owner
+                    type = tributary
+                }
+            }
+        }
+    }
+    every_scope_state = {
+        limit = { has_variable = nesnd_rumelia_autonomy_cede }
+        remove_variable = nesnd_rumelia_autonomy_cede
+    }
+}
+
+# Rumelia button "Crackdown": adds small radicals in each TUR Balkan state that contains a culture with an active cultural minority movement,
+# and raises fervor target of each such state's largest non-primary culture for 60 months (GAME 00_ip3_hungary_events.txt:220-224).
+nesnd_ottoman_rumelia_crackdown_effect = {
+    clear_variable_list = nesnd_rumelia_mov_cultures
+    clear_variable_list = nesnd_rumelia_fervor_cultures
+    every_political_movement = {
+        limit = { is_political_movement_type = movement_cultural_minority }
+        culture ?= {
+            if = {
+                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_rumelia_mov_cultures target = prev } } } }
+                root = { add_to_variable_list = { name = nesnd_rumelia_mov_cultures target = prev } }
+            }
+        }
+    }
+    every_scope_state = {
+        limit = {
+            region = sr:region_balkans
+            any_scope_culture = {
+                root = { is_target_in_variable_list = { name = nesnd_rumelia_mov_cultures target = prev } }
+            }
+        }
+        add_radicals_in_state = { value = small_radicals }
+        save_temporary_scope_as = nesnd_rumelia_state
+        ordered_scope_culture = {
+            limit = { NOT = { is_primary_culture_of = root } }
+            order_by = "scope:nesnd_rumelia_state.culture_percent_state(this)"
+            position = 0
+            check_range_bounds = no
+            if = {
+                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_rumelia_fervor_cultures target = prev } } } }
+                root = { add_to_variable_list = { name = nesnd_rumelia_fervor_cultures target = prev } }
+            }
+        }
+    }
+    every_in_list = {
+        variable = nesnd_rumelia_fervor_cultures
+        save_temporary_scope_as = nesnd_rumelia_culture
+        root = {
+            add_fervor_target_modifier = {
+                culture = scope:nesnd_rumelia_culture
+                days = normal_modifier_time
+                multiplier = 5
+            }
+        }
+    }
+    clear_variable_list = nesnd_rumelia_mov_cultures
+    clear_variable_list = nesnd_rumelia_fervor_cultures
+}
+
+# Rumelia lost / timeout outcome: adds TUR claims on every formerly held Balkan state region that has any state
+# no longer owned by TUR or its subjects (pattern: SRC common/journal_entries/nesnd_acw_slavery_question.txt:15,
+# SRC events/nesnd_india_core.txt:146-148).
+nesnd_ottoman_rumelia_claim_lost_states = {
+    every_in_list = {
+        variable = nesnd_ottoman_rumelia_held_regions
+        every_scope_state = {
+            limit = {
+                NOT = { owner = root }
+                owner = { NOT = { is_subject_of = root } }
+                NOT = { has_claim_by = root }
+            }
+            state_region = { add_claim = root }
+        }
+    }
+}
+
+# Clears the nesnd_ottoman_rumelia_held_regions snapshot list.
+nesnd_ottoman_rumelia_clear_held = {
+    clear_variable_list = nesnd_ottoman_rumelia_held_regions
+}

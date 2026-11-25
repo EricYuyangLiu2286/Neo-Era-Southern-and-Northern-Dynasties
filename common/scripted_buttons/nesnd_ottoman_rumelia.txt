@@ -1,0 +1,129 @@
+﻿# Buttons for journal "Rumelia" (nesnd_ottoman_rumelia). Shared 24-month cooldown (nesnd_ottoman_rumelia_cd).
+
+nesnd_ottoman_rumelia_charter = {
+    name = nesnd_ottoman_rumelia_charter
+    desc = nesnd_ottoman_rumelia_charter_desc
+    visible = { has_journal_entry = nesnd_ottoman_rumelia }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_rumelia_cd_tt NOT = { has_variable = nesnd_ottoman_rumelia_cd } }
+        any_scope_state = { region = sr:region_balkans }
+    }
+    effect = {
+        custom_tooltip = {
+            text = nesnd_ottoman_rumelia_charter_acceptance_tt
+            nesnd_ottoman_rumelia_charter_acceptance = yes
+        }
+        ig:ig_devout ?= { add_modifier = { name = nesnd_ottoman_rumelia_charter_ig_displeased months = 60 } }
+        ig:ig_landowners ?= { add_modifier = { name = nesnd_ottoman_rumelia_charter_ig_displeased months = 60 } }
+        custom_tooltip = nesnd_ottoman_rumelia_cd_set_tt
+        hidden_effect = {
+            if = { limit = { has_variable = nesnd_ottoman_rumelia_charter_count } change_variable = { name = nesnd_ottoman_rumelia_charter_count add = 1 } }
+            else = { set_variable = { name = nesnd_ottoman_rumelia_charter_count value = 1 } }
+            set_variable = { name = nesnd_ottoman_rumelia_cd months = 24 }
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                OR = {
+                    has_law = law_type:law_multicultural
+                    has_law = law_type:law_cultural_exclusion
+                }
+            }
+            add = 10
+        }
+    }
+}
+
+nesnd_ottoman_rumelia_autonomy = {
+    name = nesnd_ottoman_rumelia_autonomy
+    desc = nesnd_ottoman_rumelia_autonomy_desc
+    visible = { has_journal_entry = nesnd_ottoman_rumelia }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_rumelia_cd_tt NOT = { has_variable = nesnd_ottoman_rumelia_cd } }
+        is_subject = no
+        is_diplomatic_play_committed_participant = no
+        is_at_war = no
+        custom_tooltip = {
+            text = nesnd_ottoman_rumelia_autonomy_rank_tt
+            OR = {
+                AND = {
+                    is_country_type = recognized
+                    country_rank >= rank_value:minor_power
+                }
+                AND = {
+                    is_country_type = unrecognized
+                    country_rank >= rank_value:unrecognized_regional_power
+                }
+            }
+        }
+        any_scope_state = {
+            region = sr:region_balkans
+            is_capital = no
+            any_scope_culture = { NOT = { is_primary_culture_of = root } }
+        }
+    }
+    effect = {
+        custom_tooltip = {
+            text = nesnd_ottoman_rumelia_autonomy_tt
+            nesnd_ottoman_rumelia_grant_autonomy = yes
+        }
+        add_modifier = { name = nesnd_ottoman_rumelia_autonomy_cost months = 60 }
+        custom_tooltip = nesnd_ottoman_rumelia_cd_set_tt
+        hidden_effect = {
+            set_variable = { name = nesnd_ottoman_rumelia_cd months = 24 }
+        }
+    }
+    ai_chance = {
+        value = 3
+    }
+}
+
+nesnd_ottoman_rumelia_crackdown = {
+    name = nesnd_ottoman_rumelia_crackdown
+    desc = nesnd_ottoman_rumelia_crackdown_desc
+    visible = { has_journal_entry = nesnd_ottoman_rumelia }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_rumelia_cd_tt NOT = { has_variable = nesnd_ottoman_rumelia_cd } }
+        any_scope_state = { region = sr:region_balkans }
+    }
+    effect = {
+        custom_tooltip = {
+            text = nesnd_ottoman_rumelia_crackdown_states_tt
+            nesnd_ottoman_rumelia_crackdown_effect = yes
+        }
+        c:RUS ?= { change_relations = { country = root value = -15 } }
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_rumelia_crackdown_count
+                var:nesnd_ottoman_rumelia_crackdown_count >= 2
+                NOT = { has_variable = nesnd_ottoman_rumelia_rus_warned }
+                exists = c:RUS
+            }
+            custom_tooltip = nesnd_ottoman_rumelia_crackdown_rus_tt
+        }
+        custom_tooltip = nesnd_ottoman_rumelia_cd_set_tt
+        hidden_effect = {
+            if = { limit = { has_variable = nesnd_ottoman_rumelia_crackdown_count } change_variable = { name = nesnd_ottoman_rumelia_crackdown_count add = 1 } }
+            else = { set_variable = { name = nesnd_ottoman_rumelia_crackdown_count value = 1 } }
+            if = {
+                limit = {
+                    var:nesnd_ottoman_rumelia_crackdown_count >= 3
+                    NOT = { has_variable = nesnd_ottoman_rumelia_rus_warned }
+                }
+                set_variable = nesnd_ottoman_rumelia_rus_warned
+                c:RUS ?= {
+                    set_variable = nesnd_ottoman_rus_protect_rumelia_due
+                    trigger_event = { id = nesnd_ottoman_recovery.18 days = 3 popup = yes }
+                }
+            }
+            set_variable = { name = nesnd_ottoman_rumelia_cd months = 24 }
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = { limit = { has_law = law_type:law_outlawed_dissent } add = 10 }
+        if = { limit = { has_law = law_type:law_autocracy } add = 10 }
+    }
+}

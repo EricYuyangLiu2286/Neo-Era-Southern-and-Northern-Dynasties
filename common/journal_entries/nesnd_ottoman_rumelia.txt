@@ -1,0 +1,268 @@
+﻿# Ottoman failure line, block 1: domestic crisis journals "Rumelia" and "Eastern Provinces".
+# Both journals are added only by monthly on_action effects in common/on_actions/nesnd_ottoman_recovery.txt,
+# so neither defines possible or is_shown_when_inactive.
+
+nesnd_ottoman_rumelia = {
+    icon = "gfx/interface/icons/event_icons/event_protest.dds"
+    group = je_group_internal_affairs
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    scripted_button = nesnd_ottoman_rumelia_charter
+    scripted_button = nesnd_ottoman_rumelia_autonomy
+    scripted_button = nesnd_ottoman_rumelia_crackdown
+
+    immediate = {
+        nesnd_ottoman_rumelia_clear_held = yes
+        every_scope_state = {
+            limit = { region = sr:region_balkans }
+            if = {
+                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_ottoman_rumelia_held_regions target = prev.state_region } } } }
+                root = { add_to_variable_list = { name = nesnd_ottoman_rumelia_held_regions target = prev.state_region } }
+            }
+        }
+        if = { limit = { NOT = { has_variable = nesnd_ottoman_rumelia_charter_count } } set_variable = { name = nesnd_ottoman_rumelia_charter_count value = 0 } }
+        if = { limit = { NOT = { has_variable = nesnd_ottoman_rumelia_crackdown_count } } set_variable = { name = nesnd_ottoman_rumelia_crackdown_count value = 0 } }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_rumelia_held_conclusion
+        trigger = {
+            NOT = { has_journal_entry = je_great_eastern_crisis }
+            has_modifier = eastern_crisis_controlled
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_rumelia_held_mod }
+            set_variable = { name = nesnd_ottoman_rumelia_outcome value = flag:held }
+            set_variable = nesnd_ottoman_rumelia_closed
+            hidden_effect = { nesnd_ottoman_rumelia_clear_held = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_rumelia_held_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_rumelia_lost_conclusion
+        trigger = {
+            NOT = { has_journal_entry = je_great_eastern_crisis }
+            has_modifier = eastern_crisis_not_controlled
+        }
+        effect = {
+            custom_tooltip = {
+                text = nesnd_ottoman_rumelia_lost_claims_tt
+                nesnd_ottoman_rumelia_claim_lost_states = yes
+            }
+            add_modifier = { name = nesnd_ottoman_rumelia_lost_mod }
+            set_variable = { name = nesnd_ottoman_rumelia_outcome value = flag:lost }
+            set_variable = nesnd_ottoman_rumelia_closed
+            hidden_effect = { nesnd_ottoman_rumelia_clear_held = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_rumelia_lost_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "blue_negative"
+        flags = { timeout }
+        conclusion_desc = nesnd_ottoman_rumelia_timeout_conclusion
+        effect = {
+            custom_tooltip = {
+                text = nesnd_ottoman_rumelia_lost_claims_tt
+                nesnd_ottoman_rumelia_claim_lost_states = yes
+            }
+            add_modifier = { name = nesnd_ottoman_rumelia_lost_mod }
+            set_variable = { name = nesnd_ottoman_rumelia_outcome value = flag:lost }
+            set_variable = nesnd_ottoman_rumelia_closed
+            hidden_effect = { nesnd_ottoman_rumelia_clear_held = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_rumelia_lost_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_ottoman_rumelia_invalid_conclusion
+        trigger = { OR = { NOT = { c:TUR ?= this } NOT = { nesnd_ottoman_tanzimat_failed = yes } } }
+        effect = { nesnd_ottoman_rumelia_clear_held = yes }
+    }
+
+    timeout = 9125
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = {
+                    has_variable = nesnd_ottoman_rumelia_crackdown_count
+                    var:nesnd_ottoman_rumelia_crackdown_count >= 2
+                }
+                desc = nesnd_ottoman_rumelia_status_crackdown
+            }
+            triggered_desc = {
+                trigger = {
+                    has_variable = nesnd_ottoman_rumelia_charter_count
+                    var:nesnd_ottoman_rumelia_charter_count >= 2
+                }
+                desc = nesnd_ottoman_rumelia_status_charter
+            }
+            desc = nesnd_ottoman_rumelia_status_ongoing
+        }
+    }
+}
+
+nesnd_ottoman_eastern_provinces = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    group = je_group_internal_affairs
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    scripted_button = nesnd_ottoman_east_cavalry
+    scripted_button = nesnd_ottoman_east_charter
+    scripted_button = nesnd_ottoman_east_crackdown
+
+    immediate = {
+        if = { limit = { NOT = { has_variable = nesnd_ottoman_east_cavalry_count } } set_variable = { name = nesnd_ottoman_east_cavalry_count value = 0 } }
+        if = { limit = { NOT = { has_variable = nesnd_ottoman_east_charter_count } } set_variable = { name = nesnd_ottoman_east_charter_count value = 0 } }
+        if = { limit = { NOT = { has_variable = nesnd_ottoman_east_crackdown_count } } set_variable = { name = nesnd_ottoman_east_crackdown_count value = 0 } }
+    }
+
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_east_lost_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_east_lost_all_tt
+                NOT = { nesnd_ottoman_holds_eastern_province = yes }
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_east_lost_mod }
+            set_variable = { name = nesnd_ottoman_east_outcome value = flag:lost }
+            set_variable = nesnd_ottoman_eastern_provinces_closed
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_east_lost_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_east_charter_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_east_holds_province_tt
+                nesnd_ottoman_holds_eastern_province = yes
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_east_charter_count_tt
+                has_variable = nesnd_ottoman_east_charter_count
+                var:nesnd_ottoman_east_charter_count >= 3
+            }
+        }
+        effect = {
+            add_culture_acceptance_modifier = {
+                culture = cu:armenian
+                multiplier = 20
+            }
+            add_modifier = { name = nesnd_ottoman_armenian_millet }
+            c:RUS ?= { change_relations = { country = root value = 25 } }
+            set_variable = { name = nesnd_ottoman_east_outcome value = flag:charter }
+            set_variable = nesnd_ottoman_eastern_provinces_closed
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_east_charter_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_east_crushed_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_east_holds_province_tt
+                nesnd_ottoman_holds_eastern_province = yes
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_east_force_count_tt
+                nesnd_ottoman_east_force_count >= 3
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_east_no_movement_tt
+                NOT = { nesnd_ottoman_east_has_minority_movement = yes }
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_tribal_cavalry }
+            set_variable = { name = nesnd_ottoman_east_outcome value = flag:crushed }
+            set_variable = nesnd_ottoman_eastern_provinces_closed
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_east_crushed_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "blue_negative"
+        flags = { timeout }
+        conclusion_desc = nesnd_ottoman_east_timeout_conclusion
+        effect = {
+            add_modifier = { name = nesnd_ottoman_eastern_unrest }
+            set_variable = { name = nesnd_ottoman_east_outcome value = flag:unresolved }
+            set_variable = nesnd_ottoman_eastern_provinces_closed
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_east_timeout_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_ottoman_east_invalid_conclusion
+        trigger = { OR = { NOT = { c:TUR ?= this } NOT = { nesnd_ottoman_tanzimat_failed = yes } } }
+        effect = { }
+    }
+
+    timeout = 7300
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { nesnd_ottoman_east_has_minority_movement = yes }
+                desc = nesnd_ottoman_east_status_active
+            }
+            desc = nesnd_ottoman_east_status_calm
+        }
+    }
+}
