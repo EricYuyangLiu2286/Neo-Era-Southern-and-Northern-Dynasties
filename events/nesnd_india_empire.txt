@@ -375,6 +375,125 @@ nesnd_mug.25 = {
     }
 }
 
+# ---------------------------------------------------------------------------------------------
+# Old treaty dispute (India batch 15)
+# ---------------------------------------------------------------------------------------------
+# France questions the inheritance of the old treaty with Mughal.
+nesnd_mug.30 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_mug.30.t
+    desc = nesnd_mug.30.d
+    flavor = nesnd_mug.30.f
+    trigger = {
+        exists = scope:mug_dispute_subject
+        scope:mug_dispute_subject = {
+            is_country_alive = yes
+            is_subject_of = root
+        }
+    }
+    cancellation_trigger = {
+        OR = {
+            NOT = { exists = scope:mug_dispute_subject }
+            scope:mug_dispute_subject = {
+                OR = {
+                    is_country_alive = no
+                    NOT = { is_subject_of = root }
+                }
+            }
+        }
+    }
+    option = {
+        name = nesnd_mug.30.a
+        ai_chance = {
+            base = 70
+            modifier = {
+                trigger = { scope:mug_dispute_subject = { liberty_desire >= 50 } }
+                add = 20
+            }
+        }
+        change_relations = { country = scope:mug_dispute_subject value = -10 }
+        custom_tooltip = nesnd_mug.30.a_tt
+        hidden_effect = {
+            save_scope_as = mug_dispute_lord
+            set_variable = { name = nesnd_india_dispute_subject value = scope:mug_dispute_subject }
+            add_journal_entry = { type = nesnd_india_treaty_dispute_overlord }
+            scope:mug_dispute_subject = {
+                remove_variable = nesnd_india_treaty_dispute_pending
+                set_variable = { name = nesnd_india_dispute_overlord value = scope:mug_dispute_lord }
+                add_journal_entry = { type = nesnd_india_treaty_dispute }
+            }
+        }
+    }
+    option = {
+        name = nesnd_mug.30.b
+        default_option = yes
+        ai_chance = {
+            base = 30
+            modifier = {
+                trigger = { scope:mug_dispute_subject = { liberty_desire >= 50 } }
+                add = -20
+            }
+        }
+        change_relations = { country = scope:mug_dispute_subject value = 10 }
+        custom_tooltip = nesnd_mug.30.b_tt
+        hidden_effect = {
+            set_global_variable = { name = nesnd_india_treaty_dispute_wait days = 3650 }
+            scope:mug_dispute_subject = { remove_variable = nesnd_india_treaty_dispute_pending }
+        }
+    }
+}
+
+# Outcome: Old treaty renewed (sent to both Mughal and France).
+nesnd_mug.31 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_mug.31.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_india_mughal_court } desc = nesnd_mug.31.d_subject }
+            desc = nesnd_mug.31.d_overlord
+        }
+    }
+    flavor = nesnd_mug.31.f
+    option = {
+        name = nesnd_mug.31.a
+        default_option = yes
+        if = {
+            limit = { has_variable = nesnd_india_mughal_court }
+            custom_tooltip = nesnd_mug.31.a_subject_tt
+        }
+        else = {
+            custom_tooltip = nesnd_mug.31.a_overlord_tt
+        }
+    }
+}
+
+# Outcome: Old treaty voided (sent to both Mughal and France).
+nesnd_mug.32 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_mug.32.t
+    desc = {
+        first_valid = {
+            triggered_desc = { trigger = { has_variable = nesnd_india_mughal_court } desc = nesnd_mug.32.d_subject }
+            desc = nesnd_mug.32.d_overlord
+        }
+    }
+    flavor = nesnd_mug.32.f
+    option = {
+        name = nesnd_mug.32.a
+        default_option = yes
+        if = {
+            limit = { has_variable = nesnd_india_mughal_court }
+            custom_tooltip = nesnd_mug.32.a_subject_tt
+        }
+        else = {
+            custom_tooltip = nesnd_mug.32.a_overlord_tt
+        }
+    }
+}
+
 namespace = nesnd_india_indep
 
 nesnd_india_indep.1 = {
@@ -717,6 +836,8 @@ nesnd_india_indep.12 = {
                 scope:india_free_rival = { add_involvement = { strategic_region = root.capital.region value = 1000 } }
             }
         }
+        if = { limit = { c:FRA ?= scope:india_free_rival } nesnd_india_rivalry_shift = { VALUE = 10 } }
+        else_if = { limit = { c:USM ?= scope:india_free_rival } nesnd_india_rivalry_shift = { VALUE = -10 } }
     }
     after = { remove_variable = nesnd_india_indep_lord }
 }

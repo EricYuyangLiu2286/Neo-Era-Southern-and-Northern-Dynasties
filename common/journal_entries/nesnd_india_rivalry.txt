@@ -1,0 +1,98 @@
+﻿# ==== Franco-Ming Rivalry in India (India batch 15) ====
+# Opened on both France and United Federation of Ming by nesnd_india_rivalry_maintain (global monthly pulse).
+# No possible / is_shown_when_inactive so the journal can reopen cleanly after the 10-year or 20-year cooldown.
+nesnd_india_rivalry = {
+    icon = "gfx/interface/icons/event_icons/nesnd_india_weights.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    weight = 780
+    should_be_pinned_by_default_uninvolved_or_context = yes
+
+    scripted_progress_bar = nesnd_india_rivalry_bar
+
+    scripted_button = nesnd_india_rivalry_court_button
+    scripted_button = nesnd_india_rivalry_border_button
+
+    # Outcome 1: France gains the upper hand (bar >= 100).
+    outcome = {
+        header = nesnd_india_rivalry_fra_win_header
+        effect_header = nesnd_india_rivalry_fra_win_effect_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_rivalry_fra_win_conclusion
+        trigger = {
+            hidden_trigger = {
+                nesnd_india_rivalry_parties_valid = yes
+                NOT = { has_global_variable = nesnd_india_rivalry_border_agreed }
+            }
+            custom_tooltip = {
+                text = nesnd_india_rivalry_fra_win_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_india_rivalry_bar)" >= 100 }
+            }
+        }
+        effect = {
+            custom_tooltip = nesnd_india_rivalry_fra_win_effect_tt
+            hidden_effect = { nesnd_india_rivalry_settle_upper = { WINNER = c:FRA LOSER = c:USM END = 100 } }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_rivalry_fra_win_outcome_tt } } }
+    }
+    # Outcome 2: United Federation of Ming gains the upper hand (bar <= -100).
+    outcome = {
+        header = nesnd_india_rivalry_usm_win_header
+        effect_header = nesnd_india_rivalry_usm_win_effect_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_rivalry_usm_win_conclusion
+        trigger = {
+            hidden_trigger = {
+                nesnd_india_rivalry_parties_valid = yes
+                NOT = { has_global_variable = nesnd_india_rivalry_border_agreed }
+            }
+            custom_tooltip = {
+                text = nesnd_india_rivalry_usm_win_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_india_rivalry_bar)" <= -100 }
+            }
+        }
+        effect = {
+            custom_tooltip = nesnd_india_rivalry_usm_win_effect_tt
+            hidden_effect = { nesnd_india_rivalry_settle_upper = { WINNER = c:USM LOSER = c:FRA END = -100 } }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_rivalry_usm_win_outcome_tt } } }
+    }
+    # Outcome 3: Border delimitation agreed (Treaty of Bombay).
+    outcome = {
+        header = nesnd_india_rivalry_border_header
+        effect_header = nesnd_india_rivalry_border_effect_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_rivalry_border_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_india_rivalry_border_trigger_tt
+                has_global_variable = nesnd_india_rivalry_border_agreed
+            }
+        }
+        effect = {
+            custom_tooltip = nesnd_india_rivalry_border_outcome_effect_tt
+            trigger_event = { id = nesnd_india_rivalry.4 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_rivalry.4_outcome_tt } } }
+    }
+    # Hidden invalidation: one party lost all Indian states and subjects.
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            NOT = { has_global_variable = nesnd_india_rivalry_border_agreed }
+            NOT = { nesnd_india_rivalry_parties_valid = yes }
+        }
+        effect = { nesnd_india_rivalry_abandon_reward = yes }
+    }
+
+    on_monthly_pulse = {
+        effect = {
+            if = {
+                limit = { is_ai = yes nesnd_india_rivalry_can_court = yes }
+                random = { chance = 5 nesnd_india_rivalry_court_do = yes }
+            }
+        }
+    }
+}

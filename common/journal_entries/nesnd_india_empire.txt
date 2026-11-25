@@ -360,3 +360,283 @@ nesnd_mug_council = {
 
     on_monthly_pulse = { effect = { nesnd_mug_council_ai = yes } }
 }
+
+# ==== Old treaty dispute (India batch 15) ====
+# Opened together on Mughal (nesnd_india_treaty_dispute) and France (nesnd_india_treaty_dispute_overlord)
+# when France questions the old treaty in nesnd_mug.30. Neither defines possible or is_shown_when_inactive
+# so the pair can reopen cleanly twenty years after a renewal.
+nesnd_india_treaty_dispute = {
+    icon = "gfx/interface/icons/event_icons/nesnd_india_slate.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    weight = 770
+    should_be_pinned_by_default_uninvolved_or_context = yes
+
+    scripted_progress_bar = nesnd_india_treaty_dispute_bar
+
+    scripted_button = nesnd_india_dispute_petition_button
+    scripted_button = nesnd_india_dispute_withhold_button
+
+    # Bar reaches 100: treaty renewed.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_dispute_renew_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_dispute_subject_active = yes }
+            custom_tooltip = {
+                text = nesnd_india_dispute_renew_trigger_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_india_treaty_dispute_bar)" >= 100 }
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_india_treaty_renewed }
+            clear_saved_scope = mug_dispute_partner
+            var:nesnd_india_dispute_overlord ?= { save_scope_as = mug_dispute_partner }
+            if = {
+                limit = { exists = scope:mug_dispute_partner }
+                if = {
+                    limit = { NOT = { has_global_variable = nesnd_india_dispute_renew_rel_done } }
+                    set_global_variable = { name = nesnd_india_dispute_renew_rel_done days = 30 }
+                    change_relations = { country = scope:mug_dispute_partner value = 30 }
+                }
+                else = {
+                    show_as_tooltip = { change_relations = { country = scope:mug_dispute_partner value = 30 } }
+                }
+            }
+            else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
+            custom_tooltip = nesnd_india_dispute_renew_wait_tt
+            hidden_effect = {
+                set_global_variable = { name = nesnd_india_treaty_dispute_wait days = 7300 }
+                set_global_variable = nesnd_india_treaty_dispute_resolved
+                nesnd_india_dispute_push_partner = { JE = nesnd_india_treaty_dispute_overlord END = 100 }
+                nesnd_india_dispute_cleanup_subject = yes
+            }
+            trigger_event = { id = nesnd_mug.31 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_mug.31_outcome_tt } } }
+    }
+    # Bar reaches 0: treaty voided.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_dispute_void_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_dispute_subject_active = yes }
+            custom_tooltip = {
+                text = nesnd_india_dispute_void_trigger_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_india_treaty_dispute_bar)" <= 0 }
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_india_treaty_void days = long_modifier_time }
+            clear_saved_scope = mug_dispute_partner
+            var:nesnd_india_dispute_overlord ?= { save_scope_as = mug_dispute_partner }
+            if = {
+                limit = { exists = scope:mug_dispute_partner }
+                if = {
+                    limit = { NOT = { has_global_variable = nesnd_india_dispute_void_rel_done } }
+                    set_global_variable = { name = nesnd_india_dispute_void_rel_done days = 30 }
+                    change_relations = { country = scope:mug_dispute_partner value = -30 }
+                }
+                else = {
+                    show_as_tooltip = { change_relations = { country = scope:mug_dispute_partner value = -30 } }
+                }
+            }
+            else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
+            custom_tooltip = {
+                text = nesnd_india_dispute_void_fervor_tt
+                save_scope_as = mug_dispute_fervor_country
+                every_primary_culture = {
+                    scope:mug_dispute_fervor_country = {
+                        add_fervor_target_modifier = { culture = prev days = 3650 multiplier = 10 }
+                    }
+                }
+            }
+            if = {
+                limit = { has_journal_entry = nesnd_india_indep }
+                custom_tooltip = {
+                    text = nesnd_india_dispute_void_indep_tt
+                    je:nesnd_india_indep ?= {
+                        add_progress = { name = nesnd_india_indep_economy_bar value = 10 }
+                        add_progress = { name = nesnd_india_indep_military_bar value = 10 }
+                    }
+                }
+            }
+            else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
+            hidden_effect = {
+                set_global_variable = { name = nesnd_india_treaty_dispute_wait days = 3650 }
+                set_global_variable = nesnd_india_treaty_dispute_resolved
+                nesnd_india_dispute_push_partner = { JE = nesnd_india_treaty_dispute_overlord END = 0 }
+                nesnd_india_dispute_cleanup_subject = yes
+            }
+            trigger_event = { id = nesnd_mug.32 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_mug.32_subject_outcome_tt } } }
+    }
+    # Mughal is no longer a subject of France during the dispute: silent invalidation; nesnd_mug_france settles on its own.
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_india_dispute_subject_active = yes } }
+        effect = { nesnd_india_dispute_cleanup_subject = yes }
+    }
+
+    on_monthly_pulse = {
+        effect = {
+            nesnd_india_dispute_sync_overlord = yes
+            nesnd_india_dispute_subject_ai = yes
+        }
+    }
+}
+
+nesnd_india_treaty_dispute_overlord = {
+    icon = "gfx/interface/icons/event_icons/nesnd_india_slate.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    weight = 770
+    should_be_pinned_by_default_uninvolved_or_context = yes
+
+    scripted_progress_bar = nesnd_india_treaty_dispute_bar
+
+    scripted_button = nesnd_india_dispute_reaffirm_button
+    scripted_button = nesnd_india_dispute_concede_button
+
+    # Bar reaches 100: treaty renewed.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_dispute_renew_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_dispute_overlord_active = yes }
+            custom_tooltip = {
+                text = nesnd_india_dispute_renew_trigger_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_india_treaty_dispute_bar)" >= 100 }
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_india_treaty_renewed_overlord }
+            clear_saved_scope = mug_dispute_partner
+            var:nesnd_india_dispute_subject ?= { save_scope_as = mug_dispute_partner }
+            if = {
+                limit = { exists = scope:mug_dispute_partner }
+                if = {
+                    limit = { NOT = { has_global_variable = nesnd_india_dispute_renew_rel_done } }
+                    set_global_variable = { name = nesnd_india_dispute_renew_rel_done days = 30 }
+                    change_relations = { country = scope:mug_dispute_partner value = 30 }
+                }
+                else = {
+                    show_as_tooltip = { change_relations = { country = scope:mug_dispute_partner value = 30 } }
+                }
+            }
+            else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
+            # Involvement only in an Indian strategic region where France holds no state (at start, region_south_india).
+            if = {
+                limit = {
+                    OR = {
+                        NOT = { any_scope_state = { region = sr:region_south_india } }
+                        NOT = { any_scope_state = { region = sr:region_north_india } }
+                    }
+                }
+                custom_tooltip = {
+                    text = nesnd_india_dispute_renew_involvement_tt
+                    if = {
+                        limit = { NOT = { any_scope_state = { region = sr:region_south_india } } }
+                        add_involvement = { strategic_region = sr:region_south_india value = 1000 }
+                    }
+                    if = {
+                        limit = { NOT = { any_scope_state = { region = sr:region_north_india } } }
+                        add_involvement = { strategic_region = sr:region_north_india value = 1000 }
+                    }
+                }
+            }
+            else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
+            custom_tooltip = nesnd_india_dispute_renew_wait_tt
+            hidden_effect = {
+                set_global_variable = { name = nesnd_india_treaty_dispute_wait days = 7300 }
+                set_global_variable = nesnd_india_treaty_dispute_resolved
+                nesnd_india_dispute_push_partner = { JE = nesnd_india_treaty_dispute END = 100 }
+                nesnd_india_dispute_cleanup_overlord = yes
+            }
+            trigger_event = { id = nesnd_mug.31 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_mug.31_outcome_tt } } }
+    }
+    # Bar reaches 0: treaty voided.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_dispute_void_conclusion
+        trigger = {
+            hidden_trigger = { nesnd_india_dispute_overlord_active = yes }
+            custom_tooltip = {
+                text = nesnd_india_dispute_void_trigger_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_india_treaty_dispute_bar)" <= 0 }
+            }
+        }
+        effect = {
+            clear_saved_scope = mug_dispute_partner
+            var:nesnd_india_dispute_subject ?= { save_scope_as = mug_dispute_partner }
+            if = {
+                limit = { exists = scope:mug_dispute_partner }
+                if = {
+                    limit = { NOT = { has_global_variable = nesnd_india_dispute_void_rel_done } }
+                    set_global_variable = { name = nesnd_india_dispute_void_rel_done days = 30 }
+                    change_relations = { country = scope:mug_dispute_partner value = -30 }
+                }
+                else = {
+                    show_as_tooltip = { change_relations = { country = scope:mug_dispute_partner value = -30 } }
+                }
+                custom_tooltip = {
+                    text = nesnd_india_dispute_void_claim_tt
+                    scope:mug_dispute_partner = {
+                        capital ?= {
+                            state_region = {
+                                if = {
+                                    limit = { NOT = { has_claim_by = root } }
+                                    add_claim = root
+                                }
+                            }
+                        }
+                    }
+                }
+                create_diplomatic_catalyst = {
+                    type = catalyst_event_negative
+                    target = scope:mug_dispute_partner
+                }
+                hidden_effect = {
+                    if = {
+                        limit = { is_ai = yes }
+                        set_secret_goal = { country = scope:mug_dispute_partner secret_goal = conquer }
+                    }
+                }
+            }
+            else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
+            hidden_effect = {
+                set_global_variable = { name = nesnd_india_treaty_dispute_wait days = 3650 }
+                set_global_variable = nesnd_india_treaty_dispute_resolved
+                nesnd_india_dispute_push_partner = { JE = nesnd_india_treaty_dispute END = 0 }
+                nesnd_india_dispute_cleanup_overlord = yes
+            }
+            trigger_event = { id = nesnd_mug.32 popup = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_mug.32_overlord_outcome_tt } } }
+    }
+    # Mughal is no longer France's subject during the dispute: silent invalidation.
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = { NOT = { nesnd_india_dispute_overlord_active = yes } }
+        effect = { nesnd_india_dispute_cleanup_overlord = yes }
+    }
+
+    on_monthly_pulse = {
+        effect = { nesnd_india_dispute_overlord_ai = yes }
+    }
+}

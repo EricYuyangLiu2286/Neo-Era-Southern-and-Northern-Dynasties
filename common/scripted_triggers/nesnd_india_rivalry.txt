@@ -1,0 +1,84 @@
+﻿# ==== Franco-Ming Rivalry in India (India batch 15) ====
+# Country scope. Holds at least one state in India or at least one Indian subject.
+nesnd_india_rivalry_has_presence = {
+    OR = {
+        any_scope_state = { nesnd_india_state = yes state_population > 0 }
+        any_subject_or_below = { nesnd_india_country = yes }
+    }
+}
+# Any scope. Both France and United Federation of Ming exist, are alive, and hold a presence in India.
+nesnd_india_rivalry_parties_valid = {
+    exists = c:FRA
+    exists = c:USM
+    c:FRA = { is_country_alive = yes nesnd_india_rivalry_has_presence = yes }
+    c:USM = { is_country_alive = yes nesnd_india_rivalry_has_presence = yes }
+}
+# Any scope. At least one rivalry trigger holds (relations <= 0, old treaty dispute resolved, or claim on rival's Indian state).
+nesnd_india_rivalry_trigger_met = {
+    OR = {
+        c:FRA = { "relations(c:USM)" <= 0 }
+        has_global_variable = nesnd_india_treaty_dispute_resolved
+        c:USM = { any_scope_state = { nesnd_india_state = yes has_claim_by = c:FRA } }
+        c:FRA = { any_scope_state = { nesnd_india_state = yes has_claim_by = c:USM } }
+    }
+}
+# Any scope. Conditions to open nesnd_india_rivalry on both France and United Federation of Ming.
+nesnd_india_rivalry_can_open = {
+    nesnd_india_rivalry_parties_valid = yes
+    NOT = { has_global_variable = nesnd_india_rivalry_wait }
+    c:FRA = { NOT = { has_journal_entry = nesnd_india_rivalry } }
+    c:USM = { NOT = { has_journal_entry = nesnd_india_rivalry } }
+    nesnd_india_rivalry_trigger_met = yes
+}
+# Country scope. An independent Indian princely state.
+nesnd_india_rivalry_free_prince = {
+    nesnd_india_prince = yes
+    is_subject = no
+}
+# Any scope. Wrapped in custom_tooltip because nesnd_india_prince compares country tags inside any_country.
+nesnd_india_rivalry_has_free_prince = {
+    custom_tooltip = {
+        text = nesnd_india_rivalry_has_prince_tt
+        any_country = { nesnd_india_rivalry_free_prince = yes }
+    }
+}
+# Any scope. France and United Federation of Ming are not at war with each other.
+nesnd_india_rivalry_at_peace = {
+    trigger_if = {
+        limit = { exists = c:FRA exists = c:USM }
+        c:FRA = { NOT = { has_war_with = c:USM } }
+    }
+    trigger_else = { always = no }
+}
+# Country scope. Can press "Court a Princely State".
+nesnd_india_rivalry_can_court = {
+    hidden_trigger = { has_journal_entry = nesnd_india_rivalry }
+    nesnd_india_can_pay = { SUM = nesnd_india_rivalry_court_price TEXT = nesnd_india_rivalry_can_pay_tt }
+    custom_tooltip = {
+        text = nesnd_india_rivalry_court_wait_tt
+        NOT = { has_variable = nesnd_india_rivalry_court_wait }
+    }
+    nesnd_india_rivalry_has_free_prince = yes
+}
+# Country scope. Can press "Propose Border Delimitation".
+nesnd_india_rivalry_can_border = {
+    hidden_trigger = {
+        has_journal_entry = nesnd_india_rivalry
+        NOT = { has_global_variable = nesnd_india_rivalry_border_pending }
+    }
+    custom_tooltip = {
+        text = nesnd_india_rivalry_border_range_tt
+        je:nesnd_india_rivalry ?= {
+            "scripted_bar_progress(nesnd_india_rivalry_bar)" >= -30
+            "scripted_bar_progress(nesnd_india_rivalry_bar)" <= 30
+        }
+    }
+    custom_tooltip = {
+        text = nesnd_india_rivalry_not_at_war_tt
+        nesnd_india_rivalry_at_peace = yes
+    }
+    custom_tooltip = {
+        text = nesnd_india_rivalry_border_wait_tt
+        NOT = { has_variable = nesnd_india_rivalry_border_wait }
+    }
+}

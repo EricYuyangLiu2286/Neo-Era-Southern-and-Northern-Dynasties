@@ -405,3 +405,93 @@ nesnd_mug_ai_many_levels = {
     trigger_if = { limit = { exists = var:nesnd_india_matter_from } var:nesnd_india_matter_from = { nesnd_mug_overlord_levels >= 3 } }
     trigger_else = { always = no }
 }
+
+# ==== Old treaty dispute (India batch 15) ====
+# Mughal scope. At least one pressure condition holds to trigger "Inheritance of the Old Treaty".
+nesnd_mug_treaty_dispute_pressure = {
+    OR = {
+        has_variable = nesnd_india_reform_done
+        liberty_desire >= 50
+        has_variable = nesnd_mug_council_settled
+    }
+}
+# Mughal scope. Eligible to trigger the entry event nesnd_mug.30 for France.
+nesnd_mug_treaty_dispute_due = {
+    is_country_alive = yes
+    has_variable = nesnd_india_mughal_court
+    exists = c:FRA
+    c:FRA = {
+        is_country_alive = yes
+        NOT = { has_journal_entry = nesnd_india_treaty_dispute_overlord }
+    }
+    is_subject_of = c:FRA
+    NOT = { has_journal_entry = nesnd_india_treaty_dispute }
+    NOT = { has_variable = nesnd_india_treaty_dispute_pending }
+    NOT = { has_global_variable = nesnd_india_treaty_dispute_wait }
+    nesnd_mug_treaty_dispute_pressure = yes
+}
+# Mughal scope. Mughal is still a subject of its dispute overlord.
+nesnd_india_dispute_subject_active = {
+    is_country_alive = yes
+    trigger_if = {
+        limit = { exists = var:nesnd_india_dispute_overlord }
+        var:nesnd_india_dispute_overlord = { is_country_alive = yes }
+        is_subject_of = var:nesnd_india_dispute_overlord
+    }
+    trigger_else = { always = no }
+}
+# Overlord (France) scope. The dispute subject is still alive and our subject.
+nesnd_india_dispute_overlord_active = {
+    is_country_alive = yes
+    save_temporary_scope_as = dispute_lord_check
+    trigger_if = {
+        limit = { exists = var:nesnd_india_dispute_subject }
+        var:nesnd_india_dispute_subject = {
+            is_country_alive = yes
+            is_subject_of = scope:dispute_lord_check
+        }
+    }
+    trigger_else = { always = no }
+}
+# Country scope (Mughal or France). Bilateral relations between the two dispute parties >= 20.
+nesnd_india_dispute_relations_high = {
+    trigger_if = {
+        limit = { exists = var:nesnd_india_dispute_overlord }
+        var:nesnd_india_dispute_overlord = { save_temporary_scope_as = dispute_other }
+        "relations(scope:dispute_other)" >= 20
+    }
+    trigger_else_if = {
+        limit = { exists = var:nesnd_india_dispute_subject }
+        var:nesnd_india_dispute_subject = { save_temporary_scope_as = dispute_other }
+        "relations(scope:dispute_other)" >= 20
+    }
+    trigger_else = { always = no }
+}
+# Country scope (Mughal or France). Bilateral relations <= 0.
+nesnd_india_dispute_relations_low = {
+    trigger_if = {
+        limit = { exists = var:nesnd_india_dispute_overlord }
+        var:nesnd_india_dispute_overlord = { save_temporary_scope_as = dispute_other }
+        "relations(scope:dispute_other)" <= 0
+    }
+    trigger_else_if = {
+        limit = { exists = var:nesnd_india_dispute_subject }
+        var:nesnd_india_dispute_subject = { save_temporary_scope_as = dispute_other }
+        "relations(scope:dispute_other)" <= 0
+    }
+    trigger_else = { always = no }
+}
+# Country scope (Mughal or France). Bilateral relations strictly below 0 (for France AI).
+nesnd_india_dispute_relations_below_zero = {
+    trigger_if = {
+        limit = { exists = var:nesnd_india_dispute_overlord }
+        var:nesnd_india_dispute_overlord = { save_temporary_scope_as = dispute_other }
+        "relations(scope:dispute_other)" < 0
+    }
+    trigger_else_if = {
+        limit = { exists = var:nesnd_india_dispute_subject }
+        var:nesnd_india_dispute_subject = { save_temporary_scope_as = dispute_other }
+        "relations(scope:dispute_other)" < 0
+    }
+    trigger_else = { always = no }
+}

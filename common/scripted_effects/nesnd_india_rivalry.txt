@@ -1,0 +1,260 @@
+﻿# ==== Franco-Ming Rivalry in India (India batch 15) ====
+# Called from global on_monthly_pulse (no root scope): opens the rivalry journal on both powers
+# and keeps their tug-of-war bars synchronised.
+nesnd_india_rivalry_maintain = {
+    if = {
+        limit = { nesnd_india_rivalry_can_open = yes }
+        remove_global_variable = nesnd_india_rivalry_border_agreed
+        remove_global_variable = nesnd_india_rivalry_round_settled
+        c:FRA = { add_journal_entry = { type = nesnd_india_rivalry } }
+        c:USM = { add_journal_entry = { type = nesnd_india_rivalry } }
+    }
+    else_if = {
+        limit = {
+            exists = c:FRA
+            exists = c:USM
+            c:FRA = { has_journal_entry = nesnd_india_rivalry }
+            c:USM = { has_journal_entry = nesnd_india_rivalry }
+        }
+        c:FRA = {
+            je:nesnd_india_rivalry = {
+                save_scope_value_as = {
+                    name = india_rivalry_sync_val
+                    value = "scripted_bar_progress(nesnd_india_rivalry_bar)"
+                }
+            }
+        }
+        c:USM = {
+            je:nesnd_india_rivalry = {
+                set_bar_progress = { name = nesnd_india_rivalry_bar value = scope:india_rivalry_sync_val }
+            }
+        }
+    }
+}
+# Any scope. Shifts the tug-of-war bar on both France and United Federation of Ming by VALUE.
+# Positive shifts toward France; negative shifts toward United Federation of Ming.
+nesnd_india_rivalry_shift = {
+    c:FRA ?= {
+        if = {
+            limit = { has_journal_entry = nesnd_india_rivalry }
+            je:nesnd_india_rivalry = {
+                add_progress = { name = nesnd_india_rivalry_bar value = $VALUE$ }
+            }
+        }
+    }
+    c:USM ?= {
+        if = {
+            limit = { has_journal_entry = nesnd_india_rivalry }
+            je:nesnd_india_rivalry = {
+                add_progress = { name = nesnd_india_rivalry_bar value = $VALUE$ }
+            }
+        }
+    }
+}
+# Country scope (FRA or USM). Courts the independent princely state with highest relations.
+nesnd_india_rivalry_court_do = {
+    if = {
+        limit = {
+            has_journal_entry = nesnd_india_rivalry
+            gold_reserves >= nesnd_india_rivalry_court_price
+            in_default = no
+            NOT = { has_modifier = declared_bankruptcy }
+            NOT = { has_variable = nesnd_india_rivalry_court_wait }
+        }
+        save_scope_as = india_rivalry_actor
+        clear_saved_scope = india_rivalry_prince
+        ordered_country = {
+            limit = { nesnd_india_rivalry_free_prince = yes }
+            order_by = "relations(scope:india_rivalry_actor)"
+            position = 0
+            check_range_bounds = no
+            save_scope_as = india_rivalry_prince
+        }
+        if = {
+            limit = { exists = scope:india_rivalry_prince }
+            add_treasury = { value = nesnd_india_rivalry_court_price multiply = -1 }
+            set_variable = { name = nesnd_india_rivalry_court_wait months = 12 }
+            change_relations = { country = scope:india_rivalry_prince value = 15 }
+            if = {
+                limit = { c:FRA ?= this }
+                nesnd_india_rivalry_shift = { VALUE = 10 }
+            }
+            else_if = {
+                limit = { c:USM ?= this }
+                nesnd_india_rivalry_shift = { VALUE = -10 }
+            }
+        }
+    }
+}
+# Country scope (FRA or USM). Sends the border delimitation proposal to the rival.
+nesnd_india_rivalry_propose_border = {
+    if = {
+        limit = { nesnd_india_rivalry_can_border = yes }
+        set_variable = { name = nesnd_india_rivalry_border_wait months = 24 }
+        set_global_variable = { name = nesnd_india_rivalry_border_pending days = 90 }
+        save_scope_as = india_rivalry_proposer
+        if = {
+            limit = { c:FRA ?= this exists = c:USM }
+            c:USM = { trigger_event = { id = nesnd_india_rivalry.1 popup = yes } }
+        }
+        else_if = {
+            limit = { c:USM ?= this exists = c:FRA }
+            c:FRA = { trigger_event = { id = nesnd_india_rivalry.1 popup = yes } }
+        }
+    }
+}
+# Any scope. Shared settlement for either side reaching the end of the tug-of-war bar (+100 or -100).
+# Guarded by nesnd_india_rivalry_round_settled so both countries' JEs concluding on the same tick apply once.
+# END is the bar end reached (100 for France, -100 for United Federation of Ming).
+nesnd_india_rivalry_settle_upper = {
+    if = {
+        limit = { NOT = { has_global_variable = nesnd_india_rivalry_round_settled } }
+        set_global_variable = { name = nesnd_india_rivalry_round_settled days = 30 }
+        set_global_variable = { name = nesnd_india_rivalry_wait days = 3650 }
+        clear_saved_scope = india_rivalry_winner
+        clear_saved_scope = india_rivalry_loser
+        $WINNER$ = { save_scope_as = india_rivalry_winner }
+        $LOSER$ = { save_scope_as = india_rivalry_loser }
+        # Both bars go to the same end, so the other power's journal concludes with the same outcome.
+        c:FRA ?= {
+            if = {
+                limit = { has_journal_entry = nesnd_india_rivalry }
+                je:nesnd_india_rivalry = { set_bar_progress = { name = nesnd_india_rivalry_bar value = $END$ } }
+            }
+        }
+        c:USM ?= {
+            if = {
+                limit = { has_journal_entry = nesnd_india_rivalry }
+                je:nesnd_india_rivalry = { set_bar_progress = { name = nesnd_india_rivalry_bar value = $END$ } }
+            }
+        }
+        # Winner gains claims on up to 3 Indian states of loser adjacent to winner or winner's subjects.
+        scope:india_rivalry_loser = {
+            ordered_scope_state = {
+                limit = {
+                    nesnd_india_state = yes
+                    NOT = { has_claim_by = scope:india_rivalry_winner }
+                    any_neighbouring_state = {
+                        owner = {
+                            OR = {
+                                this = scope:india_rivalry_winner
+                                is_subject_of = scope:india_rivalry_winner
+                            }
+                        }
+                    }
+                }
+                order_by = state_population
+                max = 3
+                check_range_bounds = no
+                state_region = { add_claim = scope:india_rivalry_winner }
+            }
+        }
+        scope:india_rivalry_winner = {
+            add_modifier = { name = nesnd_india_rivalry_upper days = long_modifier_time }
+            if = {
+                limit = { is_ai = yes }
+                set_secret_goal = { country = scope:india_rivalry_loser secret_goal = conquer }
+            }
+            trigger_event = { id = nesnd_india_rivalry.2 popup = yes }
+        }
+        scope:india_rivalry_loser = {
+            add_modifier = { name = nesnd_india_rivalry_lower days = long_modifier_time }
+            if = {
+                limit = { is_ai = yes }
+                set_secret_goal = { country = scope:india_rivalry_winner secret_goal = antagonize }
+            }
+            trigger_event = { id = nesnd_india_rivalry.3 popup = yes }
+        }
+    }
+}
+# Responder scope (from nesnd_india_rivalry.1.a). Concludes the border delimitation (Treaty of Bombay).
+# Vanilla has no non-aggression treaty article; we sign a 10-year bidirectional military_access treaty
+# (when can_create_treaty holds) paired with a 10-year bidirectional truce.
+nesnd_india_rivalry_settle_border = {
+    if = {
+        limit = {
+            exists = scope:india_rivalry_proposer
+            NOT = { has_global_variable = nesnd_india_rivalry_round_settled }
+        }
+        save_scope_as = india_rivalry_responder
+        set_global_variable = { name = nesnd_india_rivalry_round_settled days = 30 }
+        set_global_variable = { name = nesnd_india_rivalry_wait days = 7300 }
+        set_global_variable = { name = nesnd_india_rivalry_border_agreed days = 90 }
+        if = {
+            limit = {
+                can_create_treaty = {
+                    first_country = scope:india_rivalry_responder
+                    second_country = scope:india_rivalry_proposer
+                    is_draft = no
+                    binding_period = { years = 10 }
+                    articles_to_create = {
+                        {
+                            article = military_access
+                            source_country = scope:india_rivalry_responder
+                            target_country = scope:india_rivalry_proposer
+                        }
+                        {
+                            article = military_access
+                            source_country = scope:india_rivalry_proposer
+                            target_country = scope:india_rivalry_responder
+                        }
+                    }
+                }
+            }
+            create_treaty = {
+                first_country = scope:india_rivalry_responder
+                second_country = scope:india_rivalry_proposer
+                is_draft = no
+                binding_period = { years = 10 }
+                articles_to_create = {
+                    {
+                        article = military_access
+                        source_country = scope:india_rivalry_responder
+                        target_country = scope:india_rivalry_proposer
+                    }
+                    {
+                        article = military_access
+                        source_country = scope:india_rivalry_proposer
+                        target_country = scope:india_rivalry_responder
+                    }
+                }
+            }
+        }
+        create_bidirectional_truce = {
+            country = scope:india_rivalry_proposer
+            months = 120
+        }
+        change_relations = { country = scope:india_rivalry_proposer value = 30 }
+        add_modifier = { name = nesnd_india_rivalry_border days = long_modifier_time }
+        scope:india_rivalry_proposer = {
+            add_modifier = { name = nesnd_india_rivalry_border days = long_modifier_time }
+        }
+    }
+}
+# Any scope. When one side loses all Indian states and subjects, the remaining side gains nesnd_india_rivalry_upper.
+nesnd_india_rivalry_abandon_reward = {
+    if = {
+        limit = { NOT = { has_global_variable = nesnd_india_rivalry_round_settled } }
+        set_global_variable = { name = nesnd_india_rivalry_round_settled days = 30 }
+        if = {
+            limit = {
+                exists = c:FRA
+                c:FRA = { is_country_alive = yes nesnd_india_rivalry_has_presence = yes }
+                NOT = {
+                    c:USM ?= { is_country_alive = yes nesnd_india_rivalry_has_presence = yes }
+                }
+            }
+            c:FRA = { add_modifier = { name = nesnd_india_rivalry_upper days = long_modifier_time } }
+        }
+        else_if = {
+            limit = {
+                exists = c:USM
+                c:USM = { is_country_alive = yes nesnd_india_rivalry_has_presence = yes }
+                NOT = {
+                    c:FRA ?= { is_country_alive = yes nesnd_india_rivalry_has_presence = yes }
+                }
+            }
+            c:USM = { add_modifier = { name = nesnd_india_rivalry_upper days = long_modifier_time } }
+        }
+    }
+}

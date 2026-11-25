@@ -1,0 +1,161 @@
+﻿namespace = nesnd_india_rivalry
+
+# ==== Franco-Ming Rivalry in India (India batch 15) ====
+# .1  Border delimitation proposal (sent to the other power)
+# .2  Upper hand victory event (sent to winner)
+# .3  Upper hand defeat event (sent to loser)
+# .4  Treaty of Bombay border settlement event (sent to both)
+# .5  Border proposal refused notification (sent to proposer)
+
+nesnd_india_rivalry.1 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_rivalry.1.t
+    desc = nesnd_india_rivalry.1.d
+    flavor = nesnd_india_rivalry.1.f
+    trigger = {
+        exists = scope:india_rivalry_proposer
+        scope:india_rivalry_proposer = {
+            is_country_alive = yes
+            NOT = { has_war_with = root }
+        }
+        has_journal_entry = nesnd_india_rivalry
+    }
+    cancellation_trigger = {
+        OR = {
+            NOT = { exists = scope:india_rivalry_proposer }
+            scope:india_rivalry_proposer = { is_country_alive = no }
+            has_war_with = scope:india_rivalry_proposer
+            NOT = { has_journal_entry = nesnd_india_rivalry }
+        }
+    }
+    option = {
+        name = nesnd_india_rivalry.1.a
+        ai_chance = {
+            base = 40
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 10 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 20 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 30 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 40 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 50 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 60 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 70 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 80 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 90 } add = 10 }
+            modifier = { trigger = { "relations(scope:india_rivalry_proposer)" >= 100 } add = 10 }
+            modifier = { trigger = { is_at_war = yes } add = 20 }
+            modifier = {
+                trigger = {
+                    c:FRA ?= this
+                    je:nesnd_india_rivalry ?= { "scripted_bar_progress(nesnd_india_rivalry_bar)" > 15 }
+                }
+                add = -30
+            }
+            modifier = {
+                trigger = {
+                    c:USM ?= this
+                    je:nesnd_india_rivalry ?= { "scripted_bar_progress(nesnd_india_rivalry_bar)" < -15 }
+                }
+                add = -30
+            }
+        }
+        custom_tooltip = nesnd_india_rivalry.1.a_tt
+        hidden_effect = {
+            remove_global_variable = nesnd_india_rivalry_border_pending
+            nesnd_india_rivalry_settle_border = yes
+        }
+    }
+    option = {
+        name = nesnd_india_rivalry.1.b
+        default_option = yes
+        ai_chance = { base = 60 }
+        change_relations = { country = scope:india_rivalry_proposer value = -10 }
+        custom_tooltip = nesnd_india_rivalry.1.b_tt
+        hidden_effect = {
+            remove_global_variable = nesnd_india_rivalry_border_pending
+            save_scope_as = india_rivalry_refuser
+            scope:india_rivalry_proposer = {
+                create_diplomatic_catalyst = {
+                    type = catalyst_event_negative
+                    target = scope:india_rivalry_refuser
+                }
+                if = {
+                    limit = { c:FRA ?= this }
+                    nesnd_india_rivalry_shift = { VALUE = 10 }
+                }
+                else_if = {
+                    limit = { c:USM ?= this }
+                    nesnd_india_rivalry_shift = { VALUE = -10 }
+                }
+                trigger_event = { id = nesnd_india_rivalry.5 popup = yes }
+            }
+        }
+    }
+}
+
+# Winner of the tug-of-war in India.
+nesnd_india_rivalry.2 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_rivalry.2.t
+    desc = nesnd_india_rivalry.2.d
+    flavor = nesnd_india_rivalry.2.f
+    option = {
+        name = nesnd_india_rivalry.2.a
+        default_option = yes
+        custom_tooltip = nesnd_india_rivalry.2.a_tt
+    }
+}
+
+# Loser of the tug-of-war in India.
+nesnd_india_rivalry.3 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_rivalry.3.t
+    desc = nesnd_india_rivalry.3.d
+    flavor = nesnd_india_rivalry.3.f
+    option = {
+        name = nesnd_india_rivalry.3.a
+        default_option = yes
+        custom_tooltip = nesnd_india_rivalry.3.a_tt
+    }
+}
+
+# Treaty of Bombay: border delimitation concluded (received by both powers).
+nesnd_india_rivalry.4 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_rivalry.4.t
+    desc = nesnd_india_rivalry.4.d
+    flavor = nesnd_india_rivalry.4.f
+    immediate = {
+        clear_saved_scope = india_rivalry_partner
+        if = {
+            limit = { c:FRA ?= this exists = c:USM }
+            c:USM = { save_scope_as = india_rivalry_partner }
+        }
+        else_if = {
+            limit = { c:USM ?= this exists = c:FRA }
+            c:FRA = { save_scope_as = india_rivalry_partner }
+        }
+    }
+    option = {
+        name = nesnd_india_rivalry.4.a
+        default_option = yes
+        custom_tooltip = nesnd_india_rivalry.4.a_tt
+    }
+}
+
+# Border delimitation proposal was refused (received by proposer).
+nesnd_india_rivalry.5 = {
+    type = country_event
+    event_image = { video = "unspecific_signed_contract" }
+    title = nesnd_india_rivalry.5.t
+    desc = nesnd_india_rivalry.5.d
+    flavor = nesnd_india_rivalry.5.f
+    option = {
+        name = nesnd_india_rivalry.5.a
+        default_option = yes
+        custom_tooltip = nesnd_india_rivalry.5.a_tt
+    }
+}

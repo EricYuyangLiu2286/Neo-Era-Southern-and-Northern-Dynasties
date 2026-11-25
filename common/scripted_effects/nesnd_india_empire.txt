@@ -317,6 +317,7 @@ nesnd_mug_upkeep = {
         }
     }
     if = { limit = { nesnd_mug_famine_due = yes } nesnd_mug_famine_start = yes }
+    if = { limit = { nesnd_mug_treaty_dispute_due = yes } nesnd_mug_treaty_dispute_start_event = yes }
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -1631,4 +1632,186 @@ nesnd_india_back_empire_lobby = {
             }
         }
     }
+}
+
+# ==== Old treaty dispute (India batch 15) ====
+# Mughal scope, monthly from nesnd_mug_upkeep. Sends the entry event nesnd_mug.30 to France.
+nesnd_mug_treaty_dispute_start_event = {
+    if = {
+        limit = { nesnd_mug_treaty_dispute_due = yes }
+        save_scope_as = mug_dispute_subject
+        set_variable = { name = nesnd_india_treaty_dispute_pending days = 90 }
+        c:FRA = { trigger_event = { id = nesnd_mug.30 popup = yes } }
+    }
+}
+# Country scope (Mughal or France). Shifts the negotiation bar on both sides by VALUE.
+nesnd_india_treaty_dispute_shift = {
+    if = {
+        limit = { has_journal_entry = nesnd_india_treaty_dispute }
+        je:nesnd_india_treaty_dispute = {
+            add_progress = { name = nesnd_india_treaty_dispute_bar value = $VALUE$ }
+        }
+        var:nesnd_india_dispute_overlord ?= {
+            if = {
+                limit = { has_journal_entry = nesnd_india_treaty_dispute_overlord }
+                je:nesnd_india_treaty_dispute_overlord = {
+                    add_progress = { name = nesnd_india_treaty_dispute_bar value = $VALUE$ }
+                }
+            }
+        }
+    }
+    else_if = {
+        limit = { has_journal_entry = nesnd_india_treaty_dispute_overlord }
+        je:nesnd_india_treaty_dispute_overlord = {
+            add_progress = { name = nesnd_india_treaty_dispute_bar value = $VALUE$ }
+        }
+        var:nesnd_india_dispute_subject ?= {
+            if = {
+                limit = { has_journal_entry = nesnd_india_treaty_dispute }
+                je:nesnd_india_treaty_dispute = {
+                    add_progress = { name = nesnd_india_treaty_dispute_bar value = $VALUE$ }
+                }
+            }
+        }
+    }
+}
+# Mughal scope, monthly. Keeps France's dispute bar locked to Mughal's value.
+nesnd_india_dispute_sync_overlord = {
+    if = {
+        limit = {
+            has_journal_entry = nesnd_india_treaty_dispute
+            exists = var:nesnd_india_dispute_overlord
+        }
+        je:nesnd_india_treaty_dispute = {
+            save_scope_value_as = {
+                name = mug_dispute_bar_val
+                value = "scripted_bar_progress(nesnd_india_treaty_dispute_bar)"
+            }
+        }
+        var:nesnd_india_dispute_overlord = {
+            if = {
+                limit = { has_journal_entry = nesnd_india_treaty_dispute_overlord }
+                je:nesnd_india_treaty_dispute_overlord = {
+                    set_bar_progress = { name = nesnd_india_treaty_dispute_bar value = scope:mug_dispute_bar_val }
+                }
+            }
+        }
+    }
+}
+# Mughal button action: send envoys to petition (cost 4x weekly income, bar +10, 12m cooldown).
+nesnd_india_dispute_petition_do = {
+    if = {
+        limit = {
+            has_journal_entry = nesnd_india_treaty_dispute
+            gold_reserves >= nesnd_india_treaty_dispute_price
+            in_default = no
+            NOT = { has_modifier = declared_bankruptcy }
+            NOT = { has_variable = nesnd_india_dispute_petition_wait }
+        }
+        add_treasury = { value = nesnd_india_treaty_dispute_price multiply = -1 }
+        set_variable = { name = nesnd_india_dispute_petition_wait months = 12 }
+        nesnd_india_treaty_dispute_shift = { VALUE = 10 }
+    }
+}
+# Mughal button action: withhold tribute (bar -15, primary cultures fervor target +5 for 5y, 12m cooldown).
+nesnd_india_dispute_withhold_do = {
+    if = {
+        limit = {
+            has_journal_entry = nesnd_india_treaty_dispute
+            NOT = { has_variable = nesnd_india_dispute_withhold_wait }
+        }
+        set_variable = { name = nesnd_india_dispute_withhold_wait months = 12 }
+        nesnd_india_treaty_dispute_shift = { VALUE = -15 }
+        save_scope_as = mug_dispute_fervor_country
+        every_primary_culture = {
+            scope:mug_dispute_fervor_country = {
+                add_fervor_target_modifier = { culture = prev days = 1825 multiplier = 5 }
+            }
+        }
+    }
+}
+# France button action: reaffirm the old treaty (bar -10, relations -10, 12m cooldown).
+nesnd_india_dispute_reaffirm_do = {
+    if = {
+        limit = {
+            has_journal_entry = nesnd_india_treaty_dispute_overlord
+            NOT = { has_variable = nesnd_india_dispute_reaffirm_wait }
+        }
+        set_variable = { name = nesnd_india_dispute_reaffirm_wait months = 12 }
+        nesnd_india_treaty_dispute_shift = { VALUE = -10 }
+        clear_saved_scope = mug_dispute_rel_target
+        var:nesnd_india_dispute_subject ?= { save_scope_as = mug_dispute_rel_target }
+        if = {
+            limit = { exists = scope:mug_dispute_rel_target }
+            change_relations = { country = scope:mug_dispute_rel_target value = -10 }
+        }
+    }
+}
+# France button action: grant revised terms (cost 4x weekly income, bar +10, 12m cooldown).
+nesnd_india_dispute_concede_do = {
+    if = {
+        limit = {
+            has_journal_entry = nesnd_india_treaty_dispute_overlord
+            gold_reserves >= nesnd_india_treaty_dispute_price
+            in_default = no
+            NOT = { has_modifier = declared_bankruptcy }
+            NOT = { has_variable = nesnd_india_dispute_concede_wait }
+        }
+        add_treasury = { value = nesnd_india_treaty_dispute_price multiply = -1 }
+        set_variable = { name = nesnd_india_dispute_concede_wait months = 12 }
+        nesnd_india_treaty_dispute_shift = { VALUE = 10 }
+    }
+}
+# Mughal AI: 5% monthly chance; withhold if liberty_desire >= 50, else petition.
+nesnd_india_dispute_subject_ai = {
+    if = {
+        limit = { is_ai = yes has_journal_entry = nesnd_india_treaty_dispute }
+        random = {
+            chance = 5
+            if = {
+                limit = { liberty_desire >= 50 }
+                nesnd_india_dispute_withhold_do = yes
+            }
+            else = {
+                nesnd_india_dispute_petition_do = yes
+            }
+        }
+    }
+}
+# France AI: 5% monthly chance; reaffirm if relations < 0, else concede.
+nesnd_india_dispute_overlord_ai = {
+    if = {
+        limit = { is_ai = yes has_journal_entry = nesnd_india_treaty_dispute_overlord }
+        random = {
+            chance = 5
+            if = {
+                limit = { nesnd_india_dispute_relations_below_zero = yes }
+                nesnd_india_dispute_reaffirm_do = yes
+            }
+            else = {
+                nesnd_india_dispute_concede_do = yes
+            }
+        }
+    }
+}
+# Country scope, from a concluding dispute outcome. Pushes the partner's bar to the same end, so that its
+# journal concludes with the same outcome on its next check instead of lingering with a bar a point short.
+nesnd_india_dispute_push_partner = {
+    scope:mug_dispute_partner ?= {
+        if = {
+            limit = { has_journal_entry = $JE$ }
+            je:$JE$ = { set_bar_progress = { name = nesnd_india_treaty_dispute_bar value = $END$ } }
+        }
+    }
+}
+nesnd_india_dispute_cleanup_subject = {
+    remove_variable = nesnd_india_dispute_overlord
+    remove_variable = nesnd_india_dispute_petition_wait
+    remove_variable = nesnd_india_dispute_withhold_wait
+    remove_variable = nesnd_india_treaty_dispute_pending
+}
+nesnd_india_dispute_cleanup_overlord = {
+    remove_variable = nesnd_india_dispute_subject
+    remove_variable = nesnd_india_dispute_reaffirm_wait
+    remove_variable = nesnd_india_dispute_concede_wait
 }
