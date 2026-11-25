@@ -1,0 +1,43 @@
+﻿# Shared effects of the Ottoman mid/late-game line (F1).
+
+# Country scope (TUR), called monthly while nesnd_ottoman_gec_record_due holds.
+# First month of the vanilla Great Eastern Crisis: remember which Balkan state regions the Ottoman state held then,
+# whatever the route. After the crisis: remember how it ended, because the vanilla result modifiers run out.
+nesnd_ottoman_gec_record = {
+    if = {
+        limit = { has_journal_entry = je_great_eastern_crisis NOT = { has_variable = nesnd_ottoman_gec_recorded } }
+        every_scope_state = {
+            limit = { region = sr:region_balkans }
+            if = {
+                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_ottoman_gec_held_regions target = prev.state_region } } } }
+                root = { add_to_variable_list = { name = nesnd_ottoman_gec_held_regions target = prev.state_region } }
+            }
+        }
+        set_variable = nesnd_ottoman_gec_recorded
+    }
+    if = {
+        limit = { NOT = { has_journal_entry = je_great_eastern_crisis } NOT = { has_variable = nesnd_ottoman_gec_result } }
+        if = { limit = { has_modifier = eastern_crisis_controlled } set_variable = { name = nesnd_ottoman_gec_result value = flag:controlled } }
+        else_if = { limit = { has_modifier = eastern_crisis_not_controlled } set_variable = { name = nesnd_ottoman_gec_result value = flag:not_controlled } }
+    }
+}
+
+# Country scope: the country that receives the goal. The Ottoman state marks it for conquest once.
+nesnd_ottoman_receive_conquer_goal = {
+    if = {
+        limit = { c:TUR ?= { NOT = { has_secret_goal = { who = prev secret_goal = conquer } } } }
+        c:TUR = { set_secret_goal = { country = prev secret_goal = conquer } }
+    }
+}
+
+# State region scope. Every holder outside Ottoman hands: its top overlord (or the holder itself when independent) becomes
+# the Ottoman conquest target (R11: the opponent is whoever holds the land).
+nesnd_ottoman_conquer_goal_on_holders = {
+    every_scope_state = {
+        limit = { nesnd_ottoman_state_outside_ottoman_hands = yes }
+        owner = {
+            if = { limit = { is_subject = yes } top_overlord ?= { nesnd_ottoman_receive_conquer_goal = yes } }
+            else = { nesnd_ottoman_receive_conquer_goal = yes }
+        }
+    }
+}

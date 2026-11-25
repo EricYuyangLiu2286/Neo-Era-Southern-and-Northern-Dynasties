@@ -10,6 +10,21 @@ nesnd_ottoman_islam_leader = {
     scripted_button = nesnd_ottoman_seek_qin_pact
     scripted_button = nesnd_ottoman_challenge_russia
 
+    on_monthly_pulse = {
+        effect = {
+            # Months in a row without freedom to act abroad; read by the "lost autonomy" outcome.
+            if = {
+                limit = { nesnd_ottoman_can_act_abroad = yes }
+                if = { limit = { has_variable = nesnd_ottoman_dependent_months } remove_variable = nesnd_ottoman_dependent_months }
+            }
+            else_if = {
+                limit = { has_variable = nesnd_ottoman_dependent_months }
+                change_variable = { name = nesnd_ottoman_dependent_months add = 1 }
+            }
+            else = { set_variable = { name = nesnd_ottoman_dependent_months value = 1 } }
+        }
+    }
+
     immediate = {
         set_variable = { name = nesnd_ottoman_islam_leader_wait months = 60 }
         if = {
@@ -19,6 +34,62 @@ nesnd_ottoman_islam_leader = {
                 NOT = { has_secret_goal = { who = c:RUS secret_goal = antagonize } }
             }
             set_secret_goal = { country = c:RUS secret_goal = antagonize }
+        }
+    }
+
+    # R13: an external journal ends once the Ottoman state has been unable to act abroad for twelve months running
+    # (a subject, or Eastern Thrace not wholly held). R10: the bad outcomes are judged before the good one.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_islam_leader_lost_autonomy_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_islam_leader_lost_autonomy_tt
+                has_variable = nesnd_ottoman_dependent_months
+                var:nesnd_ottoman_dependent_months >= 12
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_lost_autonomy }
+            hidden_effect = { remove_variable = nesnd_ottoman_dependent_months }
+            set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:lost_autonomy }
+            set_variable = nesnd_ottoman_islam_leader_closed
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_islam_leader_lost_autonomy_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_islam_leader_failed_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_islam_leader_failed_crimea_tt
+                global_var:nesnd_crimea_result ?= flag:russia
+            }
+            NOT = { owns_entire_state_region = STATE_BAGHDAD }
+        }
+        effect = {
+            custom_tooltip = {
+                text = nesnd_ottoman_enthusiasm_reset_tt
+                je:nesnd_ottoman_recovery ?= { set_bar_progress = { name = nesnd_ottoman_enthusiasm_bar value = 0 } }
+            }
+            add_modifier = { name = nesnd_ottoman_crimean_humiliation }
+            set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:failed }
+            set_variable = nesnd_ottoman_islam_leader_closed
+            trigger_event = { id = nesnd_ottoman_recovery.13 }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_ottoman_islam_leader_failed_event_tt }
+            }
         }
     }
 
@@ -55,35 +126,6 @@ nesnd_ottoman_islam_leader = {
     }
 
     outcome = {
-        header = je_standard_failure_header
-        effect_header = je_standard_on_failure_header
-        color = "blue_negative"
-        conclusion_desc = nesnd_ottoman_islam_leader_failed_conclusion
-        trigger = {
-            custom_tooltip = {
-                text = nesnd_ottoman_islam_leader_failed_crimea_tt
-                global_var:nesnd_crimea_result ?= flag:russia
-            }
-            NOT = { owns_entire_state_region = STATE_BAGHDAD }
-        }
-        effect = {
-            custom_tooltip = {
-                text = nesnd_ottoman_enthusiasm_reset_tt
-                je:nesnd_ottoman_recovery ?= { set_bar_progress = { name = nesnd_ottoman_enthusiasm_bar value = 0 } }
-            }
-            add_modifier = { name = nesnd_ottoman_crimean_humiliation }
-            set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:failed }
-            set_variable = nesnd_ottoman_islam_leader_closed
-            trigger_event = { id = nesnd_ottoman_recovery.13 }
-        }
-        event_outcome_desc = {
-            first_valid = {
-                triggered_desc = { desc = nesnd_ottoman_islam_leader_failed_event_tt }
-            }
-        }
-    }
-
-    outcome = {
         header = JOURNAL_ENTRY_TIMEOUT
         effect_header = JOURNAL_ENTRY_ON_TIMEOUT
         color = "blue_negative"
@@ -105,7 +147,10 @@ nesnd_ottoman_islam_leader = {
         flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_ottoman_islam_leader_invalid_conclusion
         trigger = { OR = { NOT = { c:TUR ?= this } NOT = { nesnd_ottoman_tanzimat_success = yes } } }
-        effect = { }
+        effect = {
+            if = { limit = { has_variable = nesnd_ottoman_dependent_months } remove_variable = nesnd_ottoman_dependent_months }
+            set_variable = nesnd_ottoman_islam_leader_closed
+        }
     }
 
     timeout = 9125

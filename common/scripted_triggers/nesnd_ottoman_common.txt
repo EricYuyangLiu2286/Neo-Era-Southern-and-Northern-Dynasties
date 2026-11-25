@@ -1,0 +1,57 @@
+﻿# Shared triggers of the Ottoman mid/late-game line (F1). See workbench 顶层设计/全局重想.md, rules R10-R13.
+
+# Country scope. Same test as the "End of the Old Order" outcome of nesnd_ottoman_recovery.
+nesnd_ottoman_capital_held = {
+    owns_entire_state_region = STATE_EASTERN_THRACE
+}
+
+# Country scope (R13). The Ottoman state can still act abroad on its own: not a subject and the capital region is whole.
+# Both lines display natively.
+nesnd_ottoman_can_act_abroad = {
+    is_subject = no
+    nesnd_ottoman_capital_held = yes
+}
+
+# State scope. The state is held by neither the Ottoman state nor a country under it at any level.
+# top_overlord: docs/event_targets.log:1547 (country -> country); GAME common/ai_strategies/02_diplomatic_strategies.txt:813.
+# Written with ?= so an independent owner is covered whether the link is empty or returns the country itself.
+nesnd_ottoman_state_outside_ottoman_hands = {
+    owner = {
+        NOT = { c:TUR ?= this }
+        NOT = { top_overlord ?= c:TUR }
+    }
+}
+
+# Country scope. Shared possible of the 72 claim buttons (common/scripted_buttons/nesnd_ottoman_claims.txt).
+nesnd_ottoman_claim_possible = {
+    custom_tooltip = { text = nesnd_ottoman_claim_cost_tt nesnd_ottoman_enthusiasm_value >= nesnd_ottoman_claim_cost }
+    nesnd_ottoman_can_act_abroad = yes
+}
+
+# Country scope. The vanilla Great Eastern Crisis ended contained / out of control. The vanilla modifiers are timed
+# (GAME common/scripted_effects/00_chris_scripted_effects.txt:487-491, :592-596), so nesnd_ottoman_gec_record keeps the result.
+nesnd_ottoman_gec_ended_controlled = {
+    NOT = { has_journal_entry = je_great_eastern_crisis }
+    OR = {
+        has_modifier = eastern_crisis_controlled
+        hidden_trigger = { has_variable = nesnd_ottoman_gec_result var:nesnd_ottoman_gec_result = flag:controlled }
+    }
+}
+nesnd_ottoman_gec_ended_not_controlled = {
+    NOT = { has_journal_entry = je_great_eastern_crisis }
+    OR = {
+        has_modifier = eastern_crisis_not_controlled
+        hidden_trigger = { has_variable = nesnd_ottoman_gec_result var:nesnd_ottoman_gec_result = flag:not_controlled }
+    }
+}
+nesnd_ottoman_gec_record_due = {
+    c:TUR ?= this
+    OR = {
+        AND = { has_journal_entry = je_great_eastern_crisis NOT = { has_variable = nesnd_ottoman_gec_recorded } }
+        AND = {
+            NOT = { has_journal_entry = je_great_eastern_crisis }
+            NOT = { has_variable = nesnd_ottoman_gec_result }
+            OR = { has_modifier = eastern_crisis_controlled has_modifier = eastern_crisis_not_controlled }
+        }
+    }
+}

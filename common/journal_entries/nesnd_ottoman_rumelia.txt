@@ -1,5 +1,5 @@
 ﻿# Ottoman failure line, block 1: domestic crisis journals "Rumelia" and "Eastern Provinces".
-# Both journals are added only by monthly on_action effects in common/on_actions/nesnd_ottoman_recovery.txt,
+# Both journals are added by event nesnd_ottoman_recovery.6 or by monthly on_action effects in common/on_actions/nesnd_ottoman_recovery.txt,
 # so neither defines possible or is_shown_when_inactive.
 
 nesnd_ottoman_rumelia = {
@@ -14,11 +14,22 @@ nesnd_ottoman_rumelia = {
 
     immediate = {
         nesnd_ottoman_rumelia_clear_held = yes
-        every_scope_state = {
-            limit = { region = sr:region_balkans }
-            if = {
-                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_ottoman_rumelia_held_regions target = prev.state_region } } } }
-                root = { add_to_variable_list = { name = nesnd_ottoman_rumelia_held_regions target = prev.state_region } }
+        # Snapshot: the Balkan holdings recorded in the first month of the vanilla crisis (nesnd_ottoman_gec_record).
+        # A save from before that record existed falls back to what is held now.
+        if = {
+            limit = { has_variable_list = nesnd_ottoman_gec_held_regions }
+            every_in_list = {
+                variable = nesnd_ottoman_gec_held_regions
+                root = { add_to_variable_list = { name = nesnd_ottoman_rumelia_held_regions target = prev } }
+            }
+        }
+        else = {
+            every_scope_state = {
+                limit = { region = sr:region_balkans }
+                if = {
+                    limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_ottoman_rumelia_held_regions target = prev.state_region } } } }
+                    root = { add_to_variable_list = { name = nesnd_ottoman_rumelia_held_regions target = prev.state_region } }
+                }
             }
         }
         if = { limit = { NOT = { has_variable = nesnd_ottoman_rumelia_charter_count } } set_variable = { name = nesnd_ottoman_rumelia_charter_count value = 0 } }
@@ -30,10 +41,7 @@ nesnd_ottoman_rumelia = {
         effect_header = je_standard_on_completion_header
         color = "gold_positive"
         conclusion_desc = nesnd_ottoman_rumelia_held_conclusion
-        trigger = {
-            NOT = { has_journal_entry = je_great_eastern_crisis }
-            has_modifier = eastern_crisis_controlled
-        }
+        trigger = { nesnd_ottoman_gec_ended_controlled = yes }
         effect = {
             add_modifier = { name = nesnd_ottoman_rumelia_held_mod }
             set_variable = { name = nesnd_ottoman_rumelia_outcome value = flag:held }
@@ -52,10 +60,7 @@ nesnd_ottoman_rumelia = {
         effect_header = je_standard_on_failure_header
         color = "blue_negative"
         conclusion_desc = nesnd_ottoman_rumelia_lost_conclusion
-        trigger = {
-            NOT = { has_journal_entry = je_great_eastern_crisis }
-            has_modifier = eastern_crisis_not_controlled
-        }
+        trigger = { nesnd_ottoman_gec_ended_not_controlled = yes }
         effect = {
             custom_tooltip = {
                 text = nesnd_ottoman_rumelia_lost_claims_tt
@@ -100,7 +105,7 @@ nesnd_ottoman_rumelia = {
         flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_ottoman_rumelia_invalid_conclusion
         trigger = { OR = { NOT = { c:TUR ?= this } NOT = { nesnd_ottoman_tanzimat_failed = yes } } }
-        effect = { nesnd_ottoman_rumelia_clear_held = yes }
+        effect = { nesnd_ottoman_rumelia_clear_held = yes set_variable = nesnd_ottoman_rumelia_closed }
     }
 
     timeout = 9125
@@ -251,7 +256,7 @@ nesnd_ottoman_eastern_provinces = {
         flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_ottoman_east_invalid_conclusion
         trigger = { OR = { NOT = { c:TUR ?= this } NOT = { nesnd_ottoman_tanzimat_failed = yes } } }
-        effect = { }
+        effect = { set_variable = nesnd_ottoman_eastern_provinces_closed }
     }
 
     timeout = 7300
