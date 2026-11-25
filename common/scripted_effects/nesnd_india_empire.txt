@@ -1273,6 +1273,7 @@ nesnd_mug_matter_accept = {
     else = {
         add_treasury = { value = nesnd_india_matter_quote multiply = -1 }
         scope:india_matter_holder = {
+            nesnd_mug_famine_aid_loyalists = yes
             nesnd_mug_relieve_states = yes
             change_relations = { country = scope:india_matter_answerer value = 25 }
         }
@@ -1446,6 +1447,109 @@ nesnd_mug_self_relief = {
 nesnd_mug_ask_aid = {
     if = { limit = { exists = $TO$ nesnd_mug_matter_free = yes nesnd_mug_famine_states > 0 }
         nesnd_india_matter_send = { KIND = 9 TO = $TO$ AMOUNT = nesnd_mug_famine_cost }
+    }
+}
+# Country scope (asking country). When famine aid is granted (kind 9), Indian-culture pops in each
+# struck state gain +5% loyalists. Called before nesnd_mug_relieve_states clears the state marks.
+nesnd_mug_famine_aid_loyalists = {
+    every_scope_state = {
+        limit = { nesnd_mug_famine_affected_state = yes }
+        save_scope_as = india_famine_state
+        every_scope_culture = {
+            limit = { nesnd_india_culture = yes }
+            scope:india_famine_state = {
+                add_loyalists_in_state = {
+                    culture = prev
+                    value = 0.05
+                }
+            }
+        }
+    }
+}
+# Country scope (asking country, root = this, from nesnd_mug.24 immediate). When famine aid is
+# refused, unanswered or queued out (results 1, 2, 3, 6): Indian-culture pops in each struck state
+# gain +10% radicals. If at least 3 states are struck and the 10-year cooldown is clear, our
+# largest Indian primary culture begins a mass migration to the foreign country (capital outside
+# India) with the highest relations that hosts a cultural community of that culture.
+nesnd_mug_famine_refused = {
+    every_scope_state = {
+        limit = { nesnd_mug_famine_affected_state = yes }
+        save_scope_as = india_famine_state
+        every_scope_culture = {
+            limit = { nesnd_india_culture = yes }
+            scope:india_famine_state = {
+                add_radicals_in_state = {
+                    culture = prev
+                    value = 0.10
+                }
+            }
+        }
+    }
+    if = {
+        limit = {
+            NOT = { has_variable = nesnd_mug_famine_migration_cooldown }
+            any_scope_state = {
+                nesnd_mug_famine_affected_state = yes
+                count >= 3
+            }
+        }
+        clear_saved_scope = mug_famine_mig_culture
+        ordered_primary_culture = {
+            limit = { nesnd_india_culture = yes }
+            order_by = "root.culture_percent_country(this)"
+            position = 0
+            check_range_bounds = no
+            save_scope_as = mug_famine_mig_culture
+        }
+        if = {
+            limit = { exists = scope:mug_famine_mig_culture }
+            clear_saved_scope = mug_famine_mig_host
+            clear_saved_scope = mug_famine_mig_state
+            ordered_country = {
+                limit = {
+                    is_country_alive = yes
+                    NOT = { this = root }
+                    NOT = { is_country_type = decentralized }
+                    capital ?= { NOT = { nesnd_india_state = yes } }
+                    any_scope_state = {
+                        NOT = { nesnd_india_state = yes }
+                        has_cultural_community = scope:mug_famine_mig_culture
+                        state_is_eligible_as_mass_migration_target = yes
+                    }
+                }
+                order_by = relations:root
+                position = 0
+                check_range_bounds = no
+                save_scope_as = mug_famine_mig_host
+            }
+            if = {
+                limit = { exists = scope:mug_famine_mig_host }
+                scope:mug_famine_mig_host = {
+                    ordered_scope_state = {
+                        limit = {
+                            NOT = { nesnd_india_state = yes }
+                            has_cultural_community = scope:mug_famine_mig_culture
+                            state_is_eligible_as_mass_migration_target = yes
+                        }
+                        order_by = migration_pull
+                        position = 0
+                        check_range_bounds = no
+                        save_scope_as = mug_famine_mig_state
+                    }
+                }
+                if = {
+                    limit = { exists = scope:mug_famine_mig_state }
+                    set_variable = { name = nesnd_mug_famine_migration_cooldown days = 3650 }
+                    scope:mug_famine_mig_state = {
+                        create_mass_migration = {
+                            origin = root
+                            culture = scope:mug_famine_mig_culture
+                        }
+                    }
+                    trigger_event = { id = nesnd_mug.25 popup = yes }
+                }
+            }
+        }
     }
 }
 

@@ -707,6 +707,7 @@ nesnd_india_case_launch_ready = {
             var:nesnd_india_case_state = {
                 nesnd_india_colonial_state = yes
                 nesnd_india_case_unrest = yes
+                nesnd_india_case_popular_ready = yes
                 owner = prev.var:nesnd_india_case_owner
             }
             var:nesnd_india_case_owner = {
@@ -744,6 +745,29 @@ nesnd_india_case_unrest = {
     OR = {
         turmoil >= 0.15
         average_sol < 10
+    }
+}
+
+# State scope. Popular threshold for launching an uprising (India batch 13):
+# either local turmoil >= 0.25, or an Indian culture present in the state has an active
+# cultural minority movement in the state's owning country.
+nesnd_india_case_popular_ready = {
+    save_temporary_scope_as = india_uprising_state
+    custom_tooltip = {
+        text = nesnd_india_case_popular_ready_tt
+        OR = {
+            turmoil >= 0.25
+            any_scope_culture = {
+                nesnd_india_culture = yes
+                save_temporary_scope_as = india_uprising_culture
+                scope:india_uprising_state.owner = {
+                    any_political_movement = {
+                        is_political_movement_type = movement_cultural_minority
+                        culture ?= scope:india_uprising_culture
+                    }
+                }
+            }
+        }
     }
 }
 

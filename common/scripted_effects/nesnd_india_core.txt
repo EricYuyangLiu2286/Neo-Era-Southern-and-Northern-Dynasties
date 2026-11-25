@@ -89,6 +89,37 @@ nesnd_india_unified_watch = {
     }
 }
 
+# Country scope (root = this country, from nesnd_india_recognition_check). The first time an Indian
+# country is no longer unrecognized, its largest Indian primary culture gains +5 fervor target for
+# ten years (days = 3650). Once only.
+nesnd_india_recognition_watch = {
+    if = {
+        limit = {
+            nesnd_india_country = yes
+            any_primary_culture = { nesnd_india_culture = yes }
+            NOT = { is_country_type = unrecognized }
+            NOT = { has_variable = nesnd_india_recognition_fervor_done }
+        }
+        set_variable = nesnd_india_recognition_fervor_done
+        clear_saved_scope = india_recognized_culture
+        ordered_primary_culture = {
+            limit = { nesnd_india_culture = yes }
+            order_by = "root.culture_percent_country(this)"
+            position = 0
+            check_range_bounds = no
+            save_scope_as = india_recognized_culture
+        }
+        if = {
+            limit = { exists = scope:india_recognized_culture }
+            add_fervor_target_modifier = {
+                culture = scope:india_recognized_culture
+                days = 3650
+                multiplier = 5
+            }
+        }
+    }
+}
+
 # Country scope. Shows VALUE (a script value read on this country) on the progress bar BAR of the journal JE.
 nesnd_india_sync_bar = {
     save_scope_as = india_display_country
@@ -136,10 +167,23 @@ nesnd_india_indep_choose_movement = {
             check_range_bounds = no
             save_scope_as = indep_choice_3
         }
+        clear_saved_scope = indep_choice_indian
+        ordered_political_movement = {
+            limit = { nesnd_india_cultural_minority_movement = yes }
+            order_by = political_movement_support
+            position = 0
+            check_range_bounds = no
+            save_scope_as = indep_choice_indian
+        }
     }
-    if = { limit = { exists = scope:indep_choice_1 }
+    if = { limit = { OR = { exists = scope:indep_choice_1 exists = scope:indep_choice_indian } }
         if = { limit = { is_ai = yes }
-            scope:indep_choice_1 = { save_scope_as = indep_movement }
+            if = { limit = { exists = scope:indep_choice_indian }
+                scope:indep_choice_indian = { save_scope_as = indep_movement }
+            }
+            else = {
+                scope:indep_choice_1 = { save_scope_as = indep_movement }
+            }
             nesnd_india_indep_fund = { TRACK = $TRACK$ }
         }
         else = { trigger_event = { id = nesnd_india_indep.1 popup = yes } }
@@ -162,6 +206,24 @@ nesnd_india_indep_fund = {
             if = { limit = { has_modifier = nesnd_india_indep_funded } remove_modifier = nesnd_india_indep_funded }
             add_modifier = { name = nesnd_india_indep_funded months = 24 }
             set_variable = { name = nesnd_india_indep_last_funding value = scope:indep_receipt months = 24 }
+        }
+        if = {
+            limit = {
+                scope:indep_movement = { nesnd_india_cultural_minority_movement = yes }
+            }
+            clear_saved_scope = indep_funded_culture
+            scope:indep_movement = { culture ?= { save_scope_as = indep_funded_culture } }
+            if = {
+                limit = { exists = scope:indep_funded_culture }
+                scope:indep_lord = {
+                    every_scope_state = {
+                        add_radicals_in_state = {
+                            culture = scope:indep_funded_culture
+                            value = 0.05
+                        }
+                    }
+                }
+            }
         }
         save_scope_value_as = { name = indep_kind value = 1 }
         nesnd_india_indep_discovery = yes
@@ -432,7 +494,7 @@ nesnd_india_lord_calm_clock = {
 # within them ends nesnd_india_indep_overlord as "subjects scattered".
 nesnd_india_indep_record_departure = {
     if = { limit = { exists = var:nesnd_india_indep_first_departed }
-        set_variable = { name = nesnd_india_indep_second_departed value = $WHO$ }
+        set_variable = { name = nesnd_india_indep_second_departed value = $WHO$ days = 3650 }
     }
     else = { set_variable = { name = nesnd_india_indep_first_departed value = $WHO$ days = 3650 } }
 }

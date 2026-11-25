@@ -288,10 +288,36 @@ nesnd_mug.24 = {
         }
     }
     flavor = nesnd_mug.24.f
+    immediate = {
+        if = {
+            limit = {
+                exists = scope:india_matter_result
+                OR = {
+                    scope:india_matter_result = 1
+                    scope:india_matter_result = 2
+                    scope:india_matter_result = 3
+                    scope:india_matter_result = 6
+                }
+            }
+            nesnd_mug_famine_refused = yes
+        }
+    }
     option = {
         name = nesnd_mug.22.a
         trigger = { nesnd_mug_can_relieve = yes }
         ai_chance = { base = 70 }
+        if = {
+            limit = {
+                exists = scope:india_matter_result
+                OR = {
+                    scope:india_matter_result = 1
+                    scope:india_matter_result = 2
+                    scope:india_matter_result = 3
+                    scope:india_matter_result = 6
+                }
+            }
+            custom_tooltip = nesnd_mug_aid_refused_radicals_tt
+        }
         custom_tooltip = nesnd_mug_relief_tt
         show_as_tooltip = { add_treasury = { value = nesnd_mug_famine_cost multiply = -1 } }
         hidden_effect = { nesnd_mug_self_relief = yes }
@@ -300,8 +326,46 @@ nesnd_mug.24 = {
         name = nesnd_mug.22.e
         default_option = yes
         ai_chance = { base = 30 }
+        if = {
+            limit = {
+                exists = scope:india_matter_result
+                OR = {
+                    scope:india_matter_result = 1
+                    scope:india_matter_result = 2
+                    scope:india_matter_result = 3
+                    scope:india_matter_result = 6
+                }
+            }
+            custom_tooltip = nesnd_mug_aid_refused_radicals_tt
+        }
         custom_tooltip = nesnd_mug_no_relief_tt
         hidden_effect = { every_scope_state = { limit = { has_variable = nesnd_mug_famine_state } remove_variable = nesnd_mug_famine_state } }
+    }
+}
+
+# Famine drives emigration to an overseas cultural community. To the asking country.
+nesnd_mug.25 = {
+    type = country_event
+    event_image = { video = "asia_dead_cattle_poor_harvest" }
+    title = nesnd_mug.25.t
+    desc = nesnd_mug.25.d
+    flavor = nesnd_mug.25.f
+    trigger = {
+        exists = scope:mug_famine_mig_host
+        exists = scope:mug_famine_mig_state
+        exists = scope:mug_famine_mig_culture
+    }
+    cancellation_trigger = {
+        OR = {
+            NOT = { exists = scope:mug_famine_mig_host }
+            NOT = { exists = scope:mug_famine_mig_state }
+            NOT = { exists = scope:mug_famine_mig_culture }
+        }
+    }
+    option = {
+        name = nesnd_india_diplomacy_ack
+        default_option = yes
+        custom_tooltip = nesnd_mug.25.a_tt
     }
 }
 
@@ -322,6 +386,10 @@ nesnd_india_indep.1 = {
             trigger_else = { nesnd_india_indep_can_fund = { TRACK = military } }
         }
         custom_tooltip = nesnd_india_indep_fund_tt
+        if = {
+            limit = { scope:indep_choice_1 ?= { nesnd_india_cultural_minority_movement = yes } }
+            custom_tooltip = nesnd_india_indep_fund_indian_tt
+        }
         hidden_effect = {
             scope:indep_choice_1 = { save_scope_as = indep_movement }
             if = { limit = { scope:indep_track = 1 } nesnd_india_indep_fund = { TRACK = economy } }
@@ -336,6 +404,10 @@ nesnd_india_indep.1 = {
             trigger_else = { nesnd_india_indep_can_fund = { TRACK = military } }
         }
         custom_tooltip = nesnd_india_indep_fund_tt
+        if = {
+            limit = { scope:indep_choice_2 ?= { nesnd_india_cultural_minority_movement = yes } }
+            custom_tooltip = nesnd_india_indep_fund_indian_tt
+        }
         hidden_effect = {
             scope:indep_choice_2 = { save_scope_as = indep_movement }
             if = { limit = { scope:indep_track = 1 } nesnd_india_indep_fund = { TRACK = economy } }
@@ -350,8 +422,39 @@ nesnd_india_indep.1 = {
             trigger_else = { nesnd_india_indep_can_fund = { TRACK = military } }
         }
         custom_tooltip = nesnd_india_indep_fund_tt
+        if = {
+            limit = { scope:indep_choice_3 ?= { nesnd_india_cultural_minority_movement = yes } }
+            custom_tooltip = nesnd_india_indep_fund_indian_tt
+        }
         hidden_effect = {
             scope:indep_choice_3 = { save_scope_as = indep_movement }
+            if = { limit = { scope:indep_track = 1 } nesnd_india_indep_fund = { TRACK = economy } }
+            else = { nesnd_india_indep_fund = { TRACK = military } }
+        }
+    }
+    option = {
+        name = nesnd_india_indep_movement_indian
+        show_as_unavailable = { always = yes }
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_india_indep_indian_movement_tt
+                exists = scope:indep_choice_indian
+                scope:indep_choice_indian.owner ?= scope:indep_lord
+            }
+            trigger_if = { limit = { scope:indep_track = 1 } nesnd_india_indep_can_fund = { TRACK = economy } }
+            trigger_else = { nesnd_india_indep_can_fund = { TRACK = military } }
+        }
+        if = {
+            limit = { exists = scope:indep_choice_indian }
+            custom_tooltip = nesnd_india_indep_fund_indian_target_tt
+        }
+        else = {
+            custom_tooltip = nesnd_india_indep_fund_indian_fallback_tt
+        }
+        custom_tooltip = nesnd_india_indep_fund_tt
+        custom_tooltip = nesnd_india_indep_fund_indian_tt
+        hidden_effect = {
+            scope:indep_choice_indian = { save_scope_as = indep_movement }
             if = { limit = { scope:indep_track = 1 } nesnd_india_indep_fund = { TRACK = economy } }
             else = { nesnd_india_indep_fund = { TRACK = military } }
         }
