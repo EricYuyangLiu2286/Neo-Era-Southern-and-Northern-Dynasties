@@ -1,0 +1,183 @@
+﻿# Global refresh of the unification trend (root = none; only called from the global journal entry, so scope:journal_entry exists): joiners, involvement, counts, leader, phase, modifiers and the lead bar.
+nesnd_uni_refresh = {
+	# 1. AI countries owning at least 3 regions of the scope join on their own.
+	if = {
+		limit = {
+			NOT = { has_global_variable = nesnd_uni_declared }
+		}
+		every_country = {
+			limit = {
+				is_ai = yes
+				NOT = { is_country_type = decentralized }
+				NOT = { has_variable = nesnd_uni_joined }
+				nesnd_uni_capital_in_scope = no
+				nesnd_uni_own_count >= 3
+			}
+			set_variable = nesnd_uni_joined
+		}
+	}
+	# 2. Joiners that no longer own 3 regions and have no capital in the scope drop out.
+	every_country = {
+		limit = {
+			has_variable = nesnd_uni_joined
+			nesnd_uni_capital_in_scope = no
+			nesnd_uni_own_count < 3
+		}
+		remove_variable = nesnd_uni_joined
+	}
+	# 3. Involvement follows the qualified trigger.
+	every_country = {
+		limit = {
+			nesnd_uni_qualified = yes
+			NOT = { is_involved_in_journal_entry = nesnd_uni_trend }
+		}
+		scope:journal_entry = {
+			add_involved_country = prev
+		}
+	}
+	scope:journal_entry = {
+		every_scope_je_involved = {
+			limit = {
+				nesnd_uni_qualified = no
+			}
+			scope:journal_entry = {
+				remove_involved_country = prev
+			}
+		}
+	}
+	# 4. Count regions held by each qualified country and the number of rivals.
+	set_global_variable = {
+		name = nesnd_uni_rivals
+		value = 0
+	}
+	every_country = {
+		limit = {
+			nesnd_uni_qualified = yes
+		}
+		set_variable = {
+			name = nesnd_uni_held
+			value = nesnd_uni_held_count
+		}
+		change_global_variable = {
+			name = nesnd_uni_rivals
+			add = 1
+		}
+	}
+	# 5. The country holding the most regions is the leader.
+	ordered_country = {
+		limit = {
+			nesnd_uni_qualified = yes
+		}
+		order_by = nesnd_uni_held_count
+		position = 0
+		save_scope_as = nesnd_uni_lead
+	}
+	if = {
+		limit = {
+			exists = scope:nesnd_uni_lead
+			scope:nesnd_uni_lead.var:nesnd_uni_held > 0
+		}
+		set_global_variable = {
+			name = nesnd_uni_leader
+			value = scope:nesnd_uni_lead
+		}
+		set_global_variable = {
+			name = nesnd_uni_lead_count
+			value = scope:nesnd_uni_lead.var:nesnd_uni_held
+		}
+	}
+	else = {
+		remove_global_variable = nesnd_uni_leader
+		remove_global_variable = nesnd_uni_lead_count
+	}
+	# 6. Phase: four or more rivals means the many-kingdoms phase.
+	if = {
+		limit = {
+			global_var:nesnd_uni_rivals >= 4
+		}
+		set_global_variable = nesnd_uni_many
+	}
+	else = {
+		remove_global_variable = nesnd_uni_many
+	}
+	# 7. Phase modifiers on every qualified country.
+	every_country = {
+		limit = {
+			nesnd_uni_qualified = yes
+		}
+		if = {
+			limit = {
+				has_global_variable = nesnd_uni_many
+			}
+			if = {
+				limit = {
+					has_modifier = nesnd_uni_tripod
+				}
+				remove_modifier = nesnd_uni_tripod
+			}
+			if = {
+				limit = {
+					NOT = { has_modifier = nesnd_uni_order }
+				}
+				add_modifier = {
+					name = nesnd_uni_order
+				}
+			}
+		}
+		else = {
+			if = {
+				limit = {
+					has_modifier = nesnd_uni_order
+				}
+				remove_modifier = nesnd_uni_order
+			}
+			if = {
+				limit = {
+					NOT = { has_modifier = nesnd_uni_tripod }
+				}
+				add_modifier = {
+					name = nesnd_uni_tripod
+				}
+			}
+		}
+	}
+	# 8. The lead bar shows the leader's region count.
+	if = {
+		limit = {
+			has_global_variable = nesnd_uni_lead_count
+		}
+		scope:journal_entry = {
+			set_bar_progress = {
+				name = nesnd_uni_lead_bar
+				value = global_var:nesnd_uni_lead_count
+			}
+		}
+	}
+	else = {
+		scope:journal_entry = {
+			set_bar_progress = {
+				name = nesnd_uni_lead_bar
+				value = 0
+			}
+		}
+	}
+}
+
+# Country scope: remove the phase modifiers and the unification variables of one country.
+nesnd_uni_clear_country = {
+	if = {
+		limit = {
+			has_modifier = nesnd_uni_order
+		}
+		remove_modifier = nesnd_uni_order
+	}
+	if = {
+		limit = {
+			has_modifier = nesnd_uni_tripod
+		}
+		remove_modifier = nesnd_uni_tripod
+	}
+	remove_variable = nesnd_uni_calm
+	remove_variable = nesnd_uni_mobilize
+	remove_variable = nesnd_uni_held
+}

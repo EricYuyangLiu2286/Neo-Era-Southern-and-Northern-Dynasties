@@ -1,0 +1,187 @@
+﻿# Global JE button: a country outside the scope that owns 3 regions of it joins the trend.
+nesnd_uni_join_button = {
+	name = nesnd_uni_join_button
+	desc = nesnd_uni_join_button_desc
+	visible = {
+		NOT = { is_involved_in_journal_entry = nesnd_uni_trend }
+		nesnd_uni_capital_in_scope = no
+		NOT = { is_country_type = decentralized }
+		NOT = { has_global_variable = nesnd_uni_declared }
+	}
+	possible = {
+		custom_tooltip = {
+			text = nesnd_uni_join_owned_tt
+			nesnd_uni_own_count >= 3
+		}
+	}
+	effect = {
+		set_variable = nesnd_uni_joined
+		je:nesnd_uni_trend ?= {
+			add_involved_country = root
+		}
+		custom_tooltip = nesnd_uni_join_effect_tt
+	}
+	ai_chance = {
+		base = 0
+	}
+}
+
+# Global JE button: declare the unification once enough regions are held.
+nesnd_uni_declare_button = {
+	name = nesnd_uni_declare_button
+	desc = nesnd_uni_declare_button_desc
+	visible = {
+		is_involved_in_journal_entry = nesnd_uni_trend
+	}
+	possible = {
+		is_subject = no
+		trigger_if = {
+			limit = {
+				nesnd_uni_capital_in_china = yes
+			}
+			custom_tooltip = {
+				text = nesnd_uni_declare_majority_tt
+				nesnd_uni_held_count >= 49
+			}
+		}
+		trigger_else = {
+			custom_tooltip = {
+				text = nesnd_uni_declare_all_tt
+				nesnd_uni_held_count >= 96
+			}
+		}
+	}
+	effect = {
+		custom_tooltip = {
+			text = nesnd_uni_declare_claims_tt
+			nesnd_uni_claim_rest = yes
+		}
+		set_global_variable = {
+			name = nesnd_uni_declared
+			value = root
+		}
+		custom_tooltip = nesnd_uni_declare_complete_tt
+	}
+	ai_chance = {
+		base = 1000
+	}
+}
+
+# Country JE button: start mobilising the call for unification.
+nesnd_uni_mobilize_button = {
+	name = nesnd_uni_mobilize_button
+	desc = nesnd_uni_mobilize_button_desc
+	visible = {
+		NOT = { has_variable = nesnd_uni_mobilize }
+	}
+	possible = {
+		custom_tooltip = {
+			text = nesnd_uni_not_calm_tt
+			NOT = { has_variable = nesnd_uni_calm }
+		}
+	}
+	effect = {
+		set_variable = nesnd_uni_mobilize
+		custom_tooltip = nesnd_uni_mobilize_tt
+	}
+	ai_chance = {
+		base = 0
+		modifier = {
+			trigger = {
+				je:nesnd_uni_country ?= {
+					scripted_bar_progress = {
+						name = nesnd_uni_call_bar
+						value < 50
+					}
+				}
+				is_at_war = no
+				infamy < infamy_threshold:infamous
+			}
+			add = 10
+		}
+	}
+}
+
+# Country JE button: end the mobilisation.
+nesnd_uni_mobilize_end_button = {
+	name = nesnd_uni_mobilize_end_button
+	desc = nesnd_uni_mobilize_end_button_desc
+	visible = {
+		has_variable = nesnd_uni_mobilize
+	}
+	effect = {
+		remove_variable = nesnd_uni_mobilize
+		custom_tooltip = nesnd_uni_mobilize_end_tt
+	}
+	ai_chance = {
+		base = 0
+		modifier = {
+			trigger = {
+				OR = {
+					je:nesnd_uni_country ?= {
+						scripted_bar_progress = {
+							name = nesnd_uni_call_bar
+							value >= 90
+						}
+					}
+					infamy >= infamy_threshold:infamous
+				}
+			}
+			add = 10
+		}
+	}
+}
+
+# Country JE button: start calming the call for unification.
+nesnd_uni_calm_button = {
+	name = nesnd_uni_calm_button
+	desc = nesnd_uni_calm_button_desc
+	visible = {
+		NOT = { has_variable = nesnd_uni_calm }
+	}
+	possible = {
+		custom_tooltip = {
+			text = nesnd_uni_not_mobilize_tt
+			NOT = { has_variable = nesnd_uni_mobilize }
+		}
+	}
+	effect = {
+		set_variable = nesnd_uni_calm
+		custom_tooltip = nesnd_uni_calm_tt
+	}
+	ai_chance = {
+		base = 0
+		modifier = {
+			trigger = {
+				OR = {
+					radical_fraction = { value >= 0.25 }
+					in_default = yes
+				}
+			}
+			add = 10
+		}
+	}
+}
+
+# Country JE button: end the calming.
+nesnd_uni_calm_end_button = {
+	name = nesnd_uni_calm_end_button
+	desc = nesnd_uni_calm_end_button_desc
+	visible = {
+		has_variable = nesnd_uni_calm
+	}
+	effect = {
+		remove_variable = nesnd_uni_calm
+		custom_tooltip = nesnd_uni_calm_end_tt
+	}
+	ai_chance = {
+		base = 0
+		modifier = {
+			trigger = {
+				radical_fraction = { value < 0.1 }
+				in_default = no
+			}
+			add = 10
+		}
+	}
+}

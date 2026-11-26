@@ -1,0 +1,299 @@
+﻿# Global bar: how many regions the leading country holds (written only by nesnd_uni_refresh).
+nesnd_uni_lead_bar = {
+	name = nesnd_uni_lead_bar
+	desc = nesnd_uni_lead_bar_desc
+	default = yes
+	start_value = 0
+	min_value = 0
+	max_value = 96
+}
+
+# Country bar: the call for unification among the people.
+nesnd_uni_call_bar = {
+	name = nesnd_uni_call_bar
+	desc = nesnd_uni_call_bar_desc
+	default_green = yes
+	start_value = 20
+	min_value = 0
+	max_value = 100
+	monthly_progress = {
+		progress_condition = {
+			limit = {
+				has_global_variable = nesnd_uni_many
+			}
+			add = {
+				desc = "nesnd_uni_f_order"
+				value = 1
+			}
+		}
+		progress_condition = {
+			limit = {
+				NOT = { has_global_variable = nesnd_uni_many }
+			}
+			add = {
+				desc = "nesnd_uni_f_tripod"
+				value = 0.5
+			}
+		}
+		progress_condition = {
+			limit = {
+				loyalist_fraction = { value >= 0.2 }
+			}
+			add = {
+				desc = "nesnd_uni_f_loyal"
+				value = 0.25
+			}
+		}
+		progress_condition = {
+			limit = {
+				radical_fraction = { value >= 0.2 }
+			}
+			add = {
+				desc = "nesnd_uni_f_radical"
+				value = 0.75
+			}
+		}
+		progress_condition = {
+			limit = {
+				any_scope_war = {
+					has_war_support = {
+						target = root
+						value < 0
+					}
+				}
+			}
+			add = {
+				desc = "nesnd_uni_f_weary"
+				value = -1
+			}
+		}
+		progress_condition = {
+			limit = {
+				infamy >= infamy_threshold:pariah
+			}
+			add = {
+				desc = "nesnd_uni_f_pariah"
+				value = -1.5
+			}
+			else = {
+				limit = {
+					infamy >= infamy_threshold:notorious
+				}
+				add = {
+					desc = "nesnd_uni_f_notorious"
+					value = -1
+				}
+				else = {
+					limit = {
+						infamy >= infamy_threshold:infamous
+					}
+					add = {
+						desc = "nesnd_uni_f_infamous"
+						value = -0.5
+					}
+				}
+			}
+		}
+		progress_condition = {
+			limit = {
+				in_default = yes
+			}
+			add = {
+				desc = "nesnd_uni_f_default"
+				value = -1
+			}
+			else = {
+				limit = {
+					scaled_debt > 0.5
+				}
+				add = {
+					desc = "nesnd_uni_f_debt"
+					value = -0.5
+				}
+			}
+		}
+		progress_condition = {
+			limit = {
+				army_size >= 100
+			}
+			add = {
+				desc = "nesnd_uni_f_army_big"
+				value = 0.5
+			}
+			else = {
+				limit = {
+					army_size >= 40
+				}
+				add = {
+					desc = "nesnd_uni_f_army"
+					value = 0.25
+				}
+			}
+		}
+		progress_condition = {
+			limit = {
+				navy_size >= 50
+			}
+			add = {
+				desc = "nesnd_uni_f_navy"
+				value = 0.25
+			}
+		}
+		progress_condition = {
+			limit = {
+				num_alliances >= 3
+			}
+			add = {
+				desc = "nesnd_uni_f_allies_many"
+				value = 0.5
+			}
+			else = {
+				limit = {
+					num_alliances >= 1
+				}
+				add = {
+					desc = "nesnd_uni_f_allies"
+					value = 0.25
+				}
+			}
+		}
+		progress_condition = {
+			limit = {
+				is_power_bloc_leader = yes
+			}
+			add = {
+				desc = "nesnd_uni_f_bloc"
+				value = 0.5
+			}
+		}
+		progress_condition = {
+			limit = {
+				any_country = {
+					is_involved_in_journal_entry = nesnd_uni_trend
+					has_war_with = root
+				}
+			}
+			add = {
+				desc = "nesnd_uni_f_rival_war"
+				value = 0.5
+			}
+		}
+		progress_condition = {
+			limit = {
+				has_variable = nesnd_uni_mobilize
+			}
+			add = {
+				desc = "nesnd_uni_f_mobilize"
+				value = 1
+			}
+		}
+		progress_condition = {
+			limit = {
+				has_variable = nesnd_uni_calm
+			}
+			add = {
+				desc = "nesnd_uni_f_calm"
+				value = -1
+			}
+		}
+	}
+}
+
+# Country bar: how long the claims on regions not yet held last. At 0 one claim fades. Every factor needs a fading claim.
+nesnd_uni_morale_bar = {
+	name = nesnd_uni_morale_bar
+	desc = nesnd_uni_morale_bar_desc
+	default_bad = yes
+	is_inverted = no
+	start_value = 100
+	min_value = 0
+	max_value = 100
+	monthly_progress = {
+		progress_condition = {
+			limit = {
+				nesnd_uni_fading_claim_count > 0
+			}
+			add = {
+				desc = "nesnd_uni_m_base"
+				value = -1
+			}
+		}
+		progress_condition = {
+			limit = {
+				nesnd_uni_fading_claim_count >= 5
+			}
+			add = {
+				desc = "nesnd_uni_m_many_claims"
+				value = -0.5
+			}
+		}
+		progress_condition = {
+			limit = {
+				nesnd_uni_fading_claim_count > 0
+				je:nesnd_uni_country ?= {
+					scripted_bar_progress = {
+						name = nesnd_uni_call_bar
+						value >= 50
+					}
+				}
+			}
+			add = {
+				desc = "nesnd_uni_m_call"
+				value = 0.5
+			}
+		}
+		progress_condition = {
+			limit = {
+				nesnd_uni_fading_claim_count > 0
+				any_country = {
+					is_involved_in_journal_entry = nesnd_uni_trend
+					has_war_with = root
+				}
+			}
+			add = {
+				desc = "nesnd_uni_m_rival_war"
+				value = 1
+			}
+		}
+		progress_condition = {
+			limit = {
+				nesnd_uni_fading_claim_count > 0
+				radical_fraction = { value >= 0.2 }
+			}
+			add = {
+				desc = "nesnd_uni_m_radical"
+				value = -0.5
+			}
+		}
+		progress_condition = {
+			limit = {
+				nesnd_uni_fading_claim_count > 0
+				average_sol_for_primary_cultures < 10
+			}
+			add = {
+				desc = "nesnd_uni_m_sol"
+				value = -0.5
+			}
+		}
+		progress_condition = {
+			limit = {
+				nesnd_uni_fading_claim_count > 0
+				legitimacy < 25
+			}
+			add = {
+				desc = "nesnd_uni_m_legit"
+				value = -0.5
+			}
+		}
+		progress_condition = {
+			limit = {
+				nesnd_uni_fading_claim_count > 0
+				NOT = { has_global_variable = nesnd_uni_many }
+			}
+			add = {
+				desc = "nesnd_uni_m_tripod"
+				value = -0.5
+			}
+		}
+	}
+}
