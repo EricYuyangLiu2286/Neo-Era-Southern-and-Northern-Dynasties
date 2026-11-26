@@ -58,13 +58,28 @@ nesnd_india_society_open = { nesnd_india_society_live = yes custom_tooltip = { t
 nesnd_india_dynasty_open = { nesnd_india_society_live = yes country_has_monarchy_law = yes custom_tooltip = { text = nesnd_india_dynasty_ended_tt NOT = { has_variable = nesnd_india_dynasty_done } } }
 # The religious law that the journal of caste and office asks for.
 nesnd_india_caste_religion_law = { OR = { has_law = law_type:law_freedom_of_conscience has_law = law_type:law_total_separation } }
+# Country scope. Using the vanilla Indian caste social hierarchy (India batch 16).
+nesnd_india_caste_hierarchy_in_use = { has_social_hierarchy = british_indian_caste_system }
 nesnd_india_caste_live = { nesnd_india_society_live = yes has_technology_researched = human_rights custom_tooltip = { text = nesnd_ui_not_india_caste_done_tt NOT = { has_variable = nesnd_india_caste_done } } }
 nesnd_india_caste_ready = {
     has_law = law_type:law_slavery_banned
-    OR = { has_social_hierarchy = default_social_hierarchy has_law = law_type:law_hindu_caste_not_enforced has_law = law_type:law_affirmative_action }
     nesnd_india_caste_religion_law = yes
     institution_investment_level = { institution = institution_schools value >= 3 }
     literacy_rate >= 0.35
+    trigger_if = {
+        limit = { nesnd_india_caste_hierarchy_in_use = yes }
+        OR = {
+            has_law = law_type:law_hindu_caste_not_enforced
+            has_law = law_type:law_affirmative_action
+        }
+        custom_tooltip = {
+            text = nesnd_india_caste_lower_sol_tt
+            nesnd_india_caste_lower_sol >= 10
+        }
+    }
+    trigger_else = {
+        OR = { has_social_hierarchy = default_social_hierarchy has_law = law_type:law_hindu_caste_not_enforced has_law = law_type:law_affirmative_action }
+    }
 }
 nesnd_india_usm_live = { c:USM ?= this is_subject = no NOT = { exists = c:TZ1 } any_scope_state = { nesnd_tianzhu_region = yes state_population > 0 } }
 

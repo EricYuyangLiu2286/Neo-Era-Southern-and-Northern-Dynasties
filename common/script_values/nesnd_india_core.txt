@@ -80,3 +80,31 @@ nesnd_india_indep_watch_price = { value = income multiply = 4 min = 1000 max = 5
 nesnd_india_indep_conciliate_price = { value = income multiply = 13 min = 1000 }
 # The least any of these sums can be; the buttons that do not know their target yet check this.
 nesnd_india_price_floor = 1000
+
+# ==== Caste and office: lower-caste standard of living (India batch 16) ====
+# Population-weighted average standard of living of the two lowest classes in british_indian_caste_system
+# (shudras and dalit; dalit only allows slaves, so under law_slavery_banned active lower-caste pops are shudras).
+# Scaled by 1/1000 per pop to remain well within fixed-point range in populous India.
+nesnd_india_caste_lower_pop = {
+    value = 0
+    every_scope_pop = {
+        limit = { OR = { has_social_class = shudras has_social_class = dalit } }
+        add = {
+            value = total_size
+            divide = 1000
+        }
+    }
+    min = 0.001
+}
+nesnd_india_caste_lower_sol = {
+    value = 0
+    every_scope_pop = {
+        limit = { OR = { has_social_class = shudras has_social_class = dalit } }
+        add = {
+            value = total_size
+            divide = 1000
+            multiply = standard_of_living
+        }
+    }
+    divide = nesnd_india_caste_lower_pop
+}

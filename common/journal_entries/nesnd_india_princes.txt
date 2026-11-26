@@ -455,3 +455,103 @@ nesnd_india_union = {
     weight = 480
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
+
+# ==== Frontier defence against Persia's eastern claims (India batch 16) ====
+# Added by nesnd_india_north_maintain (global monthly pulse) when Persia holds nesnd_per_east_journal
+# and claims an Indian state held by a country whose capital is in India. No possible /
+# is_shown_when_inactive so the journal can reopen cleanly ten years after an outcome.
+nesnd_india_north = {
+    icon = "gfx/interface/icons/event_icons/nesnd_india_katar.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    immediate = { nesnd_india_north_sync_regions = yes }
+    scripted_progress_bar = nesnd_india_north_bar
+    scripted_button = nesnd_india_north_garrison_button
+    scripted_button = nesnd_india_north_envoy_button
+    scripted_button = nesnd_india_north_overlord_button
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = c:PER c:PER = { is_country_alive = yes } has_war_with = c:PER }
+                desc = nesnd_india_north_status_war
+            }
+            desc = nesnd_india_north_status_watch
+        }
+    }
+    # Outcome 1 (evaluated first): a tracked region fell to Persia, its overlord or its subjects.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_north_lost_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_india_north_lost_trigger_tt
+                nesnd_india_north_any_region_lost = yes
+            }
+        }
+        effect = {
+            show_as_tooltip = { add_modifier = { name = nesnd_india_north_lost days = long_modifier_time } }
+            custom_tooltip = nesnd_india_north_lost_effect_tt
+            hidden_effect = { nesnd_india_north_settle_lost = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_north.4_outcome_tt } } }
+    }
+    # Outcome 2: frontier defence bar reaches 100 and no tracked region fell in the same month.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_india_north_held_conclusion
+        trigger = {
+            hidden_trigger = { NOT = { nesnd_india_north_any_region_lost = yes } }
+            custom_tooltip = {
+                text = nesnd_india_north_held_trigger_tt
+                scope:journal_entry = { "scripted_bar_progress(nesnd_india_north_bar)" >= 100 }
+            }
+        }
+        effect = {
+            show_as_tooltip = { add_modifier = { name = nesnd_india_north_held } }
+            custom_tooltip = nesnd_india_north_held_effect_tt
+            hidden_effect = { nesnd_india_north_settle_held = yes }
+        }
+        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_north.2_outcome_tt } } }
+    }
+    # Outcome 3 (hidden invalid): Persia is gone, no tracked region is claimed or taken, or capital left India.
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            OR = {
+                NOT = { exists = c:PER }
+                c:PER ?= { is_country_alive = no }
+                NOT = { nesnd_india_capital_in_india = yes }
+                AND = {
+                    NOT = { nesnd_india_north_any_region_claimed = yes }
+                    NOT = { nesnd_india_north_any_region_lost = yes }
+                }
+            }
+        }
+        effect = {
+            nesnd_india_north_cleanup = yes
+        }
+    }
+    on_monthly_pulse = {
+        effect = {
+            nesnd_india_north_sync_regions = yes
+            nesnd_india_north_check_halfway = yes
+            if = {
+                limit = { is_ai = yes }
+                random = {
+                    chance = 5
+                    if = { limit = { nesnd_india_north_can_garrison = yes } nesnd_india_north_garrison_do = yes }
+                    else_if = { limit = { nesnd_india_north_can_envoy = yes } nesnd_india_north_envoy_do = yes }
+                    else_if = { limit = { is_subject = yes nesnd_india_north_can_overlord = yes } nesnd_india_north_overlord_do = yes }
+                }
+            }
+        }
+    }
+    weight = 740
+    should_be_pinned_by_default_uninvolved_or_context = yes
+}

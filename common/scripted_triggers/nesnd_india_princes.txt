@@ -1021,3 +1021,141 @@ nesnd_india_claimed_by_empire = {
         }
     }
 }
+
+# ==== Frontier defence against Persia's eastern claims (India batch 16) ====
+# Country scope. Living, non-decentralised country whose capital is in an Indian state.
+nesnd_india_capital_in_india = {
+    is_country_alive = yes
+    NOT = { is_country_type = decentralized }
+    exists = capital
+    capital = { nesnd_india_state = yes }
+}
+# Country scope. Persia itself, Persia's overlord, or a subject of Persia.
+nesnd_india_north_persia_camp = {
+    exists = c:PER
+    c:PER = { is_country_alive = yes }
+    OR = {
+        c:PER ?= this
+        is_subject_of = c:PER
+        c:PER = { is_subject_of = prev }
+    }
+}
+# State region scope. HOLDER owns no state here, while Persia, its overlord or its subject does.
+nesnd_india_north_region_lost_to_persia = {
+    NOT = { any_scope_state = { owner = $HOLDER$ } }
+    any_scope_state = { owner = { nesnd_india_north_persia_camp = yes } }
+}
+# Country scope. At least one tracked region has fallen to Persia, its overlord or its subjects.
+nesnd_india_north_any_region_lost = {
+    save_temporary_scope_as = india_north_chk
+    has_variable_list = nesnd_india_north_regions
+    any_in_list = {
+        variable = nesnd_india_north_regions
+        nesnd_india_north_region_lost_to_persia = { HOLDER = scope:india_north_chk }
+    }
+}
+# Country scope. Persia still claims at least one of this country's states in a tracked region.
+nesnd_india_north_any_region_claimed = {
+    save_temporary_scope_as = india_north_chk
+    exists = c:PER
+    c:PER = { is_country_alive = yes }
+    has_variable_list = nesnd_india_north_regions
+    any_in_list = {
+        variable = nesnd_india_north_regions
+        any_scope_state = {
+            owner = scope:india_north_chk
+            has_claim_by = c:PER
+        }
+    }
+}
+# Country scope. Every tracked region still has a state held by this country.
+nesnd_india_north_all_regions_held = {
+    save_temporary_scope_as = india_north_chk
+    has_variable_list = nesnd_india_north_regions
+    NOT = {
+        any_in_list = {
+            variable = nesnd_india_north_regions
+            NOT = { any_scope_state = { owner = scope:india_north_chk } }
+        }
+    }
+}
+# Country scope. At least one tracked region still has a state held by this country.
+nesnd_india_north_has_held_state = {
+    has_variable_list = nesnd_india_north_regions
+    any_scope_state = {
+        owner = {
+            is_target_in_variable_list = {
+                name = nesnd_india_north_regions
+                target = prev.state_region
+            }
+        }
+    }
+}
+# Country scope. Eligible to open nesnd_india_north (monthly global check; no possible on the JE).
+nesnd_india_north_can_open = {
+    nesnd_india_capital_in_india = yes
+    NOT = { has_journal_entry = nesnd_india_north }
+    NOT = { has_variable = nesnd_india_north_reopen_wait }
+    exists = c:PER
+    c:PER = {
+        is_country_alive = yes
+        has_journal_entry = nesnd_per_east_journal
+    }
+    any_scope_state = {
+        nesnd_india_state = yes
+        has_claim_by = c:PER
+        NOT = {
+            AND = {
+                owner = { has_variable_list = nesnd_india_north_defended_regions }
+                owner = {
+                    is_target_in_variable_list = {
+                        name = nesnd_india_north_defended_regions
+                        target = prev.state_region
+                    }
+                }
+            }
+        }
+    }
+}
+# Country scope. Shared button and AI checks.
+nesnd_india_north_can_garrison = {
+    nesnd_india_can_pay = { SUM = nesnd_india_north_price TEXT = nesnd_india_north_pay_tt }
+    custom_tooltip = {
+        text = nesnd_india_north_garrison_wait_tt
+        NOT = { has_variable = nesnd_india_north_garrison_wait }
+    }
+    custom_tooltip = {
+        text = nesnd_india_north_has_held_state_tt
+        nesnd_india_north_has_held_state = yes
+    }
+}
+nesnd_india_north_can_envoy = {
+    custom_tooltip = {
+        text = nesnd_india_north_qe1_alive_tt
+        exists = c:QE1
+        c:QE1 = { is_country_alive = yes }
+    }
+    trigger_if = {
+        limit = { exists = c:QE1 c:QE1 = { is_country_alive = yes } }
+        NOT = { has_war_with = c:QE1 }
+    }
+    nesnd_india_can_pay = { SUM = nesnd_india_north_price TEXT = nesnd_india_north_pay_tt }
+    custom_tooltip = {
+        text = nesnd_india_north_envoy_wait_tt
+        NOT = { has_variable = nesnd_india_north_envoy_wait }
+    }
+}
+nesnd_india_north_can_overlord = {
+    custom_tooltip = {
+        text = nesnd_india_north_overlord_ready_tt
+        is_subject = yes
+        exists = overlord
+        exists = c:PER
+        c:PER = { is_country_alive = yes }
+        NOT = { overlord = c:PER }
+    }
+    custom_tooltip = {
+        text = nesnd_india_north_overlord_wait_tt
+        NOT = { has_variable = nesnd_india_north_overlord_wait }
+    }
+}

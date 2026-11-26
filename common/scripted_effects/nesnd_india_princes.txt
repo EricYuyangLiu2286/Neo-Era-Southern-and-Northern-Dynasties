@@ -1632,3 +1632,276 @@ nesnd_india_union_maintain = {
         }
     }
 }
+
+# ==== Frontier defence against Persia's eastern claims (India batch 16) ====
+# Country scope (no root used so it is safe from global on_monthly_pulse as well as the JE).
+# Adds every Indian state currently held by this country and claimed by Persia to nesnd_india_north_regions,
+# skipping regions already recorded or already defended in a prior "eastward push held" round.
+nesnd_india_north_sync_regions = {
+    save_scope_as = india_north_sync_owner
+    if = {
+        limit = { exists = c:PER c:PER = { is_country_alive = yes } }
+        every_scope_state = {
+            limit = {
+                nesnd_india_state = yes
+                has_claim_by = c:PER
+            }
+            if = {
+                limit = {
+                    NOT = {
+                        AND = {
+                            scope:india_north_sync_owner = { has_variable_list = nesnd_india_north_regions }
+                            scope:india_north_sync_owner = {
+                                is_target_in_variable_list = {
+                                    name = nesnd_india_north_regions
+                                    target = prev.state_region
+                                }
+                            }
+                        }
+                    }
+                    NOT = {
+                        AND = {
+                            scope:india_north_sync_owner = { has_variable_list = nesnd_india_north_defended_regions }
+                            scope:india_north_sync_owner = {
+                                is_target_in_variable_list = {
+                                    name = nesnd_india_north_defended_regions
+                                    target = prev.state_region
+                                }
+                            }
+                        }
+                    }
+                }
+                scope:india_north_sync_owner = {
+                    add_to_variable_list = {
+                        name = nesnd_india_north_regions
+                        target = prev.state_region
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Country scope (no root). Opens nesnd_india_north after recording currently claimed regions.
+nesnd_india_north_open = {
+    nesnd_india_north_sync_regions = yes
+    if = {
+        limit = { has_variable_list = nesnd_india_north_regions NOT = { has_journal_entry = nesnd_india_north } }
+        add_journal_entry = { type = nesnd_india_north }
+    }
+}
+
+# Global scope, monthly from on_monthly_pulse (nesnd_india_north_global_pulse). No root.
+nesnd_india_north_maintain = {
+    if = {
+        limit = {
+            exists = c:PER
+            c:PER = {
+                is_country_alive = yes
+                has_journal_entry = nesnd_per_east_journal
+            }
+        }
+        every_country = {
+            limit = { nesnd_india_north_can_open = yes }
+            nesnd_india_north_open = yes
+        }
+    }
+}
+
+# Country scope (no root). Fires nesnd_india_north.1 on Persia the first time the bar reaches 50.
+nesnd_india_north_check_halfway = {
+    if = {
+        limit = {
+            has_journal_entry = nesnd_india_north
+            NOT = { has_variable = nesnd_india_north_halfway_sent }
+            exists = c:PER
+            c:PER = { is_country_alive = yes }
+            je:nesnd_india_north ?= { "scripted_bar_progress(nesnd_india_north_bar)" >= 50 }
+        }
+        set_variable = nesnd_india_north_halfway_sent
+        save_scope_as = india_north_defender
+        c:PER = { trigger_event = { id = nesnd_india_north.1 popup = yes } }
+    }
+}
+
+# Country scope. Button 1: strengthen frontier defences.
+nesnd_india_north_garrison_do = {
+    save_scope_as = india_north_actor
+    add_treasury = { value = nesnd_india_north_price multiply = -1 }
+    je:nesnd_india_north ?= { add_progress = { name = nesnd_india_north_bar value = 10 } }
+    ordered_scope_state = {
+        limit = {
+            scope:india_north_actor = {
+                has_variable_list = nesnd_india_north_regions
+                is_target_in_variable_list = {
+                    name = nesnd_india_north_regions
+                    target = prev.state_region
+                }
+            }
+        }
+        order_by = state_population
+        position = 0
+        check_range_bounds = no
+        add_modifier = { name = nesnd_india_north_garrison days = normal_modifier_time }
+    }
+    set_variable = { name = nesnd_india_north_garrison_wait months = 12 }
+    nesnd_india_north_check_halfway = yes
+}
+
+# Country scope. Button 2: send envoys to Great Qin Republic.
+nesnd_india_north_envoy_do = {
+    add_treasury = { value = nesnd_india_north_price multiply = -1 }
+    if = {
+        limit = { exists = c:QE1 c:QE1 = { is_country_alive = yes } }
+        change_relations = { country = c:QE1 value = 15 }
+    }
+    je:nesnd_india_north ?= { add_progress = { name = nesnd_india_north_bar value = 10 } }
+    set_variable = { name = nesnd_india_north_envoy_wait months = 12 }
+    nesnd_india_north_check_halfway = yes
+}
+
+# Country scope. Button 3 (subjects only): ask our overlord to intervene against Persia.
+nesnd_india_north_overlord_do = {
+    if = {
+        limit = { is_subject = yes exists = overlord exists = c:PER c:PER = { is_country_alive = yes } NOT = { overlord = c:PER } }
+        overlord = {
+            change_relations = { country = c:PER value = -10 }
+            create_diplomatic_catalyst = { type = catalyst_event_negative target = c:PER }
+        }
+    }
+    je:nesnd_india_north ?= { add_progress = { name = nesnd_india_north_bar value = 10 } }
+    set_variable = { name = nesnd_india_north_overlord_wait months = 24 }
+    nesnd_india_north_check_halfway = yes
+}
+
+# Country scope. Clears per-round variables and the tracked region list.
+nesnd_india_north_cleanup = {
+    remove_variable = nesnd_india_north_halfway_sent
+    remove_variable = nesnd_india_north_garrison_wait
+    remove_variable = nesnd_india_north_envoy_wait
+    remove_variable = nesnd_india_north_overlord_wait
+    if = {
+        limit = { has_variable_list = nesnd_india_north_regions }
+        clear_variable_list = nesnd_india_north_regions
+    }
+}
+
+# Country scope. Outcome "eastward push held" (bar >= 100 and no tracked region lost).
+nesnd_india_north_settle_held = {
+    save_scope_as = india_north_defender
+    if = {
+        limit = { NOT = { has_modifier = nesnd_india_north_held } }
+        add_modifier = { name = nesnd_india_north_held }
+    }
+    if = {
+        limit = { has_variable_list = nesnd_india_north_regions }
+        every_in_list = {
+            variable = nesnd_india_north_regions
+            save_scope_as = india_north_held_region
+            scope:india_north_defender = {
+                if = {
+                    limit = {
+                        NOT = {
+                            AND = {
+                                has_variable_list = nesnd_india_north_defended_regions
+                                is_target_in_variable_list = {
+                                    name = nesnd_india_north_defended_regions
+                                    target = scope:india_north_held_region
+                                }
+                            }
+                        }
+                    }
+                    add_to_variable_list = {
+                        name = nesnd_india_north_defended_regions
+                        target = scope:india_north_held_region
+                    }
+                }
+            }
+            every_scope_state = {
+                limit = { owner = scope:india_north_defender }
+                save_scope_as = india_north_held_state
+                add_modifier = { name = nesnd_india_north_garrison days = long_modifier_time }
+                scope:india_north_defender = {
+                    every_primary_culture = {
+                        save_scope_as = india_north_home_culture
+                        scope:india_north_held_state = {
+                            add_loyalists_in_state = {
+                                value = 0.05
+                                culture = scope:india_north_home_culture
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if = {
+        limit = { exists = c:PER c:PER = { is_country_alive = yes } }
+        change_relations = { country = c:PER value = -10 }
+        c:PER = {
+            if = {
+                limit = { is_ai = yes }
+                set_secret_goal = { country = scope:india_north_defender secret_goal = antagonize }
+            }
+            trigger_event = { id = nesnd_india_north.3 popup = yes }
+        }
+    }
+    set_variable = { name = nesnd_india_north_reopen_wait days = 3650 }
+    nesnd_india_north_cleanup = yes
+    trigger_event = { id = nesnd_india_north.2 popup = yes }
+}
+
+# Country scope. Outcome "eastward push succeeded" (a tracked region fell to Persia's camp).
+nesnd_india_north_settle_lost = {
+    save_scope_as = india_north_defender
+    clear_saved_scope = india_north_taker
+    if = {
+        limit = { has_variable_list = nesnd_india_north_regions }
+        every_in_list = {
+            variable = nesnd_india_north_regions
+            limit = { nesnd_india_north_region_lost_to_persia = { HOLDER = scope:india_north_defender } }
+            save_scope_as = india_north_lost_region
+            c:PER ?= {
+                if = {
+                    limit = { is_country_alive = yes }
+                    every_primary_culture = {
+                        save_scope_as = india_north_per_culture
+                        scope:india_north_lost_region = {
+                            if = {
+                                limit = { NOT = { is_homeland = scope:india_north_per_culture } }
+                                add_homeland = scope:india_north_per_culture
+                            }
+                        }
+                    }
+                }
+            }
+            add_claim = scope:india_north_defender
+            ordered_scope_state = {
+                limit = { owner = { nesnd_india_north_persia_camp = yes } }
+                order_by = state_population
+                position = 0
+                check_range_bounds = no
+                owner = { save_scope_as = india_north_taker }
+            }
+        }
+    }
+    add_modifier = { name = nesnd_india_north_lost days = long_modifier_time }
+    capital ?= { add_radicals_in_state = { value = 0.1 } }
+    if = {
+        limit = { is_ai = yes exists = scope:india_north_taker scope:india_north_taker = { is_country_alive = yes } }
+        set_secret_goal = { country = scope:india_north_taker secret_goal = conquer }
+    }
+    if = {
+        limit = { has_variable_list = nesnd_india_north_defended_regions }
+        clear_variable_list = nesnd_india_north_defended_regions
+    }
+    set_variable = { name = nesnd_india_north_reopen_wait days = 3650 }
+    nesnd_india_north_cleanup = yes
+    trigger_event = { id = nesnd_india_north.4 popup = yes }
+    c:PER ?= {
+        if = {
+            limit = { is_country_alive = yes }
+            trigger_event = { id = nesnd_india_north.5 popup = yes }
+        }
+    }
+}

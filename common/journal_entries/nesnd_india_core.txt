@@ -175,6 +175,23 @@ nesnd_india_caste = {
     icon = "gfx/interface/icons/event_icons/nesnd_india_school_door.dds" group = je_group_historical_content
 	activation_description = { always = yes } can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_india_caste_live = yes } possible = { nesnd_india_caste_live = yes }
+    immediate = {
+        if = { limit = { nesnd_india_caste_religion_law = yes NOT = { has_variable = nesnd_india_caste_law_held } } set_variable = nesnd_india_caste_law_held }
+        if = {
+            limit = {
+                nesnd_india_caste_hierarchy_in_use = yes
+                OR = { has_law = law_type:law_hindu_caste_not_enforced has_law = law_type:law_affirmative_action }
+                NOT = { has_variable = nesnd_india_caste_equality_law_held }
+            }
+            set_variable = nesnd_india_caste_equality_law_held
+        }
+    }
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_india_caste_hierarchy_in_use = yes } desc = nesnd_india_caste_status_hierarchy }
+            triggered_desc = { trigger = { NOT = { nesnd_india_caste_hierarchy_in_use = yes } } desc = blank_tt }
+        }
+    }
     outcome = {
     	header = je_standard_completion_header
     	effect_header = je_standard_on_completion_header
@@ -184,11 +201,21 @@ nesnd_india_caste = {
     	effect = {
     	    set_variable = nesnd_india_caste_done
     	    remove_variable = nesnd_india_caste_law_held
+    	    remove_variable = nesnd_india_caste_equality_law_held
     	    add_modifier = { name = nesnd_india_equal_service }
     	    add_loyalists = { strata = lower value = 0.1 }
+    	    if = {
+    	        limit = { has_journal_entry = nesnd_india_society }
+    	        custom_tooltip = {
+    	            text = nesnd_india_caste_community_up_tt
+    	            je:nesnd_india_society ?= { add_progress = { name = nesnd_india_community_bar value = 10 } }
+    	        }
+    	    }
+    	    else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
     	}
     }
-    # The old order strikes back: the devout govern and the religious law the journal asks for has been repealed.
+    # The old order strikes back: the devout govern and either the religious law was repealed or
+    # (for countries that used the caste hierarchy) caste-not-enforced / affirmative action reverted to caste enforced.
     outcome = {
     	header = je_standard_failure_header
     	effect_header = je_standard_on_failure_header
@@ -196,23 +223,47 @@ nesnd_india_caste = {
     	conclusion_desc = nesnd_india_caste_reaction_conclusion
     	trigger = {
     	    hidden_trigger = { nesnd_india_caste_live = yes }
-    	    custom_tooltip = { text = nesnd_india_caste_law_lost_tt has_variable = nesnd_india_caste_law_held NOT = { nesnd_india_caste_religion_law = yes } }
+    	    OR = {
+    	        custom_tooltip = { text = nesnd_india_caste_law_lost_tt has_variable = nesnd_india_caste_law_held NOT = { nesnd_india_caste_religion_law = yes } }
+    	        custom_tooltip = { text = nesnd_india_caste_enforced_back_tt has_variable = nesnd_india_caste_equality_law_held has_law = law_type:law_hindu_caste_enforced }
+    	    }
     	    ig:ig_devout ?= { is_in_government = yes }
     	}
     	effect = {
     	    set_variable = nesnd_india_caste_done
     	    remove_variable = nesnd_india_caste_law_held
+    	    remove_variable = nesnd_india_caste_equality_law_held
     	    add_radicals = { strata = lower value = 0.1 }
+    	    if = {
+    	        limit = { has_journal_entry = nesnd_india_society }
+    	        custom_tooltip = {
+    	            text = nesnd_india_caste_community_down_tt
+    	            je:nesnd_india_society ?= { add_progress = { name = nesnd_india_community_bar value = -10 } }
+    	        }
+    	    }
+    	    else = { custom_tooltip = nesnd_journal_effect_revealed_tt }
     	}
     }
     outcome = {
     	flags = { hidden invalid_outcome }
     	conclusion_desc = je_standard_failure_conclusion_desc
     	trigger = { NOT = { nesnd_india_caste_live = yes } }
-    	effect = { remove_variable = nesnd_india_caste_law_held }
+    	effect = { remove_variable = nesnd_india_caste_law_held remove_variable = nesnd_india_caste_equality_law_held }
     }
-    # Remembers that the religious law was once held, so that its repeal can be seen.
-    on_monthly_pulse = { effect = { if = { limit = { nesnd_india_caste_religion_law = yes NOT = { has_variable = nesnd_india_caste_law_held } } set_variable = nesnd_india_caste_law_held } } }
+    # Remembers that the religious law or caste-equality law was once held, so that its repeal can be seen.
+    on_monthly_pulse = {
+        effect = {
+            if = { limit = { nesnd_india_caste_religion_law = yes NOT = { has_variable = nesnd_india_caste_law_held } } set_variable = nesnd_india_caste_law_held }
+            if = {
+                limit = {
+                    nesnd_india_caste_hierarchy_in_use = yes
+                    OR = { has_law = law_type:law_hindu_caste_not_enforced has_law = law_type:law_affirmative_action }
+                    NOT = { has_variable = nesnd_india_caste_equality_law_held }
+                }
+                set_variable = nesnd_india_caste_equality_law_held
+            }
+        }
+    }
     weight = 700
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
