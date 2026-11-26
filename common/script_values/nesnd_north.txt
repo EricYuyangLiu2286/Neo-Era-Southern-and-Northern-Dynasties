@@ -1,0 +1,72 @@
+﻿# Script values for scoring northern foe and foreign helper candidates (F2).
+# Country scope (evaluated country).
+
+# Northern foe selection score (Rule 2).
+nesnd_north_foe_score = {
+    value = 0
+    if = {
+        limit = { c:RUS ?= this }
+        add = 100
+    }
+    if = {
+        limit = { any_scope_state = { state_region = { nesnd_north_is_north_target_region = yes } } }
+        add = 50
+    }
+    if = {
+        limit = {
+            exists = c:TUR
+            c:TUR = { has_diplomatic_pact = { who = prev type = rivalry is_initiator = yes } }
+        }
+        add = 30
+    }
+    if = {
+        limit = {
+            exists = c:TUR
+            "relations(c:TUR)" <= relations_threshold:cold
+        }
+        add = 20
+    }
+    if = {
+        limit = { country_rank >= rank_value:great_power }
+        add = 10
+    }
+}
+
+# Foreign helper selection score (Rule 11).
+nesnd_north_helper_score = {
+    value = 0
+    if = {
+        limit = {
+            exists = c:TUR
+            "relations(c:TUR)" >= relations_threshold:amicable
+        }
+        add = 30
+    }
+    if = {
+        limit = {
+            has_global_variable = nesnd_north_foe
+            global_var:nesnd_north_foe ?= { relations:prev <= relations_threshold:cold }
+        }
+        add = 30
+    }
+    if = {
+        limit = {
+            has_global_variable = nesnd_north_foe
+            global_var:nesnd_north_foe ?= { has_diplomatic_pact = { who = prev type = rivalry is_initiator = no } }
+        }
+        add = 30
+    }
+    if = {
+        limit = {
+            OR = {
+                c:GBR ?= this
+                c:FRA ?= this
+            }
+        }
+        add = 15
+    }
+    if = {
+        limit = { is_at_war = yes }
+        add = -30
+    }
+}

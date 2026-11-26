@@ -29,11 +29,20 @@ nesnd_ottoman_islam_leader = {
         set_variable = { name = nesnd_ottoman_islam_leader_wait months = 60 }
         if = {
             limit = {
-                exists = c:RUS
-                NOT = { c:RUS = root }
-                NOT = { has_secret_goal = { who = c:RUS secret_goal = antagonize } }
+                NOT = { has_global_variable = nesnd_crimea_active }
+                NOT = { has_global_variable = nesnd_rtw_active }
+                nesnd_north_foe_valid = no
             }
-            set_secret_goal = { country = c:RUS secret_goal = antagonize }
+            nesnd_north_pick_foe = yes
+        }
+        if = {
+            limit = { nesnd_north_foe_valid = yes }
+            global_var:nesnd_north_foe ?= {
+                if = {
+                    limit = { root = { NOT = { has_secret_goal = { who = prev secret_goal = antagonize } } } }
+                    root = { set_secret_goal = { country = prev secret_goal = antagonize } }
+                }
+            }
         }
     }
 
@@ -52,8 +61,13 @@ nesnd_ottoman_islam_leader = {
             }
         }
         effect = {
-            add_modifier = { name = nesnd_ottoman_lost_autonomy }
-            hidden_effect = { remove_variable = nesnd_ottoman_dependent_months }
+            if = {
+                limit = { NOT = { has_modifier = nesnd_ottoman_lost_autonomy } }
+                add_modifier = { name = nesnd_ottoman_lost_autonomy }
+            }
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_ottoman_dependent_months } remove_variable = nesnd_ottoman_dependent_months }
+            }
             set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:lost_autonomy }
             set_variable = nesnd_ottoman_islam_leader_closed
         }
@@ -85,6 +99,9 @@ nesnd_ottoman_islam_leader = {
             set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:failed }
             set_variable = nesnd_ottoman_islam_leader_closed
             trigger_event = { id = nesnd_ottoman_recovery.13 }
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_ottoman_dependent_months } remove_variable = nesnd_ottoman_dependent_months }
+            }
         }
         event_outcome_desc = {
             first_valid = {
@@ -117,6 +134,9 @@ nesnd_ottoman_islam_leader = {
             set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:leader }
             set_variable = nesnd_ottoman_islam_leader_closed
             trigger_event = { id = nesnd_ottoman_recovery.12 }
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_ottoman_dependent_months } remove_variable = nesnd_ottoman_dependent_months }
+            }
         }
         event_outcome_desc = {
             first_valid = {
@@ -135,6 +155,9 @@ nesnd_ottoman_islam_leader = {
             add_modifier = { name = nesnd_ottoman_leader_unclaimed }
             set_variable = { name = nesnd_ottoman_islam_leader_outcome value = flag:timeout }
             set_variable = nesnd_ottoman_islam_leader_closed
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_ottoman_dependent_months } remove_variable = nesnd_ottoman_dependent_months }
+            }
         }
         event_outcome_desc = {
             first_valid = {

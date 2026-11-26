@@ -1,0 +1,220 @@
+﻿namespace = nesnd_rtw
+
+# H1: A dynamically chosen foreign power receives the Ottoman appeal for intervention over the Straits (Rule 13).
+nesnd_rtw.1 = {
+    type = country_event
+    placement = root
+    title = nesnd_rtw.1.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_north_foe_scope }
+                desc = nesnd_rtw.1.d
+            }
+            triggered_desc = {
+                desc = nesnd_rtw.1.d_plain
+            }
+        }
+    }
+    flavor = nesnd_rtw.1.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        exists = c:TUR
+        c:TUR = { is_country_alive = yes }
+        NOT = { c:TUR ?= this }
+        NOT = { has_war_with = c:TUR }
+    }
+    immediate = {
+        save_scope_as = nesnd_helper_country
+        c:TUR ?= { save_scope_as = nesnd_tur_country }
+        if = {
+            limit = { nesnd_north_foe_valid = yes }
+            global_var:nesnd_north_foe ?= { save_scope_as = nesnd_north_foe_scope }
+        }
+    }
+    option = {
+        name = nesnd_rtw.1.a
+        default_option = yes
+        if = {
+            limit = { nesnd_north_play_before_war = yes }
+            nesnd_crimea_join_tur_play = yes
+            c:TUR = {
+                hidden_effect = { set_variable = { name = nesnd_rtw_helper_reply value = flag:joined months = 2 } }
+                trigger_event = { id = nesnd_rtw.2 days = 3 popup = yes }
+            }
+        }
+        else_if = {
+            limit = { nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:TUR } }
+            nesnd_crimea_sign_defensive_pact = { PARTNER = c:TUR }
+            c:TUR = {
+                hidden_effect = { set_variable = { name = nesnd_rtw_helper_reply value = flag:pact months = 2 } }
+                trigger_event = { id = nesnd_rtw.2 days = 3 popup = yes }
+            }
+        }
+        else = {
+            c:TUR = {
+                change_relations = { country = root value = 20 }
+                hidden_effect = { set_variable = { name = nesnd_rtw_helper_reply value = flag:rel months = 2 } }
+                trigger_event = { id = nesnd_rtw.2 days = 3 popup = yes }
+            }
+        }
+        if = {
+            limit = {
+                has_global_variable = nesnd_crimea_active
+                NOT = { has_journal_entry = nesnd_crimea_helper }
+            }
+            add_journal_entry = { type = nesnd_crimea_helper }
+        }
+        ai_chance = {
+            base = 30
+            modifier = {
+                trigger = {
+                    nesnd_north_foe_valid = yes
+                    global_var:nesnd_north_foe ?= { relations:root < relations_threshold:poor }
+                }
+                add = 30
+            }
+            modifier = {
+                trigger = { is_at_war = yes }
+                add = -25
+            }
+        }
+    }
+    option = {
+        name = nesnd_rtw.1.b
+        c:TUR = {
+            change_relations = { country = root value = 10 }
+            hidden_effect = { set_variable = { name = nesnd_rtw_helper_reply value = flag:note months = 2 } }
+            trigger_event = { id = nesnd_rtw.3 days = 3 popup = yes }
+        }
+        if = {
+            limit = { nesnd_north_foe_valid = yes }
+            global_var:nesnd_north_foe ?= { change_relations = { country = root value = -10 } }
+        }
+        ai_chance = {
+            base = 40
+        }
+    }
+    option = {
+        name = nesnd_rtw.1.c
+        c:TUR = {
+            change_relations = { country = root value = -10 }
+            hidden_effect = { set_variable = { name = nesnd_rtw_helper_reply value = flag:refused months = 2 } }
+            trigger_event = { id = nesnd_rtw.3 days = 3 popup = yes }
+        }
+        ai_chance = {
+            base = 30
+        }
+    }
+}
+
+# H2: Ottoman Empire receives the foreign power's backing (play entry, defensive pact, or warm diplomatic support).
+nesnd_rtw.2 = {
+    type = country_event
+    placement = root
+    title = nesnd_rtw.2.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_helper_joined }
+                desc = nesnd_rtw.2.d_joined
+            }
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_helper_pact_signed }
+                desc = nesnd_rtw.2.d_pact
+            }
+            triggered_desc = {
+                desc = nesnd_rtw.2.d_rel
+            }
+        }
+    }
+    flavor = nesnd_rtw.2.f
+    event_image = { video = "unspecific_signed_contract" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = scope:nesnd_helper_country
+    }
+    immediate = {
+        if = {
+            limit = { has_variable = nesnd_rtw_helper_reply }
+            if = {
+                limit = { var:nesnd_rtw_helper_reply = flag:joined }
+                save_scope_as = nesnd_helper_joined
+            }
+            else_if = {
+                limit = { var:nesnd_rtw_helper_reply = flag:pact }
+                save_scope_as = nesnd_helper_pact_signed
+            }
+            remove_variable = nesnd_rtw_helper_reply
+        }
+    }
+    option = {
+        name = nesnd_rtw.2.a
+        default_option = yes
+        if = {
+            limit = { exists = scope:nesnd_helper_joined }
+            custom_tooltip = nesnd_rtw.2.a_joined_tt
+        }
+        else_if = {
+            limit = { exists = scope:nesnd_helper_pact_signed }
+            custom_tooltip = nesnd_rtw.2.a_pact_tt
+        }
+        else = {
+            custom_tooltip = nesnd_rtw.2.a_rel_tt
+        }
+    }
+}
+
+# H3: Ottoman Empire receives the foreign power's diplomatic declaration or refusal.
+nesnd_rtw.3 = {
+    type = country_event
+    placement = root
+    title = nesnd_rtw.3.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_helper_note_sent }
+                desc = nesnd_rtw.3.d_note
+            }
+            triggered_desc = {
+                desc = nesnd_rtw.3.d_refused
+            }
+        }
+    }
+    flavor = nesnd_rtw.3.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_protest.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = scope:nesnd_helper_country
+    }
+    immediate = {
+        if = {
+            limit = { has_variable = nesnd_rtw_helper_reply }
+            if = {
+                limit = { var:nesnd_rtw_helper_reply = flag:note }
+                save_scope_as = nesnd_helper_note_sent
+            }
+            remove_variable = nesnd_rtw_helper_reply
+        }
+    }
+    option = {
+        name = nesnd_rtw.3.a
+        default_option = yes
+        if = {
+            limit = { exists = scope:nesnd_helper_note_sent }
+            custom_tooltip = nesnd_rtw.3.a_note_tt
+        }
+        else = {
+            add_modifier = { name = nesnd_rtw_isolated months = 60 }
+        }
+    }
+}

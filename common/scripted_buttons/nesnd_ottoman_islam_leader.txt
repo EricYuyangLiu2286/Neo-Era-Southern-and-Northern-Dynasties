@@ -1,6 +1,7 @@
-﻿# Buttons for "Leader of the Islamic World" (nesnd_ottoman_islam_leader) and the Ottoman side of the Crimean War (nesnd_crimea_tur).
+﻿# Buttons for "Leader of the Islamic World" (nesnd_ottoman_islam_leader).
 
 # Node "Central Asia and Western Qin": fund frontier tribes in Western Qin (shares 24-month cooldown with seek_qin_pact).
+# Untouched per F2 Rule 28 (left for B13).
 nesnd_ottoman_fund_tribes = {
     name = nesnd_ottoman_fund_tribes
     desc = nesnd_ottoman_fund_tribes_desc
@@ -41,14 +42,15 @@ nesnd_ottoman_fund_tribes = {
     }
 }
 
-# Node "Central Asia and Western Qin": propose a defensive pact against Russia (shares 24-month cooldown with fund_tribes).
+# Node "Central Asia and Western Qin": propose a defensive pact against the northern foe (shares 24-month cooldown with fund_tribes).
 nesnd_ottoman_seek_qin_pact = {
     name = nesnd_ottoman_seek_qin_pact
     desc = nesnd_ottoman_seek_qin_pact_desc
     visible = { has_journal_entry = nesnd_ottoman_islam_leader }
     possible = {
         exists = c:QE1
-        exists = c:RUS
+        c:QE1 = { is_country_alive = yes is_subject = no }
+        custom_tooltip = { text = nesnd_north_foe_valid_tt nesnd_north_foe_valid = yes }
         "relations(c:QE1)" >= relations_threshold:amicable
         nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:QE1 }
         custom_tooltip = { text = nesnd_ottoman_qin_cd_tt NOT = { has_variable = nesnd_ottoman_qin_diplomacy_cd } }
@@ -67,27 +69,36 @@ nesnd_ottoman_seek_qin_pact = {
     }
 }
 
-# Launch the Crimean War diplomatic play against Russia (10a).
+# Launch the Crimean / Northern War diplomatic play against global_var:nesnd_north_foe (Rules 7, 20.5).
 nesnd_ottoman_challenge_russia = {
     name = nesnd_ottoman_challenge_russia
     desc = nesnd_ottoman_challenge_russia_desc
     visible = {
         has_journal_entry = nesnd_ottoman_islam_leader
         NOT = { has_global_variable = nesnd_crimea_active }
-        NOT = { has_global_variable = nesnd_crimea_result }
+        NOT = { has_variable = nesnd_crimea_tur_closed }
+        OR = {
+            NOT = { has_global_variable = nesnd_crimea_result }
+            global_var:nesnd_crimea_result ?= flag:changed
+        }
     }
     possible = {
-        exists = c:RUS
-        is_subject = no
-        c:RUS = { is_subject = no }
+        custom_tooltip = { text = nesnd_north_foe_valid_tt nesnd_north_foe_valid = yes }
+        nesnd_ottoman_can_act_abroad = yes
         custom_tooltip = { text = nesnd_crimea_not_active_tt NOT = { has_global_variable = nesnd_crimea_active } }
-        custom_tooltip = { text = nesnd_crimea_not_ended_tt NOT = { has_global_variable = nesnd_crimea_result } }
-        NOT = { has_war_with = c:RUS }
-        NOT = { is_diplomatic_play_enemy_of = c:RUS }
-        NOT = { is_diplomatic_play_ally_of = c:RUS }
-        NOT = { has_truce_with = c:RUS }
-        NOT = { has_treaty_alliance_with = { TARGET = c:RUS } }
-        NOT = { has_treaty_defensive_pact_with = { TARGET = c:RUS } }
+        custom_tooltip = { text = nesnd_crimea_not_ended_tt nesnd_crimea_can_open = yes }
+        trigger_if = {
+            limit = { nesnd_north_foe_valid = yes }
+            custom_tooltip = {
+                text = nesnd_north_foe_peaceful_tt
+                global_var:nesnd_north_foe ?= {
+                    NOT = { has_war_with = root }
+                    NOT = { is_diplomatic_play_enemy_of = root }
+                    NOT = { is_diplomatic_play_ally_of = root }
+                    NOT = { has_truce_with = root }
+                }
+            }
+        }
         custom_tooltip = { text = nesnd_crimea_rus_holds_target_tt nesnd_crimea_rus_holds_target = yes }
     }
     effect = {
@@ -103,64 +114,9 @@ nesnd_ottoman_challenge_russia = {
             }
             add = 1
             if = { limit = { nesnd_ottoman_has_major_ally = yes } add = 4 }
-            if = {
-                limit = {
-                    exists = c:QE1
-                    OR = {
-                        has_treaty_defensive_pact_with = { TARGET = c:QE1 }
-                        has_treaty_alliance_with = { TARGET = c:QE1 }
-                    }
-                }
-                add = 4
-            }
             if = { limit = { nesnd_ottoman_enthusiasm_value >= 75 } add = 2 }
         }
+        if = { limit = { is_at_war = yes } multiply = 0 }
         min = 0
     }
-}
-
-# Crimean War (nesnd_crimea_tur): invite France to back the Ottoman side (once).
-nesnd_crimea_invite_fra = {
-    name = nesnd_crimea_invite_fra
-    desc = nesnd_crimea_invite_fra_desc
-    visible = { has_journal_entry = nesnd_crimea_tur }
-    possible = {
-        exists = c:FRA
-        custom_tooltip = { text = nesnd_crimea_fra_not_invited_tt NOT = { has_variable = nesnd_crimea_fra_invited } }
-        custom_tooltip = { text = nesnd_crimea_play_open_tt nesnd_crimea_play_before_war = yes }
-        c:FRA = {
-            is_subject = no
-            NOT = { has_war_with = root }
-            NOT = { is_diplomatic_play_participant_with = root }
-        }
-    }
-    effect = {
-        custom_tooltip = nesnd_crimea_invite_fra_tt
-        c:FRA ?= { trigger_event = { id = nesnd_crimea.2 days = 2 popup = yes } }
-        hidden_effect = { set_variable = nesnd_crimea_fra_invited }
-    }
-    ai_chance = { value = 50 }
-}
-
-# Crimean War (nesnd_crimea_tur): invite Western Qin to back the Ottoman side (once).
-nesnd_crimea_invite_qe1 = {
-    name = nesnd_crimea_invite_qe1
-    desc = nesnd_crimea_invite_qe1_desc
-    visible = { has_journal_entry = nesnd_crimea_tur }
-    possible = {
-        exists = c:QE1
-        custom_tooltip = { text = nesnd_crimea_qe1_not_invited_tt NOT = { has_variable = nesnd_crimea_qe1_invited } }
-        custom_tooltip = { text = nesnd_crimea_play_open_tt nesnd_crimea_play_before_war = yes }
-        c:QE1 = {
-            is_subject = no
-            NOT = { has_war_with = root }
-            NOT = { is_diplomatic_play_participant_with = root }
-        }
-    }
-    effect = {
-        custom_tooltip = nesnd_crimea_invite_qe1_tt
-        c:QE1 ?= { trigger_event = { id = nesnd_ottoman_qe1.3 days = 2 popup = yes } }
-        hidden_effect = { set_variable = nesnd_crimea_qe1_invited }
-    }
-    ai_chance = { value = 50 }
 }

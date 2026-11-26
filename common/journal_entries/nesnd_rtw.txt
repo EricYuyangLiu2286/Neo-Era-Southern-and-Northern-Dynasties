@@ -1,0 +1,359 @@
+﻿# Global crisis journals for Ottoman failure line, block 2: Generalized Russo-Turkish / Northern Threat War (F2).
+# Journal keys keep the legacy nesnd_rtw_* prefix for save compatibility; nesnd_rtw_rus now represents
+# the dynamically selected northern foe (global_var:nesnd_north_foe). Added only by nesnd_rtw_start.
+
+nesnd_rtw_tur = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    group = je_group_foreign_affairs
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    scripted_button = nesnd_rtw_mobilize
+    scripted_button = nesnd_north_seek_help
+    scripted_button = nesnd_rtw_ask_qe1
+
+    on_monthly_pulse = {
+        effect = {
+            nesnd_north_update_dependent_months = yes
+        }
+    }
+
+    immediate = {
+        set_variable = { name = nesnd_rtw_deadline months = 180 }
+        if = {
+            limit = { NOT = { has_variable = nesnd_rtw_mobilize_count } }
+            set_variable = { name = nesnd_rtw_mobilize_count value = 0 }
+        }
+    }
+
+    # 1. Defeat (R10: bad outcome judged before survival).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_rtw_tur_lost_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_north_tur_lost_tt
+                nesnd_north_tur_lost = yes
+            }
+        }
+        effect = {
+            set_global_variable = { name = nesnd_rtw_result value = flag:rus_won }
+            custom_tooltip = {
+                text = nesnd_rtw_lost_claims_tt
+                nesnd_rtw_claim_lost_states = yes
+            }
+            add_modifier = { name = nesnd_rtw_lost_mod }
+            set_variable = { name = nesnd_rtw_outcome value = flag:lost }
+            if = {
+                limit = { NOT = { has_variable = nesnd_ottoman_revenge_asked } }
+                set_variable = nesnd_ottoman_revenge_asked
+                trigger_event = { id = nesnd_ottoman_recovery.19 days = 5 popup = yes }
+            }
+            hidden_effect = { nesnd_north_cleanup = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_rtw_tur_lost_event_tt }
+            }
+        }
+    }
+
+    # 2. Lost autonomy (R13: unable to act abroad for 12 consecutive months without a war ever breaking out).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_north_lost_autonomy_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_north_lost_autonomy_tt
+                has_variable = nesnd_north_dependent_months
+                var:nesnd_north_dependent_months >= 12
+                NOT = { has_variable = nesnd_north_war_seen }
+            }
+        }
+        effect = {
+            if = {
+                limit = { NOT = { has_modifier = nesnd_ottoman_lost_autonomy } }
+                add_modifier = { name = nesnd_ottoman_lost_autonomy }
+            }
+            set_variable = { name = nesnd_rtw_outcome value = flag:standoff }
+            set_global_variable = { name = nesnd_rtw_result value = flag:standoff }
+            hidden_effect = { nesnd_north_cleanup = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_north_lost_autonomy_event_tt }
+            }
+        }
+    }
+
+    # 3. Victory (counts as holding the line on the failure route).
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_rtw_tur_held_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_north_tur_won_tt
+                nesnd_north_tur_won = yes
+            }
+        }
+        effect = {
+            set_global_variable = { name = nesnd_rtw_result value = flag:tur_held }
+            add_modifier = { name = nesnd_rtw_held_mod }
+            if = {
+                limit = { is_country_type = unrecognized }
+                set_country_type = recognized
+            }
+            set_variable = { name = nesnd_rtw_outcome value = flag:held }
+            hidden_effect = { nesnd_north_cleanup = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_rtw_tur_held_event_tt }
+            }
+        }
+    }
+
+    # 4. White peace / draw (counts as holding the line on the failure route).
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_rtw_tur_held_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_north_war_drawn_tt
+                nesnd_north_war_drawn = yes
+            }
+        }
+        effect = {
+            set_global_variable = { name = nesnd_rtw_result value = flag:tur_held }
+            add_modifier = { name = nesnd_rtw_held_mod }
+            if = {
+                limit = { is_country_type = unrecognized }
+                set_country_type = recognized
+            }
+            set_variable = { name = nesnd_rtw_outcome value = flag:held }
+            hidden_effect = { nesnd_north_cleanup = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_rtw_tur_held_event_tt }
+            }
+        }
+    }
+
+    # 5. Situation changed (R12: foe disappeared, became a subject, or allied with TUR).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_north_situation_changed_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_north_situation_changed_tt
+                nesnd_north_situation_changed = yes
+            }
+        }
+        effect = {
+            custom_tooltip = {
+                text = nesnd_north_situation_changed_claims_tt
+                nesnd_north_claim_changed_targets = yes
+            }
+            custom_tooltip = nesnd_north_reopen_cd_tt
+            set_global_variable = { name = nesnd_rtw_result value = flag:changed }
+            hidden_effect = {
+                set_variable = { name = nesnd_north_reopen_cd months = 24 }
+                if = { limit = { has_global_variable = nesnd_north_foe } remove_global_variable = nesnd_north_foe }
+                nesnd_north_cleanup = yes
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_north_situation_changed_event_tt }
+            }
+        }
+    }
+
+    # 6. Deadline elapsed without active play or war (L-17: writes flag:standoff, not flag:tur_held; L-19: never cuts off active wars).
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "gold_positive"
+        conclusion_desc = nesnd_rtw_tur_standoff_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_rtw_timeout_tt
+                NOT = { has_variable = nesnd_rtw_deadline }
+                nesnd_north_play_in_progress = no
+                nesnd_north_at_war_with_foe = no
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_rtw_standoff_mod }
+            set_variable = { name = nesnd_rtw_outcome value = flag:standoff }
+            set_global_variable = { name = nesnd_rtw_result value = flag:standoff }
+            hidden_effect = { nesnd_north_cleanup = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_rtw_tur_standoff_event_tt }
+            }
+        }
+    }
+
+    # 7. Hidden invalidation (tag changed away from TUR, L-18 / L-24).
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_rtw_invalid_conclusion
+        trigger = { NOT = { c:TUR ?= this } }
+        effect = {
+            if = {
+                limit = { NOT = { has_global_variable = nesnd_rtw_result } }
+                set_global_variable = { name = nesnd_rtw_result value = flag:standoff }
+            }
+            set_variable = nesnd_rtw_tur_closed
+            nesnd_north_cleanup = yes
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { nesnd_north_at_war_with_foe = yes } desc = nesnd_rtw_status_war }
+            triggered_desc = { trigger = { nesnd_north_play_in_progress = yes } desc = nesnd_rtw_status_play }
+            triggered_desc = {
+                trigger = {
+                    has_variable = nesnd_rtw_mobilize_count
+                    var:nesnd_rtw_mobilize_count >= 2
+                }
+                desc = nesnd_rtw_status_mobilized
+            }
+            desc = nesnd_rtw_status_standoff
+        }
+    }
+}
+
+# Northern foe side of the RTW / Northern Threat crisis (_rus kept as legacy key for compatibility).
+nesnd_rtw_rus = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    group = je_group_foreign_affairs
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    scripted_button = nesnd_rtw_rus_launch
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_rtw_rus_won_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_rtw_result_rus_won_tt
+                global_var:nesnd_rtw_result ?= flag:rus_won
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_rtw_rus_won_mod }
+            set_variable = { name = nesnd_rtw_rus_outcome value = flag:won }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_rtw_rus_won_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_rtw_rus_failed_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_rtw_result_tur_held_tt
+                global_var:nesnd_rtw_result ?= flag:tur_held
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_rtw_rus_failed_mod }
+            set_variable = { name = nesnd_rtw_rus_outcome value = flag:failed }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_rtw_rus_failed_event_tt }
+            }
+        }
+    }
+
+    # Campaign shelved without penalty when the crisis ends in standoff or TUR disappears (Rule 21 / L-17).
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_rtw_rus_shelved_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_rtw_result_standoff_tt
+                OR = {
+                    global_var:nesnd_rtw_result ?= flag:standoff
+                    NOT = { exists = c:TUR }
+                }
+            }
+        }
+        effect = {
+            add_modifier = { name = nesnd_rtw_rus_shelved_mod }
+            set_variable = { name = nesnd_rtw_rus_outcome value = flag:shelved }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_rtw_rus_shelved_event_tt }
+            }
+        }
+    }
+
+    # Fallback timeout (> 180 + 24 months after the Ottoman side's deadline; never writes global_var:nesnd_rtw_result, L-18).
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "gold_positive"
+        flags = { timeout }
+        conclusion_desc = nesnd_rtw_rus_shelved_conclusion
+        effect = {
+            add_modifier = { name = nesnd_rtw_rus_shelved_mod }
+            set_variable = { name = nesnd_rtw_rus_outcome value = flag:shelved }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_rtw_rus_shelved_event_tt }
+            }
+        }
+    }
+
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_rtw_invalid_conclusion
+        trigger = {
+            OR = {
+                NOT = { global_var:nesnd_north_foe ?= this }
+                global_var:nesnd_rtw_result ?= flag:changed
+            }
+        }
+        effect = { }
+    }
+
+    timeout = 6210
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = { trigger = { exists = c:TUR has_war_with = c:TUR } desc = nesnd_rtw_status_war }
+            triggered_desc = { trigger = { exists = c:TUR is_diplomatic_play_enemy_of = c:TUR } desc = nesnd_rtw_status_play }
+            desc = nesnd_rtw_rus_status_ready
+        }
+    }
+}

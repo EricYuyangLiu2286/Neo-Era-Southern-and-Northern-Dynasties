@@ -1,4 +1,5 @@
-﻿# Triggers for "Leader of the Islamic World" (nesnd_ottoman_islam_leader) and the Crimean War journals. Country scope unless noted.
+﻿# Triggers for "Leader of the Islamic World" (nesnd_ottoman_islam_leader) and the Crimean / Northern War journals.
+# Country scope unless noted.
 
 nesnd_ottoman_islam_leader_fallback_due = {
     nesnd_ottoman_recovery_open = yes
@@ -9,113 +10,49 @@ nesnd_ottoman_islam_leader_fallback_due = {
     NOT = { has_variable = nesnd_ottoman_islam_leader_closed }
 }
 
+# Country scope (TUR). Any great power is allied with or in a defensive pact with the Ottoman state (Rule 7).
 nesnd_ottoman_has_major_ally = {
+    any_country = {
+        is_country_alive = yes
+        NOT = { this = root }
+        country_rank >= rank_value:great_power
+        OR = {
+            has_treaty_alliance_with = { TARGET = root }
+            has_treaty_defensive_pact_with = { TARGET = root }
+        }
+    }
+}
+
+# Any scope. The Crimean / Northern War can still be opened (either undecided, or reopened after 24m following flag:changed).
+nesnd_crimea_can_open = {
+    NOT = { has_global_variable = nesnd_crimea_active }
     OR = {
+        NOT = { has_global_variable = nesnd_crimea_result }
         AND = {
-            exists = c:GBR
-            OR = {
-                has_treaty_alliance_with = { TARGET = c:GBR }
-                has_treaty_defensive_pact_with = { TARGET = c:GBR }
-            }
-        }
-        AND = {
-            exists = c:FRA
-            OR = {
-                has_treaty_alliance_with = { TARGET = c:FRA }
-                has_treaty_defensive_pact_with = { TARGET = c:FRA }
-            }
-        }
-        AND = {
-            exists = c:AUS
-            OR = {
-                has_treaty_alliance_with = { TARGET = c:AUS }
-                has_treaty_defensive_pact_with = { TARGET = c:AUS }
-            }
-        }
-        AND = {
-            exists = c:PRU
-            OR = {
-                has_treaty_alliance_with = { TARGET = c:PRU }
-                has_treaty_defensive_pact_with = { TARGET = c:PRU }
-            }
+            global_var:nesnd_crimea_result ?= flag:changed
+            c:TUR ?= { NOT = { has_variable = nesnd_north_reopen_cd } }
         }
     }
 }
 
+# Any scope. The current northern foe holds at least one northern target state (Rule 7).
 nesnd_crimea_rus_holds_target = {
-    exists = c:RUS
-    c:RUS = {
+    nesnd_north_foe_valid = yes
+    global_var:nesnd_north_foe ?= {
         any_scope_state = {
-            OR = {
-                state_region = s:STATE_KARS
-                state_region = s:STATE_CRIMEA
-                state_region = s:STATE_GREATER_CAUCASUS
-                state_region = s:STATE_ARMENIA
-            }
+            state_region = { nesnd_north_is_north_target_region = yes }
         }
     }
 }
 
+# Any scope. The Ottoman state holds at least one southern target state (Rule 7).
 nesnd_crimea_tur_holds_balkan_or_blacksea = {
     exists = c:TUR
     c:TUR = {
         any_scope_state = {
-            OR = {
-                state_region = s:STATE_DOBRUDJA
-                state_region = s:STATE_KARS
-                state_region = s:STATE_BULGARIA
-                state_region = s:STATE_NORTHERN_THRACE
-                state_region = s:STATE_TRABZON
-            }
+            state_region = { nesnd_north_is_south_target_region = yes }
         }
     }
-}
-
-nesnd_crimea_play_in_progress = {
-    exists = c:TUR
-    exists = c:RUS
-    any_diplomatic_play = {
-        OR = {
-            AND = { initiator = c:TUR target = c:RUS }
-            AND = { initiator = c:RUS target = c:TUR }
-        }
-    }
-}
-
-nesnd_crimea_play_before_war = {
-    exists = c:TUR
-    exists = c:RUS
-    any_diplomatic_play = {
-        is_war = no
-        OR = {
-            AND = { initiator = c:TUR target = c:RUS }
-            AND = { initiator = c:RUS target = c:TUR }
-        }
-    }
-}
-
-nesnd_crimea_tur_won = {
-    OR = {
-        NOT = { exists = c:RUS }
-        AND = {
-            NOT = { has_war_with = c:RUS }
-            NOT = { is_diplomatic_play_enemy_of = c:RUS }
-            OR = {
-                global_var:nesnd_crimea_war_winner ?= flag:ottoman
-                AND = { global_var:nesnd_crimea_target ?= flag:crimea owns_entire_state_region = STATE_CRIMEA }
-                AND = { global_var:nesnd_crimea_target ?= flag:kars global_var:nesnd_crimea_initiator ?= flag:ottoman owns_entire_state_region = STATE_KARS }
-                AND = { global_var:nesnd_crimea_target ?= flag:greater_caucasus owns_entire_state_region = STATE_GREATER_CAUCASUS }
-                AND = { global_var:nesnd_crimea_target ?= flag:armenia owns_entire_state_region = STATE_ARMENIA }
-            }
-        }
-    }
-}
-
-nesnd_crimea_rus_won = {
-    exists = c:RUS
-    NOT = { has_war_with = c:RUS }
-    NOT = { is_diplomatic_play_enemy_of = c:RUS }
-    global_var:nesnd_crimea_war_winner ?= flag:russia
 }
 
 nesnd_crimea_can_sign_defensive_pact_with = {
@@ -138,16 +75,18 @@ nesnd_crimea_can_sign_defensive_pact_with = {
     }
 }
 
+# Country scope (northern foe). Eligibility for the yearly pre-emptive check against TUR (Rules 7, 20.5).
 nesnd_crimea_rus_yearly_eligible = {
-    c:RUS ?= this
-    is_subject = no
+    global_var:nesnd_north_foe ?= this
+    nesnd_north_foe_valid = yes
     exists = c:TUR
     c:TUR = {
         has_journal_entry = nesnd_ottoman_islam_leader
-        is_subject = no
+        nesnd_ottoman_can_act_abroad = yes
+        NOT = { has_variable = nesnd_crimea_tur_closed }
     }
-    NOT = { has_global_variable = nesnd_crimea_active }
-    NOT = { has_global_variable = nesnd_crimea_result }
+    nesnd_crimea_can_open = yes
+    NOT = { has_global_variable = nesnd_rtw_active }
     NOT = { has_war_with = c:TUR }
     NOT = { is_diplomatic_play_enemy_of = c:TUR }
     NOT = { is_diplomatic_play_ally_of = c:TUR }

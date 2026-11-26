@@ -1,0 +1,241 @@
+﻿# Shared effects for the generalized Northern War (Crimean War and Russo-Turkish War, F2).
+# Country scope (TUR) unless noted.
+
+# Selects the highest-scoring northern foe candidate and stores it in global_var:nesnd_north_foe (Rule 2).
+nesnd_north_pick_foe = {
+    if = {
+        limit = { any_country = { nesnd_north_foe_candidate = yes } }
+        ordered_country = {
+            limit = { nesnd_north_foe_candidate = yes }
+            order_by = nesnd_north_foe_score
+            position = 0
+            check_range_bounds = no
+            set_global_variable = { name = nesnd_north_foe value = this }
+        }
+    }
+}
+
+# Clears an invalid northern foe and selects a replacement if any candidate exists (Rule 4).
+nesnd_north_refresh_foe = {
+    if = {
+        limit = { has_global_variable = nesnd_north_foe }
+        remove_global_variable = nesnd_north_foe
+    }
+    nesnd_north_pick_foe = yes
+}
+
+# Snapshots Ottoman Balkan + southern target state regions wholly in Ottoman/subject hands, and northern foe's northern target state regions with no state in Ottoman/subject hands (Rule 10, rework).
+nesnd_north_snapshot = {
+    clear_variable_list = nesnd_north_tur_regions
+    clear_variable_list = nesnd_north_foe_regions
+    every_scope_state = {
+        limit = {
+            OR = {
+                region = sr:region_balkans
+                state_region = { nesnd_north_is_south_target_region = yes }
+            }
+            state_region = {
+                NOT = { any_scope_state = { nesnd_ottoman_state_outside_ottoman_hands = yes } }
+            }
+        }
+        if = {
+            limit = { c:TUR ?= { NOT = { is_target_in_variable_list = { name = nesnd_north_tur_regions target = prev.state_region } } } }
+            c:TUR ?= { add_to_variable_list = { name = nesnd_north_tur_regions target = prev.state_region } }
+        }
+    }
+    if = {
+        limit = { has_global_variable = nesnd_north_foe }
+        global_var:nesnd_north_foe ?= {
+            every_scope_state = {
+                limit = {
+                    state_region = {
+                        nesnd_north_is_north_target_region = yes
+                        NOT = { any_scope_state = { NOT = { nesnd_ottoman_state_outside_ottoman_hands = yes } } }
+                    }
+                }
+                if = {
+                    limit = { c:TUR ?= { NOT = { is_target_in_variable_list = { name = nesnd_north_foe_regions target = prev.state_region } } } }
+                    c:TUR ?= { add_to_variable_list = { name = nesnd_north_foe_regions target = prev.state_region } }
+                }
+            }
+        }
+    }
+}
+
+# Monthly wartime maintenance on TUR: records both belligerent side rosters and marks nesnd_north_war_seen (Rule 17).
+nesnd_north_war_roster_update = {
+    set_variable = nesnd_north_war_seen
+    if = {
+        limit = { has_global_variable = nesnd_north_foe }
+        global_var:nesnd_north_foe ?= {
+            if = {
+                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_north_foe_side target = prev } } } }
+                root = { add_to_variable_list = { name = nesnd_north_foe_side target = prev } }
+            }
+        }
+        every_country = {
+            limit = {
+                is_country_alive = yes
+                has_war_with = root
+                global_var:nesnd_north_foe ?= { is_in_war_together = prev }
+            }
+            if = {
+                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_north_foe_side target = prev } } } }
+                root = { add_to_variable_list = { name = nesnd_north_foe_side target = prev } }
+            }
+        }
+        every_country = {
+            limit = {
+                is_country_alive = yes
+                is_in_war_together = root
+                global_var:nesnd_north_foe ?= { has_war_with = prev }
+            }
+            if = {
+                limit = { root = { NOT = { is_target_in_variable_list = { name = nesnd_north_tur_side target = prev } } } }
+                root = { add_to_variable_list = { name = nesnd_north_tur_side target = prev } }
+            }
+        }
+    }
+}
+
+# Root = country that enforced a war goal; scope:target = country against which it was enforced (Rule 18).
+nesnd_north_handle_wargoal_enforced = {
+    if = {
+        limit = {
+            OR = {
+                has_global_variable = nesnd_crimea_active
+                has_global_variable = nesnd_rtw_active
+            }
+            exists = c:TUR
+            has_global_variable = nesnd_north_foe
+        }
+        if = {
+            limit = {
+                scope:target ?= c:TUR
+                OR = {
+                    global_var:nesnd_north_foe ?= this
+                    c:TUR = { is_target_in_variable_list = { name = nesnd_north_foe_side target = prev } }
+                }
+            }
+            c:TUR = {
+                set_variable = nesnd_north_goal_lost
+                set_variable = nesnd_north_war_seen
+            }
+        }
+        else_if = {
+            limit = {
+                scope:target ?= global_var:nesnd_north_foe
+                OR = {
+                    c:TUR ?= this
+                    c:TUR = { is_target_in_variable_list = { name = nesnd_north_tur_side target = prev } }
+                }
+            }
+            c:TUR = {
+                set_variable = nesnd_north_goal_won
+                set_variable = nesnd_north_war_seen
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Tracks consecutive months unable to act abroad for the "lost autonomy" outcome (Rule 20.2).
+nesnd_north_update_dependent_months = {
+    if = {
+        limit = { nesnd_ottoman_can_act_abroad = yes }
+        if = { limit = { has_variable = nesnd_north_dependent_months } remove_variable = nesnd_north_dependent_months }
+    }
+    else_if = {
+        limit = { has_variable = nesnd_north_dependent_months }
+        change_variable = { name = nesnd_north_dependent_months add = 1 }
+    }
+    else = { set_variable = { name = nesnd_north_dependent_months value = 1 } }
+}
+
+# Country scope (TUR). Grants claims when a northern war ends in "Situation Changed" (Rule 20.5).
+nesnd_north_claim_changed_targets = {
+    if = {
+        limit = {
+            has_variable_list = nesnd_north_foe_regions
+            any_in_list = {
+                variable = nesnd_north_foe_regions
+                any_scope_state = { nesnd_ottoman_state_outside_ottoman_hands = yes }
+            }
+        }
+        every_in_list = {
+            variable = nesnd_north_foe_regions
+            if = {
+                limit = {
+                    any_scope_state = { nesnd_ottoman_state_outside_ottoman_hands = yes }
+                    NOT = { root = { has_claim = prev } }
+                }
+                add_claim = root
+            }
+        }
+    }
+    else = {
+        s:STATE_CRIMEA = {
+            if = {
+                limit = {
+                    NOT = { root = { owns_entire_state_region = STATE_CRIMEA } }
+                    NOT = { root = { has_claim = s:STATE_CRIMEA } }
+                }
+                add_claim = root
+            }
+        }
+        s:STATE_KARS = {
+            if = {
+                limit = {
+                    NOT = { root = { owns_entire_state_region = STATE_KARS } }
+                    NOT = { root = { has_claim = s:STATE_KARS } }
+                }
+                add_claim = root
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Picks the highest-scoring eligible foreign helper and sends the appropriate appeal event (Rule 12).
+nesnd_north_dispatch_help_appeal = {
+    set_variable = { name = nesnd_north_help_cd months = 12 }
+    if = {
+        limit = { any_country = { nesnd_north_helper_candidate = yes } }
+        ordered_country = {
+            limit = { nesnd_north_helper_candidate = yes }
+            order_by = nesnd_north_helper_score
+            position = 0
+            check_range_bounds = no
+            root = { add_to_variable_list = { name = nesnd_north_asked target = prev } }
+            if = {
+                limit = {
+                    c:QE1 ?= this
+                    has_global_variable = nesnd_crimea_active
+                    nesnd_north_play_before_war = yes
+                }
+                trigger_event = { id = nesnd_ottoman_qe1.3 days = 2 popup = yes }
+            }
+            else = {
+                trigger_event = { id = nesnd_rtw.1 days = 2 popup = yes }
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Shared cleanup called at the end of every outcome of nesnd_crimea_tur and nesnd_rtw_tur (Rule 20).
+nesnd_north_cleanup = {
+    if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
+    if = { limit = { has_global_variable = nesnd_rtw_active } remove_global_variable = nesnd_rtw_active }
+    if = { limit = { has_global_variable = nesnd_rtw_play_started } remove_global_variable = nesnd_rtw_play_started }
+    if = { limit = { has_variable = nesnd_north_war_seen } remove_variable = nesnd_north_war_seen }
+    if = { limit = { has_variable = nesnd_north_goal_lost } remove_variable = nesnd_north_goal_lost }
+    if = { limit = { has_variable = nesnd_north_goal_won } remove_variable = nesnd_north_goal_won }
+    if = { limit = { has_variable = nesnd_crimea_deadline } remove_variable = nesnd_crimea_deadline }
+    if = { limit = { has_variable = nesnd_rtw_deadline } remove_variable = nesnd_rtw_deadline }
+    if = { limit = { has_variable = nesnd_north_dependent_months } remove_variable = nesnd_north_dependent_months }
+    if = { limit = { has_variable = nesnd_north_help_cd } remove_variable = nesnd_north_help_cd }
+    if = { limit = { has_variable = nesnd_rtw_mobilize_count } remove_variable = nesnd_rtw_mobilize_count }
+    clear_variable_list = nesnd_north_foe_side
+    clear_variable_list = nesnd_north_tur_side
+    clear_variable_list = nesnd_north_tur_regions
+    clear_variable_list = nesnd_north_foe_regions
+    clear_variable_list = nesnd_north_asked
+}

@@ -1,0 +1,159 @@
+﻿# Effects for Ottoman failure line, block 2: Generalized Russo-Turkish / Northern Threat War (nesnd_rtw).
+# Country scope unless noted.
+
+# Opens the global RTW journals for TUR and the selected northern foe, and takes the shared snapshot (Rules 8, 10, 20.5).
+nesnd_rtw_start = {
+    if = {
+        limit = { has_global_variable = nesnd_rtw_result }
+        remove_global_variable = nesnd_rtw_result
+    }
+    set_global_variable = nesnd_rtw_active
+    if = {
+        limit = { has_global_variable = nesnd_rtw_play_started }
+        remove_global_variable = nesnd_rtw_play_started
+    }
+    c:TUR ?= {
+        nesnd_north_snapshot = yes
+        if = {
+            limit = { is_country_alive = yes NOT = { has_journal_entry = nesnd_rtw_tur } }
+            add_journal_entry = { type = nesnd_rtw_tur }
+        }
+    }
+    if = {
+        limit = { has_global_variable = nesnd_north_foe }
+        global_var:nesnd_north_foe ?= {
+            if = {
+                limit = { is_country_alive = yes NOT = { has_journal_entry = nesnd_rtw_rus } }
+                add_journal_entry = { type = nesnd_rtw_rus }
+            }
+        }
+    }
+}
+
+# Adds TUR claims on every snapshotted state region in nesnd_north_tur_regions that now has a state outside Ottoman hands (Rule 20.1).
+nesnd_rtw_claim_lost_states = {
+    if = {
+        limit = { has_variable_list = nesnd_north_tur_regions }
+        every_in_list = {
+            variable = nesnd_north_tur_regions
+            if = {
+                limit = {
+                    any_scope_state = { nesnd_ottoman_state_outside_ottoman_hands = yes }
+                    NOT = { root = { has_claim = prev } }
+                }
+                add_claim = root
+            }
+        }
+    }
+}
+
+# Northern foe launches the RTW play against TUR: dp_conquer_state for Kars or Erzurum if held by TUR, else dp_humiliation.
+# Checks all preconditions first and only sets nesnd_rtw_play_started if the play actually opened (Rules 8, 9 / L-21).
+nesnd_rtw_rus_launch_play = {
+    if = {
+        limit = {
+            nesnd_rtw_rus_can_launch_play = yes
+            NOT = { has_global_variable = nesnd_rtw_play_started }
+        }
+        clear_saved_scope = nesnd_rtw_state
+        c:TUR ?= {
+            if = {
+                limit = { any_scope_state = { state_region = s:STATE_KARS } }
+                random_scope_state = {
+                    limit = { state_region = s:STATE_KARS }
+                    save_scope_as = nesnd_rtw_state
+                }
+            }
+            else_if = {
+                limit = { any_scope_state = { state_region = s:STATE_ERZURUM } }
+                random_scope_state = {
+                    limit = { state_region = s:STATE_ERZURUM }
+                    save_scope_as = nesnd_rtw_state
+                }
+            }
+        }
+        if = {
+            limit = { exists = scope:nesnd_rtw_state }
+            create_diplomatic_play = {
+                name = nesnd_rtw_play
+                type = dp_conquer_state
+                target_country = c:TUR
+                target_state = scope:nesnd_rtw_state
+                add_war_goal = {
+                    holder = c:TUR
+                    target_country = root
+                    type = humiliation
+                }
+            }
+        }
+        else = {
+            create_diplomatic_play = {
+                name = nesnd_rtw_play
+                type = dp_humiliation
+                target_country = c:TUR
+            }
+        }
+        if = {
+            limit = { nesnd_north_play_in_progress = yes }
+            set_global_variable = nesnd_rtw_play_started
+            c:TUR = { nesnd_north_snapshot = yes }
+        }
+    }
+}
+
+# Yearly AI check for the northern foe: 40% if Rumelia was lost (flag:lost), else 25% (Rule 8).
+nesnd_rtw_rus_yearly_check = {
+    if = {
+        limit = { nesnd_rtw_rus_yearly_eligible = yes }
+        if = {
+            limit = {
+                c:TUR ?= {
+                    has_variable = nesnd_ottoman_rumelia_outcome
+                    var:nesnd_ottoman_rumelia_outcome = flag:lost
+                }
+            }
+            random = {
+                chance = 40
+                nesnd_rtw_rus_launch_play = yes
+            }
+        }
+        else = {
+            random = {
+                chance = 25
+                nesnd_rtw_rus_launch_play = yes
+            }
+        }
+    }
+}
+
+# Removes TUR's claims on every state region currently owned by QE1 (R11 class b: Western Qin's own story).
+nesnd_rtw_renounce_qe1_claims = {
+    if = {
+        limit = { exists = c:TUR exists = c:QE1 }
+        c:QE1 = {
+            every_scope_state = {
+                state_region = {
+                    if = {
+                        limit = { c:TUR = { has_claim = prev } }
+                        remove_claim = c:TUR
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Raises or lowers popularity of every Qinist interest group leader in the scoped country (TUR).
+nesnd_rtw_boost_qinist_leaders = {
+    every_interest_group = {
+        limit = { leader ?= { has_ideology = ideology:ideology_ce_qin_royalist_leader } }
+        leader = { add_modifier = { name = nesnd_rtw_qinist_up months = 60 } }
+    }
+}
+
+nesnd_rtw_lower_qinist_leaders = {
+    every_interest_group = {
+        limit = { leader ?= { has_ideology = ideology:ideology_ce_qin_royalist_leader } }
+        leader = { add_modifier = { name = nesnd_rtw_qinist_down months = 60 } }
+    }
+}

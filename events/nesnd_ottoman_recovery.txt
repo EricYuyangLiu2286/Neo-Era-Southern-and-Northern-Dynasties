@@ -556,7 +556,7 @@ nesnd_ottoman_recovery.13 = {
         first_valid = {
             triggered_desc = {
                 desc = nesnd_ottoman_recovery.13.d
-                trigger = { exists = scope:nesnd_rus_country }
+                trigger = { exists = scope:nesnd_north_foe_scope }
             }
             triggered_desc = {
                 desc = nesnd_ottoman_recovery.13.d_plain
@@ -571,7 +571,10 @@ nesnd_ottoman_recovery.13 = {
     duration = 3
     immediate = {
         ruler ?= { save_scope_as = nesnd_ottoman_ruler }
-        c:RUS ?= { save_scope_as = nesnd_rus_country }
+        if = {
+            limit = { has_global_variable = nesnd_north_foe }
+            global_var:nesnd_north_foe ?= { save_scope_as = nesnd_north_foe_scope }
+        }
     }
     option = {
         name = nesnd_ottoman_recovery.13.a
@@ -588,7 +591,7 @@ nesnd_ottoman_recovery.14 = {
         first_valid = {
             triggered_desc = {
                 desc = nesnd_ottoman_recovery.14.d
-                trigger = { exists = scope:nesnd_rus_country }
+                trigger = { exists = scope:nesnd_north_foe_scope }
             }
             triggered_desc = {
                 desc = nesnd_ottoman_recovery.14.d_plain
@@ -603,7 +606,10 @@ nesnd_ottoman_recovery.14 = {
     duration = 3
     immediate = {
         ruler ?= { save_scope_as = nesnd_ottoman_ruler }
-        c:RUS ?= { save_scope_as = nesnd_rus_country }
+        if = {
+            limit = { has_global_variable = nesnd_north_foe }
+            global_var:nesnd_north_foe ?= { save_scope_as = nesnd_north_foe_scope }
+        }
     }
     option = {
         name = nesnd_ottoman_recovery.14.a
@@ -611,7 +617,7 @@ nesnd_ottoman_recovery.14 = {
         custom_tooltip = nesnd_ottoman_recovery.14.a_tt
     }
 }
-# Outcome "russia win" of nesnd_crimea_tur.
+# Outcome "northern foe win" of nesnd_crimea_tur.
 nesnd_ottoman_recovery.15 = {
     type = country_event
     placement = root
@@ -620,7 +626,7 @@ nesnd_ottoman_recovery.15 = {
         first_valid = {
             triggered_desc = {
                 desc = nesnd_ottoman_recovery.15.d
-                trigger = { exists = scope:nesnd_rus_country }
+                trigger = { exists = scope:nesnd_north_foe_scope }
             }
             triggered_desc = {
                 desc = nesnd_ottoman_recovery.15.d_plain
@@ -635,7 +641,10 @@ nesnd_ottoman_recovery.15 = {
     duration = 3
     immediate = {
         ruler ?= { save_scope_as = nesnd_ottoman_ruler }
-        c:RUS ?= { save_scope_as = nesnd_rus_country }
+        if = {
+            limit = { has_global_variable = nesnd_north_foe }
+            global_var:nesnd_north_foe ?= { save_scope_as = nesnd_north_foe_scope }
+        }
     }
     option = {
         name = nesnd_ottoman_recovery.15.a
@@ -886,6 +895,151 @@ nesnd_ottoman_recovery.18 = {
         name = nesnd_ottoman_recovery.18.b
         c:TUR ?= { change_relations = { country = root value = -20 } }
         add_modifier = { name = nesnd_ottoman_rus_protest_prestige months = 60 }
+        ai_chance = {
+            base = 30
+        }
+    }
+}
+# Post-war strategic turn ("Where the Sword Turns") after defeat in the northern war or loss of Rumelia (F2 Rule 23).
+nesnd_ottoman_recovery.19 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.19.t
+    desc = nesnd_ottoman_recovery.19.d
+    flavor = nesnd_ottoman_recovery.19.f
+    event_image = { video = "unspecific_military_parade" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+    }
+    immediate = {
+        set_variable = nesnd_ottoman_revenge_asked
+    }
+    option = {
+        name = nesnd_ottoman_recovery.19.a
+        default_option = yes
+        if = {
+            limit = { has_journal_entry = nesnd_ottoman_recovery }
+            je:nesnd_ottoman_recovery ?= {
+                add_progress = {
+                    name = nesnd_ottoman_enthusiasm_bar
+                    value = 20
+                }
+            }
+        }
+        if = {
+            limit = {
+                OR = {
+                    s:STATE_BAGHDAD = { any_scope_state = { nesnd_ottoman_state_outside_ottoman_hands = yes } }
+                    s:STATE_BASRA = { any_scope_state = { nesnd_ottoman_state_outside_ottoman_hands = yes } }
+                    s:STATE_MOSUL = { any_scope_state = { nesnd_ottoman_state_outside_ottoman_hands = yes } }
+                }
+            }
+            s:STATE_BAGHDAD = { nesnd_ottoman_conquer_goal_on_holders = yes }
+            s:STATE_BASRA = { nesnd_ottoman_conquer_goal_on_holders = yes }
+            s:STATE_MOSUL = { nesnd_ottoman_conquer_goal_on_holders = yes }
+        }
+        add_modifier = { name = nesnd_ottoman_revenge_east }
+        set_variable = { name = nesnd_ottoman_revenge value = flag:east }
+        ai_chance = {
+            base = 60
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.19.b
+        if = {
+            limit = {
+                any_state_region = {
+                    any_scope_state = {
+                        region = sr:region_balkans
+                        nesnd_ottoman_state_outside_ottoman_hands = yes
+                    }
+                    root = { has_claim = prev }
+                }
+            }
+            every_state_region = {
+                limit = {
+                    any_scope_state = {
+                        region = sr:region_balkans
+                        nesnd_ottoman_state_outside_ottoman_hands = yes
+                    }
+                    root = { has_claim = prev }
+                }
+                nesnd_ottoman_conquer_goal_on_holders = yes
+            }
+        }
+        add_modifier = { name = nesnd_ottoman_revenge_west }
+        set_variable = { name = nesnd_ottoman_revenge value = flag:west }
+        ai_chance = {
+            base = 40
+        }
+    }
+}
+# The Price of the Straits: triggered once when TUR is allied with its would-be northern foe (F2 Rule 6).
+nesnd_ottoman_recovery.20 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.20.t
+    desc = nesnd_ottoman_recovery.20.d
+    flavor = nesnd_ottoman_recovery.20.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_straits_due = yes
+    }
+    immediate = {
+        set_variable = nesnd_ottoman_straits_asked
+        ordered_country = {
+            limit = { nesnd_north_foe_allied_candidate = yes }
+            order_by = nesnd_north_foe_score
+            position = 0
+            check_range_bounds = no
+            save_scope_as = nesnd_north_ally_scope
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.20.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_north_ally_scope
+                any_country = {
+                    is_country_alive = yes
+                    NOT = { this = root }
+                    NOT = { this = scope:nesnd_north_ally_scope }
+                    country_rank >= rank_value:major_power
+                    has_diplomatic_pact = { who = scope:nesnd_north_ally_scope type = rivalry is_initiator = yes }
+                }
+            }
+            every_country = {
+                limit = {
+                    is_country_alive = yes
+                    NOT = { this = root }
+                    NOT = { this = scope:nesnd_north_ally_scope }
+                    country_rank >= rank_value:major_power
+                    has_diplomatic_pact = { who = scope:nesnd_north_ally_scope type = rivalry is_initiator = yes }
+                }
+                change_relations = { country = root value = -15 }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.20.a_no_rival_tt
+        }
+        set_variable = { name = nesnd_ottoman_straits value = flag:kept }
+        ai_chance = {
+            base = 70
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.20.b
+        scope:nesnd_north_ally_scope ?= {
+            change_relations = { country = root value = -20 }
+        }
+        set_variable = { name = nesnd_ottoman_straits value = flag:distanced }
         ai_chance = {
             base = 30
         }

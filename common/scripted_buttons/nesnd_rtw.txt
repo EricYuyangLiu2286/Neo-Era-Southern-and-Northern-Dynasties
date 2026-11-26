@@ -1,0 +1,172 @@
+﻿# Scripted buttons for the generalized Northern War journals (nesnd_crimea_tur, nesnd_rtw_tur, nesnd_rtw_rus).
+
+nesnd_rtw_mobilize = {
+    name = nesnd_rtw_mobilize
+    desc = nesnd_rtw_mobilize_desc
+    visible = { has_journal_entry = nesnd_rtw_tur }
+    possible = {
+        custom_tooltip = { text = nesnd_rtw_cd_tt NOT = { has_variable = nesnd_rtw_cd } }
+    }
+    effect = {
+        add_modifier = { name = nesnd_rtw_mobilize_army months = 60 }
+        add_modifier = { name = nesnd_rtw_mobilize_cost months = 60 }
+        custom_tooltip = nesnd_rtw_cd_set_tt
+        hidden_effect = {
+            if = {
+                limit = { has_variable = nesnd_rtw_mobilize_count }
+                change_variable = { name = nesnd_rtw_mobilize_count add = 1 }
+            }
+            else = {
+                set_variable = { name = nesnd_rtw_mobilize_count value = 1 }
+            }
+            set_variable = { name = nesnd_rtw_cd months = 12 }
+        }
+    }
+    ai_chance = {
+        value = 10
+    }
+}
+
+# Shared foreign aid appeal button for both Crimean War and RTW Ottoman journals (Rule 12).
+# Replaces nesnd_crimea_invite_fra, nesnd_crimea_invite_qe1, and nesnd_rtw_ask_gbr.
+nesnd_north_seek_help = {
+    name = nesnd_north_seek_help
+    desc = nesnd_north_seek_help_desc
+    visible = {
+        OR = {
+            has_journal_entry = nesnd_crimea_tur
+            has_journal_entry = nesnd_rtw_tur
+        }
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_north_has_helper_tt
+            any_country = { nesnd_north_helper_candidate = yes }
+        }
+        custom_tooltip = {
+            text = nesnd_north_asked_limit_tt
+            nesnd_north_asked_under_limit = yes
+        }
+        custom_tooltip = {
+            text = nesnd_north_help_cd_tt
+            NOT = { has_variable = nesnd_north_help_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_north_not_in_war_tt
+            nesnd_north_at_war_with_foe = no
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_north_seek_help_tt
+        custom_tooltip = nesnd_north_help_cd_set_tt
+        hidden_effect = { nesnd_north_dispatch_help_appeal = yes }
+    }
+    ai_chance = {
+        value = 30
+        if = {
+            limit = { nesnd_north_play_in_progress = yes }
+            add = 30
+        }
+    }
+}
+
+# Western Qin's own story (R11 class b, Rule 15): appeal for military advisers or a defensive pact.
+nesnd_rtw_ask_qe1 = {
+    name = nesnd_rtw_ask_qe1
+    desc = nesnd_rtw_ask_qe1_desc
+    visible = { has_journal_entry = nesnd_rtw_tur }
+    possible = {
+        custom_tooltip = { text = nesnd_rtw_cd_tt NOT = { has_variable = nesnd_rtw_cd } }
+        exists = c:QE1
+        trigger_if = {
+            limit = { exists = c:QE1 }
+            c:QE1 = {
+                is_country_alive = yes
+                is_subject = no
+            }
+            custom_tooltip = {
+                text = nesnd_rtw_qe1_not_in_civil_war_tt
+                c:QE1 = { nesnd_north_country_not_in_civil_war = yes }
+            }
+            NOT = { has_war_with = c:QE1 }
+            custom_tooltip = {
+                text = nesnd_rtw_qe1_not_via_per_war_tt
+                NOT = {
+                    any_country = {
+                        is_subject_of = c:QE1
+                        has_war_with = root
+                    }
+                }
+            }
+            custom_tooltip = {
+                text = nesnd_rtw_qe1_relations_tt
+                "relations(c:QE1)" >= relations_threshold:poor
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_rtw_has_qinist_leader_tt
+            nesnd_ottoman_has_qinist_leader = yes
+        }
+        custom_tooltip = {
+            text = nesnd_rtw_not_asked_qe1_tt
+            NOT = { has_variable = nesnd_rtw_asked_qe1 }
+        }
+    }
+    effect = {
+        ig:ig_devout ?= { add_modifier = { name = nesnd_rtw_qe1_appeal_devout months = 60 } }
+        custom_tooltip = nesnd_rtw_ask_qe1_tt
+        c:QE1 ?= { trigger_event = { id = nesnd_ottoman_qe1.4 days = 3 popup = yes } }
+        custom_tooltip = nesnd_rtw_cd_set_tt
+        hidden_effect = {
+            set_variable = nesnd_rtw_asked_qe1
+            set_variable = { name = nesnd_rtw_cd months = 12 }
+        }
+    }
+    ai_chance = {
+        value = 5
+        if = {
+            limit = {
+                OR = {
+                    is_at_war = yes
+                    is_diplomatic_play_committed_participant = yes
+                }
+            }
+            add = 15
+        }
+    }
+}
+
+# Northern foe player button to open the RTW diplomatic play against TUR.
+nesnd_rtw_rus_launch = {
+    name = nesnd_rtw_rus_launch
+    desc = nesnd_rtw_rus_launch_desc
+    visible = { has_journal_entry = nesnd_rtw_rus }
+    possible = {
+        exists = c:TUR
+        is_subject = no
+        c:TUR = { is_subject = no }
+        aggressive_diplomatic_plays_permitted = yes
+        custom_tooltip = {
+            text = nesnd_rtw_rus_relations_tt
+            "relations(c:TUR)" < relations_threshold:cordial
+        }
+        NOT = { has_war_with = c:TUR }
+        NOT = { is_diplomatic_play_enemy_of = c:TUR }
+        NOT = { is_diplomatic_play_ally_of = c:TUR }
+        NOT = { has_truce_with = c:TUR }
+        NOT = { has_treaty_alliance_with = { TARGET = c:TUR } }
+        NOT = { has_treaty_defensive_pact_with = { TARGET = c:TUR } }
+        custom_tooltip = {
+            text = nesnd_rtw_not_started_tt
+            NOT = { has_global_variable = nesnd_rtw_play_started }
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_rtw_rus_launch_tt
+        nesnd_rtw_rus_launch_play = yes
+    }
+    # AI launches war exclusively via the yearly check (nesnd_rtw_rus_yearly_check).
+    ai_chance = {
+        value = 0
+    }
+}

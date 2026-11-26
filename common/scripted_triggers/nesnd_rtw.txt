@@ -1,0 +1,93 @@
+﻿# Triggers for Ottoman failure line, block 2: Generalized Russo-Turkish / Northern Threat War (nesnd_rtw)
+# and Eastward Revenge (nesnd_ottoman_recovery.19). Country scope unless noted.
+
+# Country scope (TUR). Result gate: either never decided, or ended in flag:changed and the 24m reopen cooldown elapsed.
+nesnd_rtw_can_open_result = {
+    OR = {
+        NOT = { has_global_variable = nesnd_rtw_result }
+        AND = {
+            global_var:nesnd_rtw_result ?= flag:changed
+            NOT = { has_variable = nesnd_north_reopen_cd }
+        }
+    }
+}
+
+# Country scope (TUR). All failure-line prerequisites for RTW other than having a valid northern foe (shared with Rule 4 refresh).
+nesnd_rtw_ready_for_foe = {
+    nesnd_ottoman_recovery_open = yes
+    has_variable = nesnd_ottoman_route
+    var:nesnd_ottoman_route = flag:sultanic
+    nesnd_ottoman_tanzimat_failed = yes
+    OR = {
+        has_variable = nesnd_ottoman_rumelia_closed
+        AND = {
+            has_variable = nesnd_ottoman_east_outcome
+            var:nesnd_ottoman_east_outcome = flag:lost
+        }
+    }
+    NOT = { has_journal_entry = je_great_eastern_crisis }
+    NOT = { has_journal_entry = nesnd_rtw_tur }
+    NOT = { has_variable = nesnd_rtw_tur_closed }
+    nesnd_ottoman_can_act_abroad = yes
+    NOT = { has_global_variable = nesnd_rtw_active }
+    nesnd_rtw_can_open_result = yes
+    NOT = { has_global_variable = nesnd_crimea_active }
+}
+
+# Entry conditions for opening the global RTW / Northern Threat journals (TUR monthly check, Rules 8, 20.5).
+nesnd_rtw_start_due = {
+    nesnd_rtw_ready_for_foe = yes
+    nesnd_north_foe_valid = yes
+    global_var:nesnd_north_foe ?= {
+        NOT = { has_war_with = root }
+        NOT = { is_diplomatic_play_enemy_of = root }
+        NOT = { is_diplomatic_play_ally_of = root }
+        NOT = { has_truce_with = root }
+    }
+}
+
+# Preconditions for the northern foe to launch the RTW diplomatic play (dp_conquer_state or dp_humiliation, Rule 8).
+nesnd_rtw_rus_can_launch_play = {
+    global_var:nesnd_north_foe ?= this
+    nesnd_north_foe_valid = yes
+    NOT = { is_country_type = decentralized }
+    aggressive_diplomatic_plays_permitted = yes
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        is_subject = no
+        NOT = { is_country_type = decentralized }
+    }
+    "relations(c:TUR)" < relations_threshold:cordial
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_diplomatic_play_enemy_of = c:TUR }
+    NOT = { is_diplomatic_play_ally_of = c:TUR }
+    NOT = { has_truce_with = c:TUR }
+    NOT = { has_treaty_alliance_with = { TARGET = c:TUR } }
+    NOT = { has_treaty_defensive_pact_with = { TARGET = c:TUR } }
+}
+
+# Eligibility for the northern foe's yearly AI war check (Rule 8).
+nesnd_rtw_rus_yearly_eligible = {
+    global_var:nesnd_north_foe ?= this
+    is_player = no
+    has_journal_entry = nesnd_rtw_rus
+    has_global_variable = nesnd_rtw_active
+    NOT = { has_global_variable = nesnd_rtw_result }
+    NOT = { has_global_variable = nesnd_rtw_play_started }
+    nesnd_rtw_rus_can_launch_play = yes
+}
+
+# Monthly trigger for "Where the Sword Turns" (nesnd_ottoman_recovery.19) when Rumelia was lost and RTW ended in held/standoff.
+nesnd_ottoman_revenge_fallback_due = {
+    nesnd_ottoman_recovery_open = yes
+    nesnd_ottoman_can_act_abroad = yes
+    NOT = { has_variable = nesnd_ottoman_revenge_asked }
+    has_variable = nesnd_ottoman_rumelia_outcome
+    var:nesnd_ottoman_rumelia_outcome = flag:lost
+    has_variable = nesnd_rtw_outcome
+    OR = {
+        var:nesnd_rtw_outcome = flag:standoff
+        var:nesnd_rtw_outcome = flag:held
+    }
+}

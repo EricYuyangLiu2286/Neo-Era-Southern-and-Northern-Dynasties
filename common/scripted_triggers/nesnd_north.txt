@@ -1,0 +1,252 @@
+﻿# Shared triggers for the generalized Northern War (Crimean War and Russo-Turkish War, F2).
+# Country scope unless noted.
+
+# State region scope. Northern targets sought by the Ottoman state (Crimea and the Caucasus).
+nesnd_north_is_north_target_region = {
+    OR = {
+        this = s:STATE_CRIMEA
+        this = s:STATE_KARS
+        this = s:STATE_GREATER_CAUCASUS
+        this = s:STATE_ARMENIA
+        this = s:STATE_AZERBAIJAN
+        this = s:STATE_ELIZAVETPOL
+    }
+}
+
+# State region scope. Southern targets sought by the northern foe (Danube, Balkans, and eastern Anatolia).
+nesnd_north_is_south_target_region = {
+    OR = {
+        this = s:STATE_DOBRUDJA
+        this = s:STATE_KARS
+        this = s:STATE_BULGARIA
+        this = s:STATE_NORTHERN_THRACE
+        this = s:STATE_TRABZON
+        this = s:STATE_ERZURUM
+    }
+}
+
+# Country scope (evaluated country). Meets all northern foe criteria except the alliance / defensive pact exclusion.
+nesnd_north_foe_base_candidate = {
+    is_country_alive = yes
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    is_subject = no
+    NOT = { is_country_type = decentralized }
+    country_rank >= rank_value:major_power
+    OR = {
+        c:TUR = { has_diplomatic_pact = { who = prev type = rivalry is_initiator = yes } }
+        any_scope_state = { state_region = { nesnd_north_is_north_target_region = yes } }
+    }
+}
+
+# Country scope (evaluated country). Eligible to be selected as the Ottoman northern foe (Rule 1).
+nesnd_north_foe_candidate = {
+    nesnd_north_foe_base_candidate = yes
+    NOT = { has_treaty_alliance_with = { TARGET = c:TUR } }
+    NOT = { has_treaty_defensive_pact_with = { TARGET = c:TUR } }
+}
+
+# Country scope (evaluated country). Would-be northern foe that is currently allied or in a defensive pact with TUR (Rule 6).
+nesnd_north_foe_allied_candidate = {
+    nesnd_north_foe_base_candidate = yes
+    OR = {
+        has_treaty_alliance_with = { TARGET = c:TUR }
+        has_treaty_defensive_pact_with = { TARGET = c:TUR }
+    }
+}
+
+# Any scope. The selected global_var:nesnd_north_foe still exists, is independent, and is not allied with TUR (Rule 3).
+nesnd_north_foe_valid = {
+    exists = c:TUR
+    has_global_variable = nesnd_north_foe
+    global_var:nesnd_north_foe ?= {
+        is_country_alive = yes
+        is_subject = no
+        NOT = { c:TUR ?= this }
+        NOT = { has_treaty_alliance_with = { TARGET = c:TUR } }
+        NOT = { has_treaty_defensive_pact_with = { TARGET = c:TUR } }
+    }
+}
+
+# Country scope (TUR). Monthly refresh of the northern foe when no northern crisis is active (Rule 4).
+nesnd_north_foe_refresh_due = {
+    c:TUR ?= this
+    is_country_alive = yes
+    OR = {
+        has_journal_entry = nesnd_ottoman_islam_leader
+        nesnd_rtw_ready_for_foe = yes
+    }
+    NOT = { has_global_variable = nesnd_crimea_active }
+    NOT = { has_global_variable = nesnd_rtw_active }
+    nesnd_north_foe_valid = no
+}
+
+# Country scope (TUR). Monthly trigger for "The Price of the Straits" (nesnd_ottoman_recovery.20, Rule 6).
+nesnd_ottoman_straits_due = {
+    nesnd_ottoman_recovery_open = yes
+    NOT = { has_variable = nesnd_ottoman_straits_asked }
+    OR = {
+        has_journal_entry = nesnd_ottoman_islam_leader
+        AND = {
+            has_variable = nesnd_ottoman_route
+            var:nesnd_ottoman_route = flag:sultanic
+            nesnd_ottoman_tanzimat_failed = yes
+        }
+    }
+    nesnd_north_foe_valid = no
+    any_country = { nesnd_north_foe_allied_candidate = yes }
+}
+
+# Any scope. Active diplomatic play directly between TUR and global_var:nesnd_north_foe.
+nesnd_north_play_in_progress = {
+    exists = c:TUR
+    has_global_variable = nesnd_north_foe
+    global_var:nesnd_north_foe ?= {
+        any_diplomatic_play = {
+            OR = {
+                AND = { initiator_is = c:TUR target_is = prev }
+                AND = { initiator_is = prev target_is = c:TUR }
+            }
+        }
+    }
+}
+
+# Any scope. Diplomatic play between TUR and global_var:nesnd_north_foe that has not yet escalated to war.
+nesnd_north_play_before_war = {
+    exists = c:TUR
+    has_global_variable = nesnd_north_foe
+    global_var:nesnd_north_foe ?= {
+        any_diplomatic_play = {
+            is_war = no
+            OR = {
+                AND = { initiator_is = c:TUR target_is = prev }
+                AND = { initiator_is = prev target_is = c:TUR }
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Currently at war with global_var:nesnd_north_foe.
+nesnd_north_at_war_with_foe = {
+    has_global_variable = nesnd_north_foe
+    global_var:nesnd_north_foe ?= { has_war_with = prev }
+}
+
+# Country scope (evaluated country). Eligible to receive an Ottoman appeal for foreign aid (Rule 11).
+# Strategic regions in MOD: Balkans = region_balkans, Anatolia = region_near_east, Caucasus = region_greater_persia.
+nesnd_north_helper_candidate = {
+    is_country_alive = yes
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    NOT = { global_var:nesnd_north_foe ?= this }
+    is_subject = no
+    country_rank >= rank_value:major_power
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_diplomatic_play_enemy_of = c:TUR }
+    trigger_if = {
+        limit = { has_global_variable = nesnd_north_foe }
+        global_var:nesnd_north_foe ?= {
+            NOT = { has_treaty_alliance_with = { TARGET = prev } }
+            NOT = { has_treaty_defensive_pact_with = { TARGET = prev } }
+            NOT = { is_in_same_power_bloc = prev }
+        }
+    }
+    OR = {
+        has_interest_marker_in_region = sr:region_balkans
+        has_interest_marker_in_region = sr:region_near_east
+        has_interest_marker_in_region = sr:region_greater_persia
+    }
+    "relations(c:TUR)" >= relations_threshold:poor
+    c:TUR = { NOT = { is_target_in_variable_list = { name = nesnd_north_asked target = prev } } }
+}
+
+# Country scope (TUR). Fewer than two foreign powers have been appealed to during the current northern crisis (Rule 12).
+nesnd_north_asked_under_limit = {
+    OR = {
+        NOT = { has_variable_list = nesnd_north_asked }
+        any_in_list = {
+            variable = nesnd_north_asked
+            count < 2
+            always = yes
+        }
+    }
+}
+
+# Country scope. Evaluated country is not currently in a civil war (Rule 15).
+nesnd_north_country_not_in_civil_war = {
+    has_revolution = no
+    is_revolutionary = no
+    NOT = {
+        any_enemy_in_diplo_play = {
+            NOT = { this = prev }
+            country_definition = prev.country_definition
+        }
+    }
+}
+
+# Country scope (TUR). Monthly trigger to update wartime side rosters while TUR and the foe are at war (Rule 17).
+nesnd_north_war_roster_due = {
+    c:TUR ?= this
+    OR = {
+        has_global_variable = nesnd_crimea_active
+        has_global_variable = nesnd_rtw_active
+    }
+    nesnd_north_at_war_with_foe = yes
+}
+
+# Country scope (TUR). A northern confrontation (play or war) has started and now ended while the northern foe remains valid (Rule 19, rework).
+nesnd_north_war_ended = {
+    OR = {
+        has_variable = nesnd_north_war_seen
+        has_global_variable = nesnd_crimea_active
+        has_global_variable = nesnd_rtw_play_started
+    }
+    nesnd_north_foe_valid = yes
+    nesnd_north_play_in_progress = no
+    nesnd_north_at_war_with_foe = no
+}
+
+# Country scope (TUR). Defeat in the northern war (checked first per R10 / Rule 19).
+nesnd_north_tur_lost = {
+    nesnd_north_war_ended = yes
+    OR = {
+        has_variable = nesnd_north_goal_lost
+        is_subject = yes
+        AND = {
+            has_variable_list = nesnd_north_tur_regions
+            any_in_list = {
+                variable = nesnd_north_tur_regions
+                any_scope_state = { nesnd_ottoman_state_outside_ottoman_hands = yes }
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Victory in the northern war (Rule 19).
+nesnd_north_tur_won = {
+    nesnd_north_war_ended = yes
+    nesnd_north_tur_lost = no
+    OR = {
+        has_variable = nesnd_north_goal_won
+        AND = {
+            has_variable_list = nesnd_north_foe_regions
+            any_in_list = {
+                variable = nesnd_north_foe_regions
+                any_scope_state = { NOT = { nesnd_ottoman_state_outside_ottoman_hands = yes } }
+            }
+        }
+    }
+}
+
+# Country scope (TUR). White peace / inconclusive war end (Rule 19).
+nesnd_north_war_drawn = {
+    nesnd_north_war_ended = yes
+    nesnd_north_tur_lost = no
+    nesnd_north_tur_won = no
+}
+
+# Country scope (TUR). The northern foe ceased to exist, became a subject, or allied with TUR (R12 / Rule 19).
+nesnd_north_situation_changed = {
+    nesnd_north_foe_valid = no
+    nesnd_north_at_war_with_foe = no
+}

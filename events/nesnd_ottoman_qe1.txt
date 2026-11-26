@@ -1,6 +1,6 @@
 ﻿namespace = nesnd_ottoman_qe1
 
-# Western Qin learns that the Ottomans are funding frontier tribes (14).
+# Western Qin learns that the Ottomans are funding frontier tribes (B4; R11 class b).
 nesnd_ottoman_qe1.1 = {
     type = country_event
     placement = root
@@ -36,12 +36,22 @@ nesnd_ottoman_qe1.1 = {
     }
 }
 
-# Western Qin receives an Ottoman proposal for an anti-Russian defensive pact (15).
+# Western Qin receives an Ottoman proposal for a defensive pact against the northern foe (R11 class b, Rule 5).
 nesnd_ottoman_qe1.2 = {
     type = country_event
     placement = root
     title = nesnd_ottoman_qe1.2.t
-    desc = nesnd_ottoman_qe1.2.d
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_north_foe_scope }
+                desc = nesnd_ottoman_qe1.2.d
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_qe1.2.d_plain
+            }
+        }
+    }
     flavor = nesnd_ottoman_qe1.2.f
     event_image = { video = "unspecific_signed_contract" }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -49,7 +59,10 @@ nesnd_ottoman_qe1.2 = {
     duration = 3
     immediate = {
         c:TUR ?= { save_scope_as = nesnd_tur_country }
-        c:RUS ?= { save_scope_as = nesnd_rus_country }
+        if = {
+            limit = { nesnd_north_foe_valid = yes }
+            global_var:nesnd_north_foe ?= { save_scope_as = nesnd_north_foe_scope }
+        }
     }
     option = {
         name = nesnd_ottoman_qe1.2.a
@@ -61,10 +74,10 @@ nesnd_ottoman_qe1.2 = {
         }
         ai_chance = {
             base = 15
-            modifier = { trigger = { exists = c:RUS "relations(c:RUS)" <= relations_threshold:poor } add = 15 }
-            modifier = { trigger = { exists = c:RUS "relations(c:RUS)" <= relations_threshold:cold } add = 25 }
-            modifier = { trigger = { exists = c:RUS "relations(c:RUS)" <= relations_threshold:hostile } add = 35 }
-            modifier = { trigger = { exists = c:RUS has_diplomatic_pact = { who = c:RUS type = rivalry } } add = 20 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes global_var:nesnd_north_foe ?= { relations:root <= relations_threshold:poor } } add = 15 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes global_var:nesnd_north_foe ?= { relations:root <= relations_threshold:cold } } add = 25 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes global_var:nesnd_north_foe ?= { relations:root <= relations_threshold:hostile } } add = 35 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes exists = scope:nesnd_north_foe_scope has_diplomatic_pact = { who = scope:nesnd_north_foe_scope type = rivalry is_initiator = yes } } add = 20 }
             modifier = { trigger = { has_variable = nesnd_qe1_tribes_funded_by_tur } add = -30 }
         }
     }
@@ -73,39 +86,59 @@ nesnd_ottoman_qe1.2 = {
         c:TUR ?= { change_relations = { country = root value = -20 } }
         ai_chance = {
             base = 25
-            modifier = { trigger = { exists = c:RUS "relations(c:RUS)" >= relations_threshold:cordial } add = 25 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes global_var:nesnd_north_foe ?= { relations:root >= relations_threshold:cordial } } add = 25 }
             modifier = { trigger = { has_variable = nesnd_qe1_tribes_funded_by_tur } add = 60 }
         }
     }
 }
 
-# Western Qin receives the Ottoman call to arms in the Crimean War (11 & 16).
+# Western Qin receives the Ottoman call to arms in the Crimean / Northern War (R11 class b, Rules 5, 12, 14).
 nesnd_ottoman_qe1.3 = {
     type = country_event
     placement = root
     title = nesnd_ottoman_qe1.3.t
-    desc = nesnd_ottoman_qe1.3.d
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_north_foe_scope }
+                desc = nesnd_ottoman_qe1.3.d
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_qe1.3.d_plain
+            }
+        }
+    }
     flavor = nesnd_ottoman_qe1.3.f
     event_image = { video = "unspecific_military_parade" }
     on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
     icon = "gfx/interface/icons/event_icons/event_military.dds"
     duration = 3
-    trigger = { nesnd_crimea_play_before_war = yes }
+    trigger = { nesnd_north_play_before_war = yes }
     immediate = {
         c:TUR ?= { save_scope_as = nesnd_tur_country }
-        c:RUS ?= { save_scope_as = nesnd_rus_country }
+        if = {
+            limit = { nesnd_north_foe_valid = yes }
+            global_var:nesnd_north_foe ?= { save_scope_as = nesnd_north_foe_scope }
+        }
     }
     option = {
         name = nesnd_ottoman_qe1.3.a
         default_option = yes
         nesnd_crimea_join_tur_play = yes
         c:TUR ?= { change_relations = { country = root value = 25 } }
+        if = {
+            limit = {
+                has_global_variable = nesnd_crimea_active
+                NOT = { has_journal_entry = nesnd_crimea_helper }
+            }
+            add_journal_entry = { type = nesnd_crimea_helper }
+        }
         ai_chance = {
             base = 20
-            modifier = { trigger = { exists = c:RUS "relations(c:RUS)" <= relations_threshold:poor } add = 15 }
-            modifier = { trigger = { exists = c:RUS "relations(c:RUS)" <= relations_threshold:cold } add = 25 }
-            modifier = { trigger = { exists = c:RUS "relations(c:RUS)" <= relations_threshold:hostile } add = 35 }
-            modifier = { trigger = { exists = c:RUS has_diplomatic_pact = { who = c:RUS type = rivalry } } add = 20 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes global_var:nesnd_north_foe ?= { relations:root <= relations_threshold:poor } } add = 15 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes global_var:nesnd_north_foe ?= { relations:root <= relations_threshold:cold } } add = 25 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes global_var:nesnd_north_foe ?= { relations:root <= relations_threshold:hostile } } add = 35 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes exists = scope:nesnd_north_foe_scope has_diplomatic_pact = { who = scope:nesnd_north_foe_scope type = rivalry is_initiator = yes } } add = 20 }
             modifier = { trigger = { exists = c:TUR "relations(c:TUR)" >= relations_threshold:cordial } add = 10 }
             modifier = { trigger = { exists = c:TUR "relations(c:TUR)" >= relations_threshold:amicable } add = 20 }
             modifier = {
@@ -126,8 +159,176 @@ nesnd_ottoman_qe1.3 = {
         c:TUR ?= { change_relations = { country = root value = -20 } }
         ai_chance = {
             base = 30
-            modifier = { trigger = { exists = c:RUS "relations(c:RUS)" >= relations_threshold:cordial } add = 30 }
+            modifier = { trigger = { nesnd_north_foe_valid = yes global_var:nesnd_north_foe ?= { relations:root >= relations_threshold:cordial } } add = 30 }
             modifier = { trigger = { has_variable = nesnd_qe1_tribes_funded_by_tur } add = 120 }
         }
+    }
+}
+
+# E1: Western Qin receives the Ottoman appeal for military advisers or a defensive pact during RTW (R11 class b, Rule 15).
+nesnd_ottoman_qe1.4 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_qe1.4.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_north_foe_scope }
+                desc = nesnd_ottoman_qe1.4.d
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_qe1.4.d_plain
+            }
+        }
+    }
+    flavor = nesnd_ottoman_qe1.4.f
+    event_image = { video = "asia_politician_parliament_motion" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        c:QE1 ?= this
+        is_subject = no
+        exists = c:TUR
+        c:TUR = { is_country_alive = yes }
+    }
+    immediate = {
+        c:TUR ?= { save_scope_as = nesnd_tur_country }
+        if = {
+            limit = { nesnd_north_foe_valid = yes }
+            global_var:nesnd_north_foe ?= { save_scope_as = nesnd_north_foe_scope }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_qe1.4.a
+        default_option = yes
+        c:TUR = {
+            add_modifier = { name = nesnd_rtw_qin_advisers }
+            nesnd_rtw_boost_qinist_leaders = yes
+            trigger_event = { id = nesnd_ottoman_qe1.5 days = 3 popup = yes }
+        }
+        custom_tooltip = {
+            text = nesnd_rtw_renounce_qe1_claims_tt
+            nesnd_rtw_renounce_qe1_claims = yes
+        }
+        ai_chance = {
+            base = 40
+        }
+    }
+    option = {
+        name = nesnd_ottoman_qe1.4.b
+        if = {
+            limit = { nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:TUR } }
+            nesnd_crimea_sign_defensive_pact = { PARTNER = c:TUR }
+            c:TUR = {
+                hidden_effect = { set_variable = { name = nesnd_rtw_qe1_pact_signed months = 2 } }
+                trigger_event = { id = nesnd_ottoman_qe1.5 days = 3 popup = yes }
+            }
+        }
+        else = {
+            c:TUR = {
+                add_modifier = { name = nesnd_rtw_qin_advisers }
+                nesnd_rtw_boost_qinist_leaders = yes
+                trigger_event = { id = nesnd_ottoman_qe1.5 days = 3 popup = yes }
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_rtw_renounce_qe1_claims_tt
+            nesnd_rtw_renounce_qe1_claims = yes
+        }
+        ai_chance = {
+            base = 20
+            modifier = {
+                trigger = {
+                    nesnd_north_foe_valid = yes
+                    global_var:nesnd_north_foe ?= { relations:root < relations_threshold:poor }
+                }
+                add = 20
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_qe1.4.c
+        c:TUR = {
+            nesnd_rtw_lower_qinist_leaders = yes
+            change_relations = { country = root value = -10 }
+            trigger_event = { id = nesnd_ottoman_qe1.6 days = 3 popup = yes }
+        }
+        ai_chance = {
+            base = 40
+        }
+    }
+}
+
+# E2: Ottoman Empire receives Western Qin's agreement (military advisers or defensive pact; R11 class b).
+nesnd_ottoman_qe1.5 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_qe1.5.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = { exists = scope:nesnd_qe1_pact_signed }
+                desc = nesnd_ottoman_qe1.5.d_pact
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_qe1.5.d_advisers
+            }
+        }
+    }
+    flavor = nesnd_ottoman_qe1.5.f
+    event_image = { video = "unspecific_signed_contract" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = c:QE1
+    }
+    immediate = {
+        c:QE1 ?= { save_scope_as = nesnd_qin_country }
+        if = {
+            limit = { has_variable = nesnd_rtw_qe1_pact_signed }
+            save_scope_as = nesnd_qe1_pact_signed
+            remove_variable = nesnd_rtw_qe1_pact_signed
+        }
+    }
+    option = {
+        name = nesnd_ottoman_qe1.5.a
+        default_option = yes
+        if = {
+            limit = { exists = scope:nesnd_qe1_pact_signed }
+            custom_tooltip = nesnd_ottoman_qe1.5.a_pact_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_qe1.5.a_advisers_tt
+        }
+        c:PER ?= { change_relations = { country = root value = -15 } }
+        c:EGY ?= { change_relations = { country = root value = -15 } }
+    }
+}
+
+# E3: Ottoman Empire receives Western Qin's refusal (R11 class b).
+nesnd_ottoman_qe1.6 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_qe1.6.t
+    desc = nesnd_ottoman_qe1.6.d
+    flavor = nesnd_ottoman_qe1.6.f
+    event_image = { video = "unspecific_politicians_arguing" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_protest.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = c:QE1
+    }
+    immediate = {
+        c:QE1 ?= { save_scope_as = nesnd_qin_country }
+    }
+    option = {
+        name = nesnd_ottoman_qe1.6.a
+        default_option = yes
+        custom_tooltip = nesnd_ottoman_qe1.6.a_tt
     }
 }

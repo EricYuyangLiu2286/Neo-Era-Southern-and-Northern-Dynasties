@@ -1,4 +1,7 @@
-﻿# Crimean War global crisis journals (pattern #27): four country journals (TUR, RUS, FRA, QE1) added only by nesnd_crimea_start.
+﻿# Generalized Crimean / Northern War crisis journals (success line, F2).
+# Journal keys keep the legacy nesnd_crimea_* prefix for save compatibility; nesnd_crimea_rus now represents
+# the dynamically selected northern foe (global_var:nesnd_north_foe), and nesnd_crimea_helper is added only to
+# foreign powers that accept an Ottoman appeal.
 
 nesnd_crimea_tur = {
     icon = "gfx/interface/icons/event_icons/event_military.dds"
@@ -6,34 +9,19 @@ nesnd_crimea_tur = {
     activation_description = { always = yes }
     can_revolution_inherit = no
     should_be_pinned_by_default_uninvolved_or_context = yes
-    scripted_button = nesnd_crimea_invite_fra
-    scripted_button = nesnd_crimea_invite_qe1
+    scripted_button = nesnd_north_seek_help
 
-    outcome = {
-        header = je_standard_completion_header
-        effect_header = je_standard_on_completion_header
-        color = "gold_positive"
-        conclusion_desc = nesnd_crimea_tur_win_conclusion
-        trigger = {
-            custom_tooltip = {
-                text = nesnd_crimea_tur_win_tt
-                nesnd_crimea_tur_won = yes
-            }
-        }
+    on_monthly_pulse = {
         effect = {
-            set_global_variable = { name = nesnd_crimea_result value = flag:ottoman }
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
-            add_modifier = { name = nesnd_crimea_victory }
-            nesnd_crimea_claim_remaining_targets = yes
-            trigger_event = { id = nesnd_ottoman_recovery.14 }
-        }
-        event_outcome_desc = {
-            first_valid = {
-                triggered_desc = { desc = nesnd_crimea_tur_win_event_tt }
-            }
+            nesnd_north_update_dependent_months = yes
         }
     }
 
+    immediate = {
+        set_variable = { name = nesnd_crimea_deadline months = 120 }
+    }
+
+    # 1. Defeat (R10: bad outcome judged before victory or draw).
     outcome = {
         header = je_standard_failure_header
         effect_header = je_standard_on_failure_header
@@ -41,13 +29,12 @@ nesnd_crimea_tur = {
         conclusion_desc = nesnd_crimea_tur_loss_conclusion
         trigger = {
             custom_tooltip = {
-                text = nesnd_crimea_rus_win_tt
-                nesnd_crimea_rus_won = yes
+                text = nesnd_north_tur_lost_tt
+                nesnd_north_tur_lost = yes
             }
         }
         effect = {
             set_global_variable = { name = nesnd_crimea_result value = flag:russia }
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
             add_modifier = { name = nesnd_crimea_defeat }
             if = {
                 limit = { has_journal_entry = nesnd_ottoman_charter }
@@ -57,6 +44,7 @@ nesnd_crimea_tur = {
                 }
             }
             trigger_event = { id = nesnd_ottoman_recovery.15 }
+            hidden_effect = { nesnd_north_cleanup = yes }
         }
         event_outcome_desc = {
             first_valid = {
@@ -65,6 +53,62 @@ nesnd_crimea_tur = {
         }
     }
 
+    # 2. Lost autonomy (R13: unable to act abroad for 12 consecutive months without a war ever breaking out).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_north_lost_autonomy_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_north_lost_autonomy_tt
+                has_variable = nesnd_north_dependent_months
+                var:nesnd_north_dependent_months >= 12
+                NOT = { has_variable = nesnd_north_war_seen }
+            }
+        }
+        effect = {
+            if = {
+                limit = { NOT = { has_modifier = nesnd_ottoman_lost_autonomy } }
+                add_modifier = { name = nesnd_ottoman_lost_autonomy }
+            }
+            set_global_variable = { name = nesnd_crimea_result value = flag:none }
+            hidden_effect = { nesnd_north_cleanup = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_north_lost_autonomy_event_tt }
+            }
+        }
+    }
+
+    # 3. Victory.
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_crimea_tur_win_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_north_tur_won_tt
+                nesnd_north_tur_won = yes
+            }
+        }
+        effect = {
+            set_global_variable = { name = nesnd_crimea_result value = flag:ottoman }
+            add_modifier = { name = nesnd_crimea_victory }
+            nesnd_crimea_claim_remaining_targets = yes
+            trigger_event = { id = nesnd_ottoman_recovery.14 }
+            hidden_effect = { nesnd_north_cleanup = yes }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_crimea_tur_win_event_tt }
+            }
+        }
+    }
+
+    # 4. Inconclusive / white peace.
     outcome = {
         header = je_standard_failure_header
         effect_header = je_standard_on_failure_header
@@ -72,18 +116,14 @@ nesnd_crimea_tur = {
         conclusion_desc = nesnd_crimea_inconclusive_conclusion
         trigger = {
             custom_tooltip = {
-                text = nesnd_crimea_ended_inconclusive_tt
-                exists = c:RUS
-                nesnd_crimea_play_in_progress = no
-                NOT = { has_war_with = c:RUS }
-                nesnd_crimea_tur_won = no
-                nesnd_crimea_rus_won = no
+                text = nesnd_north_war_drawn_tt
+                nesnd_north_war_drawn = yes
             }
         }
         effect = {
             set_global_variable = { name = nesnd_crimea_result value = flag:none }
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
             add_modifier = { name = nesnd_crimea_stalemate }
+            hidden_effect = { nesnd_north_cleanup = yes }
         }
         event_outcome_desc = {
             first_valid = {
@@ -92,16 +132,56 @@ nesnd_crimea_tur = {
         }
     }
 
+    # 5. Situation changed (R12: foe disappeared, became a subject, or allied with TUR; never counts as victory).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_north_situation_changed_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_north_situation_changed_tt
+                nesnd_north_situation_changed = yes
+            }
+        }
+        effect = {
+            custom_tooltip = {
+                text = nesnd_north_situation_changed_claims_tt
+                nesnd_north_claim_changed_targets = yes
+            }
+            custom_tooltip = nesnd_north_reopen_cd_tt
+            set_global_variable = { name = nesnd_crimea_result value = flag:changed }
+            hidden_effect = {
+                set_variable = { name = nesnd_north_reopen_cd months = 24 }
+                if = { limit = { has_global_variable = nesnd_north_foe } remove_global_variable = nesnd_north_foe }
+                nesnd_north_cleanup = yes
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_north_situation_changed_event_tt }
+            }
+        }
+    }
+
+    # 6. Deadline elapsed without active play or war (replaces engine timeout so active wars are never cut short, L-19).
     outcome = {
         header = JOURNAL_ENTRY_TIMEOUT
         effect_header = JOURNAL_ENTRY_ON_TIMEOUT
         color = "blue_negative"
-        flags = { timeout }
         conclusion_desc = nesnd_crimea_stalemate_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_crimea_timeout_tt
+                NOT = { has_variable = nesnd_crimea_deadline }
+                nesnd_north_play_in_progress = no
+                nesnd_north_at_war_with_foe = no
+            }
+        }
         effect = {
             set_global_variable = { name = nesnd_crimea_result value = flag:none }
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
             add_modifier = { name = nesnd_crimea_stalemate }
+            hidden_effect = { nesnd_north_cleanup = yes }
         }
         event_outcome_desc = {
             first_valid = {
@@ -110,27 +190,31 @@ nesnd_crimea_tur = {
         }
     }
 
+    # 7. Hidden invalidation (tag changed away from TUR, L-18 / L-24).
     outcome = {
         flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_crimea_invalid_conclusion
         trigger = { NOT = { c:TUR ?= this } }
         effect = {
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
-            if = { limit = { NOT = { has_global_variable = nesnd_crimea_result } } set_global_variable = { name = nesnd_crimea_result value = flag:none } }
+            if = {
+                limit = { NOT = { has_global_variable = nesnd_crimea_result } }
+                set_global_variable = { name = nesnd_crimea_result value = flag:none }
+            }
+            set_variable = nesnd_crimea_tur_closed
+            nesnd_north_cleanup = yes
         }
     }
 
-    timeout = 3650
-
     status_desc = {
         first_valid = {
-            triggered_desc = { trigger = { exists = c:RUS has_war_with = c:RUS } desc = nesnd_crimea_status_war }
-            triggered_desc = { trigger = { exists = c:RUS is_diplomatic_play_enemy_of = c:RUS } desc = nesnd_crimea_status_play }
+            triggered_desc = { trigger = { nesnd_north_at_war_with_foe = yes } desc = nesnd_crimea_status_war }
+            triggered_desc = { trigger = { nesnd_north_play_in_progress = yes } desc = nesnd_crimea_status_play }
             desc = nesnd_crimea_status_lull
         }
     }
 }
 
+# Northern foe side of the Crimean / Northern War (_rus kept as legacy key for compatibility).
 nesnd_crimea_rus = {
     icon = "gfx/interface/icons/event_icons/event_military.dds"
     group = je_group_foreign_affairs
@@ -197,8 +281,6 @@ nesnd_crimea_rus = {
             }
         }
         effect = {
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
-            if = { limit = { NOT = { has_global_variable = nesnd_crimea_result } } set_global_variable = { name = nesnd_crimea_result value = flag:none } }
             add_modifier = { name = nesnd_crimea_stalemate }
         }
         event_outcome_desc = {
@@ -215,8 +297,6 @@ nesnd_crimea_rus = {
         flags = { timeout }
         conclusion_desc = nesnd_crimea_stalemate_conclusion
         effect = {
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
-            if = { limit = { NOT = { has_global_variable = nesnd_crimea_result } } set_global_variable = { name = nesnd_crimea_result value = flag:none } }
             add_modifier = { name = nesnd_crimea_stalemate }
         }
         event_outcome_desc = {
@@ -229,11 +309,17 @@ nesnd_crimea_rus = {
     outcome = {
         flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_crimea_invalid_conclusion
-        trigger = { NOT = { c:RUS ?= this } }
+        trigger = {
+            OR = {
+                NOT = { global_var:nesnd_north_foe ?= this }
+                global_var:nesnd_crimea_result ?= flag:changed
+            }
+        }
         effect = { }
     }
 
-    timeout = 3700
+    # Fallback timeout (> 120 + 24 months after the Ottoman side's deadline; never writes global_var:nesnd_crimea_result).
+    timeout = 4400
 
     status_desc = {
         first_valid = {
@@ -244,7 +330,8 @@ nesnd_crimea_rus = {
     }
 }
 
-nesnd_crimea_fra = {
+# Generalized helper side of the Crimean / Northern War (replaces nesnd_crimea_fra and nesnd_crimea_qe1, Rule 14).
+nesnd_crimea_helper = {
     icon = "gfx/interface/icons/event_icons/event_military.dds"
     group = je_group_foreign_affairs
     activation_description = { always = yes }
@@ -257,14 +344,16 @@ nesnd_crimea_fra = {
                 limit = {
                     NOT = { has_variable = nesnd_crimea_joined_tur }
                     exists = c:TUR
-                    exists = c:RUS
+                    has_global_variable = nesnd_north_foe
                     OR = {
                         is_in_war_together = c:TUR
                         is_diplomatic_play_ally_of = c:TUR
                     }
-                    OR = {
-                        has_war_with = c:RUS
-                        is_diplomatic_play_enemy_of = c:RUS
+                    global_var:nesnd_north_foe ?= {
+                        OR = {
+                            has_war_with = root
+                            is_diplomatic_play_enemy_of = root
+                        }
                     }
                 }
                 set_variable = nesnd_crimea_joined_tur
@@ -292,164 +381,8 @@ nesnd_crimea_fra = {
             else = {
                 c:TUR ?= { change_relations = { country = root value = -15 } }
             }
-        }
-        event_outcome_desc = {
-            first_valid = {
-                triggered_desc = { trigger = { has_variable = nesnd_crimea_joined_tur } desc = nesnd_crimea_ally_joined_win_tt }
-                triggered_desc = { desc = nesnd_crimea_ally_stayed_out_tur_win_tt }
-            }
-        }
-    }
-
-    outcome = {
-        header = je_standard_failure_header
-        effect_header = je_standard_on_failure_header
-        color = "blue_negative"
-        conclusion_desc = nesnd_crimea_ally_rus_win_conclusion
-        trigger = {
-            custom_tooltip = {
-                text = nesnd_crimea_result_russia_tt
-                global_var:nesnd_crimea_result ?= flag:russia
-            }
-        }
-        effect = {
-            if = {
-                limit = { has_variable = nesnd_crimea_joined_tur }
-                add_modifier = { name = nesnd_crimea_ally_defeat }
-                c:RUS ?= { change_relations = { country = root value = -15 } }
-            }
-            else = {
-                c:RUS ?= { change_relations = { country = root value = 15 } }
-            }
-        }
-        event_outcome_desc = {
-            first_valid = {
-                triggered_desc = { trigger = { has_variable = nesnd_crimea_joined_tur } desc = nesnd_crimea_ally_joined_loss_tt }
-                triggered_desc = { desc = nesnd_crimea_ally_stayed_out_rus_win_tt }
-            }
-        }
-    }
-
-    outcome = {
-        header = je_standard_failure_header
-        effect_header = je_standard_on_failure_header
-        color = "blue_negative"
-        conclusion_desc = nesnd_crimea_inconclusive_conclusion
-        trigger = {
-            custom_tooltip = {
-                text = nesnd_crimea_result_none_tt
-                OR = {
-                    global_var:nesnd_crimea_result ?= flag:none
-                    NOT = { exists = c:TUR }
-                }
-            }
-        }
-        effect = {
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
-            if = { limit = { NOT = { has_global_variable = nesnd_crimea_result } } set_global_variable = { name = nesnd_crimea_result value = flag:none } }
-            if = {
-                limit = { has_variable = nesnd_crimea_joined_tur }
-                c:TUR ?= { change_relations = { country = root value = 10 } }
-            }
-            else = {
-                c:TUR ?= { change_relations = { country = root value = -5 } }
-            }
-        }
-        event_outcome_desc = {
-            first_valid = {
-                triggered_desc = { trigger = { has_variable = nesnd_crimea_joined_tur } desc = nesnd_crimea_ally_joined_draw_tt }
-                triggered_desc = { desc = nesnd_crimea_ally_stayed_out_draw_tt }
-            }
-        }
-    }
-
-    outcome = {
-        header = JOURNAL_ENTRY_TIMEOUT
-        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
-        color = "blue_negative"
-        flags = { timeout }
-        conclusion_desc = nesnd_crimea_stalemate_conclusion
-        effect = {
-            if = {
-                limit = { has_variable = nesnd_crimea_joined_tur }
-                c:TUR ?= { change_relations = { country = root value = 10 } }
-            }
-            else = {
-                c:TUR ?= { change_relations = { country = root value = -5 } }
-            }
-        }
-        event_outcome_desc = {
-            first_valid = {
-                triggered_desc = { trigger = { has_variable = nesnd_crimea_joined_tur } desc = nesnd_crimea_ally_joined_draw_tt }
-                triggered_desc = { desc = nesnd_crimea_ally_stayed_out_draw_tt }
-            }
-        }
-    }
-
-    outcome = {
-        flags = { hidden invalid_outcome }
-        conclusion_desc = nesnd_crimea_invalid_conclusion
-        trigger = { NOT = { c:FRA ?= this } }
-        effect = { }
-    }
-
-    timeout = 3700
-
-    status_desc = {
-        first_valid = {
-            triggered_desc = { trigger = { has_variable = nesnd_crimea_joined_tur } desc = nesnd_crimea_ally_status_joined }
-            desc = nesnd_crimea_ally_status_watching
-        }
-    }
-}
-
-nesnd_crimea_qe1 = {
-    icon = "gfx/interface/icons/event_icons/event_military.dds"
-    group = je_group_foreign_affairs
-    activation_description = { always = yes }
-    can_revolution_inherit = no
-    should_be_pinned_by_default_uninvolved_or_context = yes
-
-    on_monthly_pulse = {
-        effect = {
-            if = {
-                limit = {
-                    NOT = { has_variable = nesnd_crimea_joined_tur }
-                    exists = c:TUR
-                    exists = c:RUS
-                    OR = {
-                        is_in_war_together = c:TUR
-                        is_diplomatic_play_ally_of = c:TUR
-                    }
-                    OR = {
-                        has_war_with = c:RUS
-                        is_diplomatic_play_enemy_of = c:RUS
-                    }
-                }
-                set_variable = nesnd_crimea_joined_tur
-            }
-        }
-    }
-
-    outcome = {
-        header = je_standard_completion_header
-        effect_header = je_standard_on_completion_header
-        color = "gold_positive"
-        conclusion_desc = nesnd_crimea_ally_tur_win_conclusion
-        trigger = {
-            custom_tooltip = {
-                text = nesnd_crimea_result_ottoman_tt
-                global_var:nesnd_crimea_result ?= flag:ottoman
-            }
-        }
-        effect = {
-            if = {
-                limit = { has_variable = nesnd_crimea_joined_tur }
-                add_modifier = { name = nesnd_crimea_ally_victory }
-                c:TUR ?= { change_relations = { country = root value = 25 } }
-            }
-            else = {
-                c:TUR ?= { change_relations = { country = root value = -15 } }
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_crimea_joined_tur } remove_variable = nesnd_crimea_joined_tur }
             }
         }
         event_outcome_desc = {
@@ -475,10 +408,19 @@ nesnd_crimea_qe1 = {
             if = {
                 limit = { has_variable = nesnd_crimea_joined_tur }
                 add_modifier = { name = nesnd_crimea_ally_defeat }
-                c:RUS ?= { change_relations = { country = root value = -15 } }
+                if = {
+                    limit = { has_global_variable = nesnd_north_foe }
+                    global_var:nesnd_north_foe ?= { change_relations = { country = root value = -15 } }
+                }
             }
             else = {
-                c:RUS ?= { change_relations = { country = root value = 15 } }
+                if = {
+                    limit = { has_global_variable = nesnd_north_foe }
+                    global_var:nesnd_north_foe ?= { change_relations = { country = root value = 15 } }
+                }
+            }
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_crimea_joined_tur } remove_variable = nesnd_crimea_joined_tur }
             }
         }
         event_outcome_desc = {
@@ -499,19 +441,21 @@ nesnd_crimea_qe1 = {
                 text = nesnd_crimea_result_none_tt
                 OR = {
                     global_var:nesnd_crimea_result ?= flag:none
+                    global_var:nesnd_crimea_result ?= flag:changed
                     NOT = { exists = c:TUR }
                 }
             }
         }
         effect = {
-            if = { limit = { has_global_variable = nesnd_crimea_active } remove_global_variable = nesnd_crimea_active }
-            if = { limit = { NOT = { has_global_variable = nesnd_crimea_result } } set_global_variable = { name = nesnd_crimea_result value = flag:none } }
             if = {
                 limit = { has_variable = nesnd_crimea_joined_tur }
                 c:TUR ?= { change_relations = { country = root value = 10 } }
             }
             else = {
                 c:TUR ?= { change_relations = { country = root value = -5 } }
+            }
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_crimea_joined_tur } remove_variable = nesnd_crimea_joined_tur }
             }
         }
         event_outcome_desc = {
@@ -536,6 +480,9 @@ nesnd_crimea_qe1 = {
             else = {
                 c:TUR ?= { change_relations = { country = root value = -5 } }
             }
+            hidden_effect = {
+                if = { limit = { has_variable = nesnd_crimea_joined_tur } remove_variable = nesnd_crimea_joined_tur }
+            }
         }
         event_outcome_desc = {
             first_valid = {
@@ -548,11 +495,24 @@ nesnd_crimea_qe1 = {
     outcome = {
         flags = { hidden invalid_outcome }
         conclusion_desc = nesnd_crimea_invalid_conclusion
-        trigger = { NOT = { c:QE1 ?= this } }
-        effect = { }
+        trigger = {
+            OR = {
+                is_country_alive = no
+                AND = {
+                    NOT = { has_global_variable = nesnd_crimea_result }
+                    OR = {
+                        NOT = { exists = c:TUR }
+                        c:TUR = { NOT = { has_journal_entry = nesnd_crimea_tur } }
+                    }
+                }
+            }
+        }
+        effect = {
+            if = { limit = { has_variable = nesnd_crimea_joined_tur } remove_variable = nesnd_crimea_joined_tur }
+        }
     }
 
-    timeout = 3700
+    timeout = 4400
 
     status_desc = {
         first_valid = {
