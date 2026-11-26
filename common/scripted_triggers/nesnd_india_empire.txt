@@ -408,10 +408,11 @@ nesnd_mug_ai_many_levels = {
 
 # ==== Old treaty dispute (India batch 15) ====
 # Mughal scope. At least one pressure condition holds to trigger "Inheritance of the Old Treaty".
+# Liberty desire threshold is 65 (above vanilla INITIAL_LIBERTY_DESIRE = 50) so the dispute does not fire on 1836.1.1.
 nesnd_mug_treaty_dispute_pressure = {
     OR = {
         has_variable = nesnd_india_reform_done
-        liberty_desire >= 50
+        liberty_desire >= 65
         has_variable = nesnd_mug_council_settled
     }
 }
@@ -467,31 +468,31 @@ nesnd_india_dispute_relations_high = {
     }
     trigger_else = { always = no }
 }
-# Country scope (Mughal or France). Bilateral relations <= 0.
+# Country scope (Mughal or France). Bilateral relations < 0 (neutral 0 does not passively drain the bar).
 nesnd_india_dispute_relations_low = {
     trigger_if = {
         limit = { exists = var:nesnd_india_dispute_overlord }
         var:nesnd_india_dispute_overlord = { save_temporary_scope_as = dispute_other }
-        "relations(scope:dispute_other)" <= 0
+        "relations(scope:dispute_other)" < 0
     }
     trigger_else_if = {
         limit = { exists = var:nesnd_india_dispute_subject }
         var:nesnd_india_dispute_subject = { save_temporary_scope_as = dispute_other }
-        "relations(scope:dispute_other)" <= 0
+        "relations(scope:dispute_other)" < 0
     }
     trigger_else = { always = no }
 }
-# Country scope (Mughal or France). Bilateral relations strictly below 0 (for France AI).
-nesnd_india_dispute_relations_below_zero = {
+# Country scope (Mughal or France). Bilateral relations at or below poor threshold (-20, for France AI).
+nesnd_india_dispute_relations_poor = {
     trigger_if = {
         limit = { exists = var:nesnd_india_dispute_overlord }
         var:nesnd_india_dispute_overlord = { save_temporary_scope_as = dispute_other }
-        "relations(scope:dispute_other)" < 0
+        "relations(scope:dispute_other)" <= relations_threshold:poor
     }
     trigger_else_if = {
         limit = { exists = var:nesnd_india_dispute_subject }
         var:nesnd_india_dispute_subject = { save_temporary_scope_as = dispute_other }
-        "relations(scope:dispute_other)" < 0
+        "relations(scope:dispute_other)" <= relations_threshold:poor
     }
     trigger_else = { always = no }
 }
