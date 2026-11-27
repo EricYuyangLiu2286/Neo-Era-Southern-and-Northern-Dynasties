@@ -1,0 +1,261 @@
+﻿# Ottoman B10 foreign-affairs journal: "Levant" (both constitutional and sultanic routes).
+# Added only by nesnd_ottoman_levant_start (events .5/.6 and monthly fallback nesnd_ottoman_levant_fallback),
+# so it defines neither possible nor is_shown_when_inactive.
+# Non-event outcomes omit event_outcome_desc so effects display natively.
+
+nesnd_ottoman_levant = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    group = je_group_foreign_affairs
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+
+    scripted_button = nesnd_ottoman_levant_agitate
+    scripted_button = nesnd_ottoman_levant_plan
+    scripted_button = nesnd_ottoman_levant_recognize
+    scripted_button = nesnd_ottoman_levant_seek_help
+
+    immediate = {
+        set_variable = {
+            name = nesnd_ottoman_levant_deadline
+            months = 240
+        }
+    }
+
+    on_monthly_pulse = {
+        effect = {
+            nesnd_ottoman_levant_update_dependent_months = yes
+        }
+    }
+
+    # 1. Hidden invalidation (tag changed away from TUR).
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_ottoman_levant_invalid_conclusion
+        trigger = {
+            NOT = { c:TUR ?= this }
+        }
+        effect = {
+            set_variable = nesnd_ottoman_levant_closed
+            nesnd_ottoman_levant_cleanup = yes
+        }
+    }
+
+    # 2. Border lost (R10: bad outcome judged first).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_levant_lost_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_levant_lost_tt
+                nesnd_ottoman_levant_home_lost = yes
+            }
+        }
+        effect = {
+            add_modifier = {
+                name = nesnd_ottoman_levant_lost_mod
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_levant_lost_claims_tt
+                nesnd_ottoman_levant_claim_lost_home = yes
+            }
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_levant_outcome
+                    value = flag:lost
+                }
+                set_variable = nesnd_ottoman_levant_closed
+                nesnd_ottoman_levant_cleanup = yes
+            }
+        }
+    }
+
+    # 3. Lost autonomy (R13: unable to act abroad for 12 consecutive months; may reopen after 24-month cooldown).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_levant_dependent_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_levant_dependent_tt
+                has_variable = nesnd_ottoman_levant_dependent_months
+                var:nesnd_ottoman_levant_dependent_months >= 12
+            }
+        }
+        effect = {
+            if = {
+                limit = {
+                    NOT = { has_modifier = nesnd_ottoman_lost_autonomy }
+                }
+                add_modifier = {
+                    name = nesnd_ottoman_lost_autonomy
+                }
+            }
+            custom_tooltip = nesnd_ottoman_levant_reopen_cd_tt
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_levant_outcome
+                    value = flag:dependent
+                }
+                set_variable = {
+                    name = nesnd_ottoman_levant_reopen_cd
+                    months = 24
+                }
+                nesnd_ottoman_levant_cleanup = yes
+            }
+        }
+    }
+
+    # 4. Levant recovered (R10: all three target regions held by TUR or its subjects).
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_levant_won_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_levant_won_tt
+                nesnd_ottoman_levant_all_held = yes
+            }
+        }
+        effect = {
+            add_modifier = {
+                name = nesnd_ottoman_levant_won_mod
+            }
+            if = {
+                limit = {
+                    has_journal_entry = nesnd_ottoman_recovery
+                }
+                je:nesnd_ottoman_recovery ?= {
+                    add_progress = {
+                        name = nesnd_ottoman_enthusiasm_bar
+                        value = 20
+                    }
+                }
+            }
+            every_country = {
+                limit = {
+                    nesnd_ottoman_east_intervener_candidate = yes
+                }
+                change_relations = {
+                    country = root
+                    value = -10
+                }
+            }
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_levant_outcome
+                    value = flag:won
+                }
+                set_variable = nesnd_ottoman_levant_closed
+                nesnd_ottoman_levant_cleanup = yes
+            }
+        }
+    }
+
+    # 5. Status quo recognized (set by event nesnd_ottoman_recovery.27 option a).
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_levant_recognized_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_levant_recognized_tt
+                has_variable = nesnd_ottoman_levant_recognized
+            }
+        }
+        effect = {
+            add_modifier = {
+                name = nesnd_ottoman_levant_border_mod
+            }
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_levant_outcome
+                    value = flag:recognized
+                }
+                set_variable = nesnd_ottoman_levant_closed
+                nesnd_ottoman_levant_cleanup = yes
+            }
+        }
+    }
+
+    # 6. Situation changed (R12: foe no longer valid and not currently at war with it; may reopen after 24-month cooldown).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_levant_changed_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_levant_changed_tt
+                nesnd_ottoman_levant_situation_changed = yes
+            }
+        }
+        effect = {
+            custom_tooltip = nesnd_ottoman_levant_claims_kept_tt
+            custom_tooltip = nesnd_ottoman_levant_reopen_cd_tt
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_levant_outcome
+                    value = flag:changed
+                }
+                set_variable = {
+                    name = nesnd_ottoman_levant_reopen_cd
+                    months = 24
+                }
+                nesnd_ottoman_levant_cleanup = yes
+            }
+        }
+    }
+
+    # 7. Shelved (240-month deadline elapsed while not in a play or war with the foe; replaces engine timeout so wars are never cut off).
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_levant_shelved_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_levant_timeout_tt
+                NOT = { has_variable = nesnd_ottoman_levant_deadline }
+                nesnd_ottoman_levant_play_in_progress = no
+                nesnd_ottoman_levant_at_war_with_foe = no
+            }
+        }
+        effect = {
+            add_modifier = {
+                name = nesnd_ottoman_levant_shelved_mod
+            }
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_levant_outcome
+                    value = flag:shelved
+                }
+                set_variable = nesnd_ottoman_levant_closed
+                nesnd_ottoman_levant_cleanup = yes
+            }
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = {
+                    nesnd_ottoman_levant_at_war_with_foe = yes
+                }
+                desc = nesnd_ottoman_levant_status_war
+            }
+            triggered_desc = {
+                trigger = {
+                    nesnd_ottoman_levant_play_in_progress = yes
+                }
+                desc = nesnd_ottoman_levant_status_play
+            }
+            desc = nesnd_ottoman_levant_status_standoff
+        }
+    }
+}

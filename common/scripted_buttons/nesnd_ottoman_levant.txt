@@ -1,0 +1,268 @@
+﻿# Scripted buttons for Ottoman B10 "Levant" journal (nesnd_ottoman_levant).
+
+# Rule 11: Agitate across the wider six Levant regions (36-month cooldown).
+nesnd_ottoman_levant_agitate = {
+    name = nesnd_ottoman_levant_agitate
+    desc = nesnd_ottoman_levant_agitate_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_levant
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_agitate_cd_tt
+            NOT = { has_variable = nesnd_ottoman_levant_agitate_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_foe_valid_tt
+            nesnd_ottoman_levant_foe_valid = yes
+        }
+    }
+    effect = {
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_agitate_radicals_tt
+            every_state_region = {
+                limit = {
+                    nesnd_ottoman_levant_is_wider_region = yes
+                }
+                every_scope_state = {
+                    limit = {
+                        nesnd_ottoman_state_outside_ottoman_hands = yes
+                    }
+                    add_radicals_in_state = {
+                        value = small_radicals
+                    }
+                }
+            }
+        }
+        if = {
+            limit = {
+                has_global_variable = nesnd_levant_foe
+            }
+            global_var:nesnd_levant_foe ?= {
+                change_relations = {
+                    country = root
+                    value = -15
+                }
+            }
+        }
+        if = {
+            limit = {
+                any_country = {
+                    nesnd_ottoman_levant_state_holder = yes
+                }
+            }
+            ordered_country = {
+                limit = {
+                    nesnd_ottoman_levant_state_holder = yes
+                }
+                order_by = nesnd_ottoman_levant_held_states_count
+                position = 0
+                check_range_bounds = no
+                if = {
+                    limit = {
+                        NOT = { has_variable = nesnd_levant_alarm_cd }
+                    }
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.26
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        custom_tooltip = nesnd_ottoman_levant_agitate_cd_set_tt
+        hidden_effect = {
+            set_variable = {
+                name = nesnd_ottoman_levant_agitate_cd
+                months = 36
+            }
+        }
+    }
+    ai_chance = {
+        value = 5
+        if = {
+            limit = {
+                nesnd_ottoman_levant_has_target_claim = yes
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}
+
+# Rule 12: Set Levant campaign plan (once per journal opening; requires a claim on at least one target region).
+nesnd_ottoman_levant_plan = {
+    name = nesnd_ottoman_levant_plan
+    desc = nesnd_ottoman_levant_plan_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_levant
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_not_planned_tt
+            NOT = { has_variable = nesnd_ottoman_levant_planned }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_has_claim_tt
+            nesnd_ottoman_levant_has_target_claim = yes
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_foe_valid_tt
+            nesnd_ottoman_levant_foe_valid = yes
+        }
+    }
+    effect = {
+        s:STATE_ADANA = {
+            nesnd_ottoman_conquer_goal_on_holders = yes
+        }
+        s:STATE_ALEPPO = {
+            nesnd_ottoman_conquer_goal_on_holders = yes
+        }
+        s:STATE_SYRIA = {
+            nesnd_ottoman_conquer_goal_on_holders = yes
+        }
+        add_modifier = {
+            name = nesnd_ottoman_levant_campaign_mod
+            months = 60
+        }
+        hidden_effect = {
+            set_variable = nesnd_ottoman_levant_planned
+        }
+    }
+    ai_chance = {
+        value = 20
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}
+
+# Rule 13: Propose recognizing the Levant status quo to the foe (60-month cooldown).
+nesnd_ottoman_levant_recognize = {
+    name = nesnd_ottoman_levant_recognize
+    desc = nesnd_ottoman_levant_recognize_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_levant
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_foe_valid_tt
+            nesnd_ottoman_levant_foe_valid = yes
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_peace_with_foe_tt
+            nesnd_ottoman_levant_at_war_with_foe = no
+            nesnd_ottoman_levant_play_in_progress = no
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_parley_cd_tt
+            NOT = { has_variable = nesnd_ottoman_levant_parley_cd }
+        }
+    }
+    effect = {
+        if = {
+            limit = {
+                has_global_variable = nesnd_levant_foe
+            }
+            global_var:nesnd_levant_foe ?= {
+                trigger_event = {
+                    id = nesnd_ottoman_recovery.27
+                    days = 3
+                    popup = yes
+                }
+            }
+        }
+        custom_tooltip = nesnd_ottoman_levant_parley_cd_set_tt
+        hidden_effect = {
+            set_variable = {
+                name = nesnd_ottoman_levant_parley_cd
+                months = 60
+            }
+        }
+    }
+    ai_chance = {
+        value = 0
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_route
+                var:nesnd_ottoman_route = flag:sultanic
+                nesnd_ottoman_qinist_leader_count >= 1
+            }
+            add = 5
+        }
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_levant_planned
+            }
+            multiply = 0
+        }
+    }
+}
+
+# Rule 14b: Seek foreign diplomatic backing over the Levant (36-month cooldown).
+nesnd_ottoman_levant_seek_help = {
+    name = nesnd_ottoman_levant_seek_help
+    desc = nesnd_ottoman_levant_seek_help_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_levant
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_has_helper_tt
+            any_country = {
+                nesnd_ottoman_levant_helper_candidate = yes
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_help_cd_tt
+            NOT = { has_variable = nesnd_ottoman_levant_help_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_not_in_war_tt
+            nesnd_ottoman_levant_at_war_with_foe = no
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_levant_foe_valid_tt
+            nesnd_ottoman_levant_foe_valid = yes
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_ottoman_levant_seek_help_tt
+        custom_tooltip = nesnd_ottoman_levant_help_cd_set_tt
+        hidden_effect = {
+            nesnd_ottoman_levant_dispatch_help_appeal = yes
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                nesnd_ottoman_levant_play_in_progress = yes
+            }
+            add = 20
+        }
+        if = {
+            limit = {
+                has_global_variable = nesnd_levant_foe
+                global_var:nesnd_levant_foe ?= {
+                    country_rank >= rank_value:great_power
+                }
+            }
+            add = 10
+        }
+    }
+}

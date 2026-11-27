@@ -1,0 +1,298 @@
+﻿# Effects for Ottoman B10 "Levant" journal (nesnd_ottoman_levant) and Egypt northward event (.31).
+# Country scope (TUR) unless noted.
+
+# Selects the highest-scoring Levant foe candidate and stores it in global_var:nesnd_levant_foe (Rule 4).
+nesnd_ottoman_levant_pick_foe = {
+    if = {
+        limit = {
+            has_global_variable = nesnd_levant_foe
+        }
+        remove_global_variable = nesnd_levant_foe
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_ottoman_levant_foe_candidate = yes
+            }
+        }
+        ordered_country = {
+            limit = {
+                nesnd_ottoman_levant_foe_candidate = yes
+            }
+            order_by = nesnd_ottoman_levant_foe_score
+            position = 0
+            check_range_bounds = no
+            set_global_variable = {
+                name = nesnd_levant_foe
+                value = this
+            }
+        }
+    }
+}
+
+# Dynamically snapshots every state region wholly in Ottoman / subject hands that borders a non-Ottoman state in the three target regions (Rule 7).
+nesnd_ottoman_levant_snapshot = {
+    clear_variable_list = nesnd_ottoman_levant_home_regions
+    every_state_region = {
+        limit = {
+            any_scope_state = {
+                always = yes
+            }
+            NOT = {
+                any_scope_state = {
+                    nesnd_ottoman_state_outside_ottoman_hands = yes
+                }
+            }
+            any_scope_state = {
+                any_neighbouring_state = {
+                    nesnd_ottoman_state_outside_ottoman_hands = yes
+                    state_region = {
+                        nesnd_ottoman_levant_is_target_region = yes
+                    }
+                }
+            }
+        }
+        c:TUR ?= {
+            if = {
+                limit = {
+                    NOT = {
+                        is_target_in_variable_list = {
+                            name = nesnd_ottoman_levant_home_regions
+                            target = prev
+                        }
+                    }
+                }
+                add_to_variable_list = {
+                    name = nesnd_ottoman_levant_home_regions
+                    target = prev
+                }
+            }
+        }
+    }
+}
+
+# Unified entry effect for opening nesnd_ottoman_levant (Rule 6).
+nesnd_ottoman_levant_start = {
+    hidden_effect = {
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_levant_recognized
+            }
+            remove_variable = nesnd_ottoman_levant_recognized
+        }
+        nesnd_ottoman_levant_pick_foe = yes
+        nesnd_ottoman_levant_snapshot = yes
+    }
+    add_journal_entry = {
+        type = nesnd_ottoman_levant
+    }
+}
+
+# Monthly counter of consecutive months unable to act abroad for R13 (Rule 8).
+nesnd_ottoman_levant_update_dependent_months = {
+    if = {
+        limit = {
+            nesnd_ottoman_can_act_abroad = yes
+        }
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_levant_dependent_months
+            }
+            remove_variable = nesnd_ottoman_levant_dependent_months
+        }
+    }
+    else_if = {
+        limit = {
+            has_variable = nesnd_ottoman_levant_dependent_months
+        }
+        change_variable = {
+            name = nesnd_ottoman_levant_dependent_months
+            add = 1
+        }
+    }
+    else = {
+        set_variable = {
+            name = nesnd_ottoman_levant_dependent_months
+            value = 1
+        }
+    }
+}
+
+# Adds TUR claims on snapshotted home regions that have a state outside Ottoman hands (Rule 9.2).
+nesnd_ottoman_levant_claim_lost_home = {
+    if = {
+        limit = {
+            has_variable_list = nesnd_ottoman_levant_home_regions
+        }
+        every_in_list = {
+            variable = nesnd_ottoman_levant_home_regions
+            if = {
+                limit = {
+                    any_scope_state = {
+                        nesnd_ottoman_state_outside_ottoman_hands = yes
+                    }
+                    NOT = {
+                        c:TUR ?= {
+                            has_claim = prev
+                        }
+                    }
+                }
+                add_claim = c:TUR
+            }
+        }
+    }
+}
+
+# Removes TUR claims on the three Levant target state regions (Rule 13, event .27 option a).
+nesnd_ottoman_levant_renounce_claims = {
+    s:STATE_ADANA = {
+        if = {
+            limit = {
+                c:TUR ?= {
+                    has_claim = s:STATE_ADANA
+                }
+            }
+            remove_claim = c:TUR
+        }
+    }
+    s:STATE_ALEPPO = {
+        if = {
+            limit = {
+                c:TUR ?= {
+                    has_claim = s:STATE_ALEPPO
+                }
+            }
+            remove_claim = c:TUR
+        }
+    }
+    s:STATE_SYRIA = {
+        if = {
+            limit = {
+                c:TUR ?= {
+                    has_claim = s:STATE_SYRIA
+                }
+            }
+            remove_claim = c:TUR
+        }
+    }
+}
+
+# Picks the highest-scoring Levant helper candidate and dispatches appeal event .29 (Rule 14b).
+nesnd_ottoman_levant_dispatch_help_appeal = {
+    set_variable = {
+        name = nesnd_ottoman_levant_help_cd
+        months = 36
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_ottoman_levant_helper_candidate = yes
+            }
+        }
+        ordered_country = {
+            limit = {
+                nesnd_ottoman_levant_helper_candidate = yes
+            }
+            order_by = nesnd_ottoman_levant_helper_score
+            position = 0
+            check_range_bounds = no
+            trigger_event = {
+                id = nesnd_ottoman_recovery.29
+                days = 2
+                popup = yes
+            }
+        }
+    }
+}
+
+# Shared cleanup called at the end of every outcome of nesnd_ottoman_levant (Rule 9).
+nesnd_ottoman_levant_cleanup = {
+    if = {
+        limit = {
+            has_global_variable = nesnd_levant_foe
+        }
+        remove_global_variable = nesnd_levant_foe
+    }
+    clear_variable_list = nesnd_ottoman_levant_home_regions
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_levant_dependent_months
+        }
+        remove_variable = nesnd_ottoman_levant_dependent_months
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_levant_deadline
+        }
+        remove_variable = nesnd_ottoman_levant_deadline
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_levant_agitate_cd
+        }
+        remove_variable = nesnd_ottoman_levant_agitate_cd
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_levant_planned
+        }
+        remove_variable = nesnd_ottoman_levant_planned
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_levant_parley_cd
+        }
+        remove_variable = nesnd_ottoman_levant_parley_cd
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_levant_help_cd
+        }
+        remove_variable = nesnd_ottoman_levant_help_cd
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_levant_recognized
+        }
+        remove_variable = nesnd_ottoman_levant_recognized
+    }
+}
+
+# Country scope (c:EGY). Yearly 20% roll for "Egypt Looks North" event .31 (Rule 16).
+nesnd_egypt_north_yearly_check = {
+    if = {
+        limit = {
+            nesnd_egypt_north_eligible = yes
+        }
+        random_list = {
+            20 = {
+                trigger_event = {
+                    id = nesnd_ottoman_recovery.31
+                    popup = yes
+                }
+            }
+            80 = {
+            }
+        }
+    }
+}
+
+# Country scope (c:EGY). Adds Egyptian claims on state regions containing an Ottoman state bordering Egypt (Rule 16, event .31 option a).
+nesnd_egypt_claim_ottoman_border = {
+    every_state_region = {
+        limit = {
+            NOT = {
+                root = {
+                    has_claim = prev
+                }
+            }
+            any_scope_state = {
+                owner = c:TUR
+                any_neighbouring_state = {
+                    owner = root
+                }
+            }
+        }
+        add_claim = root
+    }
+}

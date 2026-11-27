@@ -1,0 +1,371 @@
+﻿# Triggers for Ottoman B10 "Levant" journal (nesnd_ottoman_levant), Egypt northward event (.31), and Eastern Order update (Rule 17).
+# Country scope unless noted.
+
+# State region scope. Core target regions of the Levant contest (Rule 1).
+nesnd_ottoman_levant_is_target_region = {
+    OR = {
+        this = s:STATE_ADANA
+        this = s:STATE_ALEPPO
+        this = s:STATE_SYRIA
+    }
+}
+
+# State region scope. Wider six Levant regions affected by agitation (Rule 1, Rule 11; excludes STATE_SINAI).
+nesnd_ottoman_levant_is_wider_region = {
+    OR = {
+        this = s:STATE_ADANA
+        this = s:STATE_ALEPPO
+        this = s:STATE_SYRIA
+        this = s:STATE_LEBANON
+        this = s:STATE_PALESTINE
+        this = s:STATE_TRANSJORDAN
+    }
+}
+
+# Country scope (evaluated country). The country or any of its subjects at any depth holds a state in the three target regions (Rule 2).
+nesnd_ottoman_levant_holds_target_region = {
+    OR = {
+        any_scope_state = {
+            state_region = {
+                nesnd_ottoman_levant_is_target_region = yes
+            }
+        }
+        any_subject_or_below = {
+            any_scope_state = {
+                state_region = {
+                    nesnd_ottoman_levant_is_target_region = yes
+                }
+            }
+        }
+    }
+}
+
+# Country scope (evaluated country). Eligible to be selected as the Levant foe (Rule 2).
+nesnd_ottoman_levant_foe_candidate = {
+    is_country_alive = yes
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    is_subject = no
+    NOT = { is_country_type = decentralized }
+    NOT = {
+        has_treaty_alliance_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = {
+        has_treaty_defensive_pact_with = {
+            TARGET = c:TUR
+        }
+    }
+    nesnd_ottoman_levant_holds_target_region = yes
+}
+
+# Any scope. The stored global_var:nesnd_levant_foe is still alive, independent, not allied with TUR, and still holds target land (Rule 4).
+nesnd_ottoman_levant_foe_valid = {
+    exists = c:TUR
+    has_global_variable = nesnd_levant_foe
+    global_var:nesnd_levant_foe ?= {
+        is_country_alive = yes
+        is_subject = no
+        NOT = { c:TUR ?= this }
+        NOT = {
+            has_treaty_alliance_with = {
+                TARGET = c:TUR
+            }
+        }
+        NOT = {
+            has_treaty_defensive_pact_with = {
+                TARGET = c:TUR
+            }
+        }
+        nesnd_ottoman_levant_holds_target_region = yes
+    }
+}
+
+# Any scope. At least one state in the three target regions lies outside Ottoman / Ottoman-subject hands (Rule 6).
+nesnd_ottoman_levant_any_outside_hands = {
+    OR = {
+        s:STATE_ADANA = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+        s:STATE_ALEPPO = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+        s:STATE_SYRIA = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+}
+
+# Any scope. All states in the three target regions are held by TUR or its subjects (Rule 9.4).
+nesnd_ottoman_levant_all_held = {
+    s:STATE_ADANA = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+    s:STATE_ALEPPO = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+    s:STATE_SYRIA = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Entry / monthly fallback trigger for nesnd_ottoman_levant (Rule 6).
+nesnd_ottoman_levant_fallback_due = {
+    c:TUR ?= this
+    nesnd_ottoman_recovery_open = yes
+    has_variable = nesnd_ottoman_route
+    nesnd_ottoman_can_act_abroad = yes
+    nesnd_ottoman_levant_any_outside_hands = yes
+    any_country = {
+        nesnd_ottoman_levant_foe_candidate = yes
+    }
+    NOT = { has_journal_entry = nesnd_ottoman_levant }
+    NOT = { has_variable = nesnd_ottoman_levant_closed }
+    NOT = { has_variable = nesnd_ottoman_levant_reopen_cd }
+}
+
+# Country scope (TUR). Any snapshotted home region now has a state outside Ottoman hands (Rule 7, Rule 9.2).
+nesnd_ottoman_levant_home_lost = {
+    has_variable_list = nesnd_ottoman_levant_home_regions
+    any_in_list = {
+        variable = nesnd_ottoman_levant_home_regions
+        any_scope_state = {
+            nesnd_ottoman_state_outside_ottoman_hands = yes
+        }
+    }
+}
+
+# Country scope (TUR). Currently at war with global_var:nesnd_levant_foe (Rules 9, 10, 13, 14).
+nesnd_ottoman_levant_at_war_with_foe = {
+    has_global_variable = nesnd_levant_foe
+    global_var:nesnd_levant_foe ?= {
+        has_war_with = prev
+    }
+}
+
+# Any scope. Active diplomatic play opposing TUR and global_var:nesnd_levant_foe (Rules 9, 10, 13).
+nesnd_ottoman_levant_play_in_progress = {
+    exists = c:TUR
+    has_global_variable = nesnd_levant_foe
+    global_var:nesnd_levant_foe ?= {
+        OR = {
+            is_diplomatic_play_enemy_of = c:TUR
+            any_diplomatic_play = {
+                OR = {
+                    AND = {
+                        initiator_is = c:TUR
+                        target_is = prev
+                    }
+                    AND = {
+                        initiator_is = prev
+                        target_is = c:TUR
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Foe became invalid and TUR is not currently at war with it (R12, Rule 9.6).
+nesnd_ottoman_levant_situation_changed = {
+    nesnd_ottoman_levant_foe_valid = no
+    nesnd_ottoman_levant_at_war_with_foe = no
+}
+
+# Country scope (TUR). Holds a claim on at least one of the three Levant target regions (Rules 11, 12).
+nesnd_ottoman_levant_has_target_claim = {
+    OR = {
+        has_claim = s:STATE_ADANA
+        has_claim = s:STATE_ALEPPO
+        has_claim = s:STATE_SYRIA
+    }
+}
+
+# Country scope (evaluated country). Direct holder of at least one target state outside Ottoman hands (Rule 11).
+nesnd_ottoman_levant_state_holder = {
+    is_country_alive = yes
+    NOT = { is_country_type = decentralized }
+    NOT = { c:TUR ?= this }
+    NOT = { top_overlord ?= c:TUR }
+    any_scope_state = {
+        state_region = {
+            nesnd_ottoman_levant_is_target_region = yes
+        }
+    }
+}
+
+# Country scope (recipient of event nesnd_ottoman_recovery.27). The recognition offer is still valid (Rule 13).
+nesnd_ottoman_levant_offer_open = {
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        has_journal_entry = nesnd_ottoman_levant
+    }
+    global_var:nesnd_levant_foe ?= this
+    nesnd_ottoman_levant_foe_valid = yes
+    NOT = { has_war_with = c:TUR }
+}
+
+# Country scope (evaluated country). Eligible foreign helper for Ottoman Levant appeal (Rule 14b).
+nesnd_ottoman_levant_helper_candidate = {
+    is_country_alive = yes
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    is_subject = no
+    NOT = { is_country_type = decentralized }
+    country_rank >= rank_value:major_power
+    has_interest_marker_in_region = sr:region_near_east
+    "relations(c:TUR)" >= relations_threshold:cordial
+    NOT = { global_var:nesnd_levant_foe ?= this }
+    NOT = { global_var:nesnd_north_foe ?= this }
+    NOT = { global_var:nesnd_meso_foe ?= this }
+    NOT = { has_war_with = c:TUR }
+    trigger_if = {
+        limit = {
+            has_global_variable = nesnd_levant_foe
+        }
+        global_var:nesnd_levant_foe ?= {
+            NOT = {
+                has_treaty_alliance_with = {
+                    TARGET = prev
+                }
+            }
+            NOT = {
+                has_treaty_defensive_pact_with = {
+                    TARGET = prev
+                }
+            }
+            NOT = { is_in_same_power_bloc = prev }
+        }
+    }
+}
+
+# Country scope (recipient of event nesnd_ottoman_recovery.29). The Levant help appeal is still valid (Rule 14b).
+nesnd_ottoman_levant_help_offer_open = {
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        has_journal_entry = nesnd_ottoman_levant
+    }
+    NOT = { c:TUR ?= this }
+    NOT = { has_war_with = c:TUR }
+    nesnd_ottoman_levant_foe_valid = yes
+    NOT = { global_var:nesnd_levant_foe ?= this }
+    nesnd_ottoman_levant_helper_candidate = yes
+}
+
+# Country scope (c:EGY). Yearly eligibility for "Egypt Looks North" event .31 (Rule 16, R11 class b).
+nesnd_egypt_north_eligible = {
+    c:EGY ?= this
+    is_country_alive = yes
+    is_subject = no
+    has_variable = nesnd_egypt_finished
+    NOT = { has_variable = nesnd_egypt_north_fired }
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        OR = {
+            has_journal_entry = nesnd_ottoman_levant
+            has_variable = nesnd_ottoman_route
+        }
+    }
+    NOT = {
+        has_treaty_alliance_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = {
+        has_treaty_defensive_pact_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = { has_war_with = c:TUR }
+    NOT = { has_truce_with = c:TUR }
+    any_scope_state = {
+        any_neighbouring_state = {
+            owner = c:TUR
+        }
+    }
+}
+
+# Any scope. All five Eastern Order regions are held by TUR or its subjects (Rule 17).
+nesnd_ottoman_eastern_order_held = {
+    s:STATE_BAGHDAD = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+    s:STATE_MOSUL = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+    s:STATE_BASRA = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+    s:STATE_SYRIA = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+    s:STATE_ALEPPO = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+}

@@ -186,6 +186,12 @@ nesnd_ottoman_recovery.5 = {
             }
             nesnd_ottoman_meso_start = yes
         }
+        if = {
+            limit = {
+                nesnd_ottoman_levant_fallback_due = yes
+            }
+            nesnd_ottoman_levant_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_charter_ig ?= { is_powerful = yes } } add = 10 }
@@ -204,6 +210,12 @@ nesnd_ottoman_recovery.5 = {
                 nesnd_ottoman_meso_fallback_due = yes
             }
             nesnd_ottoman_meso_start = yes
+        }
+        if = {
+            limit = {
+                nesnd_ottoman_levant_fallback_due = yes
+            }
+            nesnd_ottoman_levant_start = yes
         }
         ai_chance = {
             base = 10
@@ -255,6 +267,12 @@ nesnd_ottoman_recovery.6 = {
             }
             nesnd_ottoman_meso_start = yes
         }
+        if = {
+            limit = {
+                nesnd_ottoman_levant_fallback_due = yes
+            }
+            nesnd_ottoman_levant_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_faith_ig ?= { is_powerful = yes } } add = 10 }
@@ -273,6 +291,12 @@ nesnd_ottoman_recovery.6 = {
                 nesnd_ottoman_meso_fallback_due = yes
             }
             nesnd_ottoman_meso_start = yes
+        }
+        if = {
+            limit = {
+                nesnd_ottoman_levant_fallback_due = yes
+            }
+            nesnd_ottoman_levant_start = yes
         }
         ai_chance = {
             base = 10
@@ -1467,6 +1491,575 @@ nesnd_ottoman_recovery.25 = {
         }
         else = {
             custom_tooltip = nesnd_ottoman_recovery.25.a_refused_tt
+        }
+    }
+}
+# Journal nesnd_ottoman_levant: alarm event sent to the chief holder of Levant target states after button nesnd_ottoman_levant_agitate (Rule 14a).
+nesnd_ottoman_recovery.26 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.26.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.26.d_subject
+                trigger = {
+                    exists = scope:nesnd_levant_overlord
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.26.d_independent
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.26.f
+    event_image = {
+        video = "middleeast_courtroom_upheaval"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        exists = c:TUR
+        c:TUR = {
+            is_country_alive = yes
+        }
+        NOT = { has_variable = nesnd_levant_alarm_cd }
+    }
+    immediate = {
+        set_variable = {
+            name = nesnd_levant_alarm_cd
+            months = 12
+        }
+        c:TUR ?= {
+            save_scope_as = nesnd_levant_tur
+        }
+        if = {
+            limit = {
+                is_subject = yes
+            }
+            overlord ?= {
+                save_scope_as = nesnd_levant_overlord
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.26.a
+        default_option = yes
+        add_modifier = {
+            name = nesnd_levant_garrison_mod
+            months = 60
+        }
+        change_relations = {
+            country = c:TUR
+            value = -10
+        }
+        ai_chance = {
+            base = 50
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.26.b
+        trigger = {
+            is_subject = yes
+            exists = scope:nesnd_levant_overlord
+        }
+        scope:nesnd_levant_overlord ?= {
+            change_relations = {
+                country = root
+                value = 20
+            }
+            if = {
+                limit = {
+                    NOT = {
+                        has_secret_goal = {
+                            who = root
+                            secret_goal = protect
+                        }
+                    }
+                }
+                set_secret_goal = {
+                    country = root
+                    secret_goal = protect
+                }
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+        }
+        ai_chance = {
+            base = 60
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.26.c
+        custom_tooltip = nesnd_ottoman_recovery.26.c_tt
+        ai_chance = {
+            base = 20
+        }
+    }
+}
+# Journal nesnd_ottoman_levant: Ottoman status-quo recognition proposal received by global_var:nesnd_levant_foe (Rule 13).
+nesnd_ottoman_recovery.27 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.27.t
+    desc = nesnd_ottoman_recovery.27.d
+    flavor = nesnd_ottoman_recovery.27.f
+    event_image = {
+        video = "unspecific_signed_contract"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_levant_offer_open = yes
+        is_subject = no
+    }
+    immediate = {
+        c:TUR ?= {
+            save_scope_as = nesnd_levant_tur
+        }
+        save_scope_as = nesnd_levant_foe_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.27.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_levant_offer_open = yes
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_recovery.27.a_claims_tt
+                c:TUR ?= {
+                    nesnd_ottoman_levant_renounce_claims = yes
+                    set_variable = nesnd_ottoman_levant_recognized
+                }
+            }
+            change_relations = {
+                country = c:TUR
+                value = 30
+            }
+            create_bidirectional_truce = {
+                country = c:TUR
+                months = 60
+            }
+            if = {
+                limit = {
+                    country_rank >= rank_value:great_power
+                    can_create_treaty = {
+                        first_country = root
+                        second_country = c:TUR
+                        is_draft = no
+                        binding_period = {
+                            years = 5
+                        }
+                        articles_to_create = {
+                            {
+                                article = foreign_investment_rights
+                                source_country = c:TUR
+                                target_country = root
+                            }
+                        }
+                    }
+                    NOT = {
+                        any_scope_treaty = {
+                            binds = c:TUR
+                            any_scope_article = {
+                                has_type = foreign_investment_rights
+                                source_country = c:TUR
+                            }
+                        }
+                    }
+                }
+                create_treaty = {
+                    name = nesnd_ottoman_levant_investment_treaty
+                    first_country = root
+                    second_country = c:TUR
+                    is_draft = no
+                    binding_period = {
+                        years = 5
+                    }
+                    articles_to_create = {
+                        {
+                            article = foreign_investment_rights
+                            source_country = c:TUR
+                            target_country = root
+                        }
+                    }
+                }
+            }
+            hidden_effect = {
+                # Read by event .28 (saved scopes pass on through trigger_event); a variable on TUR would be wiped if the journal concluded first.
+                save_scope_as = nesnd_levant_reply_accepted
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.28
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.27.lapsed_tt
+        }
+        ai_chance = {
+            base = 60
+            modifier = {
+                trigger = {
+                    has_diplomatic_pact = {
+                        who = c:TUR
+                        type = rivalry
+                    }
+                }
+                add = -40
+            }
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                add = 20
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.27.b
+        if = {
+            limit = {
+                nesnd_ottoman_levant_offer_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+            hidden_effect = {
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.28
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.27.lapsed_tt
+        }
+        ai_chance = {
+            base = 40
+        }
+    }
+}
+# Journal nesnd_ottoman_levant: Ottoman notification of the foe's answer to the recognition proposal (Rule 13).
+nesnd_ottoman_recovery.28 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.28.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.28.d_accepted
+                trigger = {
+                    exists = scope:nesnd_levant_reply_accepted
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.28.d_refused
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.28.f
+    event_image = {
+        video = "unspecific_signed_contract"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+    }
+    option = {
+        name = nesnd_ottoman_recovery.28.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_levant_reply_accepted
+            }
+            custom_tooltip = nesnd_ottoman_recovery.28.a_accepted_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.28.a_refused_tt
+        }
+    }
+}
+# Journal nesnd_ottoman_levant: foreign power receives an Ottoman appeal for backing over the Levant (Rule 14b).
+nesnd_ottoman_recovery.29 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.29.t
+    desc = nesnd_ottoman_recovery.29.d
+    flavor = nesnd_ottoman_recovery.29.f
+    event_image = {
+        video = "unspecific_politicians_arguing"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_levant_help_offer_open = yes
+        is_subject = no
+    }
+    immediate = {
+        save_scope_as = nesnd_levant_helper_scope
+        c:TUR ?= {
+            save_scope_as = nesnd_levant_tur
+        }
+        global_var:nesnd_levant_foe ?= {
+            save_scope_as = nesnd_levant_foe_scope
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.29.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_levant_help_offer_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = 20
+            }
+            scope:nesnd_levant_foe_scope ?= {
+                change_relations = {
+                    country = root
+                    value = -20
+                }
+            }
+            if = {
+                limit = {
+                    NOT = {
+                        has_secret_goal = {
+                            who = c:TUR
+                            secret_goal = protect
+                        }
+                    }
+                }
+                set_secret_goal = {
+                    country = c:TUR
+                    secret_goal = protect
+                }
+            }
+            c:TUR ?= {
+                add_modifier = {
+                    name = nesnd_ottoman_levant_backed_mod
+                    months = 60
+                }
+            }
+            hidden_effect = {
+                save_scope_as = nesnd_levant_help_accepted
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.30
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.29.lapsed_tt
+        }
+        ai_chance = {
+            base = 40
+            modifier = {
+                trigger = {
+                    exists = scope:nesnd_levant_foe_scope
+                    has_diplomatic_pact = {
+                        who = scope:nesnd_levant_foe_scope
+                        type = rivalry
+                    }
+                }
+                add = 40
+            }
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                add = -20
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.29.b
+        if = {
+            limit = {
+                nesnd_ottoman_levant_help_offer_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -5
+            }
+            hidden_effect = {
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.30
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.29.lapsed_tt
+        }
+        ai_chance = {
+            base = 60
+        }
+    }
+}
+# Journal nesnd_ottoman_levant: Ottoman notification of the foreign power's answer to the help appeal (Rule 14b).
+nesnd_ottoman_recovery.30 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.30.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.30.d_accepted
+                trigger = {
+                    exists = scope:nesnd_levant_help_accepted
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.30.d_refused
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.30.f
+    event_image = {
+        video = "unspecific_politicians_arguing"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = scope:nesnd_levant_helper_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.30.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_levant_help_accepted
+            }
+            custom_tooltip = nesnd_ottoman_recovery.30.a_accepted_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.30.a_refused_tt
+        }
+    }
+}
+# Egypt's own story (R4, R11 class b, Rule 16): "Egypt Looks North" after settling "The Price of Independence" while independent.
+nesnd_ottoman_recovery.31 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.31.t
+    desc = nesnd_ottoman_recovery.31.d
+    flavor = nesnd_ottoman_recovery.31.f
+    event_image = {
+        video = "middleeast_courtroom_upheaval"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        nesnd_egypt_north_eligible = yes
+    }
+    immediate = {
+        set_variable = nesnd_egypt_north_fired
+        c:TUR ?= {
+            save_scope_as = nesnd_egypt_tur
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.31.a
+        default_option = yes
+        if = {
+            limit = {
+                NOT = {
+                    has_secret_goal = {
+                        who = c:TUR
+                        secret_goal = conquer
+                    }
+                }
+            }
+            set_secret_goal = {
+                country = c:TUR
+                secret_goal = conquer
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_recovery.31.a_claims_tt
+            nesnd_egypt_claim_ottoman_border = yes
+        }
+        change_relations = {
+            country = c:TUR
+            value = -30
+        }
+        add_modifier = {
+            name = nesnd_egypt_north_mod
+            months = 60
+        }
+        ai_chance = {
+            base = 20
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        nesnd_ottoman_tanzimat_failed = yes
+                    }
+                }
+                add = 30
+            }
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        is_at_war = yes
+                    }
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                factor = 0
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.31.b
+        change_relations = {
+            country = c:TUR
+            value = 20
+        }
+        add_modifier = {
+            name = nesnd_egypt_nile_mod
+            months = 60
+        }
+        ai_chance = {
+            base = 50
         }
     }
 }

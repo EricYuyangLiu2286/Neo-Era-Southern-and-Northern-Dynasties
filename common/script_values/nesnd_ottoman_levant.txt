@@ -1,0 +1,67 @@
+﻿# Script values for Ottoman B10 "Levant" journal (nesnd_ottoman_levant).
+# Country scope (evaluated country).
+
+# Levant foe selection score (Rule 3): +20 per state in target regions held directly or via subjects; +10 historical weight for c:EGY (R11 class a).
+nesnd_ottoman_levant_foe_score = {
+    value = 0
+    every_scope_state = {
+        limit = {
+            state_region = {
+                nesnd_ottoman_levant_is_target_region = yes
+            }
+        }
+        add = 20
+    }
+    every_subject_or_below = {
+        every_scope_state = {
+            limit = {
+                state_region = {
+                    nesnd_ottoman_levant_is_target_region = yes
+                }
+            }
+            add = 20
+        }
+    }
+    if = {
+        limit = {
+            c:EGY ?= this
+        }
+        add = 10
+    }
+}
+
+# Direct target-region state count for selecting the alarm event (.26) recipient (Rule 11).
+nesnd_ottoman_levant_held_states_count = {
+    value = 0
+    every_scope_state = {
+        limit = {
+            state_region = {
+                nesnd_ottoman_levant_is_target_region = yes
+            }
+        }
+        add = 1
+    }
+}
+
+# Foreign helper selection score for Levant appeal (Rule 14b): relations with TUR, plus +50 if rival of the Levant foe.
+nesnd_ottoman_levant_helper_score = {
+    value = 0
+    if = {
+        limit = {
+            exists = c:TUR
+        }
+        add = "relations(c:TUR)"
+    }
+    if = {
+        limit = {
+            has_global_variable = nesnd_levant_foe
+            global_var:nesnd_levant_foe ?= {
+                has_diplomatic_pact = {
+                    who = prev
+                    type = rivalry
+                }
+            }
+        }
+        add = 50
+    }
+}
