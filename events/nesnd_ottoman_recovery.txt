@@ -180,6 +180,12 @@ nesnd_ottoman_recovery.5 = {
         add_journal_entry = { type = nesnd_ottoman_charter }
         add_journal_entry = { type = nesnd_ottoman_islam_leader }
         if = { limit = { nesnd_ottoman_academy_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_academy_1 } }
+        if = {
+            limit = {
+                nesnd_ottoman_meso_fallback_due = yes
+            }
+            nesnd_ottoman_meso_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_charter_ig ?= { is_powerful = yes } } add = 10 }
@@ -193,6 +199,12 @@ nesnd_ottoman_recovery.5 = {
         add_journal_entry = { type = nesnd_ottoman_charter }
         add_journal_entry = { type = nesnd_ottoman_islam_leader }
         if = { limit = { nesnd_ottoman_academy_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_academy_1 } }
+        if = {
+            limit = {
+                nesnd_ottoman_meso_fallback_due = yes
+            }
+            nesnd_ottoman_meso_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_army_ig ?= { is_powerful = yes } } add = 10 }
@@ -237,6 +249,12 @@ nesnd_ottoman_recovery.6 = {
         if = { limit = { nesnd_ottoman_rumelia_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_rumelia } }
         if = { limit = { nesnd_ottoman_eastern_provinces_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_eastern_provinces } }
         if = { limit = { nesnd_ottoman_autocracy_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_autocracy } }
+        if = {
+            limit = {
+                nesnd_ottoman_meso_fallback_due = yes
+            }
+            nesnd_ottoman_meso_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_faith_ig ?= { is_powerful = yes } } add = 10 }
@@ -250,6 +268,12 @@ nesnd_ottoman_recovery.6 = {
         if = { limit = { nesnd_ottoman_rumelia_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_rumelia } }
         if = { limit = { nesnd_ottoman_eastern_provinces_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_eastern_provinces } }
         if = { limit = { nesnd_ottoman_autocracy_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_autocracy } }
+        if = {
+            limit = {
+                nesnd_ottoman_meso_fallback_due = yes
+            }
+            nesnd_ottoman_meso_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_army_ig ?= { is_powerful = yes } } add = 10 }
@@ -1183,5 +1207,266 @@ nesnd_ottoman_recovery.22 = {
         default_option = yes
         ig:ig_armed_forces ?= { add_modifier = { name = nesnd_ottoman_army_vexed months = 24 } }
         ai_chance = { base = 10 }
+    }
+}
+# Journal nesnd_ottoman_meso: alarm event sent to the chief holder of Mesopotamian states after button nesnd_ottoman_meso_tribes (Rule 14).
+nesnd_ottoman_recovery.23 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.23.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.23.d_subject
+                trigger = {
+                    exists = scope:nesnd_meso_overlord
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.23.d_independent
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.23.f
+    event_image = {
+        video = "middleeast_courtroom_upheaval"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        exists = c:TUR
+        c:TUR = {
+            is_country_alive = yes
+        }
+        NOT = { has_variable = nesnd_meso_alarm_cd }
+    }
+    immediate = {
+        set_variable = {
+            name = nesnd_meso_alarm_cd
+            months = 12
+        }
+        c:TUR ?= {
+            save_scope_as = nesnd_meso_tur
+        }
+        if = {
+            limit = {
+                is_subject = yes
+            }
+            overlord ?= {
+                save_scope_as = nesnd_meso_overlord
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.23.a
+        default_option = yes
+        add_modifier = {
+            name = nesnd_meso_garrison_mod
+            months = 60
+        }
+        change_relations = {
+            country = c:TUR
+            value = -10
+        }
+        ai_chance = {
+            base = 50
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.23.b
+        trigger = {
+            is_subject = yes
+            exists = scope:nesnd_meso_overlord
+        }
+        scope:nesnd_meso_overlord ?= {
+            change_relations = {
+                country = root
+                value = 20
+            }
+            if = {
+                limit = {
+                    NOT = {
+                        has_secret_goal = {
+                            who = root
+                            secret_goal = protect
+                        }
+                    }
+                }
+                set_secret_goal = {
+                    country = root
+                    secret_goal = protect
+                }
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+        }
+        ai_chance = {
+            base = 60
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.23.c
+        custom_tooltip = nesnd_ottoman_recovery.23.c_tt
+        ai_chance = {
+            base = 20
+        }
+    }
+}
+# Journal nesnd_ottoman_meso: Ottoman border demarcation proposal received by global_var:nesnd_meso_foe (Rule 13).
+nesnd_ottoman_recovery.24 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.24.t
+    desc = nesnd_ottoman_recovery.24.d
+    flavor = nesnd_ottoman_recovery.24.f
+    event_image = {
+        video = "unspecific_signed_contract"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_meso_offer_open = yes
+        is_subject = no
+    }
+    immediate = {
+        c:TUR ?= {
+            save_scope_as = nesnd_meso_tur
+        }
+        save_scope_as = nesnd_meso_foe_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.24.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_meso_offer_open = yes
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_recovery.24.a_claims_tt
+                c:TUR ?= {
+                    nesnd_ottoman_meso_renounce_claims = yes
+                    set_variable = nesnd_ottoman_meso_demarcated
+                }
+            }
+            change_relations = {
+                country = c:TUR
+                value = 30
+            }
+            create_bidirectional_truce = {
+                country = c:TUR
+                months = 60
+            }
+            hidden_effect = {
+                # Read by event .25 (saved scopes pass on through trigger_event); a variable on TUR would be wiped if the journal concluded first.
+                save_scope_as = nesnd_meso_reply_accepted
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.25
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.24.lapsed_tt
+        }
+        ai_chance = {
+            base = 60
+            modifier = {
+                trigger = {
+                    has_diplomatic_pact = {
+                        who = c:TUR
+                        type = rivalry
+                    }
+                }
+                add = -40
+            }
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                add = 20
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.24.b
+        if = {
+            limit = {
+                nesnd_ottoman_meso_offer_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+            hidden_effect = {
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.25
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.24.lapsed_tt
+        }
+        ai_chance = {
+            base = 40
+        }
+    }
+}
+# Journal nesnd_ottoman_meso: Ottoman notification of the foe's answer to the demarcation proposal (Rule 13).
+nesnd_ottoman_recovery.25 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.25.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.25.d_accepted
+                trigger = {
+                    exists = scope:nesnd_meso_reply_accepted
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.25.d_refused
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.25.f
+    event_image = {
+        video = "unspecific_signed_contract"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+    }
+    option = {
+        name = nesnd_ottoman_recovery.25.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_meso_reply_accepted
+            }
+            custom_tooltip = nesnd_ottoman_recovery.25.a_accepted_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.25.a_refused_tt
+        }
     }
 }
