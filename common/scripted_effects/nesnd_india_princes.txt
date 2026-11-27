@@ -1898,37 +1898,51 @@ nesnd_india_contact_release_sponsor = {
 }
 
 # State region scope, from nesnd_india_case_maintain, before nesnd_india_close_case. The rising failed:
-# the sponsor counts it and notes the owner it rose against (journal nesnd_india_uprising), and in the
-# states of this region held again by that owner the rising's cultures turn radical.
+# the sponsor's journal nesnd_india_uprising ends at once and notes the owner it rose against
+# (nesnd_india_uprising_last_failed), and in the states of this region held again by that owner the
+# rising's cultures turn radical.
 nesnd_india_case_failed = {
     save_scope_as = india_failed_region
     clear_saved_scope = india_failed_owner
     var:nesnd_india_case_owner ?= { save_scope_as = india_failed_owner }
     var:nesnd_india_case_sponsor ?= {
-        set_variable = { name = nesnd_india_uprising_failures value = { value = nesnd_india_uprising_failures_value add = 1 } }
-        if = { limit = { exists = scope:india_failed_owner NOT = { is_target_in_variable_list = { name = nesnd_india_uprising_failed_owners target = scope:india_failed_owner } } }
-            add_to_variable_list = { name = nesnd_india_uprising_failed_owners target = scope:india_failed_owner }
+        if = {
+            limit = { exists = scope:india_failed_owner }
+            set_variable = {
+                name = nesnd_india_uprising_last_failed
+                value = scope:india_failed_owner
+                days = 30
+            }
+        }
+        else = {
+            set_variable = {
+                name = nesnd_india_uprising_last_failed
+                days = 30
+            }
         }
     }
-    if = { limit = { exists = scope:india_failed_owner }
+    if = {
+        limit = { exists = scope:india_failed_owner }
         every_scope_state = {
             limit = { owner = scope:india_failed_owner }
             save_scope_as = india_failed_state
             scope:india_failed_region = {
                 every_in_list = {
                     variable = nesnd_india_case_cultures
-                    scope:india_failed_state = { add_radicals_in_state = { culture = prev value = 0.2 } }
+                    scope:india_failed_state = {
+                        add_radicals_in_state = {
+                            culture = prev
+                            value = 0.2
+                        }
+                    }
                 }
             }
         }
     }
     clear_variable_list = nesnd_india_case_cultures
 }
-# State region scope, from nesnd_india_case_maintain. The rising held: the sponsor counts it.
+# State region scope, from nesnd_india_case_maintain. The rising held.
 nesnd_india_case_won = {
-    var:nesnd_india_case_sponsor ?= {
-        set_variable = { name = nesnd_india_uprising_successes value = { value = nesnd_india_uprising_successes_value add = 1 } }
-    }
     clear_variable_list = nesnd_india_case_cultures
 }
 nesnd_india_close_case = {
@@ -1986,6 +2000,152 @@ nesnd_india_case_start = {
         JE = nesnd_india_uprising
         BAR = nesnd_india_contact_bar
         VALUE = nesnd_india_contact_progress
+    }
+}
+
+# Country scope. The launch for the region we are in contact with (nesnd_india_contact_region).
+nesnd_india_current_launch = {
+    if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_CIRCARS }
+        nesnd_india_case_launch = {
+            R = circars
+            STATE = STATE_CIRCARS
+            TAG = IR1
+            HQ = region_south_india
+        }
+    }
+    else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_KURNOOL }
+        nesnd_india_case_launch = {
+            R = kurnool
+            STATE = STATE_KURNOOL
+            TAG = IR2
+            HQ = region_south_india
+        }
+    }
+    else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_MADRAS }
+        nesnd_india_case_launch = {
+            R = madras
+            STATE = STATE_MADRAS
+            TAG = IR3
+            HQ = region_south_india
+        }
+    }
+    else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_MYSORE }
+        nesnd_india_case_launch = {
+            R = mysore
+            STATE = STATE_MYSORE
+            TAG = IR4
+            HQ = region_south_india
+        }
+    }
+    else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_TRAVANCORE }
+        nesnd_india_case_launch = {
+            R = travancore
+            STATE = STATE_TRAVANCORE
+            TAG = IR5
+            HQ = region_south_india
+        }
+    }
+    else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_GUJARAT }
+        nesnd_india_case_launch = {
+            R = gujarat
+            STATE = STATE_GUJARAT
+            TAG = IR6
+            HQ = region_north_india
+        }
+    }
+}
+
+# State scope, from the suppression button. Our suppression weakens the fervor of the culture rising there.
+nesnd_india_suppress_fervor = {
+    if = {
+        limit = {
+            OR = {
+                state_region = s:STATE_CIRCARS
+                state_region = s:STATE_KURNOOL
+            }
+        }
+        owner = {
+            add_fervor_target_modifier = {
+                culture = cu:telegu
+                days = 1825
+                multiplier = -5
+            }
+        }
+    }
+    else_if = {
+        limit = { state_region = s:STATE_MADRAS }
+        owner = {
+            add_fervor_target_modifier = {
+                culture = cu:tamil
+                days = 1825
+                multiplier = -5
+            }
+        }
+    }
+    else_if = {
+        limit = { state_region = s:STATE_MYSORE }
+        owner = {
+            add_fervor_target_modifier = {
+                culture = cu:kannada
+                days = 1825
+                multiplier = -5
+            }
+        }
+    }
+    else_if = {
+        limit = { state_region = s:STATE_TRAVANCORE }
+        owner = {
+            add_fervor_target_modifier = {
+                culture = cu:malayalam
+                days = 1825
+                multiplier = -5
+            }
+        }
+    }
+    else_if = {
+        limit = { state_region = s:STATE_GUJARAT }
+        owner = {
+            add_fervor_target_modifier = {
+                culture = cu:gujarati
+                days = 1825
+                multiplier = -5
+            }
+        }
+    }
+}
+
+# State scope, from the suppression button. The organisation in this state's region loses ground.
+nesnd_india_suppress_hit = {
+    state_region = {
+        change_variable = {
+            name = nesnd_india_case_progress
+            add = -25
+        }
+        clamp_variable = {
+            name = nesnd_india_case_progress
+            min = 0
+            max = 100
+        }
+        if = {
+            limit = { nesnd_india_case_stage_value = 3 }
+            set_variable = {
+                name = nesnd_india_case_stage
+                value = 2
+            }
+        }
+        var:nesnd_india_case_sponsor ?= {
+            nesnd_india_sync_bar = {
+                JE = nesnd_india_uprising
+                BAR = nesnd_india_contact_bar
+                VALUE = nesnd_india_contact_progress
+            }
+        }
     }
 }
 

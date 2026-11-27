@@ -53,36 +53,10 @@ nesnd_india_uprising = {
     can_revolution_inherit = no
     is_shown_when_inactive = { nesnd_india_uprising_available = yes }
     possible = { nesnd_india_uprising_available = yes }
-    scripted_button = nesnd_india_circars_contact
-    scripted_button = nesnd_india_circars_pause
-    scripted_button = nesnd_india_circars_resume
-    scripted_button = nesnd_india_circars_launch
-    scripted_button = nesnd_india_circars_abandon
-    scripted_button = nesnd_india_kurnool_contact
-    scripted_button = nesnd_india_kurnool_pause
-    scripted_button = nesnd_india_kurnool_resume
-    scripted_button = nesnd_india_kurnool_launch
-    scripted_button = nesnd_india_kurnool_abandon
-    scripted_button = nesnd_india_madras_contact
-    scripted_button = nesnd_india_madras_pause
-    scripted_button = nesnd_india_madras_resume
-    scripted_button = nesnd_india_madras_launch
-    scripted_button = nesnd_india_madras_abandon
-    scripted_button = nesnd_india_mysore_contact
-    scripted_button = nesnd_india_mysore_pause
-    scripted_button = nesnd_india_mysore_resume
-    scripted_button = nesnd_india_mysore_launch
-    scripted_button = nesnd_india_mysore_abandon
-    scripted_button = nesnd_india_travancore_contact
-    scripted_button = nesnd_india_travancore_pause
-    scripted_button = nesnd_india_travancore_resume
-    scripted_button = nesnd_india_travancore_launch
-    scripted_button = nesnd_india_travancore_abandon
-    scripted_button = nesnd_india_gujarat_contact
-    scripted_button = nesnd_india_gujarat_pause
-    scripted_button = nesnd_india_gujarat_resume
-    scripted_button = nesnd_india_gujarat_launch
-    scripted_button = nesnd_india_gujarat_abandon
+    scripted_button = nesnd_india_contact_button
+    scripted_button = nesnd_india_resume_button
+    scripted_button = nesnd_india_launch_button
+    scripted_button = nesnd_india_abandon_button
     # Every state of the six rising regions is held by a country whose capital is in India. Once.
     outcome = {
         header = je_standard_completion_header
@@ -90,16 +64,22 @@ nesnd_india_uprising = {
         color = "gold_positive"
         conclusion_desc = nesnd_india_south_settled_conclusion
         trigger = {
-            hidden_trigger = { nesnd_india_empire = yes NOT = { has_variable = nesnd_india_south_settled } }
-            custom_tooltip = { text = nesnd_india_south_settled_tt nesnd_india_south_in_indian_hands = yes }
+            hidden_trigger = {
+                nesnd_india_empire = yes
+                NOT = { has_variable = nesnd_india_south_settled }
+            }
+            custom_tooltip = {
+                text = nesnd_india_south_settled_tt
+                nesnd_india_south_in_indian_hands = yes
+            }
         }
         effect = {
             set_variable = nesnd_india_south_settled
             add_modifier = { name = nesnd_india_south_settled }
         }
     }
-    # Three risings we paid for failed and none succeeded (nesnd_india_case_failed, nesnd_india_case_won).
-    # No journal and no new rising for ten years (nesnd_india_uprising_quiet).
+    # A rising we paid for failed (nesnd_india_case_failed sets nesnd_india_uprising_last_failed).
+    # No journal and no new rising for five years (nesnd_india_uprising_quiet).
     outcome = {
         header = je_standard_failure_header
         effect_header = je_standard_on_failure_header
@@ -107,76 +87,61 @@ nesnd_india_uprising = {
         conclusion_desc = nesnd_india_uprising_spent_conclusion
         trigger = {
             hidden_trigger = { nesnd_india_empire = yes }
-            custom_tooltip = { text = nesnd_india_uprising_three_failed_tt nesnd_india_uprising_failures_value >= 3 }
-            custom_tooltip = { text = nesnd_india_uprising_none_won_tt nesnd_india_uprising_successes_value <= 0 }
+            custom_tooltip = {
+                text = nesnd_india_uprising_failed_tt
+                has_variable = nesnd_india_uprising_last_failed
+            }
         }
         effect = {
-            add_modifier = { name = nesnd_india_uprising_spent days = normal_modifier_time }
-            # The AI owners of the failed risings turn against us (GAME events/opium_wars_events.txt:254).
+            add_modifier = {
+                name = nesnd_india_uprising_spent
+                days = normal_modifier_time
+            }
+            # The AI owner the failed rising was aimed at turns against us (GAME events/opium_wars_events.txt:254).
             custom_tooltip = {
                 text = nesnd_india_uprising_spent_goal_tt
-                every_in_list = {
-                    variable = nesnd_india_uprising_failed_owners
-                    limit = { is_country_alive = yes NOT = { this = root } }
-                    set_secret_goal = { country = root secret_goal = antagonize }
-                }
-            }
-            custom_tooltip = nesnd_india_uprising_quiet_tt
-            hidden_effect = {
-                set_variable = { name = nesnd_india_uprising_quiet days = 3650 }
-                remove_variable = nesnd_india_uprising_failures
-                remove_variable = nesnd_india_uprising_successes
-                clear_variable_list = nesnd_india_uprising_failed_owners
-            }
-        }
-    }
-    outcome = {
-        header = nesnd_journal_closures_header
-        effect_header = nesnd_journal_closures_effect_header
-        effect = { custom_tooltip = nesnd_journal_closures_no_effect_tt }
-        color = "blue_negative"
-        conclusion_desc = nesnd_journal_closures_india_uprising_conclusion
-        trigger = {
-            custom_tooltip = {
-                text = nesnd_journal_closures_india_uprising_tt
-                OR = {
-                    NOT = { nesnd_india_empire = yes }
-                    AND = {
-                        NOT = { has_variable = nesnd_india_contact_region }
-                        NOT = {
-                            any_state = {
-                                OR = {
-                                    state_region = s:STATE_CIRCARS
-                                    state_region = s:STATE_KURNOOL
-                                    state_region = s:STATE_MADRAS
-                                    state_region = s:STATE_MYSORE
-                                    state_region = s:STATE_TRAVANCORE
-                                    state_region = s:STATE_GUJARAT
-                                }
-                                owner = { nesnd_india_colonial_owner = yes }
-                            }
+                var:nesnd_india_uprising_last_failed ?= {
+                    if = {
+                        limit = {
+                            is_country_alive = yes
+                            is_ai = yes
+                            NOT = { this = root }
+                        }
+                        set_secret_goal = {
+                            country = root
+                            secret_goal = antagonize
                         }
                     }
                 }
             }
+            custom_tooltip = nesnd_india_uprising_quiet_tt
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_india_uprising_quiet
+                    days = 1825
+                }
+                remove_variable = nesnd_india_uprising_last_failed
+            }
         }
     }
+    # Not an Indian empire any more, or no region left to rise in.
     outcome = {
         flags = { hidden invalid_outcome }
         conclusion_desc = je_standard_failure_conclusion_desc
         trigger = {
-            nesnd_india_empire = yes
-            NOT = { nesnd_india_uprising_available = yes }
-            any_state = {
-                OR = {
-                    state_region = s:STATE_CIRCARS
-                    state_region = s:STATE_KURNOOL
-                    state_region = s:STATE_MADRAS
-                    state_region = s:STATE_MYSORE
-                    state_region = s:STATE_TRAVANCORE
-                    state_region = s:STATE_GUJARAT
+            OR = {
+                NOT = { nesnd_india_empire = yes }
+                AND = {
+                    NOT = { has_variable = nesnd_india_contact_region }
+                    NOT = {
+                        any_state = { nesnd_india_six_colonial_state = yes }
+                    }
                 }
-                owner = { nesnd_india_colonial_owner = yes }
+                AND = {
+                    nesnd_india_empire = yes
+                    NOT = { nesnd_india_uprising_available = yes }
+                    any_state = { nesnd_india_six_colonial_state = yes }
+                }
             }
         }
     }
@@ -301,12 +266,7 @@ nesnd_india_case_watch = {
     possible = { OR = { nesnd_india_case_watch_live = yes nesnd_india_case_watch_calm_ready = yes } }
     can_deactivate = yes
     immediate = { nesnd_india_case_watch_clock = { RESET = no } }
-    scripted_button = nesnd_india_circars_suppress
-    scripted_button = nesnd_india_kurnool_suppress
-    scripted_button = nesnd_india_madras_suppress
-    scripted_button = nesnd_india_mysore_suppress
-    scripted_button = nesnd_india_travancore_suppress
-    scripted_button = nesnd_india_gujarat_suppress
+    scripted_button = nesnd_india_suppress_button
     # Ten years without a rising prepared against us. Ten years before the reward can come again.
     outcome = {
         header = je_standard_completion_header

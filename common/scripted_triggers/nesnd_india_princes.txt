@@ -1180,24 +1180,150 @@ nesnd_india_case_launch_ready = {
     }
 }
 
+# One of the six rising regions has a state held by a colonial owner and can be opened (all six checked).
+nesnd_india_any_case_target = {
+    OR = {
+        nesnd_india_case_target = {
+            STATE = STATE_CIRCARS
+            TAG = IR1
+        }
+        nesnd_india_case_target = {
+            STATE = STATE_KURNOOL
+            TAG = IR2
+        }
+        nesnd_india_case_target = {
+            STATE = STATE_MADRAS
+            TAG = IR3
+        }
+        nesnd_india_case_target = {
+            STATE = STATE_MYSORE
+            TAG = IR4
+        }
+        nesnd_india_case_target = {
+            STATE = STATE_TRAVANCORE
+            TAG = IR5
+        }
+        nesnd_india_case_target = {
+            STATE = STATE_GUJARAT
+            TAG = IR6
+        }
+    }
+}
+
+# Country scope. The organisation we are in contact with (nesnd_india_contact_region) is still ours to run (stage 1 to 3).
+nesnd_india_case_our_current = {
+    var:nesnd_india_contact_region ?= {
+        trigger_if = {
+            limit = {
+                exists = var:nesnd_india_case_sponsor
+                has_variable = nesnd_india_case_stage
+            }
+            custom_tooltip = {
+                text = nesnd_ui_var_nesnd_india_case_sponsor_eq_root_tt
+                var:nesnd_india_case_sponsor = root
+            }
+            nesnd_india_case_stage_value <= 3
+        }
+        trigger_else = { always = no }
+    }
+}
+
+# Country scope. Local unrest in the state the contact region was opened through.
+nesnd_india_current_unrest = {
+    var:nesnd_india_contact_region ?= {
+        trigger_if = {
+            limit = { exists = var:nesnd_india_case_state }
+            var:nesnd_india_case_state = { nesnd_india_case_unrest = yes }
+        }
+        trigger_else = { always = no }
+    }
+}
+
+# Country scope. nesnd_india_case_launch_ready for the region we are in contact with.
+nesnd_india_current_launch_ready = {
+    trigger_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_CIRCARS }
+        nesnd_india_case_launch_ready = {
+            STATE = STATE_CIRCARS
+            TAG = IR1
+        }
+    }
+    trigger_else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_KURNOOL }
+        nesnd_india_case_launch_ready = {
+            STATE = STATE_KURNOOL
+            TAG = IR2
+        }
+    }
+    trigger_else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_MADRAS }
+        nesnd_india_case_launch_ready = {
+            STATE = STATE_MADRAS
+            TAG = IR3
+        }
+    }
+    trigger_else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_MYSORE }
+        nesnd_india_case_launch_ready = {
+            STATE = STATE_MYSORE
+            TAG = IR4
+        }
+    }
+    trigger_else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_TRAVANCORE }
+        nesnd_india_case_launch_ready = {
+            STATE = STATE_TRAVANCORE
+            TAG = IR5
+        }
+    }
+    trigger_else_if = {
+        limit = { var:nesnd_india_contact_region ?= s:STATE_GUJARAT }
+        nesnd_india_case_launch_ready = {
+            STATE = STATE_GUJARAT
+            TAG = IR6
+        }
+    }
+    trigger_else = { always = no }
+}
+
+# State scope. A state of the six rising regions held by a colonial owner.
+nesnd_india_six_colonial_state = {
+    OR = {
+        state_region = s:STATE_CIRCARS
+        state_region = s:STATE_KURNOOL
+        state_region = s:STATE_MADRAS
+        state_region = s:STATE_MYSORE
+        state_region = s:STATE_TRAVANCORE
+        state_region = s:STATE_GUJARAT
+    }
+    owner = { nesnd_india_colonial_owner = yes }
+}
+
+# State scope. An organisation in this state's region is still preparing against root (stage 1 to 3).
+nesnd_india_suppress_candidate = {
+    state_region = { nesnd_india_case_against_root = yes }
+}
+
+# Country scope. Some state of ours is such a state (our own states only: the fervor goes to its owner).
+nesnd_india_suppress_target_exists = {
+    any_scope_state = { nesnd_india_suppress_candidate = yes }
+}
+
 nesnd_india_uprising_available = {
     nesnd_india_empire = yes
-    custom_tooltip = { text = nesnd_india_uprising_quiet_cond_tt NOT = { has_variable = nesnd_india_uprising_quiet } }
+    custom_tooltip = {
+        text = nesnd_india_uprising_quiet_cond_tt
+        NOT = { has_variable = nesnd_india_uprising_quiet }
+    }
     OR = {
         custom_tooltip = {
             text = nesnd_ui_india_contact_region_tt
             has_variable = nesnd_india_contact_region
         }
+        has_variable = nesnd_india_uprising_last_failed
         AND = {
             nesnd_india_uprising_strength = yes
-            OR = {
-                nesnd_india_case_target = { STATE = STATE_CIRCARS TAG = IR1 }
-                nesnd_india_case_target = { STATE = STATE_KURNOOL TAG = IR2 }
-                nesnd_india_case_target = { STATE = STATE_MADRAS TAG = IR3 }
-                nesnd_india_case_target = { STATE = STATE_MYSORE TAG = IR4 }
-                nesnd_india_case_target = { STATE = STATE_TRAVANCORE TAG = IR5 }
-                nesnd_india_case_target = { STATE = STATE_GUJARAT TAG = IR6 }
-            }
+            nesnd_india_any_case_target = yes
         }
     }
 }
