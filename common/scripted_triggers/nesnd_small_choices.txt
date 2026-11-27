@@ -1,0 +1,77 @@
+﻿# Candidates for the two choice events opened from the economy journal. The chooser is scope:small_chooser,
+# the candidate is the scope the trigger runs in. Kind 5 is the investment invitation, kind 9 the defensive pact.
+nesnd_small_can_invest = {
+    trigger_if = {
+        limit = { exists = $RECEIVER$ }
+        nesnd_small_send_ready = yes
+        save_temporary_scope_as = canon_sender
+        $RECEIVER$ = { save_temporary_scope_as = canon_partner }
+        nesnd_canon_rule_small_investment = yes
+    }
+    trigger_else = { always = no }
+}
+nesnd_small_invest_candidate = {
+    trigger_if = {
+        limit = { exists = scope:small_chooser }
+        OR = {
+            c:FRA ?= this
+            c:GBR ?= this
+            c:USM ?= this
+            c:MUG ?= this
+            c:HUS ?= this
+        }
+        NOT = { this = scope:small_chooser }
+        scope:small_chooser = {
+            nesnd_small_can_invest = { RECEIVER = prev }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_small_has_invest_partner = {
+    save_temporary_scope_as = small_chooser
+    custom_tooltip = {
+        text = nesnd_small_invest_available_tt
+        trigger_if = {
+            limit = { exists = scope:small_chooser }
+            any_country = { nesnd_small_invest_candidate = yes }
+        }
+        trigger_else = { always = no }
+    }
+}
+nesnd_small_defence_candidate = {
+    trigger_if = {
+        limit = { exists = scope:small_neighbour_requester }
+        OR = {
+            c:FRA ?= this
+            c:GBR ?= this
+            c:USM ?= this
+            c:MUG ?= this
+            c:PHI ?= this
+            c:DEI ?= this
+            c:YN1 ?= this
+            c:BUR ?= this
+            c:SIA ?= this
+            c:DAI ?= this
+            nesnd_small_neighbour_candidate = yes
+        }
+        NOT = { this = scope:small_neighbour_requester }
+        scope:small_neighbour_requester = {
+            nesnd_small_can_request = {
+                KIND = 9
+                RECEIVER = prev
+            }
+        }
+    }
+    trigger_else = { always = no }
+}
+nesnd_small_has_defence_partner = {
+    save_temporary_scope_as = small_neighbour_requester
+    custom_tooltip = {
+        text = nesnd_small_defence_available_tt
+        trigger_if = {
+            limit = { exists = scope:small_neighbour_requester }
+            any_country = { nesnd_small_defence_candidate = yes }
+        }
+        trigger_else = { always = no }
+    }
+}

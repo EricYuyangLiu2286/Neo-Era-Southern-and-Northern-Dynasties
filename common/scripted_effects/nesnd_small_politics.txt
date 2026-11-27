@@ -79,41 +79,135 @@ nesnd_small_suppress_episode = {
         nesnd_small_affected_radicals = { VALUE = 0.02 }
     }
 }
+# The monthly step only writes the result number (1 promise kept, 2 promise broken, 3 term over or matter gone,
+# 4 revolution or change of regime, 5 no choice made). The journal outcome gives the consequence and closes the
+# episode. Result 4 is closed here because the journal does not come back after a revolution.
 nesnd_small_episode_monthly = {
-    if = { limit = { has_variable = nesnd_small_episode_active }
-        if = { limit = { has_variable = nesnd_small_episode_elapsed has_variable = nesnd_small_episode_term } change_variable = { name = nesnd_small_episode_elapsed add = 1 } clamp_variable = { name = nesnd_small_episode_elapsed min = 0 max = var:nesnd_small_episode_term } }
-        nesnd_small_dispute_sync = yes
-        if = { limit = { OR = { has_revolution = yes NOT = { nesnd_small_episode_regime_valid = yes } NOT = { has_variable = nesnd_small_episode_issue } } }
-            set_variable = { name = nesnd_small_episode_result value = 4 } nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
-        }
-        else_if = { limit = { has_variable = nesnd_small_episode_clock nesnd_small_episode_choice_is = { VALUE = 2 } nesnd_small_promised_law = yes }
-            set_variable = nesnd_small_reform_done
-            if = { limit = { var:nesnd_small_promise = 1 } set_variable = nesnd_small_reform_law_1 }
-            else_if = { limit = { var:nesnd_small_promise = 2 } set_variable = nesnd_small_reform_law_2 }
-            else_if = { limit = { var:nesnd_small_promise = 3 } set_variable = nesnd_small_reform_law_3 }
-            else_if = { limit = { var:nesnd_small_promise = 4 } set_variable = nesnd_small_reform_law_4 }
-            else = { set_variable = nesnd_small_reform_law_5 }
-            if = { limit = { var:nesnd_small_episode_issue = 1 }
-                add_loyalists = { pop_type = peasants value = 0.01 } add_loyalists = { pop_type = laborers value = 0.01 } add_radicals = { pop_type = aristocrats value = 0.005 }
+    if = {
+        limit = { has_variable = nesnd_small_episode_active }
+        if = {
+            limit = { has_variable = nesnd_small_episode_result }
+            # Written a month ago and the outcome did not close it (no journal, or its condition has changed since).
+            nesnd_small_close_episode = yes
+            set_variable = {
+                name = nesnd_small_episode_cooldown
+                months = 24
             }
-            else_if = { limit = { var:nesnd_small_episode_issue = 2 } add_loyalists = { pop_type = laborers value = 0.01 } add_radicals = { pop_type = capitalists value = 0.005 } }
-            else = { add_loyalists = { strata = lower value = 0.01 } }
-            trigger_event = { id = nesnd_small_states.11 popup = yes }
-            set_variable = { name = nesnd_small_episode_result value = 1 }
-            nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
         }
-        else_if = { limit = { OR = { NOT = { has_variable = nesnd_small_episode_clock } NOT = { nesnd_small_episode_issue_live = yes } } }
-            set_variable = { name = nesnd_small_episode_result value = 3 }
-            if = { limit = { nesnd_small_episode_choice_is = { VALUE = 2 } NOT = { has_variable = nesnd_small_episode_clock } nesnd_small_episode_issue_live = yes }
-                set_variable = { name = nesnd_small_episode_result value = 2 } nesnd_small_affected_radicals = { VALUE = 0.01 } trigger_event = { id = nesnd_small_states.12 popup = yes }
+        else = {
+            if = {
+                limit = {
+                    has_variable = nesnd_small_episode_elapsed
+                    has_variable = nesnd_small_episode_term
+                }
+                change_variable = {
+                    name = nesnd_small_episode_elapsed
+                    add = 1
+                }
+                clamp_variable = {
+                    name = nesnd_small_episode_elapsed
+                    min = 0
+                    max = var:nesnd_small_episode_term
+                }
             }
-            nesnd_small_close_episode = yes set_variable = { name = nesnd_small_episode_cooldown months = 24 }
+            nesnd_small_dispute_sync = yes
+            if = {
+                limit = {
+                    OR = {
+                        has_revolution = yes
+                        NOT = { nesnd_small_episode_regime_valid = yes }
+                        NOT = { has_variable = nesnd_small_episode_issue }
+                    }
+                }
+                set_variable = {
+                    name = nesnd_small_episode_result
+                    value = 4
+                }
+                nesnd_small_close_episode = yes
+                set_variable = {
+                    name = nesnd_small_episode_cooldown
+                    months = 24
+                }
+            }
+            else_if = {
+                limit = {
+                    has_variable = nesnd_small_episode_clock
+                    nesnd_small_episode_choice_is = { VALUE = 2 }
+                    nesnd_small_promised_law = yes
+                }
+                set_variable = {
+                    name = nesnd_small_episode_result
+                    value = 1
+                }
+            }
+            else_if = {
+                limit = {
+                    OR = {
+                        NOT = { has_variable = nesnd_small_episode_clock }
+                        NOT = { nesnd_small_episode_issue_live = yes }
+                    }
+                }
+                set_variable = {
+                    name = nesnd_small_episode_result
+                    value = 3
+                }
+                if = {
+                    limit = {
+                        nesnd_small_episode_choice_is = { VALUE = 2 }
+                        NOT = { has_variable = nesnd_small_episode_clock }
+                        nesnd_small_episode_issue_live = yes
+                    }
+                    set_variable = {
+                        name = nesnd_small_episode_result
+                        value = 2
+                    }
+                }
+                else_if = {
+                    limit = {
+                        NOT = { has_variable = nesnd_small_episode_choice }
+                        NOT = { has_variable = nesnd_small_episode_clock }
+                        nesnd_small_episode_issue_live = yes
+                    }
+                    set_variable = {
+                        name = nesnd_small_episode_result
+                        value = 5
+                    }
+                }
+            }
         }
     }
-    else_if = { limit = { NOT = { has_variable = nesnd_small_episode_cooldown } has_revolution = no nesnd_small_case_free = yes OR = { in_default = yes nesnd_small_pressure_coverage >= 0.2 } OR = { nesnd_small_land_issue = yes nesnd_small_labor_issue = yes nesnd_small_representation_issue = yes } }
-        if = { limit = { NOT = { has_variable = nesnd_small_pressure_months } } set_variable = { name = nesnd_small_pressure_months value = 0 } }
-        change_variable = { name = nesnd_small_pressure_months add = 1 }
-        if = { limit = { nesnd_small_pressure_months >= 6 } nesnd_small_begin_episode = yes }
+    else_if = {
+        limit = {
+            NOT = { has_variable = nesnd_small_episode_cooldown }
+            has_revolution = no
+            nesnd_small_case_free = yes
+            OR = {
+                in_default = yes
+                nesnd_small_pressure_coverage >= 0.2
+            }
+            OR = {
+                nesnd_small_land_issue = yes
+                nesnd_small_labor_issue = yes
+                nesnd_small_representation_issue = yes
+            }
+        }
+        if = {
+            limit = {
+                NOT = { has_variable = nesnd_small_pressure_months }
+            }
+            set_variable = {
+                name = nesnd_small_pressure_months
+                value = 0
+            }
+        }
+        change_variable = {
+            name = nesnd_small_pressure_months
+            add = 1
+        }
+        if = {
+            limit = { nesnd_small_pressure_months >= 6 }
+            nesnd_small_begin_episode = yes
+        }
     }
     else = { remove_variable = nesnd_small_pressure_months }
 }

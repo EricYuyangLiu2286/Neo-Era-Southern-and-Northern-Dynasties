@@ -1,0 +1,140 @@
+﻿# Sender scope. Opens the choice of an investor (nesnd_small_states.23): up to three of FRA, GBR, USM, MUG and HUS
+# that the invitation rules allow today, best relations first.
+nesnd_small_open_invest_choice = {
+    save_scope_as = small_chooser
+    clear_saved_scope = small_invest_1
+    clear_saved_scope = small_invest_2
+    clear_saved_scope = small_invest_3
+    ordered_country = {
+        limit = { nesnd_small_invest_candidate = yes }
+        order_by = "relations(scope:small_chooser)"
+        position = 0
+        check_range_bounds = no
+        save_scope_as = small_invest_1
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_small_invest_candidate = yes
+                count >= 2
+            }
+        }
+        ordered_country = {
+            limit = { nesnd_small_invest_candidate = yes }
+            order_by = "relations(scope:small_chooser)"
+            position = 1
+            check_range_bounds = no
+            save_scope_as = small_invest_2
+        }
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_small_invest_candidate = yes
+                count >= 3
+            }
+        }
+        ordered_country = {
+            limit = { nesnd_small_invest_candidate = yes }
+            order_by = "relations(scope:small_chooser)"
+            position = 2
+            check_range_bounds = no
+            save_scope_as = small_invest_3
+        }
+    }
+    trigger_event = {
+        id = nesnd_small_states.23
+        popup = yes
+    }
+}
+# Sender scope. The investor is scope:small_receiver. Sends the invitation of kind 5 the way the old per-country buttons did.
+nesnd_small_send_invest = {
+    if = {
+        limit = { exists = scope:small_receiver }
+        if = {
+            limit = { c:FRA ?= scope:small_receiver }
+            nesnd_canon_send_request = {
+                TAG = FRA
+                KIND = 5
+            }
+        }
+        else_if = {
+            limit = { c:GBR ?= scope:small_receiver }
+            nesnd_canon_send_request = {
+                TAG = GBR
+                KIND = 5
+            }
+        }
+        else_if = {
+            limit = { c:USM ?= scope:small_receiver }
+            nesnd_canon_send_request = {
+                TAG = USM
+                KIND = 5
+            }
+        }
+        else_if = {
+            limit = { c:MUG ?= scope:small_receiver }
+            nesnd_canon_send_request = {
+                TAG = MUG
+                KIND = 5
+            }
+        }
+        else_if = {
+            limit = { c:HUS ?= scope:small_receiver }
+            nesnd_canon_send_request = {
+                TAG = HUS
+                KIND = 5
+            }
+        }
+    }
+    clear_saved_scope = small_receiver
+}
+# Sender scope. Opens the choice of a defence partner (nesnd_small_states.24): up to three of the ten named countries
+# and the neighbours that a defensive pact can be asked of today, best relations first.
+nesnd_small_open_defence_choice = {
+    save_scope_as = small_neighbour_requester
+    clear_saved_scope = small_defence_1
+    clear_saved_scope = small_defence_2
+    clear_saved_scope = small_defence_3
+    ordered_country = {
+        limit = { nesnd_small_defence_candidate = yes }
+        order_by = "relations(scope:small_neighbour_requester)"
+        position = 0
+        check_range_bounds = no
+        save_scope_as = small_defence_1
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_small_defence_candidate = yes
+                count >= 2
+            }
+        }
+        ordered_country = {
+            limit = { nesnd_small_defence_candidate = yes }
+            order_by = "relations(scope:small_neighbour_requester)"
+            position = 1
+            check_range_bounds = no
+            save_scope_as = small_defence_2
+        }
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_small_defence_candidate = yes
+                count >= 3
+            }
+        }
+        ordered_country = {
+            limit = { nesnd_small_defence_candidate = yes }
+            order_by = "relations(scope:small_neighbour_requester)"
+            position = 2
+            check_range_bounds = no
+            save_scope_as = small_defence_3
+        }
+    }
+    trigger_event = {
+        id = nesnd_small_states.24
+        popup = yes
+    }
+}
