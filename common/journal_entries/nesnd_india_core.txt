@@ -1,116 +1,237 @@
 ﻿# ==== Identity, monthly refresh and the reform journals (formerly nesnd_india_core.txt) ====
+# The two reform programmes are open together once the reform is live; either one completes the moment its
+# own conditions hold. The reform is settled (nesnd_india_core.1) when the second of them completes.
 nesnd_india_schools = {
-    icon = "gfx/interface/icons/event_icons/nesnd_india_slate.dds" group = je_group_historical_content
-	activation_description = { always = yes } can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_india_track_visible = { T = schools } } possible = { nesnd_india_track_visible = { T = schools } }
-    scripted_progress_bar = nesnd_india_schools_bar
+    icon = "gfx/interface/icons/event_icons/nesnd_india_slate.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = {
+        nesnd_india_track_visible = { T = schools }
+    }
+    possible = {
+        nesnd_india_track_visible = { T = schools }
+    }
     outcome = {
-    	header = je_standard_completion_header
-    	effect_header = je_standard_on_completion_header
-    	color = "gold_positive"
-    	conclusion_desc = je_standard_completion_conclusion_desc
-    	trigger = { hidden_trigger = { nesnd_india_track_available = { T = schools PRIORITY = 1 } } nesnd_india_schools_ready = yes custom_tooltip = { text = nesnd_india_twelve_months_tt nesnd_india_schools_months_value >= 12 } }
-    	effect = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            hidden_trigger = {
+                nesnd_india_track_visible = { T = schools }
+            }
+            nesnd_india_schools_ready = yes
+        }
+        effect = {
             if = {
-                limit = { nesnd_india_track_available = { T = schools PRIORITY = 1 } }
+                limit = {
+                    nesnd_india_track_visible = { T = schools }
+                }
                 set_variable = nesnd_india_schools_done
                 if = {
                     limit = { has_variable = nesnd_india_mughal_court }
                     add_modifier = { name = nesnd_india_mug_schools_lasting }
                 }
-                else = { add_modifier = { name = nesnd_india_school_service } }
+                else = {
+                    add_modifier = { name = nesnd_india_school_service }
+                }
+                if = {
+                    limit = { has_variable = nesnd_india_industry_done }
+                    set_variable = nesnd_india_reform_done
+                    trigger_event = {
+                        id = nesnd_india_core.1
+                        popup = yes
+                    }
+                }
+                else = { custom_tooltip = nesnd_india_reform_wait_tt }
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = {
+                    trigger = { has_variable = nesnd_india_industry_done }
+                    desc = nesnd_india_core.1_outcome_tt
+                }
+            }
+        }
+    }
+    # The reform lapses: default or bankruptcy while the programmes are open. Ten years before it can begin again.
+    # Only the journal that fails first gives the penalty; the other one is then no longer visible.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_reform_lapse_conclusion
+        trigger = {
+            hidden_trigger = {
+                nesnd_india_track_visible = { T = schools }
+            }
+            nesnd_india_broke = yes
+        }
+        effect = {
+            if = {
+                limit = {
+                    NOT = { has_variable = nesnd_india_reform_lapse }
+                }
+                add_modifier = {
+                    name = nesnd_india_reform_lapsed
+                    days = normal_modifier_time
+                }
+                ig:ig_intelligentsia ?= {
+                    add_modifier = {
+                        name = nesnd_india_intelligentsia_dismayed
+                        days = normal_modifier_time
+                    }
+                }
+                custom_tooltip = nesnd_india_reform_lapse_effect_tt
+                set_variable = {
+                    name = nesnd_india_reform_lapse
+                    months = 120
+                }
             }
         }
     }
     outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { NOT = { nesnd_india_track_visible = { T = schools } } }
+        flags = {
+            hidden
+            invalid_outcome
+        }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            NOT = {
+                nesnd_india_track_visible = { T = schools }
+            }
+        }
     }
     should_be_pinned_by_default_uninvolved_or_context = yes
-    status_desc = { first_valid = { triggered_desc = { trigger = { nesnd_india_track_available = { T = schools PRIORITY = 1 } } desc = nesnd_india_schools_working } desc = nesnd_india_schools_paused } }
     weight = 700
 }
 nesnd_india_industry = {
-    icon = "gfx/interface/icons/event_icons/nesnd_india_cloth_musket.dds" group = je_group_historical_content
-	activation_description = { always = yes } can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_india_track_visible = { T = industry } } possible = { nesnd_india_track_visible = { T = industry } }
-    scripted_progress_bar = nesnd_india_industry_bar
+    icon = "gfx/interface/icons/event_icons/nesnd_india_cloth_musket.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = {
+        nesnd_india_track_visible = { T = industry }
+    }
+    possible = {
+        nesnd_india_track_visible = { T = industry }
+    }
     outcome = {
-    	header = je_standard_completion_header
-    	effect_header = je_standard_on_completion_header
-    	color = "gold_positive"
-    	conclusion_desc = je_standard_completion_conclusion_desc
-    	trigger = { hidden_trigger = { nesnd_india_track_available = { T = industry PRIORITY = 2 } } nesnd_india_industry_ready = { COUNTRY = root } custom_tooltip = { text = nesnd_india_twelve_months_tt nesnd_india_industry_months_value >= 12 } }
-    	effect = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            hidden_trigger = {
+                nesnd_india_track_visible = { T = industry }
+            }
+            nesnd_india_industry_ready = { COUNTRY = root }
+        }
+        effect = {
             if = {
-                limit = { nesnd_india_track_available = { T = industry PRIORITY = 2 } }
+                limit = {
+                    nesnd_india_track_visible = { T = industry }
+                }
                 set_variable = nesnd_india_industry_done
                 if = {
                     limit = { has_variable = nesnd_india_mughal_court }
                     add_modifier = { name = nesnd_india_mug_arms_lasting }
                 }
-                else = { add_modifier = { name = nesnd_india_industrial_service } }
+                else = {
+                    add_modifier = { name = nesnd_india_industrial_service }
+                }
                 # Half of an era-2 technology (10000, GAME common/technology/eras): Bessemer first, then mechanized workshops.
-                if = { limit = { NOT = { has_technology_researched = bessemer_process } } add_technology_progress = { progress = 5000 technology = bessemer_process } }
-                else_if = { limit = { NOT = { has_technology_researched = mechanized_workshops } } add_technology_progress = { progress = 5000 technology = mechanized_workshops } }
+                if = {
+                    limit = {
+                        NOT = { has_technology_researched = bessemer_process }
+                    }
+                    add_technology_progress = {
+                        progress = 5000
+                        technology = bessemer_process
+                    }
+                }
+                else_if = {
+                    limit = {
+                        NOT = { has_technology_researched = mechanized_workshops }
+                    }
+                    add_technology_progress = {
+                        progress = 5000
+                        technology = mechanized_workshops
+                    }
+                }
                 else = { custom_tooltip = nesnd_india_industry_tech_known_tt }
+                if = {
+                    limit = { has_variable = nesnd_india_schools_done }
+                    set_variable = nesnd_india_reform_done
+                    trigger_event = {
+                        id = nesnd_india_core.1
+                        popup = yes
+                    }
+                }
+                else = { custom_tooltip = nesnd_india_reform_wait_tt }
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = {
+                    trigger = { has_variable = nesnd_india_schools_done }
+                    desc = nesnd_india_core.1_outcome_tt
+                }
+            }
+        }
+    }
+    # The reform lapses: default or bankruptcy while the programmes are open. Ten years before it can begin again.
+    # Only the journal that fails first gives the penalty; the other one is then no longer visible.
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_india_reform_lapse_conclusion
+        trigger = {
+            hidden_trigger = {
+                nesnd_india_track_visible = { T = industry }
+            }
+            nesnd_india_broke = yes
+        }
+        effect = {
+            if = {
+                limit = {
+                    NOT = { has_variable = nesnd_india_reform_lapse }
+                }
+                add_modifier = {
+                    name = nesnd_india_reform_lapsed
+                    days = normal_modifier_time
+                }
+                ig:ig_intelligentsia ?= {
+                    add_modifier = {
+                        name = nesnd_india_intelligentsia_dismayed
+                        days = normal_modifier_time
+                    }
+                }
+                custom_tooltip = nesnd_india_reform_lapse_effect_tt
+                set_variable = {
+                    name = nesnd_india_reform_lapse
+                    months = 120
+                }
             }
         }
     }
     outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { NOT = { nesnd_india_track_visible = { T = industry } } }
+        flags = {
+            hidden
+            invalid_outcome
+        }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            NOT = {
+                nesnd_india_track_visible = { T = industry }
+            }
+        }
     }
     should_be_pinned_by_default_uninvolved_or_context = yes
-    status_desc = { first_valid = { triggered_desc = { trigger = { nesnd_india_track_available = { T = industry PRIORITY = 2 } } desc = nesnd_india_industry_working } desc = nesnd_india_industry_paused } }
     weight = 700
-}
-nesnd_india_reform = {
-    icon = "gfx/interface/icons/event_icons/nesnd_india_arch.dds" group = je_group_historical_content
-	activation_description = { always = yes } can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_india_reform_live = yes } possible = { nesnd_india_reform_live = yes }
-    scripted_button = nesnd_india_choose_schools scripted_button = nesnd_india_choose_industry
-    outcome = {
-    	header = je_standard_completion_header
-    	effect_header = je_standard_on_completion_header
-    	color = "gold_positive"
-    	conclusion_desc = je_standard_completion_conclusion_desc
-    	trigger = { hidden_trigger = { nesnd_india_reform_live = yes } custom_tooltip = { text = nesnd_india_schools_completed_tt has_variable = nesnd_india_schools_done } custom_tooltip = { text = nesnd_india_industry_completed_tt has_variable = nesnd_india_industry_done } }
-    	effect = {
-    	    set_variable = nesnd_india_reform_done
-    	    remove_variable = nesnd_india_priority
-    	    trigger_event = { id = nesnd_india_core.1 popup = yes }
-    	}
-    	event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_core.1_outcome_tt } } }
-    }
-    # The reform lapses: default or bankruptcy while a track is open. Ten years before it can begin again.
-    outcome = {
-    	header = je_standard_failure_header
-    	effect_header = je_standard_on_failure_header
-    	color = "blue_negative"
-    	conclusion_desc = nesnd_india_reform_lapse_conclusion
-    	trigger = { hidden_trigger = { nesnd_india_reform_live = yes has_variable = nesnd_india_priority } nesnd_india_broke = yes }
-    	effect = {
-    	    add_modifier = { name = nesnd_india_reform_lapsed days = normal_modifier_time }
-    	    ig:ig_intelligentsia ?= { add_modifier = { name = nesnd_india_intelligentsia_dismayed days = normal_modifier_time } }
-    	    custom_tooltip = nesnd_india_reform_lapse_effect_tt
-    	    set_variable = { name = nesnd_india_reform_lapse months = 120 }
-    	    remove_variable = nesnd_india_priority
-    	}
-    }
-    outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { NOT = { nesnd_india_reform_live = yes } }
-    	effect = { remove_variable = nesnd_india_priority }
-    }
-    status_desc = { first_valid = {
-        triggered_desc = { trigger = { nesnd_india_priority_value = 1 has_variable = nesnd_india_schools_done } desc = nesnd_india_reform_schools_done_status }
-        triggered_desc = { trigger = { nesnd_india_priority_value = 2 has_variable = nesnd_india_industry_done } desc = nesnd_india_reform_industry_done_status }
-        triggered_desc = { trigger = { nesnd_india_priority_value = 1 } desc = nesnd_india_reform_schools_status } triggered_desc = { trigger = { nesnd_india_priority_value = 2 } desc = nesnd_india_reform_industry_status } desc = nesnd_india_reform_waiting_status } }
-    weight = 1000 should_be_pinned_by_default_uninvolved_or_context = yes
 }
 nesnd_india_society = {
     icon = "gfx/interface/icons/event_icons/nesnd_india_chhatri.dds"
@@ -187,6 +308,21 @@ nesnd_india_society = {
                     }
                 }
             }
+            if = {
+                limit = { country_has_monarchy_law = yes }
+                trigger_event = {
+                    id = nesnd_india_core.3
+                    popup = yes
+                }
+            }
+        }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = {
+                    trigger = { country_has_monarchy_law = yes }
+                    desc = nesnd_india_society_broken_event_tt
+                }
+            }
         }
     }
     # No longer the empire past the reform: the journal has no subject left.
@@ -200,30 +336,8 @@ nesnd_india_society = {
             NOT = { nesnd_india_society_open = yes }
         }
     }
-    status_desc = {
-        first_valid = {
-            triggered_desc = {
-                trigger = {
-                    nesnd_india_request_kind = 6
-                    nesnd_india_request_stage_value = 1
-                    exists = var:nesnd_india_request_await
-                    exists = var:nesnd_india_request_partner
-                }
-                desc = nesnd_india_union_status_invite_consent
-            }
-            triggered_desc = {
-                trigger = {
-                    nesnd_india_request_kind = 6
-                    nesnd_india_request_stage_value = 2
-                    exists = var:nesnd_india_request_partner
-                }
-                desc = nesnd_india_union_status_invite_sent
-            }
-            desc = nesnd_india_society_status
-        }
-    }
+    status_desc = { desc = nesnd_india_society_status }
     weight = 800
-    scripted_button = nesnd_india_request_6
     immediate = { nesnd_india_initialize = yes }
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
@@ -502,97 +616,121 @@ nesnd_india_usm = {
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
 nesnd_india_unified = {
-    is_shown_in_lobby = { OR = { c:BHT ?= THIS c:DRA ?= THIS } }
-    icon = "gfx/interface/icons/event_icons/nesnd_india_weights.dds" group = je_group_historical_content
-	activation_description = { always = yes } can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_india_empire = yes OR = { c:BHT ?= this c:DRA ?= this } NOT = { has_variable = nesnd_india_unified_done } }
-    possible = { nesnd_india_empire = yes OR = { c:BHT ?= this c:DRA ?= this } custom_tooltip = { text = nesnd_ui_not_india_unified_done_tt NOT = { has_variable = nesnd_india_unified_done } } }
+    is_shown_in_lobby = {
+        OR = {
+            c:BHT ?= THIS
+            c:DRA ?= THIS
+        }
+    }
+    icon = "gfx/interface/icons/event_icons/nesnd_india_weights.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    is_shown_when_inactive = {
+        nesnd_india_empire = yes
+        OR = {
+            c:BHT ?= this
+            c:DRA ?= this
+        }
+        NOT = { has_variable = nesnd_india_unified_done }
+    }
+    possible = {
+        nesnd_india_empire = yes
+        OR = {
+            c:BHT ?= this
+            c:DRA ?= this
+        }
+        custom_tooltip = {
+            text = nesnd_ui_not_india_unified_done_tt
+            NOT = { has_variable = nesnd_india_unified_done }
+        }
+    }
     status_desc = { desc = nesnd_india_unified_status }
-    outcome = {
-    	header = je_standard_completion_header
-    	effect_header = je_standard_on_completion_header
-    	color = "gold_positive"
-    	conclusion_desc = je_standard_completion_conclusion_desc
-    	trigger = { hidden_trigger = { nesnd_india_empire = yes NOT = { has_variable = nesnd_india_unified_done } }
-    	    literacy_rate >= 0.4 institution_investment_level = { institution = institution_schools value >= 3 }
-    	    bureaucracy >= 0 country_has_building_type_levels = { target = bt:building_railway value >= 30 }
-    	    OR = { has_law = law_type:law_freedom_of_conscience has_law = law_type:law_total_separation }
-    	    custom_tooltip = { text = nesnd_india_unified_share_tt nesnd_india_held_share >= nesnd_india_unified_share_needed }
-    	}
-    	effect = {
-    	    set_variable = nesnd_india_unified_done
-    	    add_modifier = { name = nesnd_india_unified_reward }
-    	    # The seat of the new order; holding no state of this region any more counts as losing the capital.
-    	    capital ?= { root = { set_variable = { name = nesnd_india_unified_seat value = prev.state_region } } }
-    	    custom_tooltip = {
-    	        text = nesnd_india_unified_claims_tt
-    	        every_state = {
-    	            limit = { nesnd_india_state = yes NOT = { has_claim_by = root } owner = { capital ?= { NOT = { nesnd_india_state = yes } } } }
-    	            root = { add_to_variable_list = { name = nesnd_india_unified_claims target = prev.state_region } }
-    	            state_region = { add_claim = root }
-    	        }
-    	    }
-    	    custom_tooltip = {
-    	        text = nesnd_india_unified_fervor_tt
-    	        every_primary_culture = {
-    	            limit = { has_discrimination_trait_group = heritage_group_south_asian }
-    	            root = { add_fervor_target_modifier = { culture = prev days = stupidly_long_modifier_time multiplier = 10 } }
-    	        }
-    	    }
-    	}
-    }
-    outcome = {
-    	flags = { hidden invalid_outcome }
-    	conclusion_desc = je_standard_failure_conclusion_desc
-    	trigger = { OR = { NOT = { nesnd_india_empire = yes } custom_tooltip = { text = nesnd_ui_india_unified_done_tt has_variable = nesnd_india_unified_done } } }
-    }
-    weight = 800
-    should_be_pinned_by_default_uninvolved_or_context = yes
-}
-
-nesnd_india_dynasty_journal = {
-    icon = "gfx/interface/icons/event_icons/nesnd_india_morchal.dds" group = je_group_historical_content
-	activation_description = { always = yes } can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_india_dynasty_open = yes }
-    possible = { nesnd_india_dynasty_open = yes }
-    immediate = { nesnd_india_initialize = yes }
-    scripted_progress_bar = nesnd_india_dynasty_bar
-    # The dynasty is secured.
     outcome = {
         header = je_standard_completion_header
         effect_header = je_standard_on_completion_header
         color = "gold_positive"
-        conclusion_desc = nesnd_india_dynasty_secured_conclusion
-        trigger = { hidden_trigger = { nesnd_india_dynasty_open = yes } custom_tooltip = { text = nesnd_india_dynasty_full_tt nesnd_india_dynasty >= 100 } }
+        conclusion_desc = je_standard_completion_conclusion_desc
+        trigger = {
+            hidden_trigger = {
+                nesnd_india_empire = yes
+                NOT = { has_variable = nesnd_india_unified_done }
+            }
+            bureaucracy >= 0
+            country_has_building_type_levels = {
+                target = bt:building_railway
+                value >= 30
+            }
+            custom_tooltip = {
+                text = nesnd_india_unified_share_tt
+                nesnd_india_held_share >= nesnd_india_unified_share_needed
+            }
+        }
         effect = {
-            set_variable = nesnd_india_dynasty_done
-            add_modifier = { name = nesnd_india_dynasty_secured }
-            ruler ?= {
-                if = { limit = { NOT = { has_trait = charismatic } } add_trait = charismatic }
-                else = { custom_tooltip = nesnd_india_dynasty_trait_known_tt }
+            set_variable = nesnd_india_unified_done
+            add_modifier = { name = nesnd_india_unified_reward }
+            # The seat of the new order; holding no state of this region any more counts as losing the capital.
+            capital ?= {
+                root = {
+                    set_variable = {
+                        name = nesnd_india_unified_seat
+                        value = prev.state_region
+                    }
+                }
+            }
+            custom_tooltip = {
+                text = nesnd_india_unified_claims_tt
+                every_state = {
+                    limit = {
+                        nesnd_india_state = yes
+                        NOT = { has_claim_by = root }
+                        owner = {
+                            capital ?= {
+                                NOT = { nesnd_india_state = yes }
+                            }
+                        }
+                    }
+                    root = {
+                        add_to_variable_list = {
+                            name = nesnd_india_unified_claims
+                            target = prev.state_region
+                        }
+                    }
+                    state_region = { add_claim = root }
+                }
+            }
+            custom_tooltip = {
+                text = nesnd_india_unified_fervor_tt
+                every_primary_culture = {
+                    limit = { has_discrimination_trait_group = heritage_group_south_asian }
+                    root = {
+                        add_fervor_target_modifier = {
+                            culture = prev
+                            days = stupidly_long_modifier_time
+                            multiplier = 10
+                        }
+                    }
+                }
             }
         }
     }
-    # The dynasty in crisis: the event nesnd_india_core.3 asks for abdication or repression.
     outcome = {
-        header = je_standard_failure_header
-        effect_header = je_standard_on_failure_header
-        color = "blue_negative"
-        conclusion_desc = nesnd_india_dynasty_crisis_conclusion
-        trigger = { hidden_trigger = { nesnd_india_dynasty_open = yes } custom_tooltip = { text = nesnd_india_dynasty_empty_tt nesnd_india_dynasty <= 0 } }
-        effect = {
-            set_variable = nesnd_india_dynasty_done
-            trigger_event = { id = nesnd_india_core.3 popup = yes }
+        flags = {
+            hidden
+            invalid_outcome
         }
-        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_core.3_outcome_tt } } }
-    }
-    # No longer a monarchy, or no longer the empire past the reform: the dynasty has no throne to hold.
-    outcome = {
-        flags = { hidden invalid_outcome }
         conclusion_desc = je_standard_failure_conclusion_desc
-        trigger = { NOT = { nesnd_india_dynasty_open = yes } }
+        trigger = {
+            OR = {
+                NOT = { nesnd_india_empire = yes }
+                custom_tooltip = {
+                    text = nesnd_ui_india_unified_done_tt
+                    has_variable = nesnd_india_unified_done
+                }
+            }
+        }
     }
-    weight = 600
+    weight = 800
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
 
@@ -615,19 +753,41 @@ nesnd_india_indep = {
     scripted_button = nesnd_india_indep_play
     status_desc = {
         first_valid = {
-            triggered_desc = { trigger = { is_subject = no } desc = nesnd_india_indep_conclusion }
-            triggered_desc = { trigger = { is_subject_type = subject_type_puppet } desc = nesnd_india_indep_goal_protectorate }
-            triggered_desc = { trigger = { nesnd_india_indep_can_play_as_subject = no } desc = nesnd_india_indep_goal_autonomy }
+            triggered_desc = {
+                trigger = { is_subject = no }
+                desc = nesnd_india_indep_conclusion
+            }
+            triggered_desc = {
+                trigger = { is_subject_type = subject_type_puppet }
+                desc = nesnd_india_indep_goal_protectorate
+            }
+            triggered_desc = {
+                trigger = { nesnd_india_indep_can_play_as_subject = no }
+                desc = nesnd_india_indep_goal_autonomy
+            }
             desc = nesnd_india_indep_goal_independence
         }
     }
     on_monthly_pulse = {
         effect = {
-            if = { limit = { is_subject = yes }
+            if = {
+                limit = { is_subject = yes }
                 # The overlord, read when the subject becomes independent (outcome below).
-                set_variable = { name = nesnd_india_indep_lord value = overlord }
-                if = { limit = { has_variable = nesnd_india_indep_stock has_war_with = overlord } nesnd_india_indep_muster = yes }
-                if = { limit = { is_ai = yes } nesnd_india_indep_subject_ai = yes }
+                set_variable = {
+                    name = nesnd_india_indep_lord
+                    value = overlord
+                }
+                if = {
+                    limit = {
+                        has_variable = nesnd_india_indep_stock
+                        has_war_with = overlord
+                    }
+                    nesnd_india_indep_muster = yes
+                }
+                if = {
+                    limit = { is_ai = yes }
+                    nesnd_india_indep_subject_ai = yes
+                }
                 nesnd_india_indep_showdown_monthly = yes
             }
         }
@@ -639,13 +799,24 @@ nesnd_india_indep = {
         conclusion_desc = nesnd_india_indep_conclusion
         trigger = { is_subject = no }
         effect = {
-            remove_variable = nesnd_india_indep_stock remove_variable = nesnd_india_indep_was_puppet remove_variable = nesnd_india_indep_play_lock
+            remove_variable = nesnd_india_indep_stock
+            remove_variable = nesnd_india_indep_was_puppet
+            remove_variable = nesnd_india_indep_play_lock
             remove_variable = nesnd_india_indep_play_open
-            # The former overlord counts the departure (journal nesnd_india_indep_overlord).
-            var:nesnd_india_indep_lord ?= { nesnd_india_indep_record_departure = { WHO = root } }
-            trigger_event = { id = nesnd_india_indep.12 popup = yes }
+            # The former overlord claims the states of the departed subject at once and is told of it.
+            var:nesnd_india_indep_lord ?= {
+                nesnd_india_indep_record_departure = { WHO = root }
+            }
+            trigger_event = {
+                id = nesnd_india_indep.12
+                popup = yes
+            }
         }
-        event_outcome_desc = { first_valid = { triggered_desc = { desc = nesnd_india_indep.12_outcome_tt } } }
+        event_outcome_desc = {
+            first_valid = {
+                triggered_desc = { desc = nesnd_india_indep.12_outcome_tt }
+            }
+        }
     }
 }
 nesnd_india_indep_overlord = {
@@ -653,54 +824,47 @@ nesnd_india_indep_overlord = {
     group = je_group_historical_content
     can_revolution_inherit = no
     weight = 650
-    immediate = { nesnd_india_indep_rank_subjects = yes nesnd_india_lord_calm_clock = { RESET = no } }
+    immediate = {
+        nesnd_india_indep_rank_subjects = yes
+        nesnd_india_lord_calm_clock = { RESET = no }
+    }
     scripted_button = nesnd_india_indep_watch_button
     scripted_button = nesnd_india_indep_purge_button
     scripted_button = nesnd_india_indep_conciliate_button
     scripted_button = nesnd_india_indep_coerce_button
     status_desc = {
         first_valid = {
-            triggered_desc = { trigger = { exists = var:nesnd_india_indep_leader var:nesnd_india_indep_leader ?= { is_direct_subject_of = root has_journal_entry = nesnd_india_indep } } desc = nesnd_india_indep_lord_status }
+            triggered_desc = {
+                trigger = {
+                    exists = var:nesnd_india_indep_leader
+                    var:nesnd_india_indep_leader ?= {
+                        is_direct_subject_of = root
+                        has_journal_entry = nesnd_india_indep
+                    }
+                }
+                desc = nesnd_india_indep_lord_status
+            }
             desc = nesnd_india_indep_lord_no_leader
         }
     }
     on_monthly_pulse = {
         effect = {
             nesnd_india_indep_rank_subjects = yes
-            if = { limit = { is_ai = yes } nesnd_india_indep_lord_ai = yes }
+            if = {
+                limit = { is_ai = yes }
+                nesnd_india_indep_lord_ai = yes
+            }
             # A subject near independence restarts the ten calm years.
-            if = { limit = { any_subject_or_below = { is_direct_subject_of = root has_journal_entry = nesnd_india_indep liberty_desire >= 75 } } nesnd_india_lord_calm_clock = { RESET = yes } }
-        }
-    }
-    # Two subjects became independent within ten years (nesnd_india_indep_record_departure).
-    outcome = {
-        header = je_standard_failure_header
-        effect_header = je_standard_on_failure_header
-        color = "blue_negative"
-        conclusion_desc = nesnd_india_lord_scattered_conclusion
-        trigger = { custom_tooltip = { text = nesnd_india_lord_two_left_tt exists = var:nesnd_india_indep_second_departed } }
-        effect = {
-            add_modifier = { name = nesnd_india_lord_scattered days = normal_modifier_time }
-            clear_saved_scope = india_lord_gone_a
-            clear_saved_scope = india_lord_gone_b
-            var:nesnd_india_indep_first_departed ?= { save_scope_as = india_lord_gone_a }
-            var:nesnd_india_indep_second_departed ?= { save_scope_as = india_lord_gone_b }
-            custom_tooltip = {
-                text = nesnd_india_lord_scattered_claims_tt
-                scope:india_lord_gone_a ?= { every_scope_state = { limit = { nesnd_india_state = yes NOT = { has_claim_by = root } } state_region = { add_claim = root } } }
-                scope:india_lord_gone_b ?= { every_scope_state = { limit = { nesnd_india_state = yes NOT = { has_claim_by = root } } state_region = { add_claim = root } } }
-            }
-            # The AI turns against the stronger of the two (GAME events/opium_wars_events.txt:254).
-            custom_tooltip = {
-                text = nesnd_india_lord_scattered_goal_tt
-                if = { limit = { exists = scope:india_lord_gone_a exists = scope:india_lord_gone_b scope:india_lord_gone_a.gdp >= scope:india_lord_gone_b.gdp }
-                    set_secret_goal = { country = scope:india_lord_gone_a secret_goal = antagonize }
+            if = {
+                limit = {
+                    any_subject_or_below = {
+                        is_direct_subject_of = root
+                        has_journal_entry = nesnd_india_indep
+                        liberty_desire >= 75
+                    }
                 }
-                else_if = { limit = { exists = scope:india_lord_gone_b }
-                    set_secret_goal = { country = scope:india_lord_gone_b secret_goal = antagonize }
-                }
+                nesnd_india_lord_calm_clock = { RESET = yes }
             }
-            hidden_effect = { remove_variable = nesnd_india_indep_first_departed remove_variable = nesnd_india_indep_second_departed remove_variable = nesnd_india_indep_leader }
         }
     }
     # Ten years without a subject at 75 liberty desire or more. Ten years before the reward can come
@@ -712,27 +876,47 @@ nesnd_india_indep_overlord = {
         conclusion_desc = nesnd_india_lord_calm_conclusion
         trigger = {
             hidden_trigger = { nesnd_india_indep_has_subject = yes }
-            custom_tooltip = { text = nesnd_india_lord_calm_tt nesnd_india_lord_calm_due = yes }
+            custom_tooltip = {
+                text = nesnd_india_lord_calm_tt
+                nesnd_india_lord_calm_due = yes
+            }
         }
         effect = {
-            if = { limit = { NOT = { has_modifier = nesnd_india_lord_calm } } add_modifier = { name = nesnd_india_lord_calm } }
+            if = {
+                limit = {
+                    NOT = { has_modifier = nesnd_india_lord_calm }
+                }
+                add_modifier = { name = nesnd_india_lord_calm }
+            }
             custom_tooltip = nesnd_india_lord_calm_cooldown_tt
             hidden_effect = {
-                set_variable = { name = nesnd_india_lord_calm_cooldown days = 3650 }
+                set_variable = {
+                    name = nesnd_india_lord_calm_cooldown
+                    days = 3650
+                }
                 remove_variable = nesnd_india_lord_calm_since
                 remove_variable = nesnd_india_lord_calm_wait
                 remove_variable = nesnd_india_indep_leader
             }
         }
     }
-    # No subject holds the journal of independence any more, and no former subject still has to report
-    # its departure.
+    # No subject holds the journal of independence any more, and no former subject is still waiting for
+    # its independence event to close.
     outcome = {
-        flags = { hidden invalid_outcome }
+        flags = {
+            hidden
+            invalid_outcome
+        }
         conclusion_desc = je_standard_completion_conclusion_desc
         trigger = {
             nesnd_india_indep_has_subject = no
-            NOT = { any_country = { has_journal_entry = nesnd_india_indep is_subject = no var:nesnd_india_indep_lord ?= root } }
+            NOT = {
+                any_country = {
+                    has_journal_entry = nesnd_india_indep
+                    is_subject = no
+                    var:nesnd_india_indep_lord ?= root
+                }
+            }
         }
         effect = {
             remove_variable = nesnd_india_indep_leader

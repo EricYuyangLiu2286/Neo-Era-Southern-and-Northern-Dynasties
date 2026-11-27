@@ -3,7 +3,7 @@
 # ==== Mughal's old agreement, the council of princes, famine relief (formerly nesnd_india_mughal.txt) ====
 # Mughal's own affairs (common/scripted_effects/nesnd_india_empire.txt).
 #   .1 and .2   the property deals (to Mughal)
-#   .11 to .13  the council of princes (.11 and .13 to Mughal, .12 to each invited prince)
+#   .11 to .14  the council of princes (.11, .13 and .14 to Mughal, .12 to each invited prince)
 #   .21 to .24  famine (.21 to Mughal, .22 to .24 to a prince)
 
 # The overlord agreed. To Mughal.
@@ -251,6 +251,34 @@ nesnd_mug.13 = {
         default_option = yes
         if = { limit = { nesnd_mug_council_yes_value = 0 } custom_tooltip = nesnd_mug_council_none_tt }
         else = { custom_tooltip = nesnd_mug_council_done_tt }
+    }
+}
+
+# One day after the last of the three topics (railways, famine relief, common defence) was agreed once: the
+# council becomes an institution. The journal goes on (nesnd_mug_council_milestone is set by nesnd_mug_settle_council).
+nesnd_mug.14 = {
+    type = country_event
+    event_image = { video = "asia_politician_parliament_motion" }
+    title = nesnd_mug.14.t
+    desc = nesnd_mug.14.d
+    flavor = nesnd_mug.14.f
+    option = {
+        name = nesnd_mug.14.a
+        default_option = yes
+        add_modifier = { name = nesnd_mug_council_rail_lasting }
+        add_modifier = { name = nesnd_mug_council_relief_lasting }
+        add_modifier = { name = nesnd_mug_council_defence_lasting }
+        save_scope_as = mug_council_convener
+        every_country = {
+            limit = {
+                has_variable = nesnd_mug_council_attended
+                nesnd_india_prince = yes
+            }
+            change_relations = {
+                country = scope:mug_council_convener
+                value = 20
+            }
+        }
     }
 }
 
@@ -513,21 +541,39 @@ nesnd_mug.30 = {
         ai_chance = {
             base = 70
             modifier = {
-                trigger = { scope:mug_dispute_subject = { liberty_desire >= 65 } }
+                trigger = {
+                    scope:mug_dispute_subject = { liberty_desire >= 65 }
+                }
                 add = 20
             }
         }
-        change_relations = { country = scope:mug_dispute_subject value = -10 }
+        change_relations = {
+            country = scope:mug_dispute_subject
+            value = -10
+        }
         custom_tooltip = nesnd_mug.30.a_tt
         hidden_effect = {
             save_scope_as = mug_dispute_lord
-            set_variable = { name = nesnd_india_dispute_subject value = scope:mug_dispute_subject }
-            add_journal_entry = { type = nesnd_india_treaty_dispute_overlord }
-            scope:mug_dispute_subject = {
-                remove_variable = nesnd_india_treaty_dispute_pending
-                set_variable = { name = nesnd_india_dispute_overlord value = scope:mug_dispute_lord }
-                add_journal_entry = { type = nesnd_india_treaty_dispute }
+            set_variable = {
+                name = nesnd_india_dispute_subject
+                value = scope:mug_dispute_subject
             }
+            set_global_variable = {
+                name = nesnd_india_dispute_g_lord
+                value = this
+            }
+            scope:mug_dispute_subject = {
+                set_global_variable = {
+                    name = nesnd_india_dispute_g_subject
+                    value = this
+                }
+                remove_variable = nesnd_india_treaty_dispute_pending
+                set_variable = {
+                    name = nesnd_india_dispute_overlord
+                    value = scope:mug_dispute_lord
+                }
+            }
+            add_contextless_journal_entry = nesnd_india_treaty_dispute
         }
     }
     option = {
@@ -536,14 +582,22 @@ nesnd_mug.30 = {
         ai_chance = {
             base = 30
             modifier = {
-                trigger = { scope:mug_dispute_subject = { liberty_desire >= 65 } }
+                trigger = {
+                    scope:mug_dispute_subject = { liberty_desire >= 65 }
+                }
                 add = -20
             }
         }
-        change_relations = { country = scope:mug_dispute_subject value = 10 }
+        change_relations = {
+            country = scope:mug_dispute_subject
+            value = 10
+        }
         custom_tooltip = nesnd_mug.30.b_tt
         hidden_effect = {
-            set_global_variable = { name = nesnd_india_treaty_dispute_wait days = 3650 }
+            set_global_variable = {
+                name = nesnd_india_treaty_dispute_wait
+                days = 3650
+            }
             scope:mug_dispute_subject = { remove_variable = nesnd_india_treaty_dispute_pending }
         }
     }

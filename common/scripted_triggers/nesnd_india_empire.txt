@@ -45,15 +45,6 @@ nesnd_india_order_can_decrease = { scope:india_order_lord = { can_create_diploma
 nesnd_india_order_can_exempt = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = exempt_from_service } } }
 nesnd_india_order_can_share = { scope:india_order_lord = { can_create_diplomatic_pact = { target = scope:india_order_member type = da_knowledge_sharing } } }
 
-# Subject scope. LORD is its Mughal. In tax, the treaty of the end LORD has chosen now stands between
-# LORD (as initiator) and us, whoever made it.
-nesnd_india_order_tax_stands = {
-    save_temporary_scope_as = india_order_counted
-    OR = {
-        $LORD$ = { nesnd_india_order_is = { ISSUE = tax END = 1 } has_diplomatic_pact = { who = scope:india_order_counted type = raise_payments is_initiator = yes } }
-        $LORD$ = { nesnd_india_order_is = { ISSUE = tax END = 2 } has_diplomatic_pact = { who = scope:india_order_counted type = decrease_payments is_initiator = yes } }
-    }
-}
 # Subject scope. Our tax marker is LORD's and is for the end LORD has chosen now. A marker for the other
 # end is one whose treaty outlived its removal when the matter was changed; a marker of another Mughal
 # (the subject changed hands while that Mughal's treaty was in its forced duration) is not LORD's.
@@ -107,15 +98,13 @@ nesnd_mug_france_live = {
         nesnd_mug_foreign_overlord = yes
     }
 }
-# The council of princes: Mughal has finished its reform.
+# The council of princes: Mughal has finished its reform and the council is not yet complete.
 nesnd_mug_council_live = {
     hidden_trigger = {
         is_country_alive = yes
         has_variable = nesnd_india_mughal_court
         has_variable = nesnd_india_reform_done
-        # The council became an institution (for good), or failed (for three years).
-        NOT = { has_variable = nesnd_mug_council_settled }
-        NOT = { has_variable = nesnd_mug_council_closed }
+        NOT = { has_variable = nesnd_mug_council_done }
     }
 }
 
@@ -466,7 +455,8 @@ nesnd_mug_treaty_dispute_pressure = {
     OR = {
         has_variable = nesnd_india_reform_done
         liberty_desire >= 65
-        has_variable = nesnd_mug_council_settled
+        has_variable = nesnd_mug_council_milestone
+        has_variable = nesnd_mug_council_done
     }
 }
 # Mughal scope. Eligible to trigger the entry event nesnd_mug.30 for France.
@@ -474,12 +464,9 @@ nesnd_mug_treaty_dispute_due = {
     is_country_alive = yes
     has_variable = nesnd_india_mughal_court
     exists = c:FRA
-    c:FRA = {
-        is_country_alive = yes
-        NOT = { has_journal_entry = nesnd_india_treaty_dispute_overlord }
-    }
+    c:FRA = { is_country_alive = yes }
     is_subject_of = c:FRA
-    NOT = { has_journal_entry = nesnd_india_treaty_dispute }
+    NOT = { is_involved_in_journal_entry = nesnd_india_treaty_dispute }
     NOT = { has_variable = nesnd_india_treaty_dispute_pending }
     NOT = { has_global_variable = nesnd_india_treaty_dispute_wait }
     nesnd_mug_treaty_dispute_pressure = yes
@@ -506,6 +493,12 @@ nesnd_india_dispute_overlord_active = {
         }
     }
     trigger_else = { always = no }
+}
+# No scope. The two parties of the global journal nesnd_india_treaty_dispute are both still alive and the
+# subject is still the overlord's subject.
+nesnd_india_dispute_active = {
+    global_var:nesnd_india_dispute_g_subject ?= { nesnd_india_dispute_subject_active = yes }
+    global_var:nesnd_india_dispute_g_lord ?= { nesnd_india_dispute_overlord_active = yes }
 }
 # Country scope (Mughal or France). Bilateral relations between the two dispute parties >= 20.
 nesnd_india_dispute_relations_high = {

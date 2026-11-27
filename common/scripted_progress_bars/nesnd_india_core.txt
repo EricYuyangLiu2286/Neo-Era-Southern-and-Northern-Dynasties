@@ -1,18 +1,6 @@
 ﻿# ==== Identity, monthly refresh and the reform journals (formerly nesnd_india_core.txt) ====
-# The two reform bars, the dynasty and the community are the only count of these meters. The script values of
-# common/script_values/nesnd_india_core.txt read them.
-nesnd_india_schools_bar = { name = nesnd_india_program_months desc = nesnd_india_schools_bar_readout default_green = yes min_value = 0 max_value = 12 start_value = 0
-    monthly_progress = { add = { desc = nesnd_india_ready_month value = { value = 0 if = { limit = { owner = { nesnd_india_track_available = { T = schools PRIORITY = 1 } nesnd_india_schools_ready = yes } } add = 1 } } } }
-}
-nesnd_india_industry_bar = { name = nesnd_india_program_months desc = nesnd_india_industry_bar_readout default_green = yes min_value = 0 max_value = 12 start_value = 0
-    monthly_progress = { add = { desc = nesnd_india_ready_month value = { value = 0 if = { limit = { owner = { nesnd_india_track_available = { T = industry PRIORITY = 2 } nesnd_india_industry_ready = { COUNTRY = root.owner } } } add = 1 } } } }
-}
-nesnd_india_dynasty_bar = { name = nesnd_india_dynasty_bar desc = nesnd_india_dynasty_bar_readout default_green = yes min_value = 0 max_value = 100 start_value = 50 monthly_progress = {
-        add = { desc = nesnd_india_dynasty_legitimacy value = { value = 0 if = { limit = { owner = { nesnd_india_society_live = yes country_has_monarchy_law = yes } } value = owner.nesnd_india_dynasty_legitimacy } } }
-        add = { desc = nesnd_unity_lawgroup_church_state value = { value = 0 if = { limit = { owner = { nesnd_india_society_live = yes country_has_monarchy_law = yes } } value = owner.nesnd_india_dynasty_religion } } }
-        add = { desc = nesnd_india_dynasty_dependence value = { value = 0 if = { limit = { owner = { nesnd_india_society_live = yes country_has_monarchy_law = yes } } value = owner.nesnd_india_dynasty_dependence } } }
-    }
-}
+# The community bar is the only count of this meter. The script values of
+# common/script_values/nesnd_india_core.txt read it.
 nesnd_india_community_bar = { name = nesnd_india_community_bar desc = nesnd_india_community_bar_readout default_green = yes min_value = 0 max_value = 100 start_value = 25 monthly_progress = {
         add = { desc = nesnd_india_community_education value = { value = 0 if = { limit = { owner = { nesnd_india_society_live = yes } } value = owner.nesnd_india_community_education } } }
         add = { desc = nesnd_unity_lawgroup_distribution_of_power value = { value = 0 if = { limit = { owner = { nesnd_india_society_live = yes } } value = owner.nesnd_india_community_representation } } }
@@ -82,9 +70,10 @@ nesnd_india_indep_military_bar = {
 }
 
 # ==== Old treaty dispute (India batch 15) ====
-# Shared 0-100 negotiation bar (starts at 50) attached to both nesnd_india_treaty_dispute (Mughal)
-# and nesnd_india_treaty_dispute_overlord (France). Both sides see identical monthly progress from
-# bilateral relations, and buttons shift both bars together.
+# Shared 0-100 negotiation bar (starts at 50) of the global journal nesnd_india_treaty_dispute, which Mughal
+# and its overlord (France) read together. The monthly progress comes from the bilateral relations of the
+# two countries kept in the global variables nesnd_india_dispute_g_subject and nesnd_india_dispute_g_lord,
+# and the buttons of both sides shift the same bar.
 nesnd_india_treaty_dispute_bar = {
     name = nesnd_india_treaty_dispute_bar
     desc = nesnd_india_treaty_dispute_bar_renew_desc
@@ -103,7 +92,9 @@ nesnd_india_treaty_dispute_bar = {
             value = {
                 value = 0
                 if = {
-                    limit = { owner = { nesnd_india_dispute_relations_high = yes } }
+                    limit = {
+                        global_var:nesnd_india_dispute_g_subject ?= { nesnd_india_dispute_relations_high = yes }
+                    }
                     value = 0.5
                 }
             }
@@ -113,7 +104,9 @@ nesnd_india_treaty_dispute_bar = {
             value = {
                 value = 0
                 if = {
-                    limit = { owner = { nesnd_india_dispute_relations_low = yes } }
+                    limit = {
+                        global_var:nesnd_india_dispute_g_subject ?= { nesnd_india_dispute_relations_low = yes }
+                    }
                     value = -0.5
                 }
             }

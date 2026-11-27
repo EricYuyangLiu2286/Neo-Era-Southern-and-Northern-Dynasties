@@ -1,7 +1,7 @@
 ﻿# ==== Identity, monthly refresh and the reform journals (formerly nesnd_india_core.txt) ====
-# The months counted by the two reform tracks, the national community and the dynasty's support are
-# kept on the progress bars of their journals (common/scripted_progress_bars/nesnd_india_core.txt) and
-# read from them (common/script_values/nesnd_india_core.txt). Nothing here counts them a second time.
+# The national community is kept on the progress bar of its journal
+# (common/scripted_progress_bars/nesnd_india_core.txt) and read from it
+# (common/script_values/nesnd_india_core.txt). Nothing here counts it a second time.
 nesnd_india_initialize = {
     # The government that began as Mughal keeps this through any change of name (BHT, DRA); the
     # Mughal-only rewards of nesnd_india_schools and nesnd_india_industry read it.
@@ -45,13 +45,6 @@ nesnd_india_settlement_republic = {
 }
 nesnd_india_refresh = {
     nesnd_india_initialize = yes
-    if = {
-        limit = {
-            nesnd_india_reform_live = yes
-            NOT = { has_journal_entry = nesnd_india_reform }
-        }
-        add_journal_entry = { type = nesnd_india_reform }
-    }
     if = {
         limit = {
             nesnd_india_track_visible = { T = schools }
@@ -196,13 +189,6 @@ nesnd_india_refresh = {
         }
         nesnd_india_case_watch_clock = { RESET = no }
     }
-    if = {
-        limit = {
-            nesnd_india_dynasty_open = yes
-            NOT = { has_journal_entry = nesnd_india_dynasty_journal }
-        }
-        add_journal_entry = { type = nesnd_india_dynasty_journal }
-    }
     nesnd_india_unified_watch = yes
 }
 
@@ -289,18 +275,32 @@ nesnd_india_indep_choose_movement = {
             save_scope_as = indep_choice_1
         }
         clear_saved_scope = indep_choice_2
-        ordered_political_movement = {
-            order_by = political_movement_$SUPPORT$_support
-            position = 1
-            check_range_bounds = no
-            save_scope_as = indep_choice_2
+        if = {
+            limit = {
+                any_political_movement = {
+                    count >= 2
+                }
+            }
+            ordered_political_movement = {
+                order_by = political_movement_$SUPPORT$_support
+                position = 1
+                check_range_bounds = no
+                save_scope_as = indep_choice_2
+            }
         }
         clear_saved_scope = indep_choice_3
-        ordered_political_movement = {
-            order_by = political_movement_$SUPPORT$_support
-            position = 2
-            check_range_bounds = no
-            save_scope_as = indep_choice_3
+        if = {
+            limit = {
+                any_political_movement = {
+                    count >= 3
+                }
+            }
+            ordered_political_movement = {
+                order_by = political_movement_$SUPPORT$_support
+                position = 2
+                check_range_bounds = no
+                save_scope_as = indep_choice_3
+            }
         }
         clear_saved_scope = indep_choice_indian
         ordered_political_movement = {
@@ -623,15 +623,44 @@ nesnd_india_indep_choose_policy = {
         clear_saved_scope = indep_subject_3
         ordered_subject_or_below = {
             limit = { nesnd_india_indep_policy_target = yes }
-            order_by = liberty_desire position = 0 check_range_bounds = no save_scope_as = indep_subject_1
+            order_by = liberty_desire
+            position = 0
+            check_range_bounds = no
+            save_scope_as = indep_subject_1
         }
-        ordered_subject_or_below = {
-            limit = { nesnd_india_indep_policy_target = yes }
-            order_by = liberty_desire position = 1 check_range_bounds = no save_scope_as = indep_subject_2
+        if = {
+            limit = {
+                any_subject_or_below = {
+                    nesnd_india_indep_policy_target = yes
+                    count >= 2
+                }
+            }
+            ordered_subject_or_below = {
+                limit = {
+                    nesnd_india_indep_policy_target = yes
+                }
+                order_by = liberty_desire
+                position = 1
+                check_range_bounds = no
+                save_scope_as = indep_subject_2
+            }
         }
-        ordered_subject_or_below = {
-            limit = { nesnd_india_indep_policy_target = yes }
-            order_by = liberty_desire position = 2 check_range_bounds = no save_scope_as = indep_subject_3
+        if = {
+            limit = {
+                any_subject_or_below = {
+                    nesnd_india_indep_policy_target = yes
+                    count >= 3
+                }
+            }
+            ordered_subject_or_below = {
+                limit = {
+                    nesnd_india_indep_policy_target = yes
+                }
+                order_by = liberty_desire
+                position = 2
+                check_range_bounds = no
+                save_scope_as = indep_subject_3
+            }
         }
         if = { limit = { exists = scope:indep_subject_1 } trigger_event = { id = nesnd_india_indep.5 popup = yes } }
     }
@@ -645,11 +674,23 @@ nesnd_india_lord_calm_clock = {
         set_variable = { name = nesnd_india_lord_calm_wait days = 3650 }
     }
 }
-# Former overlord scope. WHO became independent: the first departure counts for ten years, a second one
-# within them ends nesnd_india_indep_overlord as "subjects scattered".
+# Former overlord scope, from the journal nesnd_india_indep when WHO becomes independent. The former overlord
+# lays a claim at once to every state WHO holds in the two Indian strategic regions that it does not claim
+# yet, and is told of it.
 nesnd_india_indep_record_departure = {
-    if = { limit = { exists = var:nesnd_india_indep_first_departed }
-        set_variable = { name = nesnd_india_indep_second_departed value = $WHO$ days = 3650 }
+    save_scope_as = india_departure_lord
+    $WHO$ = { save_scope_as = india_departure_gone }
+    custom_tooltip = {
+        text = nesnd_india_departure_claims_tt
+        scope:india_departure_gone ?= {
+            every_scope_state = {
+                limit = {
+                    nesnd_india_state = yes
+                    NOT = { has_claim_by = scope:india_departure_lord }
+                }
+                state_region = { add_claim = scope:india_departure_lord }
+            }
+        }
     }
-    else = { set_variable = { name = nesnd_india_indep_first_departed value = $WHO$ days = 3650 } }
+    hidden_effect = { post_notification = nesnd_india_departure_notice }
 }

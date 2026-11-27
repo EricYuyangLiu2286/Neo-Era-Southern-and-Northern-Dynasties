@@ -190,24 +190,24 @@ nesnd_india_order_clear_school = {
 nesnd_india_order_leave = {
     save_scope_as = india_order_member
     clear_saved_scope = india_order_old_lord
-    if = { limit = { exists = var:nesnd_india_order_lord } var:nesnd_india_order_lord = { save_scope_as = india_order_old_lord } }
-    # A member that left as an independent country is remembered by its old Mughal for ten years; a
-    # second one within them ends the journal (outcome "the union scatters").
-    if = { limit = { is_subject = no exists = scope:india_order_old_lord }
-        scope:india_order_old_lord = {
-            if = { limit = { exists = var:nesnd_india_order_first_departed NOT = { var:nesnd_india_order_first_departed = scope:india_order_member } }
-                set_variable = { name = nesnd_india_order_second_departed value = scope:india_order_member }
-            }
-            else_if = { limit = { NOT = { exists = var:nesnd_india_order_first_departed } }
-                set_variable = { name = nesnd_india_order_first_departed value = scope:india_order_member days = 3650 }
-            }
-        }
+    if = {
+        limit = { exists = var:nesnd_india_order_lord }
+        var:nesnd_india_order_lord = { save_scope_as = india_order_old_lord }
     }
     nesnd_india_order_clear_tax = { LORD = scope:india_order_old_lord }
     nesnd_india_order_clear_army = { LORD = scope:india_order_old_lord }
     nesnd_india_order_clear_school = { LORD = scope:india_order_old_lord }
     # A treaty that outlived its removal keeps the subject on this list, and the removal is tried again next month.
-    if = { limit = { NOR = { has_variable = nesnd_india_order_tax_pact has_variable = nesnd_india_order_army_pact has_variable = nesnd_india_order_school_pact } } remove_variable = nesnd_india_order_lord }
+    if = {
+        limit = {
+            NOR = {
+                has_variable = nesnd_india_order_tax_pact
+                has_variable = nesnd_india_order_army_pact
+                has_variable = nesnd_india_order_school_pact
+            }
+        }
+        remove_variable = nesnd_india_order_lord
+    }
 }
 
 # Mughal scope. It no longer holds the journal. The sixty months since each choice keep running, so a
@@ -1475,49 +1475,146 @@ nesnd_mug_open_council = {
 # From event .13, thirty days later. Princes that have not answered count as declining.
 nesnd_mug_settle_council = {
     save_scope_as = mug_council_convener
-    set_variable = { name = nesnd_mug_council_yes value = 0 }
-    set_variable = { name = nesnd_mug_council_no value = 0 }
-    set_variable = { name = nesnd_mug_council_unsigned value = 0 }
+    set_variable = {
+        name = nesnd_mug_council_yes
+        value = 0
+    }
+    set_variable = {
+        name = nesnd_mug_council_no
+        value = 0
+    }
+    set_variable = {
+        name = nesnd_mug_council_unsigned
+        value = 0
+    }
     clear_saved_scope = mug_council_topic
-    if = { limit = { has_variable = nesnd_mug_council_topic } save_scope_value_as = { name = mug_council_topic value = var:nesnd_mug_council_topic } }
-    else = { save_scope_value_as = { name = mug_council_topic value = 1 } }
-    set_variable = { name = nesnd_mug_council_last value = scope:mug_council_topic }
+    if = {
+        limit = { has_variable = nesnd_mug_council_topic }
+        save_scope_value_as = {
+            name = mug_council_topic
+            value = var:nesnd_mug_council_topic
+        }
+    }
+    else = {
+        save_scope_value_as = {
+            name = mug_council_topic
+            value = 1
+        }
+    }
+    set_variable = {
+        name = nesnd_mug_council_last
+        value = scope:mug_council_topic
+    }
     every_country = {
-        limit = { has_variable = nesnd_mug_council_invite var:nesnd_mug_council_invite ?= scope:mug_council_convener }
-        if = { limit = { has_variable = nesnd_mug_council_answer var:nesnd_mug_council_answer = 1 is_country_alive = yes NOT = { has_war_with = scope:mug_council_convener } }
-            scope:mug_council_convener = { change_variable = { name = nesnd_mug_council_yes add = 1 } }
-            set_variable = { name = nesnd_mug_council_attended months = 120 }
-            if = { limit = { scope:mug_council_topic = 1 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_rail } }
-            else_if = { limit = { scope:mug_council_topic = 2 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_relief } }
+        limit = {
+            has_variable = nesnd_mug_council_invite
+            var:nesnd_mug_council_invite ?= scope:mug_council_convener
+        }
+        if = {
+            limit = {
+                has_variable = nesnd_mug_council_answer
+                var:nesnd_mug_council_answer = 1
+                is_country_alive = yes
+                NOT = { has_war_with = scope:mug_council_convener }
+            }
+            scope:mug_council_convener = {
+                change_variable = {
+                    name = nesnd_mug_council_yes
+                    add = 1
+                }
+            }
+            set_variable = {
+                name = nesnd_mug_council_attended
+                months = 120
+            }
+            if = {
+                limit = { scope:mug_council_topic = 1 }
+                nesnd_mug_council_modifier = { NAME = nesnd_mug_council_rail }
+            }
+            else_if = {
+                limit = { scope:mug_council_topic = 2 }
+                nesnd_mug_council_modifier = { NAME = nesnd_mug_council_relief }
+            }
             else = {
                 save_scope_as = mug_council_member
-                if = { limit = { nesnd_india_defence_possible = { FIRST = scope:mug_council_convener SECOND = scope:mug_council_member YEARS = 5 } }
+                if = {
+                    limit = {
+                        nesnd_india_defence_possible = {
+                            FIRST = scope:mug_council_convener
+                            SECOND = scope:mug_council_member
+                            YEARS = 5
+                        }
+                    }
                     create_treaty = {
                         first_country = scope:mug_council_convener
                         second_country = scope:mug_council_member
                         is_draft = no
                         binding_period = { years = 5 }
-                        articles_to_create = { { article = defensive_pact } }
+                        articles_to_create = {
+                            { article = defensive_pact }
+                        }
                     }
                 }
-                else = { scope:mug_council_convener = { change_variable = { name = nesnd_mug_council_unsigned add = 1 } } }
+                else = {
+                    scope:mug_council_convener = {
+                        change_variable = {
+                            name = nesnd_mug_council_unsigned
+                            add = 1
+                        }
+                    }
+                }
             }
         }
-        else = { scope:mug_council_convener = { change_variable = { name = nesnd_mug_council_no add = 1 } } }
+        else = {
+            scope:mug_council_convener = {
+                change_variable = {
+                    name = nesnd_mug_council_no
+                    add = 1
+                }
+            }
+        }
         remove_variable = nesnd_mug_council_invite
         remove_variable = nesnd_mug_council_answer
     }
-    if = { limit = { var:nesnd_mug_council_yes > 0 }
-        if = { limit = { scope:mug_council_topic = 1 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_rail } }
-        else_if = { limit = { scope:mug_council_topic = 2 } nesnd_mug_council_modifier = { NAME = nesnd_mug_council_relief } }
-        # For the outcomes of the journal nesnd_mug_council: councils agreed, and the topics agreed at least once.
-        change_variable = { name = nesnd_mug_council_agreed add = 1 }
-        if = { limit = { scope:mug_council_topic = 1 } set_variable = nesnd_mug_council_did_rail }
-        else_if = { limit = { scope:mug_council_topic = 2 } set_variable = nesnd_mug_council_did_relief }
+    if = {
+        limit = { var:nesnd_mug_council_yes > 0 }
+        if = {
+            limit = { scope:mug_council_topic = 1 }
+            nesnd_mug_council_modifier = { NAME = nesnd_mug_council_rail }
+        }
+        else_if = {
+            limit = { scope:mug_council_topic = 2 }
+            nesnd_mug_council_modifier = { NAME = nesnd_mug_council_relief }
+        }
+        # The topics agreed at least once (for the milestone below).
+        if = {
+            limit = { scope:mug_council_topic = 1 }
+            set_variable = nesnd_mug_council_did_rail
+        }
+        else_if = {
+            limit = { scope:mug_council_topic = 2 }
+            set_variable = nesnd_mug_council_did_relief
+        }
         else = { set_variable = nesnd_mug_council_did_defence }
-        remove_variable = nesnd_mug_council_empty
+        # Each of the three topics agreed once: the council becomes an institution (once, the journal goes on).
+        if = {
+            limit = {
+                has_variable = nesnd_mug_council_did_rail
+                has_variable = nesnd_mug_council_did_relief
+                has_variable = nesnd_mug_council_did_defence
+                NOT = { has_variable = nesnd_mug_council_milestone }
+            }
+            set_variable = nesnd_mug_council_milestone
+            remove_variable = nesnd_mug_council_did_rail
+            remove_variable = nesnd_mug_council_did_relief
+            remove_variable = nesnd_mug_council_did_defence
+            trigger_event = {
+                id = nesnd_mug.14
+                days = 1
+                popup = yes
+            }
+        }
     }
-    else = { change_variable = { name = nesnd_mug_council_empty add = 1 } }
     remove_variable = nesnd_mug_council_topic
 }
 nesnd_mug_council_modifier = {
@@ -1747,57 +1844,12 @@ nesnd_mug_treaty_dispute_start_event = {
         c:FRA = { trigger_event = { id = nesnd_mug.30 popup = yes } }
     }
 }
-# Country scope (Mughal or France). Shifts the negotiation bar on both sides by VALUE.
+# Country scope (Mughal or France). Shifts the negotiation bar of the shared journal by VALUE.
 nesnd_india_treaty_dispute_shift = {
-    if = {
-        limit = { has_journal_entry = nesnd_india_treaty_dispute }
-        je:nesnd_india_treaty_dispute = {
-            add_progress = { name = nesnd_india_treaty_dispute_bar value = $VALUE$ }
-        }
-        var:nesnd_india_dispute_overlord ?= {
-            if = {
-                limit = { has_journal_entry = nesnd_india_treaty_dispute_overlord }
-                je:nesnd_india_treaty_dispute_overlord = {
-                    add_progress = { name = nesnd_india_treaty_dispute_bar value = $VALUE$ }
-                }
-            }
-        }
-    }
-    else_if = {
-        limit = { has_journal_entry = nesnd_india_treaty_dispute_overlord }
-        je:nesnd_india_treaty_dispute_overlord = {
-            add_progress = { name = nesnd_india_treaty_dispute_bar value = $VALUE$ }
-        }
-        var:nesnd_india_dispute_subject ?= {
-            if = {
-                limit = { has_journal_entry = nesnd_india_treaty_dispute }
-                je:nesnd_india_treaty_dispute = {
-                    add_progress = { name = nesnd_india_treaty_dispute_bar value = $VALUE$ }
-                }
-            }
-        }
-    }
-}
-# Mughal scope, monthly. Keeps France's dispute bar locked to Mughal's value.
-nesnd_india_dispute_sync_overlord = {
-    if = {
-        limit = {
-            has_journal_entry = nesnd_india_treaty_dispute
-            exists = var:nesnd_india_dispute_overlord
-        }
-        je:nesnd_india_treaty_dispute = {
-            save_scope_value_as = {
-                name = mug_dispute_bar_val
-                value = "scripted_bar_progress(nesnd_india_treaty_dispute_bar)"
-            }
-        }
-        var:nesnd_india_dispute_overlord = {
-            if = {
-                limit = { has_journal_entry = nesnd_india_treaty_dispute_overlord }
-                je:nesnd_india_treaty_dispute_overlord = {
-                    set_bar_progress = { name = nesnd_india_treaty_dispute_bar value = scope:mug_dispute_bar_val }
-                }
-            }
+    je:nesnd_india_treaty_dispute ?= {
+        add_progress = {
+            name = nesnd_india_treaty_dispute_bar
+            value = $VALUE$
         }
     }
 }
@@ -1805,14 +1857,21 @@ nesnd_india_dispute_sync_overlord = {
 nesnd_india_dispute_petition_do = {
     if = {
         limit = {
-            has_journal_entry = nesnd_india_treaty_dispute
+            is_involved_in_journal_entry = nesnd_india_treaty_dispute
+            has_variable = nesnd_india_dispute_overlord
             gold_reserves >= nesnd_india_treaty_dispute_price
             in_default = no
             NOT = { has_modifier = declared_bankruptcy }
             NOT = { has_variable = nesnd_india_dispute_petition_wait }
         }
-        add_treasury = { value = nesnd_india_treaty_dispute_price multiply = -1 }
-        set_variable = { name = nesnd_india_dispute_petition_wait months = 12 }
+        add_treasury = {
+            value = nesnd_india_treaty_dispute_price
+            multiply = -1
+        }
+        set_variable = {
+            name = nesnd_india_dispute_petition_wait
+            months = 12
+        }
         nesnd_india_treaty_dispute_shift = { VALUE = 10 }
     }
 }
@@ -1820,15 +1879,23 @@ nesnd_india_dispute_petition_do = {
 nesnd_india_dispute_withhold_do = {
     if = {
         limit = {
-            has_journal_entry = nesnd_india_treaty_dispute
+            is_involved_in_journal_entry = nesnd_india_treaty_dispute
+            has_variable = nesnd_india_dispute_overlord
             NOT = { has_variable = nesnd_india_dispute_withhold_wait }
         }
-        set_variable = { name = nesnd_india_dispute_withhold_wait months = 12 }
+        set_variable = {
+            name = nesnd_india_dispute_withhold_wait
+            months = 12
+        }
         nesnd_india_treaty_dispute_shift = { VALUE = -15 }
         save_scope_as = mug_dispute_fervor_country
         every_primary_culture = {
             scope:mug_dispute_fervor_country = {
-                add_fervor_target_modifier = { culture = prev days = 1825 multiplier = 5 }
+                add_fervor_target_modifier = {
+                    culture = prev
+                    days = 1825
+                    multiplier = 5
+                }
             }
         }
     }
@@ -1837,16 +1904,23 @@ nesnd_india_dispute_withhold_do = {
 nesnd_india_dispute_reaffirm_do = {
     if = {
         limit = {
-            has_journal_entry = nesnd_india_treaty_dispute_overlord
+            is_involved_in_journal_entry = nesnd_india_treaty_dispute
+            has_variable = nesnd_india_dispute_subject
             NOT = { has_variable = nesnd_india_dispute_reaffirm_wait }
         }
-        set_variable = { name = nesnd_india_dispute_reaffirm_wait months = 12 }
+        set_variable = {
+            name = nesnd_india_dispute_reaffirm_wait
+            months = 12
+        }
         nesnd_india_treaty_dispute_shift = { VALUE = -10 }
         clear_saved_scope = mug_dispute_rel_target
         var:nesnd_india_dispute_subject ?= { save_scope_as = mug_dispute_rel_target }
         if = {
             limit = { exists = scope:mug_dispute_rel_target }
-            change_relations = { country = scope:mug_dispute_rel_target value = -10 }
+            change_relations = {
+                country = scope:mug_dispute_rel_target
+                value = -10
+            }
         }
     }
 }
@@ -1854,62 +1928,66 @@ nesnd_india_dispute_reaffirm_do = {
 nesnd_india_dispute_concede_do = {
     if = {
         limit = {
-            has_journal_entry = nesnd_india_treaty_dispute_overlord
+            is_involved_in_journal_entry = nesnd_india_treaty_dispute
+            has_variable = nesnd_india_dispute_subject
             gold_reserves >= nesnd_india_treaty_dispute_price
             in_default = no
             NOT = { has_modifier = declared_bankruptcy }
             NOT = { has_variable = nesnd_india_dispute_concede_wait }
         }
-        add_treasury = { value = nesnd_india_treaty_dispute_price multiply = -1 }
-        set_variable = { name = nesnd_india_dispute_concede_wait months = 12 }
+        add_treasury = {
+            value = nesnd_india_treaty_dispute_price
+            multiply = -1
+        }
+        set_variable = {
+            name = nesnd_india_dispute_concede_wait
+            months = 12
+        }
         nesnd_india_treaty_dispute_shift = { VALUE = 10 }
         clear_saved_scope = mug_dispute_rel_target
         var:nesnd_india_dispute_subject ?= { save_scope_as = mug_dispute_rel_target }
         if = {
             limit = { exists = scope:mug_dispute_rel_target }
-            change_relations = { country = scope:mug_dispute_rel_target value = 10 }
+            change_relations = {
+                country = scope:mug_dispute_rel_target
+                value = 10
+            }
         }
     }
 }
 # Mughal AI: 5% monthly chance; withhold if liberty_desire >= 70, else petition.
 nesnd_india_dispute_subject_ai = {
     if = {
-        limit = { is_ai = yes has_journal_entry = nesnd_india_treaty_dispute }
+        limit = {
+            is_ai = yes
+            is_involved_in_journal_entry = nesnd_india_treaty_dispute
+            has_variable = nesnd_india_dispute_overlord
+        }
         random = {
             chance = 5
             if = {
                 limit = { liberty_desire >= 70 }
                 nesnd_india_dispute_withhold_do = yes
             }
-            else = {
-                nesnd_india_dispute_petition_do = yes
-            }
+            else = { nesnd_india_dispute_petition_do = yes }
         }
     }
 }
 # France AI: 5% monthly chance; reaffirm if relations <= poor (-20), else concede.
 nesnd_india_dispute_overlord_ai = {
     if = {
-        limit = { is_ai = yes has_journal_entry = nesnd_india_treaty_dispute_overlord }
+        limit = {
+            is_ai = yes
+            is_involved_in_journal_entry = nesnd_india_treaty_dispute
+            has_variable = nesnd_india_dispute_subject
+        }
         random = {
             chance = 5
             if = {
                 limit = { nesnd_india_dispute_relations_poor = yes }
                 nesnd_india_dispute_reaffirm_do = yes
             }
-            else = {
-                nesnd_india_dispute_concede_do = yes
-            }
-        }
-    }
-}
-# Country scope, from a concluding dispute outcome. Pushes the partner's bar to the same end, so that its
-# journal concludes with the same outcome on its next check instead of lingering with a bar a point short.
-nesnd_india_dispute_push_partner = {
-    scope:mug_dispute_partner ?= {
-        if = {
-            limit = { has_journal_entry = $JE$ }
-            je:$JE$ = { set_bar_progress = { name = nesnd_india_treaty_dispute_bar value = $END$ } }
+            else = { nesnd_india_dispute_concede_do = yes }
         }
     }
 }
