@@ -120,13 +120,13 @@ nesnd_india_order_school_influence = { value = nesnd_india_order_members multipl
 # On any Indian government that received a famine event: nesnd_mug_famine_wait (24 months).
 # On a state struck by a harvest condition that cuts food: nesnd_mug_famine_state (120 days).
 #
-# Matter kinds of Indian affairs (common/script_values/nesnd_india_matters.txt): 7 Mughal offers its
-# overlord one building level, 8 Mughal buys back one level the overlord holds, 9 a prince asks for
-# famine aid.
+# Request kinds on the unified request channel (common/script_values/nesnd_india_princes.txt):
+# 10 Mughal offers its overlord one building level, 11 Mughal buys back one level the overlord holds,
+# 12 a prince asks for famine aid.
 # Default sums and chances; to be tuned after in-game tests.
 
 # A property deal moves one building level (common/scripted_effects/nesnd_india_empire.txt, nesnd_mug_deal).
-# The price is named when Mughal asks (nesnd_mug_ask) and kept in the matter (nesnd_india_matter_amount):
+# The price is named when Mughal asks (nesnd_mug_ask) and kept on the request (nesnd_india_request_quote):
 # the construction of one level (nesnd_mug_deal_construction) times £40 for a sale, £64 for a buy-back.
 nesnd_mug_sale_rate = 40
 nesnd_mug_buyback_rate = 64
@@ -216,11 +216,24 @@ nesnd_mug_buyback_ask_chance = {
 }
 nesnd_mug_council_ask_chance = 2
 
-# Answering government scope (nesnd_india_matter_from is the asking country).
+# Answering government scope (scope:india_sender is the asking country).
 nesnd_mug_sell_answer_chance = {
     value = 60
-    if = { limit = { OR = { in_default = yes net_fixed_income < 0 } } add = -40 }
-    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 20 } } add = 20 }
+    if = {
+        limit = {
+            OR = {
+                in_default = yes
+                net_fixed_income < 0
+            }
+        }
+        add = -40
+    }
+    if = {
+        limit = {
+            nesnd_india_req_ai_asker_relations = { VALUE = 20 }
+        }
+        add = 20
+    }
     min = 5
     max = 95
 }
@@ -239,14 +252,27 @@ nesnd_mug_aid_answer_chance = {
     min = 5
     max = 95
 }
-# Overlord scope, per cent. Our subject (nesnd_india_matter_from) asks Mughal for famine aid and needs
-# our consent first (read by nesnd_india_matter_consent_chance for kind 9). It rests mostly on our
+# Overlord scope, per cent. Our subject (scope:india_sender) asks Mughal for famine aid and needs
+# our consent first (read by nesnd_india_req_consent_chance for kind 12). It rests mostly on our
 # relations with that subject.
 nesnd_mug_aid_consent_chance = {
     value = 50
-    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 50 } } add = 30 }
-    else_if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 20 } } add = 15 }
-    if = { limit = { nesnd_mug_ai_asker_hostile = yes } add = -35 }
+    if = {
+        limit = {
+            nesnd_india_req_ai_asker_relations = { VALUE = 50 }
+        }
+        add = 30
+    }
+    else_if = {
+        limit = {
+            nesnd_india_req_ai_asker_relations = { VALUE = 20 }
+        }
+        add = 15
+    }
+    if = {
+        limit = { nesnd_mug_ai_asker_hostile = yes }
+        add = -35
+    }
     min = 5
     max = 95
 }

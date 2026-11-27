@@ -1,8 +1,83 @@
-﻿# ==== The request channel: princes ask their overlord or a power for aid (formerly nesnd_india_diplomacy.txt) ====
+﻿# ==== The request channel: unified event-based requests across Indian states and powers ====
+# Variables on the asking country:
+#   nesnd_india_request_kind    1 teachers, 2 engineers, 3 officers, 4 autonomy, 5 defensive pact,
+#                               6 empire invites prince, 8 prince asks empire, 9 local project,
+#                               10 Mughal sells property, 11 Mughal buys back property, 12 famine aid.
+#   nesnd_india_request_stage   1 awaiting overlord consent, 2 awaiting partner reply
 nesnd_india_request_serial = { value = 0 if = { limit = { has_variable = nesnd_india_request_serial } value = var:nesnd_india_request_serial } }
 nesnd_india_request_kind = { value = 0 if = { limit = { has_variable = nesnd_india_request_kind } value = var:nesnd_india_request_kind } }
 nesnd_india_request_quote = { value = 0 if = { limit = { has_variable = nesnd_india_request_quote } value = var:nesnd_india_request_quote } }
+nesnd_india_request_stage_value = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_india_request_stage }
+        value = var:nesnd_india_request_stage
+    }
+}
+nesnd_india_request_consent_side_value = {
+    value = 0
+    if = {
+        limit = { has_variable = nesnd_india_request_consent_side }
+        value = var:nesnd_india_request_consent_side
+    }
+}
 nesnd_india_incoming_kind = { value = 0 if = { limit = { exists = scope:india_sender } value = scope:india_sender.nesnd_india_request_kind } }
+nesnd_india_incoming_quote = {
+    value = 0
+    if = {
+        limit = { exists = scope:india_sender }
+        value = scope:india_sender.nesnd_india_request_quote
+    }
+}
+nesnd_india_req_consent_chance = {
+    value = 40
+    if = {
+        limit = { nesnd_india_incoming_kind = 9 }
+        value = nesnd_india_project_consent_chance
+    }
+    else_if = {
+        limit = {
+            OR = {
+                nesnd_india_incoming_kind = 6
+                nesnd_india_incoming_kind = 8
+            }
+        }
+        value = nesnd_india_union_consent_chance
+    }
+    else_if = {
+        limit = { nesnd_india_incoming_kind = 12 }
+        value = nesnd_mug_aid_consent_chance
+    }
+}
+nesnd_india_req_consent_forbid_chance = {
+    value = 100
+    subtract = nesnd_india_req_consent_chance
+    min = 0
+}
+nesnd_india_req_answer_chance = {
+    value = 0
+    if = {
+        limit = { nesnd_india_incoming_kind = 9 }
+        value = nesnd_india_project_fund_chance
+    }
+    else_if = {
+        limit = { nesnd_india_incoming_kind = 10 }
+        value = nesnd_mug_sell_answer_chance
+    }
+    else_if = {
+        limit = { nesnd_india_incoming_kind = 11 }
+        value = nesnd_mug_buyback_answer_chance
+    }
+    else_if = {
+        limit = { nesnd_india_incoming_kind = 12 }
+        value = nesnd_mug_aid_answer_chance
+    }
+}
+nesnd_india_req_answer_decline_chance = {
+    value = 100
+    subtract = nesnd_india_req_answer_chance
+    min = 0
+}
 nesnd_india_grant = { value = net_fixed_income multiply = 4 min = 25000 max = 125000 }
 nesnd_india_regime = {
     value = 0
@@ -42,14 +117,15 @@ nesnd_india_government_levels = {
 }
 
 # ==== Local projects (formerly nesnd_india_projects.txt) ====
-# Local projects of the Indian princes. A project asked of another government is a matter of kind 1;
-# its stage, the government asked, the sum and the deadline are the matter's (nesnd_india_matters.txt).
+# Local projects of the Indian princes. A project asked of another government uses request kind 9
+# on the unified request channel; construction uses nesnd_india_project_building.
 # Project variables on the prince:
-#   nesnd_india_project_type    1 university, 2 tooling workshop, 3 railway, 4 survey and training
-#   nesnd_india_project_site    the chosen state
-#   nesnd_india_project_base    levels standing at the site when the work was ordered
-#   nesnd_india_project_choice  the thirty days in which the prince chooses
-#   nesnd_india_project_shown   the last project chosen, kept after it ends so that reports can name it
+#   nesnd_india_project_type      1 university, 2 tooling workshop, 3 railway, 4 survey and training
+#   nesnd_india_project_site      the chosen state
+#   nesnd_india_project_base      levels standing at the site when the work was ordered
+#   nesnd_india_project_choice    the thirty days in which the prince chooses
+#   nesnd_india_project_building  set while the ordered building is under construction
+#   nesnd_india_project_shown     the last project chosen, kept after it ends so that reports can name it
 nesnd_india_project_type_value = { value = 0 if = { limit = { has_variable = nesnd_india_project_type } value = var:nesnd_india_project_type } }
 nesnd_india_project_base_value = { value = 0 if = { limit = { has_variable = nesnd_india_project_base } value = var:nesnd_india_project_base } }
 nesnd_india_project_shown_value = { value = 0 if = { limit = { has_variable = nesnd_india_project_shown } value = var:nesnd_india_project_shown } }
@@ -81,11 +157,30 @@ nesnd_india_project_consent_chance = {
 # Answering government scope, per cent. A government asked for money, or for its engineers.
 nesnd_india_project_fund_chance = {
     value = 30
-    if = { limit = { nesnd_india_matter_ai_asker_relations = { VALUE = 50 } } add = 25 }
-    if = { limit = { nesnd_india_project_ai_has_interest = yes } add = 20 }
-    if = { limit = { nesnd_india_empire = yes } add = 20 }
-    if = { limit = { nesnd_india_project_ai_owner_ours = yes } add = 15 }
-    if = { limit = { nesnd_india_project_offer_is = { TYPE = 4 } } add = 30 }
+    if = {
+        limit = {
+            nesnd_india_req_ai_asker_relations = { VALUE = 50 }
+        }
+        add = 25
+    }
+    if = {
+        limit = { nesnd_india_project_ai_has_interest = yes }
+        add = 20
+    }
+    if = {
+        limit = { nesnd_india_empire = yes }
+        add = 20
+    }
+    if = {
+        limit = { nesnd_india_project_ai_owner_ours = yes }
+        add = 15
+    }
+    if = {
+        limit = {
+            nesnd_india_project_offer_is = { TYPE = 4 }
+        }
+        add = 30
+    }
     min = 5
     max = 95
 }
@@ -117,7 +212,7 @@ nesnd_india_union_half_host_population = {
     if = { limit = { exists = scope:india_sender } value = scope:india_sender.total_population multiply = 0.5 }
 }
 
-# Answering overlord scope, matter kind 6, per cent: it lets its subject go to Mughal.
+# Answering overlord scope, request kinds 6 and 8, per cent: it lets its subject go to Mughal.
 nesnd_india_union_consent_chance = {
     value = 15
     if = { limit = { nesnd_india_union_ai_host_friendly = yes } add = 20 }

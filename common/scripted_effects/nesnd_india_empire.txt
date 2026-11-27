@@ -290,59 +290,118 @@ nesnd_india_order_ai = {
 # forms BHT or DRA does not get them. Variables and sums: common/script_values/nesnd_india_empire.txt.
 #
 #   The old agreement with the overlord (journal nesnd_mug_france):
-#     a sale        matter kind 7 to the overlord; on agreement the overlord pays and one level of a
+#     a sale        request kind 10 to the overlord; on agreement the overlord pays and one level of a
 #                   building we hold becomes its own (nesnd_mug_deal).
-#     a buyback     matter kind 8 to the overlord; on agreement we pay and one level it holds here
+#     a buyback     request kind 11 to the overlord; on agreement we pay and one level it holds here
 #                   becomes ours. No independence is bought: liberty desire stays vanilla's.
 #   The council of princes (journal nesnd_mug_council, events nesnd_mug.11 to .13).
 #   Famine (events nesnd_mug.21 to .24): Mughal or a prince relieves its struck states, or a prince asks
-#     Mughal or its overlord (matter kind 9).
+#     Mughal or its overlord (request kind 12).
 
 # ---------------------------------------------------------------------------------------------
 # Monthly, from nesnd_india_refresh
 # ---------------------------------------------------------------------------------------------
 nesnd_mug_upkeep = {
-    if = { limit = { nesnd_mug_france_live = yes NOT = { has_journal_entry = nesnd_mug_france } } add_journal_entry = { type = nesnd_mug_france } }
+    if = {
+        limit = {
+            nesnd_mug_france_live = yes
+            NOT = { has_journal_entry = nesnd_mug_france }
+        }
+        add_journal_entry = { type = nesnd_mug_france }
+    }
     # The overlord of the old agreement, for the outcome "the old agreement ends".
-    if = { limit = { nesnd_mug_france_live = yes } set_variable = { name = nesnd_mug_france_lord value = overlord } }
-    if = { limit = { nesnd_mug_council_live = yes NOT = { has_journal_entry = nesnd_mug_council } } add_journal_entry = { type = nesnd_mug_council } }
-    # A plea for famine aid still on its way (it waits while the government asked is busy with another
-    # matter, at most 90 days from sending): the struck states stay marked, so that the aid reaches them
-    # when it is granted. Once the 90 days are over the marks run out on their own.
-    if = { limit = { nesnd_india_matter_kind_value = 9 has_variable = nesnd_india_matter_queue }
+    if = {
+        limit = { nesnd_mug_france_live = yes }
+        set_variable = {
+            name = nesnd_mug_france_lord
+            value = overlord
+        }
+    }
+    if = {
+        limit = {
+            nesnd_mug_council_live = yes
+            NOT = { has_journal_entry = nesnd_mug_council }
+        }
+        add_journal_entry = { type = nesnd_mug_council }
+    }
+    # Keep struck state marks alive while a famine aid request (kind 12) waits for an answer.
+    if = {
+        limit = {
+            nesnd_india_request_kind = 12
+            has_variable = nesnd_india_request_clock
+        }
         every_scope_state = {
             limit = { has_variable = nesnd_mug_famine_state }
             remove_variable = nesnd_mug_famine_state
-            set_variable = { name = nesnd_mug_famine_state days = 120 }
+            set_variable = {
+                name = nesnd_mug_famine_state
+                days = 120
+            }
         }
     }
-    if = { limit = { nesnd_mug_famine_due = yes } nesnd_mug_famine_start = yes }
-    if = { limit = { nesnd_mug_treaty_dispute_due = yes } nesnd_mug_treaty_dispute_start_event = yes }
+    if = {
+        limit = { nesnd_mug_famine_due = yes }
+        nesnd_mug_famine_start = yes
+    }
+    if = {
+        limit = { nesnd_mug_treaty_dispute_due = yes }
+        nesnd_mug_treaty_dispute_start_event = yes
+    }
 }
 
 # ---------------------------------------------------------------------------------------------
 # The property deals (Mughal scope)
 # ---------------------------------------------------------------------------------------------
 # The building is chosen when the price is named: its state and type are kept on Mughal
-# (nesnd_mug_deal_state, nesnd_mug_deal_kind; cleared with the matter) and nesnd_mug_deal looks for it.
+# (nesnd_mug_deal_state, nesnd_mug_deal_kind; cleared with the request) and nesnd_mug_deal looks for it.
 nesnd_mug_ask = {
-    if = { limit = { nesnd_mug_can_ask_$WHAT$ = yes exists = overlord }
-        save_scope_value_as = { name = mug_ask_kind value = $KIND$ }
+    if = {
+        limit = {
+            nesnd_mug_can_ask_$WHAT$ = yes
+            exists = overlord
+        }
+        save_scope_value_as = {
+            name = mug_ask_kind
+            value = $KIND$
+        }
         clear_saved_scope = mug_ask_owner
-        if = { limit = { scope:mug_ask_kind = 7 } save_scope_as = mug_ask_owner }
-        else = { overlord = { save_scope_as = mug_ask_owner } }
+        if = {
+            limit = { scope:mug_ask_kind = 10 }
+            save_scope_as = mug_ask_owner
+        }
+        else = {
+            overlord = { save_scope_as = mug_ask_owner }
+        }
         clear_saved_scope = mug_ask_building
         ordered_scope_building = {
-            limit = { nesnd_mug_deal_site = { OWNER = scope:mug_ask_owner } }
+            limit = {
+                nesnd_mug_deal_site = { OWNER = scope:mug_ask_owner }
+            }
             order_by = nesnd_mug_deal_order
             position = 0
             check_range_bounds = no
             save_scope_as = mug_ask_building
         }
-        if = { limit = { exists = scope:mug_ask_building }
-            set_variable = { name = nesnd_mug_deal_state value = scope:mug_ask_building.state }
-            set_variable = { name = nesnd_mug_deal_kind value = scope:mug_ask_building.nesnd_mug_deal_type_index }
-            nesnd_india_matter_send = { KIND = $KIND$ TO = overlord AMOUNT = $AMOUNT$ }
+        if = {
+            limit = { exists = scope:mug_ask_building }
+            set_variable = {
+                name = nesnd_mug_deal_state
+                value = scope:mug_ask_building.state
+            }
+            set_variable = {
+                name = nesnd_mug_deal_kind
+                value = scope:mug_ask_building.nesnd_mug_deal_type_index
+            }
+            clear_saved_scope = india_partner
+            overlord = { save_scope_as = india_partner }
+            nesnd_india_send_request = { KIND = $KIND$ }
+            if = {
+                limit = {
+                    NOT = { has_variable = nesnd_india_request_clock }
+                }
+                remove_variable = nesnd_mug_deal_state
+                remove_variable = nesnd_mug_deal_kind
+            }
         }
     }
 }
@@ -1251,79 +1310,90 @@ nesnd_mug_deal_recreate = {
 }
 
 # ---------------------------------------------------------------------------------------------
-# Answering a matter of kinds 7 to 9 (answering scope, from nesnd_india_matter_accept)
-# scope:india_matter_answerer answers, scope:india_matter_holder asked.
+# Answering a request of kinds 10 to 12 (answering scope, from nesnd_india_accept_request)
+# scope:india_partner answers, scope:india_sender asked.
 # ---------------------------------------------------------------------------------------------
-nesnd_mug_matter_accept = {
-    # The price named when Mughal asked (kept in the matter), also for the report event nesnd_mug.1.
-    save_scope_value_as = { name = mug_deal_price value = nesnd_india_matter_quote }
-    if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
-        nesnd_mug_deal = { HOLDER = scope:india_matter_holder NEW = scope:india_matter_answerer OLD = scope:india_matter_holder }
-        if = { limit = { exists = scope:mug_deal_done }
-            add_treasury = { value = scope:mug_deal_price multiply = -1 }
-            scope:india_matter_holder = { add_treasury = scope:mug_deal_price }
+nesnd_mug_deal_accept = {
+    save_scope_value_as = {
+        name = mug_deal_price
+        value = nesnd_india_incoming_quote
+    }
+    if = {
+        limit = { nesnd_india_incoming_kind = 10 }
+        nesnd_mug_deal = {
+            HOLDER = scope:india_sender
+            NEW = scope:india_partner
+            OLD = scope:india_sender
+        }
+        if = {
+            limit = { exists = scope:mug_deal_done }
+            add_treasury = {
+                value = scope:mug_deal_price
+                multiply = -1
+            }
+            scope:india_sender = { add_treasury = scope:mug_deal_price }
         }
     }
-    else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
-        nesnd_mug_deal = { HOLDER = scope:india_matter_holder NEW = scope:india_matter_holder OLD = scope:india_matter_answerer }
-        if = { limit = { exists = scope:mug_deal_done }
-            scope:india_matter_holder = { add_treasury = { value = scope:mug_deal_price multiply = -1 } }
+    else_if = {
+        limit = { nesnd_india_incoming_kind = 11 }
+        nesnd_mug_deal = {
+            HOLDER = scope:india_sender
+            NEW = scope:india_sender
+            OLD = scope:india_partner
+        }
+        if = {
+            limit = { exists = scope:mug_deal_done }
+            scope:india_sender = {
+                add_treasury = {
+                    value = scope:mug_deal_price
+                    multiply = -1
+                }
+            }
             add_treasury = scope:mug_deal_price
         }
     }
     else = {
-        add_treasury = { value = nesnd_india_matter_quote multiply = -1 }
-        scope:india_matter_holder = {
+        add_treasury = {
+            value = nesnd_india_incoming_quote
+            multiply = -1
+        }
+        scope:india_sender = {
             nesnd_mug_famine_aid_loyalists = yes
             nesnd_mug_relieve_states = yes
-            change_relations = { country = scope:india_matter_answerer value = 25 }
+            change_relations = {
+                country = scope:india_partner
+                value = 25
+            }
         }
-        if = { limit = { has_variable = nesnd_india_mughal_court } scope:india_matter_holder = { set_variable = { name = nesnd_mug_council_attended months = 120 } } }
-    }
-    scope:india_matter_holder = {
-        nesnd_india_matter_save_names = yes
-        if = { limit = { nesnd_india_matter_kind_value = 9 } trigger_event = { id = nesnd_mug.23 popup = yes } }
-        else = { trigger_event = { id = nesnd_mug.1 popup = yes } }
-        nesnd_india_matter_clear = yes
-    }
-}
-# Holder scope, from nesnd_india_matter_fail (scope:india_matter_result is saved).
-nesnd_mug_matter_fail = {
-    if = { limit = { nesnd_india_matter_kind_value = 9 } trigger_event = { id = nesnd_mug.24 popup = yes } }
-    else = {
         if = {
-            limit = { scope:india_matter_result = 2 exists = scope:india_matter_to }
-            change_relations = { country = scope:india_matter_to value = -15 }
-            create_diplomatic_catalyst = {
-                type = catalyst_event_negative
-                target = scope:india_matter_to
+            limit = { has_variable = nesnd_india_mughal_court }
+            scope:india_sender = {
+                set_variable = {
+                    name = nesnd_mug_council_attended
+                    months = 120
+                }
             }
         }
-        else_if = {
-            limit = { scope:india_matter_result = 1 exists = scope:india_matter_permit }
-            change_relations = { country = scope:india_matter_permit value = -15 }
-            create_diplomatic_catalyst = {
-                type = catalyst_event_negative
-                target = scope:india_matter_permit
+    }
+    scope:india_sender = {
+        save_scope_value_as = {
+            name = india_req_kind
+            value = nesnd_india_request_kind
+        }
+        if = {
+            limit = { nesnd_india_request_kind = 12 }
+            trigger_event = {
+                id = nesnd_mug.23
+                popup = yes
             }
         }
-        trigger_event = { id = nesnd_mug.2 popup = yes }
-    }
-    nesnd_india_matter_clear = yes
-}
-# What the answering government is shown on the accept button. Tooltips only.
-nesnd_mug_accept_tooltips = {
-    if = { limit = { nesnd_india_matter_is = { KIND = 7 } }
-        custom_tooltip = nesnd_mug_accept_sell_tt
-        show_as_tooltip = { add_treasury = { value = nesnd_india_matter_quote multiply = -1 } }
-    }
-    else_if = { limit = { nesnd_india_matter_is = { KIND = 8 } }
-        custom_tooltip = nesnd_mug_accept_buyback_tt
-        show_as_tooltip = { add_treasury = nesnd_india_matter_quote }
-    }
-    else = {
-        custom_tooltip = nesnd_mug_accept_aid_tt
-        show_as_tooltip = { add_treasury = { value = nesnd_india_matter_quote multiply = -1 } }
+        else = {
+            trigger_event = {
+                id = nesnd_mug.1
+                popup = yes
+            }
+        }
+        nesnd_india_clear_request = yes
     }
 }
 
@@ -1331,13 +1401,39 @@ nesnd_mug_accept_tooltips = {
 # AI on the journal nesnd_mug_france (monthly). Hard limits are in the ask triggers.
 # ---------------------------------------------------------------------------------------------
 nesnd_mug_france_ai = {
-    if = { limit = { is_ai = yes nesnd_mug_can_ask_sell = yes }
-        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_sell_ask_chance }
-        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = sell KIND = 7 AMOUNT = nesnd_mug_sale_quote } }
+    if = {
+        limit = {
+            is_ai = yes
+            nesnd_mug_can_ask_sell = yes
+        }
+        save_temporary_scope_value_as = {
+            name = mug_ai_chance
+            value = nesnd_mug_sell_ask_chance
+        }
+        random = {
+            chance = scope:mug_ai_chance
+            nesnd_mug_ask = {
+                WHAT = sell
+                KIND = 10
+            }
+        }
     }
-    if = { limit = { is_ai = yes nesnd_mug_can_ask_buyback = yes }
-        save_temporary_scope_value_as = { name = mug_ai_chance value = nesnd_mug_buyback_ask_chance }
-        random = { chance = scope:mug_ai_chance nesnd_mug_ask = { WHAT = buyback KIND = 8 AMOUNT = nesnd_mug_buyback_quote } }
+    if = {
+        limit = {
+            is_ai = yes
+            nesnd_mug_can_ask_buyback = yes
+        }
+        save_temporary_scope_value_as = {
+            name = mug_ai_chance
+            value = nesnd_mug_buyback_ask_chance
+        }
+        random = {
+            chance = scope:mug_ai_chance
+            nesnd_mug_ask = {
+                WHAT = buyback
+                KIND = 11
+            }
+        }
     }
 }
 
@@ -1464,8 +1560,15 @@ nesnd_mug_self_relief = {
 }
 # Prince scope. TO is Mughal or our overlord.
 nesnd_mug_ask_aid = {
-    if = { limit = { exists = $TO$ nesnd_mug_matter_free = yes nesnd_mug_famine_states > 0 }
-        nesnd_india_matter_send = { KIND = 9 TO = $TO$ AMOUNT = nesnd_mug_famine_cost }
+    if = {
+        limit = {
+            exists = $TO$
+            nesnd_mug_request_free = yes
+            nesnd_mug_famine_states > 0
+        }
+        clear_saved_scope = india_partner
+        $TO$ = { save_scope_as = india_partner }
+        nesnd_india_send_request = { KIND = 12 }
     }
 }
 # Country scope (asking country). When famine aid is granted (kind 9), Indian-culture pops in each

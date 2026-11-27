@@ -1,93 +1,679 @@
-﻿# ==== The request channel: princes ask their overlord or a power for aid (formerly nesnd_india_diplomacy.txt) ====
+﻿# ==== The request channel: unified event-based requests across Indian states and powers ====
 nesnd_india_clear_request = {
-    if = { limit = { exists = var:nesnd_india_request_partner }
-        save_scope_as = india_request_cleanup_owner
-        if = { limit = { exists = scope:india_request_cleanup_owner }
-            var:nesnd_india_request_partner = {
-                if = { limit = { exists = var:nesnd_india_incoming_union_sender }
-                    if = { limit = { hidden_trigger = { var:nesnd_india_incoming_union_sender = scope:india_request_cleanup_owner } } remove_variable = nesnd_india_incoming_union_sender remove_variable = nesnd_india_incoming_union_clock }
+    save_scope_as = india_request_cleanup_owner
+    if = {
+        limit = { exists = var:nesnd_india_request_await }
+        var:nesnd_india_request_await = {
+            if = {
+                limit = {
+                    exists = var:nesnd_india_incoming_from
+                    hidden_trigger = { var:nesnd_india_incoming_from ?= scope:india_request_cleanup_owner }
                 }
+                remove_variable = nesnd_india_incoming_busy
+                remove_variable = nesnd_india_incoming_from
             }
-
         }
     }
-    remove_variable = nesnd_india_request_clock remove_variable = nesnd_india_request_partner
-    remove_variable = nesnd_india_request_kind remove_variable = nesnd_india_request_quote
+    if = {
+        limit = { exists = var:nesnd_india_request_partner }
+        var:nesnd_india_request_partner = {
+            if = {
+                limit = {
+                    exists = var:nesnd_india_incoming_from
+                    hidden_trigger = { var:nesnd_india_incoming_from ?= scope:india_request_cleanup_owner }
+                }
+                remove_variable = nesnd_india_incoming_busy
+                remove_variable = nesnd_india_incoming_from
+            }
+            if = {
+                limit = { exists = var:nesnd_india_incoming_union_sender }
+                if = {
+                    limit = {
+                        hidden_trigger = { var:nesnd_india_incoming_union_sender = scope:india_request_cleanup_owner }
+                    }
+                    remove_variable = nesnd_india_incoming_union_sender
+                    remove_variable = nesnd_india_incoming_union_clock
+                }
+            }
+        }
+    }
+    remove_variable = nesnd_india_request_clock
+    remove_variable = nesnd_india_request_partner
+    remove_variable = nesnd_india_request_kind
+    remove_variable = nesnd_india_request_quote
+    remove_variable = nesnd_india_request_stage
+    remove_variable = nesnd_india_request_await
+    remove_variable = nesnd_india_request_consent_side
+    remove_variable = nesnd_india_request_ok_own
+    remove_variable = nesnd_india_request_ok_other
     remove_variable = nesnd_india_union_mode
+    remove_variable = nesnd_mug_deal_state
+    remove_variable = nesnd_mug_deal_kind
 }
+# Sender scope, with scope:india_partner saved. Opens a request of KIND 1-6 or 8-12 and dispatches
+# either the overlord consent event (step 1) or the request event (step 2).
 nesnd_india_send_request = {
-    save_scope_value_as = { name = india_request_kind_to_send value = $KIND$ }
-    if = { limit = { OR = { nesnd_india_mission_country = yes AND = { scope:india_request_kind_to_send = 4 has_journal_entry = nesnd_india_indep is_subject = yes can_increase_autonomy = yes } } nesnd_india_channel_free = yes exists = scope:india_partner }
-        if = { limit = { scope:india_partner = { is_country_alive = yes } NOT = { this = scope:india_partner } NOT = { has_war_with = scope:india_partner } }
-            save_scope_as = india_sender
-            save_scope_value_as = { name = india_sender_regime value = nesnd_india_regime }
-            if = { limit = { is_subject = yes } overlord = { save_scope_as = india_sender_patron } } else = { save_scope_as = india_sender_patron }
-            if = { limit = { exists = scope:india_sender exists = scope:india_partner exists = scope:india_sender_patron exists = scope:india_sender_regime }
+    save_scope_value_as = {
+        name = india_request_kind_to_send
+        value = $KIND$
+    }
+    if = {
+        limit = {
+            OR = {
+                nesnd_india_mission_country = yes
+                AND = {
+                    scope:india_request_kind_to_send = 4
+                    has_journal_entry = nesnd_india_indep
+                    is_subject = yes
+                    can_increase_autonomy = yes
+                }
+            }
+            trigger_if = {
+                limit = { scope:india_request_kind_to_send = 12 }
+                nesnd_mug_request_free = yes
+            }
+            trigger_else = { nesnd_india_channel_free = yes }
+            exists = scope:india_partner
+        }
+        if = {
+            limit = {
+                scope:india_partner = { is_country_alive = yes }
+                NOT = { this = scope:india_partner }
+                NOT = { has_war_with = scope:india_partner }
+            }
+            set_variable = {
+                name = nesnd_india_request_serial
+                value = {
+                    value = nesnd_india_request_serial
+                    add = 1
+                }
+            }
+            set_variable = {
+                name = nesnd_india_request_kind
+                value = $KIND$
+            }
+            set_variable = {
+                name = nesnd_india_request_partner
+                value = scope:india_partner
+            }
+            if = {
+                limit = { nesnd_india_request_kind = 8 }
+                set_variable = {
+                    name = nesnd_india_request_quote
+                    value = scope:india_partner.nesnd_india_grant
+                }
+            }
+            else_if = {
+                limit = { nesnd_india_request_kind = 9 }
+                set_variable = {
+                    name = nesnd_india_request_quote
+                    value = nesnd_india_project_ask_amount
+                }
+            }
+            else_if = {
+                limit = { nesnd_india_request_kind = 10 }
+                set_variable = {
+                    name = nesnd_india_request_quote
+                    value = nesnd_mug_sale_quote
+                }
+            }
+            else_if = {
+                limit = { nesnd_india_request_kind = 11 }
+                set_variable = {
+                    name = nesnd_india_request_quote
+                    value = nesnd_mug_buyback_quote
+                }
+            }
+            else_if = {
+                limit = { nesnd_india_request_kind = 12 }
+                set_variable = {
+                    name = nesnd_india_request_quote
+                    value = nesnd_mug_famine_cost
+                }
+            }
+            else = {
+                set_variable = {
+                    name = nesnd_india_request_quote
+                    value = nesnd_india_grant
+                }
+            }
+            set_variable = {
+                name = nesnd_india_request_clock
+                days = 45
+            }
+            if = {
+                limit = {
+                    NOT = { nesnd_india_request_kind = 12 }
+                }
+                set_variable = {
+                    name = nesnd_india_request_cooldown
+                    months = 6
+                }
+            }
+            remove_variable = nesnd_india_request_ok_own
+            remove_variable = nesnd_india_request_ok_other
+            remove_variable = nesnd_india_request_consent_side
+            remove_variable = nesnd_india_request_await
+            if = {
+                limit = { nesnd_india_request_kind = 6 }
                 scope:india_partner = {
-                    save_scope_value_as = { name = india_partner_regime value = nesnd_india_regime }
-                    if = { limit = { is_subject = yes } overlord = { save_scope_as = india_partner_patron } } else = { save_scope_as = india_partner_patron }
+                    set_variable = {
+                        name = nesnd_india_incoming_union_sender
+                        value = prev
+                    }
+                    set_variable = {
+                        name = nesnd_india_incoming_union_clock
+                        days = 45
+                    }
                 }
-                set_variable = { name = nesnd_india_request_serial value = { value = nesnd_india_request_serial add = 1 } }
-                save_scope_value_as = { name = india_serial value = nesnd_india_request_serial }
-                if = { limit = { exists = scope:india_serial exists = scope:india_partner_patron exists = scope:india_partner_regime }
-                    set_variable = { name = nesnd_india_request_kind value = $KIND$ }
-                    set_variable = { name = nesnd_india_request_partner value = scope:india_partner }
-                    set_variable = { name = nesnd_india_request_quote value = nesnd_india_grant }
-                    # A prince asking to join quotes what Mughal would pay.
-                    if = { limit = { nesnd_india_request_kind = 8 } set_variable = { name = nesnd_india_request_quote value = scope:india_partner.nesnd_india_grant } }
-                    set_variable = { name = nesnd_india_request_clock days = 45 }
-                    set_variable = { name = nesnd_india_request_cooldown months = 6 }
-                    if = { limit = { nesnd_india_request_kind = 6 } scope:india_partner = { set_variable = { name = nesnd_india_incoming_union_sender value = scope:india_sender } set_variable = { name = nesnd_india_incoming_union_clock days = 45 } } }
-                    scope:india_partner = { trigger_event = { id = nesnd_india_diplomacy.1 days = 1 popup = yes } }
-
-
+            }
+            nesnd_india_dispatch_request = yes
+        }
+    }
+}
+# Sender scope. Advances an active request to its next step: own overlord consent, partner's overlord
+# consent, or the partner's reply event (nesnd_india_diplomacy.1).
+nesnd_india_dispatch_request = {
+    if = {
+        limit = { exists = var:nesnd_india_request_partner }
+        save_scope_as = india_sender
+        save_scope_value_as = {
+            name = india_sender_regime
+            value = nesnd_india_regime
+        }
+        if = {
+            limit = { is_subject = yes }
+            overlord = { save_scope_as = india_sender_patron }
+        }
+        else = { save_scope_as = india_sender_patron }
+        save_scope_value_as = {
+            name = india_serial
+            value = nesnd_india_request_serial
+        }
+        var:nesnd_india_request_partner = {
+            save_scope_as = india_partner
+            save_scope_value_as = {
+                name = india_partner_regime
+                value = nesnd_india_regime
+            }
+            if = {
+                limit = { is_subject = yes }
+                overlord = { save_scope_as = india_partner_patron }
+            }
+            else = { save_scope_as = india_partner_patron }
+        }
+        if = {
+            limit = { nesnd_india_request_kind = 9 }
+            nesnd_india_project_save_names = yes
+        }
+        if = {
+            limit = {
+                nesnd_india_req_own_consent_needed = yes
+                NOT = { has_variable = nesnd_india_request_ok_own }
+                exists = overlord
+            }
+            set_variable = {
+                name = nesnd_india_request_stage
+                value = 1
+            }
+            set_variable = {
+                name = nesnd_india_request_consent_side
+                value = 1
+            }
+            set_variable = {
+                name = nesnd_india_request_await
+                value = overlord
+            }
+            set_variable = {
+                name = nesnd_india_request_clock
+                days = 45
+            }
+            overlord = {
+                save_scope_as = india_consent_lord
+                set_variable = {
+                    name = nesnd_india_incoming_busy
+                    days = 35
                 }
+                set_variable = {
+                    name = nesnd_india_incoming_from
+                    value = scope:india_sender
+                    days = 35
+                }
+                trigger_event = {
+                    id = nesnd_india_diplomacy.6
+                    days = 1
+                    popup = yes
+                }
+            }
+        }
+        else_if = {
+            limit = {
+                nesnd_india_req_other_consent_needed = yes
+                NOT = { has_variable = nesnd_india_request_ok_other }
+                scope:india_partner = { exists = overlord }
+            }
+            set_variable = {
+                name = nesnd_india_request_stage
+                value = 1
+            }
+            set_variable = {
+                name = nesnd_india_request_consent_side
+                value = 2
+            }
+            set_variable = {
+                name = nesnd_india_request_await
+                value = scope:india_partner.overlord
+            }
+            set_variable = {
+                name = nesnd_india_request_clock
+                days = 45
+            }
+            scope:india_partner.overlord = {
+                save_scope_as = india_consent_lord
+                set_variable = {
+                    name = nesnd_india_incoming_busy
+                    days = 35
+                }
+                set_variable = {
+                    name = nesnd_india_incoming_from
+                    value = scope:india_sender
+                    days = 35
+                }
+                trigger_event = {
+                    id = nesnd_india_diplomacy.6
+                    days = 1
+                    popup = yes
+                }
+            }
+        }
+        else = {
+            if = {
+                limit = {
+                    OR = {
+                        nesnd_india_request_kind = 6
+                        nesnd_india_request_kind = 8
+                    }
+                    OR = {
+                        is_at_war = yes
+                        is_active_in_diplomatic_play = yes
+                        has_war_with = scope:india_partner
+                        scope:india_partner = {
+                            OR = {
+                                is_country_alive = no
+                                is_at_war = yes
+                                is_active_in_diplomatic_play = yes
+                            }
+                        }
+                    }
+                }
+                save_scope_value_as = {
+                    name = india_req_result
+                    value = 5
+                }
+                trigger_event = {
+                    id = nesnd_india_union.3
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
+            }
+            else_if = {
+                limit = {
+                    nesnd_india_request_kind = 9
+                    OR = {
+                        is_at_war = yes
+                        has_war_with = scope:india_partner
+                        NOT = { nesnd_india_project_site_valid = yes }
+                        scope:india_partner = { is_country_alive = no }
+                    }
+                }
+                nesnd_india_project_save_names = yes
+                save_scope_value_as = {
+                    name = india_req_result
+                    value = 5
+                }
+                trigger_event = {
+                    id = nesnd_india_project.5
+                    popup = yes
+                }
+                nesnd_india_project_clear = yes
+            }
+            else = {
+                set_variable = {
+                    name = nesnd_india_request_stage
+                    value = 2
+                }
+                remove_variable = nesnd_india_request_consent_side
+                set_variable = {
+                    name = nesnd_india_request_await
+                    value = scope:india_partner
+                }
+                set_variable = {
+                    name = nesnd_india_request_clock
+                    days = 45
+                }
+                if = {
+                    limit = { nesnd_india_request_kind = 6 }
+                    scope:india_partner = {
+                        set_variable = {
+                            name = nesnd_india_incoming_union_sender
+                            value = scope:india_sender
+                        }
+                        set_variable = {
+                            name = nesnd_india_incoming_union_clock
+                            days = 45
+                        }
+                    }
+                }
+                scope:india_partner = {
+                    set_variable = {
+                        name = nesnd_india_incoming_busy
+                        days = 35
+                    }
+                    set_variable = {
+                        name = nesnd_india_incoming_from
+                        value = scope:india_sender
+                        days = 35
+                    }
+                    trigger_event = {
+                        id = nesnd_india_diplomacy.1
+                        days = 1
+                        popup = yes
+                    }
+                }
+            }
+        }
+    }
+}
+# Overlord scope in nesnd_india_diplomacy.6. Permits the request and advances it.
+nesnd_india_consent_permit = {
+    if = {
+        limit = { nesnd_india_consent_valid = yes }
+        remove_variable = nesnd_india_incoming_busy
+        remove_variable = nesnd_india_incoming_from
+        save_scope_as = india_consent_lord
+        scope:india_sender = {
+            if = {
+                limit = { nesnd_india_request_consent_side_value = 1 }
+                set_variable = nesnd_india_request_ok_own
+                if = {
+                    limit = {
+                        scope:india_partner = { overlord ?= scope:india_consent_lord }
+                    }
+                    set_variable = nesnd_india_request_ok_other
+                }
+            }
+            else = { set_variable = nesnd_india_request_ok_other }
+            nesnd_india_dispatch_request = yes
+        }
+    }
+}
+# Overlord scope in nesnd_india_diplomacy.6. Forbids the request and tells the asking country.
+nesnd_india_consent_forbid = {
+    if = {
+        limit = { nesnd_india_consent_valid = yes }
+        remove_variable = nesnd_india_incoming_busy
+        remove_variable = nesnd_india_incoming_from
+        save_scope_as = india_consent_lord
+        save_scope_value_as = {
+            name = india_req_result
+            value = 1
+        }
+        scope:india_sender = {
+            if = {
+                limit = { nesnd_india_request_kind = 9 }
+                nesnd_india_project_save_names = yes
+                change_relations = {
+                    country = scope:india_consent_lord
+                    value = -15
+                }
+                create_diplomatic_catalyst = {
+                    type = catalyst_event_negative
+                    target = scope:india_consent_lord
+                }
+                trigger_event = {
+                    id = nesnd_india_project.5
+                    popup = yes
+                }
+                nesnd_india_project_clear = yes
+            }
+            else_if = {
+                limit = {
+                    OR = {
+                        nesnd_india_request_kind = 6
+                        nesnd_india_request_kind = 8
+                    }
+                }
+                trigger_event = {
+                    id = nesnd_india_union.3
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
+            }
+            else_if = {
+                limit = {
+                    OR = {
+                        nesnd_india_request_kind = 10
+                        nesnd_india_request_kind = 11
+                    }
+                }
+                save_scope_value_as = {
+                    name = india_req_kind
+                    value = nesnd_india_request_kind
+                }
+                change_relations = {
+                    country = scope:india_consent_lord
+                    value = -15
+                }
+                create_diplomatic_catalyst = {
+                    type = catalyst_event_negative
+                    target = scope:india_consent_lord
+                }
+                trigger_event = {
+                    id = nesnd_mug.2
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
+            }
+            else_if = {
+                limit = { nesnd_india_request_kind = 12 }
+                trigger_event = {
+                    id = nesnd_mug.24
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
+            }
+            else = {
+                trigger_event = {
+                    id = nesnd_india_diplomacy.3
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
             }
         }
     }
 }
 nesnd_india_refuse_request = {
-    if = { limit = { nesnd_india_reply_valid = yes nesnd_india_union_reply = yes } nesnd_india_union_decline = yes }
-    else_if = { limit = { nesnd_india_reply_valid = yes }
-        scope:india_sender = {
-            if = { limit = { nesnd_india_request_kind = 4 } add_liberty_desire = 10 }
-            if = { limit = { nesnd_india_request_kind = 4 }
-                change_relations = { country = scope:india_partner value = -30 }
-                create_diplomatic_catalyst = { type = catalyst_autonomy_increase_denied target = scope:india_partner }
-                scope:india_partner = { create_diplomatic_catalyst = { type = catalyst_autonomy_increase_requested target = scope:india_sender } }
+    if = {
+        limit = { nesnd_india_reply_valid = yes }
+        remove_variable = nesnd_india_incoming_busy
+        remove_variable = nesnd_india_incoming_from
+        if = {
+            limit = { nesnd_india_union_reply = yes }
+            nesnd_india_union_decline = yes
+        }
+        else_if = {
+            limit = { nesnd_india_incoming_kind = 9 }
+            save_scope_value_as = {
+                name = india_req_result
+                value = 2
             }
-            trigger_event = { id = nesnd_india_diplomacy.3 popup = yes }
-            nesnd_india_clear_request = yes
+            scope:india_sender = {
+                nesnd_india_project_save_names = yes
+                change_relations = {
+                    country = scope:india_partner
+                    value = -15
+                }
+                create_diplomatic_catalyst = {
+                    type = catalyst_event_negative
+                    target = scope:india_partner
+                }
+                trigger_event = {
+                    id = nesnd_india_project.5
+                    popup = yes
+                }
+                nesnd_india_project_clear = yes
+            }
+        }
+        else_if = {
+            limit = {
+                OR = {
+                    nesnd_india_incoming_kind = 10
+                    nesnd_india_incoming_kind = 11
+                }
+            }
+            save_scope_value_as = {
+                name = india_req_result
+                value = 2
+            }
+            scope:india_sender = {
+                save_scope_value_as = {
+                    name = india_req_kind
+                    value = nesnd_india_request_kind
+                }
+                change_relations = {
+                    country = scope:india_partner
+                    value = -15
+                }
+                create_diplomatic_catalyst = {
+                    type = catalyst_event_negative
+                    target = scope:india_partner
+                }
+                trigger_event = {
+                    id = nesnd_mug.2
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
+            }
+        }
+        else_if = {
+            limit = { nesnd_india_incoming_kind = 12 }
+            save_scope_value_as = {
+                name = india_req_result
+                value = 2
+            }
+            scope:india_sender = {
+                trigger_event = {
+                    id = nesnd_mug.24
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
+            }
+        }
+        else = {
+            scope:india_sender = {
+                if = {
+                    limit = { nesnd_india_request_kind = 4 }
+                    add_liberty_desire = 10
+                    change_relations = {
+                        country = scope:india_partner
+                        value = -30
+                    }
+                    create_diplomatic_catalyst = {
+                        type = catalyst_autonomy_increase_denied
+                        target = scope:india_partner
+                    }
+                    scope:india_partner = {
+                        create_diplomatic_catalyst = {
+                            type = catalyst_autonomy_increase_requested
+                            target = scope:india_sender
+                        }
+                    }
+                }
+                trigger_event = {
+                    id = nesnd_india_diplomacy.3
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
+            }
         }
     }
 }
 nesnd_india_accept_request = {
-    if = { limit = { nesnd_india_reply_can_accept = yes }
-        if = { limit = { nesnd_india_incoming_kind <= 3 }
-            add_treasury = { value = scope:india_sender.nesnd_india_request_quote multiply = -1 }
+    if = {
+        limit = { nesnd_india_reply_can_accept = yes }
+        remove_variable = nesnd_india_incoming_busy
+        remove_variable = nesnd_india_incoming_from
+        if = {
+            limit = { nesnd_india_incoming_kind <= 3 }
+            add_treasury = {
+                value = scope:india_sender.nesnd_india_request_quote
+                multiply = -1
+            }
             scope:india_sender = {
                 add_treasury = nesnd_india_request_quote
-                # Counted for the outcome "aid bound" of nesnd_india_foreign.
-                set_variable = { name = nesnd_india_aid_count value = { value = nesnd_india_aid_count_value add = 1 } }
-                if = { limit = { NOT = { is_target_in_variable_list = { name = nesnd_india_aid_donors target = scope:india_partner } } } add_to_variable_list = { name = nesnd_india_aid_donors target = scope:india_partner } }
-                add_modifier = { name = nesnd_india_french_advisers months = 48 }
-                set_variable = { name = nesnd_india_aid_lock months = 48 }
-                set_variable = { name = nesnd_india_adviser_partner value = scope:india_partner }
-                if = { limit = { is_subject = yes } set_variable = { name = nesnd_india_adviser_patron value = overlord } } else = { set_variable = { name = nesnd_india_adviser_patron value = this } }
-                set_owes_obligation_to = { country = scope:india_partner setting = yes }
+                set_variable = {
+                    name = nesnd_india_aid_count
+                    value = {
+                        value = nesnd_india_aid_count_value
+                        add = 1
+                    }
+                }
+                add_modifier = {
+                    name = nesnd_india_french_advisers
+                    months = 48
+                }
+                set_variable = {
+                    name = nesnd_india_aid_lock
+                    months = 48
+                }
+                set_variable = {
+                    name = nesnd_india_adviser_partner
+                    value = scope:india_partner
+                }
+                if = {
+                    limit = { is_subject = yes }
+                    set_variable = {
+                        name = nesnd_india_adviser_patron
+                        value = overlord
+                    }
+                }
+                else = {
+                    set_variable = {
+                        name = nesnd_india_adviser_patron
+                        value = this
+                    }
+                }
+                set_owes_obligation_to = {
+                    country = scope:india_partner
+                    setting = yes
+                }
                 if = {
                     limit = { nesnd_india_request_kind = 1 }
-                    add_modifier = { name = nesnd_india_french_teachers months = 48 }
+                    add_modifier = {
+                        name = nesnd_india_french_teachers
+                        months = 48
+                    }
                     scope:india_partner = {
-                        if = { limit = { has_modifier = nesnd_india_teaching_mission } remove_modifier = nesnd_india_teaching_mission }
-                        add_modifier = { name = nesnd_india_teaching_mission months = 48 }
+                        if = {
+                            limit = { has_modifier = nesnd_india_teaching_mission }
+                            remove_modifier = nesnd_india_teaching_mission
+                        }
+                        add_modifier = {
+                            name = nesnd_india_teaching_mission
+                            months = 48
+                        }
                     }
                 }
                 else_if = {
                     limit = { nesnd_india_request_kind = 2 }
-                    add_modifier = { name = nesnd_india_french_engineers months = 48 }
+                    add_modifier = {
+                        name = nesnd_india_french_engineers
+                        months = 48
+                    }
                     if = {
-                        limit = { capital = { nesnd_india_workshop_site = yes } }
+                        limit = {
+                            capital = { nesnd_india_workshop_site = yes }
+                        }
                         capital = { save_scope_as = india_workshop_state }
                     }
                     else = {
@@ -100,40 +686,111 @@ nesnd_india_accept_request = {
                         }
                     }
                     if = {
-                        limit = { exists = scope:india_workshop_state scope:india_workshop_state = { nesnd_india_workshop_stake_met = no } }
+                        limit = {
+                            exists = scope:india_workshop_state
+                            scope:india_workshop_state = { nesnd_india_workshop_stake_met = no }
+                        }
                         scope:india_workshop_state = {
-                            if = { limit = { scope:india_sender.nesnd_india_workshop_levels = 5 } nesnd_india_grant_workshop = { LEVELS = 5 } }
-                            else_if = { limit = { scope:india_sender.nesnd_india_workshop_levels = 4 } nesnd_india_grant_workshop = { LEVELS = 4 } }
-                            else_if = { limit = { scope:india_sender.nesnd_india_workshop_levels = 3 } nesnd_india_grant_workshop = { LEVELS = 3 } }
-                            else_if = { limit = { scope:india_sender.nesnd_india_workshop_levels = 2 } nesnd_india_grant_workshop = { LEVELS = 2 } }
-                            else = { nesnd_india_grant_workshop = { LEVELS = 1 } }
+                            if = {
+                                limit = { scope:india_sender.nesnd_india_workshop_levels = 5 }
+                                nesnd_india_grant_workshop = { LEVELS = 5 }
+                            }
+                            else_if = {
+                                limit = { scope:india_sender.nesnd_india_workshop_levels = 4 }
+                                nesnd_india_grant_workshop = { LEVELS = 4 }
+                            }
+                            else_if = {
+                                limit = { scope:india_sender.nesnd_india_workshop_levels = 3 }
+                                nesnd_india_grant_workshop = { LEVELS = 3 }
+                            }
+                            else_if = {
+                                limit = { scope:india_sender.nesnd_india_workshop_levels = 2 }
+                                nesnd_india_grant_workshop = { LEVELS = 2 }
+                            }
+                            else = {
+                                nesnd_india_grant_workshop = { LEVELS = 1 }
+                            }
                         }
                     }
                 }
                 else = {
-                    add_modifier = { name = nesnd_india_french_officers months = 48 }
+                    add_modifier = {
+                        name = nesnd_india_french_officers
+                        months = 48
+                    }
                     create_treaty = {
                         first_country = scope:india_sender
                         second_country = scope:india_partner
                         is_draft = no
                         binding_period = { years = 5 }
                         articles_to_create = {
-                            { article = military_access source_country = scope:india_sender target_country = scope:india_partner }
+                            {
+                                article = military_access
+                                source_country = scope:india_sender
+                                target_country = scope:india_partner
+                            }
                         }
                     }
                 }
             }
         }
-        else_if = { limit = { nesnd_india_incoming_kind = 4 } scope:india_sender = { increase_autonomy = yes add_liberty_desire = -20 } }
-        else_if = { limit = { nesnd_india_incoming_kind = 5 }
-            create_treaty = { first_country = scope:india_sender second_country = scope:india_partner is_draft = no binding_period = { years = 3 } articles_to_create = { { article = defensive_pact } } }
+        else_if = {
+            limit = { nesnd_india_incoming_kind = 4 }
+            scope:india_sender = {
+                increase_autonomy = yes
+                add_liberty_desire = -20
+            }
+        }
+        else_if = {
+            limit = { nesnd_india_incoming_kind = 5 }
+            create_treaty = {
+                first_country = scope:india_sender
+                second_country = scope:india_partner
+                is_draft = no
+                binding_period = { years = 3 }
+                articles_to_create = {
+                    { article = defensive_pact }
+                }
+            }
         }
         # Request kind 6 is answered by the options of its own (nesnd_india_union_accept).
-        if = { limit = { nesnd_india_incoming_kind = 8 }
-            if = { limit = { scope:india_sender = { nesnd_india_union_mode_value = 2 } } nesnd_india_union_accept = { MODE = dominion } }
-            else = { nesnd_india_union_accept = { MODE = merge } }
+        if = {
+            limit = { nesnd_india_incoming_kind = 8 }
+            if = {
+                limit = {
+                    scope:india_sender = { nesnd_india_union_mode_value = 2 }
+                }
+                nesnd_india_union_accept = { MODE = dominion }
+            }
+            else = {
+                nesnd_india_union_accept = { MODE = merge }
+            }
         }
-        else_if = { limit = { NOT = { nesnd_india_incoming_kind = 6 } } scope:india_sender = { change_relations = { country = scope:india_partner value = 25 } trigger_event = { id = nesnd_india_diplomacy.2 popup = yes } nesnd_india_clear_request = yes } }
+        else_if = {
+            limit = { nesnd_india_incoming_kind = 9 }
+            nesnd_india_project_accept = yes
+        }
+        else_if = {
+            limit = {
+                nesnd_india_incoming_kind >= 10
+                nesnd_india_incoming_kind <= 12
+            }
+            nesnd_mug_deal_accept = yes
+        }
+        else_if = {
+            limit = { nesnd_india_incoming_kind <= 5 }
+            scope:india_sender = {
+                change_relations = {
+                    country = scope:india_partner
+                    value = 25
+                }
+                trigger_event = {
+                    id = nesnd_india_diplomacy.2
+                    popup = yes
+                }
+                nesnd_india_clear_request = yes
+            }
+        }
     }
 }
 # Empire scope. Offer up to four eligible princes, largest first, and let the government pick one.
@@ -148,20 +805,21 @@ nesnd_india_open_union_choice = {
     ordered_country = { limit = { nesnd_india_union_target = yes } order_by = total_population position = 3 check_range_bounds = no save_scope_as = india_union_candidate_4 }
     trigger_event = { id = nesnd_india_diplomacy.5 popup = yes }
 }
-# A prince that is another country's subject: its overlord is asked first (matter kind 6 of Indian
-# affairs), and the invitation goes out once it consents (nesnd_india_union_handoff).
+# A prince that is another country's subject: its overlord is asked first (nesnd_india_diplomacy.6),
+# and the invitation goes out once it consents.
 nesnd_india_invite_union = {
-    if = { limit = { nesnd_india_can_invite_union = yes exists = $TARGET$ }
-        if = { limit = { $TARGET$ = { nesnd_india_union_target = yes } }
-            save_scope_as = india_union_inviter
-            if = { limit = { $TARGET$ = { nesnd_india_consent_needed = { OTHER = scope:india_union_inviter GRANTS = yes } } }
-                nesnd_india_matter_send = { KIND = 6 TO = $TARGET$ AMOUNT = nesnd_india_grant }
+    if = {
+        limit = {
+            nesnd_india_can_invite_union = yes
+            exists = $TARGET$
+        }
+        if = {
+            limit = {
+                $TARGET$ = { nesnd_india_union_target = yes }
             }
-            else = {
-                clear_saved_scope = india_partner
-                $TARGET$ = { save_scope_as = india_partner }
-                nesnd_india_send_request = { KIND = 6 }
-            }
+            clear_saved_scope = india_partner
+            $TARGET$ = { save_scope_as = india_partner }
+            nesnd_india_send_request = { KIND = 6 }
         }
     }
 }
@@ -230,23 +888,157 @@ nesnd_india_remove_advisers = {
     remove_variable = nesnd_india_adviser_partner remove_variable = nesnd_india_adviser_patron
 }
 nesnd_india_diplomacy_maintenance = {
-    if = { limit = { NOT = { nesnd_india_mission_country = yes } }
-        if = { limit = { NOT = { AND = { has_journal_entry = nesnd_india_indep nesnd_india_request_kind = 4 } } } nesnd_india_clear_request = yes }
+    if = {
+        limit = { has_variable = nesnd_india_incoming_busy }
+        if = {
+            limit = {
+                OR = {
+                    NOT = { exists = var:nesnd_india_incoming_from }
+                    var:nesnd_india_incoming_from = {
+                        OR = {
+                            is_country_alive = no
+                            NOT = { has_variable = nesnd_india_request_clock }
+                        }
+                    }
+                }
+            }
+            remove_variable = nesnd_india_incoming_busy
+            remove_variable = nesnd_india_incoming_from
+        }
+    }
+    if = {
+        limit = {
+            NOT = { nesnd_india_mission_country = yes }
+        }
+        if = {
+            limit = {
+                NOT = {
+                    AND = {
+                        has_journal_entry = nesnd_india_indep
+                        nesnd_india_request_kind = 4
+                    }
+                }
+            }
+            nesnd_india_clear_request = yes
+        }
         nesnd_india_remove_advisers = yes
     }
 
-    if = { limit = { has_variable = nesnd_india_request_partner NOT = { has_variable = nesnd_india_request_clock } } nesnd_india_clear_request = yes }
-    if = { limit = { has_variable = nesnd_india_incoming_union_sender NOT = { has_variable = nesnd_india_incoming_union_clock } } remove_variable = nesnd_india_incoming_union_sender }
-    if = { limit = { has_variable = nesnd_india_union_mode NOR = { has_variable = nesnd_india_request_clock has_variable = nesnd_india_matter_clock } } remove_variable = nesnd_india_union_mode }
-    if = { limit = { has_variable = nesnd_india_adviser_partner }
-        if = { limit = { exists = var:nesnd_india_adviser_partner exists = var:nesnd_india_adviser_patron }
-            if = { limit = { OR = {
+    if = {
+        limit = {
+            has_variable = nesnd_india_request_partner
+            NOT = { has_variable = nesnd_india_request_clock }
+        }
+        clear_saved_scope = india_partner
+        clear_saved_scope = india_consent_lord
+        if = {
+            limit = { exists = var:nesnd_india_request_partner }
+            var:nesnd_india_request_partner = { save_scope_as = india_partner }
+        }
+        if = {
+            limit = {
+                nesnd_india_request_stage_value = 1
+                exists = var:nesnd_india_request_await
+            }
+            var:nesnd_india_request_await = { save_scope_as = india_consent_lord }
+        }
+        save_scope_value_as = {
+            name = india_req_result
+            value = 3
+        }
+        if = {
+            limit = {
+                OR = {
+                    nesnd_india_request_kind = 6
+                    nesnd_india_request_kind = 8
+                }
+                nesnd_india_request_stage_value = 1
+            }
+            trigger_event = {
+                id = nesnd_india_union.3
+                popup = yes
+            }
+            nesnd_india_clear_request = yes
+        }
+        else_if = {
+            limit = { nesnd_india_request_kind = 9 }
+            nesnd_india_project_save_names = yes
+            trigger_event = {
+                id = nesnd_india_project.5
+                popup = yes
+            }
+            nesnd_india_project_clear = yes
+        }
+        else_if = {
+            limit = {
+                OR = {
+                    nesnd_india_request_kind = 10
+                    nesnd_india_request_kind = 11
+                }
+            }
+            save_scope_value_as = {
+                name = india_req_kind
+                value = nesnd_india_request_kind
+            }
+            trigger_event = {
+                id = nesnd_mug.2
+                popup = yes
+            }
+            nesnd_india_clear_request = yes
+        }
+        else_if = {
+            limit = { nesnd_india_request_kind = 12 }
+            trigger_event = {
+                id = nesnd_mug.24
+                popup = yes
+            }
+            nesnd_india_clear_request = yes
+        }
+        else = { nesnd_india_clear_request = yes }
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_india_incoming_union_sender
+            NOT = { has_variable = nesnd_india_incoming_union_clock }
+        }
+        remove_variable = nesnd_india_incoming_union_sender
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_india_union_mode
+            NOT = { has_variable = nesnd_india_request_clock }
+        }
+        remove_variable = nesnd_india_union_mode
+    }
+    if = {
+        limit = { has_variable = nesnd_india_adviser_partner }
+        if = {
+            limit = {
+                exists = var:nesnd_india_adviser_partner
+                exists = var:nesnd_india_adviser_patron
+            }
+            if = {
+                limit = {
+                    OR = {
                         NOT = { has_modifier = nesnd_india_french_advisers }
                         has_war_with = var:nesnd_india_adviser_partner
-                        AND = { trigger_if = { limit = { is_subject = yes } NOT = { overlord = var:nesnd_india_adviser_patron } } trigger_else = { always = no } }
-                        AND = { is_subject = no NOT = { this = var:nesnd_india_adviser_patron } }
-                } } nesnd_india_remove_advisers = yes }
-        } else = { nesnd_india_remove_advisers = yes }
+                        AND = {
+                            trigger_if = {
+                                limit = { is_subject = yes }
+                                NOT = { overlord = var:nesnd_india_adviser_patron }
+                            }
+                            trigger_else = { always = no }
+                        }
+                        AND = {
+                            is_subject = no
+                            NOT = { this = var:nesnd_india_adviser_patron }
+                        }
+                    }
+                }
+                nesnd_india_remove_advisers = yes
+            }
+        }
+        else = { nesnd_india_remove_advisers = yes }
     }
 }
 # Empire scope. The prince's own pending request and advisers end with its state.
@@ -270,39 +1062,143 @@ nesnd_india_open_mission = {
     }
 }
 
-nesnd_india_mission_labels = {
-    c:FRA ?= { save_scope_as = nesnd_label_fra }
-    c:USM ?= { save_scope_as = nesnd_label_usm }
-    c:YN1 ?= { save_scope_as = nesnd_label_yn1 }
-    c:QE1 ?= { save_scope_as = nesnd_label_qe1 }
-    c:CNE ?= { save_scope_as = nesnd_label_cne }
-    c:JAP ?= { save_scope_as = nesnd_label_jap }
-    c:SHA ?= { save_scope_as = nesnd_label_sha }
-    c:GBR ?= { save_scope_as = nesnd_label_gbr }
-    c:HUS ?= { save_scope_as = nesnd_label_hus }
-    c:PRU ?= { save_scope_as = nesnd_label_pru }
-    c:AUS ?= { save_scope_as = nesnd_label_aus }
-    c:TUR ?= { save_scope_as = nesnd_label_tur }
+# Sender scope. Opens the choice of who to ask for foreign aid (nesnd_india_diplomacy.7):
+# subjects may ask only their direct overlord; independent states get up to three great powers
+# with an interest in North or South India, ordered by relations.
+nesnd_india_open_aid_choice = {
+    save_scope_as = india_aid_chooser
+    clear_saved_scope = india_aid_candidate_1
+    clear_saved_scope = india_aid_candidate_2
+    clear_saved_scope = india_aid_candidate_3
+    if = {
+        limit = {
+            is_subject = yes
+            exists = overlord
+        }
+        overlord = {
+            if = {
+                limit = {
+                    nesnd_india_mission_partner = { SENDER = scope:india_aid_chooser }
+                }
+                save_scope_as = india_aid_candidate_1
+            }
+        }
+    }
+    else = {
+        ordered_country = {
+            limit = {
+                nesnd_india_mission_partner = { SENDER = scope:india_aid_chooser }
+            }
+            order_by = "relations(scope:india_aid_chooser)"
+            position = 0
+            check_range_bounds = no
+            save_scope_as = india_aid_candidate_1
+        }
+        ordered_country = {
+            limit = {
+                nesnd_india_mission_partner = { SENDER = scope:india_aid_chooser }
+            }
+            order_by = "relations(scope:india_aid_chooser)"
+            position = 1
+            check_range_bounds = no
+            save_scope_as = india_aid_candidate_2
+        }
+        ordered_country = {
+            limit = {
+                nesnd_india_mission_partner = { SENDER = scope:india_aid_chooser }
+            }
+            order_by = "relations(scope:india_aid_chooser)"
+            position = 2
+            check_range_bounds = no
+            save_scope_as = india_aid_candidate_3
+        }
+    }
+    trigger_event = {
+        id = nesnd_india_diplomacy.7
+        popup = yes
+    }
 }
 
-# Pick one eligible country per mission. Independent senders give every candidate weight 1.
+# Prince scope. Opens the choice of mutual-defence partner (nesnd_india_diplomacy.8):
+# France, the Indian empire (Mughal or its successor), and the Ming Commonwealth, filtered by
+# whether a defensive pact can be signed today.
+nesnd_india_open_defence_choice = {
+    clear_saved_scope = india_defence_fra
+    clear_saved_scope = india_defence_emp
+    clear_saved_scope = india_defence_usm
+    if = {
+        limit = {
+            exists = c:FRA
+            nesnd_india_defence_candidate_ok = { PARTNER = c:FRA }
+        }
+        c:FRA = { save_scope_as = india_defence_fra }
+    }
+    if = {
+        limit = {
+            exists = var:nesnd_india_union_host
+            nesnd_india_defence_candidate_ok = { PARTNER = var:nesnd_india_union_host }
+        }
+        var:nesnd_india_union_host = { save_scope_as = india_defence_emp }
+    }
+    if = {
+        limit = {
+            exists = c:USM
+            nesnd_india_defence_candidate_ok = { PARTNER = c:USM }
+        }
+        c:USM = { save_scope_as = india_defence_usm }
+    }
+    trigger_event = {
+        id = nesnd_india_diplomacy.8
+        popup = yes
+    }
+}
+
+# Pick one eligible country per AI mission: subjects ask their overlord; independents pick
+# the eligible great power in India with the best relations.
 nesnd_india_choose_ai_partner = {
     save_scope_as = india_mission_requester
     clear_saved_scope = india_ai_partner
-    random_country = {
+    if = {
         limit = {
-            is_at_war = no
-            nesnd_india_mission_partner = { SENDER = scope:india_mission_requester }
-            nesnd_india_can_pay = { TEXT = nesnd_india_partner_can_fund_tt SUM = scope:india_mission_requester.nesnd_india_grant }
+            is_subject = yes
+            exists = overlord
         }
-        weight = {
-            base = 1
-            modifier = { factor = 6 c:YN1 ?= this scope:india_mission_requester = { is_direct_subject_of = c:USM } }
-            modifier = { factor = 3 c:JAP ?= this scope:india_mission_requester = { is_direct_subject_of = c:USM } }
+        overlord = {
+            if = {
+                limit = {
+                    is_at_war = no
+                    nesnd_india_target_not_busy = yes
+                    nesnd_india_mission_partner = { SENDER = scope:india_mission_requester }
+                    nesnd_india_can_pay = {
+                        TEXT = nesnd_india_partner_can_fund_tt
+                        SUM = scope:india_mission_requester.nesnd_india_grant
+                    }
+                }
+                save_scope_as = india_ai_partner
+            }
         }
-        save_scope_as = india_ai_partner
     }
-    if = { limit = { exists = scope:india_ai_partner } nesnd_india_open_mission = { PARTNER = scope:india_ai_partner } }
+    else = {
+        ordered_country = {
+            limit = {
+                is_at_war = no
+                nesnd_india_target_not_busy = yes
+                nesnd_india_mission_partner = { SENDER = scope:india_mission_requester }
+                nesnd_india_can_pay = {
+                    TEXT = nesnd_india_partner_can_fund_tt
+                    SUM = scope:india_mission_requester.nesnd_india_grant
+                }
+            }
+            order_by = "relations(scope:india_mission_requester)"
+            position = 0
+            check_range_bounds = no
+            save_scope_as = india_ai_partner
+        }
+    }
+    if = {
+        limit = { exists = scope:india_ai_partner }
+        nesnd_india_open_mission = { PARTNER = scope:india_ai_partner }
+    }
 }
 
 # ==== Local projects (formerly nesnd_india_projects.txt) ====
@@ -310,8 +1206,9 @@ nesnd_india_choose_ai_partner = {
 #
 # Order of a project paid for by another government:
 #   the prince chooses project, state and funder (events .1 to .3)
-#   -> nesnd_india_project_send        a matter of kind 1 (nesnd_india_matter_send): the overlord first
-#                                      if it must agree, then the funder, both in the journal nesnd_india_foreign_affairs
+#   -> nesnd_india_project_send        request kind 9 (nesnd_india_send_request): the overlord first
+#                                      via nesnd_india_diplomacy.6 if it must agree, then the funder
+#                                      via nesnd_india_diplomacy.1
 #   -> the funder agrees: nesnd_india_project_accept
 #   -> money moves, the building is ordered or created, the agreement is recorded on the state region.
 
@@ -319,35 +1216,89 @@ nesnd_india_choose_ai_partner = {
 # The prince (requester scope)
 # ---------------------------------------------------------------------------------------------
 nesnd_india_project_clear = {
-    remove_variable = nesnd_india_project_type remove_variable = nesnd_india_project_site
-    remove_variable = nesnd_india_project_base remove_variable = nesnd_india_project_choice
+    remove_variable = nesnd_india_project_type
+    remove_variable = nesnd_india_project_site
+    remove_variable = nesnd_india_project_base
+    remove_variable = nesnd_india_project_choice
     remove_variable = nesnd_india_project_build_clock
-    nesnd_india_matter_clear = yes
+    remove_variable = nesnd_india_project_building
+    if = {
+        limit = { nesnd_india_request_kind = 9 }
+        nesnd_india_clear_request = yes
+    }
 }
 
 # TYPE is 1 to 3, SITE the matching state trigger. Offer up to three states, largest first.
 nesnd_india_project_pick = {
     nesnd_india_project_clear = yes
-    set_variable = { name = nesnd_india_matter_kind value = 1 }
-    set_variable = { name = nesnd_india_project_type value = $TYPE$ }
-    set_variable = { name = nesnd_india_project_shown value = $TYPE$ }
-    set_variable = { name = nesnd_india_project_choice days = 30 }
+    set_variable = {
+        name = nesnd_india_project_type
+        value = $TYPE$
+    }
+    set_variable = {
+        name = nesnd_india_project_shown
+        value = $TYPE$
+    }
+    set_variable = {
+        name = nesnd_india_project_choice
+        days = 30
+    }
     clear_saved_scope = india_project_site_1
     clear_saved_scope = india_project_site_2
     clear_saved_scope = india_project_site_3
-    ordered_scope_state = { limit = { $SITE$ = yes } order_by = state_population position = 0 check_range_bounds = no save_scope_as = india_project_site_1 }
-    ordered_scope_state = { limit = { $SITE$ = yes } order_by = state_population position = 1 check_range_bounds = no save_scope_as = india_project_site_2 }
-    ordered_scope_state = { limit = { $SITE$ = yes } order_by = state_population position = 2 check_range_bounds = no save_scope_as = india_project_site_3 }
-    if = { limit = { any_scope_state = { $SITE$ = yes count >= 2 } } trigger_event = { id = nesnd_india_project.2 popup = yes } }
-    else_if = { limit = { exists = scope:india_project_site_1 } nesnd_india_project_set_site = { SITE = scope:india_project_site_1 } }
+    ordered_scope_state = {
+        limit = { $SITE$ = yes }
+        order_by = state_population
+        position = 0
+        check_range_bounds = no
+        save_scope_as = india_project_site_1
+    }
+    ordered_scope_state = {
+        limit = { $SITE$ = yes }
+        order_by = state_population
+        position = 1
+        check_range_bounds = no
+        save_scope_as = india_project_site_2
+    }
+    ordered_scope_state = {
+        limit = { $SITE$ = yes }
+        order_by = state_population
+        position = 2
+        check_range_bounds = no
+        save_scope_as = india_project_site_3
+    }
+    if = {
+        limit = {
+            any_scope_state = {
+                $SITE$ = yes
+                count >= 2
+            }
+        }
+        trigger_event = {
+            id = nesnd_india_project.2
+            popup = yes
+        }
+    }
+    else_if = {
+        limit = { exists = scope:india_project_site_1 }
+        nesnd_india_project_set_site = { SITE = scope:india_project_site_1 }
+    }
     else = { nesnd_india_project_clear = yes }
 }
 nesnd_india_project_pick_survey = {
     nesnd_india_project_clear = yes
-    set_variable = { name = nesnd_india_matter_kind value = 1 }
-    set_variable = { name = nesnd_india_project_type value = 4 }
-    set_variable = { name = nesnd_india_project_shown value = 4 }
-    set_variable = { name = nesnd_india_project_choice days = 30 }
+    set_variable = {
+        name = nesnd_india_project_type
+        value = 4
+    }
+    set_variable = {
+        name = nesnd_india_project_shown
+        value = 4
+    }
+    set_variable = {
+        name = nesnd_india_project_choice
+        days = 30
+    }
     nesnd_india_project_open_funding = yes
 }
 nesnd_india_project_set_site = {
@@ -371,34 +1322,67 @@ nesnd_india_project_open_funding = {
 
 # Order one level at the chosen state through the government's own construction queue.
 nesnd_india_project_build = {
-    if = { limit = { nesnd_india_project_site_valid = yes exists = var:nesnd_india_project_site }
-        if = { limit = { nesnd_india_project_type_value = 1 }
-            set_variable = { name = nesnd_india_project_base value = var:nesnd_india_project_site.nesnd_india_project_level_1 }
+    if = {
+        limit = {
+            nesnd_india_project_site_valid = yes
+            exists = var:nesnd_india_project_site
+        }
+        if = {
+            limit = { nesnd_india_project_type_value = 1 }
+            set_variable = {
+                name = nesnd_india_project_base
+                value = var:nesnd_india_project_site.nesnd_india_project_level_1
+            }
             var:nesnd_india_project_site = { start_building_construction = building_university }
         }
-        else_if = { limit = { nesnd_india_project_type_value = 2 }
-            set_variable = { name = nesnd_india_project_base value = var:nesnd_india_project_site.nesnd_india_project_level_2 }
+        else_if = {
+            limit = { nesnd_india_project_type_value = 2 }
+            set_variable = {
+                name = nesnd_india_project_base
+                value = var:nesnd_india_project_site.nesnd_india_project_level_2
+            }
             var:nesnd_india_project_site = { start_building_construction = building_tooling_workshop }
         }
-        else_if = { limit = { nesnd_india_project_type_value = 3 }
-            set_variable = { name = nesnd_india_project_base value = var:nesnd_india_project_site.nesnd_india_project_level_3 }
+        else_if = {
+            limit = { nesnd_india_project_type_value = 3 }
+            set_variable = {
+                name = nesnd_india_project_base
+                value = var:nesnd_india_project_site.nesnd_india_project_level_3
+            }
             var:nesnd_india_project_site = { start_building_construction = building_railway }
         }
-        set_variable = { name = nesnd_india_matter_kind value = 1 }
-        set_variable = { name = nesnd_india_matter_stage value = 4 }
-        remove_variable = nesnd_india_matter_clock
+        if = {
+            limit = { nesnd_india_request_kind = 9 }
+            nesnd_india_clear_request = yes
+        }
+        set_variable = nesnd_india_project_building
         remove_variable = nesnd_india_project_choice
         # an order cancelled in the queue would otherwise leave the project open for ever
-        set_variable = { name = nesnd_india_project_build_clock days = 1095 }
+        set_variable = {
+            name = nesnd_india_project_build_clock
+            days = 1095
+        }
     }
     else = { nesnd_india_project_clear = yes }
 }
 
-# FUNDER is asked. Where the overlord must agree, the overlord is asked first.
+# FUNDER is asked via request kind 9. Where the overlord must agree, the overlord is asked first.
 nesnd_india_project_send = {
-    if = { limit = { has_variable = nesnd_india_project_type nesnd_india_project_can_ask = { FUNDER = $FUNDER$ } }
+    if = {
+        limit = {
+            has_variable = nesnd_india_project_type
+            nesnd_india_project_can_ask = { FUNDER = $FUNDER$ }
+        }
         remove_variable = nesnd_india_project_choice
-        nesnd_india_matter_send = { KIND = 1 TO = $FUNDER$ AMOUNT = nesnd_india_project_ask_amount }
+        clear_saved_scope = india_partner
+        $FUNDER$ = { save_scope_as = india_partner }
+        nesnd_india_send_request = { KIND = 9 }
+        if = {
+            limit = {
+                NOT = { has_variable = nesnd_india_request_clock }
+            }
+            nesnd_india_project_clear = yes
+        }
     }
 }
 
@@ -408,42 +1392,98 @@ nesnd_india_project_save_names = {
     if = { limit = { exists = var:nesnd_india_project_site } var:nesnd_india_project_site = { save_scope_as = india_project_site } }
 }
 nesnd_india_project_withdraw = {
-    if = { limit = { nesnd_india_matter_waiting = yes } nesnd_india_project_clear = yes }
+    if = {
+        limit = {
+            nesnd_india_request_kind = 9
+            has_variable = nesnd_india_request_clock
+        }
+        nesnd_india_project_clear = yes
+    }
 }
 
-# Monthly, from nesnd_india_refresh. A request waiting for an answer is checked by nesnd_india_matter_maintenance.
+# Monthly, from nesnd_india_refresh. A request waiting for an answer is checked by nesnd_india_diplomacy_maintenance.
 nesnd_india_project_maintenance = {
-    if = { limit = { has_variable = nesnd_india_project_type }
-        # a choice left open
-        if = { limit = { nesnd_india_matter_stage_value = 0 NOT = { has_variable = nesnd_india_project_choice } } nesnd_india_project_clear = yes }
-        else_if = { limit = { nesnd_india_matter_stage_value = 4 }
-            if = { limit = { nesnd_india_project_built = yes }
+    if = {
+        limit = { has_variable = nesnd_india_project_type }
+        # a choice left open without starting construction or sending a request
+        if = {
+            limit = {
+                NOT = { has_variable = nesnd_india_project_building }
+                NOT = { has_variable = nesnd_india_project_choice }
+                NOT = {
+                    AND = {
+                        nesnd_india_request_kind = 9
+                        has_variable = nesnd_india_request_clock
+                    }
+                }
+            }
+            nesnd_india_project_clear = yes
+        }
+        else_if = {
+            limit = { has_variable = nesnd_india_project_building }
+            if = {
+                limit = { nesnd_india_project_built = yes }
                 nesnd_india_project_count = yes
                 nesnd_india_project_save_names = yes
-                trigger_event = { id = nesnd_india_project.6 popup = yes }
+                trigger_event = {
+                    id = nesnd_india_project.6
+                    popup = yes
+                }
                 nesnd_india_project_clear = yes
             }
-            else_if = { limit = { NOT = { nesnd_india_project_site_owned = yes } } nesnd_india_project_clear = yes }
+            else_if = {
+                limit = {
+                    NOT = { nesnd_india_project_site_owned = yes }
+                }
+                nesnd_india_project_clear = yes
+            }
             # Three years and no new level: the prince is told before the project is dropped (result 6, project.5).
-            else_if = { limit = { NOT = { has_variable = nesnd_india_project_build_clock } }
+            else_if = {
+                limit = {
+                    NOT = { has_variable = nesnd_india_project_build_clock }
+                }
                 nesnd_india_project_save_names = yes
-                save_scope_value_as = { name = india_matter_result value = 6 }
-                trigger_event = { id = nesnd_india_project.5 popup = yes }
+                save_scope_value_as = {
+                    name = india_req_result
+                    value = 6
+                }
+                trigger_event = {
+                    id = nesnd_india_project.5
+                    popup = yes
+                }
                 nesnd_india_project_clear = yes
             }
         }
     }
     # five-year agreements that have run out
-    if = { limit = { any_scope_state = { nesnd_india_deal_lapsed = yes } }
+    if = {
+        limit = {
+            any_scope_state = { nesnd_india_deal_lapsed = yes }
+        }
         save_scope_as = india_project_owner
         every_scope_state = {
             limit = { nesnd_india_deal_lapsed = yes }
             save_scope_as = india_project_site
             state_region = {
-                clear_saved_scope = india_matter_to
-                if = { limit = { exists = var:nesnd_india_deal_funder } var:nesnd_india_deal_funder = { save_scope_as = india_matter_to } }
-                if = { limit = { exists = var:nesnd_india_deal_host exists = scope:india_matter_to }
-                    if = { limit = { var:nesnd_india_deal_host = scope:india_project_owner } scope:india_project_owner = { trigger_event = { id = nesnd_india_project.7 popup = yes } } }
+                clear_saved_scope = india_partner
+                if = {
+                    limit = { exists = var:nesnd_india_deal_funder }
+                    var:nesnd_india_deal_funder = { save_scope_as = india_partner }
+                }
+                if = {
+                    limit = {
+                        exists = var:nesnd_india_deal_host
+                        exists = scope:india_partner
+                    }
+                    if = {
+                        limit = { var:nesnd_india_deal_host = scope:india_project_owner }
+                        scope:india_project_owner = {
+                            trigger_event = {
+                                id = nesnd_india_project.7
+                                popup = yes
+                            }
+                        }
+                    }
                 }
                 nesnd_india_deal_forget = yes
             }
@@ -468,43 +1508,89 @@ nesnd_india_deal_record = {
 }
 
 # ---------------------------------------------------------------------------------------------
-# The funder agrees (answering scope, from nesnd_india_matter_accept)
+# The funder agrees (answering scope, from nesnd_india_accept_request)
 # ---------------------------------------------------------------------------------------------
 # For a survey the prince pays the fee; otherwise the funder pays the grant, the prince owes an
 # obligation, and the agreement is recorded on the state region.
 nesnd_india_project_accept = {
     save_scope_as = india_project_payer
-    var:nesnd_india_matter_from = {
+    scope:india_sender = {
         save_scope_as = india_project_owner
-        nesnd_india_matter_save_names = yes
-        if = { limit = { nesnd_india_project_type_value = 4 }
-            add_treasury = { value = nesnd_india_matter_amount_value multiply = -1 }
-            scope:india_project_payer = { add_treasury = scope:india_project_owner.nesnd_india_matter_amount_value }
-            if = { limit = { has_modifier = nesnd_india_survey } remove_modifier = nesnd_india_survey }
-            add_modifier = { name = nesnd_india_survey months = 24 }
+        nesnd_india_project_save_names = yes
+        if = {
+            limit = { nesnd_india_project_type_value = 4 }
+            add_treasury = {
+                value = nesnd_india_request_quote
+                multiply = -1
+            }
+            scope:india_project_payer = { add_treasury = scope:india_project_owner.nesnd_india_request_quote }
+            if = {
+                limit = { has_modifier = nesnd_india_survey }
+                remove_modifier = nesnd_india_survey
+            }
+            add_modifier = {
+                name = nesnd_india_survey
+                months = 24
+            }
         }
         else = {
-            add_treasury = nesnd_india_matter_amount_value
-            scope:india_project_payer = { add_treasury = { value = scope:india_project_owner.nesnd_india_matter_amount_value multiply = -1 } }
-            set_owes_obligation_to = { country = scope:india_project_payer setting = yes }
-            change_relations = { country = scope:india_project_payer value = 25 }
-            if = { limit = { exists = scope:india_project_site }
+            add_treasury = nesnd_india_request_quote
+            scope:india_project_payer = {
+                add_treasury = {
+                    value = scope:india_project_owner.nesnd_india_request_quote
+                    multiply = -1
+                }
+            }
+            set_owes_obligation_to = {
+                country = scope:india_project_payer
+                setting = yes
+            }
+            change_relations = {
+                country = scope:india_project_payer
+                value = 25
+            }
+            if = {
+                limit = { exists = scope:india_project_site }
                 scope:india_project_site = {
                     nesnd_india_deal_record = yes
-                    if = { limit = { scope:india_project_owner.nesnd_india_project_type_value = 2 }
-                        create_building = { building = building_tooling_workshop add_ownership = { country = { country = scope:india_project_payer levels = 1 } } }
+                    if = {
+                        limit = { scope:india_project_owner.nesnd_india_project_type_value = 2 }
+                        create_building = {
+                            building = building_tooling_workshop
+                            add_ownership = {
+                                country = {
+                                    country = scope:india_project_payer
+                                    levels = 1
+                                }
+                            }
+                        }
                         scope:india_project_owner = { nesnd_india_project_count = yes }
                     }
-                    else_if = { limit = { scope:india_project_owner.nesnd_india_project_type_value = 3 }
-                        create_building = { building = building_railway add_ownership = { country = { country = scope:india_project_payer levels = 1 } } }
+                    else_if = {
+                        limit = { scope:india_project_owner.nesnd_india_project_type_value = 3 }
+                        create_building = {
+                            building = building_railway
+                            add_ownership = {
+                                country = {
+                                    country = scope:india_project_payer
+                                    levels = 1
+                                }
+                            }
+                        }
                         scope:india_project_owner = { nesnd_india_project_count = yes }
                     }
                 }
             }
         }
-        trigger_event = { id = nesnd_india_project.4 popup = yes }
+        trigger_event = {
+            id = nesnd_india_project.4
+            popup = yes
+        }
         # A university is built by the prince with the grant; a workshop or railway already stands.
-        if = { limit = { nesnd_india_project_type_value = 1 } nesnd_india_project_build = yes }
+        if = {
+            limit = { nesnd_india_project_type_value = 1 }
+            nesnd_india_project_build = yes
+        }
         else = { nesnd_india_project_clear = yes }
     }
 }
@@ -544,25 +1630,31 @@ nesnd_india_union_host_label = {
     if = { limit = { exists = var:nesnd_india_union_host } var:nesnd_india_union_host = { save_scope_as = nesnd_label_india_empire } }
 }
 
-# Prince scope. MODE is merge or dominion. The prince asks Mughal to take it in: through its overlord
-# first when it is another country's subject (matter kind 6), otherwise straight to Mughal (request kind 8).
+# Prince scope. MODE is merge or dominion. The prince asks Mughal to take it in (request kind 8);
+# when it is another country's subject, its overlord is asked first (nesnd_india_diplomacy.6).
 nesnd_india_union_ask = {
     if = {
         limit = {
             nesnd_india_can_ask_union = yes
             exists = var:nesnd_india_union_host
-            OR = { nesnd_india_union_mode_$MODE$ = 1 nesnd_india_union_own_subject = no }
+            OR = {
+                nesnd_india_union_mode_$MODE$ = 1
+                nesnd_india_union_own_subject = no
+            }
         }
-        set_variable = { name = nesnd_india_union_mode value = nesnd_india_union_mode_$MODE$ }
-        if = { limit = { nesnd_india_consent_needed = { OTHER = var:nesnd_india_union_host GRANTS = yes } }
-            nesnd_india_matter_send = { KIND = 6 TO = var:nesnd_india_union_host AMOUNT = var:nesnd_india_union_host.nesnd_india_grant }
+        set_variable = {
+            name = nesnd_india_union_mode
+            value = nesnd_india_union_mode_$MODE$
         }
-        else = {
-            clear_saved_scope = india_partner
-            var:nesnd_india_union_host = { save_scope_as = india_partner }
-            nesnd_india_send_request = { KIND = 8 }
+        clear_saved_scope = india_partner
+        var:nesnd_india_union_host = { save_scope_as = india_partner }
+        nesnd_india_send_request = { KIND = 8 }
+        if = {
+            limit = {
+                NOT = { has_variable = nesnd_india_request_clock }
+            }
+            remove_variable = nesnd_india_union_mode
         }
-        if = { limit = { NOR = { has_variable = nesnd_india_matter_clock has_variable = nesnd_india_request_clock } } remove_variable = nesnd_india_union_mode }
     }
 }
 
@@ -579,61 +1671,57 @@ nesnd_india_union_ai_asks = {
     }
 }
 
-# Holder scope, matter kind 6, from nesnd_india_matter_next once every consent is given. The consent
-# is used up here: the invitation (request kind 6) or the request (request kind 8) goes into the
-# request channel with the sum named in the matter, and the matter ends.
-nesnd_india_union_handoff = {
-    nesnd_india_matter_save_names = yes
-    save_scope_value_as = { name = india_union_quote value = nesnd_india_matter_amount_value }
-    clear_saved_scope = india_partner
-    if = { limit = { exists = var:nesnd_india_matter_to } var:nesnd_india_matter_to = { save_scope_as = india_partner } }
-    nesnd_india_matter_clear = yes
-    if = { limit = { exists = scope:india_partner nesnd_india_empire = yes } nesnd_india_send_request = { KIND = 6 } }
-    else_if = { limit = { exists = scope:india_partner } nesnd_india_send_request = { KIND = 8 } }
-    if = { limit = { has_variable = nesnd_india_request_clock exists = var:nesnd_india_request_partner }
-        set_variable = { name = nesnd_india_request_quote value = scope:india_union_quote }
-    }
-    else = {
-        # The request could not go out (a war or a diplomatic play began on the day of the consent).
-        save_scope_value_as = { name = india_matter_result value = 5 }
-        remove_variable = nesnd_india_union_mode
-        trigger_event = { id = nesnd_india_union.3 popup = yes }
-    }
-}
-
-# Holder scope, matter kind 6, from nesnd_india_matter_fail. RESULT 1 the overlord refused, 3 it did not
-# answer, 5 the matter no longer stands. A refusal or silence uses up the six months of a request.
-nesnd_india_union_matter_fail = {
-    trigger_event = { id = nesnd_india_union.3 popup = yes }
-    remove_variable = nesnd_india_union_mode
-    if = { limit = { NOT = { scope:india_matter_result = 5 } } set_variable = { name = nesnd_india_request_cooldown months = 6 } }
-    nesnd_india_matter_clear = yes
-}
-
 # Answering scope in the reply event, request kinds 6 and 8. MODE is merge or dominion.
 nesnd_india_union_accept = {
     if = {
         limit = {
             nesnd_india_union_reply = yes
             nesnd_india_reply_can_accept = yes
-            OR = { nesnd_india_union_mode_$MODE$ = 1 nesnd_india_union_dominion_open = yes }
+            OR = {
+                nesnd_india_union_mode_$MODE$ = 1
+                nesnd_india_union_dominion_open = yes
+            }
         }
-        save_scope_value_as = { name = india_union_price value = scope:india_sender.nesnd_india_request_quote }
+        remove_variable = nesnd_india_incoming_busy
+        remove_variable = nesnd_india_incoming_from
+        save_scope_value_as = {
+            name = india_union_price
+            value = scope:india_sender.nesnd_india_request_quote
+        }
         scope:india_sender = { save_scope_as = india_union_requester }
-        if = { limit = { nesnd_india_incoming_kind = 6 }
+        if = {
+            limit = { nesnd_india_incoming_kind = 6 }
             scope:india_partner = { save_scope_as = india_union_prince }
-            scope:india_sender = { nesnd_india_settle_union = { MODE = $MODE$ } }
+            scope:india_sender = {
+                nesnd_india_settle_union = { MODE = $MODE$ }
+            }
         }
         else = {
             scope:india_sender = { save_scope_as = india_union_prince }
-            scope:india_partner = { nesnd_india_settle_union = { MODE = $MODE$ } }
+            scope:india_partner = {
+                nesnd_india_settle_union = { MODE = $MODE$ }
+            }
         }
         # Told: whoever sent the invitation or request, if it still exists, and the former overlord.
-        if = { limit = { scope:india_union_requester = { is_country_alive = yes } }
-            scope:india_union_requester = { trigger_event = { id = nesnd_india_union.1 popup = yes } }
+        if = {
+            limit = {
+                scope:india_union_requester = { is_country_alive = yes }
+            }
+            scope:india_union_requester = {
+                trigger_event = {
+                    id = nesnd_india_union.1
+                    popup = yes
+                }
+            }
         }
-        if = { limit = { exists = scope:india_union_former }
-            scope:india_union_former = { trigger_event = { id = nesnd_india_union.1 popup = yes } }
+        if = {
+            limit = { exists = scope:india_union_former }
+            scope:india_union_former = {
+                trigger_event = {
+                    id = nesnd_india_union.1
+                    popup = yes
+                }
+            }
         }
     }
 }
