@@ -73,86 +73,300 @@ nesnd_jp_prepare_culture_plan = {
         limit = {
             nesnd_jp_cohesion_live = yes
             has_variable = nesnd_jp_statistics_ready
-            hidden_trigger = { NOT = { has_variable = nesnd_jp_next_mode } }
+            hidden_trigger = {
+                NOT = { has_variable = nesnd_jp_next_mode }
+            }
         }
-        set_variable = { name = nesnd_jp_next_mode value = 0 }
-        set_variable = { name = nesnd_jp_next_realm value = country_definition }
+        set_variable = {
+            name = nesnd_jp_next_mode
+            value = 0
+        }
+        set_variable = {
+            name = nesnd_jp_next_realm
+            value = country_definition
+        }
         save_scope_as = nesnd_jp_plan_owner
-        if = { limit = { nesnd_jp_cohesion_value < 25 }
-            if = { limit = { nesnd_jp_drift_toward_japanese = yes }
-                nesnd_jp_select_drift = { TARGET = cu:japanese }
-            } else = {
-                random_list = {
-                    50 = { nesnd_jp_select_drift = { TARGET = cu:han } }
-                    50 = { nesnd_jp_select_drift = { TARGET = cu:ce_wuu } }
+        if = {
+            limit = {
+                nesnd_jp_cohesion_value < 25
+            }
+            if = {
+                limit = {
+                    nesnd_jp_drift_toward_japanese = yes
+                }
+                nesnd_jp_select_drift = {
+                    SOURCE_CHECK = nesnd_han_heritage_culture
+                    TARGET_HERITAGE = japanese
                 }
             }
-        } else_if = { limit = { nesnd_jp_cohesion_value > 75 }
-            if = { limit = { nesnd_jp_jiangnan_policy = yes }
-                nesnd_jp_select_exchange = { TARGET = cu:ce_wuu }
-            } else = { nesnd_jp_select_exchange = { TARGET = cu:japanese } }
+            else = {
+                nesnd_jp_select_drift = {
+                    SOURCE_CHECK = nesnd_jp_heritage_culture
+                    TARGET_HERITAGE = han
+                }
+            }
+        }
+        else_if = {
+            limit = {
+                nesnd_jp_cohesion_value > 75
+            }
+            if = {
+                limit = {
+                    nesnd_jp_jiangnan_policy = yes
+                }
+                nesnd_jp_select_exchange = {
+                    TARGET_CHECK = nesnd_han_heritage_culture
+                    TARGET_HERITAGE = han
+                }
+            }
+            else = {
+                nesnd_jp_select_exchange = {
+                    TARGET_CHECK = nesnd_jp_heritage_culture
+                    TARGET_HERITAGE = japanese
+                }
+            }
         }
         clear_saved_scope = nesnd_jp_plan_owner
     }
 }
 
-nesnd_jp_select_drift = {
-    random_scope_state = {
-        limit = { any_scope_pop = {
-            culture = { is_primary_culture_of = scope:nesnd_jp_plan_owner }
-            NOT = { culture = $TARGET$ }
-        } }
-        scope:nesnd_jp_plan_owner = { set_variable = { name = nesnd_jp_next_state value = prev } }
-        random_scope_pop = {
+# State scope, with scope:nesnd_jp_plan_owner saved.
+nesnd_jp_pick_target = {
+    if = {
+        limit = {
+            scope:nesnd_jp_plan_owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_$HERITAGE$
+                }
+            }
+        }
+        scope:nesnd_jp_plan_owner = {
+            random_primary_culture = {
+                limit = {
+                    has_discrimination_trait = heritage_$HERITAGE$
+                }
+                scope:nesnd_jp_plan_owner = {
+                    set_variable = {
+                        name = nesnd_jp_next_target
+                        value = prev
+                    }
+                }
+            }
+        }
+    }
+    else_if = {
+        limit = {
+            any_scope_culture = {
+                has_discrimination_trait = heritage_$HERITAGE$
+            }
+        }
+        random_scope_culture = {
             limit = {
-                culture = { is_primary_culture_of = scope:nesnd_jp_plan_owner }
-                NOT = { culture = $TARGET$ }
+                has_discrimination_trait = heritage_$HERITAGE$
             }
             scope:nesnd_jp_plan_owner = {
-                set_variable = { name = nesnd_jp_next_mode value = 1 }
-                set_variable = { name = nesnd_jp_next_pop value = prev }
-                set_variable = { name = nesnd_jp_next_source_culture value = prev.culture }
-                set_variable = { name = nesnd_jp_next_target value = $TARGET$ }
+                set_variable = {
+                    name = nesnd_jp_next_target
+                    value = prev
+                }
             }
+        }
+    }
+    else = {
+        if = {
+            limit = {
+                cu:japanese = {
+                    has_discrimination_trait = heritage_$HERITAGE$
+                }
+            }
+            scope:nesnd_jp_plan_owner = {
+                set_variable = {
+                    name = nesnd_jp_next_target
+                    value = cu:japanese
+                }
+            }
+        }
+        else = {
+            random_list = {
+                50 = {
+                    scope:nesnd_jp_plan_owner = {
+                        set_variable = {
+                            name = nesnd_jp_next_target
+                            value = cu:han
+                        }
+                    }
+                }
+                50 = {
+                    scope:nesnd_jp_plan_owner = {
+                        set_variable = {
+                            name = nesnd_jp_next_target
+                            value = cu:ce_wuu
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+nesnd_jp_select_drift = {
+    random_scope_state = {
+        limit = {
+            state_population > 0
+            any_scope_pop = {
+                culture = {
+                    is_primary_culture_of = scope:nesnd_jp_plan_owner
+                    $SOURCE_CHECK$ = yes
+                }
+            }
+        }
+        scope:nesnd_jp_plan_owner = {
+            set_variable = {
+                name = nesnd_jp_next_state
+                value = prev
+            }
+        }
+        random_scope_pop = {
+            limit = {
+                culture = {
+                    is_primary_culture_of = scope:nesnd_jp_plan_owner
+                    $SOURCE_CHECK$ = yes
+                }
+            }
+            scope:nesnd_jp_plan_owner = {
+                set_variable = {
+                    name = nesnd_jp_next_mode
+                    value = 1
+                }
+                set_variable = {
+                    name = nesnd_jp_next_pop
+                    value = prev
+                }
+                set_variable = {
+                    name = nesnd_jp_next_source_culture
+                    value = prev.culture
+                }
+            }
+        }
+        nesnd_jp_pick_target = {
+            HERITAGE = $TARGET_HERITAGE$
         }
     }
 }
 
 nesnd_jp_select_exchange = {
-    if = { limit = { any_scope_state = { state_population > 0 any_scope_pop = { NOT = { culture = $TARGET$ } } } }
+    if = {
+        limit = {
+            any_scope_state = {
+                state_population > 0
+                any_scope_pop = {
+                    NOT = {
+                        culture = {
+                            $TARGET_CHECK$ = yes
+                        }
+                    }
+                }
+            }
+        }
         random_list = {
             70 = { }
-            30 = { random_scope_state = {
-                limit = { state_population > 0 any_scope_pop = { NOT = { culture = $TARGET$ } } }
-                scope:nesnd_jp_plan_owner = {
-                    set_variable = { name = nesnd_jp_next_state value = prev }
-                    set_variable = { name = nesnd_jp_next_mode value = 2 }
-                    set_variable = { name = nesnd_jp_next_target value = $TARGET$ }
+            30 = {
+                random_scope_state = {
+                    limit = {
+                        state_population > 0
+                        any_scope_pop = {
+                            NOT = {
+                                culture = {
+                                    $TARGET_CHECK$ = yes
+                                }
+                            }
+                        }
+                    }
+                    scope:nesnd_jp_plan_owner = {
+                        set_variable = {
+                            name = nesnd_jp_next_state
+                            value = prev
+                        }
+                        set_variable = {
+                            name = nesnd_jp_next_mode
+                            value = 2
+                        }
+                    }
+                    nesnd_jp_pick_target = {
+                        HERITAGE = $TARGET_HERITAGE$
+                    }
                 }
-            } }
+            }
         }
     }
 }
 
 # Executes only the plan saved last month; the journal preview reads the same variables.
-# Pop culture is compared with literal cu: keys: comparing it with a saved scope or
-# variable failed every time in the 1891 save ("Invalid right side during comparison").
+# Culture filters use heritage triggers; settlement passes the saved target scope to change_pop_culture.
 nesnd_jp_settle_culture_plan = {
-    if = { limit = { nesnd_jp_culture_plan_valid = yes }
-        if = { limit = { var:nesnd_jp_next_target = { this = cu:japanese } } nesnd_jp_settle_to = { TARGET = cu:japanese FRACTION = nesnd_jp_conversion_fraction_japanese } }
-        else_if = { limit = { var:nesnd_jp_next_target = { this = cu:ce_wuu } } nesnd_jp_settle_to = { TARGET = cu:ce_wuu FRACTION = nesnd_jp_conversion_fraction_jiangnan } }
-        else_if = { limit = { var:nesnd_jp_next_target = { this = cu:han } } nesnd_jp_settle_to = { TARGET = cu:han FRACTION = nesnd_jp_conversion_fraction_japanese } }
+    if = {
+        limit = {
+            nesnd_jp_culture_plan_valid = yes
+        }
+        var:nesnd_jp_next_target = {
+            save_scope_as = nesnd_jp_target_culture
+        }
+        if = {
+            limit = {
+                var:nesnd_jp_next_target = {
+                    nesnd_jp_heritage_culture = yes
+                }
+            }
+            nesnd_jp_settle_to = {
+                TARGET_CHECK = nesnd_jp_heritage_culture
+                FRACTION = nesnd_jp_conversion_fraction_jp_heritage
+            }
+        }
+        else_if = {
+            limit = {
+                var:nesnd_jp_next_target = {
+                    nesnd_han_heritage_culture = yes
+                }
+            }
+            nesnd_jp_settle_to = {
+                TARGET_CHECK = nesnd_han_heritage_culture
+                FRACTION = nesnd_jp_conversion_fraction_han_heritage
+            }
+        }
+        clear_saved_scope = nesnd_jp_target_culture
     }
 }
+
 nesnd_jp_settle_to = {
-    if = { limit = { var:nesnd_jp_next_mode = 1 }
-        var:nesnd_jp_next_pop = { change_pop_culture = { target = $TARGET$ value = 0.25 } }
-    } else = {
+    if = {
+        limit = {
+            var:nesnd_jp_next_mode = 1
+        }
+        var:nesnd_jp_next_pop = {
+            change_pop_culture = {
+                target = scope:nesnd_jp_target_culture
+                value = 0.25
+            }
+        }
+    }
+    else = {
         var:nesnd_jp_next_state = {
-            set_variable = { name = nesnd_jp_conversion_fraction value = $FRACTION$ }
+            set_variable = {
+                name = nesnd_jp_conversion_fraction
+                value = $FRACTION$
+            }
             every_scope_pop = {
-                limit = { NOT = { culture = $TARGET$ } }
-                change_pop_culture = { target = $TARGET$ value = state.var:nesnd_jp_conversion_fraction }
+                limit = {
+                    NOT = {
+                        culture = {
+                            $TARGET_CHECK$ = yes
+                        }
+                    }
+                }
+                change_pop_culture = {
+                    target = scope:nesnd_jp_target_culture
+                    value = state.var:nesnd_jp_conversion_fraction
+                }
             }
             remove_variable = nesnd_jp_conversion_fraction
         }

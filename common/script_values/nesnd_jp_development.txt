@@ -1,10 +1,58 @@
 ﻿nesnd_jp_population = { value = total_population }
 nesnd_jp_scale = { value = 1 if = { limit = { total_population >= 5000000 } value = 2 } if = { limit = { total_population >= 15000000 } value = 4 } }
-nesnd_jp_conversion_fraction_japanese = {
-    value = 0.1 divide = { value = 1 subtract = "culture_percent_state(cu:japanese)" min = 0.00001 } min = 0 max = 1
+nesnd_jp_conversion_fraction_jp_heritage = {
+    value = 0
+    if = {
+        limit = {
+            state_population > 0
+        }
+        value = 0.1
+        divide = {
+            value = 1
+            subtract = {
+                value = 0
+                every_scope_pop = {
+                    limit = {
+                        culture = {
+                            nesnd_jp_heritage_culture = yes
+                        }
+                    }
+                    add = total_size
+                }
+                divide = state_population
+            }
+            min = 0.00001
+        }
+        min = 0
+        max = 1
+    }
 }
-nesnd_jp_conversion_fraction_jiangnan = {
-    value = 0.1 divide = { value = 1 subtract = "culture_percent_state(cu:ce_wuu)" min = 0.00001 } min = 0 max = 1
+nesnd_jp_conversion_fraction_han_heritage = {
+    value = 0
+    if = {
+        limit = {
+            state_population > 0
+        }
+        value = 0.1
+        divide = {
+            value = 1
+            subtract = {
+                value = 0
+                every_scope_pop = {
+                    limit = {
+                        culture = {
+                            nesnd_han_heritage_culture = yes
+                        }
+                    }
+                    add = total_size
+                }
+                divide = state_population
+            }
+            min = 0.00001
+        }
+        min = 0
+        max = 1
+    }
 }
 # 上次月结以来生活水平的变化。进度条先于日志月度脉冲结算，此时 nesnd_jp_sol_previous 仍是上次月结时的值。
 nesnd_jp_sol_change_value = { value = 0 if = { limit = { has_variable = nesnd_jp_sol_previous } value = average_sol subtract = var:nesnd_jp_sol_previous } }
@@ -136,15 +184,61 @@ nesnd_jp_cohesion_value = { value = 70 if = { limit = { has_journal_entry = nesn
 # Preview size for the journal: the same saved plan and formula as nesnd_jp_settle_culture_plan.
 nesnd_jp_next_size = {
     value = 0
-    if = { limit = { nesnd_jp_culture_plan_valid = yes }
-        if = { limit = { var:nesnd_jp_next_mode = 1 }
-            var:nesnd_jp_next_pop = { add = { value = total_size multiply = 0.25 } }
+    if = {
+        limit = {
+            nesnd_jp_culture_plan_valid = yes
         }
-        else_if = { limit = { var:nesnd_jp_next_target = { this = cu:ce_wuu } }
-            var:nesnd_jp_next_state = { add = { value = 0 every_scope_pop = { limit = { NOT = { culture = cu:ce_wuu } } add = total_size } multiply = nesnd_jp_conversion_fraction_jiangnan } }
+        if = {
+            limit = {
+                var:nesnd_jp_next_mode = 1
+            }
+            var:nesnd_jp_next_pop = {
+                add = {
+                    value = total_size
+                    multiply = 0.25
+                }
+            }
+        }
+        else_if = {
+            limit = {
+                var:nesnd_jp_next_target = {
+                    nesnd_jp_heritage_culture = yes
+                }
+            }
+            var:nesnd_jp_next_state = {
+                add = {
+                    value = 0
+                    every_scope_pop = {
+                        limit = {
+                            NOT = {
+                                culture = {
+                                    nesnd_jp_heritage_culture = yes
+                                }
+                            }
+                        }
+                        add = total_size
+                    }
+                    multiply = nesnd_jp_conversion_fraction_jp_heritage
+                }
+            }
         }
         else = {
-            var:nesnd_jp_next_state = { add = { value = 0 every_scope_pop = { limit = { NOT = { culture = cu:japanese } } add = total_size } multiply = nesnd_jp_conversion_fraction_japanese } }
+            var:nesnd_jp_next_state = {
+                add = {
+                    value = 0
+                    every_scope_pop = {
+                        limit = {
+                            NOT = {
+                                culture = {
+                                    nesnd_han_heritage_culture = yes
+                                }
+                            }
+                        }
+                        add = total_size
+                    }
+                    multiply = nesnd_jp_conversion_fraction_han_heritage
+                }
+            }
         }
     }
 }

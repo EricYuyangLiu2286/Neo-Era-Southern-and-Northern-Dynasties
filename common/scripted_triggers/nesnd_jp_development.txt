@@ -9,8 +9,12 @@ nesnd_jp_drift_toward_japanese = {
     OR = {
         nesnd_jp_jiangnan_policy = yes
         AND = {
-            hidden_trigger = { has_variable = nesnd_jp_jiangnan_policy }
-            OR = { country_has_primary_culture = cu:han country_has_primary_culture = cu:ce_wuu }
+            hidden_trigger = {
+                has_variable = nesnd_jp_jiangnan_policy
+            }
+            any_primary_culture = {
+                nesnd_han_heritage_culture = yes
+            }
         }
     }
 }
@@ -26,43 +30,100 @@ nesnd_jp_culture_plan_valid = {
             exists = var:nesnd_jp_next_realm
         }
         country_definition = var:nesnd_jp_next_realm
-        var:nesnd_jp_next_state = { owner = prev state_population > 0 }
+        var:nesnd_jp_next_state = {
+            owner = prev
+            state_population > 0
+        }
         # A Pop keeps its culture when part of it converts, so the saved source culture
-        # stays true while the Pop exists. Culture checks use literal cu: keys only.
-        trigger_if = { limit = { var:nesnd_jp_next_mode = 1 }
+        # stays true while the Pop exists. Culture checks use heritage triggers only.
+        trigger_if = {
+            limit = {
+                var:nesnd_jp_next_mode = 1
+            }
             nesnd_jp_cohesion_value < 25
             trigger_if = {
-                limit = { exists = var:nesnd_jp_next_pop exists = var:nesnd_jp_next_source_culture }
-                var:nesnd_jp_next_source_culture = { is_primary_culture_of = prev }
-                var:nesnd_jp_next_pop = { state = prev.var:nesnd_jp_next_state }
-            }
-            trigger_else = { always = no }
-            trigger_if = { limit = { nesnd_jp_drift_toward_japanese = yes }
-                var:nesnd_jp_next_target = { this = cu:japanese }
-                var:nesnd_jp_next_pop = { NOT = { culture = cu:japanese } }
-            }
-            trigger_else_if = { limit = { var:nesnd_jp_next_target = { this = cu:han } }
-                var:nesnd_jp_next_pop = { NOT = { culture = cu:han } }
-            }
-            trigger_else_if = { limit = { var:nesnd_jp_next_target = { this = cu:ce_wuu } }
-                var:nesnd_jp_next_pop = { NOT = { culture = cu:ce_wuu } }
-            }
-            trigger_else = { always = no }
-        }
-        trigger_else_if = { limit = { var:nesnd_jp_next_mode = 2 }
-            nesnd_jp_cohesion_value > 75
-            trigger_if = { limit = { nesnd_jp_jiangnan_policy = yes }
-                var:nesnd_jp_next_target = { this = cu:ce_wuu }
-                var:nesnd_jp_next_state = { any_scope_pop = { NOT = { culture = cu:ce_wuu } } }
+                limit = {
+                    exists = var:nesnd_jp_next_pop
+                    exists = var:nesnd_jp_next_source_culture
+                }
+                var:nesnd_jp_next_source_culture = {
+                    is_primary_culture_of = prev
+                }
+                var:nesnd_jp_next_pop = {
+                    state = prev.var:nesnd_jp_next_state
+                }
             }
             trigger_else = {
-                var:nesnd_jp_next_target = { this = cu:japanese }
-                var:nesnd_jp_next_state = { any_scope_pop = { NOT = { culture = cu:japanese } } }
+                always = no
+            }
+            trigger_if = {
+                limit = {
+                    nesnd_jp_drift_toward_japanese = yes
+                }
+                var:nesnd_jp_next_target = {
+                    nesnd_jp_heritage_culture = yes
+                }
+                var:nesnd_jp_next_pop = {
+                    culture = {
+                        nesnd_han_heritage_culture = yes
+                    }
+                }
+            }
+            trigger_else = {
+                var:nesnd_jp_next_target = {
+                    nesnd_han_heritage_culture = yes
+                }
+                var:nesnd_jp_next_pop = {
+                    culture = {
+                        nesnd_jp_heritage_culture = yes
+                    }
+                }
             }
         }
-        trigger_else = { always = no }
+        trigger_else_if = {
+            limit = {
+                var:nesnd_jp_next_mode = 2
+            }
+            nesnd_jp_cohesion_value > 75
+            trigger_if = {
+                limit = {
+                    nesnd_jp_jiangnan_policy = yes
+                }
+                var:nesnd_jp_next_target = {
+                    nesnd_han_heritage_culture = yes
+                }
+                var:nesnd_jp_next_state = {
+                    any_scope_pop = {
+                        NOT = {
+                            culture = {
+                                nesnd_han_heritage_culture = yes
+                            }
+                        }
+                    }
+                }
+            }
+            trigger_else = {
+                var:nesnd_jp_next_target = {
+                    nesnd_jp_heritage_culture = yes
+                }
+                var:nesnd_jp_next_state = {
+                    any_scope_pop = {
+                        NOT = {
+                            culture = {
+                                nesnd_jp_heritage_culture = yes
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        trigger_else = {
+            always = no
+        }
     }
-    trigger_else = { always = no }
+    trigger_else = {
+        always = no
+    }
 }
 nesnd_jp_has_foreign_islands = {
     nesnd_jp_country = yes
