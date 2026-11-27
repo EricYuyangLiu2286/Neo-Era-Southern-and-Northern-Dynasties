@@ -91,15 +91,65 @@ nesnd_uni_refresh = {
 		remove_global_variable = nesnd_uni_leader
 		remove_global_variable = nesnd_uni_lead_count
 	}
-	# 6. Phase: four or more rivals means the many-kingdoms phase.
+	# 5b. Second place, only with at least two rivals (an ordered list at position 1 needs two entries).
 	if = {
 		limit = {
-			global_var:nesnd_uni_rivals >= 4
+			global_var:nesnd_uni_rivals >= 2
 		}
-		set_global_variable = nesnd_uni_many
+		ordered_country = {
+			limit = {
+				nesnd_uni_contender = yes
+			}
+			order_by = nesnd_uni_held_count
+			position = 1
+			save_scope_as = nesnd_uni_second_scope
+		}
+		if = {
+			limit = {
+				exists = scope:nesnd_uni_second_scope
+				scope:nesnd_uni_second_scope.var:nesnd_uni_held > 0
+			}
+			set_global_variable = {
+				name = nesnd_uni_second
+				value = scope:nesnd_uni_second_scope
+			}
+		}
+		else = {
+			remove_global_variable = nesnd_uni_second
+		}
 	}
 	else = {
-		remove_global_variable = nesnd_uni_many
+		remove_global_variable = nesnd_uni_second
+	}
+	# 5c. Count the contenders holding more than 20 regions.
+	set_global_variable = {
+		name = nesnd_uni_big
+		value = 0
+	}
+	every_country = {
+		limit = {
+			nesnd_uni_contender = yes
+			var:nesnd_uni_held > 20
+		}
+		change_global_variable = {
+			name = nesnd_uni_big
+			add = 1
+		}
+	}
+	# 6. Phase: two big contenders mean the standoff; ten or more rivals mean the many-kingdoms phase; otherwise the tripod.
+	remove_global_variable = nesnd_uni_standoff
+	remove_global_variable = nesnd_uni_many
+	if = {
+		limit = {
+			global_var:nesnd_uni_big >= 2
+		}
+		set_global_variable = nesnd_uni_standoff
+	}
+	else_if = {
+		limit = {
+			global_var:nesnd_uni_rivals >= 10
+		}
+		set_global_variable = nesnd_uni_many
 	}
 	# 7. Phase modifiers on every contender; involved non-contenders (subjects) lose them.
 	every_country = {
@@ -162,6 +212,68 @@ nesnd_uni_refresh = {
 	}
 	# 8. Write the lead bar.
 	nesnd_uni_sync_lead_bar = yes
+	# 9. Marks for the map mode.
+	nesnd_uni_mark_map = yes
+}
+
+# Global scope (root = none): marks for the map mode of the global journal entry. Countries get head and role variables, regions get the counted variable.
+nesnd_uni_mark_map = {
+	every_country = {
+		limit = {
+			OR = {
+				has_variable = nesnd_uni_head
+				has_variable = nesnd_uni_map_lead
+				has_variable = nesnd_uni_map_second
+				has_variable = nesnd_uni_map_other
+			}
+		}
+		remove_variable = nesnd_uni_head
+		remove_variable = nesnd_uni_map_lead
+		remove_variable = nesnd_uni_map_second
+		remove_variable = nesnd_uni_map_other
+	}
+	every_country = {
+		limit = {
+			nesnd_uni_contender = yes
+		}
+		save_scope_as = nesnd_uni_head_scope
+		set_variable = {
+			name = nesnd_uni_head
+			value = scope:nesnd_uni_head_scope
+		}
+		every_subject_or_below = {
+			set_variable = {
+				name = nesnd_uni_head
+				value = scope:nesnd_uni_head_scope
+			}
+		}
+		if = {
+			limit = {
+				global_var:nesnd_uni_leader ?= this
+			}
+			set_variable = nesnd_uni_map_lead
+			every_subject_or_below = {
+				set_variable = nesnd_uni_map_lead
+			}
+		}
+		else_if = {
+			limit = {
+				has_global_variable = nesnd_uni_standoff
+				global_var:nesnd_uni_second ?= this
+			}
+			set_variable = nesnd_uni_map_second
+			every_subject_or_below = {
+				set_variable = nesnd_uni_map_second
+			}
+		}
+		else = {
+			set_variable = nesnd_uni_map_other
+			every_subject_or_below = {
+				set_variable = nesnd_uni_map_other
+			}
+		}
+	}
+	nesnd_uni_mark_regions = yes
 }
 
 # Global scope (root = none, needs scope:journal_entry): the lead bar shows the leader's region count, or 0 without a leader.
@@ -204,4 +316,8 @@ nesnd_uni_clear_country = {
 	remove_variable = nesnd_uni_calm
 	remove_variable = nesnd_uni_mobilize
 	remove_variable = nesnd_uni_held
+	remove_variable = nesnd_uni_head
+	remove_variable = nesnd_uni_map_lead
+	remove_variable = nesnd_uni_map_second
+	remove_variable = nesnd_uni_map_other
 }

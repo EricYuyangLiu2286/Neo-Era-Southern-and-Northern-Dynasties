@@ -115,6 +115,30 @@ def gen_effect():
                 '\t\t}',
                 '\t\ts:%s = { add_claim = root }' % s,
                 '\t}']
+    out += ['}', '',
+            "# Global scope (root = none): mark every state of the 98 regions whose region is held whole by the owner's tree (variable nesnd_uni_counted).",
+            'nesnd_uni_mark_regions = {']
+    for s in ALL:
+        out += ['\ts:%s = {' % s,
+                '\t\tevery_scope_state = {',
+                '\t\t\tif = {',
+                '\t\t\t\tlimit = {',
+                '\t\t\t\t\towner ?= {',
+                '\t\t\t\t\t\tOR = {',
+                '\t\t\t\t\t\t\tcountry_or_subject_owns_entire_state_region = %s' % s,
+                '\t\t\t\t\t\t\toverlord ?= {',
+                '\t\t\t\t\t\t\t\tcountry_or_subject_owns_entire_state_region = %s' % s,
+                '\t\t\t\t\t\t\t}',
+                '\t\t\t\t\t\t}',
+                '\t\t\t\t\t}',
+                '\t\t\t\t}',
+                '\t\t\t\tset_variable = nesnd_uni_counted',
+                '\t\t\t}',
+                '\t\t\telse = {',
+                '\t\t\t\tremove_variable = nesnd_uni_counted',
+                '\t\t\t}',
+                '\t\t}',
+                '\t}']
     out += ['}', '']
     write('common/scripted_effects/nesnd_unification_generated.txt', '\n'.join(out))
 
