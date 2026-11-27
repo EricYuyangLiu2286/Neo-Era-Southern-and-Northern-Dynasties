@@ -563,7 +563,26 @@ nesnd_ottoman_recovery.12 = {
     option = {
         name = nesnd_ottoman_recovery.12.a
         default_option = yes
-        add_modifier = { name = nesnd_ottoman_caliphate }
+        if = {
+            limit = {
+                nesnd_ottoman_holds_holy_cities = yes
+            }
+            add_modifier = {
+                name = nesnd_ottoman_caliphate
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.12.a_holy_cities_tt
+            hidden_effect = {
+                set_variable = nesnd_ottoman_caliph_claimed
+            }
+            if = {
+                limit = {
+                    nesnd_ottoman_holy_start_ready = yes
+                }
+                nesnd_ottoman_holy_start = yes
+            }
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { ig:ig_devout ?= { is_in_government = yes } } add = 10 }
@@ -2057,6 +2076,410 @@ nesnd_ottoman_recovery.31 = {
         add_modifier = {
             name = nesnd_egypt_nile_mod
             months = 60
+        }
+        ai_chance = {
+            base = 50
+        }
+    }
+}
+# Journal nesnd_ottoman_holy_cities: Ottoman protectorate offer received by an independent minor holder of STATE_HEDJAZ (Rule 12).
+nesnd_ottoman_recovery.32 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.32.t
+    desc = nesnd_ottoman_recovery.32.d
+    flavor = nesnd_ottoman_recovery.32.f
+    event_image = {
+        video = "votp_monarch_holding_court"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_holy_offer_open = yes
+    }
+    immediate = {
+        save_scope_as = nesnd_holy_target_scope
+        c:TUR ?= {
+            save_scope_as = nesnd_holy_tur
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.32.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_holy_offer_open = yes
+            }
+            c:TUR ?= {
+                create_diplomatic_pact = {
+                    country = root
+                    type = protectorate
+                }
+            }
+            change_relations = {
+                country = c:TUR
+                value = 30
+            }
+            hidden_effect = {
+                save_scope_as = nesnd_holy_offer_accepted
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.33
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.32.lapsed_tt
+        }
+        ai_chance = {
+            base = 10
+            modifier = {
+                trigger = {
+                    "relations(c:TUR)" >= relations_threshold:cordial
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        has_variable = nesnd_ottoman_islam_leader_outcome
+                        var:nesnd_ottoman_islam_leader_outcome = flag:leader
+                    }
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                add = 10
+            }
+            modifier = {
+                trigger = {
+                    any_country = {
+                        nesnd_rival_caliph = yes
+                        "relations(root)" >= relations_threshold:cordial
+                    }
+                    OR = {
+                        "relations(c:TUR)" >= relations_threshold:cordial
+                        is_at_war = yes
+                        c:TUR ?= {
+                            has_variable = nesnd_ottoman_islam_leader_outcome
+                            var:nesnd_ottoman_islam_leader_outcome = flag:leader
+                        }
+                    }
+                }
+                add = -20
+            }
+            modifier = {
+                trigger = {
+                    any_country = {
+                        nesnd_rival_caliph = yes
+                        "relations(root)" >= relations_threshold:cordial
+                    }
+                    NOT = { "relations(c:TUR)" >= relations_threshold:cordial }
+                    is_at_war = no
+                    NOT = {
+                        c:TUR ?= {
+                            has_variable = nesnd_ottoman_islam_leader_outcome
+                            var:nesnd_ottoman_islam_leader_outcome = flag:leader
+                        }
+                    }
+                }
+                add = -10
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.32.b
+        if = {
+            limit = {
+                nesnd_ottoman_holy_offer_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+            hidden_effect = {
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.33
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.32.lapsed_tt
+        }
+        ai_chance = {
+            base = 60
+        }
+    }
+}
+# Journal nesnd_ottoman_holy_cities: Ottoman notification of the Hedjaz holder's answer to the protectorate offer (Rule 12).
+nesnd_ottoman_recovery.33 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.33.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.33.d_accepted
+                trigger = {
+                    exists = scope:nesnd_holy_offer_accepted
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.33.d_refused
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.33.f
+    event_image = {
+        video = "votp_monarch_holding_court"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = scope:nesnd_holy_target_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.33.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_holy_offer_accepted
+            }
+            custom_tooltip = nesnd_ottoman_recovery.33.a_accepted_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.33.a_refused_tt
+        }
+    }
+}
+# Two Caliphs (Ottoman side, Rule 13): fires once when TUR has nesnd_ottoman_caliphate or nesnd_ottoman_holy_cities and a rival caliph exists.
+nesnd_ottoman_recovery.34 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.34.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.34.d_caliph
+                trigger = {
+                    has_modifier = nesnd_ottoman_caliphate
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.34.d_claimant
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.34.f
+    event_image = {
+        video = "middleeast_islam"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_two_caliphs_due = yes
+    }
+    immediate = {
+        set_variable = nesnd_ottoman_two_caliphs_fired
+        save_scope_as = nesnd_holy_tur
+        if = {
+            limit = {
+                any_country = {
+                    nesnd_rival_caliph = yes
+                }
+            }
+            ordered_country = {
+                limit = {
+                    nesnd_rival_caliph = yes
+                }
+                order_by = country_rank
+                position = 0
+                check_range_bounds = no
+                save_scope_as = nesnd_rival_caliph_scope
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.34.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_rival_caliph_scope
+                scope:nesnd_rival_caliph_scope = {
+                    nesnd_rival_caliph = yes
+                }
+            }
+            scope:nesnd_rival_caliph_scope = {
+                change_relations = {
+                    country = root
+                    value = -30
+                }
+            }
+            if = {
+                limit = {
+                    NOT = {
+                        has_secret_goal = {
+                            who = scope:nesnd_rival_caliph_scope
+                            secret_goal = antagonize
+                        }
+                    }
+                }
+                set_secret_goal = {
+                    country = scope:nesnd_rival_caliph_scope
+                    secret_goal = antagonize
+                }
+            }
+            scope:nesnd_rival_caliph_scope = {
+                trigger_event = {
+                    id = nesnd_ottoman_recovery.35
+                    days = 2
+                    popup = yes
+                }
+            }
+        }
+        ig:ig_devout ?= {
+            add_modifier = {
+                name = nesnd_ottoman_holy_devout_zeal
+                months = 60
+            }
+        }
+        ai_chance = {
+            base = 60
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.34.b
+        ig:ig_devout ?= {
+            add_modifier = {
+                name = nesnd_ottoman_holy_devout_doubt
+                months = 60
+            }
+        }
+        ai_chance = {
+            base = 40
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                add = 20
+            }
+        }
+    }
+}
+# Two Caliphs (rival caliph side, R4, Rule 14): received after TUR rejects the rival caliph in event .34 option a.
+nesnd_ottoman_recovery.35 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.35.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.35.d_holds_holy
+                trigger = {
+                    nesnd_ottoman_holy_root_holds_holy_cities = yes
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.35.d_no_holy
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.35.f
+    event_image = {
+        video = "middleeast_islam"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_two_caliphs_reply_open = yes
+    }
+    immediate = {
+        c:TUR ?= {
+            save_scope_as = nesnd_holy_tur
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.35.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_two_caliphs_reply_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -30
+            }
+            if = {
+                limit = {
+                    NOT = {
+                        has_secret_goal = {
+                            who = c:TUR
+                            secret_goal = antagonize
+                        }
+                    }
+                }
+                set_secret_goal = {
+                    country = c:TUR
+                    secret_goal = antagonize
+                }
+            }
+            if = {
+                limit = {
+                    nesnd_ottoman_holy_root_holds_holy_cities = no
+                    NOT = { has_claim = s:STATE_HEDJAZ }
+                }
+                s:STATE_HEDJAZ = {
+                    add_claim = root
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.35.lapsed_tt
+        }
+        ai_chance = {
+            base = 50
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                add = -30
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.35.b
+        if = {
+            limit = {
+                nesnd_ottoman_two_caliphs_reply_open = yes
+            }
+            custom_tooltip = nesnd_ottoman_recovery.35.b_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.35.lapsed_tt
         }
         ai_chance = {
             base = 50

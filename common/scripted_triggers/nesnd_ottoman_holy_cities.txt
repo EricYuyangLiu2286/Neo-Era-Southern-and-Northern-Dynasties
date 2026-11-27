@@ -1,0 +1,269 @@
+﻿# Triggers for Ottoman B11 "The Holy Cities" journal (nesnd_ottoman_holy_cities) and Two Caliphs events (.32-.35).
+# Country scope unless noted.
+
+# Any scope. STATE_HEDJAZ has at least one state and all of its states are held by TUR or its subjects (Rule 1).
+nesnd_ottoman_holds_holy_cities = {
+    s:STATE_HEDJAZ = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+}
+
+# Country scope (evaluated country). Rival Sunni Caliphate aligned with PER caliphate dynamic names without country tag (Rule 2, F7).
+nesnd_rival_caliph = {
+    is_country_alive = yes
+    NOT = { c:TUR ?= this }
+    NOT = { is_subject_of = c:TUR }
+    NOT = { is_country_type = decentralized }
+    has_variable = nesnd_per_west_realized
+    country_has_state_religion = rel:sunni
+    OR = {
+        nesnd_per_west_ruler_tang = yes
+        nesnd_per_west_ruler_persian = yes
+        nesnd_per_west_ruler_arab = yes
+    }
+}
+
+# State scope. The state is held by a rival caliph or a subject whose top overlord is a rival caliph (helper for Rule 3).
+nesnd_ottoman_holy_state_held_by_rival_caliph = {
+    owner = {
+        OR = {
+            nesnd_rival_caliph = yes
+            AND = {
+                is_subject = yes
+                top_overlord ?= {
+                    nesnd_rival_caliph = yes
+                }
+            }
+        }
+    }
+}
+
+# Any scope. STATE_HEDJAZ has at least one state and every state's owner or top overlord is a rival caliph (Rule 3).
+nesnd_rival_caliph_holds_holy_cities = {
+    s:STATE_HEDJAZ = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_holy_state_held_by_rival_caliph = no
+            }
+        }
+    }
+}
+
+# Country scope (evaluated country). The country or any of its subjects at any depth holds a state in STATE_HEDJAZ (Rule 4).
+nesnd_ottoman_holy_holds_target = {
+    OR = {
+        any_scope_state = {
+            state_region = s:STATE_HEDJAZ
+        }
+        any_subject_or_below = {
+            any_scope_state = {
+                state_region = s:STATE_HEDJAZ
+            }
+        }
+    }
+}
+
+# Country scope (evaluated country). Eligible to be selected as the Holy Cities foe (Rule 4).
+nesnd_ottoman_holy_foe_candidate = {
+    is_country_alive = yes
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    is_subject = no
+    NOT = { is_country_type = decentralized }
+    NOT = {
+        has_treaty_alliance_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = {
+        has_treaty_defensive_pact_with = {
+            TARGET = c:TUR
+        }
+    }
+    nesnd_ottoman_holy_holds_target = yes
+}
+
+# Any scope. The stored global_var:nesnd_holy_foe is still alive, independent, not allied with TUR, and holds Hedjaz (Rule 4).
+nesnd_ottoman_holy_foe_valid = {
+    exists = c:TUR
+    has_global_variable = nesnd_holy_foe
+    global_var:nesnd_holy_foe ?= {
+        is_country_alive = yes
+        is_subject = no
+        NOT = { c:TUR ?= this }
+        NOT = {
+            has_treaty_alliance_with = {
+                TARGET = c:TUR
+            }
+        }
+        NOT = {
+            has_treaty_defensive_pact_with = {
+                TARGET = c:TUR
+            }
+        }
+        nesnd_ottoman_holy_holds_target = yes
+    }
+}
+
+# Country scope (TUR). Preconditions for opening nesnd_ottoman_holy_cities once a caliphate claim or sultanic victory is present (Rules 6, 7, F3).
+nesnd_ottoman_holy_start_ready = {
+    c:TUR ?= this
+    nesnd_ottoman_can_act_abroad = yes
+    NOT = { has_modifier = nesnd_ottoman_caliphate }
+    NOT = { has_journal_entry = nesnd_ottoman_holy_cities }
+    NOT = { has_variable = nesnd_ottoman_holy_closed }
+    NOT = { has_variable = nesnd_ottoman_holy_reopen_cd }
+    OR = {
+        nesnd_ottoman_holds_holy_cities = yes
+        any_country = {
+            nesnd_ottoman_holy_foe_candidate = yes
+        }
+    }
+}
+
+# Country scope (TUR). Entry / monthly fallback trigger for nesnd_ottoman_holy_cities (Rule 7).
+nesnd_ottoman_holy_fallback_due = {
+    nesnd_ottoman_holy_start_ready = yes
+    OR = {
+        has_variable = nesnd_ottoman_caliph_claimed
+        AND = {
+            has_variable = nesnd_ottoman_autocracy_outcome
+            var:nesnd_ottoman_autocracy_outcome = flag:sultan
+        }
+    }
+}
+
+# Country scope (TUR). Currently at war with global_var:nesnd_holy_foe (Rules 9, 10).
+nesnd_ottoman_holy_at_war_with_foe = {
+    has_global_variable = nesnd_holy_foe
+    global_var:nesnd_holy_foe ?= {
+        has_war_with = prev
+    }
+}
+
+# Any scope. Active diplomatic play opposing TUR and global_var:nesnd_holy_foe (Rules 9, 10).
+nesnd_ottoman_holy_play_in_progress = {
+    exists = c:TUR
+    has_global_variable = nesnd_holy_foe
+    global_var:nesnd_holy_foe ?= {
+        OR = {
+            is_diplomatic_play_enemy_of = c:TUR
+            any_diplomatic_play = {
+                OR = {
+                    AND = {
+                        initiator_is = c:TUR
+                        target_is = prev
+                    }
+                    AND = {
+                        initiator_is = prev
+                        target_is = c:TUR
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Foe became invalid and TUR is not currently at war with it (R12, Rule 9.4).
+nesnd_ottoman_holy_situation_changed = {
+    nesnd_ottoman_holy_foe_valid = no
+    nesnd_ottoman_holy_at_war_with_foe = no
+}
+
+# Country scope (TUR). Mechanical prerequisites for TUR to take a protectorate per GAME 00_subject_types.txt:1-46 (Rule 12, Step 0 #5).
+nesnd_ottoman_holy_can_take_protectorate = {
+    is_country_type = recognized
+    country_rank >= rank_value:minor_power
+    is_subject = no
+}
+
+# Country scope (evaluated country). Independent minor/unrecognized direct holder of STATE_HEDJAZ eligible for the protectorate offer (Rule 12, F6, F8).
+# Per GAME/common/subject_types/00_subject_types.txt:37-53 (valid_subject_country_types: recognized/unrecognized; valid_subject_ranks: minor_power,
+# insignificant_power, unrecognized_regional_power, unrecognized_power) and GAME/common/country_ranks/00_country_ranks.txt:17-249
+# (unrecognized_power=1, insignificant_power=2, unrecognized_regional_power=3, minor_power=4, unrecognized_major_power=5, major_power=6, great_power=7),
+# <= rank_value:minor_power is the exact upper bound and excludes unrecognized_major_power (5) and above.
+nesnd_ottoman_holy_offer_target = {
+    is_country_alive = yes
+    OR = {
+        is_country_type = recognized
+        is_country_type = unrecognized
+    }
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    NOT = { top_overlord ?= c:TUR }
+    is_subject = no
+    any_scope_state = {
+        state_region = s:STATE_HEDJAZ
+    }
+    country_rank <= rank_value:minor_power
+    c:TUR = {
+        country_rank > prev.country_rank
+    }
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_diplomatic_play_enemy_of = c:TUR }
+}
+
+# Country scope (recipient of event nesnd_ottoman_recovery.32). The protectorate offer is still valid (Rule 12).
+nesnd_ottoman_holy_offer_open = {
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        has_journal_entry = nesnd_ottoman_holy_cities
+        nesnd_ottoman_holy_can_take_protectorate = yes
+    }
+    nesnd_ottoman_holy_offer_target = yes
+}
+
+# Country scope (TUR). Monthly trigger for the one-time Two Caliphs event .34 (Rule 13, F4).
+nesnd_ottoman_two_caliphs_due = {
+    c:TUR ?= this
+    NOT = { has_variable = nesnd_ottoman_two_caliphs_fired }
+    OR = {
+        has_modifier = nesnd_ottoman_caliphate
+        has_journal_entry = nesnd_ottoman_holy_cities
+        has_variable = nesnd_ottoman_caliph_claimed
+        AND = {
+            has_variable = nesnd_ottoman_autocracy_outcome
+            var:nesnd_ottoman_autocracy_outcome = flag:sultan
+        }
+    }
+    any_country = {
+        nesnd_rival_caliph = yes
+    }
+}
+
+# Country scope (recipient of event nesnd_ottoman_recovery.35). Guard ensuring recipient is still a rival caliph and TUR is alive (Rule 14).
+nesnd_ottoman_two_caliphs_reply_open = {
+    nesnd_rival_caliph = yes
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+    }
+}
+
+# Country scope (root in event .35). STATE_HEDJAZ is wholly held by root or subjects of root at any depth (Rule 14).
+nesnd_ottoman_holy_root_holds_holy_cities = {
+    s:STATE_HEDJAZ = {
+        any_scope_state = {
+            always = yes
+        }
+        NOT = {
+            any_scope_state = {
+                owner = {
+                    NOT = { this = root }
+                    NOT = { is_subject_of = root }
+                }
+            }
+        }
+    }
+}

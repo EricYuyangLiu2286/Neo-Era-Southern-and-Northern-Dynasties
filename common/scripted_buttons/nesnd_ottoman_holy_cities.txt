@@ -1,0 +1,95 @@
+﻿# Scripted buttons for Ottoman B11 "The Holy Cities" journal (nesnd_ottoman_holy_cities).
+
+# Rule 11: Set Holy Cities campaign plan (once per journal opening; requires claim on STATE_HEDJAZ).
+nesnd_ottoman_holy_plan = {
+    name = nesnd_ottoman_holy_plan
+    desc = nesnd_ottoman_holy_plan_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_holy_cities
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_holy_not_planned_tt
+            NOT = { has_variable = nesnd_ottoman_holy_planned }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_holy_has_claim_tt
+            has_claim = s:STATE_HEDJAZ
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_holy_foe_valid_tt
+            nesnd_ottoman_holy_foe_valid = yes
+        }
+    }
+    effect = {
+        s:STATE_HEDJAZ = {
+            nesnd_ottoman_conquer_goal_on_holders = yes
+        }
+        add_modifier = {
+            name = nesnd_ottoman_holy_campaign_mod
+            months = 60
+        }
+        hidden_effect = {
+            set_variable = nesnd_ottoman_holy_planned
+        }
+    }
+    ai_chance = {
+        value = 20
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}
+
+# Rule 12: Offer protectorate status to an independent minor holder of STATE_HEDJAZ (60-month cooldown).
+nesnd_ottoman_holy_offer = {
+    name = nesnd_ottoman_holy_offer
+    desc = nesnd_ottoman_holy_offer_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_holy_cities
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_holy_offer_target_tt
+            any_country = {
+                nesnd_ottoman_holy_offer_target = yes
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_holy_offer_cd_tt
+            NOT = { has_variable = nesnd_ottoman_holy_offer_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_holy_offer_rank_tt
+            nesnd_ottoman_holy_can_take_protectorate = yes
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_ottoman_holy_offer_send_tt
+        custom_tooltip = nesnd_ottoman_holy_offer_cd_set_tt
+        hidden_effect = {
+            nesnd_ottoman_holy_dispatch_offer = yes
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                any_country = {
+                    nesnd_ottoman_holy_offer_target = yes
+                    "relations(root)" >= relations_threshold:cordial
+                }
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}
