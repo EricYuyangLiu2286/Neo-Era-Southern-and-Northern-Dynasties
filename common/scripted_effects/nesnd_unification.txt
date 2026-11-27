@@ -1,4 +1,4 @@
-﻿# Global refresh of the unification trend (root = none; only called from the global journal entry, so scope:journal_entry exists): joiners, involvement, counts, leader, phase, modifiers and the lead bar.
+﻿# Global refresh of the unification trend (root = none; only called from the global journal entry, so scope:journal_entry exists): joiners, involvement, heads, counts, leader, phase, modifiers and the lead bar.
 nesnd_uni_refresh = {
 	# 1. AI countries owning at least 3 regions of the scope join on their own.
 	if = {
@@ -9,6 +9,7 @@ nesnd_uni_refresh = {
 			limit = {
 				is_ai = yes
 				is_subject = no
+				nesnd_uni_bloc_follower = no
 				NOT = { is_country_type = decentralized }
 				NOT = { has_variable = nesnd_uni_joined }
 				nesnd_uni_capital_in_scope = no
@@ -46,7 +47,75 @@ nesnd_uni_refresh = {
 			}
 		}
 	}
-	# 4. Count regions held by each contender and the number of rivals.
+	# 4. Heads and roles: every contender heads its own subjects, and (as bloc leader) its power bloc members and their subjects.
+	every_country = {
+		limit = {
+			OR = {
+				has_variable = nesnd_uni_head
+				has_variable = nesnd_uni_held
+				has_variable = nesnd_uni_map_lead
+				has_variable = nesnd_uni_map_second
+				has_variable = nesnd_uni_map_other
+				has_variable = nesnd_uni_map_subject
+				has_variable = nesnd_uni_map_ally
+			}
+		}
+		remove_variable = nesnd_uni_head
+		remove_variable = nesnd_uni_held
+		remove_variable = nesnd_uni_map_lead
+		remove_variable = nesnd_uni_map_second
+		remove_variable = nesnd_uni_map_other
+		remove_variable = nesnd_uni_map_subject
+		remove_variable = nesnd_uni_map_ally
+	}
+	every_country = {
+		limit = {
+			nesnd_uni_contender = yes
+		}
+		save_scope_as = nesnd_uni_head_scope
+		set_variable = {
+			name = nesnd_uni_head
+			value = scope:nesnd_uni_head_scope
+		}
+		set_variable = {
+			name = nesnd_uni_held
+			value = 0
+		}
+		every_subject_or_below = {
+			set_variable = {
+				name = nesnd_uni_head
+				value = scope:nesnd_uni_head_scope
+			}
+			set_variable = nesnd_uni_map_subject
+		}
+		if = {
+			limit = {
+				is_power_bloc_leader = yes
+			}
+			power_bloc ?= {
+				every_power_bloc_member = {
+					limit = {
+						NOT = { this = scope:nesnd_uni_head_scope }
+					}
+					set_variable = {
+						name = nesnd_uni_head
+						value = scope:nesnd_uni_head_scope
+					}
+					set_variable = nesnd_uni_map_ally
+					every_subject_or_below = {
+						set_variable = {
+							name = nesnd_uni_head
+							value = scope:nesnd_uni_head_scope
+						}
+						set_variable = nesnd_uni_map_ally
+					}
+				}
+			}
+		}
+	}
+	# 5. Regions: count the regions whose every state belongs to one head's tree and mark the states.
+	nesnd_uni_count_regions = yes
+	# 6. Number of rivals, the leader and second place.
 	set_global_variable = {
 		name = nesnd_uni_rivals
 		value = 0
@@ -55,21 +124,16 @@ nesnd_uni_refresh = {
 		limit = {
 			nesnd_uni_contender = yes
 		}
-		set_variable = {
-			name = nesnd_uni_held
-			value = nesnd_uni_held_count
-		}
 		change_global_variable = {
 			name = nesnd_uni_rivals
 			add = 1
 		}
 	}
-	# 5. The country holding the most regions is the leader.
 	ordered_country = {
 		limit = {
 			nesnd_uni_contender = yes
 		}
-		order_by = nesnd_uni_held_count
+		order_by = nesnd_uni_held_value
 		position = 0
 		save_scope_as = nesnd_uni_lead
 	}
@@ -91,7 +155,7 @@ nesnd_uni_refresh = {
 		remove_global_variable = nesnd_uni_leader
 		remove_global_variable = nesnd_uni_lead_count
 	}
-	# 5b. Second place, only with at least two rivals (an ordered list at position 1 needs two entries).
+	# Second place, only with at least two rivals (an ordered list at position 1 needs two entries).
 	if = {
 		limit = {
 			global_var:nesnd_uni_rivals >= 2
@@ -100,7 +164,7 @@ nesnd_uni_refresh = {
 			limit = {
 				nesnd_uni_contender = yes
 			}
-			order_by = nesnd_uni_held_count
+			order_by = nesnd_uni_held_value
 			position = 1
 			save_scope_as = nesnd_uni_second_scope
 		}
@@ -121,7 +185,7 @@ nesnd_uni_refresh = {
 	else = {
 		remove_global_variable = nesnd_uni_second
 	}
-	# 5c. Count the contenders holding more than 20 regions.
+	# 7. Count the contenders holding at least 32 regions.
 	set_global_variable = {
 		name = nesnd_uni_big
 		value = 0
@@ -129,19 +193,19 @@ nesnd_uni_refresh = {
 	every_country = {
 		limit = {
 			nesnd_uni_contender = yes
-			var:nesnd_uni_held > 20
+			var:nesnd_uni_held >= 32
 		}
 		change_global_variable = {
 			name = nesnd_uni_big
 			add = 1
 		}
 	}
-	# 6. Phase: two big contenders mean the standoff; ten or more rivals mean the many-kingdoms phase; otherwise the tripod.
+	# 8. Phase: exactly two big contenders mean the standoff (a third that big cancels it); ten or more rivals mean the many-kingdoms phase; otherwise the tripod.
 	remove_global_variable = nesnd_uni_standoff
 	remove_global_variable = nesnd_uni_many
 	if = {
 		limit = {
-			global_var:nesnd_uni_big >= 2
+			global_var:nesnd_uni_big = 2
 		}
 		set_global_variable = nesnd_uni_standoff
 	}
@@ -151,7 +215,29 @@ nesnd_uni_refresh = {
 		}
 		set_global_variable = nesnd_uni_many
 	}
-	# 7. Phase modifiers on every contender; involved non-contenders (subjects) lose them.
+	# 9. Map roles on the contenders themselves.
+	every_country = {
+		limit = {
+			nesnd_uni_contender = yes
+		}
+		if = {
+			limit = {
+				global_var:nesnd_uni_leader ?= this
+			}
+			set_variable = nesnd_uni_map_lead
+		}
+		else_if = {
+			limit = {
+				has_global_variable = nesnd_uni_standoff
+				global_var:nesnd_uni_second ?= this
+			}
+			set_variable = nesnd_uni_map_second
+		}
+		else = {
+			set_variable = nesnd_uni_map_other
+		}
+	}
+	# 10. Phase modifiers on every contender; involved non-contenders (subjects, bloc followers) lose them.
 	every_country = {
 		limit = {
 			nesnd_uni_qualified = yes
@@ -210,70 +296,41 @@ nesnd_uni_refresh = {
 			}
 		}
 	}
-	# 8. Write the lead bar.
+	# The standoff modifier belongs to the leader and the second place while the standoff lasts.
+	every_country = {
+		limit = {
+			has_modifier = nesnd_uni_standoff_power
+			NOT = {
+				AND = {
+					has_global_variable = nesnd_uni_standoff
+					OR = {
+						global_var:nesnd_uni_leader ?= this
+						global_var:nesnd_uni_second ?= this
+					}
+				}
+			}
+		}
+		remove_modifier = nesnd_uni_standoff_power
+	}
+	if = {
+		limit = {
+			has_global_variable = nesnd_uni_standoff
+		}
+		every_country = {
+			limit = {
+				OR = {
+					global_var:nesnd_uni_leader ?= this
+					global_var:nesnd_uni_second ?= this
+				}
+				NOT = { has_modifier = nesnd_uni_standoff_power }
+			}
+			add_modifier = {
+				name = nesnd_uni_standoff_power
+			}
+		}
+	}
+	# 11. Write the lead bar.
 	nesnd_uni_sync_lead_bar = yes
-	# 9. Marks for the map mode.
-	nesnd_uni_mark_map = yes
-}
-
-# Global scope (root = none): marks for the map mode of the global journal entry. Countries get head and role variables, regions get the counted variable.
-nesnd_uni_mark_map = {
-	every_country = {
-		limit = {
-			OR = {
-				has_variable = nesnd_uni_head
-				has_variable = nesnd_uni_map_lead
-				has_variable = nesnd_uni_map_second
-				has_variable = nesnd_uni_map_other
-			}
-		}
-		remove_variable = nesnd_uni_head
-		remove_variable = nesnd_uni_map_lead
-		remove_variable = nesnd_uni_map_second
-		remove_variable = nesnd_uni_map_other
-	}
-	every_country = {
-		limit = {
-			nesnd_uni_contender = yes
-		}
-		save_scope_as = nesnd_uni_head_scope
-		set_variable = {
-			name = nesnd_uni_head
-			value = scope:nesnd_uni_head_scope
-		}
-		every_subject_or_below = {
-			set_variable = {
-				name = nesnd_uni_head
-				value = scope:nesnd_uni_head_scope
-			}
-		}
-		if = {
-			limit = {
-				global_var:nesnd_uni_leader ?= this
-			}
-			set_variable = nesnd_uni_map_lead
-			every_subject_or_below = {
-				set_variable = nesnd_uni_map_lead
-			}
-		}
-		else_if = {
-			limit = {
-				has_global_variable = nesnd_uni_standoff
-				global_var:nesnd_uni_second ?= this
-			}
-			set_variable = nesnd_uni_map_second
-			every_subject_or_below = {
-				set_variable = nesnd_uni_map_second
-			}
-		}
-		else = {
-			set_variable = nesnd_uni_map_other
-			every_subject_or_below = {
-				set_variable = nesnd_uni_map_other
-			}
-		}
-	}
-	nesnd_uni_mark_regions = yes
 }
 
 # Global scope (root = none, needs scope:journal_entry): the lead bar shows the leader's region count, or 0 without a leader.
@@ -313,6 +370,12 @@ nesnd_uni_clear_country = {
 		}
 		remove_modifier = nesnd_uni_tripod
 	}
+	if = {
+		limit = {
+			has_modifier = nesnd_uni_standoff_power
+		}
+		remove_modifier = nesnd_uni_standoff_power
+	}
 	remove_variable = nesnd_uni_calm
 	remove_variable = nesnd_uni_mobilize
 	remove_variable = nesnd_uni_held
@@ -320,4 +383,6 @@ nesnd_uni_clear_country = {
 	remove_variable = nesnd_uni_map_lead
 	remove_variable = nesnd_uni_map_second
 	remove_variable = nesnd_uni_map_other
+	remove_variable = nesnd_uni_map_subject
+	remove_variable = nesnd_uni_map_ally
 }
