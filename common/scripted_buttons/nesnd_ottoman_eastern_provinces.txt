@@ -38,12 +38,13 @@ nesnd_ottoman_east_charter = {
         nesnd_ottoman_holds_eastern_province = yes
     }
     effect = {
+        nesnd_ottoman_pick_east_intervener = yes
         add_culture_acceptance_modifier = {
             culture = cu:armenian
             days = normal_modifier_time
             multiplier = 15
         }
-        c:RUS ?= { change_relations = { country = root value = 15 } }
+        scope:nesnd_intervener ?= { change_relations = { country = root value = 15 } }
         ig:ig_devout ?= { add_modifier = { name = nesnd_ottoman_east_charter_ig_displeased months = 60 } }
         custom_tooltip = nesnd_ottoman_east_cd_set_tt
         hidden_effect = {
@@ -75,19 +76,21 @@ nesnd_ottoman_east_crackdown = {
         nesnd_ottoman_holds_eastern_province = yes
     }
     effect = {
+        nesnd_ottoman_pick_east_intervener = yes
+        nesnd_ottoman_pick_east_intervener_second = yes
         every_scope_state = {
             limit = { nesnd_ottoman_is_eastern_province = yes }
             add_radicals_in_state = { value = medium_radicals }
         }
         change_infamy = 5
-        c:RUS ?= { change_relations = { country = root value = -15 } }
-        c:GBR ?= { change_relations = { country = root value = -15 } }
+        scope:nesnd_intervener ?= { change_relations = { country = root value = -15 } }
+        scope:nesnd_intervener_second ?= { change_relations = { country = root value = -15 } }
         if = {
             limit = {
                 has_variable = nesnd_ottoman_east_crackdown_count
                 var:nesnd_ottoman_east_crackdown_count >= 2
                 NOT = { has_variable = nesnd_ottoman_east_rus_warned }
-                exists = c:RUS
+                any_country = { nesnd_ottoman_east_intervener_candidate = yes }
             }
             custom_tooltip = nesnd_ottoman_east_crackdown_rus_tt
         }
@@ -95,14 +98,16 @@ nesnd_ottoman_east_crackdown = {
         hidden_effect = {
             if = { limit = { has_variable = nesnd_ottoman_east_crackdown_count } change_variable = { name = nesnd_ottoman_east_crackdown_count add = 1 } }
             else = { set_variable = { name = nesnd_ottoman_east_crackdown_count value = 1 } }
+            # nesnd_ottoman_east_rus_warned / nesnd_ottoman_rus_protect_east_due: _rus_ kept for compatibility; now refers to the selected intervener (F3 Rule 9).
             if = {
                 limit = {
                     var:nesnd_ottoman_east_crackdown_count >= 3
                     NOT = { has_variable = nesnd_ottoman_east_rus_warned }
+                    exists = scope:nesnd_intervener
                 }
                 set_variable = nesnd_ottoman_east_rus_warned
-                c:RUS ?= {
-                    set_variable = nesnd_ottoman_rus_protect_east_due
+                scope:nesnd_intervener = {
+                    set_variable = { name = nesnd_ottoman_rus_protect_east_due days = 10 }
                     trigger_event = { id = nesnd_ottoman_recovery.18 days = 3 popup = yes }
                 }
             }

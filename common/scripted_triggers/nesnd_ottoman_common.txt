@@ -55,3 +55,49 @@ nesnd_ottoman_gec_record_due = {
         }
     }
 }
+
+# Country scope (evaluated country). Shared preconditions for a foreign power to intervene against Ottoman domestic crackdowns (F3 Rule 1).
+nesnd_ottoman_intervener_base = {
+    is_country_alive = yes
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    is_subject = no
+    NOT = { is_country_type = decentralized }
+    country_rank >= rank_value:major_power
+    "relations(c:TUR)" < relations_threshold:cordial
+    NOT = { has_treaty_alliance_with = { TARGET = c:TUR } }
+    NOT = { has_treaty_defensive_pact_with = { TARGET = c:TUR } }
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_in_same_power_bloc = c:TUR }
+}
+
+# Country scope (evaluated country). Eligible intervener for Rumelia crackdowns (F3 Rule 2).
+nesnd_ottoman_balkan_intervener_candidate = {
+    nesnd_ottoman_intervener_base = yes
+    has_interest_marker_in_region = sr:region_balkans
+}
+
+# Country scope (evaluated country). Eligible intervener for Eastern Provinces actions (F3 Rule 2).
+# Strategic regions in MOD: Anatolia = region_near_east, Caucasus = region_greater_persia.
+nesnd_ottoman_east_intervener_candidate = {
+    nesnd_ottoman_intervener_base = yes
+    OR = {
+        has_interest_marker_in_region = sr:region_near_east
+        has_interest_marker_in_region = sr:region_greater_persia
+    }
+}
+
+# Country scope (evaluated country). Eligible European Concert partner for event nesnd_ottoman_recovery.12 option b (F3 Rule 11).
+nesnd_ottoman_concert_candidate = {
+    is_country_alive = yes
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    is_subject = no
+    country_rank >= rank_value:great_power
+    NOT = { has_war_with = c:TUR }
+    NOT = { global_var:nesnd_north_foe ?= this }
+    OR = {
+        has_interest_marker_in_region = sr:region_balkans
+        has_interest_marker_in_region = sr:region_near_east
+    }
+}

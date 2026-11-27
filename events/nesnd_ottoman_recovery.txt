@@ -521,25 +521,23 @@ nesnd_ottoman_recovery.12 = {
     }
     option = {
         name = nesnd_ottoman_recovery.12.b
-        if = { limit = { exists = c:GBR } change_relations = { country = c:GBR value = 40 } }
-        if = { limit = { exists = c:FRA } change_relations = { country = c:FRA value = 40 } }
+        nesnd_ottoman_pick_concert_partners = yes
+        if = { limit = { exists = scope:nesnd_concert_first } change_relations = { country = scope:nesnd_concert_first value = 40 } }
+        if = { limit = { exists = scope:nesnd_concert_second } change_relations = { country = scope:nesnd_concert_second value = 40 } }
         add_modifier = { name = nesnd_ottoman_concert }
         if = {
             limit = {
-                exists = c:GBR
-                exists = c:FRA
-                "relations(c:GBR)" >= "relations(c:FRA)"
-                nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:GBR }
+                exists = scope:nesnd_concert_first
+                nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = scope:nesnd_concert_first }
             }
-            nesnd_crimea_sign_defensive_pact = { PARTNER = c:GBR }
+            nesnd_crimea_sign_defensive_pact = { PARTNER = scope:nesnd_concert_first }
         }
         else_if = {
-            limit = { nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:FRA } }
-            nesnd_crimea_sign_defensive_pact = { PARTNER = c:FRA }
-        }
-        else_if = {
-            limit = { nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = c:GBR } }
-            nesnd_crimea_sign_defensive_pact = { PARTNER = c:GBR }
+            limit = {
+                exists = scope:nesnd_concert_second
+                nesnd_crimea_can_sign_defensive_pact_with = { PARTNER = scope:nesnd_concert_second }
+            }
+            nesnd_crimea_sign_defensive_pact = { PARTNER = scope:nesnd_concert_second }
         }
         ai_chance = {
             base = 10
@@ -820,7 +818,9 @@ nesnd_ottoman_recovery.17 = {
         }
     }
 }
-# Russian reaction to repeated Ottoman crackdowns in Rumelia or the Eastern Provinces (once per journal).
+# Selected intervener's reaction to the third Ottoman crackdown in Rumelia or the Eastern Provinces (once per journal).
+# Dispatched to scope:nesnd_intervener (picked by nesnd_ottoman_pick_balkan_intervener / nesnd_ottoman_pick_east_intervener)
+# after 3 days. Variable, play, and modifier names containing _rus_ are kept for compatibility and refer to the selected intervener (F3 Rules 9-10).
 nesnd_ottoman_recovery.18 = {
     type = country_event
     placement = root
@@ -844,12 +844,13 @@ nesnd_ottoman_recovery.18 = {
     icon = "gfx/interface/icons/event_icons/event_protest.dds"
     duration = 3
     trigger = {
-        c:RUS ?= this
+        is_subject = no
         exists = c:TUR
         c:TUR = { is_country_alive = yes }
     }
     immediate = {
         c:TUR ?= { save_scope_as = nesnd_tur_country }
+        # nesnd_ottoman_rus_protect_east_due / _rumelia_due: _rus_ refers to the selected intervener (F3 Rule 9).
         if = {
             limit = { has_variable = nesnd_ottoman_rus_protect_east_due }
             save_scope_as = nesnd_rus_protect_east_event
@@ -867,6 +868,7 @@ nesnd_ottoman_recovery.18 = {
             limit = {
                 nesnd_ottoman_rus_can_open_protect_play = yes
             }
+            # nesnd_ottoman_rus_protect_play: _rus_ refers to the selected intervener (F3 Rule 9).
             create_diplomatic_play = {
                 name = nesnd_ottoman_rus_protect_play
                 type = dp_humiliation
@@ -894,6 +896,7 @@ nesnd_ottoman_recovery.18 = {
     option = {
         name = nesnd_ottoman_recovery.18.b
         c:TUR ?= { change_relations = { country = root value = -20 } }
+        # nesnd_ottoman_rus_protest_prestige: _rus_ refers to the selected intervener (F3 Rule 9; static modifier file outside F3 scope).
         add_modifier = { name = nesnd_ottoman_rus_protest_prestige months = 60 }
         ai_chance = {
             base = 30
