@@ -13,7 +13,7 @@
   } }
  } trigger_else = { always = no }
 }
-# Sender readiness shared by small-state requests (kinds 6-9). Evaluated outside the sender scope so each line shows without a header.
+# Sender readiness shared by small-state requests (kinds 6, 8 and 9). Evaluated outside the sender scope so each line shows without a header.
 nesnd_small_request_common = {
     custom_tooltip = {
         text = nesnd_canon_pair_valid_tt
@@ -78,14 +78,6 @@ nesnd_small_request_rules_6 = {
         scope:canon_partner = { NOT = { any_diplomatic_catalyst = { is_diplomatic_catalyst_type = catalyst_autonomy_increase_requested target = scope:canon_sender } } }
     }
 }
-# Kind 7: request peaceful independence from the direct overlord.
-nesnd_small_request_rules_7 = {
-    nesnd_small_request_common = yes
-    custom_tooltip = { text = nesnd_small_request_direct_subject_tt scope:canon_sender = { is_subject = yes nesnd_small_direct_partner = yes } }
-    custom_tooltip = { text = nesnd_small_request_liberty_75_tt scope:canon_sender = { liberty_desire >= 75 } }
-    custom_tooltip = { text = nesnd_canon_relations_neg20_tt scope:canon_sender = { "relations(scope:canon_partner)" >= -20 } }
-    custom_tooltip = { text = nesnd_small_request_strength_40_tt scope:canon_sender = { OR = { nesnd_small_army_ratio >= 0.4 nesnd_small_gdp_ratio >= 0.4 nesnd_small_reliable_support = yes } } }
-}
 # Kind 8: ask the current market owner to allow our own market.
 nesnd_small_request_rules_8 = {
     nesnd_small_request_common = yes
@@ -113,13 +105,37 @@ nesnd_small_request_rules_9 = {
     }
 }
 nesnd_small_request_result = {
- trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
-scope:canon_sender = {
-        trigger_if = { limit = { scope:canon_kind = 6 } OR = { is_subject = no AND = { nesnd_small_high_autonomy = yes trigger_if = { limit = { has_variable = nesnd_small_request_autonomy } var:nesnd_small_request_autonomy < 2 } trigger_else = { always = no } } } }
-        trigger_else_if = { limit = { scope:canon_kind = 7 } is_subject = no }
-        trigger_else_if = { limit = { scope:canon_kind = 8 } nesnd_small_owns_market = yes }
-        trigger_else_if = { limit = { scope:canon_kind = 9 } has_treaty_defensive_pact_with = { TARGET = scope:canon_partner } }
-        trigger_else = { always = no }
+    trigger_if = {
+        limit = {
+            exists = scope:canon_sender
+            exists = scope:canon_partner
+            exists = scope:canon_kind
+        }
+        scope:canon_sender = {
+            trigger_if = {
+                limit = { scope:canon_kind = 6 }
+                OR = {
+                    is_subject = no
+                    AND = {
+                        nesnd_small_high_autonomy = yes
+                        trigger_if = {
+                            limit = { has_variable = nesnd_small_request_autonomy }
+                            var:nesnd_small_request_autonomy < 2
+                        }
+                        trigger_else = { always = no }
+                    }
+                }
+            }
+            trigger_else_if = {
+                limit = { scope:canon_kind = 8 }
+                nesnd_small_owns_market = yes
+            }
+            trigger_else_if = {
+                limit = { scope:canon_kind = 9 }
+                has_treaty_defensive_pact_with = { TARGET = scope:canon_partner }
+            }
+            trigger_else = { always = no }
+        }
     }
- } trigger_else = { always = no }
+    trigger_else = { always = no }
 }

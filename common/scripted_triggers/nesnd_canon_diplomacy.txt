@@ -33,16 +33,42 @@ nesnd_canon_reply_valid = {
 # Buttons call a rule directly; event and maintenance paths dispatch on the kind value.
 # KIND is a value expression: scope:canon_kind (saved by effects) or var:nesnd_canon_request_kind.
 nesnd_canon_request_rules = {
-    trigger_if = { limit = { $KIND$ = 1 } nesnd_canon_rule_german = { ARTICLE = alliance } }
-    trigger_else_if = { limit = { $KIND$ = 11 } nesnd_canon_rule_german = { ARTICLE = defensive_pact } }
-    trigger_else_if = { limit = { $KIND$ = 2 } nesnd_canon_rule_usa_investment = yes }
-    trigger_else_if = { limit = { $KIND$ = 3 } nesnd_canon_rule_italy_credit = yes }
-    trigger_else_if = { limit = { $KIND$ = 4 } nesnd_canon_rule_austria_defence = yes }
-    trigger_else_if = { limit = { $KIND$ = 5 } nesnd_canon_rule_small_investment = yes }
-    trigger_else_if = { limit = { $KIND$ = 6 } nesnd_small_request_rules_6 = yes }
-    trigger_else_if = { limit = { $KIND$ = 7 } nesnd_small_request_rules_7 = yes }
-    trigger_else_if = { limit = { $KIND$ = 8 } nesnd_small_request_rules_8 = yes }
-    trigger_else_if = { limit = { $KIND$ = 9 } nesnd_small_request_rules_9 = yes }
+    trigger_if = {
+        limit = { $KIND$ = 1 }
+        nesnd_canon_rule_german = { ARTICLE = alliance }
+    }
+    trigger_else_if = {
+        limit = { $KIND$ = 11 }
+        nesnd_canon_rule_german = { ARTICLE = defensive_pact }
+    }
+    trigger_else_if = {
+        limit = { $KIND$ = 2 }
+        nesnd_canon_rule_usa_investment = yes
+    }
+    trigger_else_if = {
+        limit = { $KIND$ = 3 }
+        nesnd_canon_rule_italy_credit = yes
+    }
+    trigger_else_if = {
+        limit = { $KIND$ = 4 }
+        nesnd_canon_rule_austria_defence = yes
+    }
+    trigger_else_if = {
+        limit = { $KIND$ = 5 }
+        nesnd_canon_rule_small_investment = yes
+    }
+    trigger_else_if = {
+        limit = { $KIND$ = 6 }
+        nesnd_small_request_rules_6 = yes
+    }
+    trigger_else_if = {
+        limit = { $KIND$ = 8 }
+        nesnd_small_request_rules_8 = yes
+    }
+    trigger_else_if = {
+        limit = { $KIND$ = 9 }
+        nesnd_small_request_rules_9 = yes
+    }
     trigger_else = { always = no }
 }
 nesnd_canon_rule_pair_and_relations = {
@@ -103,15 +129,59 @@ nesnd_canon_request_conditions = {
     trigger_else = { always = no }
 }
 nesnd_canon_treaty_result = {
-    trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_partner exists = scope:canon_kind }
+    trigger_if = {
+        limit = {
+            exists = scope:canon_sender
+            exists = scope:canon_partner
+            exists = scope:canon_kind
+        }
         scope:canon_sender = {
-            trigger_if = { limit = { scope:canon_kind = 1 } has_treaty_alliance_with = { TARGET = scope:canon_partner } }
-            trigger_else_if = { limit = { OR = { scope:canon_kind = 4 scope:canon_kind = 11 } } has_treaty_defensive_pact_with = { TARGET = scope:canon_partner } }
-            trigger_else_if = { limit = { OR = { scope:canon_kind = 2 scope:canon_kind = 5 } }
-                any_scope_treaty = { binds = scope:canon_partner any_scope_article = { nesnd_canon_directed_article = { TYPE = foreign_investment_rights SOURCE = scope:canon_sender TARGET = scope:canon_partner } } }
+            trigger_if = {
+                limit = { scope:canon_kind = 1 }
+                has_treaty_alliance_with = { TARGET = scope:canon_partner }
             }
-            trigger_else_if = { limit = { scope:canon_kind = 3 } has_variable = nesnd_italy_french_guarantee has_modifier = nesnd_italy_french_credit }
-            trigger_else_if = { limit = { OR = { scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 scope:canon_kind = 9 } } nesnd_small_request_result = yes }
+            trigger_else_if = {
+                limit = {
+                    OR = {
+                        scope:canon_kind = 4
+                        scope:canon_kind = 11
+                    }
+                }
+                has_treaty_defensive_pact_with = { TARGET = scope:canon_partner }
+            }
+            trigger_else_if = {
+                limit = {
+                    OR = {
+                        scope:canon_kind = 2
+                        scope:canon_kind = 5
+                    }
+                }
+                any_scope_treaty = {
+                    binds = scope:canon_partner
+                    any_scope_article = {
+                        nesnd_canon_directed_article = {
+                            TYPE = foreign_investment_rights
+                            SOURCE = scope:canon_sender
+                            TARGET = scope:canon_partner
+                        }
+                    }
+                }
+            }
+            trigger_else_if = {
+                limit = { scope:canon_kind = 3 }
+                has_variable = nesnd_italy_french_guarantee
+                has_modifier = nesnd_italy_french_credit
+            }
+            trigger_else_if = {
+                limit = {
+                    OR = {
+                        scope:canon_kind = 6
+                        scope:canon_kind = 8
+                        scope:canon_kind = 9
+                    }
+                }
+                nesnd_small_request_result = yes
+            }
             trigger_else = { always = no }
         }
     }
@@ -157,18 +227,29 @@ nesnd_canon_available_european_article = {
 
 # Sender scope. Reconstruct only the current request; no stale event nonce is used.
 nesnd_canon_current_request_valid = {
-    trigger_if = { limit = {
-        exists = var:nesnd_canon_request_partner
-        has_variable = nesnd_canon_request_clock has_variable = nesnd_canon_request_serial
-        has_variable = nesnd_canon_request_kind
-        has_variable = nesnd_canon_request_sender_regime has_variable = nesnd_canon_request_partner_regime
-    }
+    trigger_if = {
+        limit = {
+            exists = var:nesnd_canon_request_partner
+            has_variable = nesnd_canon_request_clock
+            has_variable = nesnd_canon_request_serial
+            has_variable = nesnd_canon_request_kind
+            has_variable = nesnd_canon_request_sender_regime
+            has_variable = nesnd_canon_request_partner_regime
+        }
         save_temporary_scope_as = canon_sender
         var:nesnd_canon_request_partner = { save_temporary_scope_as = canon_partner }
         nesnd_canon_regime = var:nesnd_canon_request_sender_regime
         var:nesnd_canon_request_partner = { nesnd_canon_regime = scope:canon_sender.var:nesnd_canon_request_partner_regime }
         nesnd_canon_request_rules = { KIND = var:nesnd_canon_request_kind }
-        trigger_if = { limit = { OR = { var:nesnd_canon_request_kind = 5 var:nesnd_canon_request_kind = 6 var:nesnd_canon_request_kind = 7 var:nesnd_canon_request_kind = 8 var:nesnd_canon_request_kind = 9 } }
+        trigger_if = {
+            limit = {
+                OR = {
+                    var:nesnd_canon_request_kind = 5
+                    var:nesnd_canon_request_kind = 6
+                    var:nesnd_canon_request_kind = 8
+                    var:nesnd_canon_request_kind = 9
+                }
+            }
             nesnd_small_other_diplomacy_free = yes
         }
     }
@@ -178,9 +259,24 @@ nesnd_canon_current_request_valid = {
 # Existing execution/reply callers retain the external waiting checks.
 nesnd_canon_request_eligible = {
     nesnd_canon_request_conditions = yes
-    trigger_if = { limit = { exists = scope:canon_sender exists = scope:canon_kind }
-        trigger_if = { limit = { OR = { scope:canon_kind = 5 scope:canon_kind = 6 scope:canon_kind = 7 scope:canon_kind = 8 scope:canon_kind = 9 } }
-            custom_tooltip = { text = nesnd_small_diplomacy_not_cooling_tt scope:canon_sender = { nesnd_small_other_diplomacy_free = yes } }
+    trigger_if = {
+        limit = {
+            exists = scope:canon_sender
+            exists = scope:canon_kind
+        }
+        trigger_if = {
+            limit = {
+                OR = {
+                    scope:canon_kind = 5
+                    scope:canon_kind = 6
+                    scope:canon_kind = 8
+                    scope:canon_kind = 9
+                }
+            }
+            custom_tooltip = {
+                text = nesnd_small_diplomacy_not_cooling_tt
+                scope:canon_sender = { nesnd_small_other_diplomacy_free = yes }
+            }
         }
     }
 }
