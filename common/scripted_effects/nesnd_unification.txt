@@ -8,6 +8,7 @@ nesnd_uni_refresh = {
 		every_country = {
 			limit = {
 				is_ai = yes
+				is_subject = no
 				NOT = { is_country_type = decentralized }
 				NOT = { has_variable = nesnd_uni_joined }
 				nesnd_uni_capital_in_scope = no
@@ -45,14 +46,14 @@ nesnd_uni_refresh = {
 			}
 		}
 	}
-	# 4. Count regions held by each qualified country and the number of rivals.
+	# 4. Count regions held by each contender and the number of rivals.
 	set_global_variable = {
 		name = nesnd_uni_rivals
 		value = 0
 	}
 	every_country = {
 		limit = {
-			nesnd_uni_qualified = yes
+			nesnd_uni_contender = yes
 		}
 		set_variable = {
 			name = nesnd_uni_held
@@ -66,7 +67,7 @@ nesnd_uni_refresh = {
 	# 5. The country holding the most regions is the leader.
 	ordered_country = {
 		limit = {
-			nesnd_uni_qualified = yes
+			nesnd_uni_contender = yes
 		}
 		order_by = nesnd_uni_held_count
 		position = 0
@@ -100,10 +101,28 @@ nesnd_uni_refresh = {
 	else = {
 		remove_global_variable = nesnd_uni_many
 	}
-	# 7. Phase modifiers on every qualified country.
+	# 7. Phase modifiers on every contender; involved non-contenders (subjects) lose them.
 	every_country = {
 		limit = {
 			nesnd_uni_qualified = yes
+			nesnd_uni_contender = no
+		}
+		if = {
+			limit = {
+				has_modifier = nesnd_uni_order
+			}
+			remove_modifier = nesnd_uni_order
+		}
+		if = {
+			limit = {
+				has_modifier = nesnd_uni_tripod
+			}
+			remove_modifier = nesnd_uni_tripod
+		}
+	}
+	every_country = {
+		limit = {
+			nesnd_uni_contender = yes
 		}
 		if = {
 			limit = {
@@ -141,7 +160,12 @@ nesnd_uni_refresh = {
 			}
 		}
 	}
-	# 8. The lead bar shows the leader's region count.
+	# 8. Write the lead bar.
+	nesnd_uni_sync_lead_bar = yes
+}
+
+# Global scope (root = none, needs scope:journal_entry): the lead bar shows the leader's region count, or 0 without a leader.
+nesnd_uni_sync_lead_bar = {
 	if = {
 		limit = {
 			has_global_variable = nesnd_uni_lead_count
