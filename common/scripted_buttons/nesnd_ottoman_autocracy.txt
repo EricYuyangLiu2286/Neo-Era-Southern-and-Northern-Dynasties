@@ -1,0 +1,71 @@
+﻿# Journal nesnd_ottoman_autocracy. Three levers moving IG strength, popularity, authority, and radicals (R2); shared 24-month cooldown.
+
+nesnd_ottoman_autocracy_ulema = {
+    name = nesnd_ottoman_autocracy_ulema
+    desc = nesnd_ottoman_autocracy_ulema_desc
+    visible = { has_journal_entry = nesnd_ottoman_autocracy }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_autocracy_cd_tt NOT = { has_variable = nesnd_ottoman_autocracy_cd } }
+        ig:ig_devout ?= { is_marginal = no }
+    }
+    effect = {
+        ig:ig_devout ?= { add_modifier = { name = nesnd_ottoman_charter_rally months = 12 } }
+        ig:ig_armed_forces ?= { add_modifier = { name = nesnd_ottoman_army_vexed months = 24 } }
+        custom_tooltip = nesnd_ottoman_autocracy_cd_set_tt
+        hidden_effect = { set_variable = { name = nesnd_ottoman_autocracy_cd months = 24 } }
+    }
+    ai_chance = {
+        value = 10
+        if = { limit = { ig:ig_devout ?= { is_powerful = yes } } add = 10 }
+        subtract = { value = nesnd_ottoman_qinist_leader_count multiply = 3 }
+        min = 0
+    }
+}
+
+nesnd_ottoman_autocracy_officers = {
+    name = nesnd_ottoman_autocracy_officers
+    desc = nesnd_ottoman_autocracy_officers_desc
+    visible = { has_journal_entry = nesnd_ottoman_autocracy }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_autocracy_cd_tt NOT = { has_variable = nesnd_ottoman_autocracy_cd } }
+        ig:ig_armed_forces ?= { is_marginal = no }
+    }
+    effect = {
+        ig:ig_armed_forces ?= { add_modifier = { name = nesnd_ottoman_charter_rally months = 12 } }
+        every_interest_group = {
+            limit = { leader ?= { has_ideology = ideology:ideology_ce_qin_royalist_leader } }
+            leader = { add_modifier = { name = nesnd_ottoman_qinist_acclaim months = 12 } }
+        }
+        ig:ig_devout ?= { add_modifier = { name = nesnd_ottoman_ulema_slighted months = 24 } }
+        custom_tooltip = nesnd_ottoman_autocracy_cd_set_tt
+        hidden_effect = { set_variable = { name = nesnd_ottoman_autocracy_cd months = 24 } }
+    }
+    ai_chance = {
+        value = 5
+        add = { value = nesnd_ottoman_qinist_leader_count multiply = 10 }
+        if = { limit = { ig:ig_armed_forces ?= { is_powerful = yes } } add = 10 }
+    }
+}
+
+nesnd_ottoman_autocracy_press = {
+    name = nesnd_ottoman_autocracy_press
+    desc = nesnd_ottoman_autocracy_press_desc
+    visible = { has_journal_entry = nesnd_ottoman_autocracy }
+    possible = {
+        custom_tooltip = { text = nesnd_ottoman_autocracy_cd_tt NOT = { has_variable = nesnd_ottoman_autocracy_cd } }
+    }
+    effect = {
+        add_modifier = { name = nesnd_ottoman_press_purged months = 60 }
+        if = {
+            limit = { exists = ig:ig_intelligentsia }
+            add_radicals = { value = medium_radicals interest_group = ig:ig_intelligentsia }
+        }
+        ig:ig_intelligentsia ?= { add_modifier = { name = nesnd_ottoman_press_silenced months = 60 } }
+        custom_tooltip = nesnd_ottoman_autocracy_cd_set_tt
+        hidden_effect = { set_variable = { name = nesnd_ottoman_autocracy_cd months = 24 } }
+    }
+    ai_chance = {
+        value = 5
+        if = { limit = { OR = { has_law = law_type:law_outlawed_dissent has_law = law_type:law_censorship } } add = 5 }
+    }
+}

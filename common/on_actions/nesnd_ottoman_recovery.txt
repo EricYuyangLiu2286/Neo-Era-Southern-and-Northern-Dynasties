@@ -18,7 +18,8 @@ nesnd_ottoman_buildings_changed = { effect = { nesnd_ottoman_refresh_barracks = 
 # nesnd_north_war_roster_monthly: maintains wartime belligerent side rosters during an active northern war (F2 Rule 17).
 # nesnd_rtw_fallback: opens the generalized RTW / Northern Threat journals on the sultanic failure route once Rumelia closes or eastern provinces are lost.
 # nesnd_ottoman_revenge_fallback: fires "Where the Sword Turns" (.19) if Rumelia was lost and RTW ended in held/standoff.
-on_monthly_pulse_country = { on_actions = { nesnd_ottoman_reform_weekly nesnd_ottoman_route_fallback nesnd_ottoman_charter_fallback nesnd_ottoman_islam_leader_fallback nesnd_ottoman_academy_fallback nesnd_ottoman_rumelia_fallback nesnd_ottoman_eastern_provinces_fallback nesnd_north_foe_refresh nesnd_ottoman_straits_check nesnd_north_war_roster_monthly nesnd_rtw_fallback nesnd_ottoman_revenge_fallback nesnd_ottoman_gec_monthly } }
+# nesnd_ottoman_autocracy_fallback: opens "Mastery of the Autocracy" on the sultanic failure route (event .6 adds it; this covers older saves), and clears any lingering nesnd_ottoman_capital_fallen modifier if the journal is no longer active.
+on_monthly_pulse_country = { on_actions = { nesnd_ottoman_reform_weekly nesnd_ottoman_route_fallback nesnd_ottoman_charter_fallback nesnd_ottoman_islam_leader_fallback nesnd_ottoman_academy_fallback nesnd_ottoman_rumelia_fallback nesnd_ottoman_eastern_provinces_fallback nesnd_north_foe_refresh nesnd_ottoman_straits_check nesnd_north_war_roster_monthly nesnd_rtw_fallback nesnd_ottoman_revenge_fallback nesnd_ottoman_gec_monthly nesnd_ottoman_autocracy_fallback } }
 nesnd_ottoman_reform_weekly = {
     trigger = { OR = { has_variable = nesnd_ottoman_reform_pending nesnd_ottoman_reform_active = yes } }
     effect = { nesnd_ottoman_reform_maintenance = yes }
@@ -73,4 +74,16 @@ nesnd_ottoman_revenge_fallback = {
 nesnd_ottoman_gec_monthly = {
     trigger = { nesnd_ottoman_gec_record_due = yes }
     effect = { nesnd_ottoman_gec_record = yes }
+}
+nesnd_ottoman_autocracy_fallback = {
+    trigger = {
+        OR = {
+            nesnd_ottoman_autocracy_fallback_due = yes
+            AND = { has_modifier = nesnd_ottoman_capital_fallen NOT = { has_journal_entry = nesnd_ottoman_autocracy } }
+        }
+    }
+    effect = {
+        if = { limit = { nesnd_ottoman_autocracy_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_autocracy } }
+        else = { nesnd_ottoman_autocracy_clear_capital_fallen = yes }
+    }
 }

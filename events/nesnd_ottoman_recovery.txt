@@ -236,6 +236,7 @@ nesnd_ottoman_recovery.6 = {
         set_variable = { name = nesnd_ottoman_route_lean value = flag:sultan }
         if = { limit = { nesnd_ottoman_rumelia_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_rumelia } }
         if = { limit = { nesnd_ottoman_eastern_provinces_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_eastern_provinces } }
+        if = { limit = { nesnd_ottoman_autocracy_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_autocracy } }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_faith_ig ?= { is_powerful = yes } } add = 10 }
@@ -248,6 +249,7 @@ nesnd_ottoman_recovery.6 = {
         set_variable = { name = nesnd_ottoman_route_lean value = flag:barracks }
         if = { limit = { nesnd_ottoman_rumelia_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_rumelia } }
         if = { limit = { nesnd_ottoman_eastern_provinces_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_eastern_provinces } }
+        if = { limit = { nesnd_ottoman_autocracy_fallback_due = yes } add_journal_entry = { type = nesnd_ottoman_autocracy } }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_army_ig ?= { is_powerful = yes } } add = 10 }
@@ -1046,5 +1048,140 @@ nesnd_ottoman_recovery.20 = {
         ai_chance = {
             base = 30
         }
+    }
+}
+# Journal nesnd_ottoman_autocracy: the Shaykh al-Islam issues a fatwa backing the Sultan's personal authority. 60-month cooldown.
+nesnd_ottoman_recovery.21 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.21.t
+    desc = nesnd_ottoman_recovery.21.d
+    flavor = nesnd_ottoman_recovery.21.f
+    event_image = { video = "votp_monarch_holding_court" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        has_journal_entry = nesnd_ottoman_autocracy
+        ig:ig_devout ?= { is_marginal = no }
+        NOT = { has_variable = nesnd_ottoman_fatwa_cd }
+    }
+    immediate = {
+        set_variable = { name = nesnd_ottoman_fatwa_cd months = 60 }
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+        ig:ig_devout ?= { save_scope_as = nesnd_autocracy_devout_ig }
+        ig:ig_armed_forces ?= { save_scope_as = nesnd_autocracy_army_ig }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.21.a
+        default_option = yes
+        custom_tooltip = {
+            text = nesnd_ottoman_autocracy_bonus_sultan_gain_tt
+            set_variable = { name = nesnd_ottoman_sultan_bonus months = 60 }
+        }
+        scope:nesnd_autocracy_devout_ig ?= { add_modifier = { name = nesnd_ottoman_fatwa_heeded months = 60 } }
+        scope:nesnd_autocracy_army_ig ?= { add_modifier = { name = nesnd_ottoman_army_vexed months = 24 } }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { scope:nesnd_autocracy_devout_ig ?= { is_in_government = yes } } add = 10 }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.21.b
+        scope:nesnd_autocracy_devout_ig ?= { add_modifier = { name = nesnd_ottoman_ulema_slighted months = 24 } }
+        ai_chance = { base = 10 }
+    }
+}
+# Journal nesnd_ottoman_autocracy: Prussian military mission instructors versus Qin instructors (R11 b-class: c:PRU and c:QE1). Fires once.
+nesnd_ottoman_recovery.22 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.22.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.22.d
+                trigger = {
+                    exists = scope:nesnd_prussia_country
+                    exists = scope:nesnd_qin_country
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.22.d_prussia_only
+                trigger = { exists = scope:nesnd_prussia_country }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.22.d_qin_only
+                trigger = { always = yes }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.22.f
+    event_image = { video = "unspecific_military_parade" }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        has_journal_entry = nesnd_ottoman_autocracy
+        NOT = { has_variable = nesnd_ottoman_instructors_asked }
+        nesnd_ottoman_qin_reform_known = yes
+        OR = {
+            nesnd_ottoman_prussian_mission_valid = yes
+            nesnd_ottoman_qin_instructors_available = yes
+        }
+    }
+    immediate = {
+        set_variable = nesnd_ottoman_instructors_asked
+        ruler ?= { save_scope_as = nesnd_ottoman_ruler }
+        if = {
+            limit = { nesnd_ottoman_prussian_mission_valid = yes }
+            c:PRU ?= { save_scope_as = nesnd_prussia_country }
+        }
+        if = {
+            limit = { nesnd_ottoman_qin_instructors_available = yes }
+            c:QE1 ?= { save_scope_as = nesnd_qin_country }
+        }
+        ig:ig_devout ?= { save_scope_as = nesnd_autocracy_devout_ig }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.22.a
+        trigger = { exists = scope:nesnd_prussia_country }
+        default_option = yes
+        scope:nesnd_prussia_country ?= { change_relations = { country = root value = 20 } }
+        add_modifier = { name = nesnd_ottoman_prussian_instructors months = 120 }
+        ai_chance = { base = 10 }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.22.b
+        trigger = { exists = scope:nesnd_qin_country }
+        scope:nesnd_qin_country ?= { change_relations = { country = root value = 20 } }
+        scope:nesnd_prussia_country ?= { change_relations = { country = root value = -10 } }
+        custom_tooltip = {
+            text = nesnd_ottoman_autocracy_bonus_barracks_gain_tt
+            set_variable = { name = nesnd_ottoman_barracks_bonus months = 120 }
+        }
+        every_interest_group = {
+            limit = { leader ?= { has_ideology = ideology:ideology_ce_qin_royalist_leader } }
+            leader = { add_modifier = { name = nesnd_ottoman_qinist_acclaim months = 12 } }
+        }
+        scope:nesnd_autocracy_devout_ig ?= { add_modifier = { name = nesnd_ottoman_ulema_slighted months = 24 } }
+        ai_chance = {
+            base = 10
+            modifier = { trigger = { nesnd_ottoman_qinist_leader_count >= 1 } add = 5 }
+            modifier = { trigger = { nesnd_ottoman_qinist_leader_count >= 2 } add = 5 }
+            modifier = { trigger = { nesnd_ottoman_qinist_leader_count >= 3 } add = 5 }
+            modifier = { trigger = { nesnd_ottoman_qinist_leader_count >= 4 } add = 5 }
+            modifier = { trigger = { nesnd_ottoman_qinist_leader_count >= 5 } add = 5 }
+            modifier = { trigger = { nesnd_ottoman_qinist_leader_count >= 6 } add = 5 }
+            modifier = { trigger = { nesnd_ottoman_qinist_leader_count >= 7 } add = 5 }
+            modifier = { trigger = { nesnd_ottoman_qinist_leader_count >= 8 } add = 5 }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.22.c
+        trigger = { NOT = { exists = scope:nesnd_prussia_country } }
+        default_option = yes
+        ig:ig_armed_forces ?= { add_modifier = { name = nesnd_ottoman_army_vexed months = 24 } }
+        ai_chance = { base = 10 }
     }
 }

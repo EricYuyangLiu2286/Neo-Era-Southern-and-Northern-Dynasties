@@ -1,0 +1,178 @@
+﻿# Ottoman failure line, block 3: the Sultan's Pan-Islamic faction against the Qin-trained officers for mastery of the autocracy.
+# Added only by effects (event nesnd_ottoman_recovery.6, on_action nesnd_ottoman_autocracy_fallback), so it has no possible / is_shown_when_inactive.
+# R13: domestic journal; continues if TUR becomes a subject, and applies nesnd_ottoman_capital_fallen while Eastern Thrace is not wholly held.
+nesnd_ottoman_autocracy = {
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    group = je_group_historical_content
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+    scripted_button = nesnd_ottoman_autocracy_ulema
+    scripted_button = nesnd_ottoman_autocracy_officers
+    scripted_button = nesnd_ottoman_autocracy_press
+
+    on_monthly_pulse = {
+        effect = {
+            if = {
+                limit = {
+                    nesnd_ottoman_capital_held = no
+                    NOT = { has_modifier = nesnd_ottoman_capital_fallen }
+                }
+                add_modifier = { name = nesnd_ottoman_capital_fallen }
+            }
+            else_if = {
+                limit = {
+                    nesnd_ottoman_capital_held = yes
+                    has_modifier = nesnd_ottoman_capital_fallen
+                }
+                remove_modifier = nesnd_ottoman_capital_fallen
+            }
+        }
+        random_events = {
+            160 = 0
+            10 = nesnd_ottoman_recovery.21
+            10 = nesnd_ottoman_recovery.22
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_autocracy_sultan_conclusion
+        trigger = {
+            calc_true_if = {
+                amount >= 5
+                nesnd_ottoman_autocracy_p1 = yes
+                nesnd_ottoman_autocracy_p2 = yes
+                nesnd_ottoman_autocracy_p3 = yes
+                nesnd_ottoman_autocracy_p4 = yes
+                nesnd_ottoman_autocracy_p5 = yes
+                nesnd_ottoman_autocracy_p6 = yes
+                nesnd_ottoman_autocracy_p7 = yes
+                nesnd_ottoman_autocracy_p8 = yes
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_autocracy_p_laws_tt
+                calc_true_if = {
+                    amount >= 4
+                    nesnd_ottoman_autocracy_p1 = yes
+                    nesnd_ottoman_autocracy_p2 = yes
+                    nesnd_ottoman_autocracy_p3 = yes
+                    nesnd_ottoman_autocracy_p4 = yes
+                    nesnd_ottoman_autocracy_p5 = yes
+                    nesnd_ottoman_autocracy_p6 = yes
+                }
+            }
+            hidden_trigger = { nesnd_ottoman_autocracy_sultan_wins_tie = yes }
+        }
+        effect = {
+            add_modifier = { name = nesnd_ottoman_sultan_supreme }
+            ig:ig_devout ?= { add_modifier = { name = nesnd_ottoman_sultan_ulema_favored } }
+            ig:ig_armed_forces ?= { add_modifier = { name = nesnd_ottoman_sultan_army_curbed } }
+            hidden_effect = {
+                # Keeps nesnd_ottoman_qin_reform_known true on saves that only had the nesnd_qinist_allowed marks.
+                if = { limit = { NOT = { has_variable = nesnd_ottoman_qin_reform_begun } } set_variable = nesnd_ottoman_qin_reform_begun }
+                every_interest_group = {
+                    limit = { has_variable = nesnd_qinist_allowed }
+                    remove_variable = nesnd_qinist_allowed
+                }
+                every_scope_character = {
+                    limit = { has_variable = nesnd_qinist_allowed }
+                    remove_variable = nesnd_qinist_allowed
+                }
+            }
+            every_interest_group = {
+                limit = {
+                    leader ?= { has_ideology = ideology:ideology_ce_qin_royalist_leader }
+                }
+                leader = {
+                    if = {
+                        limit = {
+                            is_ruler_of_own_country = no
+                            is_heir_of_own_country = no
+                            is_immortal = no
+                        }
+                        retire_character = yes
+                    }
+                    else = {
+                        add_modifier = { name = nesnd_ottoman_qinist_sidelined }
+                    }
+                }
+            }
+            nesnd_ottoman_autocracy_clear_capital_fallen = yes
+            set_variable = { name = nesnd_ottoman_autocracy_outcome value = flag:sultan }
+            set_variable = nesnd_ottoman_autocracy_closed
+        }
+    }
+
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_autocracy_barracks_conclusion
+        trigger = {
+            calc_true_if = {
+                amount >= 5
+                nesnd_ottoman_autocracy_m1 = yes
+                nesnd_ottoman_autocracy_m2 = yes
+                nesnd_ottoman_autocracy_m3 = yes
+                nesnd_ottoman_autocracy_m4 = yes
+                nesnd_ottoman_autocracy_m5 = yes
+                nesnd_ottoman_autocracy_m6 = yes
+                nesnd_ottoman_autocracy_m7 = yes
+                nesnd_ottoman_autocracy_m8 = yes
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_autocracy_m_laws_tt
+                calc_true_if = {
+                    amount >= 4
+                    nesnd_ottoman_autocracy_m1 = yes
+                    nesnd_ottoman_autocracy_m2 = yes
+                    nesnd_ottoman_autocracy_m3 = yes
+                    nesnd_ottoman_autocracy_m4 = yes
+                    nesnd_ottoman_autocracy_m5 = yes
+                    nesnd_ottoman_autocracy_m6 = yes
+                }
+            }
+        }
+        effect = {
+            nesnd_ottoman_found_qin_state = yes
+            ig:ig_devout ?= { add_modifier = { name = nesnd_ottoman_barracks_ulema_curbed } }
+            nesnd_ottoman_autocracy_clear_capital_fallen = yes
+            set_variable = { name = nesnd_ottoman_autocracy_outcome value = flag:barracks }
+            set_variable = nesnd_ottoman_autocracy_closed
+        }
+    }
+
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "blue_negative"
+        flags = { timeout }
+        conclusion_desc = nesnd_ottoman_autocracy_notables_conclusion
+        effect = {
+            add_modifier = { name = nesnd_ottoman_notables_ascendant }
+            nesnd_ottoman_autocracy_clear_capital_fallen = yes
+            set_variable = { name = nesnd_ottoman_autocracy_outcome value = flag:notables }
+            set_variable = nesnd_ottoman_autocracy_closed
+        }
+    }
+
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_ottoman_autocracy_invalid_conclusion
+        trigger = { OR = { NOT = { c:TUR ?= this } NOT = { nesnd_ottoman_tanzimat_failed = yes } } }
+        effect = {
+            nesnd_ottoman_autocracy_clear_capital_fallen = yes
+            set_variable = nesnd_ottoman_autocracy_closed
+        }
+    }
+
+    timeout = 7300
+    status_desc = { first_valid = {
+        triggered_desc = { trigger = { nesnd_ottoman_autocracy_lead > 0 } desc = nesnd_ottoman_autocracy_status_sultan }
+        triggered_desc = { trigger = { nesnd_ottoman_autocracy_lead < 0 } desc = nesnd_ottoman_autocracy_status_barracks }
+        desc = nesnd_ottoman_autocracy_status_even
+    } }
+}

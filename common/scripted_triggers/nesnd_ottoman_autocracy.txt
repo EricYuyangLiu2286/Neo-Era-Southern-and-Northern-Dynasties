@@ -1,0 +1,100 @@
+﻿# Journal nesnd_ottoman_autocracy: the two agendas on the sultanic failure route. Each item scores 1 point. Country scope.
+# Read by the journal outcomes (calc_true_if) and by the score values in common/script_values/nesnd_ottoman_autocracy.txt.
+
+# Sultan's Pan-Islamic agenda (p1-p3 share law groups with m1-m3; p6 shares lawgroup_land_reform with m5 and cannot hold simultaneously; p4, p5, m4, m6 are independent).
+nesnd_ottoman_autocracy_p1 = { has_law = law_type:law_state_religion }
+nesnd_ottoman_autocracy_p2 = { OR = { has_law = law_type:law_appointed_bureaucrats has_law = law_type:law_hereditary_bureaucrats } }
+nesnd_ottoman_autocracy_p3 = { has_law = law_type:law_religious_schools }
+nesnd_ottoman_autocracy_p4 = { has_law = law_type:law_outlawed_dissent }
+nesnd_ottoman_autocracy_p5 = { has_law = law_type:law_secret_police }
+nesnd_ottoman_autocracy_p6 = { OR = { has_law = law_type:law_tenant_farmers has_law = law_type:law_serfdom } }
+nesnd_ottoman_autocracy_p7 = {
+    # Starting point from "The Sultan's Empire" (event nesnd_ottoman_recovery.6).
+    custom_tooltip = { text = nesnd_ottoman_autocracy_lean_sultan_tt has_variable = nesnd_ottoman_route_lean var:nesnd_ottoman_route_lean = flag:sultan }
+}
+nesnd_ottoman_autocracy_p8 = {
+    custom_tooltip = { text = nesnd_ottoman_autocracy_bonus_sultan_tt has_variable = nesnd_ottoman_sultan_bonus }
+}
+
+# Barracks / Qinist officers' agenda (m1-m3 share law groups with p1-p3; m5 shares lawgroup_land_reform with p6 and cannot hold simultaneously; m4, m6, p4, p5 are independent).
+nesnd_ottoman_autocracy_m1 = { OR = { has_law = law_type:law_freedom_of_conscience has_law = law_type:law_total_separation } }
+nesnd_ottoman_autocracy_m2 = { has_law = law_type:law_military_bureaucrats }
+nesnd_ottoman_autocracy_m3 = { has_law = law_type:law_public_schools }
+nesnd_ottoman_autocracy_m4 = { OR = { has_law = law_type:law_professional_army has_law = law_type:law_mass_conscription } }
+nesnd_ottoman_autocracy_m5 = { has_law = law_type:law_collectivized_agriculture }
+nesnd_ottoman_autocracy_m6 = { has_law = law_type:law_wage_subsidies }
+nesnd_ottoman_autocracy_m7 = {
+    custom_tooltip = { text = nesnd_ottoman_autocracy_lean_barracks_tt has_variable = nesnd_ottoman_route_lean var:nesnd_ottoman_route_lean = flag:barracks }
+}
+nesnd_ottoman_autocracy_m8 = {
+    custom_tooltip = { text = nesnd_ottoman_autocracy_bonus_barracks_tt has_variable = nesnd_ottoman_barracks_bonus }
+}
+
+# Country scope: the barracks agenda meets both winning conditions (same counts as the journal outcome, without tooltips).
+nesnd_ottoman_autocracy_barracks_agenda_met = {
+    nesnd_ottoman_autocracy_barracks_score >= 5
+    calc_true_if = {
+        amount >= 4
+        nesnd_ottoman_autocracy_m1 = yes
+        nesnd_ottoman_autocracy_m2 = yes
+        nesnd_ottoman_autocracy_m3 = yes
+        nesnd_ottoman_autocracy_m4 = yes
+        nesnd_ottoman_autocracy_m5 = yes
+        nesnd_ottoman_autocracy_m6 = yes
+    }
+}
+
+# Country scope (R10): when both agendas are met in the same month the higher score wins; a tie goes to the side
+# chosen in event nesnd_ottoman_recovery.6. Read by the Sultan outcome, which is written first.
+nesnd_ottoman_autocracy_sultan_wins_tie = {
+    OR = {
+        NOT = { nesnd_ottoman_autocracy_barracks_agenda_met = yes }
+        nesnd_ottoman_autocracy_lead > 0
+        AND = {
+            nesnd_ottoman_autocracy_lead = 0
+            NOT = { AND = { has_variable = nesnd_ottoman_route_lean var:nesnd_ottoman_route_lean = flag:barracks } }
+        }
+    }
+}
+
+# Country scope: the sultanic failure route is set but the journal is missing (save from before B8, or a lost add).
+nesnd_ottoman_autocracy_fallback_due = {
+    nesnd_ottoman_recovery_open = yes
+    has_variable = nesnd_ottoman_route
+    var:nesnd_ottoman_route = flag:sultanic
+    nesnd_ottoman_tanzimat_failed = yes
+    NOT = { has_journal_entry = nesnd_ottoman_autocracy }
+    NOT = { has_variable = nesnd_ottoman_autocracy_closed }
+}
+
+# Country scope (R11 b-class: c:PRU). Prussian military mission treaty with this country is still active.
+nesnd_ottoman_prussian_mission_valid = {
+    exists = c:PRU
+    trigger_if = {
+        limit = { exists = c:PRU }
+        c:PRU = {
+            is_country_alive = yes
+            NOT = { has_war_with = prev }
+        }
+        any_scope_treaty = {
+            binds = c:PRU
+            any_scope_article = {
+                has_type = military_assistance
+                source_country = c:PRU
+            }
+        }
+    }
+}
+
+# Country scope (R11 b-class: c:QE1). Western Qin is alive, independent, and not at war with this country.
+nesnd_ottoman_qin_instructors_available = {
+    exists = c:QE1
+    trigger_if = {
+        limit = { exists = c:QE1 }
+        c:QE1 = {
+            is_country_alive = yes
+            is_subject = no
+            NOT = { has_war_with = prev }
+        }
+    }
+}

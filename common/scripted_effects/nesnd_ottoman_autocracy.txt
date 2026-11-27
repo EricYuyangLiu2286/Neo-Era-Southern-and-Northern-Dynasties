@@ -1,0 +1,39 @@
+﻿# Shared scripted effects for nesnd_ottoman_autocracy (and extracted Qin-state founding effect shared with nesnd_ottoman_charter).
+
+# Country scope. Extracted verbatim from the Qin outcome of nesnd_ottoman_charter, guarded against duplicate nesnd_ottoman_qin_state.
+nesnd_ottoman_found_qin_state = {
+    if = {
+        limit = { NOT = { has_modifier = nesnd_ottoman_qin_state } }
+        add_modifier = { name = nesnd_ottoman_qin_state }
+        if = { limit = { has_modifier = nesnd_ottoman_qin_reform } remove_modifier = nesnd_ottoman_qin_reform }
+        if = { limit = { has_modifier = nesnd_ottoman_qin_reform_success } remove_modifier = nesnd_ottoman_qin_reform_success }
+        if = { limit = { has_modifier = nesnd_ottoman_qin_reform_failed } remove_modifier = nesnd_ottoman_qin_reform_failed }
+        if = { limit = { NOT = { has_law = law_type:law_military_bureaucrats } } activate_law = law_type:law_military_bureaucrats }
+        else = { add_modifier = { name = nesnd_ottoman_law_settled } }
+        every_interest_group = {
+            limit = {
+                leader ?= { has_ideology = ideology:ideology_ce_qin_royalist_leader }
+                NOT = { has_ideology = ideology:ideology_ce_qin_royalist }
+            }
+            add_ideology = ideology_ce_qin_royalist
+        }
+        hidden_effect = {
+            if = { limit = { has_variable = nesnd_ottoman_reform_pending } remove_variable = nesnd_ottoman_reform_pending }
+            if = { limit = { has_variable = nesnd_ottoman_reform_term } remove_variable = nesnd_ottoman_reform_term }
+            if = {
+                limit = { nesnd_north_foe_valid = yes }
+                global_var:nesnd_north_foe ?= {
+                    root = { set_secret_goal = { country = prev secret_goal = antagonize } }
+                }
+            }
+        }
+    }
+}
+
+# Country scope (R13). Clears the capital-fallen penalty when nesnd_ottoman_autocracy closes.
+nesnd_ottoman_autocracy_clear_capital_fallen = {
+    if = {
+        limit = { has_modifier = nesnd_ottoman_capital_fallen }
+        remove_modifier = nesnd_ottoman_capital_fallen
+    }
+}
