@@ -1,0 +1,248 @@
+﻿# Ottoman B12 foreign-affairs journal: "North Africa" (both constitutional and sultanic routes).
+# Added only by nesnd_ottoman_na_start (events .5/.6 and monthly fallback nesnd_ottoman_na_fallback),
+# so it defines neither possible nor is_shown_when_inactive.
+# Non-event outcomes omit event_outcome_desc so effects display natively.
+
+nesnd_ottoman_north_africa = {
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    group = je_group_foreign_affairs
+    activation_description = { always = yes }
+    can_revolution_inherit = no
+    should_be_pinned_by_default_uninvolved_or_context = yes
+
+    scripted_button = nesnd_ottoman_na_back
+    scripted_button = nesnd_ottoman_na_demarcate
+    scripted_button = nesnd_ottoman_na_reassert
+
+    immediate = {
+        set_variable = {
+            name = nesnd_ottoman_na_deadline
+            months = 240
+        }
+    }
+
+    on_monthly_pulse = {
+        effect = {
+            nesnd_ottoman_na_update_dependent_months = yes
+            if = {
+                limit = {
+                    NOT = { has_global_variable = nesnd_na_foe }
+                    any_country = {
+                        nesnd_ottoman_na_foe_candidate = yes
+                    }
+                }
+                nesnd_ottoman_na_pick_foe = yes
+            }
+        }
+    }
+
+    # 1. Hidden invalidation (tag changed away from TUR).
+    outcome = {
+        flags = { hidden invalid_outcome }
+        conclusion_desc = nesnd_ottoman_na_invalid_conclusion
+        trigger = {
+            NOT = { c:TUR ?= this }
+        }
+        effect = {
+            set_variable = nesnd_ottoman_na_closed
+            nesnd_ottoman_na_cleanup = yes
+        }
+    }
+
+    # 2. Lost autonomy (R13: unable to act abroad for 12 consecutive months; may reopen after 24-month cooldown).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_na_dependent_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_na_dependent_tt
+                has_variable = nesnd_ottoman_na_dependent_months
+                var:nesnd_ottoman_na_dependent_months >= 12
+            }
+        }
+        effect = {
+            if = {
+                limit = {
+                    NOT = { has_modifier = nesnd_ottoman_lost_autonomy }
+                }
+                add_modifier = {
+                    name = nesnd_ottoman_lost_autonomy
+                }
+            }
+            custom_tooltip = nesnd_ottoman_na_reopen_cd_tt
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_na_outcome
+                    value = flag:dependent
+                }
+                set_variable = {
+                    name = nesnd_ottoman_na_reopen_cd
+                    months = 24
+                }
+                nesnd_ottoman_na_cleanup = yes
+            }
+        }
+    }
+
+    # 3. Suzerainty lost (R10: all non-decentralized states in Tripoli and Tunisia fell to outsider major powers; local independence does not trigger this).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_na_lost_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_na_lost_tt
+                nesnd_ottoman_na_suzerainty_lost = yes
+            }
+        }
+        effect = {
+            add_modifier = {
+                name = nesnd_ottoman_na_lost_mod
+            }
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_na_outcome
+                    value = flag:lost
+                }
+                set_variable = nesnd_ottoman_na_closed
+                nesnd_ottoman_na_cleanup = yes
+            }
+        }
+    }
+
+    # 4. Suzerainty in North Africa (R10: Tripoli and Tunisia held by TUR or subjects, and Algeria settled by demarcation or outsider exit).
+    outcome = {
+        header = je_standard_completion_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_ottoman_na_won_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_na_won_tt
+                nesnd_ottoman_na_suzerainty_held = yes
+                nesnd_ottoman_na_algeria_settled = yes
+            }
+        }
+        effect = {
+            add_modifier = {
+                name = nesnd_ottoman_na_suzerain_mod
+            }
+            if = {
+                limit = {
+                    has_journal_entry = nesnd_ottoman_recovery
+                }
+                je:nesnd_ottoman_recovery ?= {
+                    add_progress = {
+                        name = nesnd_ottoman_enthusiasm_bar
+                        value = 20
+                    }
+                }
+            }
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_na_outcome
+                    value = flag:won
+                }
+                set_variable = nesnd_ottoman_na_closed
+                nesnd_ottoman_na_cleanup = yes
+            }
+        }
+    }
+
+    # 5. Situation changed (R12: stored foe became invalid and TUR is not at war with it; does not trigger when no foe is stored).
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_na_changed_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_na_changed_tt
+                nesnd_ottoman_na_situation_changed = yes
+            }
+        }
+        effect = {
+            custom_tooltip = nesnd_ottoman_na_claims_kept_tt
+            custom_tooltip = nesnd_ottoman_na_reopen_cd_tt
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_na_outcome
+                    value = flag:changed
+                }
+                set_variable = {
+                    name = nesnd_ottoman_na_reopen_cd
+                    months = 24
+                }
+                if = {
+                    limit = {
+                        has_variable = nesnd_ottoman_na_demarcated
+                    }
+                    remove_variable = nesnd_ottoman_na_demarcated
+                }
+                nesnd_ottoman_na_cleanup = yes
+            }
+        }
+    }
+
+    # 6. Shelved (240-month deadline elapsed while not in a play or war with the foe; when no foe is stored, checks deadline alone).
+    outcome = {
+        header = JOURNAL_ENTRY_TIMEOUT
+        effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+        color = "blue_negative"
+        conclusion_desc = nesnd_ottoman_na_shelved_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_ottoman_na_timeout_tt
+                NOT = { has_variable = nesnd_ottoman_na_deadline }
+                nesnd_ottoman_na_play_in_progress = no
+                nesnd_ottoman_na_at_war_with_foe = no
+            }
+        }
+        effect = {
+            add_modifier = {
+                name = nesnd_ottoman_na_shelved_mod
+            }
+            hidden_effect = {
+                set_variable = {
+                    name = nesnd_ottoman_na_outcome
+                    value = flag:shelved
+                }
+                set_variable = nesnd_ottoman_na_closed
+                nesnd_ottoman_na_cleanup = yes
+            }
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = {
+                    nesnd_ottoman_na_at_war_with_foe = yes
+                }
+                desc = nesnd_ottoman_na_status_war
+            }
+            triggered_desc = {
+                trigger = {
+                    nesnd_ottoman_na_play_in_progress = yes
+                }
+                desc = nesnd_ottoman_na_status_play
+            }
+            triggered_desc = {
+                trigger = {
+                    has_variable = nesnd_ottoman_na_demarcated
+                }
+                desc = nesnd_ottoman_na_status_demarcated
+            }
+            triggered_desc = {
+                trigger = {
+                    nesnd_ottoman_na_suzerainty_held = no
+                }
+                desc = nesnd_ottoman_na_status_suzerainty
+            }
+            desc = nesnd_ottoman_na_status_standoff
+        }
+    }
+}

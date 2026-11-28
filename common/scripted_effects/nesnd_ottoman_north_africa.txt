@@ -1,0 +1,181 @@
+﻿# Effects for Ottoman B12 "North Africa" journal (nesnd_ottoman_north_africa) and events .36-.39.
+# Country scope (TUR) unless noted.
+
+# Selects the highest-scoring North Africa foe candidate and stores it in global_var:nesnd_na_foe (Rule 7).
+# If no candidate exists, leaves global_var:nesnd_na_foe unset.
+nesnd_ottoman_na_pick_foe = {
+    if = {
+        limit = {
+            has_global_variable = nesnd_na_foe
+        }
+        remove_global_variable = nesnd_na_foe
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_ottoman_na_foe_candidate = yes
+            }
+        }
+        ordered_country = {
+            limit = {
+                nesnd_ottoman_na_foe_candidate = yes
+            }
+            order_by = nesnd_ottoman_na_foe_score
+            position = 0
+            check_range_bounds = no
+            set_global_variable = {
+                name = nesnd_na_foe
+                value = this
+            }
+        }
+    }
+}
+
+# Unified entry effect for opening nesnd_ottoman_north_africa (Rule 8).
+nesnd_ottoman_na_start = {
+    hidden_effect = {
+        nesnd_ottoman_na_pick_foe = yes
+    }
+    add_journal_entry = {
+        type = nesnd_ottoman_north_africa
+    }
+}
+
+# Monthly counter of consecutive months unable to act abroad for R13 (Rule 9).
+nesnd_ottoman_na_update_dependent_months = {
+    if = {
+        limit = {
+            nesnd_ottoman_can_act_abroad = yes
+        }
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_na_dependent_months
+            }
+            remove_variable = nesnd_ottoman_na_dependent_months
+        }
+    }
+    else_if = {
+        limit = {
+            has_variable = nesnd_ottoman_na_dependent_months
+        }
+        change_variable = {
+            name = nesnd_ottoman_na_dependent_months
+            add = 1
+        }
+    }
+    else = {
+        set_variable = {
+            name = nesnd_ottoman_na_dependent_months
+            value = 1
+        }
+    }
+}
+
+# Removes TUR claims on the three Algerian state regions (Rule 13, event .36 option a).
+nesnd_ottoman_na_renounce_algeria_claims = {
+    s:STATE_ORAN = {
+        if = {
+            limit = {
+                c:TUR ?= {
+                    has_claim = s:STATE_ORAN
+                }
+            }
+            remove_claim = c:TUR
+        }
+    }
+    s:STATE_ALGIERS = {
+        if = {
+            limit = {
+                c:TUR ?= {
+                    has_claim = s:STATE_ALGIERS
+                }
+            }
+            remove_claim = c:TUR
+        }
+    }
+    s:STATE_CONSTANTINE = {
+        if = {
+            limit = {
+                c:TUR ?= {
+                    has_claim = s:STATE_CONSTANTINE
+                }
+            }
+            remove_claim = c:TUR
+        }
+    }
+}
+
+# Picks the eligible independent local suzerain-region holder with the most states and dispatches event .38 (Rule 14).
+nesnd_ottoman_na_dispatch_reassert = {
+    set_variable = {
+        name = nesnd_ottoman_na_reassert_cd
+        months = 60
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_ottoman_na_reassert_target = yes
+            }
+        }
+        ordered_country = {
+            limit = {
+                nesnd_ottoman_na_reassert_target = yes
+            }
+            order_by = nesnd_ottoman_na_reassert_states_count
+            position = 0
+            check_range_bounds = no
+            trigger_event = {
+                id = nesnd_ottoman_recovery.38
+                days = 3
+                popup = yes
+            }
+        }
+    }
+}
+
+# Shared cleanup called at the end of every outcome of nesnd_ottoman_north_africa (Rule 10).
+# Preserves nesnd_ottoman_na_demarcated (durable agreement) and nesnd_ottoman_na_partner on the partner country (240m helper score bonus, Rule 17).
+nesnd_ottoman_na_cleanup = {
+    if = {
+        limit = {
+            has_global_variable = nesnd_na_foe
+        }
+        remove_global_variable = nesnd_na_foe
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_na_dependent_months
+        }
+        remove_variable = nesnd_ottoman_na_dependent_months
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_na_deadline
+        }
+        remove_variable = nesnd_ottoman_na_deadline
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_na_back_cd
+        }
+        remove_variable = nesnd_ottoman_na_back_cd
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_na_demarcate_cd
+        }
+        remove_variable = nesnd_ottoman_na_demarcate_cd
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_na_reassert_cd
+        }
+        remove_variable = nesnd_ottoman_na_reassert_cd
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_na_backed_once
+        }
+        remove_variable = nesnd_ottoman_na_backed_once
+    }
+}

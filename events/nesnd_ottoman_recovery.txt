@@ -192,6 +192,12 @@ nesnd_ottoman_recovery.5 = {
             }
             nesnd_ottoman_levant_start = yes
         }
+        if = {
+            limit = {
+                nesnd_ottoman_na_start_ready = yes
+            }
+            nesnd_ottoman_na_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_charter_ig ?= { is_powerful = yes } } add = 10 }
@@ -216,6 +222,12 @@ nesnd_ottoman_recovery.5 = {
                 nesnd_ottoman_levant_fallback_due = yes
             }
             nesnd_ottoman_levant_start = yes
+        }
+        if = {
+            limit = {
+                nesnd_ottoman_na_start_ready = yes
+            }
+            nesnd_ottoman_na_start = yes
         }
         ai_chance = {
             base = 10
@@ -273,6 +285,12 @@ nesnd_ottoman_recovery.6 = {
             }
             nesnd_ottoman_levant_start = yes
         }
+        if = {
+            limit = {
+                nesnd_ottoman_na_start_ready = yes
+            }
+            nesnd_ottoman_na_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_faith_ig ?= { is_powerful = yes } } add = 10 }
@@ -297,6 +315,12 @@ nesnd_ottoman_recovery.6 = {
                 nesnd_ottoman_levant_fallback_due = yes
             }
             nesnd_ottoman_levant_start = yes
+        }
+        if = {
+            limit = {
+                nesnd_ottoman_na_start_ready = yes
+            }
+            nesnd_ottoman_na_start = yes
         }
         ai_chance = {
             base = 10
@@ -2483,6 +2507,354 @@ nesnd_ottoman_recovery.35 = {
         }
         ai_chance = {
             base = 50
+        }
+    }
+}
+# Journal nesnd_ottoman_north_africa: Ottoman demarcation proposal over Algeria received by global_var:nesnd_na_foe (Rules 13, 15, R4).
+nesnd_ottoman_recovery.36 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.36.t
+    desc = nesnd_ottoman_recovery.36.d
+    flavor = nesnd_ottoman_recovery.36.f
+    event_image = {
+        video = "unspecific_signed_contract"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_na_demarcate_open = yes
+        is_subject = no
+    }
+    immediate = {
+        c:TUR ?= {
+            save_scope_as = nesnd_na_tur
+        }
+        save_scope_as = nesnd_na_foe_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.36.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_na_demarcate_open = yes
+            }
+            custom_tooltip = {
+                text = nesnd_ottoman_recovery.36.a_demarcate_tt
+                c:TUR ?= {
+                    nesnd_ottoman_na_renounce_algeria_claims = yes
+                    set_variable = nesnd_ottoman_na_demarcated
+                }
+                set_variable = {
+                    name = nesnd_ottoman_na_partner
+                    months = 240
+                }
+            }
+            change_relations = {
+                country = c:TUR
+                value = 30
+            }
+            hidden_effect = {
+                save_scope_as = nesnd_na_demarcate_accepted
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.37
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.36.lapsed_tt
+        }
+        ai_chance = {
+            base = 30
+            modifier = {
+                trigger = {
+                    "relations(c:TUR)" >= relations_threshold:cordial
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                add = 10
+            }
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        has_variable = nesnd_ottoman_na_backed_once
+                    }
+                }
+                add = -10
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.36.b
+        if = {
+            limit = {
+                nesnd_ottoman_na_demarcate_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+            hidden_effect = {
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.37
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.36.lapsed_tt
+        }
+        ai_chance = {
+            base = 40
+        }
+    }
+}
+# Journal nesnd_ottoman_north_africa: Ottoman notification of the foe's answer to the demarcation proposal (Rule 13).
+nesnd_ottoman_recovery.37 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.37.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.37.d_accepted
+                trigger = {
+                    exists = scope:nesnd_na_demarcate_accepted
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.37.d_refused
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.37.f
+    event_image = {
+        video = "unspecific_signed_contract"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = scope:nesnd_na_foe_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.37.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_na_demarcate_accepted
+            }
+            custom_tooltip = nesnd_ottoman_recovery.37.a_accepted_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.37.a_refused_tt
+        }
+    }
+}
+# Journal nesnd_ottoman_north_africa: Ottoman suzerainty reassertion offer received by an independent local state in Tripoli or Tunisia (Rule 14).
+nesnd_ottoman_recovery.38 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.38.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.38.d_protectorate
+                trigger = {
+                    c:TUR ?= {
+                        is_country_type = recognized
+                    }
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.38.d_tributary
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.38.f
+    event_image = {
+        video = "votp_monarch_holding_court"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_na_reassert_open = yes
+    }
+    immediate = {
+        save_scope_as = nesnd_na_target_scope
+        c:TUR ?= {
+            save_scope_as = nesnd_na_tur
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.38.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_na_reassert_open = yes
+            }
+            if = {
+                limit = {
+                    c:TUR ?= {
+                        is_country_type = recognized
+                    }
+                }
+                c:TUR ?= {
+                    create_diplomatic_pact = {
+                        country = root
+                        type = protectorate
+                    }
+                }
+            }
+            else = {
+                c:TUR ?= {
+                    create_diplomatic_pact = {
+                        country = root
+                        type = tributary
+                    }
+                }
+            }
+            change_relations = {
+                country = c:TUR
+                value = 30
+            }
+            hidden_effect = {
+                save_scope_as = nesnd_na_reassert_accepted
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.39
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.38.lapsed_tt
+        }
+        ai_chance = {
+            base = 10
+            modifier = {
+                trigger = {
+                    "relations(c:TUR)" >= relations_threshold:cordial
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    any_country = {
+                        nesnd_ottoman_na_foe_candidate = yes
+                    }
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    is_at_war = yes
+                }
+                add = 10
+            }
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        country_rank >= rank_value:great_power
+                    }
+                }
+                add = 10
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.38.b
+        if = {
+            limit = {
+                nesnd_ottoman_na_reassert_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+            hidden_effect = {
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.39
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.38.lapsed_tt
+        }
+        ai_chance = {
+            base = 60
+        }
+    }
+}
+# Journal nesnd_ottoman_north_africa: Ottoman notification of the local state's answer to the suzerainty reassertion offer (Rule 14).
+nesnd_ottoman_recovery.39 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.39.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.39.d_accepted
+                trigger = {
+                    exists = scope:nesnd_na_reassert_accepted
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.39.d_refused
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.39.f
+    event_image = {
+        video = "votp_monarch_holding_court"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = scope:nesnd_na_target_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.39.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_na_reassert_accepted
+            }
+            custom_tooltip = nesnd_ottoman_recovery.39.a_accepted_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.39.a_refused_tt
         }
     }
 }

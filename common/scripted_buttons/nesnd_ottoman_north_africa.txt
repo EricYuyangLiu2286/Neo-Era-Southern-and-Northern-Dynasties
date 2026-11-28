@@ -1,0 +1,228 @@
+﻿# Scripted buttons for Ottoman B12 "North Africa" journal (nesnd_ottoman_north_africa).
+
+# Rule 12: Back local resistance in Algeria against the outsider foe (36-month cooldown).
+nesnd_ottoman_na_back = {
+    name = nesnd_ottoman_na_back
+    desc = nesnd_ottoman_na_back_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_north_africa
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_na_foe_valid_tt
+            nesnd_ottoman_na_foe_valid = yes
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_na_resister_tt
+            any_country = {
+                nesnd_ottoman_na_resister = yes
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_na_back_cd_tt
+            NOT = { has_variable = nesnd_ottoman_na_back_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_na_not_demarcated_tt
+            NOT = { has_variable = nesnd_ottoman_na_demarcated }
+        }
+    }
+    effect = {
+        if = {
+            limit = {
+                any_country = {
+                    nesnd_ottoman_na_resister = yes
+                }
+            }
+            ordered_country = {
+                limit = {
+                    nesnd_ottoman_na_resister = yes
+                }
+                order_by = nesnd_ottoman_na_algeria_states_count
+                position = 0
+                check_range_bounds = no
+                add_modifier = {
+                    name = nesnd_ottoman_na_backed_mod
+                    months = 60
+                }
+                change_relations = {
+                    country = root
+                    value = 20
+                }
+            }
+        }
+        if = {
+            limit = {
+                has_global_variable = nesnd_na_foe
+            }
+            global_var:nesnd_na_foe ?= {
+                change_relations = {
+                    country = root
+                    value = -20
+                }
+            }
+        }
+        custom_tooltip = nesnd_ottoman_na_back_cd_set_tt
+        hidden_effect = {
+            set_variable = {
+                name = nesnd_ottoman_na_back_cd
+                months = 36
+            }
+            set_variable = nesnd_ottoman_na_backed_once
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                has_global_variable = nesnd_na_foe
+                global_var:nesnd_na_foe ?= {
+                    relations:root <= relations_threshold:cold
+                }
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                OR = {
+                    has_journal_entry = nesnd_crimea_tur
+                    has_journal_entry = nesnd_rtw_tur
+                }
+                has_global_variable = nesnd_na_foe
+                global_var:nesnd_na_foe ?= {
+                    nesnd_north_helper_candidate = yes
+                }
+            }
+            add = -10
+        }
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}
+
+# Rule 13: Propose demarcation over Algeria to the outsider foe (60-month cooldown; sends event .36).
+nesnd_ottoman_na_demarcate = {
+    name = nesnd_ottoman_na_demarcate
+    desc = nesnd_ottoman_na_demarcate_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_north_africa
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_na_foe_valid_tt
+            nesnd_ottoman_na_foe_valid = yes
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_na_peace_with_foe_tt
+            nesnd_ottoman_na_at_war_with_foe = no
+            nesnd_ottoman_na_play_in_progress = no
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_na_demarcate_cd_tt
+            NOT = { has_variable = nesnd_ottoman_na_demarcate_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_na_not_demarcated_tt
+            NOT = { has_variable = nesnd_ottoman_na_demarcated }
+        }
+    }
+    effect = {
+        if = {
+            limit = {
+                has_global_variable = nesnd_na_foe
+            }
+            global_var:nesnd_na_foe ?= {
+                trigger_event = {
+                    id = nesnd_ottoman_recovery.36
+                    days = 3
+                    popup = yes
+                }
+            }
+        }
+        custom_tooltip = nesnd_ottoman_na_demarcate_cd_set_tt
+        hidden_effect = {
+            set_variable = {
+                name = nesnd_ottoman_na_demarcate_cd
+                months = 60
+            }
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                nesnd_ottoman_na_suzerainty_held = yes
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                OR = {
+                    has_journal_entry = nesnd_crimea_tur
+                    has_journal_entry = nesnd_rtw_tur
+                }
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}
+
+# Rule 14: Reassert suzerainty over an independent local state in Tripoli or Tunisia (60-month cooldown; sends event .38).
+nesnd_ottoman_na_reassert = {
+    name = nesnd_ottoman_na_reassert
+    desc = nesnd_ottoman_na_reassert_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_north_africa
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_na_reassert_target_tt
+            any_country = {
+                nesnd_ottoman_na_reassert_target = yes
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_na_reassert_cd_tt
+            NOT = { has_variable = nesnd_ottoman_na_reassert_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_na_reassert_rank_tt
+            nesnd_ottoman_na_can_take_subject = yes
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_ottoman_na_reassert_send_tt
+        custom_tooltip = nesnd_ottoman_na_reassert_cd_set_tt
+        hidden_effect = {
+            nesnd_ottoman_na_dispatch_reassert = yes
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                any_country = {
+                    nesnd_ottoman_na_reassert_target = yes
+                    relations:root >= relations_threshold:cordial
+                }
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}

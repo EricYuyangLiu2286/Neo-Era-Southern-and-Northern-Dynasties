@@ -1,0 +1,358 @@
+﻿# Triggers for Ottoman B12 "North Africa" journal (nesnd_ottoman_north_africa) and events .36-.39.
+# Country scope unless noted.
+
+# State scope. State lies in the Ottoman North African suzerainty regions (Rule 1, Step 0 #1; excludes STATE_LIBYA which is >80% decentralized).
+nesnd_ottoman_na_suzerain_region_state = {
+    OR = {
+        state_region = s:STATE_TRIPOLI
+        state_region = s:STATE_TUNISIA
+    }
+}
+
+# State scope. State lies in the three Algerian regions (Rule 1).
+nesnd_ottoman_na_algeria_region_state = {
+    OR = {
+        state_region = s:STATE_ORAN
+        state_region = s:STATE_ALGIERS
+        state_region = s:STATE_CONSTANTINE
+    }
+}
+
+# State scope. The state counts as part of the Ottoman North African dependencies: its owner is not decentralized and is either
+# TUR, a subject of any country, a Major Power or above, or a country whose capital lies in the suzerain regions.
+# Independent countries below Major Power with a capital elsewhere (Fezzan at game start) are left out.
+nesnd_ottoman_na_dependency_state = {
+    owner = {
+        NOT = { is_country_type = decentralized }
+        OR = {
+            c:TUR ?= this
+            is_subject = yes
+            country_rank >= rank_value:major_power
+            capital ?= {
+                nesnd_ottoman_na_suzerain_region_state = yes
+            }
+        }
+    }
+}
+
+# Any scope. Each suzerain region has at least one dependency state, and no dependency state lies outside Ottoman/subject hands (Rule 2).
+nesnd_ottoman_na_suzerainty_held = {
+    s:STATE_TRIPOLI = {
+        any_scope_state = {
+            nesnd_ottoman_na_dependency_state = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_na_dependency_state = yes
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+    s:STATE_TUNISIA = {
+        any_scope_state = {
+            nesnd_ottoman_na_dependency_state = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_na_dependency_state = yes
+                nesnd_ottoman_state_outside_ottoman_hands = yes
+            }
+        }
+    }
+}
+
+# Country scope (evaluated country). Independent outside Major/Great Power (Rule 3).
+nesnd_ottoman_na_outsider = {
+    is_country_alive = yes
+    is_subject = no
+    NOT = { c:TUR ?= this }
+    country_rank >= rank_value:major_power
+}
+
+# State scope. State is held by an outsider major power or a subject whose top overlord is an outsider major power (helper for Rules 4, 10.3).
+nesnd_ottoman_na_state_held_by_outsider = {
+    owner = {
+        OR = {
+            nesnd_ottoman_na_outsider = yes
+            AND = {
+                is_subject = yes
+                top_overlord ?= {
+                    nesnd_ottoman_na_outsider = yes
+                }
+            }
+        }
+    }
+}
+
+# Any scope. Algeria is settled: either TUR demarcated with the outsider, or no state in the three Algerian regions is held by an outsider/subject (Rule 4).
+nesnd_ottoman_na_algeria_settled = {
+    OR = {
+        AND = {
+            exists = c:TUR
+            c:TUR ?= {
+                has_variable = nesnd_ottoman_na_demarcated
+            }
+        }
+        AND = {
+            s:STATE_ORAN = {
+                NOT = {
+                    any_scope_state = {
+                        nesnd_ottoman_na_state_held_by_outsider = yes
+                    }
+                }
+            }
+            s:STATE_ALGIERS = {
+                NOT = {
+                    any_scope_state = {
+                        nesnd_ottoman_na_state_held_by_outsider = yes
+                    }
+                }
+            }
+            s:STATE_CONSTANTINE = {
+                NOT = {
+                    any_scope_state = {
+                        nesnd_ottoman_na_state_held_by_outsider = yes
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Any scope. Each suzerain region has at least one dependency state, and every dependency state is held by an outsider major power or its subject (Rule 10.3).
+nesnd_ottoman_na_suzerainty_lost = {
+    s:STATE_TRIPOLI = {
+        any_scope_state = {
+            nesnd_ottoman_na_dependency_state = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_na_dependency_state = yes
+                nesnd_ottoman_na_state_held_by_outsider = no
+            }
+        }
+    }
+    s:STATE_TUNISIA = {
+        any_scope_state = {
+            nesnd_ottoman_na_dependency_state = yes
+        }
+        NOT = {
+            any_scope_state = {
+                nesnd_ottoman_na_dependency_state = yes
+                nesnd_ottoman_na_state_held_by_outsider = no
+            }
+        }
+    }
+}
+
+# Country scope (evaluated country). Local North African non-decentralized state below Major Power with capital in the five regions (Rule 5).
+nesnd_ottoman_na_local = {
+    is_country_alive = yes
+    OR = {
+        is_country_type = recognized
+        is_country_type = unrecognized
+    }
+    NOT = { c:TUR ?= this }
+    country_rank < rank_value:major_power
+    capital ?= {
+        OR = {
+            nesnd_ottoman_na_suzerain_region_state = yes
+            nesnd_ottoman_na_algeria_region_state = yes
+        }
+    }
+}
+
+# Country scope (evaluated country). The country or any subject at any depth holds a state in the suzerain or Algerian regions (Rule 6).
+nesnd_ottoman_na_holds_target = {
+    OR = {
+        any_scope_state = {
+            OR = {
+                nesnd_ottoman_na_suzerain_region_state = yes
+                nesnd_ottoman_na_algeria_region_state = yes
+            }
+        }
+        any_subject_or_below = {
+            any_scope_state = {
+                OR = {
+                    nesnd_ottoman_na_suzerain_region_state = yes
+                    nesnd_ottoman_na_algeria_region_state = yes
+                }
+            }
+        }
+    }
+}
+
+# Country scope (evaluated country). Eligible to be selected as the North Africa foe (Rule 6).
+nesnd_ottoman_na_foe_candidate = {
+    nesnd_ottoman_na_outsider = yes
+    exists = c:TUR
+    NOT = {
+        has_treaty_alliance_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = {
+        has_treaty_defensive_pact_with = {
+            TARGET = c:TUR
+        }
+    }
+    nesnd_ottoman_na_holds_target = yes
+}
+
+# Any scope. The stored global_var:nesnd_na_foe is still a valid outsider, not allied with TUR, and still holds target land (Rule 6).
+nesnd_ottoman_na_foe_valid = {
+    exists = c:TUR
+    has_global_variable = nesnd_na_foe
+    global_var:nesnd_na_foe ?= {
+        nesnd_ottoman_na_outsider = yes
+        NOT = {
+            has_treaty_alliance_with = {
+                TARGET = c:TUR
+            }
+        }
+        NOT = {
+            has_treaty_defensive_pact_with = {
+                TARGET = c:TUR
+            }
+        }
+        nesnd_ottoman_na_holds_target = yes
+    }
+}
+
+# Country scope (TUR). Entry and monthly fallback trigger for nesnd_ottoman_north_africa (Rule 8).
+nesnd_ottoman_na_start_ready = {
+    c:TUR ?= this
+    nesnd_ottoman_recovery_open = yes
+    has_variable = nesnd_ottoman_route
+    nesnd_ottoman_can_act_abroad = yes
+    NOT = { has_journal_entry = nesnd_ottoman_north_africa }
+    NOT = { has_variable = nesnd_ottoman_na_closed }
+    NOT = { has_variable = nesnd_ottoman_na_reopen_cd }
+    OR = {
+        any_country = {
+            nesnd_ottoman_na_foe_candidate = yes
+        }
+        nesnd_ottoman_na_suzerainty_held = no
+    }
+}
+
+# Country scope (TUR). Currently at war with global_var:nesnd_na_foe (Rules 10, 11, 13).
+nesnd_ottoman_na_at_war_with_foe = {
+    has_global_variable = nesnd_na_foe
+    global_var:nesnd_na_foe ?= {
+        has_war_with = prev
+    }
+}
+
+# Any scope. Active diplomatic play opposing TUR and global_var:nesnd_na_foe (Rules 10, 11, 13).
+nesnd_ottoman_na_play_in_progress = {
+    exists = c:TUR
+    has_global_variable = nesnd_na_foe
+    global_var:nesnd_na_foe ?= {
+        OR = {
+            is_diplomatic_play_enemy_of = c:TUR
+            any_diplomatic_play = {
+                OR = {
+                    AND = {
+                        initiator_is = c:TUR
+                        target_is = prev
+                    }
+                    AND = {
+                        initiator_is = prev
+                        target_is = c:TUR
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Stored foe became invalid and TUR is not currently at war with it; false if no foe is stored (R12, Rule 10.5).
+nesnd_ottoman_na_situation_changed = {
+    has_global_variable = nesnd_na_foe
+    nesnd_ottoman_na_foe_valid = no
+    nesnd_ottoman_na_at_war_with_foe = no
+}
+
+# Country scope (evaluated country). Local Algerian resister eligible for Ottoman backing via nesnd_ottoman_na_back (Rule 12).
+nesnd_ottoman_na_resister = {
+    nesnd_ottoman_na_local = yes
+    any_scope_state = {
+        nesnd_ottoman_na_algeria_region_state = yes
+    }
+    has_global_variable = nesnd_na_foe
+    NOT = { global_var:nesnd_na_foe ?= this }
+    NOT = { top_overlord ?= global_var:nesnd_na_foe }
+    OR = {
+        global_var:nesnd_na_foe ?= {
+            has_war_with = prev
+        }
+        any_scope_state = {
+            state_region = {
+                global_var:nesnd_na_foe ?= {
+                    has_claim = prev
+                }
+            }
+        }
+        global_var:nesnd_na_foe ?= {
+            relations:prev <= relations_threshold:cold
+        }
+    }
+}
+
+# Country scope (recipient of event nesnd_ottoman_recovery.36). The demarcation proposal is still valid (Rule 13).
+nesnd_ottoman_na_demarcate_open = {
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        has_journal_entry = nesnd_ottoman_north_africa
+        NOT = { has_variable = nesnd_ottoman_na_demarcated }
+    }
+    global_var:nesnd_na_foe ?= this
+    nesnd_ottoman_na_foe_valid = yes
+    NOT = { has_war_with = c:TUR }
+    nesnd_ottoman_na_play_in_progress = no
+}
+
+# Country scope (TUR). Mechanical prerequisites for TUR to take a protectorate (if recognized) or tributary (if unrecognized after sick_man.3),
+# per GAME/common/subject_types/00_subject_types.txt:31-53,154-174 (Rule 14, Step 0 #6).
+nesnd_ottoman_na_can_take_subject = {
+    is_subject = no
+    OR = {
+        AND = {
+            is_country_type = recognized
+            country_rank >= rank_value:minor_power
+        }
+        AND = {
+            is_country_type = unrecognized
+            country_rank >= rank_value:unrecognized_regional_power
+        }
+    }
+}
+
+# Country scope (evaluated country). Independent minor/unrecognized local state with capital in the suzerain regions eligible for event .38 (Rule 14).
+nesnd_ottoman_na_reassert_target = {
+    nesnd_ottoman_na_local = yes
+    exists = c:TUR
+    is_subject = no
+    capital ?= {
+        nesnd_ottoman_na_suzerain_region_state = yes
+    }
+    country_rank <= rank_value:minor_power
+    c:TUR = {
+        country_rank > prev.country_rank
+    }
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_diplomatic_play_enemy_of = c:TUR }
+}
+
+# Country scope (recipient of event nesnd_ottoman_recovery.38). The suzerainty reassertion offer is still valid (Rule 14).
+nesnd_ottoman_na_reassert_open = {
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        has_journal_entry = nesnd_ottoman_north_africa
+        nesnd_ottoman_na_can_take_subject = yes
+    }
+    nesnd_ottoman_na_reassert_target = yes
+}
