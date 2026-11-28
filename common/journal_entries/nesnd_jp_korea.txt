@@ -1,74 +1,240 @@
 ﻿nesnd_jp_korea = {
     icon = "gfx/interface/icons/event_icons/nesnd_jp_korea_gat.dds"
     group = je_group_historical_content
-    activation_description = { nesnd_jp_korea_available = yes }
+    activation_description = {
+        nesnd_jp_korea_available = yes
+    }
     can_revolution_inherit = no
-    is_shown_when_inactive = { nesnd_jp_korea_available = yes }
-    possible = { nesnd_jp_korea_available = yes }
+    is_shown_when_inactive = {
+        nesnd_jp_korea_available = yes
+    }
+    possible = {
+        nesnd_jp_korea_available = yes
+    }
     scripted_button = nesnd_jp_korean_governor
     scripted_button = nesnd_jp_korean_councils
-    scripted_button = nesnd_jp_register_korea
-    scripted_button = nesnd_jp_endow_korea
+    scripted_progress_bar = nesnd_jp_korea_bar
+    modifiers_while_active = {
+        nesnd_jp_korea_toyotomi_daimyo
+    }
 
     on_monthly_pulse = {
         effect = {
-            if = { limit = { nesnd_jp_korea_available = yes nesnd_jp_korea_route_ready = yes }
-                set_variable = { name = nesnd_jp_korea_months value = { value = nesnd_jp_korea_months add = 1 max = 12 } }
+            every_scope_state = {
+                limit = {
+                    state_region = {
+                        is_homeland = cu:korean
+                    }
+                    NOT = {
+                        has_modifier = nesnd_jp_korea_samurai_rule
+                    }
+                }
+                add_modifier = {
+                    name = nesnd_jp_korea_samurai_rule
+                }
             }
-            else = { remove_variable = nesnd_jp_korea_months }
         }
     }
+
     outcome = {
-        header = nesnd_jp_korea_charter_header
-        effect_header = je_standard_on_completion_header
-        color = "gold_positive"
-        conclusion_desc = nesnd_jp_korea_charter_conclusion
-        trigger = { custom_tooltip = { text = nesnd_jp_korea_charter_tt has_variable = nesnd_jp_korea_charter } }
-        effect = { custom_tooltip = nesnd_jp_korea_charter_conclusion }
-    }
-    outcome = {
-        header = nesnd_jp_korea_treaty_header
-        effect_header = je_standard_on_completion_header
-        color = "gold_positive"
-        conclusion_desc = nesnd_jp_korea_treaty_conclusion
-        trigger = {
-            custom_tooltip = { text = nesnd_jp_korea_treaty_tt has_variable = nesnd_jp_korea_settled }
-            custom_tooltip = { text = nesnd_jp_korea_no_land_tt NOT = { nesnd_jp_owned_korea = yes } }
-        }
-        effect = { custom_tooltip = nesnd_jp_korea_treaty_conclusion hidden_effect = { remove_variable = nesnd_jp_korea_months } }
-    }
-    outcome = {
-        header = nesnd_jp_korea_exit_header
-        effect_header = nesnd_jp_korea_exit_effect_header
+        header = nesnd_jp_korea_returned_header
+        effect_header = nesnd_journal_closures_effect_header
         color = "blue_negative"
-        conclusion_desc = nesnd_jp_korea_exit_conclusion
+        conclusion_desc = nesnd_jp_korea_returned_conclusion
         trigger = {
-            custom_tooltip = { text = nesnd_jp_korea_exit_tt
-                OR = { NOT = { nesnd_jp_owned_korea = yes } NOT = { nesnd_jp_korea_counterpart = yes } }
+            NOT = {
+                any_scope_state = {
+                    state_region = {
+                        is_homeland = cu:korean
+                    }
+                }
             }
-            hidden_trigger = { NOR = { has_variable = nesnd_jp_korea_settled has_variable = nesnd_jp_korea_charter } }
+            custom_tooltip = {
+                text = nesnd_jp_korea_settled_tt
+                has_variable = nesnd_jp_korea_settled
+            }
         }
         effect = {
-            custom_tooltip = nesnd_jp_korea_exit_conclusion
-            hidden_effect = {
-                remove_variable = nesnd_jp_korea_months
-                if = { limit = { NOT = { nesnd_jp_owned_korea = yes } } nesnd_jp_close_korean_governance = yes }
+            nesnd_jp_close_korean_governance = yes
+            add_modifier = {
+                name = nesnd_jp_korea_east_accord
+                years = 10
             }
+            set_variable = nesnd_jp_korea_closed
         }
     }
+
     outcome = {
-        flags = { hidden invalid_outcome }
-        conclusion_desc = je_standard_failure_conclusion_desc
-        trigger = { NOT = { nesnd_jp_country = yes } }
-        effect = { remove_variable = nesnd_jp_korea_months nesnd_jp_close_korean_governance = yes }
+        header = nesnd_jp_korea_lost_header
+        effect_header = nesnd_journal_closures_effect_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_jp_korea_lost_conclusion
+        trigger = {
+            NOT = {
+                any_scope_state = {
+                    state_region = {
+                        is_homeland = cu:korean
+                    }
+                }
+            }
+            custom_tooltip = {
+                text = nesnd_jp_korea_not_settled_tt
+                NOT = {
+                    has_variable = nesnd_jp_korea_settled
+                }
+            }
+        }
+        effect = {
+            nesnd_jp_close_korean_governance = yes
+            add_modifier = {
+                name = nesnd_jp_korea_colonial_attempt
+                years = 30
+            }
+            set_variable = nesnd_jp_korea_closed
+        }
     }
-    status_desc = { first_valid = {
-        triggered_desc = { trigger = { NOT = { nesnd_jp_korea_counterpart = yes } } desc = nesnd_jp_korea_handover }
-        triggered_desc = { trigger = { NOT = { nesnd_jp_owned_korea = yes } } desc = nesnd_jp_korea_across_the_strait }
-        triggered_desc = { trigger = { nesnd_jp_korea_policy_value = 1 } desc = nesnd_jp_korea_governors_status }
-        triggered_desc = { trigger = { nesnd_jp_korea_policy_value = 2 } desc = nesnd_jp_korea_councils_status }
-        desc = nesnd_jp_korea_undecided
-    } }
+
+    outcome = {
+        header = je_standard_failure_header
+        effect_header = je_standard_on_failure_header
+        color = "blue_negative"
+        conclusion_desc = nesnd_jp_korea_failure_conclusion
+        trigger = {
+            has_technology_researched = socialism
+        }
+        effect = {
+            nesnd_jp_close_korean_governance = yes
+            every_scope_state = {
+                limit = {
+                    state_region = {
+                        is_homeland = cu:korean
+                    }
+                }
+                add_modifier = {
+                    name = nesnd_jp_korea_independence_activity
+                    years = 20
+                }
+            }
+            set_variable = nesnd_jp_korea_closed
+        }
+    }
+
+    outcome = {
+        header = nesnd_jp_korea_exam_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_jp_korea_exam_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_jp_korea_chose_exam_tt
+                nesnd_jp_korea_policy_value = 1
+            }
+            scope:journal_entry = {
+                scripted_bar_progress = {
+                    name = nesnd_jp_korea_bar
+                    value >= 100
+                }
+            }
+        }
+        effect = {
+            nesnd_jp_close_korean_governance = yes
+            every_scope_state = {
+                limit = {
+                    nesnd_jp_korea_southern_state = yes
+                }
+                add_modifier = {
+                    name = nesnd_jp_korea_model_zone
+                    years = 30
+                }
+            }
+            add_primary_culture = cu:korean
+            if = {
+                limit = {
+                    has_journal_entry = nesnd_jp_cohesion
+                }
+                set_variable = nesnd_jp_cohesion_korea
+                custom_tooltip = nesnd_jp_korea_cohesion_tt
+            }
+            trigger_event = {
+                id = nesnd_jp_coast.1
+                popup = yes
+            }
+            set_variable = nesnd_jp_korea_closed
+        }
+    }
+
+    outcome = {
+        header = nesnd_jp_korea_kampaku_header
+        effect_header = je_standard_on_completion_header
+        color = "gold_positive"
+        conclusion_desc = nesnd_jp_korea_kampaku_conclusion
+        trigger = {
+            custom_tooltip = {
+                text = nesnd_jp_korea_chose_kampaku_tt
+                nesnd_jp_korea_policy_value = 2
+            }
+            scope:journal_entry = {
+                scripted_bar_progress = {
+                    name = nesnd_jp_korea_bar
+                    value >= 100
+                }
+            }
+        }
+        effect = {
+            nesnd_jp_close_korean_governance = yes
+            every_scope_state = {
+                limit = {
+                    nesnd_jp_korea_southern_state = yes
+                }
+                set_state_type = incorporated
+                add_modifier = {
+                    name = nesnd_jp_korea_daikan_autonomy
+                    years = 30
+                }
+            }
+            trigger_event = {
+                id = nesnd_jp_coast.2
+                popup = yes
+            }
+            set_variable = nesnd_jp_korea_closed
+        }
+    }
+
+    outcome = {
+        flags = {
+            hidden
+            invalid_outcome
+        }
+        conclusion_desc = je_standard_failure_conclusion_desc
+        trigger = {
+            NOT = {
+                nesnd_jp_country = yes
+            }
+        }
+        effect = {
+            nesnd_jp_close_korean_governance = yes
+            set_variable = nesnd_jp_korea_closed
+        }
+    }
+
+    status_desc = {
+        first_valid = {
+            triggered_desc = {
+                trigger = {
+                    nesnd_jp_korea_policy_value = 1
+                }
+                desc = nesnd_jp_korea_exam_status
+            }
+            triggered_desc = {
+                trigger = {
+                    nesnd_jp_korea_policy_value = 2
+                }
+                desc = nesnd_jp_korea_kampaku_status
+            }
+            desc = nesnd_jp_korea_undecided
+        }
+    }
+
     weight = 600
     should_be_pinned_by_default_uninvolved_or_context = yes
 }
