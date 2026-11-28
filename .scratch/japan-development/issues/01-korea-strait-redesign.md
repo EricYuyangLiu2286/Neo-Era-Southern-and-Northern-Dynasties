@@ -34,5 +34,5 @@ Evidence: <D:/Users/Eric Liu/Documents/Paradox Interactive/Victoria 3/nesnd-work
 
 ## 5. 遗留问题
 
-- 未开游戏。进度条包在 owner 里的写法、if 能否藏住推进条件行都没实测（C5 用了把路线写进每行 limit 的写法）。
+- 未开游戏。进度条包在 owner 里的写法没实测。两条路线的推进条件各包在一个普通 if 里，只显示所选路线的行（作者 2026-11-28 确认这就是隐藏写法）。
 - 旧档：已经走过旧结局的存档没有 nesnd_jp_korea_closed，仍持有两州时日志会按新设计重新出现。
