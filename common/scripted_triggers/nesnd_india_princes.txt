@@ -1054,6 +1054,7 @@ nesnd_india_union_ai_prince_restless = {
 nesnd_india_colonial_owner = {
     OR = {
         c:USM ?= this
+        c:FRA ?= this
         AND = {
             c:TZ1 ?= this
             trigger_if = {
@@ -1091,10 +1092,13 @@ nesnd_india_contact_safe = {
     }
 }
 
+# State scope. scope:india_sponsor is the sponsoring country (saved by nesnd_india_case_target, nesnd_india_case_launch_ready
+# and nesnd_india_case_start); it must not be a subject of the state's owner.
 nesnd_india_colonial_state = {
     state_population >= 300000
     owner = {
         nesnd_india_colonial_owner = yes
+        scope:india_sponsor = { NOT = { is_subject_of = prev } }
         is_at_war = no
         is_active_in_diplomatic_play = no
     }
@@ -1103,6 +1107,7 @@ nesnd_india_colonial_state = {
 
 # The uprising in one state region: R its name, STATE its state region, TAG the country formed there, HQ its strategic region.
 nesnd_india_case_target = {
+    save_temporary_scope_as = india_sponsor
     NOT = { exists = c:$TAG$ }
     s:$STATE$ = {
         custom_tooltip = {
@@ -1135,6 +1140,7 @@ nesnd_india_case_our_case = {
 }
 
 nesnd_india_case_launch_ready = {
+    save_temporary_scope_as = india_sponsor
     nesnd_india_uprising_strength = yes
     nesnd_india_case_our_case = { STATE = $STATE$ }
     is_at_war = no
