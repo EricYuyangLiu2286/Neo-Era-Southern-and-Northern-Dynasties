@@ -1,0 +1,172 @@
+﻿# Effects for Ottoman B13 "Central Asia" journal (nesnd_ottoman_central_asia) and events .40-.44.
+# Country scope (TUR) unless noted.
+
+# Selects the highest-scoring Central Asia foe candidate and stores it in global_var:nesnd_ca_foe (Rules 6, 7).
+# If no candidate exists, leaves global_var:nesnd_ca_foe unset.
+nesnd_ottoman_ca_pick_foe = {
+    if = {
+        limit = {
+            has_global_variable = nesnd_ca_foe
+        }
+        remove_global_variable = nesnd_ca_foe
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_ottoman_ca_foe_candidate = yes
+            }
+        }
+        ordered_country = {
+            limit = {
+                nesnd_ottoman_ca_foe_candidate = yes
+            }
+            order_by = nesnd_ottoman_ca_foe_score
+            position = 0
+            check_range_bounds = no
+            set_global_variable = {
+                name = nesnd_ca_foe
+                value = this
+            }
+        }
+    }
+}
+
+# Unified entry effect for opening nesnd_ottoman_central_asia (Rule 8).
+nesnd_ottoman_ca_start = {
+    hidden_effect = {
+        nesnd_ottoman_ca_pick_foe = yes
+    }
+    add_journal_entry = {
+        type = nesnd_ottoman_central_asia
+    }
+}
+
+# Monthly counter of consecutive months unable to act abroad for R13 (Rule 9).
+nesnd_ottoman_ca_update_dependent_months = {
+    if = {
+        limit = {
+            nesnd_ottoman_can_act_abroad = yes
+        }
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_ca_dependent_months
+            }
+            remove_variable = nesnd_ottoman_ca_dependent_months
+        }
+    }
+    else_if = {
+        limit = {
+            has_variable = nesnd_ottoman_ca_dependent_months
+        }
+        change_variable = {
+            name = nesnd_ottoman_ca_dependent_months
+            add = 1
+        }
+    }
+    else = {
+        set_variable = {
+            name = nesnd_ottoman_ca_dependent_months
+            value = 1
+        }
+    }
+}
+
+# Picks the eligible independent local Central Asian state with the most states and dispatches event .40 (Rule 13).
+nesnd_ottoman_ca_dispatch_protect = {
+    set_variable = {
+        name = nesnd_ottoman_ca_protect_cd
+        months = 60
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_ottoman_ca_protect_target = yes
+            }
+        }
+        ordered_country = {
+            limit = {
+                nesnd_ottoman_ca_protect_target = yes
+            }
+            order_by = nesnd_ottoman_ca_protect_states_count
+            position = 0
+            check_range_bounds = no
+            trigger_event = {
+                id = nesnd_ottoman_recovery.40
+                days = 3
+                popup = yes
+            }
+        }
+    }
+}
+
+# Picks the highest-scoring eligible defensive pact partner and dispatches event .42 (Rule 14).
+nesnd_ottoman_ca_dispatch_compact = {
+    set_variable = {
+        name = nesnd_ottoman_ca_compact_cd
+        months = 60
+    }
+    if = {
+        limit = {
+            any_country = {
+                nesnd_ottoman_ca_partner_candidate = yes
+                nesnd_ottoman_ca_can_compact_with_tur = yes
+            }
+        }
+        ordered_country = {
+            limit = {
+                nesnd_ottoman_ca_partner_candidate = yes
+                nesnd_ottoman_ca_can_compact_with_tur = yes
+            }
+            order_by = nesnd_ottoman_ca_partner_score
+            position = 0
+            check_range_bounds = no
+            trigger_event = {
+                id = nesnd_ottoman_recovery.42
+                days = 3
+                popup = yes
+            }
+        }
+    }
+}
+
+# Shared cleanup called at the end of every outcome of nesnd_ottoman_central_asia (Rule 10).
+# Preserves nesnd_ottoman_ca_had_client (required across reopen cooldown per F1 / Rule 10.5)
+# and nesnd_ottoman_ca_funded_once (retains goodwill bonus for .40 if the journal reopens after foe collapse).
+nesnd_ottoman_ca_cleanup = {
+    if = {
+        limit = {
+            has_global_variable = nesnd_ca_foe
+        }
+        remove_global_variable = nesnd_ca_foe
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_ca_dependent_months
+        }
+        remove_variable = nesnd_ottoman_ca_dependent_months
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_ca_deadline
+        }
+        remove_variable = nesnd_ottoman_ca_deadline
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_ca_fund_cd
+        }
+        remove_variable = nesnd_ottoman_ca_fund_cd
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_ca_protect_cd
+        }
+        remove_variable = nesnd_ottoman_ca_protect_cd
+    }
+    if = {
+        limit = {
+            has_variable = nesnd_ottoman_ca_compact_cd
+        }
+        remove_variable = nesnd_ottoman_ca_compact_cd
+    }
+}

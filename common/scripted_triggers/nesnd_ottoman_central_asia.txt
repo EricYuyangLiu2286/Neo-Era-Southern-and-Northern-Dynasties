@@ -1,0 +1,319 @@
+﻿# Triggers for Ottoman B13 "Central Asia" journal (nesnd_ottoman_central_asia) and events .40-.44.
+# Country scope unless noted.
+
+# State scope. State lies in the Central Asia region list (Rule 1, Step 0 #1: 18 states of the QE1 frontier;
+# excludes PER's 16 opening states, Mesopotamia's 3 states, and coastal STATE_BALUCHISTAN/STATE_SISTAN where KAL/MAK start).
+nesnd_ottoman_ca_region_state = {
+    OR = {
+        state_region = s:STATE_KABUL
+        state_region = s:STATE_KANDAHAR
+        state_region = s:STATE_HERAT
+        state_region = s:STATE_PASHTUNISTAN
+        state_region = s:STATE_BALKH
+        state_region = s:STATE_CENTRAL_HIGHLANDS
+        state_region = s:STATE_QUETTA
+        state_region = s:STATE_NORTHERN_BALUCHISTAN
+        state_region = s:STATE_SYRDARYA
+        state_region = s:STATE_SEMIRECHE
+        state_region = s:STATE_URALSK
+        state_region = s:STATE_AKTOBE
+        state_region = s:STATE_SAMARA
+        state_region = s:STATE_CHELYABINSK
+        state_region = s:STATE_TURKMENIA
+        state_region = s:STATE_MERZ
+        state_region = s:STATE_KHIVA
+        state_region = s:STATE_FERGANA
+    }
+}
+
+# Country scope (evaluated country). Non-decentralized Central Asian state (any rank) with capital in the region list (F1).
+nesnd_ottoman_ca_native = {
+    is_country_alive = yes
+    OR = {
+        is_country_type = recognized
+        is_country_type = unrecognized
+    }
+    NOT = { c:TUR ?= this }
+    capital ?= {
+        nesnd_ottoman_ca_region_state = yes
+    }
+}
+
+# Country scope (evaluated country). Local non-decentralized Central Asian state below Major Power with capital in the region list (Rule 2).
+nesnd_ottoman_ca_local = {
+    nesnd_ottoman_ca_native = yes
+    country_rank < rank_value:major_power
+}
+
+# Country scope (evaluated country). Independent outside Major/Great Power, regardless of capital location (Rule 3).
+nesnd_ottoman_ca_outsider = {
+    is_country_alive = yes
+    is_subject = no
+    NOT = { c:TUR ?= this }
+    country_rank >= rank_value:major_power
+}
+
+# Country scope (evaluated country). Local Central Asian state that is a subject of the Ottoman Empire at any depth (Rule 4).
+nesnd_ottoman_ca_client = {
+    nesnd_ottoman_ca_local = yes
+    exists = c:TUR
+    is_subject = yes
+    top_overlord ?= c:TUR
+}
+
+# Any scope. At least two local Central Asian states are Ottoman subjects (Rule 4).
+nesnd_ottoman_ca_clients_enough = {
+    any_country = {
+        nesnd_ottoman_ca_client = yes
+        count >= 2
+    }
+}
+
+# Country scope (evaluated country). The country or any subject at any depth holds a state in the Central Asia region list (Rule 5).
+nesnd_ottoman_ca_holds_target = {
+    OR = {
+        any_scope_state = {
+            nesnd_ottoman_ca_region_state = yes
+        }
+        any_subject_or_below = {
+            any_scope_state = {
+                nesnd_ottoman_ca_region_state = yes
+            }
+        }
+    }
+}
+
+# Country scope (evaluated country). Eligible to be selected as the Central Asia foe (Rule 5).
+nesnd_ottoman_ca_foe_candidate = {
+    nesnd_ottoman_ca_outsider = yes
+    exists = c:TUR
+    NOT = {
+        has_treaty_alliance_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = {
+        has_treaty_defensive_pact_with = {
+            TARGET = c:TUR
+        }
+    }
+    nesnd_ottoman_ca_holds_target = yes
+}
+
+# Any scope. The stored global_var:nesnd_ca_foe is still a valid outsider, not allied with TUR, and still holds target land (Rule 5).
+nesnd_ottoman_ca_foe_valid = {
+    exists = c:TUR
+    has_global_variable = nesnd_ca_foe
+    global_var:nesnd_ca_foe ?= {
+        nesnd_ottoman_ca_outsider = yes
+        NOT = {
+            has_treaty_alliance_with = {
+                TARGET = c:TUR
+            }
+        }
+        NOT = {
+            has_treaty_defensive_pact_with = {
+                TARGET = c:TUR
+            }
+        }
+        nesnd_ottoman_ca_holds_target = yes
+    }
+}
+
+# Country scope (TUR). Entry and monthly fallback trigger for nesnd_ottoman_central_asia (Rule 8).
+nesnd_ottoman_ca_start_ready = {
+    c:TUR ?= this
+    nesnd_ottoman_recovery_open = yes
+    has_variable = nesnd_ottoman_route
+    nesnd_ottoman_can_act_abroad = yes
+    NOT = { has_journal_entry = nesnd_ottoman_central_asia }
+    NOT = { has_variable = nesnd_ottoman_ca_closed }
+    NOT = { has_variable = nesnd_ottoman_ca_reopen_cd }
+    OR = {
+        any_country = {
+            nesnd_ottoman_ca_foe_candidate = yes
+        }
+        any_country = {
+            nesnd_ottoman_ca_local = yes
+        }
+    }
+}
+
+# Country scope (TUR). Currently at war with global_var:nesnd_ca_foe (Rules 10, 12).
+nesnd_ottoman_ca_at_war_with_foe = {
+    has_global_variable = nesnd_ca_foe
+    global_var:nesnd_ca_foe ?= {
+        has_war_with = prev
+    }
+}
+
+# Any scope. Active diplomatic play opposing TUR and global_var:nesnd_ca_foe (Rules 10, 12).
+nesnd_ottoman_ca_play_in_progress = {
+    exists = c:TUR
+    has_global_variable = nesnd_ca_foe
+    global_var:nesnd_ca_foe ?= {
+        OR = {
+            is_diplomatic_play_enemy_of = c:TUR
+            any_diplomatic_play = {
+                OR = {
+                    AND = {
+                        initiator_is = c:TUR
+                        target_is = prev
+                    }
+                    AND = {
+                        initiator_is = prev
+                        target_is = c:TUR
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Country scope (TUR). Stored foe became invalid and TUR is not currently at war with it; false if no foe is stored (R12, Rule 10.5).
+nesnd_ottoman_ca_situation_changed = {
+    has_global_variable = nesnd_ca_foe
+    nesnd_ottoman_ca_foe_valid = no
+    nesnd_ottoman_ca_at_war_with_foe = no
+}
+
+# Country scope (TUR). Mechanical prerequisites for TUR to take a protectorate (if recognized) or tributary (if unrecognized after sick_man.3),
+# per GAME/common/subject_types/00_subject_types.txt:31-53,154-174 (Rule 13, Step 0 #6).
+nesnd_ottoman_ca_can_take_subject = {
+    is_subject = no
+    OR = {
+        AND = {
+            is_country_type = recognized
+            country_rank >= rank_value:minor_power
+        }
+        AND = {
+            is_country_type = unrecognized
+            country_rank >= rank_value:unrecognized_regional_power
+        }
+    }
+}
+
+# Country scope (evaluated country). Independent local Central Asian state eligible for the Ottoman protection offer .40 (Rule 13).
+nesnd_ottoman_ca_protect_target = {
+    nesnd_ottoman_ca_local = yes
+    exists = c:TUR
+    is_subject = no
+    country_rank <= rank_value:minor_power
+    c:TUR = {
+        country_rank > prev.country_rank
+    }
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_diplomatic_play_enemy_of = c:TUR }
+}
+
+# Country scope (recipient of event nesnd_ottoman_recovery.40). The protection offer is still valid (Rule 13).
+nesnd_ottoman_ca_protect_open = {
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        has_journal_entry = nesnd_ottoman_central_asia
+        nesnd_ottoman_ca_can_take_subject = yes
+    }
+    nesnd_ottoman_ca_protect_target = yes
+}
+
+# Country scope (evaluated country). Independent neighbor hostile to global_var:nesnd_ca_foe eligible for a defensive pact proposal .42 (Rule 14).
+nesnd_ottoman_ca_partner_candidate = {
+    is_country_alive = yes
+    is_subject = no
+    OR = {
+        is_country_type = recognized
+        is_country_type = unrecognized
+    }
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    has_global_variable = nesnd_ca_foe
+    NOT = { global_var:nesnd_ca_foe ?= this }
+    global_var:nesnd_ca_foe ?= {
+        save_temporary_scope_as = nesnd_ca_foe_tmp
+    }
+    NOT = {
+        has_treaty_alliance_with = {
+            TARGET = scope:nesnd_ca_foe_tmp
+        }
+    }
+    NOT = {
+        has_treaty_defensive_pact_with = {
+            TARGET = scope:nesnd_ca_foe_tmp
+        }
+    }
+    OR = {
+        global_var:nesnd_ca_foe ?= {
+            has_war_with = prev
+        }
+        global_var:nesnd_ca_foe ?= {
+            relations:prev <= relations_threshold:cold
+        }
+    }
+    any_neighbouring_state = {
+        owner = {
+            global_var:nesnd_ca_foe ?= this
+        }
+    }
+    NOT = {
+        has_treaty_alliance_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = {
+        has_treaty_defensive_pact_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_diplomatic_play_enemy_of = c:TUR }
+}
+
+# Country scope (evaluated partner). Parameterless check that this country and c:TUR satisfy mechanical prerequisites for a 5-year defensive pact treaty (Rule 14, Step 0 #5).
+nesnd_ottoman_ca_can_compact_with_tur = {
+    exists = c:TUR
+    NOT = { c:TUR ?= this }
+    is_subject = no
+    c:TUR = {
+        is_country_alive = yes
+        is_subject = no
+    }
+    NOT = { has_war_with = c:TUR }
+    NOT = { is_diplomatic_play_enemy_of = c:TUR }
+    NOT = {
+        has_treaty_defensive_pact_with = {
+            TARGET = c:TUR
+        }
+    }
+    NOT = {
+        has_treaty_alliance_with = {
+            TARGET = c:TUR
+        }
+    }
+    save_temporary_scope_as = nesnd_ca_pact_partner
+    can_create_treaty = {
+        first_country = scope:nesnd_ca_pact_partner
+        second_country = c:TUR
+        is_draft = no
+        binding_period = {
+            years = 5
+        }
+        articles_to_create = {
+            {
+                article = defensive_pact
+            }
+        }
+    }
+}
+
+# Country scope (recipient of event nesnd_ottoman_recovery.42). The defensive pact proposal is still valid (Rule 14).
+nesnd_ottoman_ca_compact_open = {
+    exists = c:TUR
+    c:TUR = {
+        is_country_alive = yes
+        has_journal_entry = nesnd_ottoman_central_asia
+    }
+    nesnd_ottoman_ca_foe_valid = yes
+    nesnd_ottoman_ca_partner_candidate = yes
+    nesnd_ottoman_ca_can_compact_with_tur = yes
+}

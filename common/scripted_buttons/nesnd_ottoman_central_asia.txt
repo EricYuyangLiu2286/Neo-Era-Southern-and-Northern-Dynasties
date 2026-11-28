@@ -1,0 +1,223 @@
+﻿# Scripted buttons for Ottoman B13 "Central Asia" journal (nesnd_ottoman_central_asia).
+
+# Rule 11: Fund frontier tribes in Western Qin (moved from nesnd_ottoman_islam_leader; R11 class b, reads QE1's own frontier journal).
+nesnd_ottoman_fund_tribes = {
+    name = nesnd_ottoman_fund_tribes
+    desc = nesnd_ottoman_fund_tribes_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_central_asia
+    }
+    possible = {
+        exists = c:QE1
+        c:QE1 ?= {
+            is_country_alive = yes
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_qe1_frontier_open_tt
+            c:QE1 ?= {
+                has_journal_entry = nesnd_qe1_frontier_journal
+            }
+        }
+        NOT = {
+            has_treaty_alliance_with = {
+                TARGET = c:QE1
+            }
+        }
+        NOT = {
+            has_treaty_defensive_pact_with = {
+                TARGET = c:QE1
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_fund_cd_tt
+            NOT = { has_variable = nesnd_ottoman_ca_fund_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_fund_cost_tt
+            gold_reserves >= nesnd_ottoman_fund_tribes_cost
+        }
+    }
+    effect = {
+        add_treasury = {
+            value = nesnd_ottoman_fund_tribes_cost
+            multiply = -1
+        }
+        c:QE1 ?= {
+            add_modifier = {
+                name = nesnd_ottoman_tribes_funded
+                months = 36
+            }
+            change_relations = {
+                country = root
+                value = -25
+            }
+            trigger_event = {
+                id = nesnd_ottoman_qe1.1
+                days = 3
+                popup = yes
+            }
+        }
+        custom_tooltip = nesnd_ottoman_ca_fund_cd_set_tt
+        hidden_effect = {
+            set_variable = {
+                name = nesnd_ottoman_ca_fund_cd
+                months = 24
+            }
+            set_variable = nesnd_ottoman_ca_funded_once
+        }
+    }
+    ai_chance = {
+        value = 5
+        if = {
+            limit = {
+                c:QE1 ?= {
+                    has_variable = nesnd_qe1_unity
+                    var:nesnd_qe1_unity < 50
+                }
+            }
+            add = 20
+        }
+        if = {
+            limit = {
+                c:QE1 ?= {
+                    OR = {
+                        nesnd_qe1_fr_bar_at_least = {
+                            WHO = afg
+                            V = 40
+                        }
+                        nesnd_qe1_fr_bar_at_least = {
+                            WHO = kaz
+                            V = 40
+                        }
+                    }
+                }
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                has_variable = nesnd_ottoman_charter_outcome
+                var:nesnd_ottoman_charter_outcome = flag:qin
+            }
+            multiply = 0.25
+        }
+        if = {
+            limit = {
+                has_global_variable = nesnd_crimea_active
+            }
+            multiply = 0.2
+        }
+        min = 0
+    }
+}
+
+# Rule 13: Propose protection to an independent local Central Asian state (60-month cooldown; sends event .40).
+nesnd_ottoman_ca_protect = {
+    name = nesnd_ottoman_ca_protect
+    desc = nesnd_ottoman_ca_protect_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_central_asia
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_protect_target_tt
+            any_country = {
+                nesnd_ottoman_ca_protect_target = yes
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_protect_cd_tt
+            NOT = { has_variable = nesnd_ottoman_ca_protect_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_protect_rank_tt
+            nesnd_ottoman_ca_can_take_subject = yes
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_ottoman_ca_protect_send_tt
+        custom_tooltip = nesnd_ottoman_ca_protect_cd_set_tt
+        hidden_effect = {
+            nesnd_ottoman_ca_dispatch_protect = yes
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                any_country = {
+                    nesnd_ottoman_ca_protect_target = yes
+                    relations:root >= relations_threshold:cordial
+                }
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}
+
+# Rule 14: Propose a defensive pact to an independent neighbor hostile to the Central Asia foe (60-month cooldown; sends event .42).
+nesnd_ottoman_ca_compact = {
+    name = nesnd_ottoman_ca_compact
+    desc = nesnd_ottoman_ca_compact_desc
+    visible = {
+        has_journal_entry = nesnd_ottoman_central_asia
+    }
+    possible = {
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_foe_valid_tt
+            nesnd_ottoman_ca_foe_valid = yes
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_partner_tt
+            any_country = {
+                nesnd_ottoman_ca_partner_candidate = yes
+            }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_compact_cd_tt
+            NOT = { has_variable = nesnd_ottoman_ca_compact_cd }
+        }
+        custom_tooltip = {
+            text = nesnd_ottoman_ca_compact_pact_tt
+            any_country = {
+                nesnd_ottoman_ca_partner_candidate = yes
+                nesnd_ottoman_ca_can_compact_with_tur = yes
+            }
+        }
+    }
+    effect = {
+        custom_tooltip = nesnd_ottoman_ca_compact_send_tt
+        custom_tooltip = nesnd_ottoman_ca_compact_cd_set_tt
+        hidden_effect = {
+            nesnd_ottoman_ca_dispatch_compact = yes
+        }
+    }
+    ai_chance = {
+        value = 10
+        if = {
+            limit = {
+                has_global_variable = nesnd_ca_foe
+                any_country = {
+                    nesnd_ottoman_ca_partner_candidate = yes
+                    nesnd_ottoman_ca_can_compact_with_tur = yes
+                    global_var:nesnd_ca_foe ?= {
+                        has_war_with = prev
+                    }
+                }
+            }
+            add = 10
+        }
+        if = {
+            limit = {
+                is_at_war = yes
+            }
+            multiply = 0
+        }
+    }
+}

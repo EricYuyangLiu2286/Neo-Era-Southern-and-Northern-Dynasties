@@ -198,6 +198,12 @@ nesnd_ottoman_recovery.5 = {
             }
             nesnd_ottoman_na_start = yes
         }
+        if = {
+            limit = {
+                nesnd_ottoman_ca_start_ready = yes
+            }
+            nesnd_ottoman_ca_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_charter_ig ?= { is_powerful = yes } } add = 10 }
@@ -228,6 +234,12 @@ nesnd_ottoman_recovery.5 = {
                 nesnd_ottoman_na_start_ready = yes
             }
             nesnd_ottoman_na_start = yes
+        }
+        if = {
+            limit = {
+                nesnd_ottoman_ca_start_ready = yes
+            }
+            nesnd_ottoman_ca_start = yes
         }
         ai_chance = {
             base = 10
@@ -291,6 +303,12 @@ nesnd_ottoman_recovery.6 = {
             }
             nesnd_ottoman_na_start = yes
         }
+        if = {
+            limit = {
+                nesnd_ottoman_ca_start_ready = yes
+            }
+            nesnd_ottoman_ca_start = yes
+        }
         ai_chance = {
             base = 10
             modifier = { trigger = { scope:nesnd_route_faith_ig ?= { is_powerful = yes } } add = 10 }
@@ -321,6 +339,12 @@ nesnd_ottoman_recovery.6 = {
                 nesnd_ottoman_na_start_ready = yes
             }
             nesnd_ottoman_na_start = yes
+        }
+        if = {
+            limit = {
+                nesnd_ottoman_ca_start_ready = yes
+            }
+            nesnd_ottoman_ca_start = yes
         }
         ai_chance = {
             base = 10
@@ -2855,6 +2879,452 @@ nesnd_ottoman_recovery.39 = {
         }
         else = {
             custom_tooltip = nesnd_ottoman_recovery.39.a_refused_tt
+        }
+    }
+}
+# Journal nesnd_ottoman_central_asia: Ottoman protection offer received by an independent local Central Asian state (Rule 13).
+nesnd_ottoman_recovery.40 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.40.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.40.d_protectorate
+                trigger = {
+                    c:TUR ?= {
+                        is_country_type = recognized
+                    }
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.40.d_tributary
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.40.f
+    event_image = {
+        video = "votp_monarch_holding_court"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_ca_protect_open = yes
+    }
+    immediate = {
+        save_scope_as = nesnd_ca_target_scope
+        c:TUR ?= {
+            save_scope_as = nesnd_ca_tur
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.40.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_ca_protect_open = yes
+            }
+            if = {
+                limit = {
+                    c:TUR ?= {
+                        is_country_type = recognized
+                    }
+                }
+                c:TUR ?= {
+                    create_diplomatic_pact = {
+                        country = root
+                        type = protectorate
+                    }
+                }
+            }
+            else = {
+                c:TUR ?= {
+                    create_diplomatic_pact = {
+                        country = root
+                        type = tributary
+                    }
+                }
+            }
+            change_relations = {
+                country = c:TUR
+                value = 30
+            }
+            if = {
+                limit = {
+                    nesnd_ottoman_ca_foe_valid = yes
+                }
+                global_var:nesnd_ca_foe ?= {
+                    change_relations = {
+                        country = c:TUR
+                        value = -20
+                    }
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.44
+                        days = 3
+                        popup = yes
+                    }
+                }
+            }
+            hidden_effect = {
+                save_scope_as = nesnd_ca_protect_accepted
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.41
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.40.lapsed_tt
+        }
+        ai_chance = {
+            base = 10
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        relations:root >= relations_threshold:cordial
+                    }
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    any_country = {
+                        nesnd_ottoman_ca_foe_candidate = yes
+                    }
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    has_global_variable = nesnd_ca_foe
+                    global_var:nesnd_ca_foe ?= {
+                        has_war_with = root
+                    }
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        country_rank >= rank_value:great_power
+                    }
+                }
+                add = 10
+            }
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        has_variable = nesnd_ottoman_ca_funded_once
+                    }
+                }
+                add = 10
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.40.b
+        if = {
+            limit = {
+                nesnd_ottoman_ca_protect_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+            hidden_effect = {
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.41
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.40.lapsed_tt
+        }
+        ai_chance = {
+            base = 60
+        }
+    }
+}
+# Journal nesnd_ottoman_central_asia: Ottoman notification of the local state's answer to the protection offer (Rule 13).
+nesnd_ottoman_recovery.41 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.41.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.41.d_accepted
+                trigger = {
+                    exists = scope:nesnd_ca_protect_accepted
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.41.d_refused
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.41.f
+    event_image = {
+        video = "votp_monarch_holding_court"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = scope:nesnd_ca_target_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.41.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_ca_protect_accepted
+            }
+            custom_tooltip = nesnd_ottoman_recovery.41.a_accepted_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.41.a_refused_tt
+        }
+    }
+}
+# Journal nesnd_ottoman_central_asia: Ottoman defensive pact proposal received by a neighbor hostile to global_var:nesnd_ca_foe (Rule 14).
+nesnd_ottoman_recovery.42 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.42.t
+    desc = nesnd_ottoman_recovery.42.d
+    flavor = nesnd_ottoman_recovery.42.f
+    event_image = {
+        video = "unspecific_signed_contract"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        nesnd_ottoman_ca_compact_open = yes
+    }
+    immediate = {
+        save_scope_as = nesnd_ca_partner_scope
+        c:TUR ?= {
+            save_scope_as = nesnd_ca_tur
+        }
+        global_var:nesnd_ca_foe ?= {
+            save_scope_as = nesnd_ca_foe_scope
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.42.a
+        default_option = yes
+        if = {
+            limit = {
+                nesnd_ottoman_ca_compact_open = yes
+            }
+            nesnd_crimea_sign_defensive_pact = {
+                PARTNER = c:TUR
+            }
+            change_relations = {
+                country = c:TUR
+                value = 20
+            }
+            hidden_effect = {
+                save_scope_as = nesnd_ca_compact_accepted
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.43
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.42.lapsed_tt
+        }
+        ai_chance = {
+            base = 20
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        relations:root >= relations_threshold:cordial
+                    }
+                }
+                add = 20
+            }
+            modifier = {
+                trigger = {
+                    has_global_variable = nesnd_ca_foe
+                    global_var:nesnd_ca_foe ?= {
+                        has_war_with = root
+                    }
+                }
+                add = 30
+            }
+            modifier = {
+                trigger = {
+                    has_global_variable = nesnd_ca_foe
+                    global_var:nesnd_ca_foe ?= {
+                        country_rank >= rank_value:great_power
+                    }
+                }
+                add = 10
+            }
+            modifier = {
+                trigger = {
+                    c:TUR ?= {
+                        is_at_war = yes
+                    }
+                }
+                add = -20
+            }
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.42.b
+        if = {
+            limit = {
+                nesnd_ottoman_ca_compact_open = yes
+            }
+            change_relations = {
+                country = c:TUR
+                value = -10
+            }
+            hidden_effect = {
+                c:TUR ?= {
+                    trigger_event = {
+                        id = nesnd_ottoman_recovery.43
+                        days = 2
+                        popup = yes
+                    }
+                }
+            }
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.42.lapsed_tt
+        }
+        ai_chance = {
+            base = 40
+        }
+    }
+}
+# Journal nesnd_ottoman_central_asia: Ottoman notification of the neighbor's answer to the defensive pact proposal (Rule 14).
+nesnd_ottoman_recovery.43 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.43.t
+    desc = {
+        first_valid = {
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.43.d_accepted
+                trigger = {
+                    exists = scope:nesnd_ca_compact_accepted
+                }
+            }
+            triggered_desc = {
+                desc = nesnd_ottoman_recovery.43.d_refused
+                trigger = {
+                    always = yes
+                }
+            }
+        }
+    }
+    flavor = nesnd_ottoman_recovery.43.f
+    event_image = {
+        video = "unspecific_signed_contract"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_scales.dds"
+    duration = 3
+    trigger = {
+        c:TUR ?= this
+        exists = scope:nesnd_ca_partner_scope
+    }
+    option = {
+        name = nesnd_ottoman_recovery.43.a
+        default_option = yes
+        if = {
+            limit = {
+                exists = scope:nesnd_ca_compact_accepted
+            }
+            custom_tooltip = nesnd_ottoman_recovery.43.a_accepted_tt
+        }
+        else = {
+            custom_tooltip = nesnd_ottoman_recovery.43.a_refused_tt
+        }
+    }
+}
+# Journal nesnd_ottoman_central_asia: rival reaction when a local Central Asian state accepts Ottoman protection (Rule 15, R4).
+nesnd_ottoman_recovery.44 = {
+    type = country_event
+    placement = root
+    title = nesnd_ottoman_recovery.44.t
+    desc = nesnd_ottoman_recovery.44.d
+    flavor = nesnd_ottoman_recovery.44.f
+    event_image = {
+        video = "unspecific_politicians_arguing"
+    }
+    on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+    icon = "gfx/interface/icons/event_icons/event_military.dds"
+    duration = 3
+    trigger = {
+        exists = scope:nesnd_ca_target_scope
+        exists = scope:nesnd_ca_tur
+        exists = c:TUR
+        c:TUR = {
+            is_country_alive = yes
+        }
+        NOT = { c:TUR ?= this }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.44.a
+        default_option = yes
+        change_relations = {
+            country = c:TUR
+            value = -20
+        }
+        if = {
+            limit = {
+                is_player = no
+                exists = c:TUR
+                NOT = { c:TUR ?= this }
+                NOT = {
+                    has_secret_goal = {
+                        who = c:TUR
+                        secret_goal = antagonize
+                    }
+                }
+            }
+            set_secret_goal = {
+                country = c:TUR
+                secret_goal = antagonize
+            }
+        }
+        ai_chance = {
+            base = 60
+        }
+    }
+    option = {
+        name = nesnd_ottoman_recovery.44.b
+        add_modifier = {
+            name = nesnd_ottoman_ca_slighted_mod
+            months = 60
+        }
+        ai_chance = {
+            base = 40
         }
     }
 }

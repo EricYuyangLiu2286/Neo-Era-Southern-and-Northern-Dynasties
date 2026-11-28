@@ -1,0 +1,64 @@
+﻿# Script values for Ottoman B13 "Central Asia" journal (nesnd_ottoman_central_asia).
+# Country scope (evaluated country).
+
+# Central Asia foe selection score (Rule 6): +20 per state in the Central Asia region list held directly or via subjects.
+nesnd_ottoman_ca_foe_score = {
+    value = 0
+    every_scope_state = {
+        limit = {
+            nesnd_ottoman_ca_region_state = yes
+        }
+        add = 20
+    }
+    every_subject_or_below = {
+        every_scope_state = {
+            limit = {
+                nesnd_ottoman_ca_region_state = yes
+            }
+            add = 20
+        }
+    }
+}
+
+# State count for picking the recipient of nesnd_ottoman_ca_protect (.40): +10 per Central Asia state, +1 per total state as tie-breaker (Rule 13).
+nesnd_ottoman_ca_protect_states_count = {
+    value = 0
+    every_scope_state = {
+        limit = {
+            nesnd_ottoman_ca_region_state = yes
+        }
+        add = 10
+    }
+    every_scope_state = {
+        add = 1
+    }
+}
+
+# Partner selection score for nesnd_ottoman_ca_compact (.42) (Rule 14).
+nesnd_ottoman_ca_partner_score = {
+    value = 0
+    if = {
+        limit = {
+            has_global_variable = nesnd_ca_foe
+            global_var:nesnd_ca_foe ?= {
+                has_war_with = prev
+            }
+        }
+        add = 30
+    }
+    if = {
+        limit = {
+            exists = c:TUR
+            c:TUR ?= {
+                relations:prev >= relations_threshold:cordial
+            }
+        }
+        add = 10
+    }
+    if = {
+        limit = {
+            country_rank >= rank_value:major_power
+        }
+        add = 20
+    }
+}
