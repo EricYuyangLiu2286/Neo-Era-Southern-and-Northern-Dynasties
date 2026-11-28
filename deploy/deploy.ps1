@@ -449,9 +449,10 @@ function Invoke-Menu {
     Write-Host '  1  部署：清空 MOD 文件夹，复制运行文件，写入新版本号'
     Write-Host '  2  预览：只列出将删除、将复制的内容和版本号检查，不改动'
     Write-Host '  3  检查：只核对两边版本号与最后一条记录'
+    Write-Host '  4  强制部署：版本号不一致时仍部署（还要输入 DELETE 确认）'
     Write-Host '  q  退出'
     switch ((Read-Host '选择').Trim()) {
-        '1' { return 'deploy' } '2' { return 'preview' } '3' { return 'check' } default { return $null }
+        '1' { return 'deploy' } '2' { return 'preview' } '3' { return 'check' } '4' { return 'force' } default { return $null }
     }
 }
 
